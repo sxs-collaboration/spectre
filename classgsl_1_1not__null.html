@@ -1,0 +1,291 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: gsl::not_null&lt; T &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacegsl.html">gsl</a></li><li class="navelem"><a class="el" href="classgsl_1_1not__null.html">not_null</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classgsl_1_1not__null-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">gsl::not_null&lt; T &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__UtilitiesGroup.html">Utilities</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Require a pointer to not be a <code>nullptr</code>  
+ <a href="classgsl_1_1not__null.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Gsl_8hpp_source.html">Gsl.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a40099d330efb435eb3e5d97fb27d6f89"><td class="memTemplParams" colspan="2"><a id="a40099d330efb435eb3e5d97fb27d6f89"></a>
+template&lt;typename U , Requires&lt; std::is_convertible&lt; U, T &gt;::value &gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a40099d330efb435eb3e5d97fb27d6f89"><td class="memTemplItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memTemplItemRight" valign="bottom"><b>not_null</b> (U &amp;&amp;u)</td></tr>
+<tr class="separator:a40099d330efb435eb3e5d97fb27d6f89"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ee46f3464abd3000119b129f6abbc76"><td class="memTemplParams" colspan="2"><a id="a7ee46f3464abd3000119b129f6abbc76"></a>
+template&lt;typename U , Requires&lt; std::is_convertible&lt; U, T &gt;::value &gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a7ee46f3464abd3000119b129f6abbc76"><td class="memTemplItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memTemplItemRight" valign="bottom"><b>not_null</b> (const <a class="el" href="classgsl_1_1not__null.html">not_null</a>&lt; U &gt; &amp;other)</td></tr>
+<tr class="separator:a7ee46f3464abd3000119b129f6abbc76"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f36fdb6a19b5d587b296e5bb22a6f98"><td class="memItemLeft" align="right" valign="top"><a id="a8f36fdb6a19b5d587b296e5bb22a6f98"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>not_null</b> (const <a class="el" href="classgsl_1_1not__null.html">not_null</a> &amp;other)=default</td></tr>
+<tr class="separator:a8f36fdb6a19b5d587b296e5bb22a6f98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73cc2ae084c7cdfba8815410eed09350"><td class="memItemLeft" align="right" valign="top"><a id="a73cc2ae084c7cdfba8815410eed09350"></a>
+<a class="el" href="classgsl_1_1not__null.html">not_null</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classgsl_1_1not__null.html">not_null</a> &amp;other)=default</td></tr>
+<tr class="separator:a73cc2ae084c7cdfba8815410eed09350"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f443311626c00b2a8923158e3099bb1"><td class="memItemLeft" align="right" valign="top"><a id="a3f443311626c00b2a8923158e3099bb1"></a>
+constexpr T&#160;</td><td class="memItemRight" valign="bottom"><b>get</b> () const</td></tr>
+<tr class="separator:a3f443311626c00b2a8923158e3099bb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8804c862bd626c57167326e558ca192a"><td class="memItemLeft" align="right" valign="top"><a id="a8804c862bd626c57167326e558ca192a"></a>
+constexpr&#160;</td><td class="memItemRight" valign="bottom"><b>operator T</b> () const</td></tr>
+<tr class="separator:a8804c862bd626c57167326e558ca192a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5fbb3ebb67f4613051892756655a4215"><td class="memItemLeft" align="right" valign="top"><a id="a5fbb3ebb67f4613051892756655a4215"></a>
+constexpr T&#160;</td><td class="memItemRight" valign="bottom"><b>operator-&gt;</b> () const</td></tr>
+<tr class="separator:a5fbb3ebb67f4613051892756655a4215"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3ec0739f9f49893476317624b103aa7"><td class="memItemLeft" align="right" valign="top"><a id="af3ec0739f9f49893476317624b103aa7"></a>
+constexpr decltype(auto)&#160;</td><td class="memItemRight" valign="bottom"><b>operator*</b> () const</td></tr>
+<tr class="separator:af3ec0739f9f49893476317624b103aa7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a4e1e2ea245f78fa9a375fb586a2616"><td class="memItemLeft" align="right" valign="top"><a id="a3a4e1e2ea245f78fa9a375fb586a2616"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>not_null</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/types/nullptr_t.html">std::nullptr_t</a>)=delete</td></tr>
+<tr class="separator:a3a4e1e2ea245f78fa9a375fb586a2616"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a956f08e5402538d9d316b2801f41f39f"><td class="memItemLeft" align="right" valign="top"><a id="a956f08e5402538d9d316b2801f41f39f"></a>
+<a class="el" href="classgsl_1_1not__null.html">not_null</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/types/nullptr_t.html">std::nullptr_t</a>)=delete</td></tr>
+<tr class="separator:a956f08e5402538d9d316b2801f41f39f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2bcefc1bbe21584b4bfe57dc2e0daf11"><td class="memItemLeft" align="right" valign="top"><a id="a2bcefc1bbe21584b4bfe57dc2e0daf11"></a>
+<a class="el" href="classgsl_1_1not__null.html">not_null</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator++</b> ()=delete</td></tr>
+<tr class="separator:a2bcefc1bbe21584b4bfe57dc2e0daf11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b6bc7279d8cb257a7604f292485fc37"><td class="memItemLeft" align="right" valign="top"><a id="a5b6bc7279d8cb257a7604f292485fc37"></a>
+<a class="el" href="classgsl_1_1not__null.html">not_null</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator--</b> ()=delete</td></tr>
+<tr class="separator:a5b6bc7279d8cb257a7604f292485fc37"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1cac291b8048877c69eaa166afcff5e"><td class="memItemLeft" align="right" valign="top"><a id="ac1cac291b8048877c69eaa166afcff5e"></a>
+<a class="el" href="classgsl_1_1not__null.html">not_null</a>&#160;</td><td class="memItemRight" valign="bottom"><b>operator++</b> (int)=delete</td></tr>
+<tr class="separator:ac1cac291b8048877c69eaa166afcff5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97167ee8d0ef35e5547bc51b723a5a0d"><td class="memItemLeft" align="right" valign="top"><a id="a97167ee8d0ef35e5547bc51b723a5a0d"></a>
+<a class="el" href="classgsl_1_1not__null.html">not_null</a>&#160;</td><td class="memItemRight" valign="bottom"><b>operator--</b> (int)=delete</td></tr>
+<tr class="separator:a97167ee8d0ef35e5547bc51b723a5a0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a3d27d4d3d4d84a8274a12f580c8a49"><td class="memItemLeft" align="right" valign="top"><a id="a8a3d27d4d3d4d84a8274a12f580c8a49"></a>
+<a class="el" href="classgsl_1_1not__null.html">not_null</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator+=</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/types/ptrdiff_t.html">std::ptrdiff_t</a>)=delete</td></tr>
+<tr class="separator:a8a3d27d4d3d4d84a8274a12f580c8a49"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac48eb97bc85082c6bfc3149270b14a19"><td class="memItemLeft" align="right" valign="top"><a id="ac48eb97bc85082c6bfc3149270b14a19"></a>
+<a class="el" href="classgsl_1_1not__null.html">not_null</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator-=</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/types/ptrdiff_t.html">std::ptrdiff_t</a>)=delete</td></tr>
+<tr class="separator:ac48eb97bc85082c6bfc3149270b14a19"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a10b45462edec3b8bf2c9af1c5a48dc4e"><td class="memItemLeft" align="right" valign="top"><a id="a10b45462edec3b8bf2c9af1c5a48dc4e"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator[]</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/types/ptrdiff_t.html">std::ptrdiff_t</a>) const =delete</td></tr>
+<tr class="separator:a10b45462edec3b8bf2c9af1c5a48dc4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;class T&gt;<br />
+class gsl::not_null&lt; T &gt;</h3>
+
+<p>Require a pointer to not be a <code>nullptr</code> </p>
+<p>Restricts a pointer or smart pointer to only hold non-null values.</p>
+<p>Has zero size overhead over <code>T</code>.</p>
+<p>If <code>T</code> is a pointer (i.e. <code>T == U*</code>) then</p><ul>
+<li>allow construction from <code>U*</code></li>
+<li>disallow construction from <code>nullptr_t</code></li>
+<li>disallow default construction</li>
+<li>ensure construction from null <code>U*</code> fails</li>
+<li>allow implicit conversion to <code>U*</code> </li>
+</ul>
+</div><hr/>The documentation for this class was generated from the following files:<ul>
+<li>src/Domain/FunctionsOfTime/<a class="el" href="ReadSpecPiecewisePolynomial_8hpp_source.html">ReadSpecPiecewisePolynomial.hpp</a></li>
+<li>src/Utilities/<a class="el" href="Gsl_8hpp_source.html">Gsl.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

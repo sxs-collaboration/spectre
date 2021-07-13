@@ -1,0 +1,292 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Domain/CoordinateMaps/CoordinateMap.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_2b2489ccd21aa27a14d4bfff471515cd.html">Domain</a></li><li class="navelem"><a class="el" href="dir_bb5e4b8b03d9e3af97e505d0d090fa89.html">CoordinateMaps</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
+  <div class="headertitle">
+<div class="title">CoordinateMap.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/limits.html">limits</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/optional.html">optional</a>&gt;</code><br />
+<code>#include &lt;pup.h&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/tuple.html">tuple</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/typeinfo.html">typeinfo</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/unordered_map.html">unordered_map</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a>&gt;</code><br />
+<code>#include &quot;<a class="el" href="Tensor_8hpp_source.html">DataStructures/Tensor/Tensor.hpp</a>&quot;</code><br />
+<code>#include &quot;Domain/FunctionsOfTime/FunctionOfTime.hpp&quot;</code><br />
+<code>#include &quot;<a class="el" href="CharmPupable_8hpp_source.html">Parallel/CharmPupable.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="TMPL_8hpp_source.html">Utilities/TMPL.hpp</a>&quot;</code><br />
+</div>
+<p><a href="CoordinateMap_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase&lt; SourceFrame, TargetFrame, Dim &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Abstract base class for <a class="el" href="classdomain_1_1CoordinateMap.html" title="A coordinate map or composition of coordinate maps.">CoordinateMap</a>.  <a href="classdomain_1_1CoordinateMapBase.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap&lt; SourceFrame, TargetFrame, Maps &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A coordinate map or composition of coordinate maps.  <a href="classdomain_1_1CoordinateMap.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespacedomain_1_1CoordinateMaps"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedomain_1_1CoordinateMaps.html">domain::CoordinateMaps</a></td></tr>
+<tr class="memdesc:namespacedomain_1_1CoordinateMaps"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains all coordinate maps. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespacedomain_1_1CoordinateMaps_1_1TimeDependent"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedomain_1_1CoordinateMaps_1_1TimeDependent.html">domain::CoordinateMaps::TimeDependent</a></td></tr>
+<tr class="memdesc:namespacedomain_1_1CoordinateMaps_1_1TimeDependent"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains the time-dependent coordinate maps. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga8313460096176264f7bc06ac58aa34e6"><td class="memTemplParams" colspan="2">
+template&lt;typename SourceFrame , typename TargetFrame , typename... Maps&gt; </td></tr>
+<tr class="memitem:ga8313460096176264f7bc06ac58aa34e6"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#ga8313460096176264f7bc06ac58aa34e6">domain::make_coordinate_map</a> (Maps &amp;&amp;... maps) noexcept -&gt; CoordinateMap&lt; SourceFrame, TargetFrame, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/decay.html">std::decay_t</a>&lt; Maps &gt;... &gt;</td></tr>
+<tr class="memdesc:ga8313460096176264f7bc06ac58aa34e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a <code><a class="el" href="classdomain_1_1CoordinateMap.html" title="A coordinate map or composition of coordinate maps.">CoordinateMap</a></code> of <code>maps...</code> <br /></td></tr>
+<tr class="separator:ga8313460096176264f7bc06ac58aa34e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga281275a17c14e1361ab43e8079d545fc"><td class="memTemplParams" colspan="2">
+template&lt;typename SourceFrame , typename TargetFrame , typename... Maps&gt; </td></tr>
+<tr class="memitem:ga281275a17c14e1361ab43e8079d545fc"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#ga281275a17c14e1361ab43e8079d545fc">domain::make_coordinate_map_base</a> (Maps &amp;&amp;... maps) noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; CoordinateMapBase&lt; SourceFrame, TargetFrame, CoordinateMap&lt; SourceFrame, TargetFrame, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/decay.html">std::decay_t</a>&lt; Maps &gt;... &gt;::dim &gt;&gt;</td></tr>
+<tr class="memdesc:ga281275a17c14e1361ab43e8079d545fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt;<a class="el" href="classdomain_1_1CoordinateMapBase.html" title="Abstract base class for CoordinateMap.">CoordinateMapBase</a>&gt;</code> of <code>maps...</code> <br /></td></tr>
+<tr class="separator:ga281275a17c14e1361ab43e8079d545fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1e72842eb76ca8b91e595319a38636ac"><td class="memTemplParams" colspan="2">
+template&lt;typename SourceFrame , typename TargetFrame , typename Arg0 , typename... Args&gt; </td></tr>
+<tr class="memitem:ga1e72842eb76ca8b91e595319a38636ac"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#ga1e72842eb76ca8b91e595319a38636ac">domain::make_vector_coordinate_map_base</a> (Arg0 &amp;&amp;arg_0, Args &amp;&amp;... remaining_args) noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; CoordinateMapBase&lt; SourceFrame, TargetFrame, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/decay.html">std::decay_t</a>&lt; Arg0 &gt;::dim &gt;&gt;&gt;</td></tr>
+<tr class="memdesc:ga1e72842eb76ca8b91e595319a38636ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt;<a class="el" href="classdomain_1_1CoordinateMapBase.html" title="Abstract base class for CoordinateMap.">CoordinateMapBase</a>&gt;&gt;</code> containing the result of <code>make_coordinate_map_base</code> applied to each argument passed in. <br /></td></tr>
+<tr class="separator:ga1e72842eb76ca8b91e595319a38636ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gada681fd92fb5c963e51df2027f7a3324"><td class="memTemplParams" colspan="2">
+template&lt;typename SourceFrame , typename TargetFrame , size_t Dim, typename Map , typename... Maps&gt; </td></tr>
+<tr class="memitem:gada681fd92fb5c963e51df2027f7a3324"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#gada681fd92fb5c963e51df2027f7a3324">domain::make_vector_coordinate_map_base</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; Map &gt; maps, const Maps &amp;... remaining_maps) noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; CoordinateMapBase&lt; SourceFrame, TargetFrame, Dim &gt;&gt;&gt;</td></tr>
+<tr class="memdesc:gada681fd92fb5c963e51df2027f7a3324"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt;<a class="el" href="classdomain_1_1CoordinateMapBase.html" title="Abstract base class for CoordinateMap.">CoordinateMapBase</a>&gt;&gt;</code> containing the result of <code>make_coordinate_map_base</code> applied to each element of the vector of maps composed with the rest of the arguments passed in. <br /></td></tr>
+<tr class="separator:gada681fd92fb5c963e51df2027f7a3324"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga398bdce722c9ba655f479a7712f1a0e5"><td class="memTemplParams" colspan="2">
+template&lt;typename SourceFrame , typename TargetFrame , typename... Maps, typename NewMap &gt; </td></tr>
+<tr class="memitem:ga398bdce722c9ba655f479a7712f1a0e5"><td class="memTemplItemLeft" align="right" valign="top">CoordinateMap&lt; SourceFrame, TargetFrame, Maps..., NewMap &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#ga398bdce722c9ba655f479a7712f1a0e5">domain::push_back</a> (CoordinateMap&lt; SourceFrame, TargetFrame, Maps... &gt; old_map, NewMap new_map) noexcept</td></tr>
+<tr class="memdesc:ga398bdce722c9ba655f479a7712f1a0e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a <code><a class="el" href="classdomain_1_1CoordinateMap.html" title="A coordinate map or composition of coordinate maps.">CoordinateMap</a></code> by appending the new map to the end of the old maps. <br /></td></tr>
+<tr class="separator:ga398bdce722c9ba655f479a7712f1a0e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaadd52d75ebc604a2ecf7a505c7c5d095"><td class="memTemplParams" colspan="2">
+template&lt;typename SourceFrame , typename TargetFrame , typename... Maps, typename NewMap &gt; </td></tr>
+<tr class="memitem:gaadd52d75ebc604a2ecf7a505c7c5d095"><td class="memTemplItemLeft" align="right" valign="top">CoordinateMap&lt; SourceFrame, TargetFrame, NewMap, Maps... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#gaadd52d75ebc604a2ecf7a505c7c5d095">domain::push_front</a> (CoordinateMap&lt; SourceFrame, TargetFrame, Maps... &gt; old_map, NewMap new_map) noexcept</td></tr>
+<tr class="memdesc:gaadd52d75ebc604a2ecf7a505c7c5d095"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a <code><a class="el" href="classdomain_1_1CoordinateMap.html" title="A coordinate map or composition of coordinate maps.">CoordinateMap</a></code> by prepending the new map to the beginning of the old maps. <br /></td></tr>
+<tr class="separator:gaadd52d75ebc604a2ecf7a505c7c5d095"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:aff891e0aa7507d580b3e525ea2bd92e4"><td class="memTemplParams" colspan="2"><a id="aff891e0aa7507d580b3e525ea2bd92e4"></a>
+template&lt;typename FirstMap , typename... Maps&gt; </td></tr>
+<tr class="memitem:aff891e0aa7507d580b3e525ea2bd92e4"><td class="memTemplItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><b>domain::CoordinateMaps::map_dim</b> = FirstMap::dim</td></tr>
+<tr class="separator:aff891e0aa7507d580b3e525ea2bd92e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Defines class CoordinateMap </p>
+</div></div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

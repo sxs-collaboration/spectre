@@ -1,0 +1,311 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Events::ChangeSlabSize Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>Events</b></li><li class="navelem"><a class="el" href="classEvents_1_1ChangeSlabSize.html">ChangeSlabSize</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classEvents_1_1ChangeSlabSize-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Events::ChangeSlabSize Class Reference<div class="ingroups"><a class="el" href="group__TimeGroup.html">Time</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><code>#include &lt;<a class="el" href="ChangeSlabSize_8hpp_source.html">ChangeSlabSize.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structEvents_1_1ChangeSlabSize_1_1DelayChange.html">DelayChange</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structEvents_1_1ChangeSlabSize_1_1StepChoosers.html">StepChoosers</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a83c1df239cd07161d5fcbd304c524578"><td class="memItemLeft" align="right" valign="top"><a id="a83c1df239cd07161d5fcbd304c524578"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structEvents_1_1ChangeSlabSize_1_1StepChoosers.html">StepChoosers</a>, <a class="el" href="structEvents_1_1ChangeSlabSize_1_1DelayChange.html">DelayChange</a> &gt;</td></tr>
+<tr class="separator:a83c1df239cd07161d5fcbd304c524578"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c54025008e66e7151e775946887343d"><td class="memItemLeft" align="right" valign="top"><a id="a4c54025008e66e7151e775946887343d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt; <a class="el" href="structTags_1_1TimeStepId.html">Tags::TimeStepId</a>, <a class="el" href="structTags_1_1DataBox.html">Tags::DataBox</a> &gt;</td></tr>
+<tr class="separator:a4c54025008e66e7151e775946887343d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3369554410e38981625d5c4237d56bef"><td class="memItemLeft" align="right" valign="top"><a id="a3369554410e38981625d5c4237d56bef"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>is_ready_argument_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a3369554410e38981625d5c4237d56bef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a98110a39b345d5bdd49dfdd6bf48f932"><td class="memItemLeft" align="right" valign="top"><a id="a98110a39b345d5bdd49dfdd6bf48f932"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ChangeSlabSize</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classStepChooser.html">StepChooser</a>&lt; StepChooserUse::Slab &gt;&gt;&gt; step_choosers, const uint64_t delay_change) noexcept</td></tr>
+<tr class="separator:a98110a39b345d5bdd49dfdd6bf48f932"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af8a36775f991caa56f48f85cb85426f2"><td class="memTemplParams" colspan="2"><a id="af8a36775f991caa56f48f85cb85426f2"></a>
+template&lt;typename DbTags , typename Metavariables , typename ArrayIndex , typename ParallelComponent &gt; </td></tr>
+<tr class="memitem:af8a36775f991caa56f48f85cb85426f2"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator()</b> (const <a class="el" href="classTimeStepId.html">TimeStepId</a> &amp;time_step_id, const db::DataBox&lt; DbTags &gt; &amp;box_for_step_choosers, <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt; &amp;cache, const ArrayIndex &amp;array_index, const ParallelComponent *const) const noexcept</td></tr>
+<tr class="separator:af8a36775f991caa56f48f85cb85426f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab811ea8f797bed80503ebec89dfb0b0b"><td class="memTemplParams" colspan="2"><a id="ab811ea8f797bed80503ebec89dfb0b0b"></a>
+template&lt;typename Metavariables , typename ArrayIndex , typename Component &gt; </td></tr>
+<tr class="memitem:ab811ea8f797bed80503ebec89dfb0b0b"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>is_ready</b> (<a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt; &amp;, const ArrayIndex &amp;, const Component *const) const noexcept</td></tr>
+<tr class="separator:ab811ea8f797bed80503ebec89dfb0b0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:accdeeb9db906ac5db24a4862bc450728"><td class="memItemLeft" align="right" valign="top"><a id="accdeeb9db906ac5db24a4862bc450728"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEvents_1_1ChangeSlabSize.html#accdeeb9db906ac5db24a4862bc450728">needs_evolved_variables</a> () const noexcept override</td></tr>
+<tr class="memdesc:accdeeb9db906ac5db24a4862bc450728"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the event uses anything depending on the evolved_variables. If this returns false, anything depending on the evolved variables may have an incorrect value when the event is run. <br /></td></tr>
+<tr class="separator:accdeeb9db906ac5db24a4862bc450728"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c2573e45eeede1ec09c5256e9dbcbea"><td class="memItemLeft" align="right" valign="top"><a id="a1c2573e45eeede1ec09c5256e9dbcbea"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:a1c2573e45eeede1ec09c5256e9dbcbea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classEvent"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classEvent')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classEvent.html">Event</a></td></tr>
+<tr class="memitem:a679070c6cb69e9e7f98f3244fd186719 inherit pub_methods_classEvent"><td class="memItemLeft" align="right" valign="top"><a id="a679070c6cb69e9e7f98f3244fd186719"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Event</b> (CkMigrateMessage *msg) noexcept</td></tr>
+<tr class="separator:a679070c6cb69e9e7f98f3244fd186719 inherit pub_methods_classEvent"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0fee6ed6a5b80c54a18c876f85ccba9 inherit pub_methods_classEvent"><td class="memItemLeft" align="right" valign="top"><a id="ae0fee6ed6a5b80c54a18c876f85ccba9"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_abstract</b> (<a class="el" href="classEvent.html">Event</a>)</td></tr>
+<tr class="separator:ae0fee6ed6a5b80c54a18c876f85ccba9 inherit pub_methods_classEvent"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abea3acf074ce4f0f152fcd3cc59901da inherit pub_methods_classEvent"><td class="memTemplParams" colspan="2"><a id="abea3acf074ce4f0f152fcd3cc59901da"></a>
+template&lt;typename DbTags , typename Metavariables , typename ArrayIndex , typename ComponentPointer &gt; </td></tr>
+<tr class="memitem:abea3acf074ce4f0f152fcd3cc59901da inherit pub_methods_classEvent"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>run</b> (const db::DataBox&lt; DbTags &gt; &amp;box, <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt; &amp;cache, const ArrayIndex &amp;array_index, const ComponentPointer) const noexcept</td></tr>
+<tr class="separator:abea3acf074ce4f0f152fcd3cc59901da inherit pub_methods_classEvent"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a757530a5d4dfbd50ee36c5293291fa7f inherit pub_methods_classEvent"><td class="memTemplParams" colspan="2"><a id="a757530a5d4dfbd50ee36c5293291fa7f"></a>
+template&lt;typename DbTags , typename Metavariables , typename ArrayIndex , typename ComponentPointer &gt; </td></tr>
+<tr class="memitem:a757530a5d4dfbd50ee36c5293291fa7f inherit pub_methods_classEvent"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>is_ready</b> (const db::DataBox&lt; DbTags &gt; &amp;box, <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt; &amp;cache, const ArrayIndex &amp;array_index, const ComponentPointer) const noexcept</td></tr>
+<tr class="separator:a757530a5d4dfbd50ee36c5293291fa7f inherit pub_methods_classEvent"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a06cabbb2d2efed3562cad68aadd0ba91"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a06cabbb2d2efed3562cad68aadd0ba91"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Trigger a slab size change.</p>
+<p>The new size will be the minimum suggested by any of the provided step choosers on any element. This requires a global reduction, so it is possible to delay the change until a later slab to avoid a global synchronization. The actual change is carried out by <a class="el" href="structActions_1_1ChangeSlabSize.html">Actions::ChangeSlabSize</a>.</p>
+<p>When running with global time-stepping, the slab size and step size are the same, so this adjusts the step size used by the time integration. With local time-stepping this controls the interval between times when the sequences of steps on all elements are forced to align. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a06cabbb2d2efed3562cad68aadd0ba91"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a06cabbb2d2efed3562cad68aadd0ba91">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> Events::ChangeSlabSize::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      <span class="stringliteral">&quot;Trigger a slab size change chosen by the provided step choosers.\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;The actual changing of the slab size can be delayed until a later\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;slab to improve parallelization.&quot;</span></div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Time/Actions/<a class="el" href="ChangeSlabSize_8hpp_source.html">ChangeSlabSize.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

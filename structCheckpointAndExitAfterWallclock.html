@@ -1,0 +1,308 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: CheckpointAndExitAfterWallclock&lt; Metavariables, PhaseChangeRegistrars &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structCheckpointAndExitAfterWallclock-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">CheckpointAndExitAfterWallclock&lt; Metavariables, PhaseChangeRegistrars &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Phase control object that runs the WriteCheckpoint and Exit phases after a specified amount of wallclock time has elapsed.  
+ <a href="structCheckpointAndExitAfterWallclock.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="CheckpointAndExitAfterWallclock_8hpp_source.html">CheckpointAndExitAfterWallclock.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCheckpointAndExitAfterWallclock_1_1WallclockHours.html">WallclockHours</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:adabc494ea077b5a522f918df004588b8"><td class="memItemLeft" align="right" valign="top"><a id="adabc494ea077b5a522f918df004588b8"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structCheckpointAndExitAfterWallclock_1_1WallclockHours.html">WallclockHours</a> &gt;</td></tr>
+<tr class="separator:adabc494ea077b5a522f918df004588b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaff27daee110fbb0aad61b33aab6ebc4"><td class="memItemLeft" align="right" valign="top"><a id="aaff27daee110fbb0aad61b33aab6ebc4"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:aaff27daee110fbb0aad61b33aab6ebc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa79705041e42842694a4edfca3495531"><td class="memItemLeft" align="right" valign="top"><a id="aa79705041e42842694a4edfca3495531"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:aa79705041e42842694a4edfca3495531"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab25299ba1d1d585f55f5895636368373"><td class="memItemLeft" align="right" valign="top"><a id="ab25299ba1d1d585f55f5895636368373"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>phase_change_tags_and_combines</b> = tmpl::list&lt; <a class="el" href="structTags_1_1RestartPhase.html">Tags::RestartPhase</a>&lt; typename Metavariables::Phase &gt;, <a class="el" href="structTags_1_1WallclockHoursAtCheckpoint.html">Tags::WallclockHoursAtCheckpoint</a>, <a class="el" href="structTags_1_1CheckpointAndExitRequested.html">Tags::CheckpointAndExitRequested</a> &gt;</td></tr>
+<tr class="separator:ab25299ba1d1d585f55f5895636368373"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2922d11db396d21ddb8686ee8c80a128"><td class="memTemplParams" colspan="2"><a id="a2922d11db396d21ddb8686ee8c80a128"></a>
+template&lt;typename LocalMetavariables &gt; </td></tr>
+<tr class="memitem:a2922d11db396d21ddb8686ee8c80a128"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>participating_components</b> = typename LocalMetavariables::component_list</td></tr>
+<tr class="separator:a2922d11db396d21ddb8686ee8c80a128"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a104e083fc7f079a9641a0bc7bcfdd5db"><td class="memItemLeft" align="right" valign="top"><a id="a104e083fc7f079a9641a0bc7bcfdd5db"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CheckpointAndExitAfterWallclock</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; double &gt; wallclock_hours, const <a class="el" href="structOptions_1_1Context.html">Options::Context</a> &amp;context={})</td></tr>
+<tr class="separator:a104e083fc7f079a9641a0bc7bcfdd5db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afef287183b459bde51ffa90a484b8c4d"><td class="memItemLeft" align="right" valign="top"><a id="afef287183b459bde51ffa90a484b8c4d"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CheckpointAndExitAfterWallclock</b> (CkMigrateMessage *msg) noexcept</td></tr>
+<tr class="separator:afef287183b459bde51ffa90a484b8c4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac74fdacad1c7b5229fe66253a2ca6efa"><td class="memTemplParams" colspan="2"><a id="ac74fdacad1c7b5229fe66253a2ca6efa"></a>
+template&lt;typename... DecisionTags&gt; </td></tr>
+<tr class="memitem:ac74fdacad1c7b5229fe66253a2ca6efa"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>initialize_phase_data_impl</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; DecisionTags... &gt; * &gt; phase_change_decision_data) const noexcept</td></tr>
+<tr class="separator:ac74fdacad1c7b5229fe66253a2ca6efa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a023609800f44be8b01c0d4f597c1b2cf"><td class="memTemplParams" colspan="2"><a id="a023609800f44be8b01c0d4f597c1b2cf"></a>
+template&lt;typename ParallelComponent , typename ArrayIndex , typename LocalMetavariables &gt; </td></tr>
+<tr class="memitem:a023609800f44be8b01c0d4f597c1b2cf"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>contribute_phase_data_impl</b> (<a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; LocalMetavariables &gt; &amp;cache, const ArrayIndex &amp;array_index) const noexcept</td></tr>
+<tr class="separator:a023609800f44be8b01c0d4f597c1b2cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab60cda63887ec06871f628866483d102"><td class="memTemplParams" colspan="2"><a id="ab60cda63887ec06871f628866483d102"></a>
+template&lt;typename... DecisionTags, typename LocalMetavariables &gt; </td></tr>
+<tr class="memitem:ab60cda63887ec06871f628866483d102"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; typename Metavariables::Phase, ArbitrationStrategy &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>arbitrate_phase_change_impl</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; DecisionTags... &gt; * &gt; phase_change_decision_data, const typename LocalMetavariables::Phase current_phase, const <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; LocalMetavariables &gt; &amp;) const noexcept</td></tr>
+<tr class="separator:ab60cda63887ec06871f628866483d102"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c699f7ccdd632f059367fe000ef1ce3"><td class="memItemLeft" align="right" valign="top"><a id="a7c699f7ccdd632f059367fe000ef1ce3"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:a7c699f7ccdd632f059367fe000ef1ce3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aba67cf18470463394e82d2adfce5d69e"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:aba67cf18470463394e82d2adfce5d69e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename Metavariables, typename PhaseChangeRegistrars = tmpl::list&lt;              Registrars::CheckpointAndExitAfterWallclock&lt;Metavariables&gt;&gt;&gt;<br />
+struct CheckpointAndExitAfterWallclock&lt; Metavariables, PhaseChangeRegistrars &gt;</h3>
+
+<p>Phase control object that runs the WriteCheckpoint and Exit phases after a specified amount of wallclock time has elapsed. </p>
+<p>This phase control is useful for running SpECTRE executables performing lengthy computations that may exceed a supercomputer's wallclock limits. Writing a single checkpoint at the end of the job's allocated time allows the computation to be continued, while minimizing the disc space taken up by checkpoint files.</p>
+<p>Note that this phase control is not a trigger on wallclock time. Rather, it checks the elapsed wallclock time when called, likely from a global sync point triggered by some other mechanism, e.g., at some slab boundary. Therefore, the WriteCheckpoint and Exit phases will run the first time this phase control is called after the specified wallclock time has been reached.</p>
+<dl class="section warning"><dt>Warning</dt><dd>the global sync points <em>must</em> be triggered often enough to ensure there will be at least one sync point (i.e., one call to this phase control) in the window between the requested checkpoint-and-exit time and the time at which the batch system will kill the executable. To make this more concrete, consider this example: when running on a 12-hour queue with a checkpoint-and-exit requested after 11.5 hours, there is a 0.5-hour window for a global sync to occur, the checkpoint files to be written to disc, and the executable to clean up. In this case, triggering a global sync every 2-10 minutes might be desirable. Matching the global sync frequency with the time window for checkpoint and exit is the responsibility of the user! </dd></dl>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="aba67cf18470463394e82d2adfce5d69e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba67cf18470463394e82d2adfce5d69e">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Metavariables , typename PhaseChangeRegistrars  = tmpl::list&lt;              Registrars::CheckpointAndExitAfterWallclock&lt;Metavariables&gt;&gt;&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="structCheckpointAndExitAfterWallclock.html">CheckpointAndExitAfterWallclock</a>&lt; Metavariables, PhaseChangeRegistrars &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      <span class="stringliteral">&quot;Once the wallclock time has exceeded the specified amount, trigger &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;writing a checkpoint and then exit.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Parallel/PhaseControl/<a class="el" href="CheckpointAndExitAfterWallclock_8hpp_source.html">CheckpointAndExitAfterWallclock.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

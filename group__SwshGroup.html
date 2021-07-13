@@ -1,0 +1,1875 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Spin-weighted spherical harmonics</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">Spin-weighted spherical harmonics</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Utilities, tags, and metafunctions for using and manipulating spin-weighted spherical harmonics.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html">Spectral::Swsh::CoefficientsMetadata</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A container for libsharp metadata for the spin-weighted spherical harmonics modal representation.  <a href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpectral_1_1Swsh_1_1SpinWeightedSphericalHarmonic.html">Spectral::Swsh::SpinWeightedSphericalHarmonic</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html">Spectral::Swsh::SwshInterpolator</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs interpolation for spin-weighted spherical harmonics by taking advantage of the Clenshaw method of expanding recurrence relations.  <a href="classSpectral_1_1Swsh_1_1SwshInterpolator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1Eth.html">Spectral::Swsh::Tags::Eth</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Struct for labeling the \(\eth\) spin-weighted derivative in tags.  <a href="structSpectral_1_1Swsh_1_1Tags_1_1Eth.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Struct for labeling the \(\bar{\eth}\) spin-weighted derivative in tags.  <a href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1EthEth.html">Spectral::Swsh::Tags::EthEth</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Struct for labeling the \(\eth^2\) spin-weighted derivative in tags.  <a href="structSpectral_1_1Swsh_1_1Tags_1_1EthEth.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1EthbarEth.html">Spectral::Swsh::Tags::EthbarEth</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Struct for labeling the \(\bar{\eth} \eth\) spin-weighted derivative in tags.  <a href="structSpectral_1_1Swsh_1_1Tags_1_1EthbarEth.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1EthEthbar.html">Spectral::Swsh::Tags::EthEthbar</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Struct for labeling the \(\eth \bar{\eth}\) spin-weighted derivative in tags.  <a href="structSpectral_1_1Swsh_1_1Tags_1_1EthEthbar.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1EthbarEthbar.html">Spectral::Swsh::Tags::EthbarEthbar</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Struct for labeling the \(\bar{\eth}^2\) spin-weighted derivative in tags.  <a href="structSpectral_1_1Swsh_1_1Tags_1_1EthbarEthbar.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1InverseEth.html">Spectral::Swsh::Tags::InverseEth</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Struct for labeling the inverse \(\eth^{-1}\) spin-weighted derivative in tags.  <a href="structSpectral_1_1Swsh_1_1Tags_1_1InverseEth.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1InverseEthbar.html">Spectral::Swsh::Tags::InverseEthbar</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Struct for labeling the inverse \(\bar{\eth}^{-1}\) spin-weighted derivative in tags.  <a href="structSpectral_1_1Swsh_1_1Tags_1_1InverseEthbar.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative&lt; Tag, DerivativeKind &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefix tag representing the spin-weighted derivative of a spin-weighted scalar.  <a href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1SwshTransform.html">Spectral::Swsh::Tags::SwshTransform&lt; Tag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefix tag representing the spin-weighted spherical harmonic transform of a spin-weighted scalar.  <a href="structSpectral_1_1Swsh_1_1Tags_1_1SwshTransform.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1LMaxBase.html">Spectral::Swsh::Tags::LMaxBase</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base Tag for the maximum spin-weighted spherical harmonic l; sets angular resolution.  <a href="structSpectral_1_1Swsh_1_1Tags_1_1LMaxBase.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1LMax.html">Spectral::Swsh::Tags::LMax</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for the maximum spin-weighted spherical harmonic l; sets angular resolution.  <a href="structSpectral_1_1Swsh_1_1Tags_1_1LMax.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1NumberOfRadialPointsBase.html">Spectral::Swsh::Tags::NumberOfRadialPointsBase</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base Tag for the number of radial grid points in the three-dimensional representation of radially concentric spherical shells.  <a href="structSpectral_1_1Swsh_1_1Tags_1_1NumberOfRadialPointsBase.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1NumberOfRadialPoints.html">Spectral::Swsh::Tags::NumberOfRadialPoints</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for the number of radial grid points in the three-dimensional representation of radially concentric spherical shells.  <a href="structSpectral_1_1Swsh_1_1Tags_1_1NumberOfRadialPoints.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1SwshInterpolator.html">Spectral::Swsh::Tags::SwshInterpolator&lt; Tag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for a <a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1SwshInterpolator.html" title="Tag for a SwshInterpolator associated with a particular set of angular coordinates.">SwshInterpolator</a> associated with a particular set of angular coordinates.  <a href="structSpectral_1_1Swsh_1_1Tags_1_1SwshInterpolator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html">Spectral::Swsh::SwshTransform&lt; TagList, Representation &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A <a class="el" href="group__DataBoxGroup.html">DataBox</a> mutate-compatible computational struct for performing several spin-weighted spherical harmonic transforms. Internally dispatches to libsharp.  <a href="structSpectral_1_1Swsh_1_1SwshTransform.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSpectral_1_1Swsh_1_1InverseSwshTransform.html">Spectral::Swsh::InverseSwshTransform&lt; TagList, Representation &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A <a class="el" href="group__DataBoxGroup.html">DataBox</a> mutate-compatible computational struct for performing several spin-weighted inverse spherical harmonic transforms. Internally dispatches to libsharp.  <a href="structSpectral_1_1Swsh_1_1InverseSwshTransform.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:ga3a19e1d6fbdabe80a1252971f6594cfb"><td class="memTemplParams" colspan="2">template&lt;typename DerivativeTag &gt; </td></tr>
+<tr class="memitem:ga3a19e1d6fbdabe80a1252971f6594cfb"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga3a19e1d6fbdabe80a1252971f6594cfb">Spectral::Swsh::coefficient_buffer_tags_for_derivative_tag</a> = tmpl::list&lt; <a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1SwshTransform.html">Spectral::Swsh::Tags::SwshTransform</a>&lt; typename DerivativeTag::derivative_of &gt;, <a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1SwshTransform.html">Spectral::Swsh::Tags::SwshTransform</a>&lt; DerivativeTag &gt; &gt;</td></tr>
+<tr class="memdesc:ga3a19e1d6fbdabe80a1252971f6594cfb"><td class="mdescLeft">&#160;</td><td class="mdescRight">A metafunction for determining the coefficient buffers needed by <code><a class="el" href="group__SpectralGroup.html#ga44e6853e7fc2dfae35ed592045f91750" title="Evaluate all of the spin-weighted derivatives in DerivKindList on input SpinWeighted&lt;ComplexDataVecto...">angular_derivatives()</a></code> to avoid repeatedly allocating space for modal data each time a derivative is taken.  <a href="group__SwshGroup.html#ga3a19e1d6fbdabe80a1252971f6594cfb">More...</a><br /></td></tr>
+<tr class="separator:ga3a19e1d6fbdabe80a1252971f6594cfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gace035d5d0a36b475064a23d0ffd69941"><td class="memTemplParams" colspan="2">template&lt;int Spin, typename TagList &gt; </td></tr>
+<tr class="memitem:gace035d5d0a36b475064a23d0ffd69941"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#gace035d5d0a36b475064a23d0ffd69941">Spectral::Swsh::get_tags_with_spin</a> = tmpl::remove_duplicates&lt; tmpl::filter&lt; TagList, detail::has_spin&lt; tmpl::_1, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::integral_constant</a>&lt; int, Spin &gt; &gt;&gt; &gt;</td></tr>
+<tr class="memdesc:gace035d5d0a36b475064a23d0ffd69941"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract from <code>TagList</code> the subset of those tags that have a static int member <code>spin</code> equal to the template parameter <code>Spin</code>.  <a href="group__SwshGroup.html#gace035d5d0a36b475064a23d0ffd69941">More...</a><br /></td></tr>
+<tr class="separator:gace035d5d0a36b475064a23d0ffd69941"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga795651af0ac8f3db4d5676d590c4e3b9"><td class="memTemplParams" colspan="2">template&lt;int Spin, typename TagList &gt; </td></tr>
+<tr class="memitem:ga795651af0ac8f3db4d5676d590c4e3b9"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga795651af0ac8f3db4d5676d590c4e3b9">Spectral::Swsh::get_prefix_tags_that_wrap_tags_with_spin</a> = tmpl::filter&lt; TagList, tmpl::bind&lt; detail::wrapped_has_spin, tmpl::_1, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::integral_constant</a>&lt; int, Spin &gt; &gt;&gt;</td></tr>
+<tr class="memdesc:ga795651af0ac8f3db4d5676d590c4e3b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract from <code>TagList</code> the subset of those tags that wrap a tag that has a static int member <code>spin</code> equal to the template parameter <code>Spin</code>.  <a href="group__SwshGroup.html#ga795651af0ac8f3db4d5676d590c4e3b9">More...</a><br /></td></tr>
+<tr class="separator:ga795651af0ac8f3db4d5676d590c4e3b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa79fabec76f9551c8a5dc4c5025644ab"><td class="memTemplParams" colspan="2">template&lt;ComplexRepresentation Representation, typename DerivativeTagList &gt; </td></tr>
+<tr class="memitem:gaa79fabec76f9551c8a5dc4c5025644ab"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#gaa79fabec76f9551c8a5dc4c5025644ab">Spectral::Swsh::make_transform_list_from_derivative_tags</a> = typename detail::make_transform_list_impl&lt; -2, Representation, tmpl::transform&lt; DerivativeTagList, tmpl::bind&lt; <a class="el" href="group__DataBoxTagsGroup.html#gae0f7c7c20a2a4908eebcb234302b1b4f">db::remove_tag_prefix</a>, tmpl::_1 &gt; &gt;, decltype(<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::make_integer_sequence</a>&lt; int, 5 &gt;{})&gt;::type</td></tr>
+<tr class="memdesc:gaa79fabec76f9551c8a5dc4c5025644ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assemble a <code>tmpl::list</code> of <code><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted spherical harmo...">SwshTransform</a></code>s given a list of <code><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html" title="Prefix tag representing the spin-weighted derivative of a spin-weighted scalar.">Spectral::Swsh::Tags::Derivative</a>&lt;Tag, Derivative&gt;</code> that need to be computed. The <code><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted spherical harmo...">SwshTransform</a></code>s constructed by this type alias correspond to the <code>Tag</code>s in the list.  <a href="group__SwshGroup.html#gaa79fabec76f9551c8a5dc4c5025644ab">More...</a><br /></td></tr>
+<tr class="separator:gaa79fabec76f9551c8a5dc4c5025644ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga6f1ab67b3715a5adaea8414b5c7dcbfa"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga6f1ab67b3715a5adaea8414b5c7dcbfa">Spectral::Swsh::size_of_libsharp_coefficient_vector</a> (const size_t l_max) noexcept</td></tr>
+<tr class="memdesc:ga6f1ab67b3715a5adaea8414b5c7dcbfa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience function for determining the number of spin-weighted spherical harmonics coefficients that are stored for a given <code>l_max</code>  <a href="group__SwshGroup.html#ga6f1ab67b3715a5adaea8414b5c7dcbfa">More...</a><br /></td></tr>
+<tr class="separator:ga6f1ab67b3715a5adaea8414b5c7dcbfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaeab6360b52d6bf4683fffdaaa6f624bf"><td class="memItemLeft" align="right" valign="top">constexpr double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#gaeab6360b52d6bf4683fffdaaa6f624bf">Spectral::Swsh::sharp_swsh_sign_change</a> (const int from_spin_weight, const int to_spin_weight, const bool real) noexcept</td></tr>
+<tr class="memdesc:gaeab6360b52d6bf4683fffdaaa6f624bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the relative sign change necessary to convert between the libsharp basis for spin weight <code>from_spin_weight</code> to the basis for spin weight <code>to_spin_weight</code>, for the real component coefficients if <code>real</code> is true, otherwise for the imaginary component coefficients. The sign change for a given coefficient is equivalent to the product of <code>sharp_swsh_sign(from_spin, m, real) * sharp_swsh_sign(to_spin, m, real)</code>. Due to the form of the signs, it does not end up depending on m (the m's in the power of \(-1\)'s cancel). For full details of the libsharp sign conventions, see the documentation for TransformJob.  <a href="group__SwshGroup.html#gaeab6360b52d6bf4683fffdaaa6f624bf">More...</a><br /></td></tr>
+<tr class="separator:gaeab6360b52d6bf4683fffdaaa6f624bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3dd752fced32fd47a2ad3a29a42dbc82"><td class="memItemLeft" align="right" valign="top">constexpr double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga3dd752fced32fd47a2ad3a29a42dbc82">Spectral::Swsh::sharp_swsh_sign</a> (const int spin_weight, const int m, const bool real) noexcept</td></tr>
+<tr class="memdesc:ga3dd752fced32fd47a2ad3a29a42dbc82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the sign change between the libsharp convention and the set of spin-weighted spherical harmonics given by the relation to the Wigner rotation matrices.  <a href="group__SwshGroup.html#ga3dd752fced32fd47a2ad3a29a42dbc82">More...</a><br /></td></tr>
+<tr class="separator:ga3dd752fced32fd47a2ad3a29a42dbc82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga783b5d9a370eba729f4ceae04f17d17d"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html">CoefficientsMetadata</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga783b5d9a370eba729f4ceae04f17d17d">Spectral::Swsh::cached_coefficients_metadata</a> (size_t l_max) noexcept</td></tr>
+<tr class="memdesc:ga783b5d9a370eba729f4ceae04f17d17d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generation function for obtaining a <code><a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html" title="A container for libsharp metadata for the spin-weighted spherical harmonics modal representation.">CoefficientsMetadata</a></code> object which is computed by the libsharp calls only once, then lazily cached as a singleton via a static member of a function template. This is the preferred method for obtaining a <code><a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html" title="A container for libsharp metadata for the spin-weighted spherical harmonics modal representation.">CoefficientsMetadata</a></code> when the <code>l_max</code> is not very large.  <a href="group__SwshGroup.html#ga783b5d9a370eba729f4ceae04f17d17d">More...</a><br /></td></tr>
+<tr class="separator:ga783b5d9a370eba729f4ceae04f17d17d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaee469776430b0fc613a47da07b830c24"><td class="memTemplParams" colspan="2">template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:gaee469776430b0fc613a47da07b830c24"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#gaee469776430b0fc613a47da07b830c24">Spectral::Swsh::libsharp_mode_to_goldberg</a> (size_t l, int m, size_t l_max, const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; &amp;libsharp_modes, size_t radial_offset) noexcept</td></tr>
+<tr class="memdesc:gaee469776430b0fc613a47da07b830c24"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the mode coefficient for the convention of <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a>. See the documentation for <code>TransformJob</code> for complete details on the libsharp and Goldberg coefficient representations.  <a href="group__SwshGroup.html#gaee469776430b0fc613a47da07b830c24">More...</a><br /></td></tr>
+<tr class="separator:gaee469776430b0fc613a47da07b830c24"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7656a4abf54987a54d8f6a277ce40a9c"><td class="memTemplParams" colspan="2">template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:ga7656a4abf54987a54d8f6a277ce40a9c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga7656a4abf54987a54d8f6a277ce40a9c">Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair</a> (const <a class="el" href="structSpectral_1_1Swsh_1_1LibsharpCoefficientInfo.html">LibsharpCoefficientInfo</a> &amp;coefficient_info, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; * &gt; libsharp_modes, size_t radial_offset, <a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt; goldberg_plus_m_mode_value, <a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt; goldberg_minus_m_mode_value) noexcept</td></tr>
+<tr class="memdesc:ga7656a4abf54987a54d8f6a277ce40a9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set modes of a libsharp-compatible data structure by specifying the modes in the <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a> representation.  <a href="group__SwshGroup.html#ga7656a4abf54987a54d8f6a277ce40a9c">More...</a><br /></td></tr>
+<tr class="separator:ga7656a4abf54987a54d8f6a277ce40a9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac4f1a451cb261ad7db3abd15e756701c"><td class="memTemplParams" colspan="2">template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:gac4f1a451cb261ad7db3abd15e756701c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#gac4f1a451cb261ad7db3abd15e756701c">Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair</a> (size_t l, int m, size_t l_max, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; * &gt; libsharp_modes, size_t radial_offset, <a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt; goldberg_plus_m_mode_value, <a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt; goldberg_minus_m_mode_value) noexcept</td></tr>
+<tr class="memdesc:gac4f1a451cb261ad7db3abd15e756701c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set modes of a libsharp-compatible data structure by specifying the modes in the <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a> representation.  <a href="group__SwshGroup.html#gac4f1a451cb261ad7db3abd15e756701c">More...</a><br /></td></tr>
+<tr class="separator:gac4f1a451cb261ad7db3abd15e756701c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga226f04036d4d08f77c5ce26f59d80d04"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga226f04036d4d08f77c5ce26f59d80d04">Spectral::Swsh::goldberg_mode_index</a> (const size_t l_max, const size_t l, const int m, const size_t radial_offset=0) noexcept</td></tr>
+<tr class="memdesc:ga226f04036d4d08f77c5ce26f59d80d04"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the index into a vector of modes consistent with <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a>.  <a href="group__SwshGroup.html#ga226f04036d4d08f77c5ce26f59d80d04">More...</a><br /></td></tr>
+<tr class="separator:ga226f04036d4d08f77c5ce26f59d80d04"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga65a7e73757da97e151c31f656f9bcfef"><td class="memItemLeft" align="right" valign="top"><a id="ga65a7e73757da97e151c31f656f9bcfef"></a>
+constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga65a7e73757da97e151c31f656f9bcfef">Spectral::Swsh::number_of_swsh_collocation_points</a> (const size_t l_max) noexcept</td></tr>
+<tr class="memdesc:ga65a7e73757da97e151c31f656f9bcfef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience function for determining the number of spin-weighted spherical harmonic collocation values that are stored for a given <code>l_max</code> for a libsharp-compatible set of collocation points. <br /></td></tr>
+<tr class="separator:ga65a7e73757da97e151c31f656f9bcfef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0cbce4539432a4df5b960f94698c408e"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga0cbce4539432a4df5b960f94698c408e">Spectral::Swsh::number_of_swsh_theta_collocation_points</a> (const size_t l_max) noexcept</td></tr>
+<tr class="memdesc:ga0cbce4539432a4df5b960f94698c408e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of spin-weighted spherical harmonic collocation values in \(\theta\) for a libsharp-compatible set of collocation points.  <a href="group__SwshGroup.html#ga0cbce4539432a4df5b960f94698c408e">More...</a><br /></td></tr>
+<tr class="separator:ga0cbce4539432a4df5b960f94698c408e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad9eb81a7334f0c8f30a4391d73588474"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#gad9eb81a7334f0c8f30a4391d73588474">Spectral::Swsh::number_of_swsh_phi_collocation_points</a> (const size_t l_max) noexcept</td></tr>
+<tr class="memdesc:gad9eb81a7334f0c8f30a4391d73588474"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of spin-weighted spherical harmonic collocation values in \(\phi\) for a libsharp-compatible set of collocation points.  <a href="group__SwshGroup.html#gad9eb81a7334f0c8f30a4391d73588474">More...</a><br /></td></tr>
+<tr class="separator:gad9eb81a7334f0c8f30a4391d73588474"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga589d3bc91ab3575b6858c4af477c610a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classMesh.html">Mesh</a>&lt; 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga589d3bc91ab3575b6858c4af477c610a">Spectral::Swsh::swsh_volume_mesh_for_radial_operations</a> (const size_t l_max, const size_t number_of_radial_points)</td></tr>
+<tr class="memdesc:ga589d3bc91ab3575b6858c4af477c610a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain the three-dimensional mesh associated with a libsharp-compatible sequence of spherical nodal shells.  <a href="group__SwshGroup.html#ga589d3bc91ab3575b6858c4af477c610a">More...</a><br /></td></tr>
+<tr class="separator:ga589d3bc91ab3575b6858c4af477c610a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga701ff2b1c56fe2928d5eb79d17e1ae9b"><td class="memTemplParams" colspan="2">template&lt;ComplexRepresentation Representation = ComplexRepresentation::Interleaved, int Spin, typename... ModalThenNodalTypes&gt; </td></tr>
+<tr class="memitem:ga701ff2b1c56fe2928d5eb79d17e1ae9b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga701ff2b1c56fe2928d5eb79d17e1ae9b">Spectral::Swsh::swsh_transform</a> (const size_t l_max, const size_t number_of_radial_points, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; * &gt; first_coefficient, const ModalThenNodalTypes &amp;... coefficients_then_collocations) noexcept</td></tr>
+<tr class="memdesc:ga701ff2b1c56fe2928d5eb79d17e1ae9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform a forward libsharp spin-weighted spherical harmonic transform on any number of supplied <code><a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexDataVector.html" title="Stores a collection of complex function values.">ComplexDataVector</a>, Spin&gt;</code>.  <a href="group__SwshGroup.html#ga701ff2b1c56fe2928d5eb79d17e1ae9b">More...</a><br /></td></tr>
+<tr class="separator:ga701ff2b1c56fe2928d5eb79d17e1ae9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5e895f11c17a108191d3dd990d92fa9e"><td class="memTemplParams" colspan="2">template&lt;ComplexRepresentation Representation = ComplexRepresentation::Interleaved, int Spin&gt; </td></tr>
+<tr class="memitem:ga5e895f11c17a108191d3dd990d92fa9e"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga5e895f11c17a108191d3dd990d92fa9e">Spectral::Swsh::swsh_transform</a> (size_t l_max, size_t number_of_radial_points, const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; &amp;collocation) noexcept</td></tr>
+<tr class="memdesc:ga5e895f11c17a108191d3dd990d92fa9e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform a forward libsharp spin-weighted spherical harmonic transform on a single supplied <code><a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexDataVector.html" title="Stores a collection of complex function values.">ComplexDataVector</a>, Spin&gt;</code>.  <a href="group__SwshGroup.html#ga5e895f11c17a108191d3dd990d92fa9e">More...</a><br /></td></tr>
+<tr class="separator:ga5e895f11c17a108191d3dd990d92fa9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga963e5afa2a64066419046ed3303ccf17"><td class="memTemplParams" colspan="2">template&lt;ComplexRepresentation Representation = ComplexRepresentation::Interleaved, int Spin, typename... NodalThenModalTypes&gt; </td></tr>
+<tr class="memitem:ga963e5afa2a64066419046ed3303ccf17"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga963e5afa2a64066419046ed3303ccf17">Spectral::Swsh::inverse_swsh_transform</a> (const size_t l_max, const size_t number_of_radial_points, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt; first_collocation, const NodalThenModalTypes &amp;... collocations_then_coefficients) noexcept</td></tr>
+<tr class="memdesc:ga963e5afa2a64066419046ed3303ccf17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform an inverse libsharp spin-weighted spherical harmonic transform on any number of supplied <code><a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexModalVector.html" title="A class for storing complex spectral coefficients on a spectral grid.">ComplexModalVector</a>, Spin&gt;</code>.  <a href="group__SwshGroup.html#ga963e5afa2a64066419046ed3303ccf17">More...</a><br /></td></tr>
+<tr class="separator:ga963e5afa2a64066419046ed3303ccf17"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga56c9f575c7fbca3f83a9e5854aec5b1e"><td class="memTemplParams" colspan="2">template&lt;ComplexRepresentation Representation = ComplexRepresentation::Interleaved, int Spin&gt; </td></tr>
+<tr class="memitem:ga56c9f575c7fbca3f83a9e5854aec5b1e"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga56c9f575c7fbca3f83a9e5854aec5b1e">Spectral::Swsh::inverse_swsh_transform</a> (size_t l_max, size_t number_of_radial_points, const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; &amp;libsharp_coefficients) noexcept</td></tr>
+<tr class="memdesc:ga56c9f575c7fbca3f83a9e5854aec5b1e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform an inverse libsharp spin-weighted spherical harmonic transform on a single supplied <code><a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexModalVector.html" title="A class for storing complex spectral coefficients on a spectral grid.">ComplexModalVector</a>, Spin&gt;</code>.  <a href="group__SwshGroup.html#ga56c9f575c7fbca3f83a9e5854aec5b1e">More...</a><br /></td></tr>
+<tr class="separator:ga56c9f575c7fbca3f83a9e5854aec5b1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4bb488132a6b3d922065348d9255fe3f"><td class="memTemplParams" colspan="2"><a id="ga4bb488132a6b3d922065348d9255fe3f"></a>
+template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:ga4bb488132a6b3d922065348d9255fe3f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga4bb488132a6b3d922065348d9255fe3f">Spectral::Swsh::interpolate_to_collocation</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt; target, const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; &amp;source, size_t target_l_max, size_t source_l_max, size_t number_of_radial_points) noexcept</td></tr>
+<tr class="memdesc:ga4bb488132a6b3d922065348d9255fe3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert spin-weighted spherical harmonic data to a new set of collocation points (either downsampling or upsampling) <br /></td></tr>
+<tr class="separator:ga4bb488132a6b3d922065348d9255fe3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf051a88e5f32355c59d5ffc305817df6"><td class="memTemplParams" colspan="2">template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:gaf051a88e5f32355c59d5ffc305817df6"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#gaf051a88e5f32355c59d5ffc305817df6">Spectral::Swsh::libsharp_mode_to_goldberg_plus_m</a> (const <a class="el" href="structSpectral_1_1Swsh_1_1LibsharpCoefficientInfo.html">LibsharpCoefficientInfo</a> &amp;coefficient_info, const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; &amp;libsharp_modes, size_t radial_offset) noexcept</td></tr>
+<tr class="memdesc:gaf051a88e5f32355c59d5ffc305817df6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the mode coefficient for the convention of <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a>.  <a href="group__SwshGroup.html#gaf051a88e5f32355c59d5ffc305817df6">More...</a><br /></td></tr>
+<tr class="separator:gaf051a88e5f32355c59d5ffc305817df6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1912a2782f49dcb04da6d0d87cbbbd15"><td class="memTemplParams" colspan="2">template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:ga1912a2782f49dcb04da6d0d87cbbbd15"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga1912a2782f49dcb04da6d0d87cbbbd15">Spectral::Swsh::libsharp_mode_to_goldberg_minus_m</a> (const <a class="el" href="structSpectral_1_1Swsh_1_1LibsharpCoefficientInfo.html">LibsharpCoefficientInfo</a> &amp;coefficient_info, const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; &amp;libsharp_modes, size_t radial_offset) noexcept</td></tr>
+<tr class="memdesc:ga1912a2782f49dcb04da6d0d87cbbbd15"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the mode coefficient for the convention of <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a>.  <a href="group__SwshGroup.html#ga1912a2782f49dcb04da6d0d87cbbbd15">More...</a><br /></td></tr>
+<tr class="separator:ga1912a2782f49dcb04da6d0d87cbbbd15"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga98021522583c1ddddf77ca868dd54b9b"><td class="memTemplParams" colspan="2">template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:ga98021522583c1ddddf77ca868dd54b9b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga98021522583c1ddddf77ca868dd54b9b">Spectral::Swsh::libsharp_to_goldberg_modes</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; * &gt; goldberg_modes, const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; &amp;libsharp_modes, size_t l_max) noexcept</td></tr>
+<tr class="memdesc:ga98021522583c1ddddf77ca868dd54b9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the set of Goldberg Spin-weighted spherical harmonic modes (in the convention of <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a>) from a libsharp-compatible series of modes.  <a href="group__SwshGroup.html#ga98021522583c1ddddf77ca868dd54b9b">More...</a><br /></td></tr>
+<tr class="separator:ga98021522583c1ddddf77ca868dd54b9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabe047b5fc03944f29fd2688ee4649812"><td class="memTemplParams" colspan="2">template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:gabe047b5fc03944f29fd2688ee4649812"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#gabe047b5fc03944f29fd2688ee4649812">Spectral::Swsh::libsharp_to_goldberg_modes</a> (const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; &amp;libsharp_modes, size_t l_max) noexcept</td></tr>
+<tr class="memdesc:gabe047b5fc03944f29fd2688ee4649812"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the set of Goldberg Spin-weighted spherical harmonic modes (in the convention of <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a>) from a libsharp-compatible series of modes.  <a href="group__SwshGroup.html#gabe047b5fc03944f29fd2688ee4649812">More...</a><br /></td></tr>
+<tr class="separator:gabe047b5fc03944f29fd2688ee4649812"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga85498b22bc3f5b192a910683fcb39771"><td class="memTemplParams" colspan="2">template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:ga85498b22bc3f5b192a910683fcb39771"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga85498b22bc3f5b192a910683fcb39771">Spectral::Swsh::goldberg_to_libsharp_modes</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; * &gt; libsharp_modes, const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; &amp;goldberg_modes, size_t l_max) noexcept</td></tr>
+<tr class="memdesc:ga85498b22bc3f5b192a910683fcb39771"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the set of libsharp-compatible spin-weighted spherical harmonic modes from a set of Goldberg modes (following the convention of <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a>)  <a href="group__SwshGroup.html#ga85498b22bc3f5b192a910683fcb39771">More...</a><br /></td></tr>
+<tr class="separator:ga85498b22bc3f5b192a910683fcb39771"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8972959f562870ae345d1e76b62f5b0a"><td class="memTemplParams" colspan="2">template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:ga8972959f562870ae345d1e76b62f5b0a"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga8972959f562870ae345d1e76b62f5b0a">Spectral::Swsh::goldberg_to_libsharp_modes</a> (const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; &amp;goldberg_modes, size_t l_max) noexcept</td></tr>
+<tr class="memdesc:ga8972959f562870ae345d1e76b62f5b0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the set of libsharp-compatible spin-weighted spherical harmonic modes from a set of Goldberg modes (following the convention of <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a>)  <a href="group__SwshGroup.html#ga8972959f562870ae345d1e76b62f5b0a">More...</a><br /></td></tr>
+<tr class="separator:ga8972959f562870ae345d1e76b62f5b0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga694f6f3541f46e9065729507f96b19e7"><td class="memTemplParams" colspan="2">template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:ga694f6f3541f46e9065729507f96b19e7"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga694f6f3541f46e9065729507f96b19e7">Spectral::Swsh::filter_swsh_volume_quantity</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt; to_filter, size_t l_max, size_t limit_l, double exponential_alpha, size_t exponential_half_power, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a> * &gt; buffer, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; * &gt; transform_buffer) noexcept</td></tr>
+<tr class="memdesc:ga694f6f3541f46e9065729507f96b19e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Filter a volume collocation set in the form of consecutive libsharp-compatible spherical shells.  <a href="group__SwshGroup.html#ga694f6f3541f46e9065729507f96b19e7">More...</a><br /></td></tr>
+<tr class="separator:ga694f6f3541f46e9065729507f96b19e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2608af85fc3bc81c80c948835e75cefa"><td class="memTemplParams" colspan="2">template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:ga2608af85fc3bc81c80c948835e75cefa"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga2608af85fc3bc81c80c948835e75cefa">Spectral::Swsh::filter_swsh_volume_quantity</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt; to_filter, size_t l_max, size_t limit_l, double exponential_alpha, size_t exponential_half_power) noexcept</td></tr>
+<tr class="memdesc:ga2608af85fc3bc81c80c948835e75cefa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Filter a volume collocation set in the form of consecutive libsharp-compatible spherical shells.  <a href="group__SwshGroup.html#ga2608af85fc3bc81c80c948835e75cefa">More...</a><br /></td></tr>
+<tr class="separator:ga2608af85fc3bc81c80c948835e75cefa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad4a87d39305db1c539ce38acb204eb87"><td class="memTemplParams" colspan="2">template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:gad4a87d39305db1c539ce38acb204eb87"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#gad4a87d39305db1c539ce38acb204eb87">Spectral::Swsh::filter_swsh_boundary_quantity</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt; to_filter, size_t l_max, size_t limit_l, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; * &gt; transform_buffer) noexcept</td></tr>
+<tr class="memdesc:gad4a87d39305db1c539ce38acb204eb87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Filter a libsharp-compatible set of collocation points on a spherical surface.  <a href="group__SwshGroup.html#gad4a87d39305db1c539ce38acb204eb87">More...</a><br /></td></tr>
+<tr class="separator:gad4a87d39305db1c539ce38acb204eb87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga252b906f925dc73b0f8ef18c20a77302"><td class="memTemplParams" colspan="2">template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:ga252b906f925dc73b0f8ef18c20a77302"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga252b906f925dc73b0f8ef18c20a77302">Spectral::Swsh::filter_swsh_boundary_quantity</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt; to_filter, size_t l_max, size_t limit_l) noexcept</td></tr>
+<tr class="memdesc:ga252b906f925dc73b0f8ef18c20a77302"><td class="mdescLeft">&#160;</td><td class="mdescRight">Filter a libsharp-compatible set of collocation points on a spherical surface.  <a href="group__SwshGroup.html#ga252b906f925dc73b0f8ef18c20a77302">More...</a><br /></td></tr>
+<tr class="separator:ga252b906f925dc73b0f8ef18c20a77302"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga02f0dd68209a1f60f3e170ebc2412614"><td class="memTemplParams" colspan="2">template&lt;ComplexRepresentation Representation, typename TagList &gt; </td></tr>
+<tr class="memitem:ga02f0dd68209a1f60f3e170ebc2412614"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga02f0dd68209a1f60f3e170ebc2412614">Spectral::Swsh::make_transform_list</a> = typename detail::make_transform_list_impl&lt; -2, Representation, TagList, decltype(<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::make_integer_sequence</a>&lt; int, 5 &gt;{})&gt;::type</td></tr>
+<tr class="memdesc:ga02f0dd68209a1f60f3e170ebc2412614"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assemble a <code>tmpl::list</code> of <code><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted spherical harmo...">SwshTransform</a></code>s or <code><a class="el" href="structSpectral_1_1Swsh_1_1InverseSwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted inverse spheric...">InverseSwshTransform</a></code>s given a list of tags <code>TagList</code> that need to be transformed. The <code>Representation</code> is the <code><a class="el" href="namespaceSpectral_1_1Swsh.html#ab1fa85ae53abba64a770e7e806bf12f6" title="A set of labels for the possible representations of complex numbers for the ComplexDataView and the c...">Spectral::Swsh::ComplexRepresentation</a></code> to use for the transformations.  <a href="group__SwshGroup.html#ga02f0dd68209a1f60f3e170ebc2412614">More...</a><br /></td></tr>
+<tr class="separator:ga02f0dd68209a1f60f3e170ebc2412614"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9477efd346a5afaceae637bb89ccaac1"><td class="memTemplParams" colspan="2">template&lt;ComplexRepresentation Representation, typename TagList &gt; </td></tr>
+<tr class="memitem:ga9477efd346a5afaceae637bb89ccaac1"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SwshGroup.html#ga9477efd346a5afaceae637bb89ccaac1">Spectral::Swsh::make_inverse_transform_list</a> = typename detail::make_inverse_transform_list_impl&lt; -2, Representation, TagList, decltype(<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::make_integer_sequence</a>&lt; int, 5 &gt;{})&gt;::type</td></tr>
+<tr class="memdesc:ga9477efd346a5afaceae637bb89ccaac1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assemble a <code>tmpl::list</code> of <code><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted spherical harmo...">SwshTransform</a></code>s or <code><a class="el" href="structSpectral_1_1Swsh_1_1InverseSwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted inverse spheric...">InverseSwshTransform</a></code>s given a list of tags <code>TagList</code> that need to be transformed. The <code>Representation</code> is the <code><a class="el" href="namespaceSpectral_1_1Swsh.html#ab1fa85ae53abba64a770e7e806bf12f6" title="A set of labels for the possible representations of complex numbers for the ComplexDataView and the c...">Spectral::Swsh::ComplexRepresentation</a></code> to use for the transformations.  <a href="group__SwshGroup.html#ga9477efd346a5afaceae637bb89ccaac1">More...</a><br /></td></tr>
+<tr class="separator:ga9477efd346a5afaceae637bb89ccaac1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>Utilities, tags, and metafunctions for using and manipulating spin-weighted spherical harmonics. </p>
+<h2 class="groupheader">Typedef Documentation</h2>
+<a id="ga3a19e1d6fbdabe80a1252971f6594cfb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3a19e1d6fbdabe80a1252971f6594cfb">&#9670;&nbsp;</a></span>coefficient_buffer_tags_for_derivative_tag</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DerivativeTag &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__SwshGroup.html#ga3a19e1d6fbdabe80a1252971f6594cfb">Spectral::Swsh::coefficient_buffer_tags_for_derivative_tag</a> = typedef tmpl::list&lt; <a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1SwshTransform.html">Spectral::Swsh::Tags::SwshTransform</a>&lt;typename DerivativeTag::derivative_of&gt;, <a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1SwshTransform.html">Spectral::Swsh::Tags::SwshTransform</a>&lt;DerivativeTag&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A metafunction for determining the coefficient buffers needed by <code><a class="el" href="group__SpectralGroup.html#ga44e6853e7fc2dfae35ed592045f91750" title="Evaluate all of the spin-weighted derivatives in DerivKindList on input SpinWeighted&lt;ComplexDataVecto...">angular_derivatives()</a></code> to avoid repeatedly allocating space for modal data each time a derivative is taken. </p>
+<dl class="section note"><dt>Note</dt><dd>Using these buffers is required to use the batch <code><a class="el" href="group__SpectralGroup.html#ga44e6853e7fc2dfae35ed592045f91750" title="Evaluate all of the spin-weighted derivatives in DerivKindList on input SpinWeighted&lt;ComplexDataVecto...">angular_derivatives()</a></code> rather than the individual <code><a class="el" href="group__SpectralGroup.html#ga2e34e5c858b4ff548acb3b4a8ea40eaa" title="Evaluate the spin-weighted derivative DerivKind on the provided SpinWeighted&lt;ComplexDataVector,...">angular_derivative()</a></code>. </dd></dl>
+
+</div>
+</div>
+<a id="ga795651af0ac8f3db4d5676d590c4e3b9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga795651af0ac8f3db4d5676d590c4e3b9">&#9670;&nbsp;</a></span>get_prefix_tags_that_wrap_tags_with_spin</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin, typename TagList &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__SwshGroup.html#ga795651af0ac8f3db4d5676d590c4e3b9">Spectral::Swsh::get_prefix_tags_that_wrap_tags_with_spin</a> = typedef tmpl::filter&lt;TagList, tmpl::bind&lt;detail::wrapped_has_spin, tmpl::_1, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::integral_constant</a>&lt;int, Spin&gt; &gt;&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Extract from <code>TagList</code> the subset of those tags that wrap a tag that has a static int member <code>spin</code> equal to the template parameter <code>Spin</code>. </p>
+<div class="fragment"><div class="line"><span class="keyword">using</span> WrappedTagList = tmpl::list&lt;Derivative&lt;SpinMinus1TestTag, Eth&gt;,</div>
+<div class="line">                                  Derivative&lt;SpinMinus1TestTag, EthEthbar&gt;,</div>
+<div class="line">                                  Derivative&lt;AnotherSpinMinus1TestTag, EthEth&gt;,</div>
+<div class="line">                                  Derivative&lt;Spin2TestTag, Ethbar&gt;&gt;;</div>
+<div class="line">static_assert(</div>
+<div class="line">    std::is_same_v&lt;get_prefix_tags_that_wrap_tags_with_spin&lt;-1, WrappedTagList&gt;,</div>
+<div class="line">                   tmpl::list&lt;Derivative&lt;SpinMinus1TestTag, Eth&gt;,</div>
+<div class="line">                              Derivative&lt;SpinMinus1TestTag, EthEthbar&gt;,</div>
+<div class="line">                              Derivative&lt;AnotherSpinMinus1TestTag, EthEth&gt;&gt;&gt;,</div>
+<div class="line">    <span class="stringliteral">&quot;failed testing get_wrapped_tags_with_spin_from_prefix_tag_list&quot;</span>);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="gace035d5d0a36b475064a23d0ffd69941"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gace035d5d0a36b475064a23d0ffd69941">&#9670;&nbsp;</a></span>get_tags_with_spin</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin, typename TagList &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__SwshGroup.html#gace035d5d0a36b475064a23d0ffd69941">Spectral::Swsh::get_tags_with_spin</a> = typedef tmpl::remove_duplicates&lt;tmpl::filter&lt; TagList, detail::has_spin&lt;tmpl::_1, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::integral_constant</a>&lt;int, Spin&gt; &gt;&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Extract from <code>TagList</code> the subset of those tags that have a static int member <code>spin</code> equal to the template parameter <code>Spin</code>. </p>
+<div class="fragment"><div class="line"><span class="keyword">using</span> TestVarTagList = tmpl::list&lt;SpinMinus1TestTag, SpinMinus1TestTag,</div>
+<div class="line">                                  AnotherSpinMinus1TestTag, Spin2TestTag&gt;;</div>
+<div class="line"> </div>
+<div class="line">static_assert(</div>
+<div class="line">    std::is_same_v&lt;get_tags_with_spin&lt;-1, TestVarTagList&gt;,</div>
+<div class="line">                   tmpl::list&lt;SpinMinus1TestTag, AnotherSpinMinus1TestTag&gt;&gt;,</div>
+<div class="line">    <span class="stringliteral">&quot;failed testing get_tags_with_spin&quot;</span>);</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">using</span> TestDerivativeTagList =</div>
+<div class="line">    tmpl::list&lt;Derivative&lt;SpinMinus1TestTag, Eth&gt;,</div>
+<div class="line">               Derivative&lt;SpinMinus1TestTag, EthEthbar&gt;,</div>
+<div class="line">               Derivative&lt;AnotherSpinMinus1TestTag, EthEth&gt;,</div>
+<div class="line">               Derivative&lt;Spin2TestTag, Ethbar&gt;&gt;;</div>
+<div class="line"> </div>
+<div class="line">static_assert(</div>
+<div class="line">    std::is_same_v&lt;get_tags_with_spin&lt;1, TestDerivativeTagList&gt;,</div>
+<div class="line">                   tmpl::list&lt;Derivative&lt;AnotherSpinMinus1TestTag, EthEth&gt;,</div>
+<div class="line">                              Derivative&lt;Spin2TestTag, Ethbar&gt;&gt;&gt;,</div>
+<div class="line">    <span class="stringliteral">&quot;failed testing get_tags_with_spin&quot;</span>);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="ga9477efd346a5afaceae637bb89ccaac1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9477efd346a5afaceae637bb89ccaac1">&#9670;&nbsp;</a></span>make_inverse_transform_list</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;ComplexRepresentation Representation, typename TagList &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__SwshGroup.html#ga9477efd346a5afaceae637bb89ccaac1">Spectral::Swsh::make_inverse_transform_list</a> = typedef typename detail::make_inverse_transform_list_impl&lt; -2, Representation, TagList, decltype(<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::make_integer_sequence</a>&lt;int, 5&gt;{})&gt;::type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Assemble a <code>tmpl::list</code> of <code><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted spherical harmo...">SwshTransform</a></code>s or <code><a class="el" href="structSpectral_1_1Swsh_1_1InverseSwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted inverse spheric...">InverseSwshTransform</a></code>s given a list of tags <code>TagList</code> that need to be transformed. The <code>Representation</code> is the <code><a class="el" href="namespaceSpectral_1_1Swsh.html#ab1fa85ae53abba64a770e7e806bf12f6" title="A set of labels for the possible representations of complex numbers for the ComplexDataView and the c...">Spectral::Swsh::ComplexRepresentation</a></code> to use for the transformations. </p>
+<h3>Details</h3>
+<p>Up to five <code><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted spherical harmo...">SwshTransform</a></code>s or <code><a class="el" href="structSpectral_1_1Swsh_1_1InverseSwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted inverse spheric...">InverseSwshTransform</a></code>s will be returned, corresponding to the possible spin values. Any number of transformations are aggregated into that set of <code><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted spherical harmo...">SwshTransform</a></code>s (or <code><a class="el" href="structSpectral_1_1Swsh_1_1InverseSwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted inverse spheric...">InverseSwshTransform</a></code>s). The number of transforms is up to five because the libsharp utility only has capability to perform spin-weighted spherical harmonic transforms for integer spin-weights from -2 to 2.</p>
+<div class="fragment"><div class="line"><span class="keyword">using</span> ExpectedInverseTransforms = tmpl::list&lt;</div>
+<div class="line">    SwshTransform&lt;tmpl::list&lt;Tags::Derivative&lt;TestTag&lt;0, -1&gt;, Tags::EthEthbar&gt;,</div>
+<div class="line">                             Tags::Derivative&lt;TestTag&lt;1, -1&gt;, Tags::EthEthbar&gt;&gt;,</div>
+<div class="line">                  ComplexRepresentation::RealsThenImags&gt;,</div>
+<div class="line">    SwshTransform&lt;</div>
+<div class="line">        tmpl::list&lt;Tags::Derivative&lt;TestTag&lt;0, -1&gt;, Tags::Eth&gt;,</div>
+<div class="line">                   Tags::Derivative&lt;TestTag&lt;0, 2&gt;, Tags::EthbarEthbar&gt;&gt;,</div>
+<div class="line">        ComplexRepresentation::RealsThenImags&gt;&gt;;</div>
+<div class="line"> </div>
+<div class="line">static_assert(</div>
+<div class="line">    std::is_same_v&lt;<a class="code" href="group__SwshGroup.html#ga02f0dd68209a1f60f3e170ebc2412614">make_transform_list</a>&lt;ComplexRepresentation::RealsThenImags,</div>
+<div class="line">                                       TestDerivativeTagList&gt;,</div>
+<div class="line">                   ExpectedInverseTransforms&gt;,</div>
+<div class="line">    <span class="stringliteral">&quot;failed testing make_transform_list&quot;</span>);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="ga02f0dd68209a1f60f3e170ebc2412614"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga02f0dd68209a1f60f3e170ebc2412614">&#9670;&nbsp;</a></span>make_transform_list</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;ComplexRepresentation Representation, typename TagList &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__SwshGroup.html#ga02f0dd68209a1f60f3e170ebc2412614">Spectral::Swsh::make_transform_list</a> = typedef typename detail::make_transform_list_impl&lt; -2, Representation, TagList, decltype(<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::make_integer_sequence</a>&lt;int, 5&gt;{})&gt;::type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Assemble a <code>tmpl::list</code> of <code><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted spherical harmo...">SwshTransform</a></code>s or <code><a class="el" href="structSpectral_1_1Swsh_1_1InverseSwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted inverse spheric...">InverseSwshTransform</a></code>s given a list of tags <code>TagList</code> that need to be transformed. The <code>Representation</code> is the <code><a class="el" href="namespaceSpectral_1_1Swsh.html#ab1fa85ae53abba64a770e7e806bf12f6" title="A set of labels for the possible representations of complex numbers for the ComplexDataView and the c...">Spectral::Swsh::ComplexRepresentation</a></code> to use for the transformations. </p>
+<h3>Details</h3>
+<p>Up to five <code><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted spherical harmo...">SwshTransform</a></code>s or <code><a class="el" href="structSpectral_1_1Swsh_1_1InverseSwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted inverse spheric...">InverseSwshTransform</a></code>s will be returned, corresponding to the possible spin values. Any number of transformations are aggregated into that set of <code><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted spherical harmo...">SwshTransform</a></code>s (or <code><a class="el" href="structSpectral_1_1Swsh_1_1InverseSwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted inverse spheric...">InverseSwshTransform</a></code>s). The number of transforms is up to five because the libsharp utility only has capability to perform spin-weighted spherical harmonic transforms for integer spin-weights from -2 to 2.</p>
+<div class="fragment"><div class="line"><span class="keyword">using</span> ExpectedInverseTransforms = tmpl::list&lt;</div>
+<div class="line">    SwshTransform&lt;tmpl::list&lt;Tags::Derivative&lt;TestTag&lt;0, -1&gt;, Tags::EthEthbar&gt;,</div>
+<div class="line">                             Tags::Derivative&lt;TestTag&lt;1, -1&gt;, Tags::EthEthbar&gt;&gt;,</div>
+<div class="line">                  ComplexRepresentation::RealsThenImags&gt;,</div>
+<div class="line">    SwshTransform&lt;</div>
+<div class="line">        tmpl::list&lt;Tags::Derivative&lt;TestTag&lt;0, -1&gt;, Tags::Eth&gt;,</div>
+<div class="line">                   Tags::Derivative&lt;TestTag&lt;0, 2&gt;, Tags::EthbarEthbar&gt;&gt;,</div>
+<div class="line">        ComplexRepresentation::RealsThenImags&gt;&gt;;</div>
+<div class="line"> </div>
+<div class="line">static_assert(</div>
+<div class="line">    std::is_same_v&lt;<a class="code" href="group__SwshGroup.html#ga02f0dd68209a1f60f3e170ebc2412614">make_transform_list</a>&lt;ComplexRepresentation::RealsThenImags,</div>
+<div class="line">                                       TestDerivativeTagList&gt;,</div>
+<div class="line">                   ExpectedInverseTransforms&gt;,</div>
+<div class="line">    <span class="stringliteral">&quot;failed testing make_transform_list&quot;</span>);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="gaa79fabec76f9551c8a5dc4c5025644ab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa79fabec76f9551c8a5dc4c5025644ab">&#9670;&nbsp;</a></span>make_transform_list_from_derivative_tags</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;ComplexRepresentation Representation, typename DerivativeTagList &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__SwshGroup.html#gaa79fabec76f9551c8a5dc4c5025644ab">Spectral::Swsh::make_transform_list_from_derivative_tags</a> = typedef typename detail::make_transform_list_impl&lt; -2, Representation, tmpl::transform&lt;DerivativeTagList, tmpl::bind&lt;<a class="el" href="group__DataBoxTagsGroup.html#gae0f7c7c20a2a4908eebcb234302b1b4f">db::remove_tag_prefix</a>, tmpl::_1&gt; &gt;, decltype(<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::make_integer_sequence</a>&lt;int, 5&gt;{})&gt;::type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Assemble a <code>tmpl::list</code> of <code><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted spherical harmo...">SwshTransform</a></code>s given a list of <code><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html" title="Prefix tag representing the spin-weighted derivative of a spin-weighted scalar.">Spectral::Swsh::Tags::Derivative</a>&lt;Tag, Derivative&gt;</code> that need to be computed. The <code><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted spherical harmo...">SwshTransform</a></code>s constructed by this type alias correspond to the <code>Tag</code>s in the list. </p>
+<h3>Details</h3>
+<p>This is intended as a convenience utility for the first step of a derivative routine, where one transforms the set of fields for which derivatives are required.</p>
+<div class="fragment"><div class="line"><span class="keyword">using</span> ExpectedTransforms =</div>
+<div class="line">    tmpl::list&lt;SwshTransform&lt;tmpl::list&lt;TestTag&lt;0, -1&gt;, TestTag&lt;1, -1&gt;&gt;,</div>
+<div class="line">                             ComplexRepresentation::Interleaved&gt;,</div>
+<div class="line">               SwshTransform&lt;tmpl::list&lt;TestTag&lt;0, 2&gt;&gt;,</div>
+<div class="line">                             ComplexRepresentation::Interleaved&gt;&gt;;</div>
+<div class="line"> </div>
+<div class="line">static_assert(std::is_same_v&lt;<a class="code" href="group__SwshGroup.html#gaa79fabec76f9551c8a5dc4c5025644ab">make_transform_list_from_derivative_tags</a>&lt;</div>
+<div class="line">                                 ComplexRepresentation::Interleaved,</div>
+<div class="line">                                 TestDerivativeTagList&gt;,</div>
+<div class="line">                             ExpectedTransforms&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;failed testing make_transform_list_from_derivative_tags&quot;</span>);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="ga783b5d9a370eba729f4ceae04f17d17d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga783b5d9a370eba729f4ceae04f17d17d">&#9670;&nbsp;</a></span>cached_coefficients_metadata()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html">CoefficientsMetadata</a>&amp; Spectral::Swsh::cached_coefficients_metadata </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l_max</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Generation function for obtaining a <code><a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html" title="A container for libsharp metadata for the spin-weighted spherical harmonics modal representation.">CoefficientsMetadata</a></code> object which is computed by the libsharp calls only once, then lazily cached as a singleton via a static member of a function template. This is the preferred method for obtaining a <code><a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html" title="A container for libsharp metadata for the spin-weighted spherical harmonics modal representation.">CoefficientsMetadata</a></code> when the <code>l_max</code> is not very large. </p>
+<p>See the comments in the similar implementation found in <code><a class="el" href="SwshCollocation_8hpp_source.html">SwshCollocation.hpp</a></code> for more details on the lazy cache. </p>
+
+</div>
+</div>
+<a id="ga252b906f925dc73b0f8ef18c20a77302"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga252b906f925dc73b0f8ef18c20a77302">&#9670;&nbsp;</a></span>filter_swsh_boundary_quantity() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Spectral::Swsh::filter_swsh_boundary_quantity </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>to_filter</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>limit_l</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Filter a libsharp-compatible set of collocation points on a spherical surface. </p>
+<h3>Details</h3>
+<p>A modal Heaviside angular filter is applied which simply sets to zero all <code>l &gt; limit_l</code> modes. </p><dl class="section note"><dt>Note</dt><dd>For comparisons with SpEC CCE, <code>limit_l</code> of <code>l_max - 3</code> should be used. </dd></dl>
+
+</div>
+</div>
+<a id="gad4a87d39305db1c539ce38acb204eb87"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad4a87d39305db1c539ce38acb204eb87">&#9670;&nbsp;</a></span>filter_swsh_boundary_quantity() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Spectral::Swsh::filter_swsh_boundary_quantity </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>to_filter</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>limit_l</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>transform_buffer</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Filter a libsharp-compatible set of collocation points on a spherical surface. </p>
+<h3>Details</h3>
+<p>A modal Heaviside angular filter is applied which simply sets to zero all <code>l &gt; limit_l</code> modes. </p><dl class="section note"><dt>Note</dt><dd>For comparisons with SpEC CCE, <code>limit_l</code> of <code>l_max - 3</code> should be used. </dd></dl>
+
+</div>
+</div>
+<a id="ga2608af85fc3bc81c80c948835e75cefa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2608af85fc3bc81c80c948835e75cefa">&#9670;&nbsp;</a></span>filter_swsh_volume_quantity() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Spectral::Swsh::filter_swsh_volume_quantity </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>to_filter</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>limit_l</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>exponential_alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>exponential_half_power</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Filter a volume collocation set in the form of consecutive libsharp-compatible spherical shells. </p>
+<h3>Details</h3>
+<p>Two separate filters are applied. First, an exponential radial filter is applied to each radial ray, with parameters <code>exponential_alpha</code> and <code>exponential_half_power</code> (see <code><a class="el" href="namespaceSpectral_1_1filtering.html#ac85b4368ff2b92daa32c14888e5dd3cb" title="Returns a Matrix by which to multiply the nodal coefficients to apply a stable exponential filter.">Spectral::filtering::exponential_filter</a></code> for details on these parameters). Next, a modal Heaviside angular filter is applied which simply sets to zero all <code>l &gt; limit_l</code> modes. </p><dl class="section note"><dt>Note</dt><dd>It is assumed that Gauss-Lobatto points are used for the radial direction (as that is the representation for CCE evolution). If that is too restrictive, this function will need generalization. </dd></dl>
+<dl class="section warning"><dt>Warning</dt><dd>In principle, the radial filter in this function could cache the matrix used, but currently does not. If such a cache becomes desirable for performance, care must be taken regarding the exponential parameters. An implementation similar to <code>dg::Actions::ExponentialFilter</code> may be necessary. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>For comparisons with SpEC CCE, <code>exponential_half_power</code> of 8, <code>exponential_alpha</code> of 108, and <code>limit_l</code> of <code>l_max - 3</code> should be used. This gives a highly aggressive radial filter, though, and for runs not attempting to compare with SpEC it is recommended to use smaller parameters to preserve more of the radial modes. </dd></dl>
+
+</div>
+</div>
+<a id="ga694f6f3541f46e9065729507f96b19e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga694f6f3541f46e9065729507f96b19e7">&#9670;&nbsp;</a></span>filter_swsh_volume_quantity() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Spectral::Swsh::filter_swsh_volume_quantity </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>to_filter</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>limit_l</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>exponential_alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>exponential_half_power</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a> * &gt;&#160;</td>
+          <td class="paramname"><em>buffer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>transform_buffer</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Filter a volume collocation set in the form of consecutive libsharp-compatible spherical shells. </p>
+<h3>Details</h3>
+<p>Two separate filters are applied. First, an exponential radial filter is applied to each radial ray, with parameters <code>exponential_alpha</code> and <code>exponential_half_power</code> (see <code><a class="el" href="namespaceSpectral_1_1filtering.html#ac85b4368ff2b92daa32c14888e5dd3cb" title="Returns a Matrix by which to multiply the nodal coefficients to apply a stable exponential filter.">Spectral::filtering::exponential_filter</a></code> for details on these parameters). Next, a modal Heaviside angular filter is applied which simply sets to zero all <code>l &gt; limit_l</code> modes. </p><dl class="section note"><dt>Note</dt><dd>It is assumed that Gauss-Lobatto points are used for the radial direction (as that is the representation for CCE evolution). If that is too restrictive, this function will need generalization. </dd></dl>
+<dl class="section warning"><dt>Warning</dt><dd>In principle, the radial filter in this function could cache the matrix used, but currently does not. If such a cache becomes desirable for performance, care must be taken regarding the exponential parameters. An implementation similar to <code>dg::Actions::ExponentialFilter</code> may be necessary. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>For comparisons with SpEC CCE, <code>exponential_half_power</code> of 8, <code>exponential_alpha</code> of 108, and <code>limit_l</code> of <code>l_max - 3</code> should be used. This gives a highly aggressive radial filter, though, and for runs not attempting to compare with SpEC it is recommended to use smaller parameters to preserve more of the radial modes. </dd></dl>
+
+</div>
+</div>
+<a id="ga226f04036d4d08f77c5ce26f59d80d04"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga226f04036d4d08f77c5ce26f59d80d04">&#9670;&nbsp;</a></span>goldberg_mode_index()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr size_t Spectral::Swsh::goldberg_mode_index </td>
+          <td>(</td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>l</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>radial_offset</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the index into a vector of modes consistent with <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a>. </p>
+<h3>Details</h3>
+<p><code>radial_offset</code> is used to index into three-dimensional data in which concentric spherical shells are stored as consecutive blocks of angular modes. Goldberg modes are stored in an m varies fastest, and ascending \(m\) and \(l\) values. So, the first several modes are (l, m):</p>
+<p>[(0, 0), (1, -1), (1, 0), (1, 1), (2, -2), ...] </p>
+
+</div>
+</div>
+<a id="ga7656a4abf54987a54d8f6a277ce40a9c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7656a4abf54987a54d8f6a277ce40a9c">&#9670;&nbsp;</a></span>goldberg_modes_to_libsharp_modes_single_pair() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structSpectral_1_1Swsh_1_1LibsharpCoefficientInfo.html">LibsharpCoefficientInfo</a> &amp;&#160;</td>
+          <td class="paramname"><em>coefficient_info</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>libsharp_modes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>radial_offset</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt;&#160;</td>
+          <td class="paramname"><em>goldberg_plus_m_mode_value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt;&#160;</td>
+          <td class="paramname"><em>goldberg_minus_m_mode_value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Set modes of a libsharp-compatible data structure by specifying the modes in the <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a> representation. </p>
+<h3>Details</h3>
+<p>This interface takes a <code><a class="el" href="structSpectral_1_1Swsh_1_1LibsharpCoefficientInfo.html" title="Points to a single pair of modes in a libsharp-compatible spin-weighted spherical harmonic modal repr...">LibsharpCoefficientInfo</a></code>, so that iterating over the libsharp data structure and performing edits based on the corresponding Goldberg modes is convenient.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">coefficient_info</td><td>An iterator which stores an \(l\) and \(|m|\) for the mode to be written by the input Goldberg modes. Note that both the \(+m\) and \(-m\) modes must be simultaneously changed, due to the representation details. See discussion in <code>TransformJob</code> for details. </td></tr>
+    <tr><td class="paramname">libsharp_modes</td><td>The libsharp-compatible modal storage to be altered. </td></tr>
+    <tr><td class="paramname">radial_offset</td><td>The index of which angular slice is desired. Modes for concentric spherical shells are stored as consecutive blocks of angular modes. </td></tr>
+    <tr><td class="paramname">goldberg_plus_m_mode_value</td><td>The coefficient in the Goldberg representation ( \(l\), \(m\)) </td></tr>
+    <tr><td class="paramname">goldberg_minus_m_mode_value</td><td>The coefficient in the Goldberg representation ( \(l\), \(-m\)) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gac4f1a451cb261ad7db3abd15e756701c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac4f1a451cb261ad7db3abd15e756701c">&#9670;&nbsp;</a></span>goldberg_modes_to_libsharp_modes_single_pair() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>libsharp_modes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>radial_offset</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt;&#160;</td>
+          <td class="paramname"><em>goldberg_plus_m_mode_value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt;&#160;</td>
+          <td class="paramname"><em>goldberg_minus_m_mode_value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Set modes of a libsharp-compatible data structure by specifying the modes in the <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a> representation. </p>
+<h3>Details</h3>
+<p>This interface sets the ( \(l\), \(\pm m\)), modes in a libsharp-compatible representation from modes specified in the Goldberg representation. Note that both the \(+m\) and \(-m\) modes must be simultaneously changed, due to the representation details. See discussion in <code>TransformJob</code> for details. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">libsharp_modes</td><td>The libsharp-compatible modal storage to be altered. </td></tr>
+    <tr><td class="paramname">radial_offset</td><td>The index of which angular slice is desired. Modes for concentric spherical shells are stored as consecutive blocks of angular modes. </td></tr>
+    <tr><td class="paramname">goldberg_plus_m_mode_value</td><td>The coefficient in the Goldberg representation ( \(l\), \(m\)) </td></tr>
+    <tr><td class="paramname">goldberg_minus_m_mode_value</td><td>The coefficient in the Goldberg representation ( \(l\), \(-m\)) </td></tr>
+    <tr><td class="paramname">l</td><td>the spherical harmonic \(l\) mode requested </td></tr>
+    <tr><td class="paramname">m</td><td>the spherical harmonic \(m\) mode requested </td></tr>
+    <tr><td class="paramname">l_max</td><td>the <code>l_max</code> for the provided coefficient set </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga8972959f562870ae345d1e76b62f5b0a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga8972959f562870ae345d1e76b62f5b0a">&#9670;&nbsp;</a></span>goldberg_to_libsharp_modes() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt;<a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin&gt; Spectral::Swsh::goldberg_to_libsharp_modes </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; &amp;&#160;</td>
+          <td class="paramname"><em>goldberg_modes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the set of libsharp-compatible spin-weighted spherical harmonic modes from a set of Goldberg modes (following the convention of <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a>) </p>
+<h3>Details</h3>
+<p>Internally iterates and uses the <code><a class="el" href="group__SwshGroup.html#ga7656a4abf54987a54d8f6a277ce40a9c" title="Set modes of a libsharp-compatible data structure by specifying the modes in the  representation.">goldberg_modes_to_libsharp_modes_single_pair()</a></code>. In many applications where it is not necessary to store the full Goldberg representation, memory allocation can be saved by manually performing the iteration and calls to <code><a class="el" href="group__SwshGroup.html#ga7656a4abf54987a54d8f6a277ce40a9c" title="Set modes of a libsharp-compatible data structure by specifying the modes in the  representation.">goldberg_modes_to_libsharp_modes_single_pair()</a></code>. </p>
+
+</div>
+</div>
+<a id="ga85498b22bc3f5b192a910683fcb39771"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga85498b22bc3f5b192a910683fcb39771">&#9670;&nbsp;</a></span>goldberg_to_libsharp_modes() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Spectral::Swsh::goldberg_to_libsharp_modes </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>libsharp_modes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; &amp;&#160;</td>
+          <td class="paramname"><em>goldberg_modes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the set of libsharp-compatible spin-weighted spherical harmonic modes from a set of Goldberg modes (following the convention of <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a>) </p>
+<h3>Details</h3>
+<p>Internally iterates and uses the <code><a class="el" href="group__SwshGroup.html#ga7656a4abf54987a54d8f6a277ce40a9c" title="Set modes of a libsharp-compatible data structure by specifying the modes in the  representation.">goldberg_modes_to_libsharp_modes_single_pair()</a></code>. In many applications where it is not necessary to store the full Goldberg representation, memory allocation can be saved by manually performing the iteration and calls to <code><a class="el" href="group__SwshGroup.html#ga7656a4abf54987a54d8f6a277ce40a9c" title="Set modes of a libsharp-compatible data structure by specifying the modes in the  representation.">goldberg_modes_to_libsharp_modes_single_pair()</a></code>. </p>
+
+</div>
+</div>
+<a id="ga963e5afa2a64066419046ed3303ccf17"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga963e5afa2a64066419046ed3303ccf17">&#9670;&nbsp;</a></span>inverse_swsh_transform() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;ComplexRepresentation Representation = ComplexRepresentation::Interleaved, int Spin, typename... NodalThenModalTypes&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Spectral::Swsh::inverse_swsh_transform </td>
+          <td>(</td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>number_of_radial_points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>first_collocation</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const NodalThenModalTypes &amp;...&#160;</td>
+          <td class="paramname"><em>collocations_then_coefficients</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Perform an inverse libsharp spin-weighted spherical harmonic transform on any number of supplied <code><a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexModalVector.html" title="A class for storing complex spectral coefficients on a spectral grid.">ComplexModalVector</a>, Spin&gt;</code>. </p>
+<h3>Details</h3>
+<p>This function places the result in one or more <code><a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexDataVector.html" title="Stores a collection of complex function values.">ComplexDataVector</a>, Spin&gt;</code> returned via provided pointer. This is a simpler interface to the same functionality as the <a class="el" href="group__DataBoxGroup.html">DataBox</a> mutation compatible <code><a class="el" href="structSpectral_1_1Swsh_1_1InverseSwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted inverse spheric...">InverseSwshTransform</a></code>.</p>
+<p>The following parameter ordering for the multiple input interface is enforced by the interior function calls, but is not obvious from the explicit parameter packs in this function signature:</p>
+<ul>
+<li><code>size_t l_max</code> : angular resolution for the transform</li>
+<li><code>size_t number_of_radial_points</code> : radial resolution (number of consecutive transforms in each of the vectors)</li>
+<li>any number of <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a>&lt;<a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexDataVector.html" title="Stores a collection of complex function values.">ComplexDataVector</a>, Spin&gt;*&gt;</code>, all sharing the same <code>Spin</code> : The return-by-pointer containers for the transformed nodal quantities</li>
+<li>the same number of <code>const <a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexModalVector.html" title="A class for storing complex spectral coefficients on a spectral grid.">ComplexModalVector</a>, Spin&gt;&amp;</code>, with the same <code>Spin</code> as the previous function argument set : The input containers of modal spin-weighted spherical harmonic data.</li>
+</ul>
+<p>template parameters:</p><ul>
+<li><code>Representation</code>: Either <code>ComplexRepresentation::Interleaved</code> or <code>ComplexRepresentation::RealsThenImags</code>, indicating the representation for intermediate steps of the transformation. The two representations will give identical results but may help or hurt performance depending on the task. If unspecified, defaults to <code>ComplexRepresentation::Interleaved</code>.</li>
+</ul>
+<p>The input is a set of libsharp-compatible coefficients. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted spherical harmo...">SwshTransform</a> for more details on the mathematics of the libsharp data structures. </dd></dl>
+
+</div>
+</div>
+<a id="ga56c9f575c7fbca3f83a9e5854aec5b1e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga56c9f575c7fbca3f83a9e5854aec5b1e">&#9670;&nbsp;</a></span>inverse_swsh_transform() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;ComplexRepresentation Representation = ComplexRepresentation::Interleaved, int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt;<a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin&gt; Spectral::Swsh::inverse_swsh_transform </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>number_of_radial_points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; &amp;&#160;</td>
+          <td class="paramname"><em>libsharp_coefficients</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Perform an inverse libsharp spin-weighted spherical harmonic transform on a single supplied <code><a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexModalVector.html" title="A class for storing complex spectral coefficients on a spectral grid.">ComplexModalVector</a>, Spin&gt;</code>. </p>
+<h3>Details</h3>
+<p>This function returns a <code><a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexDataVector.html" title="Stores a collection of complex function values.">ComplexDataVector</a>, Spin&gt;</code> by value (causing an allocation). This is a simpler interface to the same functionality as the <a class="el" href="group__DataBoxGroup.html">DataBox</a> mutation compatible <code><a class="el" href="structSpectral_1_1Swsh_1_1InverseSwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted inverse spheric...">InverseSwshTransform</a></code>. If you have two or more vectors to transform at once, consider the pass-by-pointer version of <code><a class="el" href="group__SwshGroup.html#ga963e5afa2a64066419046ed3303ccf17" title="Perform an inverse libsharp spin-weighted spherical harmonic transform on any number of supplied Spin...">Spectral::Swsh::inverse_swsh_transform</a></code> or the <a class="el" href="group__DataBoxGroup.html">DataBox</a> interface <code><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted spherical harmo...">SwshTransform</a></code>, as they are more efficient for performing several transforms at once.</p>
+<p>The input is a set of libsharp-compatible coefficients. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted spherical harmo...">SwshTransform</a> for more details on the mathematics of the libsharp data structures. </dd></dl>
+
+</div>
+</div>
+<a id="gaee469776430b0fc613a47da07b830c24"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaee469776430b0fc613a47da07b830c24">&#9670;&nbsp;</a></span>libsharp_mode_to_goldberg()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt;double&gt; Spectral::Swsh::libsharp_mode_to_goldberg </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; &amp;&#160;</td>
+          <td class="paramname"><em>libsharp_modes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>radial_offset</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the mode coefficient for the convention of <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a>. See the documentation for <code>TransformJob</code> for complete details on the libsharp and Goldberg coefficient representations. </p>
+<h3>Details</h3>
+<p>This interface extracts the (<code>l</code>, <code>m</code>) Goldberg mode from the provided libsharp-compatible <code>libsharp_modes</code>, at angular slice <code>radial_offset</code> (Modes for concentric spherical shells are stored as consecutive blocks of angular modes). <code>l_max</code> must also be specified to determine the representation details. </p>
+
+</div>
+</div>
+<a id="ga1912a2782f49dcb04da6d0d87cbbbd15"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga1912a2782f49dcb04da6d0d87cbbbd15">&#9670;&nbsp;</a></span>libsharp_mode_to_goldberg_minus_m()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt;double&gt; Spectral::Swsh::libsharp_mode_to_goldberg_minus_m </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structSpectral_1_1Swsh_1_1LibsharpCoefficientInfo.html">LibsharpCoefficientInfo</a> &amp;&#160;</td>
+          <td class="paramname"><em>coefficient_info</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; &amp;&#160;</td>
+          <td class="paramname"><em>libsharp_modes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>radial_offset</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the mode coefficient for the convention of <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a>. </p>
+<h3>Details</h3>
+<p>See the documentation for <code>TransformJob</code> for complete details on the libsharp and Goldberg coefficient representations. This interface takes a <code><a class="el" href="structSpectral_1_1Swsh_1_1LibsharpCoefficientInfo.html" title="Points to a single pair of modes in a libsharp-compatible spin-weighted spherical harmonic modal repr...">LibsharpCoefficientInfo</a></code>, so that iterating over the libsharp data structure and performing computations based on the corresponding Goldberg modes is convenient. Two functions are provided, one for the positive m modes in the Goldberg representation, and one for the negative m modes, as the distinction is not made by the coefficient iterator.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">coefficient_info</td><td>An iterator which stores an \(l\) and \(|m|\) for the mode to be converted to the Goldberg form. </td></tr>
+    <tr><td class="paramname">libsharp_modes</td><td>The libsharp-compatible modal storage to be accessed </td></tr>
+    <tr><td class="paramname">radial_offset</td><td>The index of which angular slice is desired. Modes for concentric spherical shells are stored as consecutive blocks of angular modes. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gaf051a88e5f32355c59d5ffc305817df6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf051a88e5f32355c59d5ffc305817df6">&#9670;&nbsp;</a></span>libsharp_mode_to_goldberg_plus_m()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt;double&gt; Spectral::Swsh::libsharp_mode_to_goldberg_plus_m </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structSpectral_1_1Swsh_1_1LibsharpCoefficientInfo.html">LibsharpCoefficientInfo</a> &amp;&#160;</td>
+          <td class="paramname"><em>coefficient_info</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; &amp;&#160;</td>
+          <td class="paramname"><em>libsharp_modes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>radial_offset</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the mode coefficient for the convention of <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a>. </p>
+<h3>Details</h3>
+<p>See the documentation for <code>TransformJob</code> for complete details on the libsharp and Goldberg coefficient representations. This interface takes a <code><a class="el" href="structSpectral_1_1Swsh_1_1LibsharpCoefficientInfo.html" title="Points to a single pair of modes in a libsharp-compatible spin-weighted spherical harmonic modal repr...">LibsharpCoefficientInfo</a></code>, so that iterating over the libsharp data structure and performing computations based on the corresponding Goldberg modes is convenient. Two functions are provided, one for the positive m modes in the Goldberg representation, and one for the negative m modes, as the distinction is not made by the coefficient iterator.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">coefficient_info</td><td>An iterator which stores an \(l\) and \(|m|\) for the mode to be converted to the Goldberg form. </td></tr>
+    <tr><td class="paramname">libsharp_modes</td><td>The libsharp-compatible modal storage to be accessed </td></tr>
+    <tr><td class="paramname">radial_offset</td><td>The index of which angular slice is desired. Modes for concentric spherical shells are stored as consecutive blocks of angular modes. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gabe047b5fc03944f29fd2688ee4649812"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gabe047b5fc03944f29fd2688ee4649812">&#9670;&nbsp;</a></span>libsharp_to_goldberg_modes() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt;<a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin&gt; Spectral::Swsh::libsharp_to_goldberg_modes </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; &amp;&#160;</td>
+          <td class="paramname"><em>libsharp_modes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the set of Goldberg Spin-weighted spherical harmonic modes (in the convention of <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a>) from a libsharp-compatible series of modes. </p>
+<h3>Details</h3>
+<p>Modes for concentric spherical shells are stored as consecutive blocks of angular modes in both representations. </p>
+
+</div>
+</div>
+<a id="ga98021522583c1ddddf77ca868dd54b9b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga98021522583c1ddddf77ca868dd54b9b">&#9670;&nbsp;</a></span>libsharp_to_goldberg_modes() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Spectral::Swsh::libsharp_to_goldberg_modes </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>goldberg_modes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; &amp;&#160;</td>
+          <td class="paramname"><em>libsharp_modes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the set of Goldberg Spin-weighted spherical harmonic modes (in the convention of <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a>) from a libsharp-compatible series of modes. </p>
+<h3>Details</h3>
+<p>Modes for concentric spherical shells are stored as consecutive blocks of angular modes in both representations. </p>
+
+</div>
+</div>
+<a id="gad9eb81a7334f0c8f30a4391d73588474"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad9eb81a7334f0c8f30a4391d73588474">&#9670;&nbsp;</a></span>number_of_swsh_phi_collocation_points()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr size_t Spectral::Swsh::number_of_swsh_phi_collocation_points </td>
+          <td>(</td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>l_max</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the number of spin-weighted spherical harmonic collocation values in \(\phi\) for a libsharp-compatible set of collocation points. </p>
+<h3>Details</h3>
+<p>The full number of collocation points is the product of the number of \(\theta\) points and the number of \(\phi\) points (a 'rectangular' grid). </p>
+
+</div>
+</div>
+<a id="ga0cbce4539432a4df5b960f94698c408e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0cbce4539432a4df5b960f94698c408e">&#9670;&nbsp;</a></span>number_of_swsh_theta_collocation_points()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr size_t Spectral::Swsh::number_of_swsh_theta_collocation_points </td>
+          <td>(</td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>l_max</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the number of spin-weighted spherical harmonic collocation values in \(\theta\) for a libsharp-compatible set of collocation points. </p>
+<h3>Details</h3>
+<p>The full number of collocation points is the product of the number of \(\theta\) points and the number of \(\phi\) points (a 'rectangular' grid). </p>
+
+</div>
+</div>
+<a id="ga3dd752fced32fd47a2ad3a29a42dbc82"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3dd752fced32fd47a2ad3a29a42dbc82">&#9670;&nbsp;</a></span>sharp_swsh_sign()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr double Spectral::Swsh::sharp_swsh_sign </td>
+          <td>(</td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>spin_weight</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>real</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the sign change between the libsharp convention and the set of spin-weighted spherical harmonics given by the relation to the Wigner rotation matrices. </p>
+<h3>Details</h3>
+<p>The sign change is obtained via the difference between the libsharp convention and the convention which uses:</p>
+<p class="formulaDsp">
+\[ {}_s Y_{\ell m} (\theta, \phi) = (-1)^m \sqrt{\frac{2 l + 1}{4 \pi}} D^{\ell}{}_{-m s}(\phi, \theta, 0). \]
+</p>
+<p>See <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a>. The sign change is computed for the real component coefficients if <code>real</code> is true, otherwise for the imaginary component coefficients. For full details on the sign convention used in libsharp, see the documentation for TransformJob. This function outputs the \(\mathrm{sign}(m, s, \mathrm{real})\) necessary to produce the conversion between Goldberg moments and libsharp moments:</p>
+<p class="formulaDsp">
+\begin{align*} {}_s Y_{\ell m}^{\mathrm{real}, \mathrm{sharp}} =&amp; \mathrm{sign}(m, s, \mathrm{real=true}) {}_s Y_{\ell m}^{\mathrm{Goldberg}}\\ {}_s Y_{\ell m}^{\mathrm{imag}, \mathrm{sharp}} =&amp; \mathrm{sign}(m, s, \mathrm{real=false}) {}_s Y_{\ell m}^{\mathrm{Goldberg}}. \end{align*}
+</p>
+<p>Note that in this equation, the "real" and "imag" superscripts refer to the set of basis functions used for the decomposition of the real and imaginary part of the spin-weighted collocation points, not real or imaginary parts of the basis functions themselves. </p>
+
+</div>
+</div>
+<a id="gaeab6360b52d6bf4683fffdaaa6f624bf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaeab6360b52d6bf4683fffdaaa6f624bf">&#9670;&nbsp;</a></span>sharp_swsh_sign_change()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr double Spectral::Swsh::sharp_swsh_sign_change </td>
+          <td>(</td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>from_spin_weight</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>to_spin_weight</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>real</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the relative sign change necessary to convert between the libsharp basis for spin weight <code>from_spin_weight</code> to the basis for spin weight <code>to_spin_weight</code>, for the real component coefficients if <code>real</code> is true, otherwise for the imaginary component coefficients. The sign change for a given coefficient is equivalent to the product of <code>sharp_swsh_sign(from_spin, m, real) * sharp_swsh_sign(to_spin, m, real)</code>. Due to the form of the signs, it does not end up depending on m (the m's in the power of \(-1\)'s cancel). For full details of the libsharp sign conventions, see the documentation for TransformJob. </p>
+<h3>Details</h3>
+<p>The sign change is obtained by the difference between the libsharp convention and the convention which uses:</p>
+<p class="formulaDsp">
+\[ {}_s Y_{\ell m} (\theta, \phi) = (-1)^m \sqrt{\frac{2 l + 1}{4 \pi}} D^{\ell}{}_{-m s}(\phi, \theta, 0). \]
+</p>
+<p>See <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a> </p>
+
+</div>
+</div>
+<a id="ga6f1ab67b3715a5adaea8414b5c7dcbfa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6f1ab67b3715a5adaea8414b5c7dcbfa">&#9670;&nbsp;</a></span>size_of_libsharp_coefficient_vector()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr size_t Spectral::Swsh::size_of_libsharp_coefficient_vector </td>
+          <td>(</td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>l_max</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Convenience function for determining the number of spin-weighted spherical harmonics coefficients that are stored for a given <code>l_max</code> </p>
+<h3>Details</h3>
+<p>This includes the factor of 2 associated with needing to store both the transform of the real and imaginary parts, so is the full size of the result of a libsharp swsh transform.</p>
+<dl class="section note"><dt>Note</dt><dd>Assumes the triangular libsharp representation is used. </dd></dl>
+
+</div>
+</div>
+<a id="ga701ff2b1c56fe2928d5eb79d17e1ae9b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga701ff2b1c56fe2928d5eb79d17e1ae9b">&#9670;&nbsp;</a></span>swsh_transform() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;ComplexRepresentation Representation = ComplexRepresentation::Interleaved, int Spin, typename... ModalThenNodalTypes&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Spectral::Swsh::swsh_transform </td>
+          <td>(</td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>number_of_radial_points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>first_coefficient</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const ModalThenNodalTypes &amp;...&#160;</td>
+          <td class="paramname"><em>coefficients_then_collocations</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Perform a forward libsharp spin-weighted spherical harmonic transform on any number of supplied <code><a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexDataVector.html" title="Stores a collection of complex function values.">ComplexDataVector</a>, Spin&gt;</code>. </p>
+<h3>Details</h3>
+<p>This function places the result in one or more <code><a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexModalVector.html" title="A class for storing complex spectral coefficients on a spectral grid.">ComplexModalVector</a>, Spin&gt;</code> returned via provided pointer. This is a simpler interface to the same functionality as the <a class="el" href="group__DataBoxGroup.html">DataBox</a> mutation compatible <code><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted spherical harmo...">SwshTransform</a></code>.</p>
+<p>The following parameter ordering for the multiple input interface is enforced by the interior function calls, but is not obvious from the explicit parameter packs in this function signature:</p>
+<ul>
+<li><code>size_t l_max</code> : angular resolution for the transform</li>
+<li><code>size_t number_of_radial_points</code> : radial resolution (number of consecutive transforms in each of the vectors)</li>
+<li>any number of <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a>&lt;<a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexModalVector.html" title="A class for storing complex spectral coefficients on a spectral grid.">ComplexModalVector</a>, Spin&gt;*&gt;</code>, all sharing the same <code>Spin</code> : The return-by-pointer containers for the transformed modal quantities</li>
+<li>the same number of <code>const <a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexDataVector.html" title="Stores a collection of complex function values.">ComplexDataVector</a>, Spin&gt;&amp;</code>, with the same <code>Spin</code> as the previous function argument set : The input containers of nodal spin-weighted spherical harmonic data.</li>
+</ul>
+<p>template parameters:</p><ul>
+<li><code>Representation</code>: Either <code>ComplexRepresentation::Interleaved</code> or <code>ComplexRepresentation::RealsThenImags</code>, indicating the representation for intermediate steps of the transformation. The two representations will give identical results but may help or hurt performance depending on the task. If unspecified, defaults to <code>ComplexRepresentation::Interleaved</code>.</li>
+</ul>
+<p>The result is a set of libsharp-compatible coefficients. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted spherical harmo...">SwshTransform</a> for more details on the mathematics of the libsharp data structures.</dd></dl>
+<dl class="section warning"><dt>Warning</dt><dd>The collocation data is taken by const reference, but can be temporarily altered in-place during intermediate parts of the computation. The input data is guaranteed to return to its original state by the end of the function. In a setting in which multiple threads access the same data passed as input to this function, a lock must be used to prevent access during the execution of the transform. </dd></dl>
+
+</div>
+</div>
+<a id="ga5e895f11c17a108191d3dd990d92fa9e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5e895f11c17a108191d3dd990d92fa9e">&#9670;&nbsp;</a></span>swsh_transform() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;ComplexRepresentation Representation = ComplexRepresentation::Interleaved, int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt;<a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin&gt; Spectral::Swsh::swsh_transform </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>number_of_radial_points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; &amp;&#160;</td>
+          <td class="paramname"><em>collocation</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Perform a forward libsharp spin-weighted spherical harmonic transform on a single supplied <code><a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexDataVector.html" title="Stores a collection of complex function values.">ComplexDataVector</a>, Spin&gt;</code>. </p>
+<h3>Details</h3>
+<p>This function returns a <code><a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexModalVector.html" title="A class for storing complex spectral coefficients on a spectral grid.">ComplexModalVector</a>, Spin&gt;</code> by value (causing an allocation). This is a simpler interface to the same functionality as the <a class="el" href="group__DataBoxGroup.html">DataBox</a> mutation compatible <code><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted spherical harmo...">SwshTransform</a></code>. If you have two or more vectors to transform at once, consider the pass-by-pointer version of <code><a class="el" href="group__SwshGroup.html#ga701ff2b1c56fe2928d5eb79d17e1ae9b" title="Perform a forward libsharp spin-weighted spherical harmonic transform on any number of supplied SpinW...">Spectral::Swsh::swsh_transform</a></code> or the <a class="el" href="group__DataBoxGroup.html">DataBox</a> interface <code><a class="el" href="structSpectral_1_1Swsh_1_1InverseSwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted inverse spheric...">InverseSwshTransform</a></code>, as they are more efficient for performing several transforms at once.</p>
+<p>The result is a set of libsharp-compatible coefficients. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html" title="A DataBox mutate-compatible computational struct for performing several spin-weighted spherical harmo...">SwshTransform</a> for more details on the mathematics of the libsharp data structures.</dd></dl>
+<dl class="section warning"><dt>Warning</dt><dd>The collocation data is taken by const reference, but can be temporarily altered in-place during intermediate parts of the computation. The input data is guaranteed to return to its original state by the end of the function. In a setting in which multiple threads access the same data passed as input to this function, a lock must be used to prevent access during the execution of the transform. </dd></dl>
+
+</div>
+</div>
+<a id="ga589d3bc91ab3575b6858c4af477c610a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga589d3bc91ab3575b6858c4af477c610a">&#9670;&nbsp;</a></span>swsh_volume_mesh_for_radial_operations()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classMesh.html">Mesh</a>&lt;3&gt; Spectral::Swsh::swsh_volume_mesh_for_radial_operations </td>
+          <td>(</td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>number_of_radial_points</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Obtain the three-dimensional mesh associated with a libsharp-compatible sequence of spherical nodal shells. </p>
+<dl class="section warning"><dt>Warning</dt><dd>This is to be used only for operations in the radial direction! The angular collocation points should not be regarded as having a useful product representation for e.g. taking derivatives in just the theta direction. Instead, use spin-weighted utilities for all angular operations. </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
+<div class="ttc" id="agroup__SwshGroup_html_gaa79fabec76f9551c8a5dc4c5025644ab"><div class="ttname"><a href="group__SwshGroup.html#gaa79fabec76f9551c8a5dc4c5025644ab">Spectral::Swsh::make_transform_list_from_derivative_tags</a></div><div class="ttdeci">typename detail::make_transform_list_impl&lt; -2, Representation, tmpl::transform&lt; DerivativeTagList, tmpl::bind&lt; db::remove_tag_prefix, tmpl::_1 &gt; &gt;, decltype(std::make_integer_sequence&lt; int, 5 &gt;{})&gt;::type make_transform_list_from_derivative_tags</div><div class="ttdoc">Assemble a tmpl::list of SwshTransforms given a list of Spectral::Swsh::Tags::Derivative&lt;Tag,...</div><div class="ttdef"><b>Definition:</b> SwshTransform.hpp:775</div></div>
+<div class="ttc" id="agroup__SwshGroup_html_ga02f0dd68209a1f60f3e170ebc2412614"><div class="ttname"><a href="group__SwshGroup.html#ga02f0dd68209a1f60f3e170ebc2412614">Spectral::Swsh::make_transform_list</a></div><div class="ttdeci">typename detail::make_transform_list_impl&lt; -2, Representation, TagList, decltype(std::make_integer_sequence&lt; int, 5 &gt;{})&gt;::type make_transform_list</div><div class="ttdoc">Assemble a tmpl::list of SwshTransforms or InverseSwshTransforms given a list of tags TagList that ne...</div><div class="ttdef"><b>Definition:</b> SwshTransform.hpp:749</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,868 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Type Traits</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#define-members">Macros</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#var-members">Variables</a>  </div>
+  <div class="headertitle">
+<div class="title">Type Traits</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A collection of useful type traits, including C++14 and C++17 additions to the standard library.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespacett"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacett.html">tt</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespacecpp20"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecpp20.html">cpp20</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structis__any__spin__weighted.html">is_any_spin_weighted&lt; T &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structis__spin__weighted__of.html">is_spin_weighted_of&lt; InternalType, T &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structis__spin__weighted__of__same__type.html">is_spin_weighted_of_same_type&lt; T1, T2 &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__tensor__index.html">tt::is_tensor_index&lt; T &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if a type <code>T</code> is a <a class="el" href="structTensorIndex.html" title="Represents the geeric indices in a TensorExpression.">TensorIndex</a> used in <a class="el" href="namespaceTensorExpressions.html">TensorExpressions</a>.  <a href="structtt_1_1is__tensor__index.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__tensor__index__type.html">tt::is_tensor_index_type&lt; T &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structget__vector__element__type.html">get_vector_element_type&lt; T, bool &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper struct to determine the element type of a <a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a> or container of <a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a>.  <a href="structget__vector__element__type.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTypeDisplayer.html">TypeDisplayer&lt;... &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get compiler error with type of template parameter.  <a href="structTypeDisplayer.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1can__be__copy__constructed.html">tt::can_be_copy_constructed&lt; T, typename &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if <code>T</code> is copy constructible.  <a href="structtt_1_1can__be__copy__constructed.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1get__fundamental__type.html">tt::get_fundamental_type&lt; T, Enable &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extracts the fundamental type for a container.  <a href="structtt_1_1get__fundamental__type.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1has__equivalence.html">tt::has_equivalence&lt; T, typename &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if type <code>T</code> has operator== defined.  <a href="structtt_1_1has__equivalence.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1has__inequivalence.html">tt::has_inequivalence&lt; T, U &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if type <code>T</code> has operator!= defined.  <a href="structtt_1_1has__inequivalence.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__a.html">tt::is_a&lt; U, T &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if type <code>T</code> is a template specialization of <code>U</code>  <a href="structtt_1_1is__a.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtt_1_1is__callable.html">tt::is_callable&lt; TT, TArgs &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if a type <code>T</code> is callable, i.e. <code>T(Args...)</code> is evaluable.  <a href="classtt_1_1is__callable.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__complex__of__fundamental.html">tt::is_complex_of_fundamental&lt; T, typename &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines if a type <code>T</code> is a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a></code> of a fundamental type, is a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a></code> if so, and otherwise is a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::false_type</a></code>  <a href="structtt_1_1is__complex__of__fundamental.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__integer.html">tt::is_integer&lt; I &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if <code>I</code> is an integer type (non-bool, non-character), unlike <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_integral.html">std::is_integral</a>.  <a href="structtt_1_1is__integer.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__iterable.html">tt::is_iterable&lt; T, typename &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if type T has a begin() and end() function.  <a href="structtt_1_1is__iterable.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__maplike.html">tt::is_maplike&lt; T, typename &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if type <code>T</code> is like a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map</a> or std::unordored_map.  <a href="structtt_1_1is__maplike.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__std__array.html">tt::is_std_array&lt; T &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if type T is a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>.  <a href="structtt_1_1is__std__array.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__std__array__of__size.html">tt::is_std_array_of_size&lt; N, T &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if type T is a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a> of a given size.  <a href="structtt_1_1is__std__array__of__size.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__streamable.html">tt::is_streamable&lt; S, T, typename &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if type <code>T</code> has operator&lt;&lt;(<code>S</code>, <code>T</code>) defined.  <a href="structtt_1_1is__streamable.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1remove__reference__wrapper.html">tt::remove_reference_wrapper&lt; T &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the underlying type if the type is a <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/functional/reference_wrapper.html">std::reference_wrapper</a>, otherwise returns the type itself.  <a href="structtt_1_1remove__reference__wrapper.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1remove__cvref__wrap.html">tt::remove_cvref_wrap&lt; T &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/functional/reference_wrapper.html">std::reference_wrapper</a>, references, and cv qualifiers.  <a href="structtt_1_1remove__cvref__wrap.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcpp20_1_1remove__cvref.html">cpp20::remove_cvref&lt; T &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:gacbd0d33f786fae59dcb6a5d0c9546f0a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TypeTraitsGroup.html#gacbd0d33f786fae59dcb6a5d0c9546f0a">CREATE_GET_TYPE_ALIAS_OR_DEFAULT</a>(ALIAS_NAME)</td></tr>
+<tr class="memdesc:gacbd0d33f786fae59dcb6a5d0c9546f0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a metafunction that will retrieve the specified type alias, or if not present, assign a default type.  <a href="group__TypeTraitsGroup.html#gacbd0d33f786fae59dcb6a5d0c9546f0a">More...</a><br /></td></tr>
+<tr class="separator:gacbd0d33f786fae59dcb6a5d0c9546f0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:ga5a3e485b1f99ebd6694d2169a17fa498"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga5a3e485b1f99ebd6694d2169a17fa498"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TypeTraitsGroup.html#ga5a3e485b1f99ebd6694d2169a17fa498">is_derived_of_vector_impl</a> = decltype(detail::is_derived_of_vector_impl_impl(std::declval&lt; T * &gt;()))</td></tr>
+<tr class="separator:ga5a3e485b1f99ebd6694d2169a17fa498"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad0d02ffbe3df2975350abdac14764a39"><td class="memTemplParams" colspan="2">template&lt;typename F &gt; </td></tr>
+<tr class="memitem:gad0d02ffbe3df2975350abdac14764a39"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TypeTraitsGroup.html#gad0d02ffbe3df2975350abdac14764a39">tt::function_info</a> = detail::function_info_impl&lt; F &gt;</td></tr>
+<tr class="memdesc:gad0d02ffbe3df2975350abdac14764a39"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a struct that contains the return type, argument types, and the class type if the <code>F</code> is a non-static member function.  <a href="group__TypeTraitsGroup.html#gad0d02ffbe3df2975350abdac14764a39">More...</a><br /></td></tr>
+<tr class="separator:gad0d02ffbe3df2975350abdac14764a39"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga81f7735f66baf7185f69d9f3ee6a84aa"><td class="memTemplParams" colspan="2"><a id="ga81f7735f66baf7185f69d9f3ee6a84aa"></a>
+template&lt;class T &gt; </td></tr>
+<tr class="memitem:ga81f7735f66baf7185f69d9f3ee6a84aa"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>cpp20::remove_cvref_t</b> = typename <a class="el" href="structcpp20_1_1remove__cvref.html">remove_cvref</a>&lt; T &gt;::type</td></tr>
+<tr class="separator:ga81f7735f66baf7185f69d9f3ee6a84aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:ga7cb04134f248d9a9af7fd9d2cdbe9313"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga7cb04134f248d9a9af7fd9d2cdbe9313"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TypeTraitsGroup.html#ga7cb04134f248d9a9af7fd9d2cdbe9313">tt::is_complex_or_fundamental_v</a></td></tr>
+<tr class="memdesc:ga7cb04134f248d9a9af7fd9d2cdbe9313"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluates to <code>true</code> if type <code>T</code> is a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a></code> of a fundamental type or if <code>T</code> is a fundamental type.  <a href="group__TypeTraitsGroup.html#ga7cb04134f248d9a9af7fd9d2cdbe9313">More...</a><br /></td></tr>
+<tr class="separator:ga7cb04134f248d9a9af7fd9d2cdbe9313"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga739f64a5c2117c7d224cf7bae03ff4d6"><td class="memTemplParams" colspan="2">template&lt;typename Array &gt; </td></tr>
+<tr class="memitem:ga739f64a5c2117c7d224cf7bae03ff4d6"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TypeTraitsGroup.html#ga739f64a5c2117c7d224cf7bae03ff4d6">tt::array_size</a> = decltype(TypeTraits_detail::array_size_impl(std::declval&lt; const Array &amp; &gt;()))</td></tr>
+<tr class="memdesc:ga739f64a5c2117c7d224cf7bae03ff4d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the size of a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a> as a <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::integral_constant</a>.  <a href="group__TypeTraitsGroup.html#ga739f64a5c2117c7d224cf7bae03ff4d6">More...</a><br /></td></tr>
+<tr class="separator:ga739f64a5c2117c7d224cf7bae03ff4d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga585d0d44b42c0a46d59d1cd51fdb3916"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TypeTraitsGroup.html#ga585d0d44b42c0a46d59d1cd51fdb3916">CREATE_HAS_STATIC_MEMBER_VARIABLE</a>(CONSTEXPR_NAME)</td></tr>
+<tr class="memdesc:ga585d0d44b42c0a46d59d1cd51fdb3916"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a type trait to check if a class has a <code>static constexpr</code> variable, optionally also checking its type.  <a href="group__TypeTraitsGroup.html#ga585d0d44b42c0a46d59d1cd51fdb3916">More...</a><br /></td></tr>
+<tr class="separator:ga585d0d44b42c0a46d59d1cd51fdb3916"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga26fcb75b5ec5f074d485292a3772d8b0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TypeTraitsGroup.html#ga26fcb75b5ec5f074d485292a3772d8b0">CREATE_HAS_STATIC_MEMBER_VARIABLE_V</a>(CONSTEXPR_NAME)</td></tr>
+<tr class="memdesc:ga26fcb75b5ec5f074d485292a3772d8b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a type trait to check if a class has a <code>static constexpr</code> variable, optionally also checking its type.  <a href="group__TypeTraitsGroup.html#ga26fcb75b5ec5f074d485292a3772d8b0">More...</a><br /></td></tr>
+<tr class="separator:ga26fcb75b5ec5f074d485292a3772d8b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae31399fb295155dea540c3e840dfa98d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TypeTraitsGroup.html#gae31399fb295155dea540c3e840dfa98d">CREATE_HAS_TYPE_ALIAS</a>(ALIAS_NAME)</td></tr>
+<tr class="memdesc:gae31399fb295155dea540c3e840dfa98d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a type trait to check if a class has a type alias with a particular name, optionally also checking its type.  <a href="group__TypeTraitsGroup.html#gae31399fb295155dea540c3e840dfa98d">More...</a><br /></td></tr>
+<tr class="separator:gae31399fb295155dea540c3e840dfa98d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2cce0a156dfe67bbf4f2b0b96b6239d9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TypeTraitsGroup.html#ga2cce0a156dfe67bbf4f2b0b96b6239d9">CREATE_HAS_TYPE_ALIAS_V</a>(ALIAS_NAME)</td></tr>
+<tr class="memdesc:ga2cce0a156dfe67bbf4f2b0b96b6239d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a type trait to check if a class has a type alias with a particular name, optionally also checking its type.  <a href="group__TypeTraitsGroup.html#ga2cce0a156dfe67bbf4f2b0b96b6239d9">More...</a><br /></td></tr>
+<tr class="separator:ga2cce0a156dfe67bbf4f2b0b96b6239d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf5157dbd846dba6c52f75619eb95389f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TypeTraitsGroup.html#gaf5157dbd846dba6c52f75619eb95389f">CREATE_IS_CALLABLE</a>(METHOD_NAME)</td></tr>
+<tr class="memdesc:gaf5157dbd846dba6c52f75619eb95389f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a type trait to check if a class has a member function that can be invoked with arguments of type <code>TArgs...</code>  <a href="group__TypeTraitsGroup.html#gaf5157dbd846dba6c52f75619eb95389f">More...</a><br /></td></tr>
+<tr class="separator:gaf5157dbd846dba6c52f75619eb95389f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1a4b80d94918da54ccfd53b16e2ee77d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TypeTraitsGroup.html#ga1a4b80d94918da54ccfd53b16e2ee77d">CREATE_IS_CALLABLE_R_V</a>(METHOD_NAME)</td></tr>
+<tr class="memdesc:ga1a4b80d94918da54ccfd53b16e2ee77d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a type trait to check if a class has a member function that can be invoked with arguments of type <code>TArgs...</code>  <a href="group__TypeTraitsGroup.html#ga1a4b80d94918da54ccfd53b16e2ee77d">More...</a><br /></td></tr>
+<tr class="separator:ga1a4b80d94918da54ccfd53b16e2ee77d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaafe6f8a00a9324987bcd7953aa909b39"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TypeTraitsGroup.html#gaafe6f8a00a9324987bcd7953aa909b39">CREATE_IS_CALLABLE_V</a>(METHOD_NAME)</td></tr>
+<tr class="memdesc:gaafe6f8a00a9324987bcd7953aa909b39"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a type trait to check if a class has a member function that can be invoked with arguments of type <code>TArgs...</code>  <a href="group__TypeTraitsGroup.html#gaafe6f8a00a9324987bcd7953aa909b39">More...</a><br /></td></tr>
+<tr class="separator:gaafe6f8a00a9324987bcd7953aa909b39"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>A collection of useful type traits, including C++14 and C++17 additions to the standard library. </p>
+<h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="gacbd0d33f786fae59dcb6a5d0c9546f0a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gacbd0d33f786fae59dcb6a5d0c9546f0a">&#9670;&nbsp;</a></span>CREATE_GET_TYPE_ALIAS_OR_DEFAULT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CREATE_GET_TYPE_ALIAS_OR_DEFAULT</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">ALIAS_NAME</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> CheckingType, <span class="keyword">typename</span> Default,                  \</div>
+<div class="line">            bool present = has_##ALIAS_NAME##_v&lt;CheckingType&gt;&gt;        \</div>
+<div class="line">  struct get_##ALIAS_NAME##_or_default {                              \</div>
+<div class="line">    using type = Default;                                             \</div>
+<div class="line">  };                                                                  \</div>
+<div class="line">  template &lt;typename CheckingType, typename Default&gt;                  \</div>
+<div class="line">  struct get_##ALIAS_NAME##_or_default&lt;CheckingType, Default, true&gt; { \</div>
+<div class="line">    using type = <span class="keyword">typename</span> CheckingType::ALIAS_NAME;                   \</div>
+<div class="line">  };                                                                  \</div>
+<div class="line">  template &lt;typename CheckingType, typename Default&gt;                  \</div>
+<div class="line">  using get_##ALIAS_NAME##_or_default_t =                             \</div>
+<div class="line">      typename get_##ALIAS_NAME##_or_default&lt;CheckingType, Default&gt;::type;</div>
+</div><!-- fragment -->
+<p>Generate a metafunction that will retrieve the specified type alias, or if not present, assign a default type. </p>
+<dl class="section note"><dt>Note</dt><dd>This macro requires the type traits created by <code>CREATE_HAS_TYPE_ALIAS</code> and <code>CREATE_HAS_TYPE_ALIAS_V</code> but does not create them &ndash; both of those macros should be called before this macro to generate the needed type traits. </dd></dl>
+
+</div>
+</div>
+<a id="ga585d0d44b42c0a46d59d1cd51fdb3916"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga585d0d44b42c0a46d59d1cd51fdb3916">&#9670;&nbsp;</a></span>CREATE_HAS_STATIC_MEMBER_VARIABLE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CREATE_HAS_STATIC_MEMBER_VARIABLE</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">CONSTEXPR_NAME</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> CheckingType, <span class="keyword">typename</span> VariableType = <a class="code" href="structNoSuchType.html">NoSuchType</a>*****,   \</div>
+<div class="line">            typename = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/void_t.html">std::void_t&lt;&gt;</a>&gt;                                         \</div>
+<div class="line">  struct has_##CONSTEXPR_NAME : <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::false_type</a> {};                           \</div>
+<div class="line">                                                                              \</div>
+<div class="line">  template &lt;typename CheckingType, typename VariableType&gt;                     \</div>
+<div class="line">  struct has_##CONSTEXPR_NAME&lt;CheckingType, VariableType,                     \</div>
+<div class="line">                              std::void_t&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/types/remove_cv.html">std::remove_const_t</a>&lt;decltype(       \</div>
+<div class="line">                                  CheckingType::CONSTEXPR_NAME)&gt;&gt;&gt;            \</div>
+<div class="line">      : <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::bool_constant&lt;std::is_same_v&lt;VariableType, NoSuchType*****&gt;</a> or   \</div>
+<div class="line">                           std::is_same_v&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/types/remove_cv.html">std::remove_const_t</a>&lt;decltype(       \</div>
+<div class="line">                                              CheckingType::CONSTEXPR_NAME)&gt;, \</div>
+<div class="line">                                          VariableType&gt;&gt; {};</div>
+</div><!-- fragment -->
+<p>Generate a type trait to check if a class has a <code>static constexpr</code> variable, optionally also checking its type. </p>
+<p>To generate the corresponding <code>_v</code> metafunction, call <code>CREATE_HAS_STATIC_MEMBER_VARIABLE</code> first and then <code>CREATE_HAS_STATIC_MEMBER_VARIABLE_V</code>.</p>
+<h3>Example</h3>
+<div class="fragment"><div class="line"><a class="code" href="group__TypeTraitsGroup.html#ga585d0d44b42c0a46d59d1cd51fdb3916">CREATE_HAS_STATIC_MEMBER_VARIABLE</a>(foo)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#ga26fcb75b5ec5f074d485292a3772d8b0">CREATE_HAS_STATIC_MEMBER_VARIABLE_V</a>(foo)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#ga585d0d44b42c0a46d59d1cd51fdb3916">CREATE_HAS_STATIC_MEMBER_VARIABLE</a>(foobar)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#ga26fcb75b5ec5f074d485292a3772d8b0">CREATE_HAS_STATIC_MEMBER_VARIABLE_V</a>(foobar)</div>
+<div class="line"><span class="keyword">struct </span>testing_create_has_static_member_variable {</div>
+<div class="line">  <span class="keyword">static</span> constexpr <span class="keywordtype">size_t</span> foo = 1;</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line">static_assert(has_foo_v&lt;testing_create_has_static_member_variable&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_HAS_STATIC_MEMBER_VARIABLE&quot;</span>);</div>
+<div class="line">static_assert(has_foo_v&lt;testing_create_has_static_member_variable, size_t&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_HAS_STATIC_MEMBER_VARIABLE&quot;</span>);</div>
+<div class="line">static_assert(not has_foo_v&lt;testing_create_has_static_member_variable, int&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_HAS_STATIC_MEMBER_VARIABLE&quot;</span>);</div>
+<div class="line">static_assert(not has_foobar_v&lt;testing_create_has_static_member_variable&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_HAS_STATIC_MEMBER_VARIABLE&quot;</span>);</div>
+<div class="line">static_assert(</div>
+<div class="line">    not has_foobar_v&lt;testing_create_has_static_member_variable, size_t&gt;,</div>
+<div class="line">    <span class="stringliteral">&quot;Failed testing CREATE_HAS_STATIC_MEMBER_VARIABLE&quot;</span>);</div>
+</div><!-- fragment --> <dl class="section see"><dt>See also</dt><dd><code><a class="el" href="group__TypeTraitsGroup.html#gaf5157dbd846dba6c52f75619eb95389f" title="Generate a type trait to check if a class has a member function that can be invoked with arguments of...">CREATE_IS_CALLABLE</a></code> </dd></dl>
+
+</div>
+</div>
+<a id="ga26fcb75b5ec5f074d485292a3772d8b0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga26fcb75b5ec5f074d485292a3772d8b0">&#9670;&nbsp;</a></span>CREATE_HAS_STATIC_MEMBER_VARIABLE_V</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CREATE_HAS_STATIC_MEMBER_VARIABLE_V</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">CONSTEXPR_NAME</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> CheckingType, <span class="keyword">typename</span> VariableType = NoSuchType*****&gt; \</div>
+<div class="line">  static constexpr <span class="keyword">const</span> <span class="keywordtype">bool</span> has_##CONSTEXPR_NAME##_v =                    \</div>
+<div class="line">      has_##CONSTEXPR_NAME&lt;CheckingType, VariableType&gt;::value;</div>
+</div><!-- fragment -->
+<p>Generate a type trait to check if a class has a <code>static constexpr</code> variable, optionally also checking its type. </p>
+<p>To generate the corresponding <code>_v</code> metafunction, call <code>CREATE_HAS_STATIC_MEMBER_VARIABLE</code> first and then <code>CREATE_HAS_STATIC_MEMBER_VARIABLE_V</code>.</p>
+<h3>Example</h3>
+<div class="fragment"><div class="line"><a class="code" href="group__TypeTraitsGroup.html#ga585d0d44b42c0a46d59d1cd51fdb3916">CREATE_HAS_STATIC_MEMBER_VARIABLE</a>(foo)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#ga26fcb75b5ec5f074d485292a3772d8b0">CREATE_HAS_STATIC_MEMBER_VARIABLE_V</a>(foo)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#ga585d0d44b42c0a46d59d1cd51fdb3916">CREATE_HAS_STATIC_MEMBER_VARIABLE</a>(foobar)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#ga26fcb75b5ec5f074d485292a3772d8b0">CREATE_HAS_STATIC_MEMBER_VARIABLE_V</a>(foobar)</div>
+<div class="line"><span class="keyword">struct </span>testing_create_has_static_member_variable {</div>
+<div class="line">  <span class="keyword">static</span> constexpr <span class="keywordtype">size_t</span> foo = 1;</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line">static_assert(has_foo_v&lt;testing_create_has_static_member_variable&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_HAS_STATIC_MEMBER_VARIABLE&quot;</span>);</div>
+<div class="line">static_assert(has_foo_v&lt;testing_create_has_static_member_variable, size_t&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_HAS_STATIC_MEMBER_VARIABLE&quot;</span>);</div>
+<div class="line">static_assert(not has_foo_v&lt;testing_create_has_static_member_variable, int&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_HAS_STATIC_MEMBER_VARIABLE&quot;</span>);</div>
+<div class="line">static_assert(not has_foobar_v&lt;testing_create_has_static_member_variable&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_HAS_STATIC_MEMBER_VARIABLE&quot;</span>);</div>
+<div class="line">static_assert(</div>
+<div class="line">    not has_foobar_v&lt;testing_create_has_static_member_variable, size_t&gt;,</div>
+<div class="line">    <span class="stringliteral">&quot;Failed testing CREATE_HAS_STATIC_MEMBER_VARIABLE&quot;</span>);</div>
+</div><!-- fragment --> <dl class="section see"><dt>See also</dt><dd><code><a class="el" href="group__TypeTraitsGroup.html#gaf5157dbd846dba6c52f75619eb95389f" title="Generate a type trait to check if a class has a member function that can be invoked with arguments of...">CREATE_IS_CALLABLE</a></code> </dd></dl>
+
+</div>
+</div>
+<a id="gae31399fb295155dea540c3e840dfa98d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae31399fb295155dea540c3e840dfa98d">&#9670;&nbsp;</a></span>CREATE_HAS_TYPE_ALIAS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CREATE_HAS_TYPE_ALIAS</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">ALIAS_NAME</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> CheckingType, <span class="keyword">typename</span> AliasType = <a class="code" href="structNoSuchType.html">NoSuchType</a>*****,  \</div>
+<div class="line">            typename = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/void_t.html">std::void_t&lt;&gt;</a>&gt;                                     \</div>
+<div class="line">  struct has_##ALIAS_NAME : <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::false_type</a> {};                           \</div>
+<div class="line">                                                                          \</div>
+<div class="line">  template &lt;typename CheckingType, typename AliasType&gt;                    \</div>
+<div class="line">  struct has_##ALIAS_NAME&lt;CheckingType, AliasType,                        \</div>
+<div class="line">                          std::void_t&lt;typename CheckingType::ALIAS_NAME&gt;&gt; \</div>
+<div class="line">      : <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::bool_constant</a>&lt;                                               \</div>
+<div class="line">            std::is_same_v&lt;AliasType, NoSuchType*****&gt; or                 \</div>
+<div class="line">            std::is_same_v&lt;typename CheckingType::ALIAS_NAME, AliasType&gt;&gt; {};</div>
+</div><!-- fragment -->
+<p>Generate a type trait to check if a class has a type alias with a particular name, optionally also checking its type. </p>
+<p>To generate the corresponding <code>_v</code> metafunction, call <code>CREATE_HAS_TYPE_ALIAS</code> first and then <code>CREATE_HAS_TYPE_ALIAS_V</code>.</p>
+<h3>Example</h3>
+<div class="fragment"><div class="line"><a class="code" href="group__TypeTraitsGroup.html#gae31399fb295155dea540c3e840dfa98d">CREATE_HAS_TYPE_ALIAS</a>(foo_alias)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#ga2cce0a156dfe67bbf4f2b0b96b6239d9">CREATE_HAS_TYPE_ALIAS_V</a>(foo_alias)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#gae31399fb295155dea540c3e840dfa98d">CREATE_HAS_TYPE_ALIAS</a>(foobar_alias)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#ga2cce0a156dfe67bbf4f2b0b96b6239d9">CREATE_HAS_TYPE_ALIAS_V</a>(foobar_alias)</div>
+<div class="line"><span class="keyword">struct </span>testing_create_has_type_alias {</div>
+<div class="line">  <span class="keyword">using</span> foo_alias = int;</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line">static_assert(has_foo_alias_v&lt;testing_create_has_type_alias&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_HAS_TYPE_ALIAS&quot;</span>);</div>
+<div class="line">static_assert(has_foo_alias_v&lt;testing_create_has_type_alias, int&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_HAS_TYPE_ALIAS&quot;</span>);</div>
+<div class="line">static_assert(not has_foo_alias_v&lt;testing_create_has_type_alias, double&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_HAS_TYPE_ALIAS&quot;</span>);</div>
+<div class="line">static_assert(not has_foobar_alias_v&lt;testing_create_has_type_alias&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_HAS_TYPE_ALIAS&quot;</span>);</div>
+<div class="line">static_assert(not has_foobar_alias_v&lt;testing_create_has_type_alias, int&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_HAS_TYPE_ALIAS&quot;</span>);</div>
+</div><!-- fragment --> <dl class="section see"><dt>See also</dt><dd><code><a class="el" href="group__TypeTraitsGroup.html#gaf5157dbd846dba6c52f75619eb95389f" title="Generate a type trait to check if a class has a member function that can be invoked with arguments of...">CREATE_IS_CALLABLE</a></code> </dd></dl>
+
+</div>
+</div>
+<a id="ga2cce0a156dfe67bbf4f2b0b96b6239d9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2cce0a156dfe67bbf4f2b0b96b6239d9">&#9670;&nbsp;</a></span>CREATE_HAS_TYPE_ALIAS_V</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CREATE_HAS_TYPE_ALIAS_V</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">ALIAS_NAME</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> CheckingType, <span class="keyword">typename</span> AliasType = NoSuchType*****&gt; \</div>
+<div class="line">  static constexpr <span class="keyword">const</span> <span class="keywordtype">bool</span> has_##ALIAS_NAME##_v =                     \</div>
+<div class="line">      has_##ALIAS_NAME&lt;CheckingType, AliasType&gt;::value;</div>
+</div><!-- fragment -->
+<p>Generate a type trait to check if a class has a type alias with a particular name, optionally also checking its type. </p>
+<p>To generate the corresponding <code>_v</code> metafunction, call <code>CREATE_HAS_TYPE_ALIAS</code> first and then <code>CREATE_HAS_TYPE_ALIAS_V</code>.</p>
+<h3>Example</h3>
+<div class="fragment"><div class="line"><a class="code" href="group__TypeTraitsGroup.html#gae31399fb295155dea540c3e840dfa98d">CREATE_HAS_TYPE_ALIAS</a>(foo_alias)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#ga2cce0a156dfe67bbf4f2b0b96b6239d9">CREATE_HAS_TYPE_ALIAS_V</a>(foo_alias)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#gae31399fb295155dea540c3e840dfa98d">CREATE_HAS_TYPE_ALIAS</a>(foobar_alias)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#ga2cce0a156dfe67bbf4f2b0b96b6239d9">CREATE_HAS_TYPE_ALIAS_V</a>(foobar_alias)</div>
+<div class="line"><span class="keyword">struct </span>testing_create_has_type_alias {</div>
+<div class="line">  <span class="keyword">using</span> foo_alias = int;</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line">static_assert(has_foo_alias_v&lt;testing_create_has_type_alias&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_HAS_TYPE_ALIAS&quot;</span>);</div>
+<div class="line">static_assert(has_foo_alias_v&lt;testing_create_has_type_alias, int&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_HAS_TYPE_ALIAS&quot;</span>);</div>
+<div class="line">static_assert(not has_foo_alias_v&lt;testing_create_has_type_alias, double&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_HAS_TYPE_ALIAS&quot;</span>);</div>
+<div class="line">static_assert(not has_foobar_alias_v&lt;testing_create_has_type_alias&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_HAS_TYPE_ALIAS&quot;</span>);</div>
+<div class="line">static_assert(not has_foobar_alias_v&lt;testing_create_has_type_alias, int&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_HAS_TYPE_ALIAS&quot;</span>);</div>
+</div><!-- fragment --> <dl class="section see"><dt>See also</dt><dd><code><a class="el" href="group__TypeTraitsGroup.html#gaf5157dbd846dba6c52f75619eb95389f" title="Generate a type trait to check if a class has a member function that can be invoked with arguments of...">CREATE_IS_CALLABLE</a></code> </dd></dl>
+
+</div>
+</div>
+<a id="gaf5157dbd846dba6c52f75619eb95389f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf5157dbd846dba6c52f75619eb95389f">&#9670;&nbsp;</a></span>CREATE_IS_CALLABLE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CREATE_IS_CALLABLE</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">METHOD_NAME</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keyword">struct </span>AnyReturnType##METHOD_NAME {};                                        \</div>
+<div class="line">                                                                               \</div>
+<div class="line">  template &lt;<span class="keyword">typename</span> ReturnType, <span class="keyword">typename</span> TT, <span class="keyword">typename</span>... TArgs&gt;               \</div>
+<div class="line">  class is_##METHOD_NAME##_callable_r {                                        \</div>
+<div class="line">   private:                                                                    \</div>
+<div class="line">    struct NotCallable {};                                                     \</div>
+<div class="line">    template &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span>... Args&gt;                                    \</div>
+<div class="line">    static <span class="keyword">auto</span> test_callable(<span class="keywordtype">int</span>) noexcept                                    \</div>
+<div class="line">        -&gt; decltype(std::declval&lt;T&gt;().METHOD_NAME(std::declval&lt;Args&gt;()...));   \</div>
+<div class="line">    template &lt;<span class="keyword">typename</span>, <span class="keyword">typename</span>...&gt;                                           \</div>
+<div class="line">    static <span class="keyword">auto</span> test_callable(...) noexcept -&gt; NotCallable;                    \</div>
+<div class="line">                                                                               \</div>
+<div class="line">   public:                                                                     \</div>
+<div class="line">    static constexpr <span class="keywordtype">bool</span> value =                                              \</div>
+<div class="line">        (std::is_same_v&lt;ReturnType, AnyReturnType<span class="preprocessor">##METHOD_NAME&gt; and            \</span></div>
+<div class="line"><span class="preprocessor">         not std::is_same_v&lt;decltype(test_callable&lt;TT, TArgs...&gt;(0)),          \</span></div>
+<div class="line"><span class="preprocessor">                            NotCallable&gt;) or                                   \</span></div>
+<div class="line"><span class="preprocessor">        std::is_same_v&lt;decltype(test_callable&lt;TT, TArgs...&gt;(0)), ReturnType&gt;;  \</span></div>
+<div class="line"><span class="preprocessor">    using type = std::integral_constant&lt;bool, value&gt;;                          \</span></div>
+<div class="line"><span class="preprocessor">  };                                                                           \</span></div>
+<div class="line"><span class="preprocessor">  template &lt;typename ReturnType, typename T, typename... Args&gt;                 \</span></div>
+<div class="line"><span class="preprocessor">  using is_##METHOD_NAME##_callable_r_t =                                      \</span></div>
+<div class="line"><span class="preprocessor">      typename is_##METHOD_NAME##_callable_r&lt;ReturnType, T, Args...&gt;::type;    \</span></div>
+<div class="line"><span class="preprocessor">  template &lt;typename TT, typename... TArgs&gt;                                    \</span></div>
+<div class="line"><span class="preprocessor">  using is_##METHOD_NAME##_callable =                                          \</span></div>
+<div class="line"><span class="preprocessor">      is_##METHOD_NAME##_callable_r&lt;AnyReturnType##METHOD_NAME, TT, TArgs...&gt;; \</span></div>
+<div class="line"><span class="preprocessor">  template &lt;typename TT, typename... TArgs&gt;                                    \</span></div>
+<div class="line"><span class="preprocessor">  using is_##METHOD_NAME##_callable_t =                                        \</span></div>
+<div class="line"><span class="preprocessor">      is_##METHOD_NAME##_callable_r_t&lt;AnyReturnType##METHOD_NAME, TT,          \</span></div>
+<div class="line"><span class="preprocessor">                                      TArgs...&gt;;</span></div>
+</div><!-- fragment -->
+<p>Generate a type trait to check if a class has a member function that can be invoked with arguments of type <code>TArgs...</code> </p>
+<p>The usage of the type trait is identical to the usage of the <code><a class="el" href="classtt_1_1is__callable.html" title="Check if a type T is callable, i.e. T(Args...) is evaluable.">tt::is_callable</a></code> type trait. The name of the type trait is <code>is_METHOD_NAME_callable</code> and is not placed in the <code>tt</code> namespace. To avoid collisions it is highly recommended that type traits generated with this macro are generated into <code>_detail</code> namespaces. This will reduce redefinition compilation errors.</p>
+<p>Note that variable templates with <code>_r</code> and <code>_t</code> suffixes that follow the standard library's naming convention are also generated. To generate corresponding <code>_v</code> metafunctions, call <code>CREATE_IS_CALLABLE</code> first and then <code>CREATE_IS_CALLABLE_V</code> and/or <code>CREATE_IS_CALLABLE_R_V</code>.</p>
+<h3>Example</h3>
+<div class="fragment"><div class="line"><a class="code" href="group__TypeTraitsGroup.html#gaf5157dbd846dba6c52f75619eb95389f">CREATE_IS_CALLABLE</a>(foo)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#gaafe6f8a00a9324987bcd7953aa909b39">CREATE_IS_CALLABLE_V</a>(foo)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#ga1a4b80d94918da54ccfd53b16e2ee77d">CREATE_IS_CALLABLE_R_V</a>(foo)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#gaf5157dbd846dba6c52f75619eb95389f">CREATE_IS_CALLABLE</a>(foobar)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#gaafe6f8a00a9324987bcd7953aa909b39">CREATE_IS_CALLABLE_V</a>(foobar)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#ga1a4b80d94918da54ccfd53b16e2ee77d">CREATE_IS_CALLABLE_R_V</a>(foobar)</div>
+<div class="line"><span class="keyword">struct </span>bar {</div>
+<div class="line">  <span class="keywordtype">size_t</span> foo(<span class="keywordtype">int</span> <span class="comment">/*unused*/</span>, <span class="keywordtype">double</span> <span class="comment">/*unused*/</span>) { <span class="keywordflow">return</span> <span class="keywordtype">size_t</span>{0}; }</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line">static_assert(is_foo_callable_v&lt;bar, int, double&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+<div class="line">static_assert(is_foo_callable_r_v&lt;size_t, bar, int, double&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+<div class="line">static_assert(not is_foo_callable_v&lt;bar, int&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+<div class="line">static_assert(not is_foo_callable_v&lt;bar&gt;, <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+<div class="line">static_assert(not is_foobar_callable_r_v&lt;size_t, bar, int, double&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+<div class="line">static_assert(not is_foo_callable_r_v&lt;int, bar, int, double&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+<div class="line">static_assert(not is_foobar_callable_v&lt;bar, int, double&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+</div><!-- fragment --> <dl class="section see"><dt>See also</dt><dd><a class="el" href="classtt_1_1is__callable.html" title="Check if a type T is callable, i.e. T(Args...) is evaluable.">tt::is_callable</a> </dd></dl>
+
+</div>
+</div>
+<a id="ga1a4b80d94918da54ccfd53b16e2ee77d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga1a4b80d94918da54ccfd53b16e2ee77d">&#9670;&nbsp;</a></span>CREATE_IS_CALLABLE_R_V</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CREATE_IS_CALLABLE_R_V</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">METHOD_NAME</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ReturnType, <span class="keyword">typename</span> T, <span class="keyword">typename</span>... Args&gt;  \</div>
+<div class="line">  static constexpr <span class="keyword">const</span> <span class="keywordtype">bool</span> is_##METHOD_NAME##_callable_r_v = \</div>
+<div class="line">      is_##METHOD_NAME##_callable_r&lt;ReturnType, T, Args...&gt;::value;</div>
+</div><!-- fragment -->
+<p>Generate a type trait to check if a class has a member function that can be invoked with arguments of type <code>TArgs...</code> </p>
+<p>The usage of the type trait is identical to the usage of the <code><a class="el" href="classtt_1_1is__callable.html" title="Check if a type T is callable, i.e. T(Args...) is evaluable.">tt::is_callable</a></code> type trait. The name of the type trait is <code>is_METHOD_NAME_callable</code> and is not placed in the <code>tt</code> namespace. To avoid collisions it is highly recommended that type traits generated with this macro are generated into <code>_detail</code> namespaces. This will reduce redefinition compilation errors.</p>
+<p>Note that variable templates with <code>_r</code> and <code>_t</code> suffixes that follow the standard library's naming convention are also generated. To generate corresponding <code>_v</code> metafunctions, call <code>CREATE_IS_CALLABLE</code> first and then <code>CREATE_IS_CALLABLE_V</code> and/or <code>CREATE_IS_CALLABLE_R_V</code>.</p>
+<h3>Example</h3>
+<div class="fragment"><div class="line"><a class="code" href="group__TypeTraitsGroup.html#gaf5157dbd846dba6c52f75619eb95389f">CREATE_IS_CALLABLE</a>(foo)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#gaafe6f8a00a9324987bcd7953aa909b39">CREATE_IS_CALLABLE_V</a>(foo)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#ga1a4b80d94918da54ccfd53b16e2ee77d">CREATE_IS_CALLABLE_R_V</a>(foo)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#gaf5157dbd846dba6c52f75619eb95389f">CREATE_IS_CALLABLE</a>(foobar)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#gaafe6f8a00a9324987bcd7953aa909b39">CREATE_IS_CALLABLE_V</a>(foobar)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#ga1a4b80d94918da54ccfd53b16e2ee77d">CREATE_IS_CALLABLE_R_V</a>(foobar)</div>
+<div class="line"><span class="keyword">struct </span>bar {</div>
+<div class="line">  <span class="keywordtype">size_t</span> foo(<span class="keywordtype">int</span> <span class="comment">/*unused*/</span>, <span class="keywordtype">double</span> <span class="comment">/*unused*/</span>) { <span class="keywordflow">return</span> <span class="keywordtype">size_t</span>{0}; }</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line">static_assert(is_foo_callable_v&lt;bar, int, double&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+<div class="line">static_assert(is_foo_callable_r_v&lt;size_t, bar, int, double&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+<div class="line">static_assert(not is_foo_callable_v&lt;bar, int&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+<div class="line">static_assert(not is_foo_callable_v&lt;bar&gt;, <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+<div class="line">static_assert(not is_foobar_callable_r_v&lt;size_t, bar, int, double&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+<div class="line">static_assert(not is_foo_callable_r_v&lt;int, bar, int, double&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+<div class="line">static_assert(not is_foobar_callable_v&lt;bar, int, double&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+</div><!-- fragment --> <dl class="section see"><dt>See also</dt><dd><a class="el" href="classtt_1_1is__callable.html" title="Check if a type T is callable, i.e. T(Args...) is evaluable.">tt::is_callable</a> </dd></dl>
+
+</div>
+</div>
+<a id="gaafe6f8a00a9324987bcd7953aa909b39"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaafe6f8a00a9324987bcd7953aa909b39">&#9670;&nbsp;</a></span>CREATE_IS_CALLABLE_V</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CREATE_IS_CALLABLE_V</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">METHOD_NAME</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span>... Args&gt;                     \</div>
+<div class="line">  static constexpr <span class="keyword">const</span> <span class="keywordtype">bool</span> is_##METHOD_NAME##_callable_v = \</div>
+<div class="line">      is_##METHOD_NAME##_callable&lt;T, Args...&gt;::value;</div>
+</div><!-- fragment -->
+<p>Generate a type trait to check if a class has a member function that can be invoked with arguments of type <code>TArgs...</code> </p>
+<p>The usage of the type trait is identical to the usage of the <code><a class="el" href="classtt_1_1is__callable.html" title="Check if a type T is callable, i.e. T(Args...) is evaluable.">tt::is_callable</a></code> type trait. The name of the type trait is <code>is_METHOD_NAME_callable</code> and is not placed in the <code>tt</code> namespace. To avoid collisions it is highly recommended that type traits generated with this macro are generated into <code>_detail</code> namespaces. This will reduce redefinition compilation errors.</p>
+<p>Note that variable templates with <code>_r</code> and <code>_t</code> suffixes that follow the standard library's naming convention are also generated. To generate corresponding <code>_v</code> metafunctions, call <code>CREATE_IS_CALLABLE</code> first and then <code>CREATE_IS_CALLABLE_V</code> and/or <code>CREATE_IS_CALLABLE_R_V</code>.</p>
+<h3>Example</h3>
+<div class="fragment"><div class="line"><a class="code" href="group__TypeTraitsGroup.html#gaf5157dbd846dba6c52f75619eb95389f">CREATE_IS_CALLABLE</a>(foo)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#gaafe6f8a00a9324987bcd7953aa909b39">CREATE_IS_CALLABLE_V</a>(foo)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#ga1a4b80d94918da54ccfd53b16e2ee77d">CREATE_IS_CALLABLE_R_V</a>(foo)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#gaf5157dbd846dba6c52f75619eb95389f">CREATE_IS_CALLABLE</a>(foobar)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#gaafe6f8a00a9324987bcd7953aa909b39">CREATE_IS_CALLABLE_V</a>(foobar)</div>
+<div class="line"><a class="code" href="group__TypeTraitsGroup.html#ga1a4b80d94918da54ccfd53b16e2ee77d">CREATE_IS_CALLABLE_R_V</a>(foobar)</div>
+<div class="line"><span class="keyword">struct </span>bar {</div>
+<div class="line">  <span class="keywordtype">size_t</span> foo(<span class="keywordtype">int</span> <span class="comment">/*unused*/</span>, <span class="keywordtype">double</span> <span class="comment">/*unused*/</span>) { <span class="keywordflow">return</span> <span class="keywordtype">size_t</span>{0}; }</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line">static_assert(is_foo_callable_v&lt;bar, int, double&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+<div class="line">static_assert(is_foo_callable_r_v&lt;size_t, bar, int, double&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+<div class="line">static_assert(not is_foo_callable_v&lt;bar, int&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+<div class="line">static_assert(not is_foo_callable_v&lt;bar&gt;, <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+<div class="line">static_assert(not is_foobar_callable_r_v&lt;size_t, bar, int, double&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+<div class="line">static_assert(not is_foo_callable_r_v&lt;int, bar, int, double&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+<div class="line">static_assert(not is_foobar_callable_v&lt;bar, int, double&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing CREATE_IS_CALLABLE&quot;</span>);</div>
+</div><!-- fragment --> <dl class="section see"><dt>See also</dt><dd><a class="el" href="classtt_1_1is__callable.html" title="Check if a type T is callable, i.e. T(Args...) is evaluable.">tt::is_callable</a> </dd></dl>
+
+</div>
+</div>
+<h2 class="groupheader">Typedef Documentation</h2>
+<a id="ga739f64a5c2117c7d224cf7bae03ff4d6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga739f64a5c2117c7d224cf7bae03ff4d6">&#9670;&nbsp;</a></span>array_size</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Array &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TypeTraitsGroup.html#ga739f64a5c2117c7d224cf7bae03ff4d6">tt::array_size</a> = typedef decltype(TypeTraits_detail::array_size_impl(std::declval&lt;const Array&amp;&gt;()))</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the size of a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a> as a <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::integral_constant</a>. </p>
+<h3>Details</h3>
+<p>Given a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>, <code>Array</code>, returns a <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::integral_constant</a> that has the size of the array as its value</p>
+<h3>Usage</h3>
+<p>For a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a> <code>T</code> </p><div class="fragment"><div class="line"><span class="keyword">using</span> result = <a class="code" href="group__TypeTraitsGroup.html#ga739f64a5c2117c7d224cf7bae03ff4d6">tt::array_size&lt;T&gt;</a>;</div>
+</div><!-- fragment --><p><em>Returns:</em> std::integral_constant&lt;std::size_t&gt;</p>
+<p><em>Semantics:</em> For a type <code>T</code>, </p><div class="fragment"><div class="line"><span class="keyword">using</span> <a class="code" href="group__TypeTraitsGroup.html#ga739f64a5c2117c7d224cf7bae03ff4d6">tt::array_size&lt;std::array&lt;T, N&gt;</a>&gt; = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::integral_constant</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/types/size_t.html">std::size_t</a>,</div>
+<div class="line">N&gt;;</div>
+</div><!-- fragment --><h3>Example</h3>
+<div class="fragment"><div class="line">static_assert(<a class="code" href="group__TypeTraitsGroup.html#ga739f64a5c2117c7d224cf7bae03ff4d6">tt::array_size</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;double, 3&gt;</a>&gt;::value == 3,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing type trait array_size&quot;</span>);</div>
+<div class="line">static_assert(<a class="code" href="group__TypeTraitsGroup.html#ga739f64a5c2117c7d224cf7bae03ff4d6">tt::array_size</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;A, 4&gt;</a>&gt;::value == 4,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing type trait array_size&quot;</span>);</div>
+</div><!-- fragment --><dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Array</td><td>the whose size should be stored in value of array_size </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gad0d02ffbe3df2975350abdac14764a39"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad0d02ffbe3df2975350abdac14764a39">&#9670;&nbsp;</a></span>function_info</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename F &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TypeTraitsGroup.html#gad0d02ffbe3df2975350abdac14764a39">tt::function_info</a> = typedef detail::function_info_impl&lt;F&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns a struct that contains the return type, argument types, and the class type if the <code>F</code> is a non-static member function. </p>
+<p>The return class has member type aliases:</p><ul>
+<li><code>return_type</code> The return type of the function</li>
+<li><code>argument_types</code> A <code>tmpl::list</code> of the arguments types of the function</li>
+<li><code>class_type</code> The type of the class if the function is a non-static member function, otherwise <code>void</code></li>
+</ul>
+<dl class="section note"><dt>Note</dt><dd>For static member variables the class will be <code>void</code> because they are effectively free functions. </dd></dl>
+
+</div>
+</div>
+<a id="ga5a3e485b1f99ebd6694d2169a17fa498"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5a3e485b1f99ebd6694d2169a17fa498">&#9670;&nbsp;</a></span>is_derived_of_vector_impl</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TypeTraitsGroup.html#ga5a3e485b1f99ebd6694d2169a17fa498">is_derived_of_vector_impl</a> =  decltype(detail::is_derived_of_vector_impl_impl(std::declval&lt;T*&gt;()))</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>This is <code><a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a></code> if the provided type possesses an implicit conversion to any <code><a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a></code>, which is the primary feature of SpECTRE vectors generally. Otherwise, it is <code><a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::false_type</a></code>. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a id="ga7cb04134f248d9a9af7fd9d2cdbe9313"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7cb04134f248d9a9af7fd9d2cdbe9313">&#9670;&nbsp;</a></span>is_complex_or_fundamental_v</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool tt::is_complex_or_fundamental_v</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">    is_complex_of_fundamental_v&lt;T&gt; or std::is_fundamental_v&lt;T&gt;</div>
+</div><!-- fragment -->
+<p>Evaluates to <code>true</code> if type <code>T</code> is a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a></code> of a fundamental type or if <code>T</code> is a fundamental type. </p>
+
+</div>
+</div>
+</div><!-- contents -->
+<div class="ttc" id="astructNoSuchType_html"><div class="ttname"><a href="structNoSuchType.html">NoSuchType</a></div><div class="ttdoc">Used to mark &quot;no type&quot; or &quot;bad state&quot; for metaprogramming.</div><div class="ttdef"><b>Definition:</b> NoSuchType.hpp:10</div></div>
+<div class="ttc" id="aintegral_constant_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::false_type</a></div></div>
+<div class="ttc" id="agroup__TypeTraitsGroup_html_gaafe6f8a00a9324987bcd7953aa909b39"><div class="ttname"><a href="group__TypeTraitsGroup.html#gaafe6f8a00a9324987bcd7953aa909b39">CREATE_IS_CALLABLE_V</a></div><div class="ttdeci">#define CREATE_IS_CALLABLE_V(METHOD_NAME)</div><div class="ttdoc">Generate a type trait to check if a class has a member function that can be invoked with arguments of...</div><div class="ttdef"><b>Definition:</b> CreateIsCallable.hpp:68</div></div>
+<div class="ttc" id="avoid_t_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/void_t.html">std::void_t</a></div></div>
+<div class="ttc" id="agroup__TypeTraitsGroup_html_ga739f64a5c2117c7d224cf7bae03ff4d6"><div class="ttname"><a href="group__TypeTraitsGroup.html#ga739f64a5c2117c7d224cf7bae03ff4d6">tt::array_size</a></div><div class="ttdeci">decltype(TypeTraits_detail::array_size_impl(std::declval&lt; const Array &amp; &gt;())) array_size</div><div class="ttdoc">Get the size of a std::array as a std::integral_constant.</div><div class="ttdef"><b>Definition:</b> ArraySize.hpp:46</div></div>
+<div class="ttc" id="agroup__TypeTraitsGroup_html_ga585d0d44b42c0a46d59d1cd51fdb3916"><div class="ttname"><a href="group__TypeTraitsGroup.html#ga585d0d44b42c0a46d59d1cd51fdb3916">CREATE_HAS_STATIC_MEMBER_VARIABLE</a></div><div class="ttdeci">#define CREATE_HAS_STATIC_MEMBER_VARIABLE(CONSTEXPR_NAME)</div><div class="ttdoc">Generate a type trait to check if a class has a static constexpr variable, optionally also checking i...</div><div class="ttdef"><b>Definition:</b> CreateHasStaticMemberVariable.hpp:28</div></div>
+<div class="ttc" id="agroup__TypeTraitsGroup_html_gae31399fb295155dea540c3e840dfa98d"><div class="ttname"><a href="group__TypeTraitsGroup.html#gae31399fb295155dea540c3e840dfa98d">CREATE_HAS_TYPE_ALIAS</a></div><div class="ttdeci">#define CREATE_HAS_TYPE_ALIAS(ALIAS_NAME)</div><div class="ttdoc">Generate a type trait to check if a class has a type alias with a particular name,...</div><div class="ttdef"><b>Definition:</b> CreateHasTypeAlias.hpp:27</div></div>
+<div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt; double, 3 &gt;</a></div></div>
+<div class="ttc" id="agroup__TypeTraitsGroup_html_ga26fcb75b5ec5f074d485292a3772d8b0"><div class="ttname"><a href="group__TypeTraitsGroup.html#ga26fcb75b5ec5f074d485292a3772d8b0">CREATE_HAS_STATIC_MEMBER_VARIABLE_V</a></div><div class="ttdeci">#define CREATE_HAS_STATIC_MEMBER_VARIABLE_V(CONSTEXPR_NAME)</div><div class="ttdoc">Generate a type trait to check if a class has a static constexpr variable, optionally also checking i...</div><div class="ttdef"><b>Definition:</b> CreateHasStaticMemberVariable.hpp:43</div></div>
+<div class="ttc" id="aremove_cv_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/remove_cv.html">std::remove_const_t</a></div></div>
+<div class="ttc" id="asize_t_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/size_t.html">std::size_t</a></div></div>
+<div class="ttc" id="agroup__TypeTraitsGroup_html_ga1a4b80d94918da54ccfd53b16e2ee77d"><div class="ttname"><a href="group__TypeTraitsGroup.html#ga1a4b80d94918da54ccfd53b16e2ee77d">CREATE_IS_CALLABLE_R_V</a></div><div class="ttdeci">#define CREATE_IS_CALLABLE_R_V(METHOD_NAME)</div><div class="ttdoc">Generate a type trait to check if a class has a member function that can be invoked with arguments of...</div><div class="ttdef"><b>Definition:</b> CreateIsCallable.hpp:64</div></div>
+<div class="ttc" id="agroup__TypeTraitsGroup_html_ga2cce0a156dfe67bbf4f2b0b96b6239d9"><div class="ttname"><a href="group__TypeTraitsGroup.html#ga2cce0a156dfe67bbf4f2b0b96b6239d9">CREATE_HAS_TYPE_ALIAS_V</a></div><div class="ttdeci">#define CREATE_HAS_TYPE_ALIAS_V(ALIAS_NAME)</div><div class="ttdoc">Generate a type trait to check if a class has a type alias with a particular name,...</div><div class="ttdef"><b>Definition:</b> CreateHasTypeAlias.hpp:39</div></div>
+<div class="ttc" id="agroup__TypeTraitsGroup_html_gaf5157dbd846dba6c52f75619eb95389f"><div class="ttname"><a href="group__TypeTraitsGroup.html#gaf5157dbd846dba6c52f75619eb95389f">CREATE_IS_CALLABLE</a></div><div class="ttdeci">#define CREATE_IS_CALLABLE(METHOD_NAME)</div><div class="ttdoc">Generate a type trait to check if a class has a member function that can be invoked with arguments of...</div><div class="ttdef"><b>Definition:</b> CreateIsCallable.hpp:31</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

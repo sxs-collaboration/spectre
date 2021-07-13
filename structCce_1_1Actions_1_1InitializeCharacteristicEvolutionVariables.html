@@ -1,0 +1,306 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Cce::Actions::InitializeCharacteristicEvolutionVariables&lt; Metavariables &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceCce.html">Cce</a></li><li class="navelem"><a class="el" href="namespaceCce_1_1Actions.html">Actions</a></li><li class="navelem"><a class="el" href="structCce_1_1Actions_1_1InitializeCharacteristicEvolutionVariables.html">InitializeCharacteristicEvolutionVariables</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="structCce_1_1Actions_1_1InitializeCharacteristicEvolutionVariables-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Cce::Actions::InitializeCharacteristicEvolutionVariables&lt; Metavariables &gt; Struct Template Reference<div class="ingroups"><a class="el" href="group__ActionsGroup.html">Actions</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Initializes the main data storage for the <code><a class="el" href="structCce_1_1CharacteristicEvolution.html" title="The component for handling the CCE evolution and waveform output.">CharacteristicEvolution</a></code> component, which is the singleton that handles the main evolution system for CCE computations.  
+ <a href="structCce_1_1Actions_1_1InitializeCharacteristicEvolutionVariables.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="InitializeCharacteristicEvolutionVariables_8hpp_source.html">InitializeCharacteristicEvolutionVariables.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a1a105ed73a75496338d196a2edc34a24"><td class="memItemLeft" align="right" valign="top"><a id="a1a105ed73a75496338d196a2edc34a24"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>const_global_cache_tags</b> = tmpl::list&lt; <a class="el" href="structCce_1_1Tags_1_1LMax.html">Tags::LMax</a>, <a class="el" href="structCce_1_1Tags_1_1NumberOfRadialPoints.html">Tags::NumberOfRadialPoints</a> &gt;</td></tr>
+<tr class="separator:a1a105ed73a75496338d196a2edc34a24"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a35763a2cb8b34aafa9d33c756f0390db"><td class="memItemLeft" align="right" valign="top"><a id="a35763a2cb8b34aafa9d33c756f0390db"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>boundary_value_variables_tag</b> = ::<a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt; tmpl::append&lt; typename Metavariables::cce_boundary_communication_tags, typename Metavariables::cce_gauge_boundary_tags &gt; &gt;</td></tr>
+<tr class="separator:a35763a2cb8b34aafa9d33c756f0390db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adba5d598bc5c9995c9a95947f8ae4b88"><td class="memItemLeft" align="right" valign="top"><a id="adba5d598bc5c9995c9a95947f8ae4b88"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>scri_variables_tag</b> = ::<a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt; typename Metavariables::cce_scri_tags &gt;</td></tr>
+<tr class="separator:adba5d598bc5c9995c9a95947f8ae4b88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae544723961cb590612e96c40d161ed0a"><td class="memItemLeft" align="right" valign="top"><a id="ae544723961cb590612e96c40d161ed0a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>volume_variables_tag</b> = ::<a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt; tmpl::append&lt; typename Metavariables::cce_integrand_tags, typename Metavariables::cce_integration_independent_tags, typename Metavariables::cce_temporary_equations_tags &gt; &gt;</td></tr>
+<tr class="separator:ae544723961cb590612e96c40d161ed0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1ce35464dc18192ef42299fa529b4d73"><td class="memItemLeft" align="right" valign="top"><a id="a1ce35464dc18192ef42299fa529b4d73"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>pre_swsh_derivatives_variables_tag</b> = ::<a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt; typename Metavariables::cce_pre_swsh_derivatives_tags &gt;</td></tr>
+<tr class="separator:a1ce35464dc18192ef42299fa529b4d73"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae1e1b67f03cd674be33213ea4186e78d"><td class="memItemLeft" align="right" valign="top"><a id="ae1e1b67f03cd674be33213ea4186e78d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>transform_buffer_variables_tag</b> = ::<a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt; typename Metavariables::cce_transform_buffer_tags &gt;</td></tr>
+<tr class="separator:ae1e1b67f03cd674be33213ea4186e78d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea002b861f67b3e9a8b7c98c58d7c0b7"><td class="memItemLeft" align="right" valign="top"><a id="aea002b861f67b3e9a8b7c98c58d7c0b7"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>swsh_derivative_variables_tag</b> = ::<a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt; typename Metavariables::cce_swsh_derivative_tags &gt;</td></tr>
+<tr class="separator:aea002b861f67b3e9a8b7c98c58d7c0b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeae06570c2138cb404fa648685983abf"><td class="memItemLeft" align="right" valign="top"><a id="aeae06570c2138cb404fa648685983abf"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>angular_coordinates_variables_tag</b> = ::<a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt; typename Metavariables::cce_angular_coordinate_tags &gt;</td></tr>
+<tr class="separator:aeae06570c2138cb404fa648685983abf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0baa958071c3f16e1889620c764940e2"><td class="memItemLeft" align="right" valign="top"><a id="a0baa958071c3f16e1889620c764940e2"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>coordinate_variables_tag</b> = typename Metavariables::evolved_coordinates_variables_tag</td></tr>
+<tr class="separator:a0baa958071c3f16e1889620c764940e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae70516355bdcf80e606c30d0ba77ba00"><td class="memItemLeft" align="right" valign="top"><a id="ae70516355bdcf80e606c30d0ba77ba00"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dt_coordinate_variables_tag</b> = <a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>, coordinate_variables_tag &gt;</td></tr>
+<tr class="separator:ae70516355bdcf80e606c30d0ba77ba00"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a33f2c16fac5d6b9cbb726f2094e9d97f"><td class="memItemLeft" align="right" valign="top"><a id="a33f2c16fac5d6b9cbb726f2094e9d97f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>evolved_swsh_variables_tag</b> = ::<a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt; tmpl::list&lt; typename Metavariables::evolved_swsh_tag &gt; &gt;</td></tr>
+<tr class="separator:a33f2c16fac5d6b9cbb726f2094e9d97f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a736b125c256b976e10c2c514f549e527"><td class="memItemLeft" align="right" valign="top"><a id="a736b125c256b976e10c2c514f549e527"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>evolved_swsh_dt_variables_tag</b> = <a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>, <a class="el" href="structTags_1_1Variables.html">evolved_swsh_variables_tag</a> &gt;</td></tr>
+<tr class="separator:a736b125c256b976e10c2c514f549e527"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f7630d995ca2e87d741280d0d6fe32b"><td class="memItemLeft" align="right" valign="top"><a id="a9f7630d995ca2e87d741280d0d6fe32b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>simple_tags</b> = tmpl::list&lt; <a class="el" href="structTags_1_1Variables.html">boundary_value_variables_tag</a>, coordinate_variables_tag, dt_coordinate_variables_tag, <a class="el" href="structTags_1_1Variables.html">evolved_swsh_variables_tag</a>, evolved_swsh_dt_variables_tag, <a class="el" href="structTags_1_1Variables.html">angular_coordinates_variables_tag</a>, <a class="el" href="structTags_1_1Variables.html">scri_variables_tag</a>, <a class="el" href="structTags_1_1Variables.html">volume_variables_tag</a>, <a class="el" href="structTags_1_1Variables.html">pre_swsh_derivatives_variables_tag</a>, <a class="el" href="structTags_1_1Variables.html">transform_buffer_variables_tag</a>, <a class="el" href="structTags_1_1Variables.html">swsh_derivative_variables_tag</a>, <a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1SwshInterpolator.html">Spectral::Swsh::Tags::SwshInterpolator</a>&lt; <a class="el" href="structCce_1_1Tags_1_1CauchyAngularCoords.html">Tags::CauchyAngularCoords</a> &gt; &gt;</td></tr>
+<tr class="separator:a9f7630d995ca2e87d741280d0d6fe32b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a32e7bd45cb1e80e72d93e9d83111bcdc"><td class="memItemLeft" align="right" valign="top"><a id="a32e7bd45cb1e80e72d93e9d83111bcdc"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>compute_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a32e7bd45cb1e80e72d93e9d83111bcdc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a1af14cad1b04cfcb980390d943dc6171"><td class="memTemplParams" colspan="2"><a id="a1af14cad1b04cfcb980390d943dc6171"></a>
+template&lt;typename DbTags , typename... InboxTags, typename ArrayIndex , typename ActionList , typename ParallelComponent &gt; </td></tr>
+<tr class="memitem:a1af14cad1b04cfcb980390d943dc6171"><td class="memTemplItemLeft" align="right" valign="top">static auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>apply</b> (db::DataBox&lt; DbTags &gt; &amp;box, const <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; InboxTags... &gt; &amp;, const <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt; &amp;, const ArrayIndex &amp;, const ActionList, const ParallelComponent *const) noexcept</td></tr>
+<tr class="separator:a1af14cad1b04cfcb980390d943dc6171"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename Metavariables&gt;<br />
+struct Cce::Actions::InitializeCharacteristicEvolutionVariables&lt; Metavariables &gt;</h3>
+
+<p>Initializes the main data storage for the <code><a class="el" href="structCce_1_1CharacteristicEvolution.html" title="The component for handling the CCE evolution and waveform output.">CharacteristicEvolution</a></code> component, which is the singleton that handles the main evolution system for CCE computations. </p>
+<h3>Details</h3>
+<p>Sets up the <a class="el" href="group__DataBoxGroup.html">DataBox</a> to be ready to take data from the worldtube component, calculate initial data, and start the hypersurface computations.</p>
+<p><a class="el" href="group__DataBoxGroup.html">DataBox</a> changes:</p><ul>
+<li>Modifies: nothing</li>
+<li>Adds:<ul>
+<li><code>metavariables::evolved_coordinates_variables_tag</code></li>
+<li><div class="fragment"><div class="line"><a class="code" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt;<a class="code" href="structTags_1_1dt.html">Tags::dt</a>,</div>
+<div class="line">metavariables::evolved_coordinates_variables_tag&gt;</div>
+</div><!-- fragment --></li>
+<li><code><a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt;metavariables::cce_angular_coordinate_tags&gt;</code></li>
+<li><code><a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt;metavariables::cce_scri_tags&gt;</code></li>
+<li><div class="fragment"><div class="line"><a class="code" href="structTags_1_1Variables.html">Tags::Variables</a>&lt;tmpl::append&lt;</div>
+<div class="line">metavariables::cce_integrand_tags,</div>
+<div class="line">metavariables::cce_integration_independent_tags,</div>
+<div class="line">metavariables::cce_temporary_equations_tags&gt;&gt;</div>
+</div><!-- fragment --></li>
+<li><code><a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt;metavariables::cce_pre_swsh_derivatives_tags&gt;</code></li>
+<li><code><a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt;metavariables::cce_transform_buffer_tags&gt;</code></li>
+<li><code><a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt;metavariables::cce_swsh_derivative_tags&gt;</code></li>
+<li><code><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1SwshInterpolator.html" title="Tag for a SwshInterpolator associated with a particular set of angular coordinates.">Spectral::Swsh::Tags::SwshInterpolator</a>&lt; <a class="el" href="structCce_1_1Tags_1_1CauchyAngularCoords.html">Tags::CauchyAngularCoords</a>&gt;</code></li>
+</ul>
+</li>
+<li>Removes: nothing</li>
+</ul>
+<dl class="section note"><dt>Note</dt><dd>This action relies on the <code>SetupDataBox</code> aggregated initialization mechanism, so <code><a class="el" href="structActions_1_1SetupDataBox.html" title="Add into the DataBox default constructed items for the collection of tags requested by any of the act...">Actions::SetupDataBox</a></code> must be present in the <code>Initialization</code> phase action list prior to this action. </dd></dl>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/Systems/Cce/Actions/<a class="el" href="InitializeCharacteristicEvolutionVariables_8hpp_source.html">InitializeCharacteristicEvolutionVariables.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="agroup__DataBoxTagsGroup_html_gafeeced2a7fb41fdced8c55e76343f63c"><div class="ttname"><a href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a></div><div class="ttdeci">typename detail::add_tag_prefix_impl&lt; Prefix, Tag, Args... &gt;::type add_tag_prefix</div><div class="ttdef"><b>Definition:</b> PrefixHelpers.hpp:51</div></div>
+<div class="ttc" id="astructTags_1_1Variables_html"><div class="ttname"><a href="structTags_1_1Variables.html">Tags::Variables</a></div><div class="ttdef"><b>Definition:</b> VariablesTag.hpp:21</div></div>
+<div class="ttc" id="astructTags_1_1dt_html"><div class="ttname"><a href="structTags_1_1dt.html">Tags::dt</a></div><div class="ttdoc">Prefix indicating a time derivative.</div><div class="ttdef"><b>Definition:</b> Prefixes.hpp:29</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

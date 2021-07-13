@@ -1,0 +1,352 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: DynamicBuffer&lt; T &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classDynamicBuffer-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">DynamicBuffer&lt; T &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__DataStructuresGroup.html">Data Structures</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A dynamically sized vector of <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>s. For convenience it can also be instantiated for fundamental types.  
+ <a href="classDynamicBuffer.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DynamicBuffer_8hpp_source.html">DynamicBuffer.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a98c330d007fb902dc40a4b1a1374d505"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDynamicBuffer.html#a98c330d007fb902dc40a4b1a1374d505">DynamicBuffer</a> (size_t number_of_vectors, size_t number_of_grid_points) noexcept</td></tr>
+<tr class="separator:a98c330d007fb902dc40a4b1a1374d505"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ba98f0c6d404890f15ae8cc417715d3"><td class="memItemLeft" align="right" valign="top"><a id="a3ba98f0c6d404890f15ae8cc417715d3"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>DynamicBuffer</b> (<a class="el" href="classDynamicBuffer.html">DynamicBuffer</a> &amp;&amp;other)=default</td></tr>
+<tr class="separator:a3ba98f0c6d404890f15ae8cc417715d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9b716e34499bd0d8e7e002d0fa0eadc"><td class="memItemLeft" align="right" valign="top"><a id="aa9b716e34499bd0d8e7e002d0fa0eadc"></a>
+<a class="el" href="classDynamicBuffer.html">DynamicBuffer</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classDynamicBuffer.html">DynamicBuffer</a> &amp;&amp;other)=default</td></tr>
+<tr class="separator:aa9b716e34499bd0d8e7e002d0fa0eadc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a201ff9bf8706b8d89722882183127bcc"><td class="memItemLeft" align="right" valign="top"><a id="a201ff9bf8706b8d89722882183127bcc"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>DynamicBuffer</b> (const <a class="el" href="classDynamicBuffer.html">DynamicBuffer</a> &amp;other) noexcept</td></tr>
+<tr class="separator:a201ff9bf8706b8d89722882183127bcc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4fbc7d17ab9806df89e504fd9e1f7804"><td class="memItemLeft" align="right" valign="top"><a id="a4fbc7d17ab9806df89e504fd9e1f7804"></a>
+<a class="el" href="classDynamicBuffer.html">DynamicBuffer</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classDynamicBuffer.html">DynamicBuffer</a> &amp;other) noexcept</td></tr>
+<tr class="separator:a4fbc7d17ab9806df89e504fd9e1f7804"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f89f7f683e86ed1840381fe997ebeaf"><td class="memItemLeft" align="right" valign="top"><a id="a3f89f7f683e86ed1840381fe997ebeaf"></a>
+T &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator[]</b> (size_t index) noexcept</td></tr>
+<tr class="separator:a3f89f7f683e86ed1840381fe997ebeaf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb48415ff8d06fe0725229a40070cbfd"><td class="memItemLeft" align="right" valign="top"><a id="adb48415ff8d06fe0725229a40070cbfd"></a>
+T &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>at</b> (size_t index) noexcept</td></tr>
+<tr class="separator:adb48415ff8d06fe0725229a40070cbfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a459444ef9d31aa72178ddce5e299d23c"><td class="memItemLeft" align="right" valign="top"><a id="a459444ef9d31aa72178ddce5e299d23c"></a>
+const T &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator[]</b> (size_t index) const noexcept</td></tr>
+<tr class="separator:a459444ef9d31aa72178ddce5e299d23c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ce88996392b8da0299ef55f8984350b"><td class="memItemLeft" align="right" valign="top"><a id="a5ce88996392b8da0299ef55f8984350b"></a>
+const T &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>at</b> (size_t index) const noexcept</td></tr>
+<tr class="separator:a5ce88996392b8da0299ef55f8984350b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a35b4a6b9ac041d87cd7d144006e63cbf"><td class="memItemLeft" align="right" valign="top"><a id="a35b4a6b9ac041d87cd7d144006e63cbf"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>begin</b> () noexcept</td></tr>
+<tr class="separator:a35b4a6b9ac041d87cd7d144006e63cbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a375b00b31df5e6adc7c9728bc14d7c65"><td class="memItemLeft" align="right" valign="top"><a id="a375b00b31df5e6adc7c9728bc14d7c65"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>end</b> () noexcept</td></tr>
+<tr class="separator:a375b00b31df5e6adc7c9728bc14d7c65"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a971a9f5d5d0ff375bc2100b0576f103f"><td class="memItemLeft" align="right" valign="top"><a id="a971a9f5d5d0ff375bc2100b0576f103f"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>begin</b> () const noexcept</td></tr>
+<tr class="separator:a971a9f5d5d0ff375bc2100b0576f103f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad216c31820afd71cf5678cfc7bcdd3eb"><td class="memItemLeft" align="right" valign="top"><a id="ad216c31820afd71cf5678cfc7bcdd3eb"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>end</b> () const noexcept</td></tr>
+<tr class="separator:ad216c31820afd71cf5678cfc7bcdd3eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a339fa06b67fe0fdadd396ecf864accab"><td class="memItemLeft" align="right" valign="top"><a id="a339fa06b67fe0fdadd396ecf864accab"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>size</b> () const noexcept</td></tr>
+<tr class="separator:a339fa06b67fe0fdadd396ecf864accab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7a041119ce78689f106c9cafd5d7928e"><td class="memItemLeft" align="right" valign="top"><a id="a7a041119ce78689f106c9cafd5d7928e"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a7a041119ce78689f106c9cafd5d7928e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a7188ca59db56b1b7ba285238f5088973"><td class="memItemLeft" align="right" valign="top">static constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_data_vector_type</b></td></tr>
+<tr class="separator:a7188ca59db56b1b7ba285238f5088973"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a5f80a93ade0a80d103991d2329cdc5bb"><td class="memTemplParams" colspan="2"><a id="a5f80a93ade0a80d103991d2329cdc5bb"></a>
+template&lt;typename LocalT &gt; </td></tr>
+<tr class="memitem:a5f80a93ade0a80d103991d2329cdc5bb"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classDynamicBuffer.html">DynamicBuffer</a>&lt; LocalT &gt; &amp;lhs, const <a class="el" href="classDynamicBuffer.html">DynamicBuffer</a>&lt; LocalT &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a5f80a93ade0a80d103991d2329cdc5bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename T&gt;<br />
+class DynamicBuffer&lt; T &gt;</h3>
+
+<p>A dynamically sized vector of <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>s. For convenience it can also be instantiated for fundamental types. </p>
+<h3>Details</h3>
+<p>This class is useful when one wants to create a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;T&gt;</code> with a size that is unknown at compile time. It allocates all <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>s in a single memory chunk rather than allocating each individually. If the size of the vector is known at compile time, a <code><a class="el" href="structTempBuffer.html" title="A TempBuffer holds a set of Tensor&lt;DataType&gt;s, where DataType is either a DataVector (or similar type...">TempBuffer</a></code> object should be used instead.</p>
+<p>If needed it should be fairly straightforward to generalize to <code><a class="el" href="classComplexDataVector.html" title="Stores a collection of complex function values.">ComplexDataVector</a></code>. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a98c330d007fb902dc40a4b1a1374d505"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a98c330d007fb902dc40a4b1a1374d505">&#9670;&nbsp;</a></span>DynamicBuffer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classDynamicBuffer.html">DynamicBuffer</a>&lt; T &gt;::<a class="el" href="classDynamicBuffer.html">DynamicBuffer</a> </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>number_of_vectors</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>number_of_grid_points</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Constructs a <code><a class="el" href="classDynamicBuffer.html" title="A dynamically sized vector of DataVectors. For convenience it can also be instantiated for fundamenta...">DynamicBuffer</a></code>. The <code>number_of_vectors</code> corresponds to the number of <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>s which are saved inside, each of which has size <code>number_of_grid_points</code>. <code>number_of_grid_points</code> has to be 1 if T is a fundamental type. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="a7188ca59db56b1b7ba285238f5088973"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7188ca59db56b1b7ba285238f5088973">&#9670;&nbsp;</a></span>is_data_vector_type</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool <a class="el" href="classDynamicBuffer.html">DynamicBuffer</a>&lt; T &gt;::is_data_vector_type</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      std::is_base_of_v&lt;VectorImpl&lt;tt::get_fundamental_type_t&lt;T&gt;, T&gt;, T&gt;</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/DataStructures/<a class="el" href="DynamicBuffer_8hpp_source.html">DynamicBuffer.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,798 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: ScalarWave Namespace Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#nested-classes">Classes</a>  </div>
+  <div class="headertitle">
+<div class="title">ScalarWave Namespace Reference<div class="ingroups"><a class="el" href="group__EvolutionSystemsGroup.html">Evolution Systems</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Items related to evolving the scalar wave equation.  
+<a href="namespaceScalarWave.html#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceScalarWave_1_1BoundaryConditions"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceScalarWave_1_1BoundaryConditions.html">BoundaryConditions</a></td></tr>
+<tr class="memdesc:namespaceScalarWave_1_1BoundaryConditions"><td class="mdescLeft">&#160;</td><td class="mdescRight">Boundary conditions for the scalar wave system. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceScalarWave_1_1BoundaryCorrections"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceScalarWave_1_1BoundaryCorrections.html">BoundaryCorrections</a></td></tr>
+<tr class="memdesc:namespaceScalarWave_1_1BoundaryCorrections"><td class="mdescLeft">&#160;</td><td class="mdescRight">Boundary corrections/numerical fluxes. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceScalarWave_1_1Solutions"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceScalarWave_1_1Solutions.html">Solutions</a></td></tr>
+<tr class="memdesc:namespaceScalarWave_1_1Solutions"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds classes implementing a solution to the Euclidean wave equation \(0 = \frac{\partial^2 \Psi}{\partial t^2} - \nabla^2 \Psi\). <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceScalarWave_1_1Tags"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceScalarWave_1_1Tags.html">Tags</a></td></tr>
+<tr class="memdesc:namespaceScalarWave_1_1Tags"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespaceScalarWave_1_1Tags.html" title="Tags for the ScalarWave evolution system.">Tags</a> for the <a class="el" href="namespaceScalarWave.html" title="Items related to evolving the scalar wave equation.">ScalarWave</a> evolution system. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structScalarWave_1_1ComputeNormalDotFluxes.html">ComputeNormalDotFluxes</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A relic of an old incorrect way of handling boundaries for non-conservative systems.  <a href="structScalarWave_1_1ComputeNormalDotFluxes.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structScalarWave_1_1Phi.html">Phi</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structScalarWave_1_1Pi.html">Pi</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structScalarWave_1_1Psi.html">Psi</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structScalarWave_1_1System.html">System</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structScalarWave_1_1TimeDerivative.html">TimeDerivative</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the time derivatives for scalar wave system.  <a href="structScalarWave_1_1TimeDerivative.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structScalarWave_1_1UpwindPenaltyCorrection.html">UpwindPenaltyCorrection</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the scalar wave upwind multipenalty boundary correction.  <a href="structScalarWave_1_1UpwindPenaltyCorrection.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Items related to evolving the scalar wave equation. </p>
+<p>The equations of motion for the system augmented with constraint damping terms are given by Eq. (15), (23) and (24) of <a class="el" href="citelist.html#CITEREF_Holst2004wt">[57]</a> (setting background spacetime to Minkowskian):</p>
+<p class="formulaDsp">
+\begin{align*} \partial_t \psi =&amp; -\Pi \\ \partial_t \Pi =&amp; -\partial^i \Phi_i \\ \partial_t \Phi_i =&amp; -\partial_i \Pi + \gamma_2 (\partial_i \psi - \Phi_i) \end{align*}
+</p>
+<p>In our implementation here, to disable the constraint damping terms, set \(\gamma_2 = 0\). </p>
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="a1d9fc2d77f3d35a8325b152ec9177be5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1d9fc2d77f3d35a8325b152ec9177be5">&#9670;&nbsp;</a></span>characteristic_fields() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variables&lt;tmpl::list&lt;<a class="el" href="structScalarWave_1_1Tags_1_1VPsi.html">Tags::VPsi</a>, <a class="el" href="structScalarWave_1_1Tags_1_1VZero.html">Tags::VZero</a>&lt;Dim&gt;, <a class="el" href="structScalarWave_1_1Tags_1_1VPlus.html">Tags::VPlus</a>, <a class="el" href="structScalarWave_1_1Tags_1_1VMinus.html">Tags::VMinus</a>&gt; &gt; ScalarWave::characteristic_fields </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>gamma_2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>psi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>pi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>phi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>unit_normal_one_form</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Computes characteristic fields from evolved fields. </p>
+<p><a class="el" href="structScalarWave_1_1Tags_1_1CharacteristicFieldsCompute.html">Tags::CharacteristicFieldsCompute</a> and <a class="el" href="structScalarWave_1_1Tags_1_1EvolvedFieldsFromCharacteristicFieldsCompute.html">Tags::EvolvedFieldsFromCharacteristicFieldsCompute</a> convert between characteristic and evolved fields for the scalar-wave system.</p>
+<p><a class="el" href="structScalarWave_1_1Tags_1_1CharacteristicFieldsCompute.html">Tags::CharacteristicFieldsCompute</a> computes characteristic fields as described in "Optimal constraint projection for
+hyperbolic evolution systems" by Holst et al. <a class="el" href="citelist.html#CITEREF_Holst2004wt">[57]</a> . Their names used here differ from this paper:</p>
+<p class="formulaDsp">
+\begin{align*} \mathrm{SpECTRE} &amp;&amp; \mathrm{Holst} \\ v^{\hat \psi} &amp;&amp; Z^1 \\ v^{\hat 0}_{i} &amp;&amp; Z^{2}_{i} \\ v^{\hat \pm} &amp;&amp; u^{1\pm} \end{align*}
+</p>
+<p>The characteristic fields \({v}^{\hat \alpha}\) are given in terms of the evolved fields by Eq.(33) - (35) of <a class="el" href="citelist.html#CITEREF_Holst2004wt">[57]</a>, respectively:</p>
+<p class="formulaDsp">
+\begin{align*} v^{\hat \psi} =&amp; \psi \\ v^{\hat 0}_{i} =&amp; (\delta^k_i - n_i n^k) \Phi_{k} := P^k_i \Phi_{k} \\ v^{\hat \pm} =&amp; \Pi \pm n^i \Phi_{i} - \gamma_2\psi \end{align*}
+</p>
+<p>where \(\psi\) is the scalar field, \(\Phi_{i}=\partial_i \psi\) is an auxiliary variable, \(\Pi\) is a conjugate momentum, \(\gamma_2\) is a constraint damping parameter, and \(n_k\) is the unit normal to the surface along which the characteristic fields are defined.</p>
+<p><a class="el" href="structScalarWave_1_1Tags_1_1EvolvedFieldsFromCharacteristicFieldsCompute.html">Tags::EvolvedFieldsFromCharacteristicFieldsCompute</a> computes evolved fields \(u_\alpha\) in terms of the characteristic fields. This uses the inverse of above relations:</p>
+<p class="formulaDsp">
+\begin{align*} \psi =&amp; v^{\hat \psi}, \\ \Pi =&amp; \frac{1}{2}(v^{\hat +} + v^{\hat -}) + \gamma_2 v^{\hat \psi}, \\ \Phi_{i} =&amp; \frac{1}{2}(v^{\hat +} - v^{\hat -}) n_i + v^{\hat 0}_{i}. \end{align*}
+</p>
+<p>The corresponding characteristic speeds \(\lambda_{\hat \alpha}\) are computed by <a class="el" href="structScalarWave_1_1Tags_1_1CharacteristicSpeedsCompute.html">Tags::CharacteristicSpeedsCompute</a> . </p>
+
+</div>
+</div>
+<a id="afaac9e95d671352d17f1449da4c4085d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afaac9e95d671352d17f1449da4c4085d">&#9670;&nbsp;</a></span>characteristic_fields() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ScalarWave::characteristic_fields </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; tmpl::list&lt; <a class="el" href="structScalarWave_1_1Tags_1_1VPsi.html">Tags::VPsi</a>, <a class="el" href="structScalarWave_1_1Tags_1_1VZero.html">Tags::VZero</a>&lt; Dim &gt;, <a class="el" href="structScalarWave_1_1Tags_1_1VPlus.html">Tags::VPlus</a>, <a class="el" href="structScalarWave_1_1Tags_1_1VMinus.html">Tags::VMinus</a> &gt;&gt; * &gt;&#160;</td>
+          <td class="paramname"><em>char_fields</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>gamma_2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>psi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>pi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>phi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>unit_normal_one_form</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Computes characteristic fields from evolved fields. </p>
+<p><a class="el" href="structScalarWave_1_1Tags_1_1CharacteristicFieldsCompute.html">Tags::CharacteristicFieldsCompute</a> and <a class="el" href="structScalarWave_1_1Tags_1_1EvolvedFieldsFromCharacteristicFieldsCompute.html">Tags::EvolvedFieldsFromCharacteristicFieldsCompute</a> convert between characteristic and evolved fields for the scalar-wave system.</p>
+<p><a class="el" href="structScalarWave_1_1Tags_1_1CharacteristicFieldsCompute.html">Tags::CharacteristicFieldsCompute</a> computes characteristic fields as described in "Optimal constraint projection for
+hyperbolic evolution systems" by Holst et al. <a class="el" href="citelist.html#CITEREF_Holst2004wt">[57]</a> . Their names used here differ from this paper:</p>
+<p class="formulaDsp">
+\begin{align*} \mathrm{SpECTRE} &amp;&amp; \mathrm{Holst} \\ v^{\hat \psi} &amp;&amp; Z^1 \\ v^{\hat 0}_{i} &amp;&amp; Z^{2}_{i} \\ v^{\hat \pm} &amp;&amp; u^{1\pm} \end{align*}
+</p>
+<p>The characteristic fields \({v}^{\hat \alpha}\) are given in terms of the evolved fields by Eq.(33) - (35) of <a class="el" href="citelist.html#CITEREF_Holst2004wt">[57]</a>, respectively:</p>
+<p class="formulaDsp">
+\begin{align*} v^{\hat \psi} =&amp; \psi \\ v^{\hat 0}_{i} =&amp; (\delta^k_i - n_i n^k) \Phi_{k} := P^k_i \Phi_{k} \\ v^{\hat \pm} =&amp; \Pi \pm n^i \Phi_{i} - \gamma_2\psi \end{align*}
+</p>
+<p>where \(\psi\) is the scalar field, \(\Phi_{i}=\partial_i \psi\) is an auxiliary variable, \(\Pi\) is a conjugate momentum, \(\gamma_2\) is a constraint damping parameter, and \(n_k\) is the unit normal to the surface along which the characteristic fields are defined.</p>
+<p><a class="el" href="structScalarWave_1_1Tags_1_1EvolvedFieldsFromCharacteristicFieldsCompute.html">Tags::EvolvedFieldsFromCharacteristicFieldsCompute</a> computes evolved fields \(u_\alpha\) in terms of the characteristic fields. This uses the inverse of above relations:</p>
+<p class="formulaDsp">
+\begin{align*} \psi =&amp; v^{\hat \psi}, \\ \Pi =&amp; \frac{1}{2}(v^{\hat +} + v^{\hat -}) + \gamma_2 v^{\hat \psi}, \\ \Phi_{i} =&amp; \frac{1}{2}(v^{\hat +} - v^{\hat -}) n_i + v^{\hat 0}_{i}. \end{align*}
+</p>
+<p>The corresponding characteristic speeds \(\lambda_{\hat \alpha}\) are computed by <a class="el" href="structScalarWave_1_1Tags_1_1CharacteristicSpeedsCompute.html">Tags::CharacteristicSpeedsCompute</a> . </p>
+
+</div>
+</div>
+<a id="ac617bf4f09463ba2980d802a5b51711f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac617bf4f09463ba2980d802a5b51711f">&#9670;&nbsp;</a></span>characteristic_speeds() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;<a class="el" href="classDataVector.html">DataVector</a>, 4&gt; ScalarWave::characteristic_speeds </td>
+          <td>(</td>
+          <td class="paramtype">const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>unit_normal_one_form</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the characteristic speeds for the scalar wave system. </p>
+<p>Computes the speeds as described in "Optimal constraint projection for
+hyperbolic evolution systems" by Holst et al. <a class="el" href="citelist.html#CITEREF_Holst2004wt">[57]</a> [see text following Eq.(32)]. The characteristic fields' names used here differ from this paper:</p>
+<p class="formulaDsp">
+\begin{align*} \mathrm{SpECTRE} &amp;&amp; \mathrm{Holst} \\ v^{\hat \psi} &amp;&amp; Z^1 \\ v^{\hat 0}_{i} &amp;&amp; Z^{2}_{i} \\ v^{\hat \pm} &amp;&amp; u^{1\pm} \end{align*}
+</p>
+<p>The corresponding characteristic speeds \(\lambda_{\hat \alpha}\) are given in the text following Eq.(38) of <a class="el" href="citelist.html#CITEREF_Holst2004wt">[57]</a> :</p>
+<p class="formulaDsp">
+\begin{align*} \lambda_{\hat \psi} =&amp; 0 \\ \lambda_{\hat 0} =&amp; 0 \\ \lambda_{\hat \pm} =&amp; \pm 1. \end{align*}
+</p>
+ 
+</div>
+</div>
+<a id="aac4a3f322b5e40f603451981d7d47028"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aac4a3f322b5e40f603451981d7d47028">&#9670;&nbsp;</a></span>characteristic_speeds() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ScalarWave::characteristic_speeds </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, 4 &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>char_speeds</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>unit_normal_one_form</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the characteristic speeds for the scalar wave system. </p>
+<p>Computes the speeds as described in "Optimal constraint projection for
+hyperbolic evolution systems" by Holst et al. <a class="el" href="citelist.html#CITEREF_Holst2004wt">[57]</a> [see text following Eq.(32)]. The characteristic fields' names used here differ from this paper:</p>
+<p class="formulaDsp">
+\begin{align*} \mathrm{SpECTRE} &amp;&amp; \mathrm{Holst} \\ v^{\hat \psi} &amp;&amp; Z^1 \\ v^{\hat 0}_{i} &amp;&amp; Z^{2}_{i} \\ v^{\hat \pm} &amp;&amp; u^{1\pm} \end{align*}
+</p>
+<p>The corresponding characteristic speeds \(\lambda_{\hat \alpha}\) are given in the text following Eq.(38) of <a class="el" href="citelist.html#CITEREF_Holst2004wt">[57]</a> :</p>
+<p class="formulaDsp">
+\begin{align*} \lambda_{\hat \psi} =&amp; 0 \\ \lambda_{\hat 0} =&amp; 0 \\ \lambda_{\hat \pm} =&amp; \pm 1. \end{align*}
+</p>
+ 
+</div>
+</div>
+<a id="a634ce9d12597872c756dc0cdc99f5399"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a634ce9d12597872c756dc0cdc99f5399">&#9670;&nbsp;</a></span>evolved_fields_from_characteristic_fields() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variables&lt;tmpl::list&lt;<a class="el" href="structScalarWave_1_1Psi.html">Psi</a>, <a class="el" href="structScalarWave_1_1Pi.html">Pi</a>, <a class="el" href="structScalarWave_1_1Phi.html">Phi</a>&lt;Dim&gt; &gt; &gt; ScalarWave::evolved_fields_from_characteristic_fields </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>gamma_2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>v_psi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>v_zero</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>v_plus</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>v_minus</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>unit_normal_one_form</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute evolved fields from characteristic fields. </p>
+<p>For expressions used here to compute evolved fields from characteristic ones, see <a class="el" href="structScalarWave_1_1Tags_1_1CharacteristicFieldsCompute.html">Tags::CharacteristicFieldsCompute</a>. </p>
+
+</div>
+</div>
+<a id="aa365e2ac1467258420f2a7a9b4c54471"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa365e2ac1467258420f2a7a9b4c54471">&#9670;&nbsp;</a></span>evolved_fields_from_characteristic_fields() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ScalarWave::evolved_fields_from_characteristic_fields </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; tmpl::list&lt; <a class="el" href="structScalarWave_1_1Psi.html">Psi</a>, <a class="el" href="structScalarWave_1_1Pi.html">Pi</a>, <a class="el" href="structScalarWave_1_1Phi.html">Phi</a>&lt; Dim &gt;&gt;&gt; * &gt;&#160;</td>
+          <td class="paramname"><em>evolved_fields</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>gamma_2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>v_psi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>v_zero</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>v_plus</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>v_minus</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>unit_normal_one_form</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute evolved fields from characteristic fields. </p>
+<p>For expressions used here to compute evolved fields from characteristic ones, see <a class="el" href="structScalarWave_1_1Tags_1_1CharacteristicFieldsCompute.html">Tags::CharacteristicFieldsCompute</a>. </p>
+
+</div>
+</div>
+<a id="a9ab4a3ca1432db9aed9dbbdc18cb91a7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9ab4a3ca1432db9aed9dbbdc18cb91a7">&#9670;&nbsp;</a></span>one_index_constraint() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t SpatialDim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">tnsr::i&lt;<a class="el" href="classDataVector.html">DataVector</a>, SpatialDim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt; ScalarWave::one_index_constraint </td>
+          <td>(</td>
+          <td class="paramtype">const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, SpatialDim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>d_psi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, SpatialDim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>phi</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the scalar-wave one-index constraint. </p>
+<h3>Details</h3>
+<p>Computes the scalar-wave one-index constraint, \(C_{i} = \partial_i\psi - \Phi_{i},\) which is given by Eq. (19) of <a class="el" href="citelist.html#CITEREF_Holst2004wt">[57]</a> </p>
+
+</div>
+</div>
+<a id="a0aa553b65f6e0c299cc09a710b19c066"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0aa553b65f6e0c299cc09a710b19c066">&#9670;&nbsp;</a></span>one_index_constraint() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t SpatialDim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ScalarWave::one_index_constraint </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, SpatialDim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>constraint</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, SpatialDim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>d_psi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, SpatialDim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>phi</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the scalar-wave one-index constraint. </p>
+<h3>Details</h3>
+<p>Computes the scalar-wave one-index constraint, \(C_{i} = \partial_i\psi - \Phi_{i},\) which is given by Eq. (19) of <a class="el" href="citelist.html#CITEREF_Holst2004wt">[57]</a> </p>
+
+</div>
+</div>
+<a id="ad6bb71aac3f86b8b1070e1ddaff8f881"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad6bb71aac3f86b8b1070e1ddaff8f881">&#9670;&nbsp;</a></span>two_index_constraint() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t SpatialDim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">tnsr::ij&lt;<a class="el" href="classDataVector.html">DataVector</a>, SpatialDim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt; ScalarWave::two_index_constraint </td>
+          <td>(</td>
+          <td class="paramtype">const tnsr::ij&lt; <a class="el" href="classDataVector.html">DataVector</a>, SpatialDim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>d_phi</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the scalar-wave 2-index constraint. </p>
+<h3>Details</h3>
+<p>Computes the scalar-wave 2-index constraint \(C_{ij} = \partial_i\Phi_j - \partial_j\Phi_i,\) where \(\Phi_{i} = \partial_i\psi\), that is given by Eq. (20) of <a class="el" href="citelist.html#CITEREF_Holst2004wt">[57]</a></p>
+<dl class="section note"><dt>Note</dt><dd>We do not support custom storage for antisymmetric tensors yet. </dd></dl>
+
+</div>
+</div>
+<a id="a4ebaff0bd9a7838f9d95a37381931181"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4ebaff0bd9a7838f9d95a37381931181">&#9670;&nbsp;</a></span>two_index_constraint() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t SpatialDim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ScalarWave::two_index_constraint </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ij&lt; <a class="el" href="classDataVector.html">DataVector</a>, SpatialDim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>constraint</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::ij&lt; <a class="el" href="classDataVector.html">DataVector</a>, SpatialDim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>d_phi</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the scalar-wave 2-index constraint. </p>
+<h3>Details</h3>
+<p>Computes the scalar-wave 2-index constraint \(C_{ij} = \partial_i\Phi_j - \partial_j\Phi_i,\) where \(\Phi_{i} = \partial_i\psi\), that is given by Eq. (20) of <a class="el" href="citelist.html#CITEREF_Holst2004wt">[57]</a></p>
+<dl class="section note"><dt>Note</dt><dd>We do not support custom storage for antisymmetric tensors yet. </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

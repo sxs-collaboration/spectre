@@ -1,0 +1,239 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: SFINAE</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">SFINAE </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><p>SFINAE, Substitution Failure Is Not An Error, means that if a deduced template substitution fails, compilation must continue. This can be exploited to make decisions at compile time. See <a href="http://nilsdeppe.com/posts/tmpl-part1">here</a> for a discussion using <code><a class="elRef" href="http://en.cppreference.com/w/cpp/types/enable_if.html">std::enable_if</a></code> to remove certain functions from overload resolution or certain template specializations from name lookup. Another method of controlling name lookup resolution is using <code><a class="elRef" href="http://en.cppreference.com/w/cpp/types/void_t.html">std::void_t</a></code>. <code>void_t</code> is a metafunction from types to <code>void</code>, that is</p>
+<div class="fragment"><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><span class="keyword">using</span> void_t = void;</div>
+</div><!-- fragment --><p><code>void_t</code> is useful when used in combination with <code>decltype</code> and <code>std::declval</code> to probe if a type has certain members. For example, we can implement a type trait to check if a type <code>T</code> is iterable by first have the general definition inherit from <code><a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::false_type</a></code> as follows,</p>
+<div class="fragment"><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> = <span class="keywordtype">void</span>&gt;</div>
+<div class="line"><span class="keyword">struct </span>is_iterable : <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::false_type</a> {};</div>
+</div><!-- fragment --><p>Next we will have specialization that uses <code>void_t</code> to check if the type <code>T</code> has a <code>begin()</code> and <code>end()</code> function.</p>
+<div class="fragment"><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><span class="keyword">struct </span>is_iterable&lt;T, std::void_t&lt;decltype(std::declval&lt;T&gt;().begin(),</div>
+<div class="line">                                           std::declval&lt;T&gt;().end())&gt;&gt;</div>
+<div class="line">    : <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a> {};</div>
+</div><!-- fragment --><p>What is happening here? Well, we use <code>std::declval</code> to convert the type <code>T</code> to a reference type, which allows us to call member functions inside <code>decltype</code> expressions without having to construct an object. First we try to call the member function <code>begin()</code> on <code>std::declval&lt;T&gt;()</code>, and if that succeeds we throw away the result using the comma operator. Next we try to call <code>end()</code> on <code>std::declval&lt;T&gt;()</code>, which, if it succeeds we get the return type of using <code>decltype</code>. Note that <code>decltype</code> is important because we can only call member functions on reference types inside of <code>decltype</code>, not just anywhere. Finally, if all this succeeded use <code>void_t</code> to metareturn <code>void</code>, otherwise the template parameters of <code>void_t</code> fail to evaluate and the specialization cannot be resolved during name lookup. We could just as well use</p>
+<div class="fragment"><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><span class="keyword">struct </span>is_iterable&lt;T, std::void_t&lt;decltype(std::declval&lt;T&gt;().begin()),</div>
+<div class="line">                                  decltype(std::declval&lt;T&gt;().end())&gt;&gt;</div>
+<div class="line">    : <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a> {};</div>
+</div><!-- fragment --><p>Which of the two implementations of the <code>is_iterable</code> is preferred is simply a matter of taste, both behave correctly.</p>
+<p>If you're reading closely you might wonder why the <code>void_t</code> is necessary at all, why not just <code>decltype(...)</code>? Well the reason is that since the default template parameter metavalue is <code>void</code>, the specialization cannot be resolved during name lookup unless the second template parameter in the specialization is either <code>void</code> as well or is explicitly specified when the class template is being invoked. Thus, the clearest implementation probably is</p>
+<div class="fragment"><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> = std::<span class="keywordtype">void</span>_t&lt;&gt;&gt;</div>
+<div class="line"><span class="keyword">struct </span>is_iterable : <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::false_type</a> {};</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><span class="keyword">struct </span>is_iterable&lt;T, std::void_t&lt;decltype(std::declval&lt;T&gt;().begin(),</div>
+<div class="line">                                           std::declval&lt;T&gt;().end())&gt;&gt;</div>
+<div class="line">    : <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a> {};</div>
+</div><!-- fragment --><p>You could now also define a helper type alias and constexpr boolean</p>
+<div class="fragment"><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><span class="keyword">using</span> <a class="code" href="namespacett.html#a50dbdc0936a2bb38449082f40abfca3d">is_iterable_t</a> = <span class="keyword">typename</span> is_iterable&lt;T&gt;::type;</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line">constexpr <span class="keywordtype">bool</span> <a class="code" href="namespacett.html#a3e2f1dd5f4019eba2f7073205a0a078b">is_iterable_v</a> = is_iterable&lt;T&gt;::value;</div>
+</div><!-- fragment --> </div></div><!-- contents -->
+</div><!-- PageDoc -->
+<div class="ttc" id="aintegral_constant_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::false_type</a></div></div>
+<div class="ttc" id="anamespacett_html_a50dbdc0936a2bb38449082f40abfca3d"><div class="ttname"><a href="namespacett.html#a50dbdc0936a2bb38449082f40abfca3d">tt::is_iterable_t</a></div><div class="ttdeci">typename is_iterable&lt; T &gt;::type is_iterable_t</div><div class="ttdef"><b>Definition:</b> IsIterable.hpp:55</div></div>
+<div class="ttc" id="anamespacett_html_a3e2f1dd5f4019eba2f7073205a0a078b"><div class="ttname"><a href="namespacett.html#a3e2f1dd5f4019eba2f7073205a0a078b">tt::is_iterable_v</a></div><div class="ttdeci">constexpr bool is_iterable_v</div><div class="ttdef"><b>Definition:</b> IsIterable.hpp:51</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

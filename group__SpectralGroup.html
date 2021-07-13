@@ -1,0 +1,850 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Spectral</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">Spectral</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Things related to spectral transformations.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceSpectral_1_1Swsh"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceSpectral_1_1Swsh.html">Spectral::Swsh</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceSpectral_1_1filtering"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceSpectral_1_1filtering.html">Spectral::filtering</a></td></tr>
+<tr class="memdesc:namespaceSpectral_1_1filtering"><td class="mdescLeft">&#160;</td><td class="mdescRight">Matrices for filtering spectral coefficients. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceSpectral"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html">Spectral</a></td></tr>
+<tr class="memdesc:namespaceSpectral"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functionality associated with a particular choice of basis functions and quadrature for spectral operations. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpherepackIterator.html">SpherepackIterator</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Iterates over spectral coefficients stored in SPHEREPACK format.  <a href="classSpherepackIterator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html">YlmSpherepack</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines the C++ interface to SPHEREPACK.  <a href="classYlmSpherepack.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:ga5d3e95021414531f2b911ebc69c52890"><td class="memTemplParams" colspan="2">template&lt;typename DerivativeTagList , ComplexRepresentation Representation = ComplexRepresentation::Interleaved&gt; </td></tr>
+<tr class="memitem:ga5d3e95021414531f2b911ebc69c52890"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SpectralGroup.html#ga5d3e95021414531f2b911ebc69c52890">Spectral::Swsh::AngularDerivatives</a> = detail::AngularDerivativesImpl&lt; DerivativeTagList, typename detail::unique_derived_from_list&lt; DerivativeTagList &gt;::type, Representation &gt;</td></tr>
+<tr class="memdesc:ga5d3e95021414531f2b911ebc69c52890"><td class="mdescLeft">&#160;</td><td class="mdescRight">A <a class="el" href="group__DataBoxGroup.html">DataBox</a> mutate-compatible computational struct for computing a set of spin-weighted spherical harmonic derivatives by grouping and batch-computing spin-weighted spherical harmonic transforms.  <a href="group__SpectralGroup.html#ga5d3e95021414531f2b911ebc69c52890">More...</a><br /></td></tr>
+<tr class="separator:ga5d3e95021414531f2b911ebc69c52890"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:ga37c9c17d05dccca652060d117f72ee21"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__SpectralGroup.html#ga37c9c17d05dccca652060d117f72ee21">Spectral::Basis</a> { <b>Chebyshev</b>, 
+<b>Legendre</b>, 
+<b>FiniteDifference</b>, 
+<b>SphericalHarmonic</b>
+ }</td></tr>
+<tr class="memdesc:ga37c9c17d05dccca652060d117f72ee21"><td class="mdescLeft">&#160;</td><td class="mdescRight">The choice of basis functions for computing collocation points and weights.  <a href="group__SpectralGroup.html#ga37c9c17d05dccca652060d117f72ee21">More...</a><br /></td></tr>
+<tr class="separator:ga37c9c17d05dccca652060d117f72ee21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7744e520f6d553caf358a6f09f5978c1"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__SpectralGroup.html#ga7744e520f6d553caf358a6f09f5978c1">Spectral::Quadrature</a> { <b>Gauss</b>, 
+<b>GaussLobatto</b>, 
+<b>CellCentered</b>, 
+<b>FaceCentered</b>
+ }</td></tr>
+<tr class="memdesc:ga7744e520f6d553caf358a6f09f5978c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">The choice of quadrature method to compute integration weights.  <a href="group__SpectralGroup.html#ga7744e520f6d553caf358a6f09f5978c1">More...</a><br /></td></tr>
+<tr class="separator:ga7744e520f6d553caf358a6f09f5978c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:gab91b7938e592e6e6ae440bd05be162da"><td class="memTemplParams" colspan="2">template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:gab91b7938e592e6e6ae440bd05be162da"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SpectralGroup.html#gab91b7938e592e6e6ae440bd05be162da">Spectral::Swsh::swsh_buffer</a> (const size_t l_max, const size_t number_of_radial_points) noexcept</td></tr>
+<tr class="memdesc:gab91b7938e592e6e6ae440bd05be162da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Produces a <code><a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexModalVector.html" title="A class for storing complex spectral coefficients on a spectral grid.">ComplexModalVector</a>, Spin&gt;</code> of the appropriate size to be used as a modal buffer for <code><a class="el" href="group__SpectralGroup.html#ga5d3e95021414531f2b911ebc69c52890" title="A DataBox mutate-compatible computational struct for computing a set of spin-weighted spherical harmo...">Spectral::Swsh::AngularDerivatives</a></code> or <code><a class="el" href="group__SpectralGroup.html#ga44e6853e7fc2dfae35ed592045f91750" title="Evaluate all of the spin-weighted derivatives in DerivKindList on input SpinWeighted&lt;ComplexDataVecto...">Spectral::Swsh::angular_derivatives</a></code>.  <a href="group__SpectralGroup.html#gab91b7938e592e6e6ae440bd05be162da">More...</a><br /></td></tr>
+<tr class="separator:gab91b7938e592e6e6ae440bd05be162da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga44e6853e7fc2dfae35ed592045f91750"><td class="memTemplParams" colspan="2">template&lt;typename DerivativeKindList , ComplexRepresentation Representation = ComplexRepresentation::Interleaved, typename... ArgumentTypes&gt; </td></tr>
+<tr class="memitem:ga44e6853e7fc2dfae35ed592045f91750"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SpectralGroup.html#ga44e6853e7fc2dfae35ed592045f91750">Spectral::Swsh::angular_derivatives</a> (const size_t l_max, const size_t number_of_radial_points, const ArgumentTypes &amp;... arguments) noexcept</td></tr>
+<tr class="memdesc:ga44e6853e7fc2dfae35ed592045f91750"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate all of the spin-weighted derivatives in <code>DerivKindList</code> on input <code><a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexDataVector.html" title="Stores a collection of complex function values.">ComplexDataVector</a>, Spin&gt;</code> collocation data, returning by pointer.  <a href="group__SpectralGroup.html#ga44e6853e7fc2dfae35ed592045f91750">More...</a><br /></td></tr>
+<tr class="separator:ga44e6853e7fc2dfae35ed592045f91750"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2e34e5c858b4ff548acb3b4a8ea40eaa"><td class="memTemplParams" colspan="2"><a id="ga2e34e5c858b4ff548acb3b4a8ea40eaa"></a>
+template&lt;typename DerivKind , ComplexRepresentation Representation = ComplexRepresentation::Interleaved, int Spin&gt; </td></tr>
+<tr class="memitem:ga2e34e5c858b4ff548acb3b4a8ea40eaa"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Tags::derivative_spin_weight&lt; DerivKind &gt;+Spin &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SpectralGroup.html#ga2e34e5c858b4ff548acb3b4a8ea40eaa">Spectral::Swsh::angular_derivative</a> (size_t l_max, size_t number_of_radial_points, const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; &amp;to_differentiate) noexcept</td></tr>
+<tr class="memdesc:ga2e34e5c858b4ff548acb3b4a8ea40eaa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate the spin-weighted derivative <code>DerivKind</code> on the provided <code><a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexDataVector.html" title="Stores a collection of complex function values.">ComplexDataVector</a>, Spin&gt;</code> collocation data, returning by value. <br /></td></tr>
+<tr class="separator:ga2e34e5c858b4ff548acb3b4a8ea40eaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga724a4f13046d9d0a04ecad5f7c9178cc"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:ga724a4f13046d9d0a04ecad5f7c9178cc"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SpectralGroup.html#ga724a4f13046d9d0a04ecad5f7c9178cc">to_modal_coefficients</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a> * &gt; modal_coefficients, const <a class="el" href="classComplexDataVector.html">ComplexDataVector</a> &amp;nodal_coefficients, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:ga724a4f13046d9d0a04ecad5f7c9178cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the modal coefficients from the nodal coefficients.  <a href="group__SpectralGroup.html#ga724a4f13046d9d0a04ecad5f7c9178cc">More...</a><br /></td></tr>
+<tr class="separator:ga724a4f13046d9d0a04ecad5f7c9178cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga28d05d9b4de78572606f0e01b8ae5159"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:ga28d05d9b4de78572606f0e01b8ae5159"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SpectralGroup.html#ga28d05d9b4de78572606f0e01b8ae5159">to_modal_coefficients</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classModalVector.html">ModalVector</a> * &gt; modal_coefficients, const <a class="el" href="classDataVector.html">DataVector</a> &amp;nodal_coefficients, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:ga28d05d9b4de78572606f0e01b8ae5159"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the modal coefficients from the nodal coefficients.  <a href="group__SpectralGroup.html#ga28d05d9b4de78572606f0e01b8ae5159">More...</a><br /></td></tr>
+<tr class="separator:ga28d05d9b4de78572606f0e01b8ae5159"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga84e8187184ac3d64dafcacf388f9ad7c"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:ga84e8187184ac3d64dafcacf388f9ad7c"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classModalVector.html">ModalVector</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SpectralGroup.html#ga84e8187184ac3d64dafcacf388f9ad7c">to_modal_coefficients</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;nodal_coefficients, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:ga84e8187184ac3d64dafcacf388f9ad7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the modal coefficients from the nodal coefficients.  <a href="group__SpectralGroup.html#ga84e8187184ac3d64dafcacf388f9ad7c">More...</a><br /></td></tr>
+<tr class="separator:ga84e8187184ac3d64dafcacf388f9ad7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac1fd19ab7313e23df5adda60fd50ca11"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:gac1fd19ab7313e23df5adda60fd50ca11"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classComplexModalVector.html">ComplexModalVector</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SpectralGroup.html#gac1fd19ab7313e23df5adda60fd50ca11">to_modal_coefficients</a> (const <a class="el" href="classComplexDataVector.html">ComplexDataVector</a> &amp;nodal_coefficients, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:gac1fd19ab7313e23df5adda60fd50ca11"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the modal coefficients from the nodal coefficients.  <a href="group__SpectralGroup.html#gac1fd19ab7313e23df5adda60fd50ca11">More...</a><br /></td></tr>
+<tr class="separator:gac1fd19ab7313e23df5adda60fd50ca11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac31ae00ea8a1783a9847a5720bf9a695"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:gac31ae00ea8a1783a9847a5720bf9a695"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SpectralGroup.html#gac31ae00ea8a1783a9847a5720bf9a695">to_nodal_coefficients</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a> * &gt; nodal_coefficients, const <a class="el" href="classComplexModalVector.html">ComplexModalVector</a> &amp;modal_coefficients, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:gac31ae00ea8a1783a9847a5720bf9a695"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the nodal coefficients from the modal coefficients.  <a href="group__SpectralGroup.html#gac31ae00ea8a1783a9847a5720bf9a695">More...</a><br /></td></tr>
+<tr class="separator:gac31ae00ea8a1783a9847a5720bf9a695"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga928ce25650289ebc4bdc11db58a16b03"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:ga928ce25650289ebc4bdc11db58a16b03"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SpectralGroup.html#ga928ce25650289ebc4bdc11db58a16b03">to_nodal_coefficients</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt; nodal_coefficients, const <a class="el" href="classModalVector.html">ModalVector</a> &amp;modal_coefficients, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:ga928ce25650289ebc4bdc11db58a16b03"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the nodal coefficients from the modal coefficients.  <a href="group__SpectralGroup.html#ga928ce25650289ebc4bdc11db58a16b03">More...</a><br /></td></tr>
+<tr class="separator:ga928ce25650289ebc4bdc11db58a16b03"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadfee7dc04620106a922abe4c52ef3169"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:gadfee7dc04620106a922abe4c52ef3169"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classDataVector.html">DataVector</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SpectralGroup.html#gadfee7dc04620106a922abe4c52ef3169">to_nodal_coefficients</a> (const <a class="el" href="classModalVector.html">ModalVector</a> &amp;modal_coefficients, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:gadfee7dc04620106a922abe4c52ef3169"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the nodal coefficients from the modal coefficients.  <a href="group__SpectralGroup.html#gadfee7dc04620106a922abe4c52ef3169">More...</a><br /></td></tr>
+<tr class="separator:gadfee7dc04620106a922abe4c52ef3169"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1e66b9e4c2d7d487990cbbc55815b074"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:ga1e66b9e4c2d7d487990cbbc55815b074"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classComplexDataVector.html">ComplexDataVector</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__SpectralGroup.html#ga1e66b9e4c2d7d487990cbbc55815b074">to_nodal_coefficients</a> (const <a class="el" href="classComplexModalVector.html">ComplexModalVector</a> &amp;modal_coefficients, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:ga1e66b9e4c2d7d487990cbbc55815b074"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the nodal coefficients from the modal coefficients.  <a href="group__SpectralGroup.html#ga1e66b9e4c2d7d487990cbbc55815b074">More...</a><br /></td></tr>
+<tr class="separator:ga1e66b9e4c2d7d487990cbbc55815b074"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>Things related to spectral transformations. </p>
+<h2 class="groupheader">Typedef Documentation</h2>
+<a id="ga5d3e95021414531f2b911ebc69c52890"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5d3e95021414531f2b911ebc69c52890">&#9670;&nbsp;</a></span>AngularDerivatives</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DerivativeTagList , ComplexRepresentation Representation = ComplexRepresentation::Interleaved&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__SpectralGroup.html#ga5d3e95021414531f2b911ebc69c52890">Spectral::Swsh::AngularDerivatives</a> = typedef detail::AngularDerivativesImpl&lt; DerivativeTagList, typename detail::unique_derived_from_list&lt;DerivativeTagList&gt;::type, Representation&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A <a class="el" href="group__DataBoxGroup.html">DataBox</a> mutate-compatible computational struct for computing a set of spin-weighted spherical harmonic derivatives by grouping and batch-computing spin-weighted spherical harmonic transforms. </p>
+<h3>Details</h3>
+<p>A derivative is evaluated for each tag in <code>DerivativeTagList</code>. All entries in <code>DerivativeTagList</code> must be the tag <code><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html" title="Prefix tag representing the spin-weighted derivative of a spin-weighted scalar.">Spectral::Swsh::Tags::Derivative</a>&lt;Tag, DerivativeKind&gt;</code> prefixing the <code>Tag</code> to be differentiated, and indicating the spin-weighted derivative <code>DerivativeKind</code> to be taken. A <a class="el" href="group__DataBoxGroup.html">DataBox</a> on which this struct is invoked must contain:</p><ul>
+<li>each of the tags in <code>DerivativeTagList</code> (the results of the computation)</li>
+<li>each of the tags <code>Tag</code> prefixed by <code><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html" title="Prefix tag representing the spin-weighted derivative of a spin-weighted scalar.">Spectral::Swsh::Tags::Derivative</a></code> in <code>DerivativeTagList</code> (the inputs of the computation).</li>
+<li>each of the tags <code><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1SwshTransform.html" title="Prefix tag representing the spin-weighted spherical harmonic transform of a spin-weighted scalar.">Spectral::Swsh::Tags::SwshTransform</a>&lt;DerivativeTag&gt;</code> for <code>DerivativeTag</code>in <code>DerivativeTagList</code> (the buffers for the derivative applied to the modes)</li>
+<li>each of the tags <code><a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1SwshTransform.html" title="Prefix tag representing the spin-weighted spherical harmonic transform of a spin-weighted scalar.">Spectral::Swsh::Tags::SwshTransform</a>&lt;Tag&gt;</code> for <code>Tag</code> prefixed by any <code>DerivativeTag</code> in <code>DerivativeTagList</code> (the buffers for the transforms of the input data).</li>
+</ul>
+<p>This function optimizes the derivative taking process by clustering like spins of tags, forward-transforming each spin cluster together, applying the factor for the derivative to each modal vector, re-clustering according to the new spin weights (the derivatives alter the spin weights), and finally inverse-transforming in clusters. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="ga37c9c17d05dccca652060d117f72ee21"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga37c9c17d05dccca652060d117f72ee21">&#9670;&nbsp;</a></span>Basis</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="group__SpectralGroup.html#ga37c9c17d05dccca652060d117f72ee21">Spectral::Basis</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The choice of basis functions for computing collocation points and weights. </p>
+<h3>Details</h3>
+<p>Choose <code>Legendre</code> for a general-purpose DG mesh, unless you have a particular reason for choosing another basis.</p>
+<dl class="section warning"><dt>Warning</dt><dd>The <code>FiniteDifference</code> "basis" is used to denote that only the collocation points are defined, but that differentiation, integration, and interpolation schemes are to be chosen locally wherever a <code>FiniteDifference</code> mesh is being used. The reason is that there isn't a requirement that the basis and collocation point locations are at all related to the differentiation, integration, or interpolation methods - it is merely a convenient choice in a lot of cases. For <code>FiniteDifference</code> we need to choose the order of the scheme (and hence the weights, differentiation matrix, integration weights, and interpolant) locally in space and time to handle discontinuous solutions, hence none of those are defined for the <code>FiniteDifference</code> basis. </dd></dl>
+
+</div>
+</div>
+<a id="ga7744e520f6d553caf358a6f09f5978c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7744e520f6d553caf358a6f09f5978c1">&#9670;&nbsp;</a></span>Quadrature</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="group__SpectralGroup.html#ga7744e520f6d553caf358a6f09f5978c1">Spectral::Quadrature</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The choice of quadrature method to compute integration weights. </p>
+<h3>Details</h3>
+<p>Integrals using \(N\) collocation points with Gauss quadrature are exact to polynomial order \(p=2N-1\). Gauss-Lobatto quadrature is exact only to polynomial order \(p=2N-3\), but includes collocation points at the domain boundary.</p>
+<dl class="section warning"><dt>Warning</dt><dd><code>CellCentered</code> and <code>FaceCentered</code> are intended to be used with the <code>FiniteDifference</code> basis (though in principle they could be used with any basis), and thus do not implement differentiation matrices, integration weights, and interpolation matrices. </dd></dl>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="ga44e6853e7fc2dfae35ed592045f91750"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga44e6853e7fc2dfae35ed592045f91750">&#9670;&nbsp;</a></span>angular_derivatives()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DerivativeKindList , ComplexRepresentation Representation = ComplexRepresentation::Interleaved, typename... ArgumentTypes&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Spectral::Swsh::angular_derivatives </td>
+          <td>(</td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>number_of_radial_points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const ArgumentTypes &amp;...&#160;</td>
+          <td class="paramname"><em>arguments</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Evaluate all of the spin-weighted derivatives in <code>DerivKindList</code> on input <code><a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexDataVector.html" title="Stores a collection of complex function values.">ComplexDataVector</a>, Spin&gt;</code> collocation data, returning by pointer. </p>
+<h3>Details</h3>
+<p>This function provides two interfaces, one in which the caller provides the intermediate coefficient buffers needed during the computation of the derivatives, and one in which those buffers are temporarily allocated during the derivative function calls.</p>
+<p>For the interface in which the caller does not provide buffers, the arguments must take the following structure (enforced by internal function calls):</p>
+<ul>
+<li><code>size_t l_max</code> : angular resolution for the spherical representation</li>
+<li><code>size_t number_of_radial_points</code> : radial resolution (number of consecutive blocks to evaluate derivatives, for each input vector )</li>
+<li>for each <code>DerivKind</code> in <code>DerivKindList</code>, a <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a>&lt;<a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexDataVector.html" title="Stores a collection of complex function values.">ComplexDataVector</a>, Spin + Tags::derivative_spin_weight&lt;DerivKind&gt;&gt;&gt;</code> : the output of the derivative evaluation</li>
+<li>for each <code>DerivKind</code> in <code>DerivKindList</code>, a <code>const <a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexDataVector.html" title="Stores a collection of complex function values.">ComplexDataVector</a>, Spin&gt;&amp;</code> (where the <code>Spin</code> for these arguments matches the corresponding vector from the previous set) : the input to the derivative evaluation.</li>
+</ul>
+<p>For the interface in which the caller does provide buffers, the arguments must take the following structure (enforced by internal function calls):</p>
+<ul>
+<li><code>size_t l_max</code> : angular resolution for the spherical representation</li>
+<li><code>size_t number_of_radial_points</code> : radial resolution (number of consecutive blocks to evaluate derivatives, for each input vector )</li>
+<li>for each <code>DerivKind</code> in <code>DerivKindList</code>, a <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a>&lt;<a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexModalVector.html" title="A class for storing complex spectral coefficients on a spectral grid.">ComplexModalVector</a>, Spin + Tags::derivative_spin_weight&lt;DerivKind&gt;&gt;&gt;</code> : the buffer for the spin-weighted spherical harmonic modes of the derivative quantities.</li>
+<li>for each <code>DerivKind</code> in <code>DerivKindList</code>, a <code>const <a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexModalVector.html" title="A class for storing complex spectral coefficients on a spectral grid.">ComplexModalVector</a>, Spin&gt;</code> (where the <code>Spin</code> for these arguments matches the corresponding vector from the previous set) : the buffer for the spin-weighted spherical harmonic modes of the input quantities.</li>
+<li>for each <code>DerivKind</code> in <code>DerivKindList</code>, a <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a>&lt;<a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexDataVector.html" title="Stores a collection of complex function values.">ComplexDataVector</a>, Spin + Tags::derivative_spin_weight&lt;DerivKind&gt;&gt;&gt;</code> : the output of the derivative evaluation</li>
+<li>for each <code>DerivKind</code> in <code>DerivKindList</code>, a <code>const <a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexDataVector.html" title="Stores a collection of complex function values.">ComplexDataVector</a>, Spin&gt;</code> (where the <code>Spin</code> for these arguments matches the corresponding vector from the previous set) : the input to the derivative evaluation.</li>
+</ul>
+<p>The function <code>swsh_buffer</code> assists in generating the modal buffers of appropriate size. </p>
+
+</div>
+</div>
+<a id="gab91b7938e592e6e6ae440bd05be162da"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab91b7938e592e6e6ae440bd05be162da">&#9670;&nbsp;</a></span>swsh_buffer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto Spectral::Swsh::swsh_buffer </td>
+          <td>(</td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>number_of_radial_points</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Produces a <code><a class="el" href="structSpinWeighted.html" title="Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...">SpinWeighted</a>&lt;<a class="el" href="classComplexModalVector.html" title="A class for storing complex spectral coefficients on a spectral grid.">ComplexModalVector</a>, Spin&gt;</code> of the appropriate size to be used as a modal buffer for <code><a class="el" href="group__SpectralGroup.html#ga5d3e95021414531f2b911ebc69c52890" title="A DataBox mutate-compatible computational struct for computing a set of spin-weighted spherical harmo...">Spectral::Swsh::AngularDerivatives</a></code> or <code><a class="el" href="group__SpectralGroup.html#ga44e6853e7fc2dfae35ed592045f91750" title="Evaluate all of the spin-weighted derivatives in DerivKindList on input SpinWeighted&lt;ComplexDataVecto...">Spectral::Swsh::angular_derivatives</a></code>. </p>
+<h3>Details</h3>
+<p>The <code><a class="el" href="group__SpectralGroup.html#ga44e6853e7fc2dfae35ed592045f91750" title="Evaluate all of the spin-weighted derivatives in DerivKindList on input SpinWeighted&lt;ComplexDataVecto...">Spectral::Swsh::angular_derivatives</a></code> and <code><a class="el" href="group__SpectralGroup.html#ga5d3e95021414531f2b911ebc69c52890" title="A DataBox mutate-compatible computational struct for computing a set of spin-weighted spherical harmo...">Spectral::Swsh::AngularDerivatives</a></code> interfaces require that calling code provides a buffer for the intermediate transform results, to ensure that callers are aware of the allocations and can suitably reuse buffers if possible. This utility eases the creation of those buffers. </p>
+
+</div>
+</div>
+<a id="gac1fd19ab7313e23df5adda60fd50ca11"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac1fd19ab7313e23df5adda60fd50ca11">&#9670;&nbsp;</a></span>to_modal_coefficients() <span class="overload">[1/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classComplexModalVector.html">ComplexModalVector</a> to_modal_coefficients </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classComplexDataVector.html">ComplexDataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>nodal_coefficients</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mesh</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the modal coefficients from the nodal coefficients. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="namespaceSpectral.html#a690676a766e2de8b0a2cc1d29aa25888" title="Matrix used to transform from the nodal coefficients of a function to its spectral coefficients (mode...">Spectral::nodal_to_modal_matrix</a> </dd></dl>
+
+</div>
+</div>
+<a id="ga84e8187184ac3d64dafcacf388f9ad7c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga84e8187184ac3d64dafcacf388f9ad7c">&#9670;&nbsp;</a></span>to_modal_coefficients() <span class="overload">[2/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classModalVector.html">ModalVector</a> to_modal_coefficients </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>nodal_coefficients</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mesh</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the modal coefficients from the nodal coefficients. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="namespaceSpectral.html#a690676a766e2de8b0a2cc1d29aa25888" title="Matrix used to transform from the nodal coefficients of a function to its spectral coefficients (mode...">Spectral::nodal_to_modal_matrix</a> </dd></dl>
+
+</div>
+</div>
+<a id="ga724a4f13046d9d0a04ecad5f7c9178cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga724a4f13046d9d0a04ecad5f7c9178cc">&#9670;&nbsp;</a></span>to_modal_coefficients() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void to_modal_coefficients </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a> * &gt;&#160;</td>
+          <td class="paramname"><em>modal_coefficients</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classComplexDataVector.html">ComplexDataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>nodal_coefficients</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mesh</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the modal coefficients from the nodal coefficients. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="namespaceSpectral.html#a690676a766e2de8b0a2cc1d29aa25888" title="Matrix used to transform from the nodal coefficients of a function to its spectral coefficients (mode...">Spectral::nodal_to_modal_matrix</a> </dd></dl>
+
+</div>
+</div>
+<a id="ga28d05d9b4de78572606f0e01b8ae5159"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga28d05d9b4de78572606f0e01b8ae5159">&#9670;&nbsp;</a></span>to_modal_coefficients() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void to_modal_coefficients </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classModalVector.html">ModalVector</a> * &gt;&#160;</td>
+          <td class="paramname"><em>modal_coefficients</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>nodal_coefficients</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mesh</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the modal coefficients from the nodal coefficients. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="namespaceSpectral.html#a690676a766e2de8b0a2cc1d29aa25888" title="Matrix used to transform from the nodal coefficients of a function to its spectral coefficients (mode...">Spectral::nodal_to_modal_matrix</a> </dd></dl>
+
+</div>
+</div>
+<a id="ga1e66b9e4c2d7d487990cbbc55815b074"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga1e66b9e4c2d7d487990cbbc55815b074">&#9670;&nbsp;</a></span>to_nodal_coefficients() <span class="overload">[1/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classComplexDataVector.html">ComplexDataVector</a> to_nodal_coefficients </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classComplexModalVector.html">ComplexModalVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>modal_coefficients</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mesh</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the nodal coefficients from the modal coefficients. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="namespaceSpectral.html#aec4515583e06fd661630abf433049473" title="Matrix used to transform from the spectral coefficients (modes) of a function to its nodal coefficien...">Spectral::modal_to_nodal_matrix</a> </dd></dl>
+
+</div>
+</div>
+<a id="gadfee7dc04620106a922abe4c52ef3169"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadfee7dc04620106a922abe4c52ef3169">&#9670;&nbsp;</a></span>to_nodal_coefficients() <span class="overload">[2/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classDataVector.html">DataVector</a> to_nodal_coefficients </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classModalVector.html">ModalVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>modal_coefficients</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mesh</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the nodal coefficients from the modal coefficients. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="namespaceSpectral.html#aec4515583e06fd661630abf433049473" title="Matrix used to transform from the spectral coefficients (modes) of a function to its nodal coefficien...">Spectral::modal_to_nodal_matrix</a> </dd></dl>
+
+</div>
+</div>
+<a id="gac31ae00ea8a1783a9847a5720bf9a695"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac31ae00ea8a1783a9847a5720bf9a695">&#9670;&nbsp;</a></span>to_nodal_coefficients() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void to_nodal_coefficients </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a> * &gt;&#160;</td>
+          <td class="paramname"><em>nodal_coefficients</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classComplexModalVector.html">ComplexModalVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>modal_coefficients</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mesh</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the nodal coefficients from the modal coefficients. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="namespaceSpectral.html#aec4515583e06fd661630abf433049473" title="Matrix used to transform from the spectral coefficients (modes) of a function to its nodal coefficien...">Spectral::modal_to_nodal_matrix</a> </dd></dl>
+
+</div>
+</div>
+<a id="ga928ce25650289ebc4bdc11db58a16b03"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga928ce25650289ebc4bdc11db58a16b03">&#9670;&nbsp;</a></span>to_nodal_coefficients() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void to_nodal_coefficients </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt;&#160;</td>
+          <td class="paramname"><em>nodal_coefficients</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classModalVector.html">ModalVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>modal_coefficients</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mesh</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the nodal coefficients from the modal coefficients. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="namespaceSpectral.html#aec4515583e06fd661630abf433049473" title="Matrix used to transform from the spectral coefficients (modes) of a function to its nodal coefficien...">Spectral::modal_to_nodal_matrix</a> </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

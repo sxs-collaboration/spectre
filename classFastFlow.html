@@ -1,0 +1,361 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: FastFlow Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classFastFlow-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">FastFlow Class Reference<div class="ingroups"><a class="el" href="group__SurfacesGroup.html">Surfaces</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Fast flow method for finding apparent horizons.  
+ <a href="classFastFlow.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="FastFlow_8hpp_source.html">FastFlow.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structFastFlow_1_1AbsTol.html">AbsTol</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structFastFlow_1_1Alpha.html">Alpha</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structFastFlow_1_1Beta.html">Beta</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structFastFlow_1_1DivergenceIter.html">DivergenceIter</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structFastFlow_1_1DivergenceTol.html">DivergenceTol</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structFastFlow_1_1Flow.html">Flow</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structFastFlow_1_1IterInfo.html">IterInfo</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds information about an iteration of the algorithm.  <a href="structFastFlow_1_1IterInfo.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structFastFlow_1_1MaxIts.html">MaxIts</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structFastFlow_1_1TruncationTol.html">TruncationTol</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a189b3d4603b6780631725c4cfd9f108e"><td class="memItemLeft" align="right" valign="top"><a id="a189b3d4603b6780631725c4cfd9f108e"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>FlowType</b> { <b>Jacobi</b>, 
+<b>Curvature</b>, 
+<b>Fast</b>
+ }</td></tr>
+<tr class="separator:a189b3d4603b6780631725c4cfd9f108e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5258e3db6d615418611bd07beeb236f4"><td class="memItemLeft" align="right" valign="top"><a id="a5258e3db6d615418611bd07beeb236f4"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>Status</b> { <br />
+&#160;&#160;<b>SuccessfulIteration</b> = 0, 
+<b>AbsTol</b> = 1, 
+<b>TruncationTol</b> = 2, 
+<b>MaxIts</b> = -1, 
+<br />
+&#160;&#160;<b>NegativeRadius</b> = -2, 
+<b>DivergenceError</b> = -3, 
+<b>InterpolationFailure</b> = -4
+<br />
+ }</td></tr>
+<tr class="separator:a5258e3db6d615418611bd07beeb236f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90cbe026c2338f204f6626d973252860"><td class="memItemLeft" align="right" valign="top"><a id="a90cbe026c2338f204f6626d973252860"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structFastFlow_1_1Flow.html">Flow</a>, <a class="el" href="structFastFlow_1_1Alpha.html">Alpha</a>, <a class="el" href="structFastFlow_1_1Beta.html">Beta</a>, <a class="el" href="structFastFlow_1_1AbsTol.html">AbsTol</a>, <a class="el" href="structFastFlow_1_1TruncationTol.html">TruncationTol</a>, <a class="el" href="structFastFlow_1_1DivergenceTol.html">DivergenceTol</a>, <a class="el" href="structFastFlow_1_1DivergenceIter.html">DivergenceIter</a>, <a class="el" href="structFastFlow_1_1MaxIts.html">MaxIts</a> &gt;</td></tr>
+<tr class="separator:a90cbe026c2338f204f6626d973252860"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a72256413225ecb6a30f14123e8389a2c"><td class="memItemLeft" align="right" valign="top"><a id="a72256413225ecb6a30f14123e8389a2c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FastFlow</b> (Flow::type flow, Alpha::type alpha, Beta::type beta, AbsTol::type abs_tol, TruncationTol::type trunc_tol, DivergenceTol::type divergence_tol, DivergenceIter::type divergence_iter, MaxIts::type max_its) noexcept</td></tr>
+<tr class="separator:a72256413225ecb6a30f14123e8389a2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5122fa71bea3dd651ba1c8cb9b4635d6"><td class="memItemLeft" align="right" valign="top"><a id="a5122fa71bea3dd651ba1c8cb9b4635d6"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FastFlow</b> (const <a class="el" href="classFastFlow.html">FastFlow</a> &amp;)=default</td></tr>
+<tr class="separator:a5122fa71bea3dd651ba1c8cb9b4635d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a961c7fc2b2dc66c6aa920d6f3333decf"><td class="memItemLeft" align="right" valign="top"><a id="a961c7fc2b2dc66c6aa920d6f3333decf"></a>
+<a class="el" href="classFastFlow.html">FastFlow</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classFastFlow.html">FastFlow</a> &amp;)=default</td></tr>
+<tr class="separator:a961c7fc2b2dc66c6aa920d6f3333decf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26827676ce5195945be70393324461a3"><td class="memItemLeft" align="right" valign="top"><a id="a26827676ce5195945be70393324461a3"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FastFlow</b> (<a class="el" href="classFastFlow.html">FastFlow</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a26827676ce5195945be70393324461a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f20c32813156b150fc31e10a9343538"><td class="memItemLeft" align="right" valign="top"><a id="a1f20c32813156b150fc31e10a9343538"></a>
+<a class="el" href="classFastFlow.html">FastFlow</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classFastFlow.html">FastFlow</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a1f20c32813156b150fc31e10a9343538"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad882a8369c671a7c56689be370b1d3eb"><td class="memItemLeft" align="right" valign="top"><a id="ad882a8369c671a7c56689be370b1d3eb"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:ad882a8369c671a7c56689be370b1d3eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e249039af776e66ab769b0355bf4e57"><td class="memTemplParams" colspan="2"><a id="a2e249039af776e66ab769b0355bf4e57"></a>
+template&lt;typename Frame &gt; </td></tr>
+<tr class="memitem:a2e249039af776e66ab769b0355bf4e57"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; Status, <a class="el" href="structFastFlow_1_1IterInfo.html">IterInfo</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classFastFlow.html#a2e249039af776e66ab769b0355bf4e57">iterate_horizon_finder</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classStrahlkorper.html">Strahlkorper</a>&lt; Frame &gt; * &gt; current_strahlkorper, const tnsr::II&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, Frame &gt; &amp;upper_spatial_metric, const tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, Frame &gt; &amp;extrinsic_curvature, const tnsr::Ijj&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, Frame &gt; &amp;christoffel_2nd_kind) noexcept</td></tr>
+<tr class="memdesc:a2e249039af776e66ab769b0355bf4e57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate residuals and compute the next iteration. If Status==SuccessfulIteration, then <code>current_strahlkorper</code> is modified and <code>current_iteration()</code> is incremented. Otherwise, we end with success or failure, and neither <code>current_strahlkorper</code> nor <code>current_iteration()</code> is changed. <br /></td></tr>
+<tr class="separator:a2e249039af776e66ab769b0355bf4e57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0f325e9da89a3217381eedf3079dc75b"><td class="memItemLeft" align="right" valign="top"><a id="a0f325e9da89a3217381eedf3079dc75b"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>current_iteration</b> () const noexcept</td></tr>
+<tr class="separator:a0f325e9da89a3217381eedf3079dc75b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50fa680a50814e179ea42b911ea3e09b"><td class="memTemplParams" colspan="2"><a id="a50fa680a50814e179ea42b911ea3e09b"></a>
+template&lt;typename Frame &gt; </td></tr>
+<tr class="memitem:a50fa680a50814e179ea42b911ea3e09b"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classFastFlow.html#a50fa680a50814e179ea42b911ea3e09b">current_l_mesh</a> (const <a class="el" href="classStrahlkorper.html">Strahlkorper</a>&lt; Frame &gt; &amp;strahlkorper) const noexcept</td></tr>
+<tr class="memdesc:a50fa680a50814e179ea42b911ea3e09b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a <a class="el" href="classStrahlkorper.html" title="A star-shaped surface expanded in spherical harmonics.">Strahlkorper</a> defined up to some maximum Y_lm l called l_surface, returns a larger value of l, l_mesh, that is used for evaluating convergence. <br /></td></tr>
+<tr class="separator:a50fa680a50814e179ea42b911ea3e09b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae74c8f3f6540623c05a7861bf89f8b6b"><td class="memItemLeft" align="right" valign="top"><a id="ae74c8f3f6540623c05a7861bf89f8b6b"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFastFlow.html#ae74c8f3f6540623c05a7861bf89f8b6b">reset_for_next_find</a> () noexcept</td></tr>
+<tr class="memdesc:ae74c8f3f6540623c05a7861bf89f8b6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resets the finder. <br /></td></tr>
+<tr class="separator:ae74c8f3f6540623c05a7861bf89f8b6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a6cb96b2284cb08adf956e350b9bb5de3"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a6cb96b2284cb08adf956e350b9bb5de3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a6629c74153aaf0179be09cdd04af9f86"><td class="memItemLeft" align="right" valign="top"><a id="a6629c74153aaf0179be09cdd04af9f86"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classFastFlow.html">FastFlow</a> &amp;, const <a class="el" href="classFastFlow.html">FastFlow</a> &amp;) noexcept</td></tr>
+<tr class="separator:a6629c74153aaf0179be09cdd04af9f86"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Fast flow method for finding apparent horizons. </p>
+<h3>Details</h3>
+<p>Based on <a class="el" href="citelist.html#CITEREF_Gundlach1997us">[49]</a>. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a6cb96b2284cb08adf956e350b9bb5de3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6cb96b2284cb08adf956e350b9bb5de3">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> FastFlow::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      <span class="stringliteral">&quot;Find a Strahlkorper using a &#39;fast flow&#39; method.\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;Based on Gundlach, PRD 57, 863 (1998).\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;Expands the surface in terms of spherical harmonics Y_lm up to a given\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;l_surface, and varies the coefficients S_lm where 0&lt;=l&lt;=l_surface to\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;minimize the residual of the apparent horizon equation.  Also keeps\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;another representation of the surface that is expanded up to\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;l_mesh &gt; l_surface.  Let R_{Y_lm} be the residual computed using the\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;surface represented up to l_surface; this residual can in principle be\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;lowered to machine roundoff by enough iterations. Let R_{mesh} be the\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;residual computed using the surface represented up to l_mesh; this\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;residual represents the truncation error, since l_mesh&gt;l_surface and\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;since coefficients S_lm with l&gt;l_surface are not modified in the\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;iteration.\n\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;Convergence is achieved if R_{Y_lm}&lt; TruncationTol*R_{mesh}, or if\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;R_{Y_lm}&lt;AbsTol, where TruncationTol and AbsTol are input parameters.\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;If instead |R_{mesh}|_i &gt; DivergenceTol * min_{j}(|R_{mesh}|_j) where\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;i is the iteration index and j runs from 0 to i-DivergenceIter, then\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;FastFlow exits with Status::DivergenceError.  Here DivergenceIter and\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;DivergenceTol are input parameters.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/ApparentHorizons/<a class="el" href="FastFlow_8hpp_source.html">FastFlow.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

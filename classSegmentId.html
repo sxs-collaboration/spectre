@@ -1,0 +1,289 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: SegmentId Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classSegmentId-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">SegmentId Class Reference<div class="ingroups"><a class="el" href="group__ComputationalDomainGroup.html">Computational Domain</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A <a class="el" href="classSegmentId.html" title="A SegmentId labels a segment of the interval [-1,1] and is used to identify the bounds of an Element ...">SegmentId</a> labels a segment of the interval [-1,1] and is used to identify the bounds of an <a class="el" href="classElement.html">Element</a> in a <a class="el" href="classBlock.html">Block</a> in each dimension.  
+ <a href="classSegmentId.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="SegmentId_8hpp_source.html">SegmentId.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a79c472f7bcf44fdb196429703cd4a97b"><td class="memItemLeft" align="right" valign="top"><a id="a79c472f7bcf44fdb196429703cd4a97b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSegmentId.html#a79c472f7bcf44fdb196429703cd4a97b">SegmentId</a> () noexcept=default</td></tr>
+<tr class="memdesc:a79c472f7bcf44fdb196429703cd4a97b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor needed for Charm++ serialization. <br /></td></tr>
+<tr class="separator:a79c472f7bcf44fdb196429703cd4a97b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b4d7071405bae75d77e042eb59449d2"><td class="memItemLeft" align="right" valign="top"><a id="a3b4d7071405bae75d77e042eb59449d2"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SegmentId</b> (const <a class="el" href="classSegmentId.html">SegmentId</a> &amp;segment_id) noexcept=default</td></tr>
+<tr class="separator:a3b4d7071405bae75d77e042eb59449d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a314db389e3d8390ceca8f3d4dcf14c5d"><td class="memItemLeft" align="right" valign="top"><a id="a314db389e3d8390ceca8f3d4dcf14c5d"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SegmentId</b> (<a class="el" href="classSegmentId.html">SegmentId</a> &amp;&amp;segment_id) noexcept=default</td></tr>
+<tr class="separator:a314db389e3d8390ceca8f3d4dcf14c5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af6b7cb52e9d8985cba58d4e025925db1"><td class="memItemLeft" align="right" valign="top"><a id="af6b7cb52e9d8985cba58d4e025925db1"></a>
+<a class="el" href="classSegmentId.html">SegmentId</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classSegmentId.html">SegmentId</a> &amp;segment_id) noexcept=default</td></tr>
+<tr class="separator:af6b7cb52e9d8985cba58d4e025925db1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab3c984f13760bf55e0fccfc0295d3bcb"><td class="memItemLeft" align="right" valign="top"><a id="ab3c984f13760bf55e0fccfc0295d3bcb"></a>
+<a class="el" href="classSegmentId.html">SegmentId</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classSegmentId.html">SegmentId</a> &amp;&amp;segment_id) noexcept=default</td></tr>
+<tr class="separator:ab3c984f13760bf55e0fccfc0295d3bcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e962b5182786269ea008e62bc529478"><td class="memItemLeft" align="right" valign="top"><a id="a3e962b5182786269ea008e62bc529478"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SegmentId</b> (size_t refinement_level, size_t index) noexcept</td></tr>
+<tr class="separator:a3e962b5182786269ea008e62bc529478"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa87bf19cba1fc17c00d8a6c742d9d96f"><td class="memItemLeft" align="right" valign="top"><a id="aa87bf19cba1fc17c00d8a6c742d9d96f"></a>
+constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>refinement_level</b> () const noexcept</td></tr>
+<tr class="separator:aa87bf19cba1fc17c00d8a6c742d9d96f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0919749ab0d3a017c6f43adb9189ba97"><td class="memItemLeft" align="right" valign="top"><a id="a0919749ab0d3a017c6f43adb9189ba97"></a>
+constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>index</b> () const noexcept</td></tr>
+<tr class="separator:a0919749ab0d3a017c6f43adb9189ba97"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8889b7f26718f7e09828405cb85306ed"><td class="memItemLeft" align="right" valign="top"><a id="a8889b7f26718f7e09828405cb85306ed"></a>
+<a class="el" href="classSegmentId.html">SegmentId</a>&#160;</td><td class="memItemRight" valign="bottom"><b>id_of_parent</b> () const noexcept</td></tr>
+<tr class="separator:a8889b7f26718f7e09828405cb85306ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afdf8966ea120c15895049b4133572830"><td class="memItemLeft" align="right" valign="top"><a id="afdf8966ea120c15895049b4133572830"></a>
+<a class="el" href="classSegmentId.html">SegmentId</a>&#160;</td><td class="memItemRight" valign="bottom"><b>id_of_child</b> (<a class="el" href="group__ComputationalDomainGroup.html#ga8c0137d7160ad71b6ed265c53c99ed00">Side</a> side) const noexcept</td></tr>
+<tr class="separator:afdf8966ea120c15895049b4133572830"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7af7ae864292ad02f3a161e97bd3f884"><td class="memItemLeft" align="right" valign="top"><a id="a7af7ae864292ad02f3a161e97bd3f884"></a>
+<a class="el" href="classSegmentId.html">SegmentId</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSegmentId.html#a7af7ae864292ad02f3a161e97bd3f884">id_of_sibling</a> () const noexcept</td></tr>
+<tr class="memdesc:a7af7ae864292ad02f3a161e97bd3f884"><td class="mdescLeft">&#160;</td><td class="mdescRight">The other child of the parent of this segment. <br /></td></tr>
+<tr class="separator:a7af7ae864292ad02f3a161e97bd3f884"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f0848d0c5474b8ab2dfb521d154d31d"><td class="memItemLeft" align="right" valign="top"><a id="a9f0848d0c5474b8ab2dfb521d154d31d"></a>
+<a class="el" href="classSegmentId.html">SegmentId</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSegmentId.html#a9f0848d0c5474b8ab2dfb521d154d31d">id_of_abutting_nibling</a> () const noexcept</td></tr>
+<tr class="memdesc:a9f0848d0c5474b8ab2dfb521d154d31d"><td class="mdescLeft">&#160;</td><td class="mdescRight">The child of the sibling of this segment that shares an endpoint with it. <br /></td></tr>
+<tr class="separator:a9f0848d0c5474b8ab2dfb521d154d31d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8958bf35d91b2e65da2eda4fed044d5b"><td class="memItemLeft" align="right" valign="top"><a id="a8958bf35d91b2e65da2eda4fed044d5b"></a>
+<a class="el" href="group__ComputationalDomainGroup.html#ga8c0137d7160ad71b6ed265c53c99ed00">Side</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSegmentId.html#a8958bf35d91b2e65da2eda4fed044d5b">side_of_sibling</a> () const noexcept</td></tr>
+<tr class="memdesc:a8958bf35d91b2e65da2eda4fed044d5b"><td class="mdescLeft">&#160;</td><td class="mdescRight">The side on which this segment shares an endpoint with its sibling. <br /></td></tr>
+<tr class="separator:a8958bf35d91b2e65da2eda4fed044d5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4972500fd0b7cb7522f40e745ca3e0b4"><td class="memItemLeft" align="right" valign="top"><a id="a4972500fd0b7cb7522f40e745ca3e0b4"></a>
+<a class="el" href="classSegmentId.html">SegmentId</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSegmentId.html#a4972500fd0b7cb7522f40e745ca3e0b4">id_if_flipped</a> () const noexcept</td></tr>
+<tr class="memdesc:a4972500fd0b7cb7522f40e745ca3e0b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">The id this segment would have if the coordinate axis were flipped. <br /></td></tr>
+<tr class="separator:a4972500fd0b7cb7522f40e745ca3e0b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4918c0bcbc55052bf05a6cbd7cd424ed"><td class="memItemLeft" align="right" valign="top"><a id="a4918c0bcbc55052bf05a6cbd7cd424ed"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSegmentId.html#a4918c0bcbc55052bf05a6cbd7cd424ed">endpoint</a> (<a class="el" href="group__ComputationalDomainGroup.html#ga8c0137d7160ad71b6ed265c53c99ed00">Side</a> side) const noexcept</td></tr>
+<tr class="memdesc:a4918c0bcbc55052bf05a6cbd7cd424ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">The logical coordinate of the endpoint of the segment on the given Side. <br /></td></tr>
+<tr class="separator:a4918c0bcbc55052bf05a6cbd7cd424ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a53665d99d580f61cf1dd4f15706552be"><td class="memItemLeft" align="right" valign="top"><a id="a53665d99d580f61cf1dd4f15706552be"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSegmentId.html#a53665d99d580f61cf1dd4f15706552be">midpoint</a> () const noexcept</td></tr>
+<tr class="memdesc:a53665d99d580f61cf1dd4f15706552be"><td class="mdescLeft">&#160;</td><td class="mdescRight">The logical coordinate of the midpoint of the segment. <br /></td></tr>
+<tr class="separator:a53665d99d580f61cf1dd4f15706552be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe9a8bec2c673cdd8f852833f306cdd5"><td class="memItemLeft" align="right" valign="top"><a id="abe9a8bec2c673cdd8f852833f306cdd5"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSegmentId.html#abe9a8bec2c673cdd8f852833f306cdd5">overlaps</a> (const <a class="el" href="classSegmentId.html">SegmentId</a> &amp;other) const noexcept</td></tr>
+<tr class="memdesc:abe9a8bec2c673cdd8f852833f306cdd5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Does the segment overlap with another? <br /></td></tr>
+<tr class="separator:abe9a8bec2c673cdd8f852833f306cdd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae21d03522ca705a4842342ac5b5776ce"><td class="memItemLeft" align="right" valign="top"><a id="ae21d03522ca705a4842342ac5b5776ce"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:ae21d03522ca705a4842342ac5b5776ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A <a class="el" href="classSegmentId.html" title="A SegmentId labels a segment of the interval [-1,1] and is used to identify the bounds of an Element ...">SegmentId</a> labels a segment of the interval [-1,1] and is used to identify the bounds of an <a class="el" href="classElement.html">Element</a> in a <a class="el" href="classBlock.html">Block</a> in each dimension. </p>
+<p>In \(d\) dimensions, \(d\) <a class="el" href="classSegmentId.html" title="A SegmentId labels a segment of the interval [-1,1] and is used to identify the bounds of an Element ...">SegmentId</a>s are used to identify an <a class="el" href="classElement.html">Element</a>. In each dimension, a segment spans the subinterval \([-1 + 2 \frac{i}{N}, -1 + 2 \frac{i+1}{N}]\) of the logical coordinates of a <a class="el" href="classBlock.html">Block</a>, where \(i \)= <code>index</code> and \(N = 2^L\) where \(L\) = <code>refinement_level</code>.</p>
+<div class="image">
+<object type="image/svg+xml" data="SegmentId.svg" style="pointer-events: none;"></object>
+<div class="caption">
+SegmentIds</div></div>
+<p>In the figure, The <code>index</code> of segments increase from the <code>lower side</code> to the <code>upper side</code> in each dimension of a <a class="el" href="classBlock.html">Block</a>, while the <code>refinement level</code> increases as the segments are subdivided. For example, let the segment labeled <code>self</code> be on <code>refinement level</code> \(L\), with <code>index</code> \(i\). Its <code>parent</code> segment is on <code>refinement level</code> \(L-1\) with <code>index</code> \(\frac{i-1}{2}\). The <code>children</code> of <code>self</code> are on <code>refinement level</code> \(L+1\), and have <code>index</code> \(2i\) and \(2i+1\) for the lower and upper child respectively. Also labeled on the figure are the <code>sibling</code> and <code>abutting nibling</code> (child of sibling) of <code>self</code>. These relationships between segments are important for h-refinement, since in each dimension an <a class="el" href="classElement.html">Element</a> can be flagged to split into its two <code>children</code> segments, or join with its <code>sibling</code> segment to form its <code>parent</code> segment. As refinement levels of neighboring elements are kept within one, in the direction of its <code>sibling</code>, a segment can only abut its <code>sibling</code> or <code>abutting nibling</code>, while on the opposite side, it can abut a segment on its level, the next-lower, or the next-higher level. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/Structure/<a class="el" href="SegmentId_8hpp_source.html">SegmentId.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

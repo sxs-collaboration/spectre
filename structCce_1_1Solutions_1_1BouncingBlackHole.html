@@ -1,0 +1,641 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Cce::Solutions::BouncingBlackHole Struct Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceCce.html">Cce</a></li><li class="navelem"><a class="el" href="namespaceCce_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="structCce_1_1Solutions_1_1BouncingBlackHole.html">BouncingBlackHole</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
+<a href="#pro-attribs">Protected Attributes</a> &#124;
+<a href="structCce_1_1Solutions_1_1BouncingBlackHole-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Cce::Solutions::BouncingBlackHole Struct Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Analytic solution representing a coordinate oscillation about a stationary Schwarzschild black hole.  
+ <a href="structCce_1_1Solutions_1_1BouncingBlackHole.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="BouncingBlackHole_8hpp_source.html">BouncingBlackHole.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1BouncingBlackHole_1_1Amplitude.html">Amplitude</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1BouncingBlackHole_1_1ExtractionRadius.html">ExtractionRadius</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1BouncingBlackHole_1_1Mass.html">Mass</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1BouncingBlackHole_1_1Period.html">Period</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:abcd13539cdfdb41353619922f2951deb"><td class="memItemLeft" align="right" valign="top"><a id="abcd13539cdfdb41353619922f2951deb"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structCce_1_1Solutions_1_1BouncingBlackHole_1_1Amplitude.html">Amplitude</a>, <a class="el" href="structCce_1_1Solutions_1_1BouncingBlackHole_1_1ExtractionRadius.html">ExtractionRadius</a>, <a class="el" href="structCce_1_1Solutions_1_1BouncingBlackHole_1_1Mass.html">Mass</a>, <a class="el" href="structCce_1_1Solutions_1_1BouncingBlackHole_1_1Period.html">Period</a> &gt;</td></tr>
+<tr class="separator:abcd13539cdfdb41353619922f2951deb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_structCce_1_1Solutions_1_1WorldtubeData"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structCce_1_1Solutions_1_1WorldtubeData')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html">Cce::Solutions::WorldtubeData</a></td></tr>
+<tr class="memitem:a8b9e90ccc6cf69ae8b85e3c53f354281 inherit pub_types_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a8b9e90ccc6cf69ae8b85e3c53f354281"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::list&lt; <a class="el" href="structCce_1_1Solutions_1_1BouncingBlackHole.html">BouncingBlackHole</a>, <a class="el" href="structCce_1_1Solutions_1_1GaugeWave.html">GaugeWave</a>, <a class="el" href="structCce_1_1Solutions_1_1LinearizedBondiSachs.html">LinearizedBondiSachs</a>, <a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman.html">RobinsonTrautman</a>, <a class="el" href="structCce_1_1Solutions_1_1RotatingSchwarzschild.html">RotatingSchwarzschild</a>, <a class="el" href="structCce_1_1Solutions_1_1TeukolskyWave.html">TeukolskyWave</a> &gt;</td></tr>
+<tr class="separator:a8b9e90ccc6cf69ae8b85e3c53f354281 inherit pub_types_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ee6a73d9bf50ff19a27f7324d1705ab inherit pub_types_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a5ee6a73d9bf50ff19a27f7324d1705ab"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html#a5ee6a73d9bf50ff19a27f7324d1705ab">tags</a> = tmpl::list&lt; <a class="el" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Tags::CauchyCartesianCoords</a>, <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Tags::CauchyCartesianCoords</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Pi.html">GeneralizedHarmonic::Tags::Pi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Phi.html">GeneralizedHarmonic::Tags::Phi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structCce_1_1Tags_1_1News.html">Tags::News</a> &gt;</td></tr>
+<tr class="memdesc:a5ee6a73d9bf50ff19a27f7324d1705ab inherit pub_types_structCce_1_1Solutions_1_1WorldtubeData"><td class="mdescLeft">&#160;</td><td class="mdescRight">The set of available tags provided by the analytic solution. <br /></td></tr>
+<tr class="separator:a5ee6a73d9bf50ff19a27f7324d1705ab inherit pub_types_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a2437b9fa9ad7709ab2a999a086022222"><td class="memItemLeft" align="right" valign="top"><a id="a2437b9fa9ad7709ab2a999a086022222"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_template</b> (<a class="el" href="structCce_1_1Solutions_1_1BouncingBlackHole.html">BouncingBlackHole</a>)</td></tr>
+<tr class="separator:a2437b9fa9ad7709ab2a999a086022222"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a710ed0b891f5781a776ebe292e09b386"><td class="memItemLeft" align="right" valign="top"><a id="a710ed0b891f5781a776ebe292e09b386"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BouncingBlackHole</b> (CkMigrateMessage *msg) noexcept</td></tr>
+<tr class="separator:a710ed0b891f5781a776ebe292e09b386"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d43000553f5d1df527fb286c4865571"><td class="memItemLeft" align="right" valign="top"><a id="a0d43000553f5d1df527fb286c4865571"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BouncingBlackHole</b> (double amplitude, double extraction_radius, double mass, double period) noexcept</td></tr>
+<tr class="separator:a0d43000553f5d1df527fb286c4865571"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c14e533e6dcb1e034d62617b6beeac0"><td class="memItemLeft" align="right" valign="top"><a id="a1c14e533e6dcb1e034d62617b6beeac0"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html">WorldtubeData</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const noexcept override</td></tr>
+<tr class="separator:a1c14e533e6dcb1e034d62617b6beeac0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a65d290e0202dcae2042fb2601de84738"><td class="memItemLeft" align="right" valign="top"><a id="a65d290e0202dcae2042fb2601de84738"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:a65d290e0202dcae2042fb2601de84738"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_structCce_1_1Solutions_1_1WorldtubeData')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html">Cce::Solutions::WorldtubeData</a></td></tr>
+<tr class="memitem:a3c5a0fe64f2a96f97f63bd44be57204a inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a3c5a0fe64f2a96f97f63bd44be57204a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_abstract</b> (<a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html">WorldtubeData</a>)</td></tr>
+<tr class="separator:a3c5a0fe64f2a96f97f63bd44be57204a inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a683ab11633acdf85e9b210e61f9fffa2 inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a683ab11633acdf85e9b210e61f9fffa2"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WorldtubeData</b> (const double extraction_radius) noexcept</td></tr>
+<tr class="separator:a683ab11633acdf85e9b210e61f9fffa2 inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7d9d2b3081f4b02db940f77c46fcd6b inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="ab7d9d2b3081f4b02db940f77c46fcd6b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WorldtubeData</b> (CkMigrateMessage *msg) noexcept</td></tr>
+<tr class="separator:ab7d9d2b3081f4b02db940f77c46fcd6b inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a656fe16b0af8227986385984ca7f432a inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memTemplParams" colspan="2">template&lt;typename... Tags&gt; </td></tr>
+<tr class="memitem:a656fe16b0af8227986385984ca7f432a inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html#a656fe16b0af8227986385984ca7f432a">variables</a> (const size_t output_l_max, const double time, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:a656fe16b0af8227986385984ca7f432a inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve worldtube data represented by the analytic solution, at boundary angular resolution <code>l_max</code> and time <code>time</code>  <a href="structCce_1_1Solutions_1_1WorldtubeData.html#a656fe16b0af8227986385984ca7f432a">More...</a><br /></td></tr>
+<tr class="separator:a656fe16b0af8227986385984ca7f432a inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f809cb42f3245ccab3e276f5a818687 inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a9f809cb42f3245ccab3e276f5a818687"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:a9f809cb42f3245ccab3e276f5a818687 inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c80c8f69ba596071003a87257d8cfa2 inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a6c80c8f69ba596071003a87257d8cfa2"></a>
+virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="structCce_1_1InitializeJ_1_1InitializeJ.html">Cce::InitializeJ::InitializeJ</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_initialize_j</b> (const double) const noexcept</td></tr>
+<tr class="separator:a6c80c8f69ba596071003a87257d8cfa2 inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9c97e98dda865add27bc0f32c0e158fa inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a9c97e98dda865add27bc0f32c0e158fa"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>use_noninertial_news</b> () const noexcept</td></tr>
+<tr class="separator:a9c97e98dda865add27bc0f32c0e158fa inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aa5d1767f83da8f3214e52953756e2df7"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:aa5d1767f83da8f3214e52953756e2df7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:a9fc3d2e47b8be6f17c712bfb26910366"><td class="memItemLeft" align="right" valign="top"><a id="a9fc3d2e47b8be6f17c712bfb26910366"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>prepare_solution</b> (const size_t, const double) const noexcept override</td></tr>
+<tr class="separator:a9fc3d2e47b8be6f17c712bfb26910366"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa20457440a44bb2c09f71bdb45d1b511"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1BouncingBlackHole.html#aa20457440a44bb2c09f71bdb45d1b511">variables_impl</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; spacetime_metric, size_t l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept override</td></tr>
+<tr class="memdesc:aa20457440a44bb2c09f71bdb45d1b511"><td class="mdescLeft">&#160;</td><td class="mdescRight">The implementation function that computes the spacetime metric on the extraction sphere at collocation points associated with angular resolution <code>l_max</code>.  <a href="structCce_1_1Solutions_1_1BouncingBlackHole.html#aa20457440a44bb2c09f71bdb45d1b511">More...</a><br /></td></tr>
+<tr class="separator:aa20457440a44bb2c09f71bdb45d1b511"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acae59243c035a910b77682ac87780d94"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1BouncingBlackHole.html#acae59243c035a910b77682ac87780d94">variables_impl</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dt_spacetime_metric, size_t l_max, double time, tmpl::type_&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept override</td></tr>
+<tr class="memdesc:acae59243c035a910b77682ac87780d94"><td class="mdescLeft">&#160;</td><td class="mdescRight">The implementation function that computes the first time derivative of the spacetime metric on the extraction sphere.  <a href="structCce_1_1Solutions_1_1BouncingBlackHole.html#acae59243c035a910b77682ac87780d94">More...</a><br /></td></tr>
+<tr class="separator:acae59243c035a910b77682ac87780d94"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a388f3661eaec901526636bdc46314806"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1BouncingBlackHole.html#a388f3661eaec901526636bdc46314806">variables_impl</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; d_spacetime_metric, size_t l_max, double time, tmpl::type_&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Phi.html">GeneralizedHarmonic::Tags::Phi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt;) const noexcept override</td></tr>
+<tr class="memdesc:a388f3661eaec901526636bdc46314806"><td class="mdescLeft">&#160;</td><td class="mdescRight">The implementation function that computes the first spatial derivative of the spacetime metric on the extraction sphere.  <a href="structCce_1_1Solutions_1_1BouncingBlackHole.html#a388f3661eaec901526636bdc46314806">More...</a><br /></td></tr>
+<tr class="separator:a388f3661eaec901526636bdc46314806"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3240ca07281d27bd18a90e5263b4dc4"><td class="memItemLeft" align="right" valign="top"><a id="ac3240ca07281d27bd18a90e5263b4dc4"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1BouncingBlackHole.html#ac3240ca07281d27bd18a90e5263b4dc4">variables_impl</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, -2 &gt;&gt; * &gt; news, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1News.html">Tags::News</a> &gt;) const noexcept override</td></tr>
+<tr class="memdesc:ac3240ca07281d27bd18a90e5263b4dc4"><td class="mdescLeft">&#160;</td><td class="mdescRight">The News in the bouncing black hole solution vanishes, as the oscillation comes entirely from a coordinate transform. <br /></td></tr>
+<tr class="separator:ac3240ca07281d27bd18a90e5263b4dc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9765260eec9be583717225ad75dbc9c"><td class="memItemLeft" align="right" valign="top"><a id="ab9765260eec9be583717225ad75dbc9c"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; cartesian_coordinates, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Tags::CauchyCartesianCoords</a> &gt;) const noexcept</td></tr>
+<tr class="separator:ab9765260eec9be583717225ad75dbc9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea78278bb48494a69aeb1a8066a8f281"><td class="memItemLeft" align="right" valign="top"><a id="aea78278bb48494a69aeb1a8066a8f281"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dr_cartesian_coordinates, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Tags::CauchyCartesianCoords</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:aea78278bb48494a69aeb1a8066a8f281"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af60554b526e65f28dcf29e6181085fa6"><td class="memItemLeft" align="right" valign="top"><a id="af60554b526e65f28dcf29e6181085fa6"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; spacetime_metric, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept=0</td></tr>
+<tr class="separator:af60554b526e65f28dcf29e6181085fa6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a53a02d37d8f474573cf896a2b9342576"><td class="memItemLeft" align="right" valign="top"><a id="a53a02d37d8f474573cf896a2b9342576"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dt_spacetime_metric, size_t output_l_max, double time, tmpl::type_&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept=0</td></tr>
+<tr class="separator:a53a02d37d8f474573cf896a2b9342576"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91d1e9688e8bff946def057036b58971"><td class="memItemLeft" align="right" valign="top"><a id="a91d1e9688e8bff946def057036b58971"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; pi, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Pi.html">GeneralizedHarmonic::Tags::Pi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a91d1e9688e8bff946def057036b58971"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a37dad7778eed0abb6d2774049170e4b4"><td class="memItemLeft" align="right" valign="top"><a id="a37dad7778eed0abb6d2774049170e4b4"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; d_spacetime_metric, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Phi.html">GeneralizedHarmonic::Tags::Phi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt;) const noexcept=0</td></tr>
+<tr class="separator:a37dad7778eed0abb6d2774049170e4b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac16028ba30bc7a1a50707b4058fc10d7"><td class="memItemLeft" align="right" valign="top"><a id="ac16028ba30bc7a1a50707b4058fc10d7"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; spatial_metric, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:ac16028ba30bc7a1a50707b4058fc10d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84a42a9daa329d4d3379e0cdabc363a6"><td class="memItemLeft" align="right" valign="top"><a id="a84a42a9daa329d4d3379e0cdabc363a6"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dt_spatial_metric, size_t output_l_max, double time, tmpl::type_&lt; ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a84a42a9daa329d4d3379e0cdabc363a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a00c44643f0cf2859b2eb4399f7207744"><td class="memItemLeft" align="right" valign="top"><a id="a00c44643f0cf2859b2eb4399f7207744"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dr_spatial_metric, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a00c44643f0cf2859b2eb4399f7207744"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0281fc5c38a9b2a74976f2fd2e932543"><td class="memItemLeft" align="right" valign="top"><a id="a0281fc5c38a9b2a74976f2fd2e932543"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; shift, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a0281fc5c38a9b2a74976f2fd2e932543"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc8e6bfd2d02d330698f7556b66c87ce"><td class="memItemLeft" align="right" valign="top"><a id="abc8e6bfd2d02d330698f7556b66c87ce"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dt_shift, size_t output_l_max, double time, tmpl::type_&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:abc8e6bfd2d02d330698f7556b66c87ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d37439a67540392492c1471247e82d0"><td class="memItemLeft" align="right" valign="top"><a id="a2d37439a67540392492c1471247e82d0"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dr_shift, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a2d37439a67540392492c1471247e82d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0484059e6cd3271bf52c8d82453f212c"><td class="memItemLeft" align="right" valign="top"><a id="a0484059e6cd3271bf52c8d82453f212c"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; lapse, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a0484059e6cd3271bf52c8d82453f212c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6283b33616b262925ff52e72182176f"><td class="memItemLeft" align="right" valign="top"><a id="ab6283b33616b262925ff52e72182176f"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; dt_lapse, size_t output_l_max, double time, tmpl::type_&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:ab6283b33616b262925ff52e72182176f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a478d23825c68ec9904314afc78b086ec"><td class="memItemLeft" align="right" valign="top"><a id="a478d23825c68ec9904314afc78b086ec"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; dr_lapse, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a478d23825c68ec9904314afc78b086ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4595e07cdd789af4673e057d3c7bf56"><td class="memItemLeft" align="right" valign="top"><a id="ac4595e07cdd789af4673e057d3c7bf56"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, -2 &gt;&gt; * &gt; news, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1News.html">Tags::News</a> &gt;) const noexcept=0</td></tr>
+<tr class="separator:ac4595e07cdd789af4673e057d3c7bf56"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_structCce_1_1Solutions_1_1WorldtubeData')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html">Cce::Solutions::WorldtubeData</a></td></tr>
+<tr class="memitem:a44475110f23b15986822d5cc7350ac21 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memTemplParams" colspan="2"><a id="a44475110f23b15986822d5cc7350ac21"></a>
+template&lt;typename Tag &gt; </td></tr>
+<tr class="memitem:a44475110f23b15986822d5cc7350ac21 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memTemplItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>cache_or_compute</b> (const size_t output_l_max, const double time) const noexcept</td></tr>
+<tr class="separator:a44475110f23b15986822d5cc7350ac21 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9765260eec9be583717225ad75dbc9c inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="ab9765260eec9be583717225ad75dbc9c"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; cartesian_coordinates, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Tags::CauchyCartesianCoords</a> &gt;) const noexcept</td></tr>
+<tr class="separator:ab9765260eec9be583717225ad75dbc9c inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea78278bb48494a69aeb1a8066a8f281 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="aea78278bb48494a69aeb1a8066a8f281"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dr_cartesian_coordinates, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Tags::CauchyCartesianCoords</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:aea78278bb48494a69aeb1a8066a8f281 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91d1e9688e8bff946def057036b58971 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a91d1e9688e8bff946def057036b58971"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; pi, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Pi.html">GeneralizedHarmonic::Tags::Pi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a91d1e9688e8bff946def057036b58971 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac16028ba30bc7a1a50707b4058fc10d7 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="ac16028ba30bc7a1a50707b4058fc10d7"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; spatial_metric, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:ac16028ba30bc7a1a50707b4058fc10d7 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84a42a9daa329d4d3379e0cdabc363a6 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a84a42a9daa329d4d3379e0cdabc363a6"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dt_spatial_metric, size_t output_l_max, double time, tmpl::type_&lt; ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a84a42a9daa329d4d3379e0cdabc363a6 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a00c44643f0cf2859b2eb4399f7207744 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a00c44643f0cf2859b2eb4399f7207744"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dr_spatial_metric, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a00c44643f0cf2859b2eb4399f7207744 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0281fc5c38a9b2a74976f2fd2e932543 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a0281fc5c38a9b2a74976f2fd2e932543"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; shift, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a0281fc5c38a9b2a74976f2fd2e932543 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc8e6bfd2d02d330698f7556b66c87ce inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="abc8e6bfd2d02d330698f7556b66c87ce"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dt_shift, size_t output_l_max, double time, tmpl::type_&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:abc8e6bfd2d02d330698f7556b66c87ce inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d37439a67540392492c1471247e82d0 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a2d37439a67540392492c1471247e82d0"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dr_shift, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a2d37439a67540392492c1471247e82d0 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0484059e6cd3271bf52c8d82453f212c inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a0484059e6cd3271bf52c8d82453f212c"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; lapse, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a0484059e6cd3271bf52c8d82453f212c inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6283b33616b262925ff52e72182176f inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="ab6283b33616b262925ff52e72182176f"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; dt_lapse, size_t output_l_max, double time, tmpl::type_&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:ab6283b33616b262925ff52e72182176f inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a478d23825c68ec9904314afc78b086ec inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a478d23825c68ec9904314afc78b086ec"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; dr_lapse, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a478d23825c68ec9904314afc78b086ec inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
+Protected Attributes</h2></td></tr>
+<tr class="memitem:aa4ae347b050fa918378cb959de730acf"><td class="memItemLeft" align="right" valign="top"><a id="aa4ae347b050fa918378cb959de730acf"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>amplitude_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:aa4ae347b050fa918378cb959de730acf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1394ef0c3163c8b0b1276b0294848ade"><td class="memItemLeft" align="right" valign="top"><a id="a1394ef0c3163c8b0b1276b0294848ade"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>mass_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:a1394ef0c3163c8b0b1276b0294848ade"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a55ae7760c338ab5455b84cb01ea2eda8"><td class="memItemLeft" align="right" valign="top"><a id="a55ae7760c338ab5455b84cb01ea2eda8"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>frequency_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:a55ae7760c338ab5455b84cb01ea2eda8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_attribs_structCce_1_1Solutions_1_1WorldtubeData"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_structCce_1_1Solutions_1_1WorldtubeData')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html">Cce::Solutions::WorldtubeData</a></td></tr>
+<tr class="memitem:a4e31fc36bb7a0643cf30d8d5420e1447 inherit pro_attribs_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a4e31fc36bb7a0643cf30d8d5420e1447"></a>
+IntermediateCacheTuple&#160;</td><td class="memItemRight" valign="bottom"><b>intermediate_cache_</b></td></tr>
+<tr class="separator:a4e31fc36bb7a0643cf30d8d5420e1447 inherit pro_attribs_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a57a9b50a228cb183c27ff1bc3578d572 inherit pro_attribs_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a57a9b50a228cb183c27ff1bc3578d572"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>extraction_radius_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::quiet_NaN()</td></tr>
+<tr class="separator:a57a9b50a228cb183c27ff1bc3578d572 inherit pro_attribs_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header pro_types_structCce_1_1Solutions_1_1WorldtubeData"><td colspan="2" onclick="javascript:toggleInherit('pro_types_structCce_1_1Solutions_1_1WorldtubeData')"><img src="closed.png" alt="-"/>&#160;Protected Types inherited from <a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html">Cce::Solutions::WorldtubeData</a></td></tr>
+<tr class="memitem:ac0ff8140807f63097b5e202743b6b4bc inherit pro_types_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="ac0ff8140807f63097b5e202743b6b4bc"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>IntermediateCacheTuple</b> = tuples::tagged_tuple_from_typelist&lt; tmpl::transform&lt; tmpl::list&lt; <a class="el" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Tags::CauchyCartesianCoords</a>, <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Tags::CauchyCartesianCoords</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Pi.html">GeneralizedHarmonic::Tags::Pi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Phi.html">GeneralizedHarmonic::Tags::Phi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structCce_1_1Tags_1_1News.html">Tags::News</a> &gt;, tmpl::bind&lt; <a class="el" href="structCce_1_1Solutions_1_1WorldtubeData_1_1IntermediateCacheTag.html">IntermediateCacheTag</a>, tmpl::_1 &gt; &gt;&gt;</td></tr>
+<tr class="separator:ac0ff8140807f63097b5e202743b6b4bc inherit pro_types_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Analytic solution representing a coordinate oscillation about a stationary Schwarzschild black hole. </p>
+<h3>Details</h3>
+<p>As the oscillation in the metric data at the worldtube is a pure coordinate effect, the system evolved using this worldtube data should produce zero news. The solution is a coordinate transform applied to the Schwarzschild solution in Kerr-Schild coordinates. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="acae59243c035a910b77682ac87780d94"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acae59243c035a910b77682ac87780d94">&#9670;&nbsp;</a></span>variables_impl() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Cce::Solutions::BouncingBlackHole::variables_impl </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>dt_spacetime_metric</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>time</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">tmpl::type_&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">protected</span><span class="mlabel">virtual</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The implementation function that computes the first time derivative of the spacetime metric on the extraction sphere. </p>
+<h3>Details</h3>
+<p>The time derivative of the spacetime metric \(\partial_t g_{a b}\) comes entirely from the Jacobian factor:</p>
+<p class="formulaDsp">
+\begin{align*} \partial_t x = \frac{8 \pi A}{T} \cos\left(\frac{2 \pi t}{T}\right) \left(\sin\left(\frac{2 \pi t}{T}\right)\right)^3, \end{align*}
+</p>
+<p>so the transformed metric derivative is,</p>
+<p class="formulaDsp">
+\begin{align*} \partial_t g_{a^\prime b^\prime} = 2 \partial_{(a^\prime} \partial_t x \partial_{b^\prime)} x^a g_{x a}. \end{align*}
+</p>
+<p>In this notation we take the primed coordinates to be the coordinates for which the black hole has time-dependent coordinate position. </p>
+
+<p>Implements <a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html">Cce::Solutions::WorldtubeData</a>.</p>
+
+</div>
+</div>
+<a id="aa20457440a44bb2c09f71bdb45d1b511"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa20457440a44bb2c09f71bdb45d1b511">&#9670;&nbsp;</a></span>variables_impl() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Cce::Solutions::BouncingBlackHole::variables_impl </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>spacetime_metric</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>time</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">protected</span><span class="mlabel">virtual</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The implementation function that computes the spacetime metric on the extraction sphere at collocation points associated with angular resolution <code>l_max</code>. </p>
+<h3>Details</h3>
+<p>The spacetime metric \(g_{a b}\) is determined by evaluating the Kerr-Schild metric at a set of transformed coordinates \(t^\prime = t, y^\prime = y, z^\prime = z\), and</p>
+<p class="formulaDsp">
+\begin{align*} x = x^\prime + A \left(\sin\left(\frac{2 \pi t}{T}\right)\right)^4, \end{align*}
+</p>
+<p>where the amplitude \(A\) is set by the option <code><a class="el" href="structCce_1_1Solutions_1_1BouncingBlackHole_1_1Amplitude.html">Amplitude</a></code> and the period \(T\) is set by the option <code><a class="el" href="structCce_1_1Solutions_1_1BouncingBlackHole_1_1Period.html">Period</a></code>. In this notation we take the primed coordinates to be the coordinates for which the black hole has time-dependent coordinate position. </p>
+
+<p>Implements <a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html">Cce::Solutions::WorldtubeData</a>.</p>
+
+</div>
+</div>
+<a id="a388f3661eaec901526636bdc46314806"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a388f3661eaec901526636bdc46314806">&#9670;&nbsp;</a></span>variables_impl() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Cce::Solutions::BouncingBlackHole::variables_impl </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>d_spacetime_metric</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>time</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">tmpl::type_&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Phi.html">GeneralizedHarmonic::Tags::Phi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt;&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">protected</span><span class="mlabel">virtual</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The implementation function that computes the first spatial derivative of the spacetime metric on the extraction sphere. </p>
+<h3>Details</h3>
+<p>The calculation proceeds by standard coordinate transform techniques for the transformation given by \(t^\prime = t, y^\prime = y, z^\prime = z\), and</p>
+<p class="formulaDsp">
+\begin{align*} x = x^\prime + A \left(\sin\left(\frac{2 \pi t}{T}\right)\right)^4, \end{align*}
+</p>
+<p>The general coordinate transformation formula that gives the metric is then </p><p class="formulaDsp">
+\begin{align*} \partial_a g_{b c} = \partial_a \partial_b x^{\prime a^\prime} \partial_c x^{\prime b^\prime} g_{a^\prime b^\prime} + \partial_b x^{\prime a^\prime} \partial_a \partial_c x^{\prime b^\prime} g_{a^\prime b^\prime} + \partial_a x^{\prime a^\prime} \partial_b x^{\prime b^\prime} \partial_c x^{\prime c^\prime} \partial_a g_{b c} \end{align*}
+</p>
+ 
+<p>Implements <a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html">Cce::Solutions::WorldtubeData</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="aa5d1767f83da8f3214e52953756e2df7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa5d1767f83da8f3214e52953756e2df7">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> Cce::Solutions::BouncingBlackHole::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      <span class="stringliteral">&quot;Analytic solution in which a static black hole is placed in an &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;oscillating coordinate system&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/Systems/Cce/AnalyticSolutions/<a class="el" href="BouncingBlackHole_8hpp_source.html">BouncingBlackHole.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

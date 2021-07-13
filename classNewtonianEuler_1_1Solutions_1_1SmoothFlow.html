@@ -1,0 +1,362 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: NewtonianEuler::Solutions::SmoothFlow&lt; Dim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceNewtonianEuler.html">NewtonianEuler</a></li><li class="navelem"><a class="el" href="namespaceNewtonianEuler_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="classNewtonianEuler_1_1Solutions_1_1SmoothFlow.html">SmoothFlow</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classNewtonianEuler_1_1Solutions_1_1SmoothFlow-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">NewtonianEuler::Solutions::SmoothFlow&lt; Dim &gt; Class Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Smooth density wave advecting across the domain.  
+ <a href="classNewtonianEuler_1_1Solutions_1_1SmoothFlow.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="NewtonianEuler_2SmoothFlow_8hpp_source.html">SmoothFlow.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:aeb795118e99ee33f5fd0064e44bd058f"><td class="memItemLeft" align="right" valign="top"><a id="aeb795118e99ee33f5fd0064e44bd058f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = typename smooth_flow::options</td></tr>
+<tr class="separator:aeb795118e99ee33f5fd0064e44bd058f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af867d75f972cca57f0526efa6cc18a7b"><td class="memItemLeft" align="right" valign="top"><a id="af867d75f972cca57f0526efa6cc18a7b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>source_term_type</b> = <a class="el" href="structNewtonianEuler_1_1Sources_1_1NoSource.html">Sources::NoSource</a></td></tr>
+<tr class="separator:af867d75f972cca57f0526efa6cc18a7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa991f21c76941173b9d00a6930f7f90a"><td class="memItemLeft" align="right" valign="top"><a id="aa991f21c76941173b9d00a6930f7f90a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state_type</b> = <a class="el" href="classEquationsOfState_1_1IdealFluid.html">EquationsOfState::IdealFluid</a>&lt; IsRelativistic &gt;</td></tr>
+<tr class="separator:aa991f21c76941173b9d00a6930f7f90a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:aa415d44cdec8ee488e060106abd0fe80"><td class="memItemLeft" align="right" valign="top"><a id="aa415d44cdec8ee488e060106abd0fe80"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SmoothFlow</b> (const <a class="el" href="classNewtonianEuler_1_1Solutions_1_1SmoothFlow.html">SmoothFlow</a> &amp;)=delete</td></tr>
+<tr class="separator:aa415d44cdec8ee488e060106abd0fe80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb9ac463a4d96e15af7fa19942c101f5"><td class="memItemLeft" align="right" valign="top"><a id="adb9ac463a4d96e15af7fa19942c101f5"></a>
+<a class="el" href="classNewtonianEuler_1_1Solutions_1_1SmoothFlow.html">SmoothFlow</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classNewtonianEuler_1_1Solutions_1_1SmoothFlow.html">SmoothFlow</a> &amp;)=delete</td></tr>
+<tr class="separator:adb9ac463a4d96e15af7fa19942c101f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52827973cb7cbde60020fc9b037f6854"><td class="memItemLeft" align="right" valign="top"><a id="a52827973cb7cbde60020fc9b037f6854"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SmoothFlow</b> (<a class="el" href="classNewtonianEuler_1_1Solutions_1_1SmoothFlow.html">SmoothFlow</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a52827973cb7cbde60020fc9b037f6854"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9fb356696eb7ad5c98e0278ef27fae58"><td class="memItemLeft" align="right" valign="top"><a id="a9fb356696eb7ad5c98e0278ef27fae58"></a>
+<a class="el" href="classNewtonianEuler_1_1Solutions_1_1SmoothFlow.html">SmoothFlow</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classNewtonianEuler_1_1Solutions_1_1SmoothFlow.html">SmoothFlow</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a9fb356696eb7ad5c98e0278ef27fae58"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeaf54f801843e9d3a0b7d45c4b2b7660"><td class="memItemLeft" align="right" valign="top"><a id="aeaf54f801843e9d3a0b7d45c4b2b7660"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SmoothFlow</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, Dim &gt; &amp;mean_velocity, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, Dim &gt; &amp;wavevector, double pressure, double adiabatic_index, double perturbation_size) noexcept</td></tr>
+<tr class="separator:aeaf54f801843e9d3a0b7d45c4b2b7660"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31848c484a5047d2b7b39b60c2485cfc"><td class="memItemLeft" align="right" valign="top"><a id="a31848c484a5047d2b7b39b60c2485cfc"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SmoothFlow</b> (CkMigrateMessage *msg) noexcept</td></tr>
+<tr class="separator:a31848c484a5047d2b7b39b60c2485cfc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a666bc0fbe44f7f4bce675360086577ff"><td class="memTemplParams" colspan="2"><a id="a666bc0fbe44f7f4bce675360086577ff"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a666bc0fbe44f7f4bce675360086577ff"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1MassDensity.html">Tags::MassDensity</a>&lt; DataType &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, Dim &gt; &amp;x, const double t, tmpl::list&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1MassDensity.html">Tags::MassDensity</a>&lt; DataType &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a666bc0fbe44f7f4bce675360086577ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9130242dd4a040bc0237d88e50bc3e76"><td class="memTemplParams" colspan="2"><a id="a9130242dd4a040bc0237d88e50bc3e76"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a9130242dd4a040bc0237d88e50bc3e76"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1Velocity.html">Tags::Velocity</a>&lt; DataType, Dim &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, Dim &gt; &amp;x, const double t, tmpl::list&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1Velocity.html">Tags::Velocity</a>&lt; DataType, Dim &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a9130242dd4a040bc0237d88e50bc3e76"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb736ab05842c8a5661f21e1c3df341e"><td class="memTemplParams" colspan="2"><a id="adb736ab05842c8a5661f21e1c3df341e"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:adb736ab05842c8a5661f21e1c3df341e"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1Pressure.html">Tags::Pressure</a>&lt; DataType &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, Dim &gt; &amp;x, const double t, tmpl::list&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1Pressure.html">Tags::Pressure</a>&lt; DataType &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:adb736ab05842c8a5661f21e1c3df341e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad3cb1e3c39f94903c44e62562d72ff4a"><td class="memTemplParams" colspan="2"><a id="ad3cb1e3c39f94903c44e62562d72ff4a"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:ad3cb1e3c39f94903c44e62562d72ff4a"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1SpecificInternalEnergy.html">Tags::SpecificInternalEnergy</a>&lt; DataType &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, Dim &gt; &amp;x, const double t, tmpl::list&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1SpecificInternalEnergy.html">Tags::SpecificInternalEnergy</a>&lt; DataType &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:ad3cb1e3c39f94903c44e62562d72ff4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75a717ebcf29af936d6d5665cfd743aa"><td class="memTemplParams" colspan="2"><a id="a75a717ebcf29af936d6d5665cfd743aa"></a>
+template&lt;typename DataType , typename... Tags&gt; </td></tr>
+<tr class="memitem:a75a717ebcf29af936d6d5665cfd743aa"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classNewtonianEuler_1_1Solutions_1_1SmoothFlow.html#a75a717ebcf29af936d6d5665cfd743aa">variables</a> (const tnsr::I&lt; DataType, Dim &gt; &amp;x, const double t, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:a75a717ebcf29af936d6d5665cfd743aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a collection of hydro variables at <code>(x, t)</code> <br /></td></tr>
+<tr class="separator:a75a717ebcf29af936d6d5665cfd743aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac28311bb6f8c28748005c214e285b1e9"><td class="memItemLeft" align="right" valign="top"><a id="ac28311bb6f8c28748005c214e285b1e9"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;) noexcept</td></tr>
+<tr class="separator:ac28311bb6f8c28748005c214e285b1e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea605992a2ceb7523af4a8a28a1d8248"><td class="memItemLeft" align="right" valign="top"><a id="aea605992a2ceb7523af4a8a28a1d8248"></a>
+const <a class="el" href="classEquationsOfState_1_1IdealFluid.html">EquationsOfState::IdealFluid</a>&lt; IsRelativistic &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state</b> () const noexcept</td></tr>
+<tr class="separator:aea605992a2ceb7523af4a8a28a1d8248"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38479081816e55ebf9656cd3f43c3c82"><td class="memTemplParams" colspan="2"><a id="a38479081816e55ebf9656cd3f43c3c82"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a38479081816e55ebf9656cd3f43c3c82"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classNewtonianEuler_1_1Solutions_1_1SmoothFlow.html#a38479081816e55ebf9656cd3f43c3c82">variables</a> (const tnsr::I&lt; DataType, Dim &gt; &amp;x, double t, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1RestMassDensity.html">hydro::Tags::RestMassDensity</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1RestMassDensity.html">hydro::Tags::RestMassDensity</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:a38479081816e55ebf9656cd3f43c3c82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve hydro variable at <code>(x, t)</code> <br /></td></tr>
+<tr class="separator:a38479081816e55ebf9656cd3f43c3c82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa4b6791694f670a7f8e9ccc2c3e333c5"><td class="memTemplParams" colspan="2"><a id="aa4b6791694f670a7f8e9ccc2c3e333c5"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:aa4b6791694f670a7f8e9ccc2c3e333c5"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, Dim &gt; &amp;x, double t, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificInternalEnergy.html">hydro::Tags::SpecificInternalEnergy</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificInternalEnergy.html">hydro::Tags::SpecificInternalEnergy</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="separator:aa4b6791694f670a7f8e9ccc2c3e333c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc6554dee2d2cacaff6d5984052b4593"><td class="memTemplParams" colspan="2"><a id="afc6554dee2d2cacaff6d5984052b4593"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:afc6554dee2d2cacaff6d5984052b4593"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, Dim &gt; &amp;x, double, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1Pressure.html">hydro::Tags::Pressure</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1Pressure.html">hydro::Tags::Pressure</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="separator:afc6554dee2d2cacaff6d5984052b4593"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a043efdd275178673dac43b4f4981616e"><td class="memTemplParams" colspan="2"><a id="a043efdd275178673dac43b4f4981616e"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a043efdd275178673dac43b4f4981616e"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, Dim &gt; &amp;x, double, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; DataType, Dim &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; DataType, Dim &gt;&gt;</td></tr>
+<tr class="separator:a043efdd275178673dac43b4f4981616e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab287bbeea0701f9d32d665a6f04c0f70"><td class="memTemplParams" colspan="2"><a id="ab287bbeea0701f9d32d665a6f04c0f70"></a>
+template&lt;typename DataType , bool LocalIsRelativistic = IsRelativistic, Requires&lt; IsRelativistic and IsRelativistic==LocalIsRelativistic &gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:ab287bbeea0701f9d32d665a6f04c0f70"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, Dim &gt; &amp;x, double, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="separator:ab287bbeea0701f9d32d665a6f04c0f70"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad428a95fe6546e5f669a6df11aa8821a"><td class="memTemplParams" colspan="2"><a id="ad428a95fe6546e5f669a6df11aa8821a"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:ad428a95fe6546e5f669a6df11aa8821a"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, Dim &gt; &amp;x, double t, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificEnthalpy.html">hydro::Tags::SpecificEnthalpy</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificEnthalpy.html">hydro::Tags::SpecificEnthalpy</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="separator:ad428a95fe6546e5f669a6df11aa8821a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:ac0d25a456bc8247a04106bc37c83346b"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:ac0d25a456bc8247a04106bc37c83346b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a5d33051386f844b379506aa698611962"><td class="memTemplParams" colspan="2"><a id="a5d33051386f844b379506aa698611962"></a>
+template&lt;size_t SpatialDim&gt; </td></tr>
+<tr class="memitem:a5d33051386f844b379506aa698611962"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classNewtonianEuler_1_1Solutions_1_1SmoothFlow.html">SmoothFlow</a>&lt; SpatialDim &gt; &amp;lhs, const <a class="el" href="classNewtonianEuler_1_1Solutions_1_1SmoothFlow.html">SmoothFlow</a>&lt; SpatialDim &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a5d33051386f844b379506aa698611962"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+class NewtonianEuler::Solutions::SmoothFlow&lt; Dim &gt;</h3>
+
+<p>Smooth density wave advecting across the domain. </p>
+<p>A solution with constant pressure and uniform spatial velocity provided that the rest mass density satisfies the advection equation</p>
+<p class="formulaDsp">
+\begin{align*} \partial_t\rho + v^i\partial_i\rho = 0, \end{align*}
+</p>
+<p>and the specific internal energy is a function of the rest mass density only, \(\epsilon = \epsilon(\rho)\). For testing purposes, this class implements this solution for the case where \(\rho\) is a sine wave. The user specifies the mean flow velocity of the fluid, the wavevector of the density profile, and the amplitude \(A\) of the density profile. In Cartesian coordinates \((x, y, z)\), and using dimensionless units, the primitive variables at a given time \(t\) are then</p>
+<p class="formulaDsp">
+\begin{align*} \rho(\vec{x},t) &amp;= 1 + A \sin(\vec{k}\cdot(\vec{x} - \vec{v}t)) \\ \vec{v}(\vec{x},t) &amp;= [v_x, v_y, v_z]^{T},\\ P(\vec{x},t) &amp;= P, \\ \epsilon(\vec{x}, t) &amp;= \frac{P}{(\gamma - 1)\rho}\\ \end{align*}
+</p>
+<p>where we have assumed \(\epsilon\) and \(\rho\) to be related through an equation mathematically equivalent to the equation of state of an ideal gas, where the pressure is held constant. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="ac0d25a456bc8247a04106bc37c83346b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac0d25a456bc8247a04106bc37c83346b">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classNewtonianEuler_1_1Solutions_1_1SmoothFlow.html">NewtonianEuler::Solutions::SmoothFlow</a>&lt; Dim &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Smooth density wave advecting across a domain.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following files:<ul>
+<li>src/Evolution/Executables/NewtonianEuler/<a class="el" href="EvolveNewtonianEulerFwd_8hpp_source.html">EvolveNewtonianEulerFwd.hpp</a></li>
+<li>src/PointwiseFunctions/AnalyticSolutions/NewtonianEuler/<a class="el" href="NewtonianEuler_2SmoothFlow_8hpp_source.html">SmoothFlow.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,309 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: gr::Solutions::KerrSchild::IntermediateComputer&lt; DataType, Frame &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacegr.html">gr</a></li><li class="navelem"><a class="el" href="namespacegr_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">KerrSchild</a></li><li class="navelem"><a class="el" href="classgr_1_1Solutions_1_1KerrSchild_1_1IntermediateComputer.html">IntermediateComputer</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classgr_1_1Solutions_1_1KerrSchild_1_1IntermediateComputer-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">gr::Solutions::KerrSchild::IntermediateComputer&lt; DataType, Frame &gt; Class Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a025cf9bbc4336e4a3d4a88a25e7ad0f4"><td class="memItemLeft" align="right" valign="top"><a id="a025cf9bbc4336e4a3d4a88a25e7ad0f4"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>CachedBuffer</b> = <a class="el" href="classCachedTempBuffer.html">KerrSchild::CachedBuffer</a>&lt; DataType, Frame &gt;</td></tr>
+<tr class="separator:a025cf9bbc4336e4a3d4a88a25e7ad0f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:aa42da8c783aa829eec706e5401c501d4"><td class="memItemLeft" align="right" valign="top"><a id="aa42da8c783aa829eec706e5401c501d4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>IntermediateComputer</b> (const <a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">KerrSchild</a> &amp;solution, const tnsr::I&lt; DataType, 3, Frame &gt; &amp;x, double null_vector_0) noexcept</td></tr>
+<tr class="separator:aa42da8c783aa829eec706e5401c501d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aafdaec2ff59b062aef6f5931987ad195"><td class="memItemLeft" align="right" valign="top"><a id="aafdaec2ff59b062aef6f5931987ad195"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; DataType, 3, Frame &gt; * &gt; x_minus_center, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::x_minus_center</a>&lt; DataType, Frame &gt;) const noexcept</td></tr>
+<tr class="separator:aafdaec2ff59b062aef6f5931987ad195"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f8386a46fd217d3f1368478634e71ce"><td class="memItemLeft" align="right" valign="top"><a id="a9f8386a46fd217d3f1368478634e71ce"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; a_dot_x, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::a_dot_x</a>&lt; DataType &gt;) const noexcept</td></tr>
+<tr class="separator:a9f8386a46fd217d3f1368478634e71ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac5d9ffbe59f4b1ef785bd803888062f2"><td class="memItemLeft" align="right" valign="top"><a id="ac5d9ffbe59f4b1ef785bd803888062f2"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; a_dot_x_squared, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::a_dot_x_squared</a>&lt; DataType &gt;) const noexcept</td></tr>
+<tr class="separator:ac5d9ffbe59f4b1ef785bd803888062f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25c997f2f2da81742872fbd73cc2f17f"><td class="memItemLeft" align="right" valign="top"><a id="a25c997f2f2da81742872fbd73cc2f17f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; half_xsq_minus_asq, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::half_xsq_minus_asq</a>&lt; DataType &gt;) const noexcept</td></tr>
+<tr class="separator:a25c997f2f2da81742872fbd73cc2f17f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9936339d0af3497331849d4140959101"><td class="memItemLeft" align="right" valign="top"><a id="a9936339d0af3497331849d4140959101"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; r_squared, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::r_squared</a>&lt; DataType &gt;) const noexcept</td></tr>
+<tr class="separator:a9936339d0af3497331849d4140959101"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae83d4c838068610cf4f9f140f644e5d9"><td class="memItemLeft" align="right" valign="top"><a id="ae83d4c838068610cf4f9f140f644e5d9"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; r, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::r</a>&lt; DataType &gt;) const noexcept</td></tr>
+<tr class="separator:ae83d4c838068610cf4f9f140f644e5d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a826e5d56fb0babc3e7d1cdebd2061d"><td class="memItemLeft" align="right" valign="top"><a id="a0a826e5d56fb0babc3e7d1cdebd2061d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; a_dot_x_over_rsquared, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::a_dot_x_over_rsquared</a>&lt; DataType &gt;) const noexcept</td></tr>
+<tr class="separator:a0a826e5d56fb0babc3e7d1cdebd2061d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7197215dc73873aa26514be26647f866"><td class="memItemLeft" align="right" valign="top"><a id="a7197215dc73873aa26514be26647f866"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; deriv_log_r_denom, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_log_r_denom</a>&lt; DataType &gt;) const noexcept</td></tr>
+<tr class="separator:a7197215dc73873aa26514be26647f866"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abed387a054049ab03d4052c709a3fc93"><td class="memItemLeft" align="right" valign="top"><a id="abed387a054049ab03d4052c709a3fc93"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; DataType, 3, Frame &gt; * &gt; deriv_log_r, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_log_r</a>&lt; DataType, Frame &gt;) const noexcept</td></tr>
+<tr class="separator:abed387a054049ab03d4052c709a3fc93"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8be19a5ab3f474082f6dc31edfddb45f"><td class="memItemLeft" align="right" valign="top"><a id="a8be19a5ab3f474082f6dc31edfddb45f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; H_denom, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::H_denom</a>&lt; DataType &gt;) const noexcept</td></tr>
+<tr class="separator:a8be19a5ab3f474082f6dc31edfddb45f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a953da85d76e93db9a245fc374f956c"><td class="memItemLeft" align="right" valign="top"><a id="a5a953da85d76e93db9a245fc374f956c"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; H, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::H</a>&lt; DataType &gt;) const noexcept</td></tr>
+<tr class="separator:a5a953da85d76e93db9a245fc374f956c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1278463714ee92b2ddc866c127541499"><td class="memItemLeft" align="right" valign="top"><a id="a1278463714ee92b2ddc866c127541499"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; deriv_H_temp1, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_H_temp1</a>&lt; DataType &gt;) const noexcept</td></tr>
+<tr class="separator:a1278463714ee92b2ddc866c127541499"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac088403da254f6872bd3880f967551ca"><td class="memItemLeft" align="right" valign="top"><a id="ac088403da254f6872bd3880f967551ca"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; deriv_H_temp2, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_H_temp2</a>&lt; DataType &gt;) const noexcept</td></tr>
+<tr class="separator:ac088403da254f6872bd3880f967551ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a987b408d51490997913dec48eb484f0c"><td class="memItemLeft" align="right" valign="top"><a id="a987b408d51490997913dec48eb484f0c"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; DataType, 3, Frame &gt; * &gt; deriv_H, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_H</a>&lt; DataType, Frame &gt;) const noexcept</td></tr>
+<tr class="separator:a987b408d51490997913dec48eb484f0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5fee9774cb019fc4bbe7cb4844c1f3b4"><td class="memItemLeft" align="right" valign="top"><a id="a5fee9774cb019fc4bbe7cb4844c1f3b4"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; denom, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::denom</a>&lt; DataType &gt;) const noexcept</td></tr>
+<tr class="separator:a5fee9774cb019fc4bbe7cb4844c1f3b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac6b4a15283d1afa51c7b1d5ea0777e46"><td class="memItemLeft" align="right" valign="top"><a id="ac6b4a15283d1afa51c7b1d5ea0777e46"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; a_dot_x_over_r, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::a_dot_x_over_r</a>&lt; DataType &gt;) const noexcept</td></tr>
+<tr class="separator:ac6b4a15283d1afa51c7b1d5ea0777e46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad94c54d31873ed575c0eaf2f54238171"><td class="memItemLeft" align="right" valign="top"><a id="ad94c54d31873ed575c0eaf2f54238171"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; DataType, 3, Frame &gt; * &gt; null_form, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::null_form</a>&lt; DataType, Frame &gt;) const noexcept</td></tr>
+<tr class="separator:ad94c54d31873ed575c0eaf2f54238171"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adbd70edae06f502d548e7c7a01f2b4f9"><td class="memItemLeft" align="right" valign="top"><a id="adbd70edae06f502d548e7c7a01f2b4f9"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ij&lt; DataType, 3, Frame &gt; * &gt; deriv_null_form, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_null_form</a>&lt; DataType, Frame &gt;) const noexcept</td></tr>
+<tr class="separator:adbd70edae06f502d548e7c7a01f2b4f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd48535f6f510284968ae42cc9f37097"><td class="memItemLeft" align="right" valign="top"><a id="acd48535f6f510284968ae42cc9f37097"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; lapse_squared, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::lapse_squared</a>&lt; DataType &gt;) const noexcept</td></tr>
+<tr class="separator:acd48535f6f510284968ae42cc9f37097"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:addc3e718734f0d52d5f2db160cddc863"><td class="memItemLeft" align="right" valign="top"><a id="addc3e718734f0d52d5f2db160cddc863"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; <a class="el" href="group__GeneralRelativityGroup.html#ga2b741dbe71bd10a06f0d71f18782b612">lapse</a>, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; DataType &gt;) const noexcept</td></tr>
+<tr class="separator:addc3e718734f0d52d5f2db160cddc863"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae4cd5c14f2463a6df7d69282a4c4667a"><td class="memItemLeft" align="right" valign="top"><a id="ae4cd5c14f2463a6df7d69282a4c4667a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; deriv_lapse_multiplier, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_lapse_multiplier</a>&lt; DataType &gt;) const noexcept</td></tr>
+<tr class="separator:ae4cd5c14f2463a6df7d69282a4c4667a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d5f9366d21bce172c4da4d18cc5b360"><td class="memItemLeft" align="right" valign="top"><a id="a9d5f9366d21bce172c4da4d18cc5b360"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; shift_multiplier, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::shift_multiplier</a>&lt; DataType &gt;) const noexcept</td></tr>
+<tr class="separator:a9d5f9366d21bce172c4da4d18cc5b360"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6026e5283cbdd9c5f5ccdfc089e341e3"><td class="memItemLeft" align="right" valign="top"><a id="a6026e5283cbdd9c5f5ccdfc089e341e3"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; DataType, 3, Frame &gt; * &gt; <a class="el" href="group__GeneralRelativityGroup.html#gac067e03fcb04c8c6c45d9708539a56b0">shift</a>, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, Frame, DataType &gt;) const noexcept</td></tr>
+<tr class="separator:a6026e5283cbdd9c5f5ccdfc089e341e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52e37df6fb07572fe9c3721a9dfcea22"><td class="memItemLeft" align="right" valign="top"><a id="a52e37df6fb07572fe9c3721a9dfcea22"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::iJ&lt; DataType, 3, Frame &gt; * &gt; deriv_shift, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1deriv.html">DerivShift</a>&lt; DataType, Frame &gt;) const noexcept</td></tr>
+<tr class="separator:a52e37df6fb07572fe9c3721a9dfcea22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a46b5fd2bd4325babb0862c8083380f58"><td class="memItemLeft" align="right" valign="top"><a id="a46b5fd2bd4325babb0862c8083380f58"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; DataType, 3, Frame &gt; * &gt; <a class="el" href="group__GeneralRelativityGroup.html#gabc0e56f42065eac8865d45559d5164ef">spatial_metric</a>, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, Frame, DataType &gt;) const noexcept</td></tr>
+<tr class="separator:a46b5fd2bd4325babb0862c8083380f58"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5fd752fbfc84f77c1754ffbc39a949f7"><td class="memItemLeft" align="right" valign="top"><a id="a5fd752fbfc84f77c1754ffbc39a949f7"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ijj&lt; DataType, 3, Frame &gt; * &gt; deriv_spatial_metric, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, <a class="el" href="structTags_1_1deriv.html">DerivSpatialMetric</a>&lt; DataType, Frame &gt;) const noexcept</td></tr>
+<tr class="separator:a5fd752fbfc84f77c1754ffbc39a949f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a542631b4c20c4d8587c1e342b5225aa9"><td class="memItemLeft" align="right" valign="top"><a id="a542631b4c20c4d8587c1e342b5225aa9"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; DataType, 3, Frame &gt; * &gt; dt_spatial_metric, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classCachedTempBuffer.html">CachedBuffer</a> * &gt; cache, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, Frame, DataType &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a542631b4c20c4d8587c1e342b5225aa9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticSolutions/GeneralRelativity/<a class="el" href="KerrSchild_8hpp_source.html">KerrSchild.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

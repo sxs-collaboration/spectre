@@ -1,0 +1,245 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: FunctionOfTimeUpdater&lt; DerivOrder &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classFunctionOfTimeUpdater-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">FunctionOfTimeUpdater&lt; DerivOrder &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__ControlSystemGroup.html">Control System</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><code>#include &lt;<a class="el" href="FunctionOfTimeUpdater_8hpp_source.html">FunctionOfTimeUpdater.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a2c548e1b308e04af121af8a7b7c79aa1"><td class="memItemLeft" align="right" valign="top"><a id="a2c548e1b308e04af121af8a7b7c79aa1"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FunctionOfTimeUpdater</b> (<a class="el" href="classAverager.html">Averager</a>&lt; DerivOrder &gt; &amp;&amp;averager, <a class="el" href="classController.html">Controller</a>&lt; DerivOrder &gt; &amp;&amp;controller, <a class="el" href="classTimescaleTuner.html">TimescaleTuner</a> &amp;&amp;timescale_tuner) noexcept</td></tr>
+<tr class="separator:a2c548e1b308e04af121af8a7b7c79aa1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a11147fe0375d199cadd41848d799a9b7"><td class="memItemLeft" align="right" valign="top"><a id="a11147fe0375d199cadd41848d799a9b7"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FunctionOfTimeUpdater</b> (<a class="el" href="classFunctionOfTimeUpdater.html">FunctionOfTimeUpdater</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a11147fe0375d199cadd41848d799a9b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1408e06528b1ef5db12ca3b5985f4783"><td class="memItemLeft" align="right" valign="top"><a id="a1408e06528b1ef5db12ca3b5985f4783"></a>
+<a class="el" href="classFunctionOfTimeUpdater.html">FunctionOfTimeUpdater</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classFunctionOfTimeUpdater.html">FunctionOfTimeUpdater</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a1408e06528b1ef5db12ca3b5985f4783"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a447a080a4e3eaed0a439c6c1c9d38f1f"><td class="memItemLeft" align="right" valign="top"><a id="a447a080a4e3eaed0a439c6c1c9d38f1f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FunctionOfTimeUpdater</b> (const <a class="el" href="classFunctionOfTimeUpdater.html">FunctionOfTimeUpdater</a> &amp;)=delete</td></tr>
+<tr class="separator:a447a080a4e3eaed0a439c6c1c9d38f1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3da1848e9b5fe882ced5b3ca24ca683b"><td class="memItemLeft" align="right" valign="top"><a id="a3da1848e9b5fe882ced5b3ca24ca683b"></a>
+<a class="el" href="classFunctionOfTimeUpdater.html">FunctionOfTimeUpdater</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classFunctionOfTimeUpdater.html">FunctionOfTimeUpdater</a> &amp;)=delete</td></tr>
+<tr class="separator:a3da1848e9b5fe882ced5b3ca24ca683b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94506cfbe82226a52688498843fdf09f"><td class="memItemLeft" align="right" valign="top"><a id="a94506cfbe82226a52688498843fdf09f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFunctionOfTimeUpdater.html#a94506cfbe82226a52688498843fdf09f">measure</a> (double time, const <a class="el" href="classDataVector.html">DataVector</a> &amp;raw_q) noexcept</td></tr>
+<tr class="memdesc:a94506cfbe82226a52688498843fdf09f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provides \(Q(t)\) to the averager, which internally updates the averaged values of \(Q\) and derivatives stored by the averager. <br /></td></tr>
+<tr class="separator:a94506cfbe82226a52688498843fdf09f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e71cc19ade2a82ea8f885aa4819a2f2"><td class="memItemLeft" align="right" valign="top"><a id="a0e71cc19ade2a82ea8f885aa4819a2f2"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFunctionOfTimeUpdater.html#a0e71cc19ade2a82ea8f885aa4819a2f2">modify</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1PiecewisePolynomial.html">domain::FunctionsOfTime::PiecewisePolynomial</a>&lt; DerivOrder &gt; * &gt; f_of_t, double time, double expiration_time) noexcept</td></tr>
+<tr class="memdesc:a0e71cc19ade2a82ea8f885aa4819a2f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the control signal, updates the FunctionOfTime and updates the <a class="el" href="classTimescaleTuner.html" title="Manages control system timescales.">TimescaleTuner</a> <code>expiration_time</code> is the time at which the FunctionOfTime is supposed to expire, i.e. the time by which we demand that <code>modify</code> is called again. <br /></td></tr>
+<tr class="separator:a0e71cc19ade2a82ea8f885aa4819a2f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t DerivOrder&gt;<br />
+class FunctionOfTimeUpdater&lt; DerivOrder &gt;</h3>
+
+<p>Responsible for updating the FunctionOfTime map parameters. <code>modify</code>: updates the FunctionOfTime map parameters, changing the maps. <code>measure</code>: provides updated information to the ControlSystem, without modifying the maps.</p>
+<p><code>modify</code> computes the control signal, which relies on \(Q\) and its derivatives. The <a class="el" href="classAverager.html">Averager</a> is responsible for numerically computing the derivatives, and as such, requires sufficient data (the number of points being dependent on the <code>DerivOrder</code>). This data is provided to the <a class="el" href="classAverager.html">Averager</a> through <code>measure</code>. We do not <code>modify</code> at every <code>measure</code> (even once the <a class="el" href="classAverager.html">Averager</a> has sufficient data to compute derivatives) since <code>modify</code> requires updating the maps, which could potentially hold up other processes that rely on these maps. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/ControlSystem/<a class="el" href="FunctionOfTimeUpdater_8hpp_source.html">FunctionOfTimeUpdater.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

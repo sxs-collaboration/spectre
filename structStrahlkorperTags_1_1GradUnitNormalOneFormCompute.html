@@ -1,0 +1,282 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: StrahlkorperTags::GradUnitNormalOneFormCompute&lt; Frame &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceStrahlkorperTags.html">StrahlkorperTags</a></li><li class="navelem"><a class="el" href="structStrahlkorperTags_1_1GradUnitNormalOneFormCompute.html">GradUnitNormalOneFormCompute</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structStrahlkorperTags_1_1GradUnitNormalOneFormCompute-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">StrahlkorperTags::GradUnitNormalOneFormCompute&lt; Frame &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Computes 3-covariant gradient \(D_i S_j\) of a <a class="el" href="structStrahlkorperTags_1_1Strahlkorper.html" title="Tag referring to a Strahlkorper">Strahlkorper</a>'s normal.  
+ <a href="structStrahlkorperTags_1_1GradUnitNormalOneFormCompute.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ApparentHorizons_2Tags_8hpp_source.html">Tags.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ac8b7461978860ebdf3f44d4f254a2c74"><td class="memItemLeft" align="right" valign="top"><a id="ac8b7461978860ebdf3f44d4f254a2c74"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>base</b> = <a class="el" href="structStrahlkorperTags_1_1GradUnitNormalOneForm.html">GradUnitNormalOneForm</a>&lt; Frame &gt;</td></tr>
+<tr class="separator:ac8b7461978860ebdf3f44d4f254a2c74"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5536b13808948c63defb136f6cdbe7b9"><td class="memItemLeft" align="right" valign="top"><a id="a5536b13808948c63defb136f6cdbe7b9"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt; <a class="el" href="structStrahlkorperTags_1_1Rhat.html">Rhat</a>&lt; Frame &gt;, <a class="el" href="structStrahlkorperTags_1_1Radius.html">Radius</a>&lt; Frame &gt;, <a class="el" href="structStrahlkorperTags_1_1UnitNormalOneForm.html">UnitNormalOneForm</a>&lt; Frame &gt;, <a class="el" href="structStrahlkorperTags_1_1D2xRadius.html">D2xRadius</a>&lt; Frame &gt;, <a class="el" href="structStrahlkorperTags_1_1OneOverOneFormMagnitude.html">OneOverOneFormMagnitude</a>, <a class="el" href="structgr_1_1Tags_1_1SpatialChristoffelSecondKind.html">gr::Tags::SpatialChristoffelSecondKind</a>&lt; 3, Frame, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;</td></tr>
+<tr class="separator:a5536b13808948c63defb136f6cdbe7b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6daded6201138d3c12bc15d02ce4ab3a"><td class="memItemLeft" align="right" valign="top"><a id="a6daded6201138d3c12bc15d02ce4ab3a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_type</b> = tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, Frame &gt;</td></tr>
+<tr class="separator:a6daded6201138d3c12bc15d02ce4ab3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_structStrahlkorperTags_1_1GradUnitNormalOneForm"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structStrahlkorperTags_1_1GradUnitNormalOneForm')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structStrahlkorperTags_1_1GradUnitNormalOneForm.html">StrahlkorperTags::GradUnitNormalOneForm&lt; Frame &gt;</a></td></tr>
+<tr class="memitem:adfcaf5c21bef57f21de71ad8e9ebed68 inherit pub_types_structStrahlkorperTags_1_1GradUnitNormalOneForm"><td class="memItemLeft" align="right" valign="top"><a id="adfcaf5c21bef57f21de71ad8e9ebed68"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>type</b> = tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, Frame &gt;</td></tr>
+<tr class="separator:adfcaf5c21bef57f21de71ad8e9ebed68 inherit pub_types_structStrahlkorperTags_1_1GradUnitNormalOneForm"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a82ade0c90f70331382598c8818400dbb"><td class="memItemLeft" align="right" valign="top">static constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><b>function</b></td></tr>
+<tr class="separator:a82ade0c90f70331382598c8818400dbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename Frame&gt;<br />
+struct StrahlkorperTags::GradUnitNormalOneFormCompute&lt; Frame &gt;</h3>
+
+<p>Computes 3-covariant gradient \(D_i S_j\) of a <a class="el" href="structStrahlkorperTags_1_1Strahlkorper.html" title="Tag referring to a Strahlkorper">Strahlkorper</a>'s normal. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a82ade0c90f70331382598c8818400dbb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a82ade0c90f70331382598c8818400dbb">&#9670;&nbsp;</a></span>function</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Frame &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr auto <a class="el" href="structStrahlkorperTags_1_1GradUnitNormalOneFormCompute.html">StrahlkorperTags::GradUnitNormalOneFormCompute</a>&lt; Frame &gt;::function</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= <span class="keyword">static_cast&lt;</span><span class="keywordtype">void</span> (*)(</div>
+<div class="line">      <span class="keyword">const </span><a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;tnsr::ii&lt;DataVector, 3, Frame&gt;</a>*<span class="keyword">&gt;</span>,</div>
+<div class="line">      <span class="keyword">const</span> tnsr::i&lt;DataVector, 3, Frame&gt;&amp;, <span class="keyword">const</span> <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;DataVector&gt;</a>&amp;,</div>
+<div class="line">      <span class="keyword">const</span> tnsr::i&lt;DataVector, 3, Frame&gt;&amp;,</div>
+<div class="line">      <span class="keyword">const</span> tnsr::ii&lt;DataVector, 3, Frame&gt;&amp;, <span class="keyword">const</span> <a class="code" href="classDataVector.html">DataVector</a>&amp;,</div>
+<div class="line">      <span class="keyword">const</span> tnsr::Ijj&lt;DataVector, 3, Frame&gt;&amp;) noexcept&gt;(</div>
+<div class="line">      &amp;StrahlkorperGr::grad_unit_normal_one_form&lt;Frame&gt;)</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/ApparentHorizons/<a class="el" href="ApparentHorizons_2Tags_8hpp_source.html">Tags.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="aclassDataVector_html"><div class="ttname"><a href="classDataVector.html">DataVector</a></div><div class="ttdoc">Stores a collection of function values.</div><div class="ttdef"><b>Definition:</b> DataVector.hpp:46</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga06ebcb38a1f13c246e53378b9e8959ce"><div class="ttname"><a href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a></div><div class="ttdeci">Tensor&lt; T, Symmetry&lt;&gt;, index_list&lt;&gt; &gt; Scalar</div><div class="ttdef"><b>Definition:</b> TypeAliases.hpp:21</div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

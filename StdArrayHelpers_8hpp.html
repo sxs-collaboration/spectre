@@ -1,0 +1,311 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Utilities/StdArrayHelpers.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_703734d551dc6f7d643184484c894e35.html">Utilities</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#define-members">Macros</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">StdArrayHelpers.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/array.html">array</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/cmath.html">cmath</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</code><br />
+<code>#include &quot;<a class="el" href="Assert_8hpp_source.html">Utilities/ErrorHandling/Assert.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="Gsl_8hpp_source.html">Utilities/Gsl.hpp</a>&quot;</code><br />
+</div>
+<p><a href="StdArrayHelpers_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:gaee1c0cc775bf58891fab30b95a3ac51f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gaee1c0cc775bf58891fab30b95a3ac51f">DEFINE_STD_ARRAY_BINOP</a>(RESULT_TYPE,  LTYPE,  RTYPE,  OP_FUNCTION_NAME,  BINARY_OP)</td></tr>
+<tr class="memdesc:gaee1c0cc775bf58891fab30b95a3ac51f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Declares a binary function on an array, intended for binary operators such as <code>+</code>  <a href="group__UtilitiesGroup.html#gaee1c0cc775bf58891fab30b95a3ac51f">More...</a><br /></td></tr>
+<tr class="separator:gaee1c0cc775bf58891fab30b95a3ac51f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4409dfaeeba8ef49967a7c98e4709c98"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga4409dfaeeba8ef49967a7c98e4709c98">DEFINE_STD_ARRAY_INPLACE_BINOP</a>(LTYPE,  RTYPE,  OP_FUNCTION_NAME,  BINARY_OP)</td></tr>
+<tr class="memdesc:ga4409dfaeeba8ef49967a7c98e4709c98"><td class="mdescLeft">&#160;</td><td class="mdescRight">Declares an in-place binary function on an array, intended for operations such as <code>+=</code>  <a href="group__UtilitiesGroup.html#ga4409dfaeeba8ef49967a7c98e4709c98">More...</a><br /></td></tr>
+<tr class="separator:ga4409dfaeeba8ef49967a7c98e4709c98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:acde723fee9e09075c8296333bd2c1ae3"><td class="memTemplParams" colspan="2"><a id="acde723fee9e09075c8296333bd2c1ae3"></a>
+template&lt;size_t Dim, typename T , typename U &gt; </td></tr>
+<tr class="memitem:acde723fee9e09075c8296333bd2c1ae3"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt; &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator+=</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt; &amp;lhs, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; U, Dim &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:acde723fee9e09075c8296333bd2c1ae3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5dfaf207ba7df95166dd85fb2992e2b3"><td class="memTemplParams" colspan="2"><a id="a5dfaf207ba7df95166dd85fb2992e2b3"></a>
+template&lt;size_t Dim, typename T , typename U &gt; </td></tr>
+<tr class="memitem:a5dfaf207ba7df95166dd85fb2992e2b3"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator+</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt; &amp;lhs, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; U, Dim &gt; &amp;rhs) noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; decltype(lhs[0]+rhs[0]), Dim &gt;</td></tr>
+<tr class="separator:a5dfaf207ba7df95166dd85fb2992e2b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a480b00905481edebaaf8a13089ff62"><td class="memTemplParams" colspan="2"><a id="a6a480b00905481edebaaf8a13089ff62"></a>
+template&lt;size_t Dim, typename T , typename U &gt; </td></tr>
+<tr class="memitem:a6a480b00905481edebaaf8a13089ff62"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt; &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator-=</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt; &amp;lhs, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; U, Dim &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a6a480b00905481edebaaf8a13089ff62"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac6088053616cf4be39bbc44dab58fa42"><td class="memTemplParams" colspan="2"><a id="ac6088053616cf4be39bbc44dab58fa42"></a>
+template&lt;size_t Dim, typename T , typename U &gt; </td></tr>
+<tr class="memitem:ac6088053616cf4be39bbc44dab58fa42"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator-</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt; &amp;lhs, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; U, Dim &gt; &amp;rhs) noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; decltype(lhs[0] - rhs[0]), Dim &gt;</td></tr>
+<tr class="separator:ac6088053616cf4be39bbc44dab58fa42"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a858ae12e853908b50a3605a4ff4e2065"><td class="memTemplParams" colspan="2"><a id="a858ae12e853908b50a3605a4ff4e2065"></a>
+template&lt;size_t Dim, typename T , typename U &gt; </td></tr>
+<tr class="memitem:a858ae12e853908b50a3605a4ff4e2065"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator*</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt; &amp;lhs, const U &amp;scale) noexcept</td></tr>
+<tr class="separator:a858ae12e853908b50a3605a4ff4e2065"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8eb9e2803f5ca48701f28036534d3d14"><td class="memTemplParams" colspan="2"><a id="a8eb9e2803f5ca48701f28036534d3d14"></a>
+template&lt;size_t Dim, typename T , typename U &gt; </td></tr>
+<tr class="memitem:a8eb9e2803f5ca48701f28036534d3d14"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator*</b> (const U &amp;scale, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a8eb9e2803f5ca48701f28036534d3d14"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a194de1c0f92150bbb88555a4c323f2cd"><td class="memTemplParams" colspan="2"><a id="a194de1c0f92150bbb88555a4c323f2cd"></a>
+template&lt;size_t Dim, typename T , typename U &gt; </td></tr>
+<tr class="memitem:a194de1c0f92150bbb88555a4c323f2cd"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator/</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt; &amp;lhs, const U &amp;scale) noexcept</td></tr>
+<tr class="separator:a194de1c0f92150bbb88555a4c323f2cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab1627973d97522f72d5bd27f8be33391"><td class="memTemplParams" colspan="2"><a id="ab1627973d97522f72d5bd27f8be33391"></a>
+template&lt;size_t Dim, typename T &gt; </td></tr>
+<tr class="memitem:ab1627973d97522f72d5bd27f8be33391"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator-</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:ab1627973d97522f72d5bd27f8be33391"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2be082292cf46aa7a006b44e729474e7"><td class="memTemplParams" colspan="2">
+template&lt;typename T , size_t Dim&gt; </td></tr>
+<tr class="memitem:ga2be082292cf46aa7a006b44e729474e7"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim - 1 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga2be082292cf46aa7a006b44e729474e7">all_but_specified_element_of</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt; &amp;a, const size_t element_to_remove) noexcept</td></tr>
+<tr class="memdesc:ga2be082292cf46aa7a006b44e729474e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct an array from an existing array omitting one element. <br /></td></tr>
+<tr class="separator:ga2be082292cf46aa7a006b44e729474e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf56b8d2cde45404481339fbafcf19e39"><td class="memTemplParams" colspan="2">
+template&lt;typename T , size_t Dim&gt; </td></tr>
+<tr class="memitem:gaf56b8d2cde45404481339fbafcf19e39"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim+1 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gaf56b8d2cde45404481339fbafcf19e39">insert_element</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt; a, const size_t element_to_add, T value) noexcept</td></tr>
+<tr class="memdesc:gaf56b8d2cde45404481339fbafcf19e39"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct an array from an existing array adding one element. <br /></td></tr>
+<tr class="separator:gaf56b8d2cde45404481339fbafcf19e39"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabddc5fbff7dc002caf6472d5c782b11b"><td class="memTemplParams" colspan="2">
+template&lt;typename T , size_t Dim&gt; </td></tr>
+<tr class="memitem:gabddc5fbff7dc002caf6472d5c782b11b"><td class="memTemplItemLeft" align="right" valign="top">constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim+1 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gabddc5fbff7dc002caf6472d5c782b11b">prepend</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt; &amp;a, T value) noexcept</td></tr>
+<tr class="memdesc:gabddc5fbff7dc002caf6472d5c782b11b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct an array from an existing array prepending a value. <br /></td></tr>
+<tr class="separator:gabddc5fbff7dc002caf6472d5c782b11b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa9752049086a20f017376e22ad169e47"><td class="memTemplParams" colspan="2">template&lt;typename T , size_t Dim, typename F &gt; </td></tr>
+<tr class="memitem:gaa9752049086a20f017376e22ad169e47"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gaa9752049086a20f017376e22ad169e47">map_array</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt; &amp;array, const F &amp;f) noexcept</td></tr>
+<tr class="separator:gaa9752049086a20f017376e22ad169e47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ga05223223c63459beb75c170fa104ca57"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga05223223c63459beb75c170fa104ca57"><td class="memTemplItemLeft" align="right" valign="top">decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga05223223c63459beb75c170fa104ca57">magnitude</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 1 &gt; &amp;a) noexcept</td></tr>
+<tr class="memdesc:ga05223223c63459beb75c170fa104ca57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Euclidean magnitude of the elements of the array.  <a href="group__UtilitiesGroup.html#ga05223223c63459beb75c170fa104ca57">More...</a><br /></td></tr>
+<tr class="separator:ga05223223c63459beb75c170fa104ca57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga270b7b477b51bd698937452882a9d70d"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga270b7b477b51bd698937452882a9d70d"><td class="memTemplItemLeft" align="right" valign="top">decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga270b7b477b51bd698937452882a9d70d">magnitude</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 2 &gt; &amp;a) noexcept</td></tr>
+<tr class="memdesc:ga270b7b477b51bd698937452882a9d70d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Euclidean magnitude of the elements of the array.  <a href="group__UtilitiesGroup.html#ga270b7b477b51bd698937452882a9d70d">More...</a><br /></td></tr>
+<tr class="separator:ga270b7b477b51bd698937452882a9d70d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa2498f54ca8013103c91a14d1350c777"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:gaa2498f54ca8013103c91a14d1350c777"><td class="memTemplItemLeft" align="right" valign="top">decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gaa2498f54ca8013103c91a14d1350c777">magnitude</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;a) noexcept</td></tr>
+<tr class="memdesc:gaa2498f54ca8013103c91a14d1350c777"><td class="mdescLeft">&#160;</td><td class="mdescRight">Euclidean magnitude of the elements of the array.  <a href="group__UtilitiesGroup.html#gaa2498f54ca8013103c91a14d1350c777">More...</a><br /></td></tr>
+<tr class="separator:gaa2498f54ca8013103c91a14d1350c777"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ga2205f7b4b505b2c8c5f50555bf2725bd"><td class="memTemplParams" colspan="2">template&lt;typename T , typename R &gt; </td></tr>
+<tr class="memitem:ga2205f7b4b505b2c8c5f50555bf2725bd"><td class="memTemplItemLeft" align="right" valign="top">decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga2205f7b4b505b2c8c5f50555bf2725bd">dot</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 1 &gt; &amp;first, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; R, 1 &gt; &amp;second)</td></tr>
+<tr class="memdesc:ga2205f7b4b505b2c8c5f50555bf2725bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dot product between two arrays.  <a href="group__UtilitiesGroup.html#ga2205f7b4b505b2c8c5f50555bf2725bd">More...</a><br /></td></tr>
+<tr class="separator:ga2205f7b4b505b2c8c5f50555bf2725bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga825f09807dc021897b0879bc1469061c"><td class="memTemplParams" colspan="2">template&lt;typename T , typename R &gt; </td></tr>
+<tr class="memitem:ga825f09807dc021897b0879bc1469061c"><td class="memTemplItemLeft" align="right" valign="top">decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga825f09807dc021897b0879bc1469061c">dot</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 2 &gt; &amp;first, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; R, 2 &gt; &amp;second)</td></tr>
+<tr class="memdesc:ga825f09807dc021897b0879bc1469061c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dot product between two arrays.  <a href="group__UtilitiesGroup.html#ga825f09807dc021897b0879bc1469061c">More...</a><br /></td></tr>
+<tr class="separator:ga825f09807dc021897b0879bc1469061c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad0847cf84cbbb471fc0499a5d4a1cb96"><td class="memTemplParams" colspan="2">template&lt;typename T , typename R &gt; </td></tr>
+<tr class="memitem:gad0847cf84cbbb471fc0499a5d4a1cb96"><td class="memTemplItemLeft" align="right" valign="top">decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gad0847cf84cbbb471fc0499a5d4a1cb96">dot</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;first, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; R, 3 &gt; &amp;second)</td></tr>
+<tr class="memdesc:gad0847cf84cbbb471fc0499a5d4a1cb96"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dot product between two arrays.  <a href="group__UtilitiesGroup.html#gad0847cf84cbbb471fc0499a5d4a1cb96">More...</a><br /></td></tr>
+<tr class="separator:gad0847cf84cbbb471fc0499a5d4a1cb96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Defines arithmetic operators for <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a> and other helpful functions. </p>
+</div></div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

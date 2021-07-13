@@ -1,0 +1,444 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - 39f3c2b725318dcf91749887b1e61f477736e132 - NumericalAlgorithms/FiniteDifference/AoWeno.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title"> SpECTRE Documentation Coverage Report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">NumericalAlgorithms/FiniteDifference</a> - AoWeno.hpp</td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+             <td class="headerItem">Commit:</td>
+             <td class="headerValue"><a target="_blank" href="https://github.com/sxs-collaboration/spectre/commit/39f3c2b725318dcf91749887b1e61f477736e132">39f3c2b725318dcf91749887b1e61f477736e132</a></td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntry">4</td>
+            <td class="headerCovTableEntryMed">75.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2021-07-13 03:19:40</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineNoCov">          0 : // Distributed under the MIT License.</span></a>
+<a name="2"><span class="lineNum">       2 </span>            : // See LICENSE.txt for details.</a>
+<a name="3"><span class="lineNum">       3 </span>            : </a>
+<a name="4"><span class="lineNum">       4 </span>            : #pragma once</a>
+<a name="5"><span class="lineNum">       5 </span>            : </a>
+<a name="6"><span class="lineNum">       6 </span>            : #include &lt;array&gt;</a>
+<a name="7"><span class="lineNum">       7 </span>            : #include &lt;cmath&gt;</a>
+<a name="8"><span class="lineNum">       8 </span>            : #include &lt;cstddef&gt;</a>
+<a name="9"><span class="lineNum">       9 </span>            : #include &lt;utility&gt;</a>
+<a name="10"><span class="lineNum">      10 </span>            : </a>
+<a name="11"><span class="lineNum">      11 </span>            : #include &quot;NumericalAlgorithms/FiniteDifference/Reconstruct.hpp&quot;</a>
+<a name="12"><span class="lineNum">      12 </span>            : #include &quot;Utilities/ConstantExpressions.hpp&quot;</a>
+<a name="13"><span class="lineNum">      13 </span>            : #include &quot;Utilities/ForceInline.hpp&quot;</a>
+<a name="14"><span class="lineNum">      14 </span>            : #include &quot;Utilities/Gsl.hpp&quot;</a>
+<a name="15"><span class="lineNum">      15 </span>            : #include &quot;Utilities/Math.hpp&quot;</a>
+<a name="16"><span class="lineNum">      16 </span>            : #include &quot;Utilities/TMPL.hpp&quot;</a>
+<a name="17"><span class="lineNum">      17 </span>            : </a>
+<a name="18"><span class="lineNum">      18 </span>            : /// \cond</a>
+<a name="19"><span class="lineNum">      19 </span>            : template &lt;size_t Dim&gt;</a>
+<a name="20"><span class="lineNum">      20 </span>            : class Direction;</a>
+<a name="21"><span class="lineNum">      21 </span>            : template &lt;size_t Dim&gt;</a>
+<a name="22"><span class="lineNum">      22 </span>            : class Index;</a>
+<a name="23"><span class="lineNum">      23 </span>            : /// \endcond</a>
+<a name="24"><span class="lineNum">      24 </span>            : </a>
+<a name="25"><span class="lineNum">      25 </span><span class="lineCov">          1 : namespace fd::reconstruction {</span></a>
+<a name="26"><span class="lineNum">      26 </span>            : namespace detail {</a>
+<a name="27"><span class="lineNum">      27 </span>            : template &lt;size_t NonlinearWeightExponent&gt;</a>
+<a name="28"><span class="lineNum">      28 </span>            : struct AoWeno53Reconstructor {</a>
+<a name="29"><span class="lineNum">      29 </span>            :   SPECTRE_ALWAYS_INLINE static std::array&lt;double, 2&gt; pointwise(</a>
+<a name="30"><span class="lineNum">      30 </span>            :       const double* const u, const int stride, const double gamma_hi,</a>
+<a name="31"><span class="lineNum">      31 </span>            :       const double gamma_lo, const double epsilon) noexcept {</a>
+<a name="32"><span class="lineNum">      32 </span>            :     ASSERT(gamma_hi &lt;= 1.0 and gamma_hi &gt;= 0.0,</a>
+<a name="33"><span class="lineNum">      33 </span>            :            &quot;gamma_hi must be in [0.0, 1.0] but is &quot; &lt;&lt; gamma_hi);</a>
+<a name="34"><span class="lineNum">      34 </span>            :     ASSERT(gamma_lo &lt;= 1.0 and gamma_lo &gt;= 0.0,</a>
+<a name="35"><span class="lineNum">      35 </span>            :            &quot;gamma_lo must be in [0.0, 1.0] but is &quot; &lt;&lt; gamma_lo);</a>
+<a name="36"><span class="lineNum">      36 </span>            :     ASSERT(epsilon &gt; 0.0,</a>
+<a name="37"><span class="lineNum">      37 </span>            :            &quot;epsilon must be greater than zero but is &quot; &lt;&lt; epsilon);</a>
+<a name="38"><span class="lineNum">      38 </span>            : </a>
+<a name="39"><span class="lineNum">      39 </span>            :     const std::array moments_sr3_1{</a>
+<a name="40"><span class="lineNum">      40 </span>            :         1.041666666666666 * u[0] - 0.08333333333333333 * u[-stride] +</a>
+<a name="41"><span class="lineNum">      41 </span>            :             0.04166666666666666 * u[-2 * stride],</a>
+<a name="42"><span class="lineNum">      42 </span>            :         0.5 * u[-2 * stride] - 2.0 * u[-stride] + 1.5 * u[0],</a>
+<a name="43"><span class="lineNum">      43 </span>            :         0.5 * u[-2 * stride] - u[-stride] + 0.5 * u[0]};</a>
+<a name="44"><span class="lineNum">      44 </span>            :     const std::array moments_sr3_2{0.04166666666666666 * u[stride] +</a>
+<a name="45"><span class="lineNum">      45 </span>            :                                        0.9166666666666666 * u[0] +</a>
+<a name="46"><span class="lineNum">      46 </span>            :                                        0.04166666666666666 * u[-stride],</a>
+<a name="47"><span class="lineNum">      47 </span>            :                                    0.5 * (u[stride] - u[-stride]),</a>
+<a name="48"><span class="lineNum">      48 </span>            :                                    0.5 * u[-stride] - u[0] + 0.5 * u[stride]};</a>
+<a name="49"><span class="lineNum">      49 </span>            :     const std::array moments_sr3_3{</a>
+<a name="50"><span class="lineNum">      50 </span>            :         0.04166666666666666 * u[2 * stride] - 0.08333333333333333 * u[stride] +</a>
+<a name="51"><span class="lineNum">      51 </span>            :             1.04166666666666666 * u[0],</a>
+<a name="52"><span class="lineNum">      52 </span>            :         -1.5 * u[0] + 2.0 * u[stride] - 0.5 * u[2 * stride],</a>
+<a name="53"><span class="lineNum">      53 </span>            :         0.5 * u[0] - u[stride] + 0.5 * u[2 * stride]};</a>
+<a name="54"><span class="lineNum">      54 </span>            :     const std::array moments_sr5{-2.95138888888888881e-03 * u[-2 * stride] +</a>
+<a name="55"><span class="lineNum">      55 </span>            :                                      5.34722222222222196e-02 * u[-stride] +</a>
+<a name="56"><span class="lineNum">      56 </span>            :                                      8.98958333333333304e-01 * u[0] +</a>
+<a name="57"><span class="lineNum">      57 </span>            :                                      5.34722222222222196e-02 * u[stride] +</a>
+<a name="58"><span class="lineNum">      58 </span>            :                                      -2.95138888888888881e-03 * u[2 * stride],</a>
+<a name="59"><span class="lineNum">      59 </span>            :                                  7.08333333333333315e-02 * u[-2 * stride] +</a>
+<a name="60"><span class="lineNum">      60 </span>            :                                      -6.41666666666666718e-01 * u[-stride] +</a>
+<a name="61"><span class="lineNum">      61 </span>            :                                      6.41666666666666718e-01 * u[stride] +</a>
+<a name="62"><span class="lineNum">      62 </span>            :                                      -7.08333333333333315e-02 * u[2 * stride],</a>
+<a name="63"><span class="lineNum">      63 </span>            :                                  -3.27380952380952397e-02 * u[-2 * stride] +</a>
+<a name="64"><span class="lineNum">      64 </span>            :                                      6.30952380952380931e-01 * u[-stride] +</a>
+<a name="65"><span class="lineNum">      65 </span>            :                                      -1.19642857142857140e+00 * u[0] +</a>
+<a name="66"><span class="lineNum">      66 </span>            :                                      6.30952380952380931e-01 * u[stride] +</a>
+<a name="67"><span class="lineNum">      67 </span>            :                                      -3.27380952380952397e-02 * u[2 * stride],</a>
+<a name="68"><span class="lineNum">      68 </span>            :                                  -8.33333333333333287e-02 * u[-2 * stride] +</a>
+<a name="69"><span class="lineNum">      69 </span>            :                                      1.66666666666666657e-01 * u[-stride] +</a>
+<a name="70"><span class="lineNum">      70 </span>            :                                      -1.66666666666666657e-01 * u[stride] +</a>
+<a name="71"><span class="lineNum">      71 </span>            :                                      8.33333333333333287e-02 * u[2 * stride],</a>
+<a name="72"><span class="lineNum">      72 </span>            :                                  4.16666666666666644e-02 * u[-2 * stride] +</a>
+<a name="73"><span class="lineNum">      73 </span>            :                                      -1.66666666666666657e-01 * u[-stride] +</a>
+<a name="74"><span class="lineNum">      74 </span>            :                                      2.50000000000000000e-01 * u[0] +</a>
+<a name="75"><span class="lineNum">      75 </span>            :                                      -1.66666666666666657e-01 * u[stride] +</a>
+<a name="76"><span class="lineNum">      76 </span>            :                                      4.16666666666666644e-02 * u[2 * stride]};</a>
+<a name="77"><span class="lineNum">      77 </span>            : </a>
+<a name="78"><span class="lineNum">      78 </span>            :     // These are the &quot;first alternative&quot; oscillation indicators</a>
+<a name="79"><span class="lineNum">      79 </span>            :     constexpr double beta_r3_factor = 37.0 / 3.0;</a>
+<a name="80"><span class="lineNum">      80 </span>            :     const std::array beta_r3{</a>
+<a name="81"><span class="lineNum">      81 </span>            :         square(moments_sr3_1[1]) + beta_r3_factor * square(moments_sr3_1[2]),</a>
+<a name="82"><span class="lineNum">      82 </span>            :         square(moments_sr3_2[1]) + beta_r3_factor * square(moments_sr3_2[2]),</a>
+<a name="83"><span class="lineNum">      83 </span>            :         square(moments_sr3_3[1]) + beta_r3_factor * square(moments_sr3_3[2])};</a>
+<a name="84"><span class="lineNum">      84 </span>            :     const double beta_sr5 = square(moments_sr5[1]) +</a>
+<a name="85"><span class="lineNum">      85 </span>            :                             61.0 / 5.0 * moments_sr5[1] * moments_sr5[3] +</a>
+<a name="86"><span class="lineNum">      86 </span>            :                             37.0 / 3.0 * square(moments_sr5[2]) +</a>
+<a name="87"><span class="lineNum">      87 </span>            :                             1538.0 / 7.0 * moments_sr5[2] * moments_sr5[4] +</a>
+<a name="88"><span class="lineNum">      88 </span>            :                             8973.0 / 50.0 * square(moments_sr5[3]) +</a>
+<a name="89"><span class="lineNum">      89 </span>            :                             167158.0 / 49.0 * square(moments_sr5[4]);</a>
+<a name="90"><span class="lineNum">      90 </span>            : </a>
+<a name="91"><span class="lineNum">      91 </span>            :     // Compute linear and normalized nonlinear weights</a>
+<a name="92"><span class="lineNum">      92 </span>            :     const std::array linear_weights{</a>
+<a name="93"><span class="lineNum">      93 </span>            :         gamma_hi, 0.5 * (1.0 - gamma_hi) * (1.0 - gamma_lo),</a>
+<a name="94"><span class="lineNum">      94 </span>            :         (1.0 - gamma_hi) * gamma_lo, 0.5 * (1.0 - gamma_hi) * (1.0 - gamma_lo)};</a>
+<a name="95"><span class="lineNum">      95 </span>            :     std::array nonlinear_weights{</a>
+<a name="96"><span class="lineNum">      96 </span>            :         linear_weights[0] / pow&lt;NonlinearWeightExponent&gt;(beta_sr5 + epsilon),</a>
+<a name="97"><span class="lineNum">      97 </span>            :         linear_weights[1] / pow&lt;NonlinearWeightExponent&gt;(beta_r3[0] + epsilon),</a>
+<a name="98"><span class="lineNum">      98 </span>            :         linear_weights[2] / pow&lt;NonlinearWeightExponent&gt;(beta_r3[1] + epsilon),</a>
+<a name="99"><span class="lineNum">      99 </span>            :         linear_weights[3] / pow&lt;NonlinearWeightExponent&gt;(beta_r3[2] + epsilon)};</a>
+<a name="100"><span class="lineNum">     100 </span>            :     const double normalization = nonlinear_weights[0] + nonlinear_weights[1] +</a>
+<a name="101"><span class="lineNum">     101 </span>            :                                  nonlinear_weights[2] + nonlinear_weights[3];</a>
+<a name="102"><span class="lineNum">     102 </span>            :     for (double&amp; nw : nonlinear_weights) {</a>
+<a name="103"><span class="lineNum">     103 </span>            :       nw /= normalization;</a>
+<a name="104"><span class="lineNum">     104 </span>            :     }</a>
+<a name="105"><span class="lineNum">     105 </span>            : </a>
+<a name="106"><span class="lineNum">     106 </span>            :     const std::array&lt;double, 5&gt; moments{</a>
+<a name="107"><span class="lineNum">     107 </span>            :         {nonlinear_weights[0] / linear_weights[0] *</a>
+<a name="108"><span class="lineNum">     108 </span>            :                  (moments_sr5[0] - linear_weights[1] * moments_sr3_1[0] -</a>
+<a name="109"><span class="lineNum">     109 </span>            :                   linear_weights[2] * moments_sr3_2[0] -</a>
+<a name="110"><span class="lineNum">     110 </span>            :                   linear_weights[3] * moments_sr3_3[0]) +</a>
+<a name="111"><span class="lineNum">     111 </span>            :              nonlinear_weights[1] * moments_sr3_1[0] +</a>
+<a name="112"><span class="lineNum">     112 </span>            :              nonlinear_weights[2] * moments_sr3_2[0] +</a>
+<a name="113"><span class="lineNum">     113 </span>            :              nonlinear_weights[3] * moments_sr3_3[0],</a>
+<a name="114"><span class="lineNum">     114 </span>            :          nonlinear_weights[0] / linear_weights[0] *</a>
+<a name="115"><span class="lineNum">     115 </span>            :                  (moments_sr5[1] - linear_weights[1] * moments_sr3_1[1] -</a>
+<a name="116"><span class="lineNum">     116 </span>            :                   linear_weights[2] * moments_sr3_2[1] -</a>
+<a name="117"><span class="lineNum">     117 </span>            :                   linear_weights[3] * moments_sr3_3[1]) +</a>
+<a name="118"><span class="lineNum">     118 </span>            :              nonlinear_weights[1] * moments_sr3_1[1] +</a>
+<a name="119"><span class="lineNum">     119 </span>            :              nonlinear_weights[2] * moments_sr3_2[1] +</a>
+<a name="120"><span class="lineNum">     120 </span>            :              nonlinear_weights[3] * moments_sr3_3[1],</a>
+<a name="121"><span class="lineNum">     121 </span>            :          nonlinear_weights[0] / linear_weights[0] *</a>
+<a name="122"><span class="lineNum">     122 </span>            :                  (moments_sr5[2] - linear_weights[1] * moments_sr3_1[2] -</a>
+<a name="123"><span class="lineNum">     123 </span>            :                   linear_weights[2] * moments_sr3_2[2] -</a>
+<a name="124"><span class="lineNum">     124 </span>            :                   linear_weights[3] * moments_sr3_3[2]) +</a>
+<a name="125"><span class="lineNum">     125 </span>            :              nonlinear_weights[1] * moments_sr3_1[2] +</a>
+<a name="126"><span class="lineNum">     126 </span>            :              nonlinear_weights[2] * moments_sr3_2[2] +</a>
+<a name="127"><span class="lineNum">     127 </span>            :              nonlinear_weights[3] * moments_sr3_3[2],</a>
+<a name="128"><span class="lineNum">     128 </span>            :          nonlinear_weights[0] / linear_weights[0] * moments_sr5[3],</a>
+<a name="129"><span class="lineNum">     129 </span>            :          nonlinear_weights[0] / linear_weights[0] * moments_sr5[4]}};</a>
+<a name="130"><span class="lineNum">     130 </span>            : </a>
+<a name="131"><span class="lineNum">     131 </span>            :     // The polynomial values (excluding the L_0(x)) at the lower/upper faces.</a>
+<a name="132"><span class="lineNum">     132 </span>            :     // The polynomials are (x in [-0.5,0.5]):</a>
+<a name="133"><span class="lineNum">     133 </span>            :     // L0(x)=1.0 (not in array)</a>
+<a name="134"><span class="lineNum">     134 </span>            :     // L1(x)=x</a>
+<a name="135"><span class="lineNum">     135 </span>            :     // L2(x)=x^2-1/12</a>
+<a name="136"><span class="lineNum">     136 </span>            :     // L3(x)=x^3 - (3/20) x</a>
+<a name="137"><span class="lineNum">     137 </span>            :     // L4(x)=x^4 - (3/14) x^2 + 3/560</a>
+<a name="138"><span class="lineNum">     138 </span>            :     const std::array polys_at_plus_half{0.5, 0.16666666666666666, 0.05,</a>
+<a name="139"><span class="lineNum">     139 </span>            :                                         0.014285714285714289};</a>
+<a name="140"><span class="lineNum">     140 </span>            : </a>
+<a name="141"><span class="lineNum">     141 </span>            :     return {{moments[0] - polys_at_plus_half[0] * moments[1] +</a>
+<a name="142"><span class="lineNum">     142 </span>            :                  polys_at_plus_half[1] * moments[2] -</a>
+<a name="143"><span class="lineNum">     143 </span>            :                  polys_at_plus_half[2] * moments[3] +</a>
+<a name="144"><span class="lineNum">     144 </span>            :                  polys_at_plus_half[3] * moments[4],</a>
+<a name="145"><span class="lineNum">     145 </span>            :              moments[0] + polys_at_plus_half[0] * moments[1] +</a>
+<a name="146"><span class="lineNum">     146 </span>            :                  polys_at_plus_half[1] * moments[2] +</a>
+<a name="147"><span class="lineNum">     147 </span>            :                  polys_at_plus_half[2] * moments[3] +</a>
+<a name="148"><span class="lineNum">     148 </span>            :                  polys_at_plus_half[3] * moments[4]}};</a>
+<a name="149"><span class="lineNum">     149 </span>            :   }</a>
+<a name="150"><span class="lineNum">     150 </span>            : </a>
+<a name="151"><span class="lineNum">     151 </span>            :   SPECTRE_ALWAYS_INLINE static constexpr size_t stencil_width() noexcept {</a>
+<a name="152"><span class="lineNum">     152 </span>            :     return 5;</a>
+<a name="153"><span class="lineNum">     153 </span>            :   }</a>
+<a name="154"><span class="lineNum">     154 </span>            : };</a>
+<a name="155"><span class="lineNum">     155 </span>            : }  // namespace detail</a>
+<a name="156"><span class="lineNum">     156 </span>            : </a>
+<a name="157"><span class="lineNum">     157 </span>            : /*!</a>
+<a name="158"><span class="lineNum">     158 </span>            :  * \ingroup FiniteDifferenceGroup</a>
+<a name="159"><span class="lineNum">     159 </span>            :  * \brief Performs an adaptive order (AO) WENO reconstruction using a single 5th</a>
+<a name="160"><span class="lineNum">     160 </span>            :  * order stencil and a 3rd-order CWENO scheme.</a>
+<a name="161"><span class="lineNum">     161 </span>            :  *</a>
+<a name="162"><span class="lineNum">     162 </span>            :  * The AO-WENO(5,3) scheme is based on the scheme presented in</a>
+<a name="163"><span class="lineNum">     163 </span>            :  * \cite Balsara2016780 but adjusted to do reconstruction on variables instead</a>
+<a name="164"><span class="lineNum">     164 </span>            :  * of fluxes. The Legendre basis functions on the domain \f$\xi\in[-1/2,1/2]\f$</a>
+<a name="165"><span class="lineNum">     165 </span>            :  * are given by:</a>
+<a name="166"><span class="lineNum">     166 </span>            :  *</a>
+<a name="167"><span class="lineNum">     167 </span>            :  * \f{align*}{</a>
+<a name="168"><span class="lineNum">     168 </span>            :  * L_0(\xi) &amp;= 1 \\</a>
+<a name="169"><span class="lineNum">     169 </span>            :  * L_1(\xi) &amp;= \xi \\</a>
+<a name="170"><span class="lineNum">     170 </span>            :  * L_2(\xi) &amp;= \xi^2-\frac{1}{12} \\</a>
+<a name="171"><span class="lineNum">     171 </span>            :  * L_3(\xi) &amp;= \xi^3 - \frac{3}{20} \xi \\</a>
+<a name="172"><span class="lineNum">     172 </span>            :  * L_4(\xi) &amp;= \xi^4 - \frac{3}{14} \xi^2 + \frac{3}{560}</a>
+<a name="173"><span class="lineNum">     173 </span>            :  * \f}</a>
+<a name="174"><span class="lineNum">     174 </span>            :  *</a>
+<a name="175"><span class="lineNum">     175 </span>            :  * The oscillation indicators are given by</a>
+<a name="176"><span class="lineNum">     176 </span>            :  *</a>
+<a name="177"><span class="lineNum">     177 </span>            :  * \f{align*}{</a>
+<a name="178"><span class="lineNum">     178 </span>            :  * \beta_l = \sum_{k=1}^{p}\sum_{m=1}^{p}\sigma_{km} u_{k,l} u_{m,l}</a>
+<a name="179"><span class="lineNum">     179 </span>            :  * \f}</a>
+<a name="180"><span class="lineNum">     180 </span>            :  *</a>
+<a name="181"><span class="lineNum">     181 </span>            :  * where \f$p\f$ is the maximum degree of the basis function used for the</a>
+<a name="182"><span class="lineNum">     182 </span>            :  * stencil \f$l\f$, and</a>
+<a name="183"><span class="lineNum">     183 </span>            :  *</a>
+<a name="184"><span class="lineNum">     184 </span>            :  * \f{align*}{</a>
+<a name="185"><span class="lineNum">     185 </span>            :  * \sigma_{km}=\sum_{i=1}^{p}\int_{-1/2}^{1/2}</a>
+<a name="186"><span class="lineNum">     186 </span>            :  * \frac{d^i L_k(\xi)}{d\xi^i}\frac{d^i L_m(\xi)}{d\xi^i}d\xi</a>
+<a name="187"><span class="lineNum">     187 </span>            :  * \f}</a>
+<a name="188"><span class="lineNum">     188 </span>            :  *</a>
+<a name="189"><span class="lineNum">     189 </span>            :  * We write the 3rd-order reconstructed polynomial \f$P^{r3}_l(\xi)\f$</a>
+<a name="190"><span class="lineNum">     190 </span>            :  * associated with the stencil \f$S^{r3}_l\f$ as</a>
+<a name="191"><span class="lineNum">     191 </span>            :  *</a>
+<a name="192"><span class="lineNum">     192 </span>            :  * \f{align*}{</a>
+<a name="193"><span class="lineNum">     193 </span>            :  * P^{r3}_l(\xi) = u_0 +u_{\xi} L_1(\xi) + u_{\xi 2} L_2(\xi)</a>
+<a name="194"><span class="lineNum">     194 </span>            :  * \f}</a>
+<a name="195"><span class="lineNum">     195 </span>            :  *</a>
+<a name="196"><span class="lineNum">     196 </span>            :  * For the stencil \f$S^{r3}_1\f$ we get</a>
+<a name="197"><span class="lineNum">     197 </span>            :  *</a>
+<a name="198"><span class="lineNum">     198 </span>            :  * \f{align*}{</a>
+<a name="199"><span class="lineNum">     199 </span>            :  *  u_0 &amp;= \frac{25}{24} u_{j} -\frac{1}{12} u_{j-1} + \frac{1}{24} u_{j-2} \\</a>
+<a name="200"><span class="lineNum">     200 </span>            :  *  u_{\xi} &amp;= \frac{1}{2}u_{j-2} - 2 u_{j-1} + \frac{3}{2} u_j \\</a>
+<a name="201"><span class="lineNum">     201 </span>            :  *  u_{\xi2} &amp;= \frac{1}{2} u_{j-2} - u_{j-1} + \frac{1}{2} u_j</a>
+<a name="202"><span class="lineNum">     202 </span>            :  * \f}</a>
+<a name="203"><span class="lineNum">     203 </span>            :  *</a>
+<a name="204"><span class="lineNum">     204 </span>            :  * For the stencil \f$S^{r3}_2\f$ we get</a>
+<a name="205"><span class="lineNum">     205 </span>            :  *</a>
+<a name="206"><span class="lineNum">     206 </span>            :  * \f{align*}{</a>
+<a name="207"><span class="lineNum">     207 </span>            :  *  u_0 &amp;= \frac{1}{24} u_{j-1} + \frac{11}{12} u_{j} + \frac{1}{24} u_{j+1} \\</a>
+<a name="208"><span class="lineNum">     208 </span>            :  *  u_{\xi} &amp;= \frac{1}{2}(u_{j+1} - u_{j-1}) \\</a>
+<a name="209"><span class="lineNum">     209 </span>            :  *  u_{\xi2} &amp;= \frac{1}{2} u_{j-1} - u_{j} + \frac{1}{2} u_{j+1}</a>
+<a name="210"><span class="lineNum">     210 </span>            :  * \f}</a>
+<a name="211"><span class="lineNum">     211 </span>            :  *</a>
+<a name="212"><span class="lineNum">     212 </span>            :  * For the stencil \f$S^{r3}_3\f$ we get</a>
+<a name="213"><span class="lineNum">     213 </span>            :  *</a>
+<a name="214"><span class="lineNum">     214 </span>            :  * \f{align*}{</a>
+<a name="215"><span class="lineNum">     215 </span>            :  *  u_0 &amp;= \frac{25}{24} u_{j} -\frac{1}{12} u_{j+1} + \frac{1}{24} u_{j+2} \\</a>
+<a name="216"><span class="lineNum">     216 </span>            :  *  u_{\xi} &amp;= -\frac{1}{2}u_{j+2} + 2 u_{j+1} - \frac{3}{2} u_j \\</a>
+<a name="217"><span class="lineNum">     217 </span>            :  *  u_{\xi2} &amp;= \frac{1}{2} u_{j+2} - u_{j+1} + \frac{1}{2} u_j</a>
+<a name="218"><span class="lineNum">     218 </span>            :  * \f}</a>
+<a name="219"><span class="lineNum">     219 </span>            :  *</a>
+<a name="220"><span class="lineNum">     220 </span>            :  * The oscillation indicator for the 3rd-order stencils is given by</a>
+<a name="221"><span class="lineNum">     221 </span>            :  *</a>
+<a name="222"><span class="lineNum">     222 </span>            :  * \f{align*}{</a>
+<a name="223"><span class="lineNum">     223 </span>            :  *  \beta^{r3}_l = \left(u_{\xi}\right)^2+\frac{13}{3}\left(u_{\xi2}\right)^2</a>
+<a name="224"><span class="lineNum">     224 </span>            :  * \f}</a>
+<a name="225"><span class="lineNum">     225 </span>            :  *</a>
+<a name="226"><span class="lineNum">     226 </span>            :  * We write the 5th-order reconstructed polynomial \f$P^{r5}(\xi)\f$ as</a>
+<a name="227"><span class="lineNum">     227 </span>            :  *</a>
+<a name="228"><span class="lineNum">     228 </span>            :  * \f{align*}{</a>
+<a name="229"><span class="lineNum">     229 </span>            :  * P^{r5}_l(\xi) = u_0 +u_{\xi} L_1(\xi) + u_{\xi 2} L_2(\xi)</a>
+<a name="230"><span class="lineNum">     230 </span>            :  *  + u_{\xi3} L_3(\xi) + u_{\xi4} L_4(\xi)</a>
+<a name="231"><span class="lineNum">     231 </span>            :  * \f}</a>
+<a name="232"><span class="lineNum">     232 </span>            :  *</a>
+<a name="233"><span class="lineNum">     233 </span>            :  * with</a>
+<a name="234"><span class="lineNum">     234 </span>            :  *</a>
+<a name="235"><span class="lineNum">     235 </span>            :  * \f{align*}{</a>
+<a name="236"><span class="lineNum">     236 </span>            :  * u_0 &amp;= -\frac{17}{5760} u_{j-2} + \frac{77}{1440} u_{j-1} +</a>
+<a name="237"><span class="lineNum">     237 </span>            :  *        \frac{863}{960} u_{j} + \frac{77}{1440} u_{j+1} -</a>
+<a name="238"><span class="lineNum">     238 </span>            :  *        \frac{17}{5760} u_{j+2} \\</a>
+<a name="239"><span class="lineNum">     239 </span>            :  * u_{\xi} &amp;= \frac{17}{240} u_{j-2} - \frac{77}{120} u_{j-1} +</a>
+<a name="240"><span class="lineNum">     240 </span>            :  *           \frac{77}{120} u_{j+1} - \frac{17}{240} u_{j+2} \\</a>
+<a name="241"><span class="lineNum">     241 </span>            :  * u_{\xi2} &amp;= -\frac{11}{336} u_{j-2} + \frac{53}{84} u_{j-1} -</a>
+<a name="242"><span class="lineNum">     242 </span>            :  *            \frac{67}{56} u_{j} + \frac{53}{84} u_{j+1} -</a>
+<a name="243"><span class="lineNum">     243 </span>            :  *            \frac{11}{336} u_{j+2} \\</a>
+<a name="244"><span class="lineNum">     244 </span>            :  * u_{\xi3} &amp;= -\frac{1}{12} u_{j-2} + \frac{1}{6} u_{j-1}</a>
+<a name="245"><span class="lineNum">     245 </span>            :  *            -\frac{1}{6} u_{j+1} + \frac{1}{12} u_{j+2} \\</a>
+<a name="246"><span class="lineNum">     246 </span>            :  * u_{\xi4} &amp;= \frac{1}{24} u_{j-2} -\frac{1}{6} u_{j-1}</a>
+<a name="247"><span class="lineNum">     247 </span>            :  *           +\frac{1}{4} u_{j} - \frac{1}{6}u_{j+1}+\frac{1}{24}u_{j+2}</a>
+<a name="248"><span class="lineNum">     248 </span>            :  * \f}</a>
+<a name="249"><span class="lineNum">     249 </span>            :  *</a>
+<a name="250"><span class="lineNum">     250 </span>            :  * The oscillation indicator is given by</a>
+<a name="251"><span class="lineNum">     251 </span>            :  *</a>
+<a name="252"><span class="lineNum">     252 </span>            :  * \f{align*}{</a>
+<a name="253"><span class="lineNum">     253 </span>            :  *  \beta^{r5}&amp;=\left(u_{\xi}+\frac{1}{10}u_{\xi3}\right)^2 \\</a>
+<a name="254"><span class="lineNum">     254 </span>            :  *             &amp;+\frac{13}{3}\left(u_{\xi2}+\frac{123}{455}u_{\xi4}\right)^2\\</a>
+<a name="255"><span class="lineNum">     255 </span>            :  *             &amp;+\frac{781}{20}(u_{\xi3})^2+\frac{1421461}{2275}(u_{\xi4})^2</a>
+<a name="256"><span class="lineNum">     256 </span>            :  * \f}</a>
+<a name="257"><span class="lineNum">     257 </span>            :  *</a>
+<a name="258"><span class="lineNum">     258 </span>            :  * There are two linear weights \f$\gamma_{\mathrm{hi}}\f$ and</a>
+<a name="259"><span class="lineNum">     259 </span>            :  * \f$\gamma_{\mathrm{lo}}\f$. \f$\gamma_{\mathrm{hi}}\f$ controls how much of</a>
+<a name="260"><span class="lineNum">     260 </span>            :  * the 5th-order stencil is used in smooth regions, while</a>
+<a name="261"><span class="lineNum">     261 </span>            :  * \f$\gamma_{\mathrm{lo}}\f$ controls the linear weight of the central</a>
+<a name="262"><span class="lineNum">     262 </span>            :  * 3rd-order stencil. For larger \f$\gamma_{\mathrm{lo}}\f$, the 3rd-order</a>
+<a name="263"><span class="lineNum">     263 </span>            :  * method is more centrally weighted. The linear weights for the stencils</a>
+<a name="264"><span class="lineNum">     264 </span>            :  * are given by</a>
+<a name="265"><span class="lineNum">     265 </span>            :  *</a>
+<a name="266"><span class="lineNum">     266 </span>            :  * \f{align*}{</a>
+<a name="267"><span class="lineNum">     267 </span>            :  *  \gamma^{r5}&amp;=\gamma_{\mathrm{hi}} \\</a>
+<a name="268"><span class="lineNum">     268 </span>            :  *  \gamma^{r3}_1&amp; = (1-\gamma_{\mathrm{hi}})(1-\gamma_{\mathrm{lo}})/2 \\</a>
+<a name="269"><span class="lineNum">     269 </span>            :  *  \gamma^{r3}_2&amp; = (1-\gamma_{\mathrm{hi}})\gamma_{\mathrm{lo}} \\</a>
+<a name="270"><span class="lineNum">     270 </span>            :  *  \gamma^{r3}_3&amp; = (1-\gamma_{\mathrm{hi}})(1-\gamma_{\mathrm{lo}})/2</a>
+<a name="271"><span class="lineNum">     271 </span>            :  * \f}</a>
+<a name="272"><span class="lineNum">     272 </span>            :  *</a>
+<a name="273"><span class="lineNum">     273 </span>            :  * We use the standard nonlinear weights instead of the &quot;Z&quot; weights of</a>
+<a name="274"><span class="lineNum">     274 </span>            :  * \cite Borges20083191</a>
+<a name="275"><span class="lineNum">     275 </span>            :  *</a>
+<a name="276"><span class="lineNum">     276 </span>            :  * \f{align*}{</a>
+<a name="277"><span class="lineNum">     277 </span>            :  *  w^{r5}&amp;=\frac{\gamma^{r5}}{(\beta^{r5}+\epsilon)^q} \\</a>
+<a name="278"><span class="lineNum">     278 </span>            :  *  w^{r3}_l&amp;=\frac{\gamma^{r3}_l}{(\beta^{r3}_l+\epsilon)^q}</a>
+<a name="279"><span class="lineNum">     279 </span>            :  * \f}</a>
+<a name="280"><span class="lineNum">     280 </span>            :  *</a>
+<a name="281"><span class="lineNum">     281 </span>            :  * where \f$\epsilon\f$ is a small number used to avoid division by zero. The</a>
+<a name="282"><span class="lineNum">     282 </span>            :  * normalized nonlinear weights are denoted by \f$\bar{w}^{r5}\f$ and</a>
+<a name="283"><span class="lineNum">     283 </span>            :  * \f$\bar{w}_l^{r3}\f$. The final reconstructed polynomial \f$P(\xi)\f$ is</a>
+<a name="284"><span class="lineNum">     284 </span>            :  * given by</a>
+<a name="285"><span class="lineNum">     285 </span>            :  *</a>
+<a name="286"><span class="lineNum">     286 </span>            :  * \f{align*}{</a>
+<a name="287"><span class="lineNum">     287 </span>            :  *  P(\xi)&amp;=\frac{\bar{w}^{r5}}{\gamma^{r5}}</a>
+<a name="288"><span class="lineNum">     288 </span>            :  *   \left(P^{r5}(\xi)-\gamma^{r3}_1P^{r3}_1(\xi)</a>
+<a name="289"><span class="lineNum">     289 </span>            :  *         -\gamma^{r3}_2P^{r3}_2(\xi)-\gamma^{r3}_3P^{r3}_3(\xi)\right) \\</a>
+<a name="290"><span class="lineNum">     290 </span>            :  *  &amp;+\bar{w}^{r3}_1P^{r3}_1(\xi)+\bar{w}^{r3}_2P^{r3}_2(\xi)</a>
+<a name="291"><span class="lineNum">     291 </span>            :  *  +\bar{w}^{r3}_3P^{r3}_3(\xi)</a>
+<a name="292"><span class="lineNum">     292 </span>            :  * \f}</a>
+<a name="293"><span class="lineNum">     293 </span>            :  *</a>
+<a name="294"><span class="lineNum">     294 </span>            :  * The weights \f$\gamma_{\mathrm{hi}}\f$ and \f$\gamma_{\mathrm{lo}}\f$</a>
+<a name="295"><span class="lineNum">     295 </span>            :  * are typically chosen to be in the range \f$[0.85,0.95]\f$.</a>
+<a name="296"><span class="lineNum">     296 </span>            :  *</a>
+<a name="297"><span class="lineNum">     297 </span>            :  * ### First alternative oscillation indicators</a>
+<a name="298"><span class="lineNum">     298 </span>            :  *</a>
+<a name="299"><span class="lineNum">     299 </span>            :  * Instead of integrating over just the cell, we can instead integrate the basis</a>
+<a name="300"><span class="lineNum">     300 </span>            :  * functions over the entire fit interval, \f$[-5/2,5/2]\f$. Using this interval</a>
+<a name="301"><span class="lineNum">     301 </span>            :  * for the \f$S^{r3}_l\f$ and the \f$S^{r5}\f$ stencils we get</a>
+<a name="302"><span class="lineNum">     302 </span>            :  *</a>
+<a name="303"><span class="lineNum">     303 </span>            :  * \f{align*}{</a>
+<a name="304"><span class="lineNum">     304 </span>            :  *  \beta^{r3}_l&amp;=(u_{\xi})^2 + \frac{37}{3} (u_{\xi2})^2 \\</a>
+<a name="305"><span class="lineNum">     305 </span>            :  *  \beta^{r5}  &amp;=\left(u_{\xi}+\frac{61}{10}u_{\xi3}\right)^2</a>
+<a name="306"><span class="lineNum">     306 </span>            :  *   + \frac{569}{4}u_{\xi3}^2 \\</a>
+<a name="307"><span class="lineNum">     307 </span>            :  *  &amp;+ \frac{1}{8190742}\left(5383 u_{\xi2} + 167158 u_{\xi4}\right)^2</a>
+<a name="308"><span class="lineNum">     308 </span>            :  *  +\frac{4410763}{501474}(u_{\xi2})^2 \\</a>
+<a name="309"><span class="lineNum">     309 </span>            :  * &amp;=u_{\xi}^2 + \frac{61}{5}u_{\xi}u_{\xi3} + \frac{37}{3}u_{\xi2}^2</a>
+<a name="310"><span class="lineNum">     310 </span>            :  *  + \frac{1538}{7}u_{\xi2}u_{\xi4} \\</a>
+<a name="311"><span class="lineNum">     311 </span>            :  * &amp;+ \frac{8973}{50}u_{\xi3}^2 + \frac{167158}{49}u_{\xi4}^2</a>
+<a name="312"><span class="lineNum">     312 </span>            :  * \f}</a>
+<a name="313"><span class="lineNum">     313 </span>            :  *</a>
+<a name="314"><span class="lineNum">     314 </span>            :  * Note that the indicator is manifestly non-negative, a required property of</a>
+<a name="315"><span class="lineNum">     315 </span>            :  * oscillation indicators. These indicators weight high modes more, which means</a>
+<a name="316"><span class="lineNum">     316 </span>            :  * the scheme is more sensitive to high-frequency features in the solution.</a>
+<a name="317"><span class="lineNum">     317 </span>            :  *</a>
+<a name="318"><span class="lineNum">     318 </span>            :  * \note currently it is the alternative indicators that are used. However, an</a>
+<a name="319"><span class="lineNum">     319 </span>            :  * option to control which are used can readily be added, probably best done</a>
+<a name="320"><span class="lineNum">     320 </span>            :  * as a template parameter with `if constexpr` to avoid conditionals inside</a>
+<a name="321"><span class="lineNum">     321 </span>            :  * tight loops.</a>
+<a name="322"><span class="lineNum">     322 </span>            :  */</a>
+<a name="323"><span class="lineNum">     323 </span>            : template &lt;size_t NonlinearWeightExponent, size_t Dim&gt;</a>
+<a name="324"><span class="lineNum">     324 </span><span class="lineCov">          1 : void aoweno_53(</span></a>
+<a name="325"><span class="lineNum">     325 </span>            :     const gsl::not_null&lt;std::array&lt;gsl::span&lt;double&gt;, Dim&gt;*&gt;</a>
+<a name="326"><span class="lineNum">     326 </span>            :         reconstructed_upper_side_of_face_vars,</a>
+<a name="327"><span class="lineNum">     327 </span>            :     const gsl::not_null&lt;std::array&lt;gsl::span&lt;double&gt;, Dim&gt;*&gt;</a>
+<a name="328"><span class="lineNum">     328 </span>            :         reconstructed_lower_side_of_face_vars,</a>
+<a name="329"><span class="lineNum">     329 </span>            :     const gsl::span&lt;const double&gt;&amp; volume_vars,</a>
+<a name="330"><span class="lineNum">     330 </span>            :     const DirectionMap&lt;Dim, gsl::span&lt;const double&gt;&gt;&amp; ghost_cell_vars,</a>
+<a name="331"><span class="lineNum">     331 </span>            :     const Index&lt;Dim&gt;&amp; volume_extents, const size_t number_of_variables,</a>
+<a name="332"><span class="lineNum">     332 </span>            :     const double gamma_hi, const double gamma_lo,</a>
+<a name="333"><span class="lineNum">     333 </span>            :     const double epsilon) noexcept {</a>
+<a name="334"><span class="lineNum">     334 </span>            :   detail::reconstruct&lt;detail::AoWeno53Reconstructor&lt;NonlinearWeightExponent&gt;&gt;(</a>
+<a name="335"><span class="lineNum">     335 </span>            :       reconstructed_upper_side_of_face_vars,</a>
+<a name="336"><span class="lineNum">     336 </span>            :       reconstructed_lower_side_of_face_vars, volume_vars, ghost_cell_vars,</a>
+<a name="337"><span class="lineNum">     337 </span>            :       volume_extents, number_of_variables, gamma_hi, gamma_lo, epsilon);</a>
+<a name="338"><span class="lineNum">     338 </span>            : }</a>
+<a name="339"><span class="lineNum">     339 </span>            : </a>
+<a name="340"><span class="lineNum">     340 </span>            : /*!</a>
+<a name="341"><span class="lineNum">     341 </span>            :  * \brief Returns function pointers to the `aoweno_53` function, lower neighbor</a>
+<a name="342"><span class="lineNum">     342 </span>            :  * reconstruction, and upper neighbor reconstruction.</a>
+<a name="343"><span class="lineNum">     343 </span>            :  *</a>
+<a name="344"><span class="lineNum">     344 </span>            :  * This is useful for controlling template parameters like the</a>
+<a name="345"><span class="lineNum">     345 </span>            :  * `NonlinearWeightExponent` from an input file by setting a function pointer.</a>
+<a name="346"><span class="lineNum">     346 </span>            :  * Note that the reason the reconstruction functions instead of say the</a>
+<a name="347"><span class="lineNum">     347 </span>            :  * `pointwise` member function is returned is to avoid function pointers inside</a>
+<a name="348"><span class="lineNum">     348 </span>            :  * tight loops.</a>
+<a name="349"><span class="lineNum">     349 </span>            :  */</a>
+<a name="350"><span class="lineNum">     350 </span>            : template &lt;size_t Dim&gt;</a>
+<a name="351"><span class="lineNum">     351 </span>            : std::tuple&lt;</a>
+<a name="352"><span class="lineNum">     352 </span>            :     void (*)(gsl::not_null&lt;std::array&lt;gsl::span&lt;double&gt;, Dim&gt;*&gt;,</a>
+<a name="353"><span class="lineNum">     353 </span>            :              gsl::not_null&lt;std::array&lt;gsl::span&lt;double&gt;, Dim&gt;*&gt;,</a>
+<a name="354"><span class="lineNum">     354 </span>            :              const gsl::span&lt;const double&gt;&amp;,</a>
+<a name="355"><span class="lineNum">     355 </span>            :              const DirectionMap&lt;Dim, gsl::span&lt;const double&gt;&gt;&amp;,</a>
+<a name="356"><span class="lineNum">     356 </span>            :              const Index&lt;Dim&gt;&amp;, size_t, double, double, double) noexcept,</a>
+<a name="357"><span class="lineNum">     357 </span>            :     void (*)(gsl::not_null&lt;DataVector*&gt;, const DataVector&amp;, const DataVector&amp;,</a>
+<a name="358"><span class="lineNum">     358 </span>            :              const Index&lt;Dim&gt;&amp;, const Index&lt;Dim&gt;&amp;, const Direction&lt;Dim&gt;&amp;,</a>
+<a name="359"><span class="lineNum">     359 </span>            :              const double&amp;, const double&amp;, const double&amp;) noexcept,</a>
+<a name="360"><span class="lineNum">     360 </span>            :     void (*)(gsl::not_null&lt;DataVector*&gt;, const DataVector&amp;, const DataVector&amp;,</a>
+<a name="361"><span class="lineNum">     361 </span>            :              const Index&lt;Dim&gt;&amp;, const Index&lt;Dim&gt;&amp;, const Direction&lt;Dim&gt;&amp;,</a>
+<a name="362"><span class="lineNum">     362 </span>            :              const double&amp;, const double&amp;, const double&amp;) noexcept&gt;</a>
+<a name="363"><span class="lineNum">     363 </span><span class="lineCov">          1 : aoweno_53_function_pointers(size_t nonlinear_weight_exponent) noexcept;</span></a>
+<a name="364"><span class="lineNum">     364 </span>            : }  // namespace fd::reconstruction</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

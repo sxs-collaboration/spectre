@@ -1,0 +1,466 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/NumericalAlgorithms/LinearSolver/ExplicitInverse.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_e67410f72df12b3cc042db20f578e557.html">NumericalAlgorithms</a></li><li class="navelem"><a class="el" href="dir_700a0c0fa91d73c58f1ba15ac3fb1e5c.html">LinearSolver</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">ExplicitInverse.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/algorithm.html">algorithm</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160; </div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DenseMatrix_8hpp.html">DataStructures/DenseMatrix.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DenseVector_8hpp.html">DataStructures/DenseVector.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Convergence/HasConverged.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/LinearSolver/LinearSolver.hpp&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Options_8hpp.html">Options/Options.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="CharmPupable_8hpp.html">Parallel/CharmPupable.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="MakeWithValue_8hpp.html">Utilities/MakeWithValue.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;Utilities/TypeTraits/CreateIsCallable.hpp&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160; </div>
+<div class="line"><a name="l00020"></a><span class="lineno"><a class="line" href="namespaceLinearSolver.html">   20</a></span>&#160;<span class="keyword">namespace </span>LinearSolver::Serial {</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> LinearSolverRegistrars&gt;</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="keyword">struct </span>ExplicitInverse;<span class="comment"></span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00027"></a><span class="lineno"><a class="line" href="namespaceLinearSolver_1_1Serial_1_1Registrars.html">   27</a></span>&#160;<span class="keyword">namespace </span>Registrars {<span class="comment"></span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment">/// Registers the `LinearSolver::Serial::ExplicitInverse` linear solver</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno"><a class="line" href="namespaceLinearSolver_1_1Serial_1_1Registrars.html#ac037e64f431bb0b16b3535fdd0033a88">   29</a></span>&#160;<span class="comment"></span><span class="keyword">using</span> <a class="code" href="structRegistration_1_1Registrar.html">ExplicitInverse</a> = <a class="code" href="structRegistration_1_1Registrar.html">Registration::Registrar&lt;Serial::ExplicitInverse&gt;</a>;</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;}  <span class="comment">// namespace Registrars</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keyword">namespace </span>detail {</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<a class="code" href="group__TypeTraitsGroup.html#gaf5157dbd846dba6c52f75619eb95389f">CREATE_IS_CALLABLE</a>(reset)</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<a class="code" href="group__TypeTraitsGroup.html#gaafe6f8a00a9324987bcd7953aa909b39">CREATE_IS_CALLABLE_V</a>(reset)</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;}  <span class="comment">// namespace detail</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="comment"> * \brief Linear solver that builds a matrix representation of the linear</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment"> * operator and inverts it directly</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment"> * This solver first constructs an explicit matrix representation by &quot;sniffing</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment"> * out&quot; the operator, i.e. feeding it with unit vectors, and then directly</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment"> * inverts the matrix. The result is an operator that solves the linear problem</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment"> * in a single step. This means that each element has a large initialization</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment"> * cost, but all successive solves converge immediately.</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment"> * \par Advice on using this linear solver:</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment"> * - This solver is entirely agnostic to the structure of the linear operator.</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment"> *   It is usually better to implement a linear solver that is specialized for</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment"> *   your linear operator to take advantage of its properties. For example, if</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment"> *   the operator has a tensor-product structure, the linear solver might take</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment"> *   advantage of that. Only use this solver if no alternatives are available</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment"> *   and if you have verified that it speeds up your solves.</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment"> * - Since this linear solver stores the full inverse operator matrix it can</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment"> *   have significant memory demands. For example, an operator representing a 3D</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment"> *   first-order Elasticity system (9 variables) discretized on 12 grid points</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment"> *   per dimension requires ca. 2GB of memory (per element) to store the matrix,</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment"> *   scaling quadratically with the number of variables and with a power of 6</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment"> *   with the number of grid points per dimension. Therefore, make sure to</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment"> *   distribute the elements on a sufficient number of nodes to meet the memory</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment"> *   requirements.</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment"> * - This linear solver can be `reset()` when the operator changes (e.g. in each</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment"> *   nonlinear-solver iteration). However, when using this solver as</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment"> *   preconditioner it can be advantageous to avoid the reset and the</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment"> *   corresponding cost of re-building the matrix and its inverse if the</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment"> *   operator only changes &quot;a little&quot;. In that case the preconditioner solves</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment"> *   subdomain problems only approximately, but possibly still sufficiently to</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment"> *   provide effective preconditioning.</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> LinearSolverRegistrars =</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;              tmpl::list&lt;Registrars::ExplicitInverse&gt;&gt;</div>
+<div class="line"><a name="l00073"></a><span class="lineno"><a class="line" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">   73</a></span>&#160;<span class="keyword">class </span><a class="code" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">ExplicitInverse</a> : <span class="keyword">public</span> <a class="code" href="namespaceLinearSolver.html">LinearSolver</a>&lt;LinearSolverRegistrars&gt; {</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;  <span class="keyword">using</span> <a class="code" href="classLinearSolver_1_1Serial_1_1LinearSolver.html">Base</a> = <a class="code" href="classLinearSolver_1_1Serial_1_1LinearSolver.html">LinearSolver&lt;LinearSolverRegistrars&gt;</a>;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;  <span class="keyword">using</span> options = tmpl::list&lt;&gt;;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help =</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;      <span class="stringliteral">&quot;Build a matrix representation of the linear operator and invert it &quot;</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;      <span class="stringliteral">&quot;directly. This means that the first solve has a large initialization &quot;</span></div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;      <span class="stringliteral">&quot;cost, but all subsequent solves converge immediately.&quot;</span>;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160; </div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;  <a class="code" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">ExplicitInverse</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;  <a class="code" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">ExplicitInverse</a>(<span class="keyword">const</span> <a class="code" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">ExplicitInverse</a>&amp; <span class="comment">/*rhs*/</span>) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;  <a class="code" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">ExplicitInverse</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">ExplicitInverse</a>&amp; <span class="comment">/*rhs*/</span>) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;  <a class="code" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">ExplicitInverse</a>(<a class="code" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">ExplicitInverse</a>&amp;&amp; <span class="comment">/*rhs*/</span>) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;  <a class="code" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">ExplicitInverse</a>&amp; operator=(<a class="code" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">ExplicitInverse</a>&amp;&amp; <span class="comment">/*rhs*/</span>) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;  ~<a class="code" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">ExplicitInverse</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment">  /// \cond</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment"></span>  <span class="keyword">explicit</span> <a class="code" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">ExplicitInverse</a>(CkMigrateMessage* m) noexcept : <a class="code" href="classLinearSolver_1_1Serial_1_1LinearSolver.html">Base</a>(m) {}</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;  <span class="keyword">using</span> PUP::able::register_constructor;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;  <a class="code" href="group__ParallelGroup.html#ga54770b986b9c522da6d651e1be125a03">WRAPPED_PUPable_decl_template</a>(<a class="code" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">ExplicitInverse</a>);  <span class="comment">// NOLINT</span><span class="comment"></span></div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment">  /// \endcond</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="comment"></span><span class="comment"></span> </div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment">  /*!</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="comment">   * \brief Solve the equation \f$Ax=b\f$ by explicitly constructing the</span></div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="comment">   * operator matrix \f$A\f$ and its inverse. The first solve is computationally</span></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="comment">   * expensive and successive solves are cheap.</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="comment">   * Building a matrix representation of the `linear_operator` requires</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="comment">   * iterating over the `SourceType` (which is also the type returned by the</span></div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="comment">   * `linear_operator`) in a consistent way. This can be non-trivial for</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="comment">   * heterogeneous data structures because it requires they define a data</span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="comment">   * ordering. Specifically, the `SourceType` must have a `size()` function as</span></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="comment">   * well as `begin()` and `end()` iterators that point into the data. If the</span></div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="comment">   * iterators have a `reset()` function it is used to avoid repeatedly</span></div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="comment">   * re-creating the `begin()` iterator. The `reset()` function must not</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="comment">   * invalidate the `end()` iterator.</span></div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="comment">   */</span></div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> LinearOperator, <span class="keyword">typename</span> VarsType, <span class="keyword">typename</span> SourceType&gt;</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;  <a class="code" href="structConvergence_1_1HasConverged.html">Convergence::HasConverged</a> <a class="code" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a278b6cec2dfcd3f398aa72a1424e5ad7">solve</a>(<a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;VarsType*&gt;</a> solution,</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;                                  <span class="keyword">const</span> LinearOperator&amp; linear_operator,</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;                                  <span class="keyword">const</span> SourceType&amp; source) <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="comment">  /// Flags the operator to require re-initialization. No memory is released.</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="comment">  /// Call this function to rebuild the solver when the operator changed.</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno"><a class="line" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a4a2ac8c12624e16551c09efc601ae7bf">  119</a></span>&#160;<span class="comment"></span>  <span class="keywordtype">void</span> <a class="code" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a4a2ac8c12624e16551c09efc601ae7bf">reset</a>() noexcept<span class="keyword"> override </span>{</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    size_ = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/max.html">std::numeric_limits&lt;size_t&gt;::max</a>();</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;  }</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="comment">  /// Size of the operator. The stored matrix will have `size^2` entries.</span></div>
+<div class="line"><a name="l00124"></a><span class="lineno"><a class="line" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a18d35a0574e7f3befc2c4b0f9e2a6762">  124</a></span>&#160;<span class="comment"></span>  <span class="keywordtype">size_t</span> <a class="code" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a18d35a0574e7f3befc2c4b0f9e2a6762">size</a>() const noexcept { <span class="keywordflow">return</span> size_; }</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;<span class="comment">  /// The matrix representation of the solver. This matrix approximates the</span></div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;<span class="comment">  /// inverse of the subdomain operator.</span></div>
+<div class="line"><a name="l00128"></a><span class="lineno"><a class="line" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a911bcfe6b3ce3387c818daada2dd2feb">  128</a></span>&#160;<span class="comment"></span>  <span class="keyword">const</span> <a class="code" href="classDenseMatrix.html">DenseMatrix&lt;double&gt;</a>&amp; <a class="code" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a911bcfe6b3ce3387c818daada2dd2feb">matrix_representation</a>() const noexcept {</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;    <span class="keywordflow">return</span> inverse_;</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;  }</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160; </div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;  <span class="comment">// NOLINTNEXTLINE(google-runtime-references)</span></div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;  <span class="keywordtype">void</span> pup(PUP::er&amp; p) noexcept <span class="keyword">override</span> {</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    p | size_;</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    p | inverse_;</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;    <span class="keywordflow">if</span> (p.isUnpacking() and size_ != <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits&lt;size_t&gt;::max</a>()) {</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;      source_workspace_.resize(size_);</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;      solution_workspace_.resize(size_);</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;    }</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;  }</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160; </div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;Base&gt;</a> get_clone() const noexcept<span class="keyword"> override </span>{</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;    <span class="keywordflow">return</span> std::make_unique&lt;ExplicitInverse&gt;(*<span class="keyword">this</span>);</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;  }</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160; </div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;  <span class="comment">// Caches for successive solves of the same operator</span></div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;  <span class="keyword">mutable</span> <span class="keywordtype">size_t</span> size_ = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/max.html">std::numeric_limits&lt;size_t&gt;::max</a>();</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;  <span class="keyword">mutable</span> <a class="code" href="classDenseMatrix.html">DenseMatrix&lt;double, blaze::columnMajor&gt;</a> inverse_{};</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160; </div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;  <span class="comment">// Buffers to avoid re-allocating memory for applying the operator</span></div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;  <span class="keyword">mutable</span> <a class="code" href="classDenseVector.html">DenseVector&lt;double&gt;</a> source_workspace_{};</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;  <span class="keyword">mutable</span> <a class="code" href="classDenseVector.html">DenseVector&lt;double&gt;</a> solution_workspace_{};</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;};</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160; </div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> LinearSolverRegistrars&gt;</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> LinearOperator, <span class="keyword">typename</span> VarsType, <span class="keyword">typename</span> SourceType&gt;</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;<a class="code" href="structConvergence_1_1HasConverged.html">Convergence::HasConverged</a> <a class="code" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a278b6cec2dfcd3f398aa72a1424e5ad7">ExplicitInverse&lt;LinearSolverRegistrars&gt;::solve</a>(</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;VarsType*&gt;</a> solution,</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;    <span class="keyword">const</span> LinearOperator&amp; linear_operator,</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;    <span class="keyword">const</span> SourceType&amp; source) <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;  <span class="keywordflow">if</span> (<a class="code" href="group__UtilitiesGroup.html#gab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a>(size_ == <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits&lt;size_t&gt;::max</a>())) {</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; used_for_size = source;</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;    size_ = used_for_size.size();</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;    source_workspace_.resize(size_);</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;    solution_workspace_.resize(size_);</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;    inverse_.resize(size_, size_);</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;    <span class="comment">// Construct explicit matrix representation by &quot;sniffing out&quot; the operator,</span></div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;    <span class="comment">// i.e. feeding it unit vectors</span></div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;    <span class="keyword">auto</span> unit_vector = make_with_value&lt;VarsType&gt;(used_for_size, 0.);</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;    <span class="keyword">auto</span> result_buffer = make_with_value&lt;SourceType&gt;(used_for_size, 0.);</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;    <span class="keyword">auto</span>&amp; operator_matrix = inverse_;</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;    <span class="keywordtype">size_t</span> i = 0;</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;    <span class="comment">// Re-using the iterators for all operator invocations</span></div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;    <span class="keyword">auto</span> result_iterator_begin = result_buffer.begin();</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;    <span class="keyword">auto</span> result_iterator_end = result_buffer.end();</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">double</span>&amp; unit_vector_data : unit_vector) {</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;      <span class="comment">// Add a 1 at the unit vector location i</span></div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;      unit_vector_data = 1.;</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;      <span class="comment">// Invoke the operator on the unit vector</span></div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;      linear_operator(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;result_buffer), unit_vector);</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;      <span class="comment">// Set the unit vector back to zero</span></div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;      unit_vector_data = 0.;</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;      <span class="comment">// Reset the iterator by calling its `reset` member function or by</span></div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;      <span class="comment">// re-creating it</span></div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;      <span class="keywordflow">if</span> constexpr (detail::is_reset_callable_v&lt;decltype(</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;                        result_iterator_begin)&gt;) {</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;        result_iterator_begin.reset();</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;      } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;        result_iterator_begin = result_buffer.begin();</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;        result_iterator_end = result_buffer.end();</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;      }</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;      <span class="comment">// Store the result in column i of the matrix</span></div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;      std::copy(result_iterator_begin, result_iterator_end,</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;                column(operator_matrix, i).<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/begin.html">begin</a>());</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;      ++i;</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;    }</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;    <span class="comment">// Directly invert the matrix</span></div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;    <span class="keywordflow">try</span> {</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;      blaze::invert(inverse_);</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;    } <span class="keywordflow">catch</span> (<span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/error/invalid_argument.html">std::invalid_argument</a>&amp; e) {</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;      <a class="code" href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a>(<span class="stringliteral">&quot;Could not invert subdomain matrix (size &quot;</span> &lt;&lt; size_</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;                                                       &lt;&lt; <span class="stringliteral">&quot;): &quot;</span> &lt;&lt; e.what());</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;    }</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;  }</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;  <span class="comment">// Copy source into contiguous workspace. In cases where the source and</span></div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;  <span class="comment">// solution data are already stored contiguously we might avoid the copy and</span></div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;  <span class="comment">// the associated workspace memory. However, compared to the cost of building</span></div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;  <span class="comment">// and storing the matrix this is likely insignificant.</span></div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;  std::copy(source.begin(), source.end(), source_workspace_.begin());</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;  <span class="comment">// Apply inverse</span></div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;  solution_workspace_ = inverse_ * source_workspace_;</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;  <span class="comment">// Reconstruct solution data from contiguous workspace</span></div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;  std::copy(solution_workspace_.begin(), solution_workspace_.end(),</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;            solution-&gt;begin());</div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;  <span class="keywordflow">return</span> {0, 0};</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;}</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> LinearSolverRegistrars&gt;</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;<span class="comment">// NOLINTNEXTLINE</span></div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;PUP::able::PUP_ID ExplicitInverse&lt;LinearSolverRegistrars&gt;::my_PUP_ID = 0;<span class="comment"></span></div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;}  <span class="comment">// namespace LinearSolver::Serial</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="aclassLinearSolver_1_1Serial_1_1LinearSolver_html"><div class="ttname"><a href="classLinearSolver_1_1Serial_1_1LinearSolver.html">LinearSolver::Serial::LinearSolver</a></div><div class="ttdoc">Base class for serial linear solvers that supports factory-creation.</div><div class="ttdef"><b>Definition:</b> LinearSolver.hpp:37</div></div>
+<div class="ttc" id="aclassLinearSolver_1_1Serial_1_1ExplicitInverse_html_a18d35a0574e7f3befc2c4b0f9e2a6762"><div class="ttname"><a href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a18d35a0574e7f3befc2c4b0f9e2a6762">LinearSolver::Serial::ExplicitInverse::size</a></div><div class="ttdeci">size_t size() const noexcept</div><div class="ttdoc">Size of the operator. The stored matrix will have size^2 entries.</div><div class="ttdef"><b>Definition:</b> ExplicitInverse.hpp:124</div></div>
+<div class="ttc" id="aCharmPupable_8hpp_html"><div class="ttname"><a href="CharmPupable_8hpp.html">CharmPupable.hpp</a></div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_gab10d0a221f4d7a706701b806c8135fd7"><div class="ttname"><a href="group__UtilitiesGroup.html#gab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a></div><div class="ttdeci">#define UNLIKELY(x)</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:73</div></div>
+<div class="ttc" id="aOptions_8hpp_html"><div class="ttname"><a href="Options_8hpp.html">Options.hpp</a></div></div>
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a></div></div>
+<div class="ttc" id="aclassLinearSolver_1_1Serial_1_1ExplicitInverse_html_a278b6cec2dfcd3f398aa72a1424e5ad7"><div class="ttname"><a href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a278b6cec2dfcd3f398aa72a1424e5ad7">LinearSolver::Serial::ExplicitInverse::solve</a></div><div class="ttdeci">Convergence::HasConverged solve(gsl::not_null&lt; VarsType * &gt; solution, const LinearOperator &amp;linear_operator, const SourceType &amp;source) const noexcept</div><div class="ttdoc">Solve the equation  by explicitly constructing the operator matrix  and its inverse....</div></div>
+<div class="ttc" id="aDenseVector_8hpp_html"><div class="ttname"><a href="DenseVector_8hpp.html">DenseVector.hpp</a></div></div>
+<div class="ttc" id="aDenseMatrix_8hpp_html"><div class="ttname"><a href="DenseMatrix_8hpp.html">DenseMatrix.hpp</a></div></div>
+<div class="ttc" id="agroup__TypeTraitsGroup_html_gaafe6f8a00a9324987bcd7953aa909b39"><div class="ttname"><a href="group__TypeTraitsGroup.html#gaafe6f8a00a9324987bcd7953aa909b39">CREATE_IS_CALLABLE_V</a></div><div class="ttdeci">#define CREATE_IS_CALLABLE_V(METHOD_NAME)</div><div class="ttdoc">Generate a type trait to check if a class has a member function that can be invoked with arguments of...</div><div class="ttdef"><b>Definition:</b> CreateIsCallable.hpp:68</div></div>
+<div class="ttc" id="aclassDenseVector_html"><div class="ttname"><a href="classDenseVector.html">DenseVector&lt; double &gt;</a></div></div>
+<div class="ttc" id="astructConvergence_1_1HasConverged_html"><div class="ttname"><a href="structConvergence_1_1HasConverged.html">Convergence::HasConverged</a></div><div class="ttdoc">Signals convergence of the algorithm.</div><div class="ttdef"><b>Definition:</b> HasConverged.hpp:68</div></div>
+<div class="ttc" id="aclassLinearSolver_1_1Serial_1_1ExplicitInverse_html_a4a2ac8c12624e16551c09efc601ae7bf"><div class="ttname"><a href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a4a2ac8c12624e16551c09efc601ae7bf">LinearSolver::Serial::ExplicitInverse::reset</a></div><div class="ttdeci">void reset() noexcept override</div><div class="ttdoc">Flags the operator to require re-initialization. No memory is released. Call this function to rebuild...</div><div class="ttdef"><b>Definition:</b> ExplicitInverse.hpp:119</div></div>
+<div class="ttc" id="aalgorithm_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/algorithm.html">algorithm</a></div></div>
+<div class="ttc" id="astructRegistration_1_1Registrar_html"><div class="ttname"><a href="structRegistration_1_1Registrar.html">Registration::Registrar</a></div><div class="ttdoc">A template for defining a registrar.</div><div class="ttdef"><b>Definition:</b> Registration.hpp:42</div></div>
+<div class="ttc" id="aclassDenseMatrix_html"><div class="ttname"><a href="classDenseMatrix.html">DenseMatrix&lt; double &gt;</a></div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_ga1d27028c1827976007fe9d29ad3a2f66"><div class="ttname"><a href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a></div><div class="ttdeci">#define ERROR(m)</div><div class="ttdoc">prints an error message to the standard error stream and aborts the program.</div><div class="ttdef"><b>Definition:</b> Error.hpp:37</div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_ga54770b986b9c522da6d651e1be125a03"><div class="ttname"><a href="group__ParallelGroup.html#ga54770b986b9c522da6d651e1be125a03">WRAPPED_PUPable_decl_template</a></div><div class="ttdeci">#define WRAPPED_PUPable_decl_template(className)</div><div class="ttdoc">Mark derived classes as serializable.</div><div class="ttdef"><b>Definition:</b> CharmPupable.hpp:22</div></div>
+<div class="ttc" id="aclassLinearSolver_1_1Serial_1_1ExplicitInverse_html_a911bcfe6b3ce3387c818daada2dd2feb"><div class="ttname"><a href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a911bcfe6b3ce3387c818daada2dd2feb">LinearSolver::Serial::ExplicitInverse::matrix_representation</a></div><div class="ttdeci">const DenseMatrix&lt; double &gt; &amp; matrix_representation() const noexcept</div><div class="ttdoc">The matrix representation of the solver. This matrix approximates the inverse of the subdomain operat...</div><div class="ttdef"><b>Definition:</b> ExplicitInverse.hpp:128</div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="aMakeWithValue_8hpp_html"><div class="ttname"><a href="MakeWithValue_8hpp.html">MakeWithValue.hpp</a></div></div>
+<div class="ttc" id="ainvalid_argument_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/error/invalid_argument.html">std::invalid_argument</a></div></div>
+<div class="ttc" id="aclassLinearSolver_1_1Serial_1_1ExplicitInverse_html"><div class="ttname"><a href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">LinearSolver::Serial::ExplicitInverse</a></div><div class="ttdoc">Linear solver that builds a matrix representation of the linear operator and inverts it directly.</div><div class="ttdef"><b>Definition:</b> ExplicitInverse.hpp:73</div></div>
+<div class="ttc" id="anamespaceLinearSolver_html"><div class="ttname"><a href="namespaceLinearSolver.html">LinearSolver</a></div><div class="ttdoc">Functionality for solving linear systems of equations.</div><div class="ttdef"><b>Definition:</b> ExplicitInverse.hpp:20</div></div>
+<div class="ttc" id="abegin_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/iterator/begin.html">std::begin</a></div><div class="ttdeci">T begin(T... args)</div></div>
+<div class="ttc" id="anamespaceOptions_html_aa61c7f41f21afa7646811456f673be89"><div class="ttname"><a href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a></div><div class="ttdeci">const char *const String</div><div class="ttdoc">The string used in option structs.</div><div class="ttdef"><b>Definition:</b> Options.hpp:32</div></div>
+<div class="ttc" id="aGsl_8hpp_html_a649c6961f9146205c203e45d58fd0c4c"><div class="ttname"><a href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a></div><div class="ttdeci">gsl::not_null&lt; T * &gt; make_not_null(T *ptr) noexcept</div><div class="ttdoc">Construct a not_null from a pointer. Often this will be done as an implicit conversion,...</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:880</div></div>
+<div class="ttc" id="amax_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/numeric_limits/max.html">std::numeric_limits::max</a></div><div class="ttdeci">T max(T... args)</div></div>
+<div class="ttc" id="aunique_ptr_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></div></div>
+<div class="ttc" id="anumeric_limits_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a></div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<div class="ttc" id="agroup__TypeTraitsGroup_html_gaf5157dbd846dba6c52f75619eb95389f"><div class="ttname"><a href="group__TypeTraitsGroup.html#gaf5157dbd846dba6c52f75619eb95389f">CREATE_IS_CALLABLE</a></div><div class="ttdeci">#define CREATE_IS_CALLABLE(METHOD_NAME)</div><div class="ttdoc">Generate a type trait to check if a class has a member function that can be invoked with arguments of...</div><div class="ttdef"><b>Definition:</b> CreateIsCallable.hpp:31</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

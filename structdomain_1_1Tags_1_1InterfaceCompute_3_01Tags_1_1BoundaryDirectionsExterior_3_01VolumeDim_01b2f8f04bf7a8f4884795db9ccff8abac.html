@@ -1,0 +1,251 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::Tags::InterfaceCompute&lt; Tags::BoundaryDirectionsExterior&lt; VolumeDim &gt;, UnnormalizedFaceNormalMovingMeshCompute&lt; VolumeDim &gt; &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1Tags.html">Tags</a></li><li class="navelem"><a class="el" href="structdomain_1_1Tags_1_1InterfaceCompute_3_01Tags_1_1BoundaryDirectionsExterior_3_01VolumeDim_01b2f8f04bf7a8f4884795db9ccff8abac.html">InterfaceCompute&lt; Tags::BoundaryDirectionsExterior&lt; VolumeDim &gt;, UnnormalizedFaceNormalMovingMeshCompute&lt; VolumeDim &gt; &gt;</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="structdomain_1_1Tags_1_1InterfaceCompute_3_01Tags_1_1BoundaryDirectionsExterior_3_01VolumeDim_01e011d20372595ddcee6e540514c3f0c6.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::Tags::InterfaceCompute&lt; Tags::BoundaryDirectionsExterior&lt; VolumeDim &gt;, UnnormalizedFaceNormalMovingMeshCompute&lt; VolumeDim &gt; &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a107165a554c516a21ca006c3caee43fd"><td class="memItemLeft" align="right" valign="top"><a id="a107165a554c516a21ca006c3caee43fd"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>base</b> = <a class="el" href="structdomain_1_1Tags_1_1Interface.html">Tags::Interface</a>&lt; <a class="el" href="structdomain_1_1Tags_1_1BoundaryDirectionsExterior.html">Tags::BoundaryDirectionsExterior</a>&lt; VolumeDim &gt;, <a class="el" href="structdomain_1_1Tags_1_1UnnormalizedFaceNormal.html">Tags::UnnormalizedFaceNormal</a>&lt; VolumeDim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;</td></tr>
+<tr class="separator:a107165a554c516a21ca006c3caee43fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2ee731f0ea8b34596b5c7a3b4eb2653"><td class="memItemLeft" align="right" valign="top"><a id="ae2ee731f0ea8b34596b5c7a3b4eb2653"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dirs</b> = <a class="el" href="structdomain_1_1Tags_1_1BoundaryDirectionsExterior.html">BoundaryDirectionsExterior</a>&lt; VolumeDim &gt;</td></tr>
+<tr class="separator:ae2ee731f0ea8b34596b5c7a3b4eb2653"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17c016d850e90ef6eb268e7ab9a7778d"><td class="memItemLeft" align="right" valign="top"><a id="a17c016d850e90ef6eb268e7ab9a7778d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_type</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt;::<a class="el" href="structdomain_1_1Tags_1_1Direction.html">Direction</a>&lt; VolumeDim &gt;, tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;</td></tr>
+<tr class="separator:a17c016d850e90ef6eb268e7ab9a7778d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30ce13ff95b3ecec1aece2438070c542"><td class="memItemLeft" align="right" valign="top"><a id="a30ce13ff95b3ecec1aece2438070c542"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt; <a class="el" href="structdomain_1_1Tags_1_1Interface.html">Tags::Interface</a>&lt; <a class="el" href="structdomain_1_1Tags_1_1BoundaryDirectionsExterior.html">dirs</a>, <a class="el" href="structdomain_1_1Tags_1_1Mesh.html">Mesh</a>&lt; VolumeDim - 1 &gt; &gt;, <a class="el" href="structdomain_1_1Tags_1_1ElementMap.html">Tags::ElementMap</a>&lt; VolumeDim, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a> &gt;, <a class="el" href="structdomain_1_1CoordinateMaps_1_1Tags_1_1CoordinateMap.html">CoordinateMaps::Tags::CoordinateMap</a>&lt; VolumeDim, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, ::<a class="el" href="structTags_1_1Time.html">Tags::Time</a>, <a class="el" href="structdomain_1_1Tags_1_1FunctionsOfTime.html">Tags::FunctionsOfTime</a> &gt;</td></tr>
+<tr class="separator:a30ce13ff95b3ecec1aece2438070c542"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_structdomain_1_1Tags_1_1Interface"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structdomain_1_1Tags_1_1Interface')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structdomain_1_1Tags_1_1Interface.html">domain::Tags::Interface&lt; Tags::BoundaryDirectionsExterior&lt; VolumeDim &gt;, Tags::UnnormalizedFaceNormal&lt; VolumeDim, Frame::Inertial &gt; &gt;</a></td></tr>
+<tr class="memitem:af6505c9754366422f1fc8462ee19e69a inherit pub_types_structdomain_1_1Tags_1_1Interface"><td class="memItemLeft" align="right" valign="top"><a id="af6505c9754366422f1fc8462ee19e69a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>tag</b> = <a class="el" href="structdomain_1_1Tags_1_1UnnormalizedFaceNormal.html">Tags::UnnormalizedFaceNormal</a>&lt; VolumeDim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;</td></tr>
+<tr class="separator:af6505c9754366422f1fc8462ee19e69a inherit pub_types_structdomain_1_1Tags_1_1Interface"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf3f14bedce5c3c6e11c12c8d0bd5ad8 inherit pub_types_structdomain_1_1Tags_1_1Interface"><td class="memItemLeft" align="right" valign="top"><a id="aaf3f14bedce5c3c6e11c12c8d0bd5ad8"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>type</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt;::<a class="el" href="structdomain_1_1Tags_1_1Direction.html">Direction</a>&lt; <a class="el" href="structdomain_1_1Tags_1_1BoundaryDirectionsExterior.html">Tags::BoundaryDirectionsExterior</a>&lt; VolumeDim &gt; ::volume_dim &gt;, typename <a class="el" href="structdomain_1_1Tags_1_1UnnormalizedFaceNormal.html">Tags::UnnormalizedFaceNormal</a>&lt; VolumeDim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; ::<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">type</a> &gt;</td></tr>
+<tr class="separator:aaf3f14bedce5c3c6e11c12c8d0bd5ad8 inherit pub_types_structdomain_1_1Tags_1_1Interface"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:afbc6b61b32294f5051dd89765aa37bf8"><td class="memItemLeft" align="right" valign="top"><a id="afbc6b61b32294f5051dd89765aa37bf8"></a>
+static <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memItemRight" valign="bottom"><b>name</b> () noexcept</td></tr>
+<tr class="separator:afbc6b61b32294f5051dd89765aa37bf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f27a5c3bfc4b197f275e2c67c4f52d2"><td class="memItemLeft" align="right" valign="top"><a id="a4f27a5c3bfc4b197f275e2c67c4f52d2"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>function</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">return_type</a> * &gt; normals, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt;::<a class="el" href="structdomain_1_1Tags_1_1Direction.html">Direction</a>&lt; VolumeDim &gt;, ::<a class="el" href="structdomain_1_1Tags_1_1Mesh.html">Mesh</a>&lt; VolumeDim - 1 &gt;&gt; &amp;meshes, const ::<a class="el" href="structdomain_1_1Tags_1_1ElementMap.html">ElementMap</a>&lt; VolumeDim, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a> &gt; &amp;logical_to_grid_map, const <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, VolumeDim &gt; &amp;grid_to_inertial_map, const double time, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time) noexcept</td></tr>
+<tr class="separator:a4f27a5c3bfc4b197f275e2c67c4f52d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_static_methods_structdomain_1_1Tags_1_1Interface"><td colspan="2" onclick="javascript:toggleInherit('pub_static_methods_structdomain_1_1Tags_1_1Interface')"><img src="closed.png" alt="-"/>&#160;Static Public Member Functions inherited from <a class="el" href="structdomain_1_1Tags_1_1Interface.html">domain::Tags::Interface&lt; Tags::BoundaryDirectionsExterior&lt; VolumeDim &gt;, Tags::UnnormalizedFaceNormal&lt; VolumeDim, Frame::Inertial &gt; &gt;</a></td></tr>
+<tr class="memitem:a86bb62dc7f7b0dfe2fce153fd35d2dcc inherit pub_static_methods_structdomain_1_1Tags_1_1Interface"><td class="memItemLeft" align="right" valign="top"><a id="a86bb62dc7f7b0dfe2fce153fd35d2dcc"></a>
+static <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memItemRight" valign="bottom"><b>name</b> () noexcept</td></tr>
+<tr class="separator:a86bb62dc7f7b0dfe2fce153fd35d2dcc inherit pub_static_methods_structdomain_1_1Tags_1_1Interface"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Domain/<a class="el" href="FaceNormal_8hpp_source.html">FaceNormal.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

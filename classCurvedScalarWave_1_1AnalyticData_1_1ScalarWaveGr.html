@@ -1,0 +1,347 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: CurvedScalarWave::AnalyticData::ScalarWaveGr&lt; ScalarFieldData, BackgroundGrData &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceCurvedScalarWave.html">CurvedScalarWave</a></li><li class="navelem"><a class="el" href="namespaceCurvedScalarWave_1_1AnalyticData.html">AnalyticData</a></li><li class="navelem"><a class="el" href="classCurvedScalarWave_1_1AnalyticData_1_1ScalarWaveGr.html">ScalarWaveGr</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classCurvedScalarWave_1_1AnalyticData_1_1ScalarWaveGr-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">CurvedScalarWave::AnalyticData::ScalarWaveGr&lt; ScalarFieldData, BackgroundGrData &gt; Class Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Analytic initial data for scalar waves in curved spacetime.  
+ <a href="classCurvedScalarWave_1_1AnalyticData_1_1ScalarWaveGr.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ScalarWaveGr_8hpp_source.html">ScalarWaveGr.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCurvedScalarWave_1_1AnalyticData_1_1ScalarWaveGr_1_1Background.html">Background</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCurvedScalarWave_1_1AnalyticData_1_1ScalarWaveGr_1_1ScalarField.html">ScalarField</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ae7028915d283059d69ce899dbc84e6e1"><td class="memItemLeft" align="right" valign="top"><a id="ae7028915d283059d69ce899dbc84e6e1"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structCurvedScalarWave_1_1AnalyticData_1_1ScalarWaveGr_1_1Background.html">Background</a>, <a class="el" href="structCurvedScalarWave_1_1AnalyticData_1_1ScalarWaveGr_1_1ScalarField.html">ScalarField</a> &gt;</td></tr>
+<tr class="separator:ae7028915d283059d69ce899dbc84e6e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1faf9d88e3df1a71f575dc110a4a3ade"><td class="memTemplParams" colspan="2"><a id="a1faf9d88e3df1a71f575dc110a4a3ade"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a1faf9d88e3df1a71f575dc110a4a3ade"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>spacetime_tags</b> = typename BackgroundGrData::template tags&lt; DataType &gt;</td></tr>
+<tr class="separator:a1faf9d88e3df1a71f575dc110a4a3ade"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a32cdb96f493c72367ca8a0c2a880da0d"><td class="memItemLeft" align="right" valign="top"><a id="a32cdb96f493c72367ca8a0c2a880da0d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>tags</b> = tmpl::append&lt; spacetime_tags&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, tmpl::list&lt; <a class="el" href="structCurvedScalarWave_1_1Pi.html">Pi</a>, <a class="el" href="structCurvedScalarWave_1_1Phi.html">Phi</a>&lt; volume_dim &gt;, <a class="el" href="structCurvedScalarWave_1_1Psi.html">Psi</a> &gt; &gt;</td></tr>
+<tr class="separator:a32cdb96f493c72367ca8a0c2a880da0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a09b9bc07cb4605846744d07db23acce5"><td class="memItemLeft" align="right" valign="top"><a id="a09b9bc07cb4605846744d07db23acce5"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ScalarWaveGr</b> (BackgroundGrData background, ScalarFieldData scalar_field) noexcept</td></tr>
+<tr class="separator:a09b9bc07cb4605846744d07db23acce5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a74c4dfe665a21bd30c92054a10bcc6"><td class="memItemLeft" align="right" valign="top"><a id="a9a74c4dfe665a21bd30c92054a10bcc6"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ScalarWaveGr</b> (CkMigrateMessage *) noexcept</td></tr>
+<tr class="separator:a9a74c4dfe665a21bd30c92054a10bcc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2843d6950ad8c5a3a683771af7575055"><td class="memItemLeft" align="right" valign="top"><a id="a2843d6950ad8c5a3a683771af7575055"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ScalarWaveGr</b> (const <a class="el" href="classCurvedScalarWave_1_1AnalyticData_1_1ScalarWaveGr.html">ScalarWaveGr</a> &amp;)=delete</td></tr>
+<tr class="separator:a2843d6950ad8c5a3a683771af7575055"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75604ad07371575edf88b794c466d2ea"><td class="memItemLeft" align="right" valign="top"><a id="a75604ad07371575edf88b794c466d2ea"></a>
+<a class="el" href="classCurvedScalarWave_1_1AnalyticData_1_1ScalarWaveGr.html">ScalarWaveGr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classCurvedScalarWave_1_1AnalyticData_1_1ScalarWaveGr.html">ScalarWaveGr</a> &amp;)=delete</td></tr>
+<tr class="separator:a75604ad07371575edf88b794c466d2ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a079b6a701334430e331694df73285ff0"><td class="memItemLeft" align="right" valign="top"><a id="a079b6a701334430e331694df73285ff0"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ScalarWaveGr</b> (<a class="el" href="classCurvedScalarWave_1_1AnalyticData_1_1ScalarWaveGr.html">ScalarWaveGr</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a079b6a701334430e331694df73285ff0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a3fe8320cb5248a7b7546e3e499eee1"><td class="memItemLeft" align="right" valign="top"><a id="a8a3fe8320cb5248a7b7546e3e499eee1"></a>
+<a class="el" href="classCurvedScalarWave_1_1AnalyticData_1_1ScalarWaveGr.html">ScalarWaveGr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classCurvedScalarWave_1_1AnalyticData_1_1ScalarWaveGr.html">ScalarWaveGr</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a8a3fe8320cb5248a7b7546e3e499eee1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab66201fdcfd48be9a2f5f7b94179f0dc"><td class="memTemplParams" colspan="2"><a id="ab66201fdcfd48be9a2f5f7b94179f0dc"></a>
+template&lt;typename DataType , typename Tag , Requires&lt; tmpl::list_contains_v&lt; spacetime_tags&lt; DataType &gt;, Tag &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:ab66201fdcfd48be9a2f5f7b94179f0dc"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tag &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classCurvedScalarWave_1_1AnalyticData_1_1ScalarWaveGr.html#ab66201fdcfd48be9a2f5f7b94179f0dc">variables</a> (const tnsr::I&lt; DataType, volume_dim &gt; &amp;x, tmpl::list&lt; Tag &gt;) const noexcept</td></tr>
+<tr class="memdesc:ab66201fdcfd48be9a2f5f7b94179f0dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve spacetime variables. <br /></td></tr>
+<tr class="separator:ab66201fdcfd48be9a2f5f7b94179f0dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61c40f1a316c0b5e4ee16205c0277d4f"><td class="memItemLeft" align="right" valign="top"><a id="a61c40f1a316c0b5e4ee16205c0277d4f"></a>
+<a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structCurvedScalarWave_1_1Pi.html">Pi</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCurvedScalarWave_1_1AnalyticData_1_1ScalarWaveGr.html#a61c40f1a316c0b5e4ee16205c0277d4f">variables</a> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, volume_dim &gt; &amp;x, tmpl::list&lt; <a class="el" href="structCurvedScalarWave_1_1Pi.html">Pi</a> &gt;) const noexcept</td></tr>
+<tr class="memdesc:a61c40f1a316c0b5e4ee16205c0277d4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve scalar wave variables. <br /></td></tr>
+<tr class="separator:a61c40f1a316c0b5e4ee16205c0277d4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa4ea2cfbee5e0d87b47b9828b94df31"><td class="memItemLeft" align="right" valign="top"><a id="afa4ea2cfbee5e0d87b47b9828b94df31"></a>
+<a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structCurvedScalarWave_1_1Phi.html">Phi</a>&lt; volume_dim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, volume_dim &gt; &amp;x, tmpl::list&lt; <a class="el" href="structCurvedScalarWave_1_1Phi.html">Phi</a>&lt; volume_dim &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:afa4ea2cfbee5e0d87b47b9828b94df31"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adedded2de64104b2c4711f2a85f498e7"><td class="memItemLeft" align="right" valign="top"><a id="adedded2de64104b2c4711f2a85f498e7"></a>
+<a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structCurvedScalarWave_1_1Psi.html">Psi</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, volume_dim &gt; &amp;x, tmpl::list&lt; <a class="el" href="structCurvedScalarWave_1_1Psi.html">Psi</a> &gt;) const noexcept</td></tr>
+<tr class="separator:adedded2de64104b2c4711f2a85f498e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45daf67eee2b79fdfca23ab83fe1946a"><td class="memTemplParams" colspan="2"><a id="a45daf67eee2b79fdfca23ab83fe1946a"></a>
+template&lt;typename DataType , typename... Tags&gt; </td></tr>
+<tr class="memitem:a45daf67eee2b79fdfca23ab83fe1946a"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, volume_dim &gt; &amp;x, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="separator:a45daf67eee2b79fdfca23ab83fe1946a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0975f532d59f717ffd572ed509a30ce4"><td class="memItemLeft" align="right" valign="top"><a id="a0975f532d59f717ffd572ed509a30ce4"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a0975f532d59f717ffd572ed509a30ce4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:aa737a2e9afc0f2ae6b4c7445e166f295"><td class="memItemLeft" align="right" valign="top"><a id="aa737a2e9afc0f2ae6b4c7445e166f295"></a>
+static <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memItemRight" valign="bottom"><b>name</b> () noexcept</td></tr>
+<tr class="separator:aa737a2e9afc0f2ae6b4c7445e166f295"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:ac47bb02b0a8810edebc05d8bd86d8cf2"><td class="memItemLeft" align="right" valign="top"><a id="ac47bb02b0a8810edebc05d8bd86d8cf2"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = ScalarFieldData::volume_dim</td></tr>
+<tr class="separator:ac47bb02b0a8810edebc05d8bd86d8cf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae882c292923bbf709a1cf34c5d32890c"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:ae882c292923bbf709a1cf34c5d32890c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:aeae2a771e7f502c1094138468cf5a2af"><td class="memTemplParams" colspan="2"><a id="aeae2a771e7f502c1094138468cf5a2af"></a>
+template&lt;typename LocalScalarFieldData , typename LocalBackgroundData &gt; </td></tr>
+<tr class="memitem:aeae2a771e7f502c1094138468cf5a2af"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classCurvedScalarWave_1_1AnalyticData_1_1ScalarWaveGr.html">ScalarWaveGr</a>&lt; LocalScalarFieldData, LocalBackgroundData &gt; &amp;lhs, const <a class="el" href="classCurvedScalarWave_1_1AnalyticData_1_1ScalarWaveGr.html">ScalarWaveGr</a>&lt; LocalScalarFieldData, LocalBackgroundData &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:aeae2a771e7f502c1094138468cf5a2af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename ScalarFieldData, typename BackgroundGrData&gt;<br />
+class CurvedScalarWave::AnalyticData::ScalarWaveGr&lt; ScalarFieldData, BackgroundGrData &gt;</h3>
+
+<p>Analytic initial data for scalar waves in curved spacetime. </p>
+<h3>Details</h3>
+<p>When evolving a scalar field propagating through curved spacetime, this class provides a method to initialize the scalar-field and spacetime variables using analytic solution(s) of the flat-space scalar-wave equation and of the Einstein equations. Note that the coordinate profile of the scalar field \(\Psi\) in curved spacetime being the same as \(\Psi\) in flat spacetime is our primary identification, allowing it to be initialized using any member class of <code><a class="el" href="namespaceScalarWave_1_1Solutions.html" title="Holds classes implementing a solution to the Euclidean wave equation .">ScalarWave::Solutions</a></code>. We initialize \(\Phi_i\) in curved spacetime to the coordinate spatial derivative of \(\Psi\) in flat spacetime. The definition of \(\Pi\) comes from requiring it to be the future-directed time derivative of the scalar field in curved spacetime:</p>
+<p class="formulaDsp">
+\begin{align} \Pi :=&amp; -n^a \partial_a \Psi \\ =&amp; \frac{1}{\alpha}\left(\beta^k \Phi_k - {\partial_t\Psi}\right),\\ =&amp; \frac{1}{\alpha}\left(\beta^k \Phi_k + {\Pi}_{\mathrm{flat}}\right), \end{align}
+</p>
+<p>where \(n^a\) is the unit normal to spatial slices of the spacetime foliation, and \({\Pi}_{\mathrm{flat}}\) comes from the flat spacetime solution. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="ae882c292923bbf709a1cf34c5d32890c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae882c292923bbf709a1cf34c5d32890c">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename ScalarFieldData , typename BackgroundGrData &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classCurvedScalarWave_1_1AnalyticData_1_1ScalarWaveGr.html">CurvedScalarWave::AnalyticData::ScalarWaveGr</a>&lt; ScalarFieldData, BackgroundGrData &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      <span class="stringliteral">&quot;A scalar field in curved background spacetime\n\n&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticData/CurvedWaveEquation/<a class="el" href="ScalarWaveGr_8hpp_source.html">ScalarWaveGr.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

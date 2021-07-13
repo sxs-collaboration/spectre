@@ -1,0 +1,316 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: NonlinearSolver::newton_raphson Namespace Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceNonlinearSolver.html">NonlinearSolver</a></li><li class="navelem"><a class="el" href="namespaceNonlinearSolver_1_1newton__raphson.html">newton_raphson</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">NonlinearSolver::newton_raphson Namespace Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Items related to the <a class="el" href="structNonlinearSolver_1_1newton__raphson_1_1NewtonRaphson.html" title="A Newton-Raphson correction scheme for nonlinear systems of equations .">NewtonRaphson</a> nonlinear solver.  
+<a href="namespaceNonlinearSolver_1_1newton__raphson.html#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNonlinearSolver_1_1newton__raphson_1_1NewtonRaphson.html">NewtonRaphson</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A Newton-Raphson correction scheme for nonlinear systems of equations \(A_\mathrm{nonlinear}(x)=b\).  <a href="structNonlinearSolver_1_1newton__raphson_1_1NewtonRaphson.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a376ff343875b5182ed668fe749832b7d"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceNonlinearSolver_1_1newton__raphson.html#a376ff343875b5182ed668fe749832b7d">next_step_length</a> (size_t globalization_iteration_id, double step_length, double prev_step_length, double residual, double residual_slope, double next_residual, double prev_residual) noexcept</td></tr>
+<tr class="memdesc:a376ff343875b5182ed668fe749832b7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find the next step length for the line-search globalization.  <a href="namespaceNonlinearSolver_1_1newton__raphson.html#a376ff343875b5182ed668fe749832b7d">More...</a><br /></td></tr>
+<tr class="separator:a376ff343875b5182ed668fe749832b7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Items related to the <a class="el" href="structNonlinearSolver_1_1newton__raphson_1_1NewtonRaphson.html" title="A Newton-Raphson correction scheme for nonlinear systems of equations .">NewtonRaphson</a> nonlinear solver. </p>
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="a376ff343875b5182ed668fe749832b7d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a376ff343875b5182ed668fe749832b7d">&#9670;&nbsp;</a></span>next_step_length()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double NonlinearSolver::newton_raphson::next_step_length </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>globalization_iteration_id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>step_length</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>prev_step_length</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>residual</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>residual_slope</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>next_residual</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>prev_residual</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Find the next step length for the line-search globalization. </p>
+<p>The next step length is chosen such that it minimizes the quadratic (first globalization step, i.e., when <code>globalization_iteration_id</code> is 0) or cubic (subsequent globalization steps) polynomial interpolation. This function implements Algorithm A6.1.3 in <a class="el" href="citelist.html#CITEREF_DennisSchnabel">[33]</a> (p. 325). This is how argument names map to symbols in that algorithm:</p>
+<ul>
+<li><code>step_length</code>: \(\lambda\)</li>
+<li><code>prev_step_length</code>: \(\lambda_\mathrm{prev}\)</li>
+<li><code>residual</code>: \(f_c\)</li>
+<li><code>residual_slope</code>: \(g^T p &lt; 0\)</li>
+<li><code>next_residual</code>: \(f_+\)</li>
+<li><code>prev_residual</code>: \(f_{+,\mathrm{prev}}\)</li>
+</ul>
+<p>Note that the argument <code>residual_slope</code> is the derivative of the residual function \(f\) w.r.t. the step length, i.e. \(\frac{\mathrm{d}f}{\mathrm{d}\lambda}\), which must be negative. For the common scenario where \(f(x)=|\boldsymbol{r}(x)|^2\), i.e. the residual function is the L2 norm of a residual vector \(\boldsymbol{r}(x)\), and where that in turn is the residual of a nonlinear equation \(\boldsymbol{r}(x)=b-A_\mathrm{nonlinear}(x)\) in a Newton-Raphson step as described in <code><a class="el" href="structNonlinearSolver_1_1newton__raphson_1_1NewtonRaphson.html" title="A Newton-Raphson correction scheme for nonlinear systems of equations .">NonlinearSolver::newton_raphson::NewtonRaphson</a></code>, then the <code>residual_slope</code> reduces to</p>
+<p class="formulaDsp">
+\begin{equation} \frac{\mathrm{d}f}{\mathrm{d}\lambda} = \frac{\mathrm{d}f}{\mathrm{d}x^i} \frac{\mathrm{d}x^i}{\mathrm{d}\lambda} = 2 \boldsymbol{r}(x) \cdot \frac{\mathrm{d}\boldsymbol{r}}{\mathrm{d}x^i} \frac{\mathrm{d}x^i}{\mathrm{d}\lambda} = -2 |\boldsymbol{r}(x)|^2 = -2 f(x) \equiv -2 f_c \text{.} \end{equation}
+</p>
+<p>Here we have used the relation</p>
+<p class="formulaDsp">
+\begin{equation} \frac{\mathrm{d}\boldsymbol{r}}{\mathrm{d}x^i} \frac{\mathrm{d}x^i}{\mathrm{d}\lambda} = -\frac{\delta A_\mathrm{nonlinear}}{\delta x}\cdot\delta x = -r \end{equation}
+</p>
+<p>of a Newton-Raphson step of full length \(\delta x\). </p>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

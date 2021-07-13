@@ -1,0 +1,290 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - 39f3c2b725318dcf91749887b1e61f477736e132 - /work/build/docs/xml/tutorial_minimal_parallel_executable.xml</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title"> SpECTRE Documentation Coverage Report</td></tr>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../index.html">top level</a> - <a href="index.html">work/build/docs/xml</a> - tutorial_minimal_parallel_executable.xml</td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+             <td class="headerItem">Commit:</td>
+             <td class="headerValue"><a target="_blank" href="https://github.com/sxs-collaboration/spectre/commit/39f3c2b725318dcf91749887b1e61f477736e132">39f3c2b725318dcf91749887b1e61f477736e132</a></td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2021-07-13 03:19:40</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineCov">          1 : &lt;?xml version='1.0' encoding='UTF-8' standalone='no'?&gt;</span></a>
+<a name="2"><span class="lineNum">       2 </span>            : &lt;doxygen xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:noNamespaceSchemaLocation=&quot;compound.xsd&quot; version=&quot;1.8.17&quot;&gt;</a>
+<a name="3"><span class="lineNum">       3 </span>            :   &lt;compounddef id=&quot;tutorial_minimal_parallel_executable&quot; kind=&quot;page&quot;&gt;</a>
+<a name="4"><span class="lineNum">       4 </span>            :     &lt;compoundname&gt;tutorial_minimal_parallel_executable&lt;/compoundname&gt;</a>
+<a name="5"><span class="lineNum">       5 </span>            :     &lt;title&gt;The minimal SpECTRE executable&lt;/title&gt;</a>
+<a name="6"><span class="lineNum">       6 </span>            :     &lt;briefdescription&gt;</a>
+<a name="7"><span class="lineNum">       7 </span>            :     &lt;/briefdescription&gt;</a>
+<a name="8"><span class="lineNum">       8 </span>            :     &lt;detaileddescription&gt;</a>
+<a name="9"><span class="lineNum">       9 </span>            : &lt;para&gt;This tutorial will illustrate what is needed to compile the minimal SpECTRE executable that will simply print some useful information about the executable and then exit.&lt;/para&gt;</a>
+<a name="10"><span class="lineNum">      10 </span>            : &lt;para&gt;Specifically, this tutorial will introduce:&lt;itemizedlist&gt;</a>
+<a name="11"><span class="lineNum">      11 </span>            : &lt;listitem&gt;&lt;para&gt;&lt;computeroutput&gt;add_spectre_parallel_executable&lt;/computeroutput&gt;, a CMake function that will add a build target for a SpECTRE executable&lt;/para&gt;</a>
+<a name="12"><span class="lineNum">      12 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;A user-provided &lt;computeroutput&gt;Metavariables&lt;/computeroutput&gt;, a C++ struct that is used to specify the metaprogram that is converted into a C++ executable.&lt;/para&gt;</a>
+<a name="13"><span class="lineNum">      13 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;how to build a SpECTRE executable&lt;/para&gt;</a>
+<a name="14"><span class="lineNum">      14 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;how to run a SpECTRE executable&lt;/para&gt;</a>
+<a name="15"><span class="lineNum">      15 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;useful information that can be extracted from all SpECTRE executables&lt;/para&gt;</a>
+<a name="16"><span class="lineNum">      16 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;&lt;computeroutput&gt;Main&lt;/computeroutput&gt;, the main parallel component that acts as the main function of a C++ executable.&lt;/para&gt;</a>
+<a name="17"><span class="lineNum">      17 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="18"><span class="lineNum">      18 </span>            : &lt;/para&gt;</a>
+<a name="19"><span class="lineNum">      19 </span>            : &lt;para&gt;In this tutorial, &lt;computeroutput&gt;SPECTRE_ROOT&lt;/computeroutput&gt; refers to the directory in which SpECTRE was cloned, and &lt;computeroutput&gt;SPECTRE_BUILD_DIR&lt;/computeroutput&gt; refers to the directory in which you built SpECTRE.&lt;/para&gt;</a>
+<a name="20"><span class="lineNum">      20 </span>            : &lt;sect2 id=&quot;tutorial_minimal_parallel_executable_1autotoc_md171&quot;&gt;</a>
+<a name="21"><span class="lineNum">      21 </span>            : &lt;title&gt;Creating a build target for a parallel executable&lt;/title&gt;</a>
+<a name="22"><span class="lineNum">      22 </span>            : &lt;para&gt;The first step is to select (or create) a directory (within &lt;computeroutput&gt;SPECTRE_ROOT/src&lt;/computeroutput&gt;) that will hold the files from which the executable will be created. For this tutorial we created the directory &lt;computeroutput&gt;ParallelTutorial&lt;/computeroutput&gt; in &lt;computeroutput&gt;src/Executables/Examples&lt;/computeroutput&gt;. If you create a new directory for the executable, you will need to edit the &lt;computeroutput&gt;CMakeLists.txt&lt;/computeroutput&gt; file in its parent directory and add (replacing &lt;computeroutput&gt;ParallelTutorial&lt;/computeroutput&gt; with the appropriate directory name)&lt;/para&gt;</a>
+<a name="23"><span class="lineNum">      23 </span>            : &lt;para&gt;&lt;programlisting filename=&quot;Examples/CMakeLists.txt&quot;&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;add_subdirectory(ParallelTutorial)&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="24"><span class="lineNum">      24 </span>            : &lt;/programlisting&gt; The second step is to edit (or create) the &lt;computeroutput&gt;CMakeLists.txt&lt;/computeroutput&gt; file in the executable directory and add a call to &lt;computeroutput&gt;add_spectre_parallel_executable&lt;/computeroutput&gt; such as:&lt;/para&gt;</a>
+<a name="25"><span class="lineNum">      25 </span>            : &lt;para&gt;&lt;programlisting filename=&quot;ParallelTutorial/CMakeLists.txt&quot;&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;set(LIBS_TO_LINK&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="26"><span class="lineNum">      26 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;ref refid=&quot;classInformer&quot; kindref=&quot;compound&quot;&gt;Informer&lt;/ref&gt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="27"><span class="lineNum">      27 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;ref refid=&quot;namespaceOptions&quot; kindref=&quot;compound&quot;&gt;Options&lt;/ref&gt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="28"><span class="lineNum">      28 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;Utilities&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="29"><span class="lineNum">      29 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;)&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="30"><span class="lineNum">      30 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="31"><span class="lineNum">      31 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;add_spectre_parallel_executable(&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="32"><span class="lineNum">      32 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;MinimalExample&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="33"><span class="lineNum">      33 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;MinimalExecutable&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="34"><span class="lineNum">      34 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;Executables/Examples/ParallelTutorial&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="35"><span class="lineNum">      35 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;Metavariables&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="36"><span class="lineNum">      36 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;/highlight&gt;&lt;highlight class=&quot;stringliteral&quot;&gt;&amp;quot;${LIBS_TO_LINK}&amp;quot;&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="37"><span class="lineNum">      37 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;)&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="38"><span class="lineNum">      38 </span>            : &lt;/programlisting&gt; The (SpECTRE defined) &lt;computeroutput&gt;CMake&lt;/computeroutput&gt; function &lt;computeroutput&gt;add_spectre_executable&lt;/computeroutput&gt; takes five arguments:&lt;/para&gt;</a>
+<a name="39"><span class="lineNum">      39 </span>            : &lt;para&gt;&lt;itemizedlist&gt;</a>
+<a name="40"><span class="lineNum">      40 </span>            : &lt;listitem&gt;&lt;para&gt;The name of the executable (in the given example &lt;computeroutput&gt;MinimalExample&lt;/computeroutput&gt;) that will be created, which will also be the name of the corresponding build target.&lt;/para&gt;</a>
+<a name="41"><span class="lineNum">      41 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;The base name (in the given example &lt;computeroutput&gt;MinimalExecutable&lt;/computeroutput&gt;) of the two user-provided files that declare (&lt;computeroutput&gt;&lt;ref refid=&quot;MinimalExecutableFwd_8hpp_source&quot; kindref=&quot;compound&quot;&gt;MinimalExecutableFwd.hpp&lt;/ref&gt;&lt;/computeroutput&gt;) and define (&lt;computeroutput&gt;&lt;ref refid=&quot;MinimalExecutable_8hpp_source&quot; kindref=&quot;compound&quot;&gt;MinimalExecutable.hpp&lt;/ref&gt;&lt;/computeroutput&gt;) a C++ struct (or struct template) that will describe the metaprogram that is converted into a C++ executable. We will refer to this struct (template) as the metavariables struct (template), and the files declaring and defining the metavariables struct (template) as the metavariables files.&lt;/para&gt;</a>
+<a name="42"><span class="lineNum">      42 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;The path relative to &lt;computeroutput&gt;SPECTRE_ROOT/src&lt;/computeroutput&gt; to the directory holding the metavariables files (in the given example &lt;computeroutput&gt;Executables/Examples/ParallelTutorial&lt;/computeroutput&gt;)&lt;/para&gt;</a>
+<a name="43"><span class="lineNum">      43 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;The specific metavariables struct (in the given example &lt;computeroutput&gt;Metavariables&lt;/computeroutput&gt;) that will be used to create the executable. This is either the name of the metavariables struct in the metavariables files, or a specific instantiation of the metavariables struct template in the metavariables files.&lt;/para&gt;</a>
+<a name="44"><span class="lineNum">      44 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;A list of SpECTRE libraries that the executable will be linked against (in the given example the &lt;computeroutput&gt;CMake&lt;/computeroutput&gt; list &lt;computeroutput&gt;LIBS_TO_LINK&lt;/computeroutput&gt; where &lt;computeroutput&gt;Informer&lt;/computeroutput&gt; and &lt;computeroutput&gt;Utilities&lt;/computeroutput&gt; are two SpECTRE libraries)&lt;/para&gt;</a>
+<a name="45"><span class="lineNum">      45 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="46"><span class="lineNum">      46 </span>            : &lt;/para&gt;</a>
+<a name="47"><span class="lineNum">      47 </span>            : &lt;/sect2&gt;</a>
+<a name="48"><span class="lineNum">      48 </span>            : &lt;sect2 id=&quot;tutorial_minimal_parallel_executable_1autotoc_md172&quot;&gt;</a>
+<a name="49"><span class="lineNum">      49 </span>            : &lt;title&gt;Writing the metavariables files&lt;/title&gt;</a>
+<a name="50"><span class="lineNum">      50 </span>            : &lt;para&gt;The header files from which an executable is generated must declare and define a metavariables struct that can be thought of as a compile-time input file that defines what the executable will do.&lt;/para&gt;</a>
+<a name="51"><span class="lineNum">      51 </span>            : &lt;para&gt;The first metavariables file (&lt;computeroutput&gt;&lt;ref refid=&quot;MinimalExecutableFwd_8hpp_source&quot; kindref=&quot;compound&quot;&gt;MinimalExecutableFwd.hpp&lt;/ref&gt;&lt;/computeroutput&gt;) is simply a forward declaration of the metavariables struct:&lt;/para&gt;</a>
+<a name="52"><span class="lineNum">      52 </span>            : &lt;para&gt;&lt;programlisting filename=&quot;MinimalExecutableFwd.hpp&quot;&gt;&lt;codeline&gt;&lt;highlight class=&quot;preprocessor&quot;&gt;#pragma&lt;sp/&gt;once&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="53"><span class="lineNum">      53 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="54"><span class="lineNum">      54 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;/highlight&gt;&lt;highlight class=&quot;keyword&quot;&gt;struct&lt;sp/&gt;&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;Metavariables;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="55"><span class="lineNum">      55 </span>            : &lt;/programlisting&gt; (Note that &lt;computeroutput&gt;#pragma once&lt;/computeroutput&gt; tells the compiler to only include the file once per compilation, and the &lt;computeroutput&gt;/// \cond&lt;/computeroutput&gt; and &lt;computeroutput&gt;/// \endcond&lt;/computeroutput&gt; around the code tells doxygen not to generate documentation from the wrapped region)&lt;/para&gt;</a>
+<a name="56"><span class="lineNum">      56 </span>            : &lt;para&gt;The second metavariables file (&lt;computeroutput&gt;&lt;ref refid=&quot;MinimalExecutable_8hpp_source&quot; kindref=&quot;compound&quot;&gt;MinimalExecutable.hpp&lt;/ref&gt;&lt;/computeroutput&gt;) holds the definition of the metavariables struct.&lt;/para&gt;</a>
+<a name="57"><span class="lineNum">      57 </span>            : &lt;para&gt;&lt;programlisting filename=&quot;MinimalExecutable.hpp&quot;&gt;&lt;codeline&gt;&lt;highlight class=&quot;keyword&quot;&gt;struct&lt;sp/&gt;&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;Metavariables&lt;sp/&gt;{&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="58"><span class="lineNum">      58 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;/highlight&gt;&lt;highlight class=&quot;keyword&quot;&gt;using&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;component_list&lt;sp/&gt;=&lt;sp/&gt;tmpl::list&amp;lt;&amp;gt;;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="59"><span class="lineNum">      59 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="60"><span class="lineNum">      60 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;/highlight&gt;&lt;highlight class=&quot;keyword&quot;&gt;enum&lt;sp/&gt;class&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;Phase&lt;sp/&gt;{&lt;sp/&gt;Initialization,&lt;sp/&gt;Exit&lt;sp/&gt;};&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="61"><span class="lineNum">      61 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="62"><span class="lineNum">      62 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;/highlight&gt;&lt;highlight class=&quot;keyword&quot;&gt;template&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&amp;lt;&lt;/highlight&gt;&lt;highlight class=&quot;keyword&quot;&gt;typename&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;...&lt;sp/&gt;Tags&amp;gt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="63"><span class="lineNum">      63 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;/highlight&gt;&lt;highlight class=&quot;keyword&quot;&gt;static&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;Phase&lt;sp/&gt;determine_next_phase(&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="64"><span class="lineNum">      64 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;/highlight&gt;&lt;highlight class=&quot;keyword&quot;&gt;const&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;ref refid=&quot;classgsl_1_1not__null&quot; kindref=&quot;compound&quot;&gt;gsl::not_null&lt;/ref&gt;&amp;lt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="65"><span class="lineNum">      65 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;ref refid=&quot;classtuples_1_1TaggedTuple&quot; kindref=&quot;compound&quot;&gt;tuples::TaggedTuple&amp;lt;Tags...&amp;gt;&lt;/ref&gt;*&amp;gt;&lt;sp/&gt;&lt;/highlight&gt;&lt;highlight class=&quot;comment&quot;&gt;/*phase_change_decision_data*/&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="66"><span class="lineNum">      66 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;/highlight&gt;&lt;highlight class=&quot;keyword&quot;&gt;const&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;Phase&amp;amp;&lt;sp/&gt;&lt;/highlight&gt;&lt;highlight class=&quot;comment&quot;&gt;/*current_phase*/&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="67"><span class="lineNum">      67 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;/highlight&gt;&lt;highlight class=&quot;keyword&quot;&gt;const&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;Parallel::CProxy_GlobalCache&amp;lt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="68"><span class="lineNum">      68 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;Metavariables&amp;gt;&amp;amp;&lt;sp/&gt;&lt;/highlight&gt;&lt;highlight class=&quot;comment&quot;&gt;/*cache_proxy*/&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;)&lt;sp/&gt;noexcept&lt;sp/&gt;{&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="69"><span class="lineNum">      69 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;/highlight&gt;&lt;highlight class=&quot;keywordflow&quot;&gt;return&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;Phase::Exit;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="70"><span class="lineNum">      70 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;}&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="71"><span class="lineNum">      71 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="72"><span class="lineNum">      72 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;/highlight&gt;&lt;highlight class=&quot;keyword&quot;&gt;static&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;constexpr&lt;sp/&gt;&lt;ref refid=&quot;namespaceOptions_1aa61c7f41f21afa7646811456f673be89&quot; kindref=&quot;member&quot;&gt;Options::String&lt;/ref&gt;&lt;sp/&gt;help{&lt;/highlight&gt;&lt;highlight class=&quot;stringliteral&quot;&gt;&amp;quot;A&lt;sp/&gt;minimal&lt;sp/&gt;executable&amp;quot;&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;};&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="73"><span class="lineNum">      73 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;};&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="74"><span class="lineNum">      74 </span>            : &lt;/programlisting&gt; The metavariables struct must define an enum class &lt;computeroutput&gt;Phase&lt;/computeroutput&gt; with the phases of the executable (which must include &lt;computeroutput&gt;Initialization&lt;/computeroutput&gt; and &lt;computeroutput&gt;Exit&lt;/computeroutput&gt;), and a static function &lt;computeroutput&gt;determine_next_phase&lt;/computeroutput&gt;. In this example, no additional phases are defined, and the executable will execute the &lt;computeroutput&gt;Initialization&lt;/computeroutput&gt; phase followed by the &lt;computeroutput&gt;Exit&lt;/computeroutput&gt; phase. (&lt;computeroutput&gt;Parallel::CProxy_GlobalCache&lt;/computeroutput&gt; is an unused proxy to the &lt;computeroutput&gt;GlobalCache&lt;/computeroutput&gt; that is explained below)&lt;/para&gt;</a>
+<a name="75"><span class="lineNum">      75 </span>            : &lt;para&gt;The metavariables struct must define a type alias &lt;computeroutput&gt;component_list&lt;/computeroutput&gt; that is a &lt;computeroutput&gt;tmpl::list&lt;/computeroutput&gt; (a typelist defined in &lt;computeroutput&gt;&lt;ref refid=&quot;TMPL_8hpp&quot; kindref=&quot;compound&quot;&gt;Utilities/TMPL.hpp&lt;/ref&gt;&lt;/computeroutput&gt;) of the parallel components used by the executable. In this example no parallel components are used.&lt;/para&gt;</a>
+<a name="76"><span class="lineNum">      76 </span>            : &lt;para&gt;The metavariables struct must define &lt;computeroutput&gt;help&lt;/computeroutput&gt;, a &lt;computeroutput&gt;static constexpr &lt;ref refid=&quot;namespaceOptions_1aa61c7f41f21afa7646811456f673be89&quot; kindref=&quot;member&quot;&gt;Options::String&lt;/ref&gt;&lt;/computeroutput&gt; that will be printed as part of the help message of the executable. (&lt;computeroutput&gt;&lt;ref refid=&quot;namespaceOptions_1aa61c7f41f21afa7646811456f673be89&quot; kindref=&quot;member&quot;&gt;Options::String&lt;/ref&gt;&lt;/computeroutput&gt; is defined in &lt;computeroutput&gt;&lt;ref refid=&quot;Options_8hpp&quot; kindref=&quot;compound&quot;&gt;Options/Options.hpp&lt;/ref&gt;&lt;/computeroutput&gt;.)&lt;/para&gt;</a>
+<a name="77"><span class="lineNum">      77 </span>            : &lt;para&gt;In addition to defining the metavaribles struct, the metavariables file must define the two vectors of functions &lt;computeroutput&gt;charm_init_node_funcs&lt;/computeroutput&gt; and &lt;computeroutput&gt;charm_init_proc_funcs&lt;/computeroutput&gt;&lt;/para&gt;</a>
+<a name="78"><span class="lineNum">      78 </span>            : &lt;para&gt;&lt;programlisting filename=&quot;MinimalExecutable.hpp&quot;&gt;&lt;codeline&gt;&lt;highlight class=&quot;keyword&quot;&gt;static&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;/highlight&gt;&lt;highlight class=&quot;keyword&quot;&gt;const&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;ref refid=&quot;cpp/container/vector&quot; kindref=&quot;compound&quot; external=&quot;/__w/spectre/spectre/docs/config/cppreference-doxygen-web.tag.xml&quot;&gt;std::vector&lt;/ref&gt;&amp;lt;void&lt;sp/&gt;(*)()&amp;gt;&lt;sp/&gt;charm_init_node_funcs{};&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="79"><span class="lineNum">      79 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;/highlight&gt;&lt;highlight class=&quot;keyword&quot;&gt;static&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;/highlight&gt;&lt;highlight class=&quot;keyword&quot;&gt;const&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;ref refid=&quot;cpp/container/vector&quot; kindref=&quot;compound&quot; external=&quot;/__w/spectre/spectre/docs/config/cppreference-doxygen-web.tag.xml&quot;&gt;std::vector&lt;/ref&gt;&amp;lt;void&lt;sp/&gt;(*)()&amp;gt;&lt;sp/&gt;charm_init_proc_funcs{};&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="80"><span class="lineNum">      80 </span>            : &lt;/programlisting&gt; that are executed at startup by Charm++ on each node and processing element (PE) the executable runs on. In this example, the vectors are empty.&lt;/para&gt;</a>
+<a name="81"><span class="lineNum">      81 </span>            : &lt;/sect2&gt;</a>
+<a name="82"><span class="lineNum">      82 </span>            : &lt;sect2 id=&quot;tutorial_minimal_parallel_executable_1autotoc_md173&quot;&gt;</a>
+<a name="83"><span class="lineNum">      83 </span>            : &lt;title&gt;Building a SpECTRE executable&lt;/title&gt;</a>
+<a name="84"><span class="lineNum">      84 </span>            : &lt;para&gt;Let &lt;computeroutput&gt;$EXECUTABLE&lt;/computeroutput&gt; be the name of the executable (the first argument passed to the &lt;computeroutput&gt;add_spectre_executable&lt;/computeroutput&gt; &lt;computeroutput&gt;CMake&lt;/computeroutput&gt; function, so in this example &lt;computeroutput&gt;MinimalExample&lt;/computeroutput&gt;). Then the executable can be built by running the following command in &lt;computeroutput&gt;$SPECTRE_BUILD_DIR&lt;/computeroutput&gt;:&lt;/para&gt;</a>
+<a name="85"><span class="lineNum">      85 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;make&lt;sp/&gt;$EXECUTABLE&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="86"><span class="lineNum">      86 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="87"><span class="lineNum">      87 </span>            : &lt;para&gt;which will produce the executable of the same name in &lt;computeroutput&gt;$SPECTRE_BUILD_DIR/bin&lt;/computeroutput&gt;.&lt;/para&gt;</a>
+<a name="88"><span class="lineNum">      88 </span>            : &lt;/sect2&gt;</a>
+<a name="89"><span class="lineNum">      89 </span>            : &lt;sect2 id=&quot;tutorial_minimal_parallel_executable_1autotoc_md174&quot;&gt;</a>
+<a name="90"><span class="lineNum">      90 </span>            : &lt;title&gt;Running a SpECTRE executable&lt;/title&gt;</a>
+<a name="91"><span class="lineNum">      91 </span>            : &lt;para&gt;To run a SpECTRE executable, run the command:&lt;/para&gt;</a>
+<a name="92"><span class="lineNum">      92 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;./$SPECTRE_BUILD_DIR/bin/$EXECUTABLE&lt;sp/&gt;&lt;sp/&gt;&amp;lt;options&amp;gt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="93"><span class="lineNum">      93 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="94"><span class="lineNum">      94 </span>            : &lt;para&gt;where &lt;computeroutput&gt;&amp;lt;options&amp;gt;&lt;/computeroutput&gt; must include any required command-line options. In the simple example for this tutorial, no command-line options are required.&lt;/para&gt;</a>
+<a name="95"><span class="lineNum">      95 </span>            : &lt;para&gt;On a laptop, we get the following output:&lt;/para&gt;</a>
+<a name="96"><span class="lineNum">      96 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Charm++:&lt;sp/&gt;standalone&lt;sp/&gt;mode&lt;sp/&gt;(not&lt;sp/&gt;using&lt;sp/&gt;charmrun)&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="97"><span class="lineNum">      97 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Charm++&amp;gt;&lt;sp/&gt;Running&lt;sp/&gt;in&lt;sp/&gt;Multicore&lt;sp/&gt;mode:&lt;sp/&gt;&lt;sp/&gt;1&lt;sp/&gt;threads&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="98"><span class="lineNum">      98 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Converse/Charm++&lt;sp/&gt;Commit&lt;sp/&gt;ID:&lt;sp/&gt;v6.8.0-0-ga36028edb&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="99"><span class="lineNum">      99 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;CharmLB&amp;gt;&lt;sp/&gt;Load&lt;sp/&gt;balancer&lt;sp/&gt;assumes&lt;sp/&gt;all&lt;sp/&gt;CPUs&lt;sp/&gt;are&lt;sp/&gt;same.&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="100"><span class="lineNum">     100 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Charm++&amp;gt;&lt;sp/&gt;Running&lt;sp/&gt;on&lt;sp/&gt;1&lt;sp/&gt;unique&lt;sp/&gt;compute&lt;sp/&gt;nodes&lt;sp/&gt;(4-way&lt;sp/&gt;SMP).&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="101"><span class="lineNum">     101 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Charm++&amp;gt;&lt;sp/&gt;cpu&lt;sp/&gt;topology&lt;sp/&gt;info&lt;sp/&gt;is&lt;sp/&gt;gathered&lt;sp/&gt;in&lt;sp/&gt;0.000&lt;sp/&gt;seconds.&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="102"><span class="lineNum">     102 </span>            : &lt;codeline&gt;&lt;/codeline&gt;</a>
+<a name="103"><span class="lineNum">     103 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Executing&lt;sp/&gt;&amp;apos;some_path/MinimalExample&amp;apos;&lt;sp/&gt;using&lt;sp/&gt;1&lt;sp/&gt;processors.&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="104"><span class="lineNum">     104 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Date&lt;sp/&gt;and&lt;sp/&gt;time&lt;sp/&gt;at&lt;sp/&gt;startup:&lt;sp/&gt;Fri&lt;sp/&gt;Oct&lt;sp/&gt;25&lt;sp/&gt;15:03:05&lt;sp/&gt;2019&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="105"><span class="lineNum">     105 </span>            : &lt;codeline&gt;&lt;/codeline&gt;</a>
+<a name="106"><span class="lineNum">     106 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;SpECTRE&lt;sp/&gt;Build&lt;sp/&gt;Information:&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="107"><span class="lineNum">     107 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Version:&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;0.0.0&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="108"><span class="lineNum">     108 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Compiled&lt;sp/&gt;on&lt;sp/&gt;host:&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;kosh-3.local&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="109"><span class="lineNum">     109 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Compiled&lt;sp/&gt;in&lt;sp/&gt;directory:&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;some_path/build&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="110"><span class="lineNum">     110 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Source&lt;sp/&gt;directory&lt;sp/&gt;is:&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;some_path/parallel_tutorial&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="111"><span class="lineNum">     111 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Compiled&lt;sp/&gt;on&lt;sp/&gt;git&lt;sp/&gt;branch:&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;feature/parallel_tutorial&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="112"><span class="lineNum">     112 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Compiled&lt;sp/&gt;with&lt;sp/&gt;git&lt;sp/&gt;hash:&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;1f4ab20cbda9ae8072a17df69de9731c43687468&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="113"><span class="lineNum">     113 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Linked&lt;sp/&gt;on:&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;Fri&lt;sp/&gt;Oct&lt;sp/&gt;25&lt;sp/&gt;13:26:06&lt;sp/&gt;2019&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="114"><span class="lineNum">     114 </span>            : &lt;codeline&gt;&lt;/codeline&gt;</a>
+<a name="115"><span class="lineNum">     115 </span>            : &lt;codeline&gt;&lt;/codeline&gt;</a>
+<a name="116"><span class="lineNum">     116 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Done!&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="117"><span class="lineNum">     117 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Wall&lt;sp/&gt;time&lt;sp/&gt;in&lt;sp/&gt;seconds:&lt;sp/&gt;0.004185&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="118"><span class="lineNum">     118 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Date&lt;sp/&gt;and&lt;sp/&gt;time&lt;sp/&gt;at&lt;sp/&gt;completion:&lt;sp/&gt;Fri&lt;sp/&gt;Oct&lt;sp/&gt;25&lt;sp/&gt;15:03:05&lt;sp/&gt;2019&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="119"><span class="lineNum">     119 </span>            : &lt;codeline&gt;&lt;/codeline&gt;</a>
+<a name="120"><span class="lineNum">     120 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;[Partition&lt;sp/&gt;0][Node&lt;sp/&gt;0]&lt;sp/&gt;End&lt;sp/&gt;of&lt;sp/&gt;program&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="121"><span class="lineNum">     121 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="122"><span class="lineNum">     122 </span>            : &lt;para&gt;which includes information that will be printed by every SpECTRE executable on startup and exit. First, there is information provided by &lt;computeroutput&gt;Charm++&lt;/computeroutput&gt; that will depend upon how &lt;computeroutput&gt;Charm++&lt;/computeroutput&gt; was built. Next you will see information provided by SpECTRE which includes:&lt;/para&gt;</a>
+<a name="123"><span class="lineNum">     123 </span>            : &lt;para&gt;&lt;itemizedlist&gt;</a>
+<a name="124"><span class="lineNum">     124 </span>            : &lt;listitem&gt;&lt;para&gt;the name of the executable&lt;/para&gt;</a>
+<a name="125"><span class="lineNum">     125 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;how many processes the executable was run on&lt;/para&gt;</a>
+<a name="126"><span class="lineNum">     126 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;the date and time at startup&lt;/para&gt;</a>
+<a name="127"><span class="lineNum">     127 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;the version of SpECTRE that was used to compile the executable&lt;/para&gt;</a>
+<a name="128"><span class="lineNum">     128 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;where the executable was compiled&lt;/para&gt;</a>
+<a name="129"><span class="lineNum">     129 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;which git branch and hash was used to compile the executable&lt;/para&gt;</a>
+<a name="130"><span class="lineNum">     130 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;when the executable was linked&lt;/para&gt;</a>
+<a name="131"><span class="lineNum">     131 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="132"><span class="lineNum">     132 </span>            : &lt;/para&gt;</a>
+<a name="133"><span class="lineNum">     133 </span>            : &lt;para&gt;On exit, the executable will print that it is &lt;computeroutput&gt;Done!&lt;/computeroutput&gt;, followed by how the long the executable took to run as timed by the &lt;computeroutput&gt;Charm++&lt;/computeroutput&gt; wall-clock timer, and the date and time at completion, followed by any information the &lt;computeroutput&gt;Charm++&lt;/computeroutput&gt; provides upon exiting the program.&lt;/para&gt;</a>
+<a name="134"><span class="lineNum">     134 </span>            : &lt;/sect2&gt;</a>
+<a name="135"><span class="lineNum">     135 </span>            : &lt;sect2 id=&quot;tutorial_minimal_parallel_executable_1autotoc_md175&quot;&gt;</a>
+<a name="136"><span class="lineNum">     136 </span>            : &lt;title&gt;Extracting useful information from a SpECTRE executable&lt;/title&gt;</a>
+<a name="137"><span class="lineNum">     137 </span>            : &lt;para&gt;Every SpECTRE executable comes with a set of command-line options that can be used to obtain useful information about the executable (and for executables expecting an input file, whether or not the input file can be parsed successfully).&lt;/para&gt;</a>
+<a name="138"><span class="lineNum">     138 </span>            : &lt;sect3 id=&quot;tutorial_minimal_parallel_executable_1autotoc_md176&quot;&gt;</a>
+<a name="139"><span class="lineNum">     139 </span>            : &lt;title&gt;Getting a list of available options&lt;/title&gt;</a>
+<a name="140"><span class="lineNum">     140 </span>            : &lt;para&gt;To get a list of available options for a SpECTRE executable, run either of the following commands:&lt;/para&gt;</a>
+<a name="141"><span class="lineNum">     141 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;./$SPECTRE_BUILD_DIR/bin/$EXECUTABLE&lt;sp/&gt;&lt;sp/&gt;--help&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="142"><span class="lineNum">     142 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;./$SPECTRE_BUILD_DIR/bin/$EXECUTABLE&lt;sp/&gt;&lt;sp/&gt;-h&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="143"><span class="lineNum">     143 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="144"><span class="lineNum">     144 </span>            : &lt;para&gt;In the middle of the &lt;computeroutput&gt;Charm++&lt;/computeroutput&gt; startup information will now appear a long list of &lt;computeroutput&gt;Charm++&lt;/computeroutput&gt; related command-line options which we will ignore for this tutorial. After the SpECTRE startup information, there is now a list of available command-line options:&lt;/para&gt;</a>
+<a name="145"><span class="lineNum">     145 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;-h&lt;sp/&gt;[&lt;sp/&gt;--help&lt;sp/&gt;]&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;Describe&lt;sp/&gt;program&lt;sp/&gt;options&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="146"><span class="lineNum">     146 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;--check-options&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;Check&lt;sp/&gt;input&lt;sp/&gt;file&lt;sp/&gt;options&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="147"><span class="lineNum">     147 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;--dump-source-tree-as&lt;sp/&gt;arg&lt;sp/&gt;If&lt;sp/&gt;specified,&lt;sp/&gt;then&lt;sp/&gt;a&lt;sp/&gt;gzip&lt;sp/&gt;archive&lt;sp/&gt;of&lt;sp/&gt;the&lt;sp/&gt;source&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="148"><span class="lineNum">     148 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;tree&lt;sp/&gt;is&lt;sp/&gt;dumped&lt;sp/&gt;with&lt;sp/&gt;the&lt;sp/&gt;specified&lt;sp/&gt;name.&lt;sp/&gt;The&lt;sp/&gt;archive&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="149"><span class="lineNum">     149 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;can&lt;sp/&gt;be&lt;sp/&gt;expanded&lt;sp/&gt;using&lt;sp/&gt;&amp;apos;tar&lt;sp/&gt;-xzf&lt;sp/&gt;ARCHIVE.tar.gz&amp;apos;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="150"><span class="lineNum">     150 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;--dump-paths&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;Dump&lt;sp/&gt;the&lt;sp/&gt;PATH,&lt;sp/&gt;CPATH,&lt;sp/&gt;LD_LIBRARY_PATH,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="151"><span class="lineNum">     151 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;LIBRARY_PATH,&lt;sp/&gt;and&lt;sp/&gt;CMAKE_PREFIX_PATH&lt;sp/&gt;at&lt;sp/&gt;compile&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="152"><span class="lineNum">     152 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;time.&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="153"><span class="lineNum">     153 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;--dump-environment&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;Dump&lt;sp/&gt;the&lt;sp/&gt;result&lt;sp/&gt;of&lt;sp/&gt;printenv&lt;sp/&gt;at&lt;sp/&gt;compile&lt;sp/&gt;time.&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="154"><span class="lineNum">     154 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;--dump-library-versions&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;Dump&lt;sp/&gt;the&lt;sp/&gt;contents&lt;sp/&gt;of&lt;sp/&gt;SpECTRE&amp;apos;s&lt;sp/&gt;LibraryVersions.txt&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="155"><span class="lineNum">     155 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;--dump-only&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;Exit&lt;sp/&gt;after&lt;sp/&gt;dumping&lt;sp/&gt;requested&lt;sp/&gt;information.&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="156"><span class="lineNum">     156 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="157"><span class="lineNum">     157 </span>            : &lt;para&gt;which we will describe in detail below. This is followed by a description of the expected input-file options, which in this example will simply print the &lt;computeroutput&gt;help&lt;/computeroutput&gt; string from the metavariables struct, and the statement that there are no options expected:&lt;/para&gt;</a>
+<a name="158"><span class="lineNum">     158 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;====&lt;sp/&gt;Description&lt;sp/&gt;of&lt;sp/&gt;expected&lt;sp/&gt;options:&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="159"><span class="lineNum">     159 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;A&lt;sp/&gt;minimal&lt;sp/&gt;executable&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="160"><span class="lineNum">     160 </span>            : &lt;codeline&gt;&lt;/codeline&gt;</a>
+<a name="161"><span class="lineNum">     161 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&amp;lt;No&lt;sp/&gt;options&amp;gt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="162"><span class="lineNum">     162 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="163"><span class="lineNum">     163 </span>            : &lt;para&gt;We will cover input file options in a future tutorial.&lt;/para&gt;</a>
+<a name="164"><span class="lineNum">     164 </span>            : &lt;/sect3&gt;</a>
+<a name="165"><span class="lineNum">     165 </span>            : &lt;sect3 id=&quot;tutorial_minimal_parallel_executable_1autotoc_md177&quot;&gt;</a>
+<a name="166"><span class="lineNum">     166 </span>            : &lt;title&gt;Checking options&lt;/title&gt;</a>
+<a name="167"><span class="lineNum">     167 </span>            : &lt;para&gt;As the minimal executable in this tutorial expects no input-file options, running the command:&lt;/para&gt;</a>
+<a name="168"><span class="lineNum">     168 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;./$SPECTRE_BUILD_DIR/bin/$EXECUTABLE&lt;sp/&gt;&lt;sp/&gt;--check-options&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="169"><span class="lineNum">     169 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="170"><span class="lineNum">     170 </span>            : &lt;para&gt;will print out &lt;computeroutput&gt;No options to check!&lt;/computeroutput&gt; and exit the program. See a future tutorial for an example of checking input-file options.&lt;/para&gt;</a>
+<a name="171"><span class="lineNum">     171 </span>            : &lt;/sect3&gt;</a>
+<a name="172"><span class="lineNum">     172 </span>            : &lt;sect3 id=&quot;tutorial_minimal_parallel_executable_1autotoc_md178&quot;&gt;</a>
+<a name="173"><span class="lineNum">     173 </span>            : &lt;title&gt;Dumping the source tree&lt;/title&gt;</a>
+<a name="174"><span class="lineNum">     174 </span>            : &lt;para&gt;In order to aid in reproducibility, all SpECTRE executables contain a copy of &lt;computeroutput&gt;$SPECTRE_ROOT&lt;/computeroutput&gt;. To obtain the source tree as an archive file, run the command:&lt;/para&gt;</a>
+<a name="175"><span class="lineNum">     175 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;./$SPECTRE_BUILD_DIR/bin/$EXECUTABLE&lt;sp/&gt;&lt;sp/&gt;--dump-source-tree-as&lt;sp/&gt;SpECTRE&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="176"><span class="lineNum">     176 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="177"><span class="lineNum">     177 </span>            : &lt;para&gt;which will produce the archive file &lt;computeroutput&gt;SpECTRE.tar.gz&lt;/computeroutput&gt; which can be expanded with the command:&lt;/para&gt;</a>
+<a name="178"><span class="lineNum">     178 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;tar&lt;sp/&gt;-xzf&lt;sp/&gt;SpECTRE.tar.gz&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="179"><span class="lineNum">     179 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="180"><span class="lineNum">     180 </span>            : &lt;/sect3&gt;</a>
+<a name="181"><span class="lineNum">     181 </span>            : &lt;sect3 id=&quot;tutorial_minimal_parallel_executable_1autotoc_md179&quot;&gt;</a>
+<a name="182"><span class="lineNum">     182 </span>            : &lt;title&gt;Dumping other information about a SpECTRE executable&lt;/title&gt;</a>
+<a name="183"><span class="lineNum">     183 </span>            : &lt;para&gt;In addition to dumping the entire source tree there are the following options:&lt;/para&gt;</a>
+<a name="184"><span class="lineNum">     184 </span>            : &lt;para&gt;&lt;itemizedlist&gt;</a>
+<a name="185"><span class="lineNum">     185 </span>            : &lt;listitem&gt;&lt;para&gt;&lt;computeroutput&gt;--dump-paths&lt;/computeroutput&gt; will print out various paths from when the executable was compiled&lt;/para&gt;</a>
+<a name="186"><span class="lineNum">     186 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;&lt;computeroutput&gt;--dump-environment&lt;/computeroutput&gt; will print the results of &lt;computeroutput&gt;printenv&lt;/computeroutput&gt; (i.e. all of the environment variables) from when the executable was compiled&lt;/para&gt;</a>
+<a name="187"><span class="lineNum">     187 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;&lt;computeroutput&gt;--dump-library-versions&lt;/computeroutput&gt; will print the contents of SpECTRE&amp;apos;s &lt;computeroutput&gt;LibraryVersions.txt&lt;/computeroutput&gt; which will contain the versions of libraries that SpECTRE linked against, as well as various &lt;computeroutput&gt;CMake&lt;/computeroutput&gt; variables&lt;/para&gt;</a>
+<a name="188"><span class="lineNum">     188 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="189"><span class="lineNum">     189 </span>            : &lt;/para&gt;</a>
+<a name="190"><span class="lineNum">     190 </span>            : &lt;para&gt;Also note that the option &lt;computeroutput&gt;--dump-only&lt;/computeroutput&gt; can be used to have the SpECTRE executable terminate immediately after dumping the information.&lt;/para&gt;</a>
+<a name="191"><span class="lineNum">     191 </span>            : &lt;/sect3&gt;</a>
+<a name="192"><span class="lineNum">     192 </span>            : &lt;/sect2&gt;</a>
+<a name="193"><span class="lineNum">     193 </span>            : &lt;sect2 id=&quot;tutorial_minimal_parallel_executable_1autotoc_md180&quot;&gt;</a>
+<a name="194"><span class="lineNum">     194 </span>            : &lt;title&gt;Behind the scenes:  the main parallel component&lt;/title&gt;</a>
+<a name="195"><span class="lineNum">     195 </span>            : &lt;para&gt;Every Charm++ executable needs a mainchare. All SpECTRE executables use &lt;computeroutput&gt;Main&lt;/computeroutput&gt; (found in &lt;computeroutput&gt;&lt;ref refid=&quot;Main_8hpp&quot; kindref=&quot;compound&quot;&gt;src/Parallel/Main.hpp&lt;/ref&gt;&lt;/computeroutput&gt;) as the mainchare. When a SpECTRE executable is run, the constructor of &lt;computeroutput&gt;Main&lt;/computeroutput&gt; that is executed takes the command line options as an argument (as type &lt;computeroutput&gt;CkArgMsg*&lt;/computeroutput&gt;). This constructor performs the following operations:&lt;/para&gt;</a>
+<a name="196"><span class="lineNum">     196 </span>            : &lt;para&gt;&lt;itemizedlist&gt;</a>
+<a name="197"><span class="lineNum">     197 </span>            : &lt;listitem&gt;&lt;para&gt;Prints useful startup information&lt;/para&gt;</a>
+<a name="198"><span class="lineNum">     198 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;Parses the command line options, performing any requested operations&lt;/para&gt;</a>
+<a name="199"><span class="lineNum">     199 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;Parses the input file options, populating a tagged tuple with their values. (This is discussed in more detail in a future tutorial on input file options.)&lt;/para&gt;</a>
+<a name="200"><span class="lineNum">     200 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;Creates the &lt;computeroutput&gt;GlobalCache&lt;/computeroutput&gt; (a nodegroup chare) that holds objects created from input file options that are stored once per Charm++ node, as well as proxies to all other parallel components.&lt;/para&gt;</a>
+<a name="201"><span class="lineNum">     201 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;Creates user-requested non-array parallel components, passing them the proxy to the &lt;computeroutput&gt;GlobalCache&lt;/computeroutput&gt; as well as any items they request that can be created from input file options.&lt;/para&gt;</a>
+<a name="202"><span class="lineNum">     202 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;Creates empty array user-requested parallel components&lt;/para&gt;</a>
+<a name="203"><span class="lineNum">     203 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;Sends the complete list of parallel components to the &lt;computeroutput&gt;GlobalCache&lt;/computeroutput&gt;.&lt;/para&gt;</a>
+<a name="204"><span class="lineNum">     204 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="205"><span class="lineNum">     205 </span>            : &lt;/para&gt;</a>
+<a name="206"><span class="lineNum">     206 </span>            : &lt;para&gt;Once the list of parallel components is sent to the &lt;computeroutput&gt;GlobalCache&lt;/computeroutput&gt; on each node, the &lt;computeroutput&gt;Main&lt;/computeroutput&gt; member function &lt;computeroutput&gt;allocate_array_components_and_execute_initial_phase&lt;/computeroutput&gt; will be executed. This will allocate the elements of the array parallel components by calling the &lt;computeroutput&gt;allocate_array&lt;/computeroutput&gt; member function of each component. Then the &lt;computeroutput&gt;start_phase&lt;/computeroutput&gt; member function is called on each component, which will execute the phase action list for the &lt;computeroutput&gt;Initialization&lt;/computeroutput&gt; phase for each component. Charm++ will execute each phase until it detects that nothing is happening (quiescence detection). As this represents a global synchronization point, the number of phases should be minimized in order to exploit the power of SpECTRE. After each phase, the &lt;computeroutput&gt;execute_next_phase&lt;/computeroutput&gt; member function of &lt;computeroutput&gt;Main&lt;/computeroutput&gt; will be called. This member function first determines what the next phase is. If the next phase is &lt;computeroutput&gt;Exit&lt;/computeroutput&gt;, then some useful information is printed and the program exits gracefully. Otherwise the &lt;computeroutput&gt;execute_next_phase&lt;/computeroutput&gt; member function of each parallel component is called. &lt;/para&gt;</a>
+<a name="207"><span class="lineNum">     207 </span>            : &lt;/sect2&gt;</a>
+<a name="208"><span class="lineNum">     208 </span>            :     &lt;/detaileddescription&gt;</a>
+<a name="209"><span class="lineNum">     209 </span>            :   &lt;/compounddef&gt;</a>
+<a name="210"><span class="lineNum">     210 </span>            : &lt;/doxygen&gt;</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

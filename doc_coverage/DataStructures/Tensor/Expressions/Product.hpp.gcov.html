@@ -1,0 +1,365 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - 39f3c2b725318dcf91749887b1e61f477736e132 - DataStructures/Tensor/Expressions/Product.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title"> SpECTRE Documentation Coverage Report</td></tr>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">DataStructures/Tensor/Expressions</a> - Product.hpp</td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+             <td class="headerItem">Commit:</td>
+             <td class="headerValue"><a target="_blank" href="https://github.com/sxs-collaboration/spectre/commit/39f3c2b725318dcf91749887b1e61f477736e132">39f3c2b725318dcf91749887b1e61f477736e132</a></td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">9</td>
+            <td class="headerCovTableEntry">22</td>
+            <td class="headerCovTableEntryLo">40.9 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2021-07-13 03:19:40</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineCov">          1 : // Distributed under the MIT License.</span></a>
+<a name="2"><span class="lineNum">       2 </span>            : // See LICENSE.txt for details.</a>
+<a name="3"><span class="lineNum">       3 </span>            : </a>
+<a name="4"><span class="lineNum">       4 </span>            : /// \file</a>
+<a name="5"><span class="lineNum">       5 </span>            : /// Defines ET for tensor inner and outer products</a>
+<a name="6"><span class="lineNum">       6 </span>            : </a>
+<a name="7"><span class="lineNum">       7 </span>            : #pragma once</a>
+<a name="8"><span class="lineNum">       8 </span>            : </a>
+<a name="9"><span class="lineNum">       9 </span>            : #include &lt;array&gt;</a>
+<a name="10"><span class="lineNum">      10 </span>            : #include &lt;cstddef&gt;</a>
+<a name="11"><span class="lineNum">      11 </span>            : #include &lt;iterator&gt;</a>
+<a name="12"><span class="lineNum">      12 </span>            : #include &lt;type_traits&gt;</a>
+<a name="13"><span class="lineNum">      13 </span>            : #include &lt;utility&gt;</a>
+<a name="14"><span class="lineNum">      14 </span>            : </a>
+<a name="15"><span class="lineNum">      15 </span>            : #include &quot;DataStructures/Tensor/Expressions/Contract.hpp&quot;</a>
+<a name="16"><span class="lineNum">      16 </span>            : #include &quot;DataStructures/Tensor/Expressions/NumberAsExpression.hpp&quot;</a>
+<a name="17"><span class="lineNum">      17 </span>            : #include &quot;DataStructures/Tensor/Expressions/TensorExpression.hpp&quot;</a>
+<a name="18"><span class="lineNum">      18 </span>            : #include &quot;DataStructures/Tensor/Symmetry.hpp&quot;</a>
+<a name="19"><span class="lineNum">      19 </span>            : #include &quot;Utilities/Algorithm.hpp&quot;</a>
+<a name="20"><span class="lineNum">      20 </span>            : #include &quot;Utilities/ForceInline.hpp&quot;</a>
+<a name="21"><span class="lineNum">      21 </span>            : #include &quot;Utilities/Gsl.hpp&quot;</a>
+<a name="22"><span class="lineNum">      22 </span>            : #include &quot;Utilities/TMPL.hpp&quot;</a>
+<a name="23"><span class="lineNum">      23 </span>            : </a>
+<a name="24"><span class="lineNum">      24 </span>            : namespace TensorExpressions {</a>
+<a name="25"><span class="lineNum">      25 </span>            : namespace detail {</a>
+<a name="26"><span class="lineNum">      26 </span>            : template &lt;typename T1, typename T2, typename SymmList1 = typename T1::symmetry,</a>
+<a name="27"><span class="lineNum">      27 </span>            :           typename SymmList2 = typename T2::symmetry&gt;</a>
+<a name="28"><span class="lineNum">      28 </span>            : struct OuterProductType;</a>
+<a name="29"><span class="lineNum">      29 </span>            : </a>
+<a name="30"><span class="lineNum">      30 </span>            : template &lt;typename T1, typename T2, template &lt;typename...&gt; class SymmList1,</a>
+<a name="31"><span class="lineNum">      31 </span>            :           typename... Symm1, template &lt;typename...&gt; class SymmList2,</a>
+<a name="32"><span class="lineNum">      32 </span>            :           typename... Symm2&gt;</a>
+<a name="33"><span class="lineNum">      33 </span>            : struct OuterProductType&lt;T1, T2, SymmList1&lt;Symm1...&gt;, SymmList2&lt;Symm2...&gt;&gt; {</a>
+<a name="34"><span class="lineNum">      34 </span>            :   using type =</a>
+<a name="35"><span class="lineNum">      35 </span>            :       std::conditional_t&lt;std::is_same&lt;typename T1::type, DataVector&gt;::value or</a>
+<a name="36"><span class="lineNum">      36 </span>            :                              std::is_same&lt;typename T2::type, DataVector&gt;::value,</a>
+<a name="37"><span class="lineNum">      37 </span>            :                          DataVector, double&gt;;</a>
+<a name="38"><span class="lineNum">      38 </span>            :   using symmetry =</a>
+<a name="39"><span class="lineNum">      39 </span>            :       Symmetry&lt;(Symm1::value + sizeof...(Symm2))..., Symm2::value...&gt;;</a>
+<a name="40"><span class="lineNum">      40 </span>            :   using index_list =</a>
+<a name="41"><span class="lineNum">      41 </span>            :       tmpl::append&lt;typename T1::index_list, typename T2::index_list&gt;;</a>
+<a name="42"><span class="lineNum">      42 </span>            :   using tensorindex_list =</a>
+<a name="43"><span class="lineNum">      43 </span>            :       tmpl::append&lt;typename T1::args_list, typename T2::args_list&gt;;</a>
+<a name="44"><span class="lineNum">      44 </span>            : };</a>
+<a name="45"><span class="lineNum">      45 </span>            : }  // namespace detail</a>
+<a name="46"><span class="lineNum">      46 </span>            : </a>
+<a name="47"><span class="lineNum">      47 </span>            : /// \ingroup TensorExpressionsGroup</a>
+<a name="48"><span class="lineNum">      48 </span>            : /// \brief Defines the tensor expression representing the outer product of two</a>
+<a name="49"><span class="lineNum">      49 </span>            : /// tensor expressions</a>
+<a name="50"><span class="lineNum">      50 </span>            : ///</a>
+<a name="51"><span class="lineNum">      51 </span>            : /// \tparam T1 the first operand expression of the outer product expression</a>
+<a name="52"><span class="lineNum">      52 </span>            : /// \tparam T2 the second operand expression of the outer product expression</a>
+<a name="53"><span class="lineNum">      53 </span>            : template &lt;typename T1, typename T2,</a>
+<a name="54"><span class="lineNum">      54 </span>            :           typename IndexList1 = typename T1::index_list,</a>
+<a name="55"><span class="lineNum">      55 </span>            :           typename IndexList2 = typename T2::index_list,</a>
+<a name="56"><span class="lineNum">      56 </span>            :           typename ArgsList1 = typename T1::args_list,</a>
+<a name="57"><span class="lineNum">      57 </span>            :           typename ArgsList2 = typename T2::args_list&gt;</a>
+<a name="58"><span class="lineNum">      58 </span><span class="lineCov">          1 : struct OuterProduct;</span></a>
+<a name="59"><span class="lineNum">      59 </span>            : </a>
+<a name="60"><span class="lineNum">      60 </span>            : template &lt;typename T1, typename T2, template &lt;typename...&gt; class IndexList1,</a>
+<a name="61"><span class="lineNum">      61 </span>            :           typename... Indices1, template &lt;typename...&gt; class IndexList2,</a>
+<a name="62"><span class="lineNum">      62 </span>            :           typename... Indices2, template &lt;typename...&gt; class ArgsList1,</a>
+<a name="63"><span class="lineNum">      63 </span>            :           typename... Args1, template &lt;typename...&gt; class ArgsList2,</a>
+<a name="64"><span class="lineNum">      64 </span>            :           typename... Args2&gt;</a>
+<a name="65"><span class="lineNum">      65 </span>            : struct OuterProduct&lt;T1, T2, IndexList1&lt;Indices1...&gt;, IndexList2&lt;Indices2...&gt;,</a>
+<a name="66"><span class="lineNum">      66 </span>            :                     ArgsList1&lt;Args1...&gt;, ArgsList2&lt;Args2...&gt;&gt;</a>
+<a name="67"><span class="lineNum">      67 </span>            :     : public TensorExpression&lt;</a>
+<a name="68"><span class="lineNum">      68 </span>            :           OuterProduct&lt;T1, T2&gt;, typename detail::OuterProductType&lt;T1, T2&gt;::type,</a>
+<a name="69"><span class="lineNum">      69 </span>            :           typename detail::OuterProductType&lt;T1, T2&gt;::symmetry,</a>
+<a name="70"><span class="lineNum">      70 </span>            :           typename detail::OuterProductType&lt;T1, T2&gt;::index_list,</a>
+<a name="71"><span class="lineNum">      71 </span><span class="lineNoCov">          0 :           typename detail::OuterProductType&lt;T1, T2&gt;::tensorindex_list&gt; {</span></a>
+<a name="72"><span class="lineNum">      72 </span>            :   static_assert(std::is_same&lt;typename T1::type, typename T2::type&gt;::value or</a>
+<a name="73"><span class="lineNum">      73 </span>            :                     std::is_same&lt;T1, NumberAsExpression&gt;::value or</a>
+<a name="74"><span class="lineNum">      74 </span>            :                     std::is_same&lt;T2, NumberAsExpression&gt;::value,</a>
+<a name="75"><span class="lineNum">      75 </span>            :                 &quot;Cannot product Tensors holding different data types.&quot;);</a>
+<a name="76"><span class="lineNum">      76 </span>            : </a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineNoCov">          0 :   using type = typename detail::OuterProductType&lt;T1, T2&gt;::type;</span></a>
+<a name="78"><span class="lineNum">      78 </span><span class="lineNoCov">          0 :   using symmetry = typename detail::OuterProductType&lt;T1, T2&gt;::symmetry;</span></a>
+<a name="79"><span class="lineNum">      79 </span><span class="lineNoCov">          0 :   using index_list = typename detail::OuterProductType&lt;T1, T2&gt;::index_list;</span></a>
+<a name="80"><span class="lineNum">      80 </span><span class="lineNoCov">          0 :   using args_list = typename detail::OuterProductType&lt;T1, T2&gt;::tensorindex_list;</span></a>
+<a name="81"><span class="lineNum">      81 </span><span class="lineNoCov">          0 :   static constexpr auto num_tensor_indices = tmpl::size&lt;index_list&gt;::value;</span></a>
+<a name="82"><span class="lineNum">      82 </span><span class="lineNoCov">          0 :   static constexpr auto num_tensor_indices_first_operand =</span></a>
+<a name="83"><span class="lineNum">      83 </span>            :       tmpl::size&lt;typename T1::index_list&gt;::value;</a>
+<a name="84"><span class="lineNum">      84 </span><span class="lineNoCov">          0 :   static constexpr auto num_tensor_indices_second_operand =</span></a>
+<a name="85"><span class="lineNum">      85 </span>            :       num_tensor_indices - num_tensor_indices_first_operand;</a>
+<a name="86"><span class="lineNum">      86 </span>            : </a>
+<a name="87"><span class="lineNum">      87 </span><span class="lineNoCov">          0 :   OuterProduct(T1 t1, T2 t2) : t1_(std::move(t1)), t2_(std::move(t2)) {}</span></a>
+<a name="88"><span class="lineNum">      88 </span><span class="lineNoCov">          0 :   ~OuterProduct() override = default;</span></a>
+<a name="89"><span class="lineNum">      89 </span>            : </a>
+<a name="90"><span class="lineNum">      90 </span>            :   /// \ingroup TensorExpressionsGroup</a>
+<a name="91"><span class="lineNum">      91 </span>            :   /// \brief Helper struct for computing the multi-index of a component of an</a>
+<a name="92"><span class="lineNum">      92 </span>            :   /// operand of the outer product from the multi-index of a component of the</a>
+<a name="93"><span class="lineNum">      93 </span>            :   /// outer product</a>
+<a name="94"><span class="lineNum">      94 </span>            :   ///</a>
+<a name="95"><span class="lineNum">      95 </span>            :   /// \details</a>
+<a name="96"><span class="lineNum">      96 </span>            :   /// While `OperandTensorIndexList` will either be the first operand's generic</a>
+<a name="97"><span class="lineNum">      97 </span>            :   /// indices, `ArgsList1&lt;Args1...&gt;`, or the second operand's generic indices,</a>
+<a name="98"><span class="lineNum">      98 </span>            :   /// `ArgsList2&lt;Args2...&gt;`, and both of these are accessible within the class,</a>
+<a name="99"><span class="lineNum">      99 </span>            :   /// this struct wraps the core functionality and is templated with</a>
+<a name="100"><span class="lineNum">     100 </span>            :   /// `OperandTensorIndexList` so that the functionality can be reused for each</a>
+<a name="101"><span class="lineNum">     101 </span>            :   /// operand's generic index list.</a>
+<a name="102"><span class="lineNum">     102 </span>            :   ///</a>
+<a name="103"><span class="lineNum">     103 </span>            :   /// \tparam OperandTensorIndexList the operand's list of TensorIndexs</a>
+<a name="104"><span class="lineNum">     104 </span>            :   template &lt;typename OperandTensorIndexList&gt;</a>
+<a name="105"><span class="lineNum">     105 </span><span class="lineCov">          1 :   struct GetOpTensorMultiIndex;</span></a>
+<a name="106"><span class="lineNum">     106 </span>            : </a>
+<a name="107"><span class="lineNum">     107 </span>            :   template &lt;typename... OperandTensorIndices&gt;</a>
+<a name="108"><span class="lineNum">     108 </span><span class="lineNoCov">          0 :   struct GetOpTensorMultiIndex&lt;tmpl::list&lt;OperandTensorIndices...&gt;&gt; {</span></a>
+<a name="109"><span class="lineNum">     109 </span>            :     /// \ingroup TensorExpressionsGroup</a>
+<a name="110"><span class="lineNum">     110 </span>            :     /// \brief Computes the multi-index of a component of an operand of the</a>
+<a name="111"><span class="lineNum">     111 </span>            :     /// outer product from the multi-index of a component of the outer product</a>
+<a name="112"><span class="lineNum">     112 </span>            :     ///</a>
+<a name="113"><span class="lineNum">     113 </span>            :     /// \details</a>
+<a name="114"><span class="lineNum">     114 </span>            :     /// Example: Let's say we are evaluating \f$L_abc = R_{b} * S_{ca}\f$. Let</a>
+<a name="115"><span class="lineNum">     115 </span>            :     /// `ti_a_t` denote the type of `ti_a`, and apply the same convention for</a>
+<a name="116"><span class="lineNum">     116 </span>            :     /// other generic indices. Let `LhsTensorIndices == ti_a_t, ti_b_t, ti_c_t`,</a>
+<a name="117"><span class="lineNum">     117 </span>            :     /// and `OperandTensorIndices` is either `ti_b_t` or `ti_c_t, ti_a_t`. Let</a>
+<a name="118"><span class="lineNum">     118 </span>            :     /// `lhs_tensor_multi_index == [0, 1, 2]`, representing the multi-index of</a>
+<a name="119"><span class="lineNum">     119 </span>            :     /// the component \f$L_{012}\f$. If</a>
+<a name="120"><span class="lineNum">     120 </span>            :     /// `OperandTensorIndices == ti_c_t, ti_a_t`, this function will return the</a>
+<a name="121"><span class="lineNum">     121 </span>            :     /// tensor multi-index representing the component \f$S_{20}\f$, which is</a>
+<a name="122"><span class="lineNum">     122 </span>            :     /// `[2, 0]`.</a>
+<a name="123"><span class="lineNum">     123 </span>            :     ///</a>
+<a name="124"><span class="lineNum">     124 </span>            :     /// \tparam LhsTensorIndices the TensorIndexs of the outer product tensor</a>
+<a name="125"><span class="lineNum">     125 </span>            :     /// \param lhs_tensor_multi_index the tensor multi-index of a component in</a>
+<a name="126"><span class="lineNum">     126 </span>            :     /// the outer product tensor</a>
+<a name="127"><span class="lineNum">     127 </span>            :     /// \return the tensor multi-index of an operand of the outer product</a>
+<a name="128"><span class="lineNum">     128 </span>            :     template &lt;typename... LhsTensorIndices&gt;</a>
+<a name="129"><span class="lineNum">     129 </span>            :     static SPECTRE_ALWAYS_INLINE constexpr std::array&lt;</a>
+<a name="130"><span class="lineNum">     130 </span>            :         size_t, sizeof...(OperandTensorIndices)&gt;</a>
+<a name="131"><span class="lineNum">     131 </span><span class="lineCov">          1 :     apply(</span></a>
+<a name="132"><span class="lineNum">     132 </span>            :         const std::array&lt;size_t, num_tensor_indices&gt;&amp; lhs_tensor_multi_index) {</a>
+<a name="133"><span class="lineNum">     133 </span>            :       constexpr size_t operand_num_tensor_indices =</a>
+<a name="134"><span class="lineNum">     134 </span>            :           sizeof...(OperandTensorIndices);</a>
+<a name="135"><span class="lineNum">     135 </span>            :       constexpr std::array&lt;size_t, sizeof...(LhsTensorIndices)&gt;</a>
+<a name="136"><span class="lineNum">     136 </span>            :           lhs_tensorindex_vals = {{LhsTensorIndices::value...}};</a>
+<a name="137"><span class="lineNum">     137 </span>            :       constexpr std::array&lt;size_t, operand_num_tensor_indices&gt;</a>
+<a name="138"><span class="lineNum">     138 </span>            :           operand_tensorindex_vals = {{OperandTensorIndices::value...}};</a>
+<a name="139"><span class="lineNum">     139 </span>            : </a>
+<a name="140"><span class="lineNum">     140 </span>            :       // the operand component's tensor multi-index to compute</a>
+<a name="141"><span class="lineNum">     141 </span>            :       std::array&lt;size_t, operand_num_tensor_indices&gt;</a>
+<a name="142"><span class="lineNum">     142 </span>            :           operand_tensor_multi_index{};</a>
+<a name="143"><span class="lineNum">     143 </span>            :       for (size_t i = 0; i &lt; operand_num_tensor_indices; i++) {</a>
+<a name="144"><span class="lineNum">     144 </span>            :         gsl::at(operand_tensor_multi_index, i) =</a>
+<a name="145"><span class="lineNum">     145 </span>            :             gsl::at(lhs_tensor_multi_index,</a>
+<a name="146"><span class="lineNum">     146 </span>            :                     static_cast&lt;size_t&gt;(std::distance(</a>
+<a name="147"><span class="lineNum">     147 </span>            :                         lhs_tensorindex_vals.begin(),</a>
+<a name="148"><span class="lineNum">     148 </span>            :                         alg::find(lhs_tensorindex_vals,</a>
+<a name="149"><span class="lineNum">     149 </span>            :                                   gsl::at(operand_tensorindex_vals, i)))));</a>
+<a name="150"><span class="lineNum">     150 </span>            :       }</a>
+<a name="151"><span class="lineNum">     151 </span>            :       return operand_tensor_multi_index;</a>
+<a name="152"><span class="lineNum">     152 </span>            :     }</a>
+<a name="153"><span class="lineNum">     153 </span>            :   };</a>
+<a name="154"><span class="lineNum">     154 </span>            : </a>
+<a name="155"><span class="lineNum">     155 </span>            :   /// \brief Return the value of the component of the outer product tensor at a</a>
+<a name="156"><span class="lineNum">     156 </span>            :   /// given multi-index</a>
+<a name="157"><span class="lineNum">     157 </span>            :   ///</a>
+<a name="158"><span class="lineNum">     158 </span>            :   /// \details</a>
+<a name="159"><span class="lineNum">     159 </span>            :   /// This function takes the multi-index of some component of the LHS outer</a>
+<a name="160"><span class="lineNum">     160 </span>            :   /// product to compute. The function first computes the multi-indices of the</a>
+<a name="161"><span class="lineNum">     161 </span>            :   /// pair of components in the two RHS operand expressions, then multiplies the</a>
+<a name="162"><span class="lineNum">     162 </span>            :   /// values at these multi-indices to obtain the value of the LHS outer product</a>
+<a name="163"><span class="lineNum">     163 </span>            :   /// component. For example, say we are evaluating</a>
+<a name="164"><span class="lineNum">     164 </span>            :   /// \f$L_abc = R_{b} * S_{ca}\f$. Let `lhs_multi_index == {0, 1, 2}`, which</a>
+<a name="165"><span class="lineNum">     165 </span>            :   /// refers to the component \f$L_{012}\f$, the component we wish to compute.</a>
+<a name="166"><span class="lineNum">     166 </span>            :   /// This function will compute the multi-indices of the operands that</a>
+<a name="167"><span class="lineNum">     167 </span>            :   /// correspond to \f$R_{1}\f$ and \f$S_{20}\f$, retrieve their values, and</a>
+<a name="168"><span class="lineNum">     168 </span>            :   /// return their product.</a>
+<a name="169"><span class="lineNum">     169 </span>            :   ///</a>
+<a name="170"><span class="lineNum">     170 </span>            :   /// \tparam LhsIndices the TensorIndexs of the outer product tensor</a>
+<a name="171"><span class="lineNum">     171 </span>            :   /// \param lhs_multi_index the multi-index of the component of the outer</a>
+<a name="172"><span class="lineNum">     172 </span>            :   /// product tensor to retrieve</a>
+<a name="173"><span class="lineNum">     173 </span>            :   /// \return the value of the component at `lhs_multi_index` in the outer</a>
+<a name="174"><span class="lineNum">     174 </span>            :   /// product tensor</a>
+<a name="175"><span class="lineNum">     175 </span>            :   template &lt;typename... LhsIndices&gt;</a>
+<a name="176"><span class="lineNum">     176 </span><span class="lineCov">          1 :   SPECTRE_ALWAYS_INLINE decltype(auto) get(</span></a>
+<a name="177"><span class="lineNum">     177 </span>            :       const std::array&lt;size_t, num_tensor_indices&gt;&amp; lhs_multi_index) const {</a>
+<a name="178"><span class="lineNum">     178 </span>            :     const std::array&lt;size_t, num_tensor_indices_first_operand&gt;</a>
+<a name="179"><span class="lineNum">     179 </span>            :         first_op_tensor_multi_index =</a>
+<a name="180"><span class="lineNum">     180 </span>            :             GetOpTensorMultiIndex&lt;ArgsList1&lt;Args1...&gt;&gt;::template apply&lt;</a>
+<a name="181"><span class="lineNum">     181 </span>            :                 LhsIndices...&gt;(lhs_multi_index);</a>
+<a name="182"><span class="lineNum">     182 </span>            :     const std::array&lt;size_t, num_tensor_indices_second_operand&gt;</a>
+<a name="183"><span class="lineNum">     183 </span>            :         second_op_tensor_multi_index =</a>
+<a name="184"><span class="lineNum">     184 </span>            :             GetOpTensorMultiIndex&lt;ArgsList2&lt;Args2...&gt;&gt;::template apply&lt;</a>
+<a name="185"><span class="lineNum">     185 </span>            :                 LhsIndices...&gt;(lhs_multi_index);</a>
+<a name="186"><span class="lineNum">     186 </span>            : </a>
+<a name="187"><span class="lineNum">     187 </span>            :     return t1_.template get&lt;Args1...&gt;(first_op_tensor_multi_index) *</a>
+<a name="188"><span class="lineNum">     188 </span>            :            t2_.template get&lt;Args2...&gt;(second_op_tensor_multi_index);</a>
+<a name="189"><span class="lineNum">     189 </span>            :   }</a>
+<a name="190"><span class="lineNum">     190 </span>            : </a>
+<a name="191"><span class="lineNum">     191 </span>            :  private:</a>
+<a name="192"><span class="lineNum">     192 </span><span class="lineNoCov">          0 :   T1 t1_;</span></a>
+<a name="193"><span class="lineNum">     193 </span><span class="lineNoCov">          0 :   T2 t2_;</span></a>
+<a name="194"><span class="lineNum">     194 </span>            : };</a>
+<a name="195"><span class="lineNum">     195 </span>            : </a>
+<a name="196"><span class="lineNum">     196 </span>            : }  // namespace TensorExpressions</a>
+<a name="197"><span class="lineNum">     197 </span>            : </a>
+<a name="198"><span class="lineNum">     198 </span>            : /// \ingroup TensorExpressionsGroup</a>
+<a name="199"><span class="lineNum">     199 </span>            : /// \brief Returns the tensor expression representing the product of two tensor</a>
+<a name="200"><span class="lineNum">     200 </span>            : /// expressions</a>
+<a name="201"><span class="lineNum">     201 </span>            : ///</a>
+<a name="202"><span class="lineNum">     202 </span>            : /// \details</a>
+<a name="203"><span class="lineNum">     203 </span>            : /// If the two operands have N pairs of indices that need to be contracted, the</a>
+<a name="204"><span class="lineNum">     204 </span>            : /// returned expression will be an `OuterProduct` expression nested inside N</a>
+<a name="205"><span class="lineNum">     205 </span>            : /// `TensorContract` expressions. This represents computing the inner product</a>
+<a name="206"><span class="lineNum">     206 </span>            : /// of the outer product of the two operands. If the operands do not have any</a>
+<a name="207"><span class="lineNum">     207 </span>            : /// indices to be contracted, the returned expression will be an `OuterProduct`.</a>
+<a name="208"><span class="lineNum">     208 </span>            : ///</a>
+<a name="209"><span class="lineNum">     209 </span>            : /// The two arguments are expressions that contain the two operands of the</a>
+<a name="210"><span class="lineNum">     210 </span>            : /// product, where the types of the operands are `T1` and `T2`.</a>
+<a name="211"><span class="lineNum">     211 </span>            : ///</a>
+<a name="212"><span class="lineNum">     212 </span>            : /// \tparam T1 the derived TensorExpression type of the first operand of the</a>
+<a name="213"><span class="lineNum">     213 </span>            : /// product</a>
+<a name="214"><span class="lineNum">     214 </span>            : /// \tparam T2 the derived TensorExpression type of the second operand of the</a>
+<a name="215"><span class="lineNum">     215 </span>            : /// product</a>
+<a name="216"><span class="lineNum">     216 </span>            : /// \tparam ArgsList1 the TensorIndexs of the first operand</a>
+<a name="217"><span class="lineNum">     217 </span>            : /// \tparam ArgsList2 the TensorIndexs of the second operand</a>
+<a name="218"><span class="lineNum">     218 </span>            : /// \param t1 first operand expression of the product</a>
+<a name="219"><span class="lineNum">     219 </span>            : /// \param t2 the second operand expression of the product</a>
+<a name="220"><span class="lineNum">     220 </span>            : /// \return the tensor expression representing the product of two tensor</a>
+<a name="221"><span class="lineNum">     221 </span>            : /// expressions</a>
+<a name="222"><span class="lineNum">     222 </span>            : template &lt;typename T1, typename T2, typename ArgsList1, typename ArgsList2&gt;</a>
+<a name="223"><span class="lineNum">     223 </span><span class="lineCov">          1 : SPECTRE_ALWAYS_INLINE auto operator*(</span></a>
+<a name="224"><span class="lineNum">     224 </span>            :     const TensorExpression&lt;T1, typename T1::type, typename T1::symmetry,</a>
+<a name="225"><span class="lineNum">     225 </span>            :                            typename T1::index_list, ArgsList1&gt;&amp; t1,</a>
+<a name="226"><span class="lineNum">     226 </span>            :     const TensorExpression&lt;T2, typename T2::type, typename T2::symmetry,</a>
+<a name="227"><span class="lineNum">     227 </span>            :                            typename T2::index_list, ArgsList2&gt;&amp; t2) {</a>
+<a name="228"><span class="lineNum">     228 </span>            :   return TensorExpressions::contract(</a>
+<a name="229"><span class="lineNum">     229 </span>            :       TensorExpressions::OuterProduct&lt;T1, T2&gt;(~t1, ~t2));</a>
+<a name="230"><span class="lineNum">     230 </span>            : }</a>
+<a name="231"><span class="lineNum">     231 </span>            : </a>
+<a name="232"><span class="lineNum">     232 </span>            : /// @{</a>
+<a name="233"><span class="lineNum">     233 </span>            : /// \ingroup TensorExpressionsGroup</a>
+<a name="234"><span class="lineNum">     234 </span>            : /// \brief Returns the tensor expression representing the product of a tensor</a>
+<a name="235"><span class="lineNum">     235 </span>            : /// expression and a `double`</a>
+<a name="236"><span class="lineNum">     236 </span>            : ///</a>
+<a name="237"><span class="lineNum">     237 </span>            : /// \tparam T the derived TensorExpression type of the tensor expression operand</a>
+<a name="238"><span class="lineNum">     238 </span>            : /// of the product</a>
+<a name="239"><span class="lineNum">     239 </span>            : /// \tparam X the type of data stored in the tensor expression operand of the</a>
+<a name="240"><span class="lineNum">     240 </span>            : /// product</a>
+<a name="241"><span class="lineNum">     241 </span>            : /// \tparam ArgsList the TensorIndexs of the tensor expression operand of the</a>
+<a name="242"><span class="lineNum">     242 </span>            : /// product</a>
+<a name="243"><span class="lineNum">     243 </span>            : /// \param t the tensor expression operand of the product</a>
+<a name="244"><span class="lineNum">     244 </span>            : /// \param number the `double` operand of the product</a>
+<a name="245"><span class="lineNum">     245 </span>            : /// \return the tensor expression representing the product of a tensor</a>
+<a name="246"><span class="lineNum">     246 </span>            : /// expression and a `double`</a>
+<a name="247"><span class="lineNum">     247 </span>            : template &lt;typename T, typename X, typename ArgsList&gt;</a>
+<a name="248"><span class="lineNum">     248 </span><span class="lineCov">          1 : SPECTRE_ALWAYS_INLINE auto operator*(</span></a>
+<a name="249"><span class="lineNum">     249 </span>            :     const TensorExpression&lt;T, X, typename T::symmetry, typename T::index_list,</a>
+<a name="250"><span class="lineNum">     250 </span>            :                            ArgsList&gt;&amp; t,</a>
+<a name="251"><span class="lineNum">     251 </span>            :     const double number) {</a>
+<a name="252"><span class="lineNum">     252 </span>            :   return t * TensorExpressions::NumberAsExpression(number);</a>
+<a name="253"><span class="lineNum">     253 </span>            : }</a>
+<a name="254"><span class="lineNum">     254 </span>            : template &lt;typename T, typename X, typename ArgsList&gt;</a>
+<a name="255"><span class="lineNum">     255 </span><span class="lineCov">          1 : SPECTRE_ALWAYS_INLINE auto operator*(</span></a>
+<a name="256"><span class="lineNum">     256 </span>            :     const double number,</a>
+<a name="257"><span class="lineNum">     257 </span>            :     const TensorExpression&lt;T, X, typename T::symmetry, typename T::index_list,</a>
+<a name="258"><span class="lineNum">     258 </span>            :                            ArgsList&gt;&amp; t) {</a>
+<a name="259"><span class="lineNum">     259 </span>            :   return TensorExpressions::NumberAsExpression(number) * t;</a>
+<a name="260"><span class="lineNum">     260 </span>            : }</a>
+<a name="261"><span class="lineNum">     261 </span>            : /// @}</a>
+<a name="262"><span class="lineNum">     262 </span>            : </a>
+<a name="263"><span class="lineNum">     263 </span>            : /// \ingroup TensorExpressionsGroup</a>
+<a name="264"><span class="lineNum">     264 </span>            : /// \brief Returns the tensor expression representing the quotient of a tensor</a>
+<a name="265"><span class="lineNum">     265 </span>            : /// expression and a `double`</a>
+<a name="266"><span class="lineNum">     266 </span>            : ///</a>
+<a name="267"><span class="lineNum">     267 </span>            : /// \note The implementation instead uses the operation, `t * (1.0 / number)`</a>
+<a name="268"><span class="lineNum">     268 </span>            : ///</a>
+<a name="269"><span class="lineNum">     269 </span>            : /// \tparam T the derived TensorExpression type of the tensor expression operand</a>
+<a name="270"><span class="lineNum">     270 </span>            : /// of the quotient</a>
+<a name="271"><span class="lineNum">     271 </span>            : /// \tparam X the type of data stored in the tensor expression operand of the</a>
+<a name="272"><span class="lineNum">     272 </span>            : /// quotient</a>
+<a name="273"><span class="lineNum">     273 </span>            : /// \tparam ArgsList the TensorIndexs of the tensor expression operand of the</a>
+<a name="274"><span class="lineNum">     274 </span>            : /// quotient</a>
+<a name="275"><span class="lineNum">     275 </span>            : /// \param t the tensor expression operand of the quotient</a>
+<a name="276"><span class="lineNum">     276 </span>            : /// \param number the `double` operand of the quotient</a>
+<a name="277"><span class="lineNum">     277 </span>            : /// \return the tensor expression representing the quotient of a tensor</a>
+<a name="278"><span class="lineNum">     278 </span>            : /// expression and a `double`</a>
+<a name="279"><span class="lineNum">     279 </span>            : template &lt;typename T, typename X, typename ArgsList&gt;</a>
+<a name="280"><span class="lineNum">     280 </span><span class="lineCov">          1 : SPECTRE_ALWAYS_INLINE auto operator/(</span></a>
+<a name="281"><span class="lineNum">     281 </span>            :     const TensorExpression&lt;T, X, typename T::symmetry, typename T::index_list,</a>
+<a name="282"><span class="lineNum">     282 </span>            :                            ArgsList&gt;&amp; t,</a>
+<a name="283"><span class="lineNum">     283 </span>            :     const double number) {</a>
+<a name="284"><span class="lineNum">     284 </span>            :   return t * TensorExpressions::NumberAsExpression(1.0 / number);</a>
+<a name="285"><span class="lineNum">     285 </span>            : }</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

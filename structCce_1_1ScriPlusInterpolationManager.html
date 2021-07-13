@@ -1,0 +1,431 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Cce::ScriPlusInterpolationManager&lt; VectorTypeToInterpolate, Tag &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceCce.html">Cce</a></li><li class="navelem"><a class="el" href="structCce_1_1ScriPlusInterpolationManager.html">ScriPlusInterpolationManager</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="structCce_1_1ScriPlusInterpolationManager-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Cce::ScriPlusInterpolationManager&lt; VectorTypeToInterpolate, Tag &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Stores necessary data and interpolates on to new time points at scri+.  
+ <a href="structCce_1_1ScriPlusInterpolationManager.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ScriPlusInterpolationManager_8hpp_source.html">ScriPlusInterpolationManager.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ada535d647f5df057e68d16e80a4f9675"><td class="memItemLeft" align="right" valign="top"><a id="ada535d647f5df057e68d16e80a4f9675"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ScriPlusInterpolationManager</b> (const size_t target_number_of_points, const size_t vector_size, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classintrp_1_1SpanInterpolator.html">intrp::SpanInterpolator</a> &gt; interpolator) noexcept</td></tr>
+<tr class="separator:ada535d647f5df057e68d16e80a4f9675"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2fd508bfdab9eafe3bc14e060aa67ba4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1ScriPlusInterpolationManager.html#a2fd508bfdab9eafe3bc14e060aa67ba4">insert_data</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;u_bondi, const VectorTypeToInterpolate &amp;to_interpolate) noexcept</td></tr>
+<tr class="memdesc:a2fd508bfdab9eafe3bc14e060aa67ba4"><td class="mdescLeft">&#160;</td><td class="mdescRight">provide data to the interpolation manager.  <a href="structCce_1_1ScriPlusInterpolationManager.html#a2fd508bfdab9eafe3bc14e060aa67ba4">More...</a><br /></td></tr>
+<tr class="separator:a2fd508bfdab9eafe3bc14e060aa67ba4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a44a7be58c229ee0836aa0f2bad385eb0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1ScriPlusInterpolationManager.html#a44a7be58c229ee0836aa0f2bad385eb0">insert_target_time</a> (const double time) noexcept</td></tr>
+<tr class="memdesc:a44a7be58c229ee0836aa0f2bad385eb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Request a target time to be interpolated to when enough data has been accumulated.  <a href="structCce_1_1ScriPlusInterpolationManager.html#a44a7be58c229ee0836aa0f2bad385eb0">More...</a><br /></td></tr>
+<tr class="separator:a44a7be58c229ee0836aa0f2bad385eb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef81648b4122d1a22e5e327f7a634702"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1ScriPlusInterpolationManager.html#aef81648b4122d1a22e5e327f7a634702">first_time_is_ready_to_interpolate</a> () const noexcept</td></tr>
+<tr class="memdesc:aef81648b4122d1a22e5e327f7a634702"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines whether enough data before and after the first time in the target time queue has been provided to interpolate.  <a href="structCce_1_1ScriPlusInterpolationManager.html#aef81648b4122d1a22e5e327f7a634702">More...</a><br /></td></tr>
+<tr class="separator:aef81648b4122d1a22e5e327f7a634702"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad14f91286a724916030824eadf28fa08"><td class="memItemLeft" align="right" valign="top"><a id="ad14f91286a724916030824eadf28fa08"></a>
+const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/deque.html">std::deque</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; double, double &gt; &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>get_u_bondi_ranges</b> () const noexcept</td></tr>
+<tr class="separator:ad14f91286a724916030824eadf28fa08"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c56ae8a9f13cc05d030c118ffdb3716"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; double, VectorTypeToInterpolate &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1ScriPlusInterpolationManager.html#a5c56ae8a9f13cc05d030c118ffdb3716">interpolate_first_time</a> () noexcept</td></tr>
+<tr class="memdesc:a5c56ae8a9f13cc05d030c118ffdb3716"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interpolate to the first target time in the queue, returning both the time and the interpolated data at that time.  <a href="structCce_1_1ScriPlusInterpolationManager.html#a5c56ae8a9f13cc05d030c118ffdb3716">More...</a><br /></td></tr>
+<tr class="separator:a5c56ae8a9f13cc05d030c118ffdb3716"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9709f92a6d7efec4e26ca6688d4cefa"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; double, VectorTypeToInterpolate &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1ScriPlusInterpolationManager.html#ad9709f92a6d7efec4e26ca6688d4cefa">interpolate_and_pop_first_time</a> () noexcept</td></tr>
+<tr class="memdesc:ad9709f92a6d7efec4e26ca6688d4cefa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interpolate to the first target time in the queue, returning both the time and the interpolated data at that time, and remove the first time from the queue.  <a href="structCce_1_1ScriPlusInterpolationManager.html#ad9709f92a6d7efec4e26ca6688d4cefa">More...</a><br /></td></tr>
+<tr class="separator:ad9709f92a6d7efec4e26ca6688d4cefa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71517d87da2b3a2762599ee09c922704"><td class="memItemLeft" align="right" valign="top"><a id="a71517d87da2b3a2762599ee09c922704"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1ScriPlusInterpolationManager.html#a71517d87da2b3a2762599ee09c922704">number_of_target_times</a> () const noexcept</td></tr>
+<tr class="memdesc:a71517d87da2b3a2762599ee09c922704"><td class="mdescLeft">&#160;</td><td class="mdescRight">return the number of times in the target times queue <br /></td></tr>
+<tr class="separator:a71517d87da2b3a2762599ee09c922704"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac70fa47196f3850d9a1594521dc2bb81"><td class="memItemLeft" align="right" valign="top"><a id="ac70fa47196f3850d9a1594521dc2bb81"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1ScriPlusInterpolationManager.html#ac70fa47196f3850d9a1594521dc2bb81">number_of_data_points</a> () const noexcept</td></tr>
+<tr class="memdesc:ac70fa47196f3850d9a1594521dc2bb81"><td class="mdescLeft">&#160;</td><td class="mdescRight">return the number of data points that have been provided to the interpolation manager <br /></td></tr>
+<tr class="separator:ac70fa47196f3850d9a1594521dc2bb81"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d528cb9d047b169d416ffc4efcf2404"><td class="memItemLeft" align="right" valign="top"><a id="a4d528cb9d047b169d416ffc4efcf2404"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a4d528cb9d047b169d416ffc4efcf2404"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:ae779b0ab6d1505f7c2790289bf5ac7d0"><td class="memItemLeft" align="right" valign="top"><a id="ae779b0ab6d1505f7c2790289bf5ac7d0"></a>
+struct&#160;</td><td class="memItemRight" valign="bottom"><b>ScriPlusInterpolationManager&lt; VectorTypeToInterpolate, Tags::Du&lt; Tag &gt; &gt;</b></td></tr>
+<tr class="separator:ae779b0ab6d1505f7c2790289bf5ac7d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename VectorTypeToInterpolate, typename Tag&gt;<br />
+struct Cce::ScriPlusInterpolationManager&lt; VectorTypeToInterpolate, Tag &gt;</h3>
+
+<p>Stores necessary data and interpolates on to new time points at scri+. </p>
+<h3>Details</h3>
+<p>The coordinate time used for the CCE evolution is not the same as the asymptotic inertial retarded time, which is determined through a separate evolution equation. This class manages the scri+ data passed in (via <code><a class="el" href="structCce_1_1ScriPlusInterpolationManager.html#a2fd508bfdab9eafe3bc14e060aa67ba4" title="provide data to the interpolation manager.">insert_data()</a></code>) along with the set of inertial retarded times associated with that data, and interpolates to a set of requested times (supplied via <code><a class="el" href="structCce_1_1ScriPlusInterpolationManager.html#a44a7be58c229ee0836aa0f2bad385eb0" title="Request a target time to be interpolated to when enough data has been accumulated.">insert_target_time()</a></code>).</p>
+<p>Template parameters:</p><ul>
+<li><code>VectorTypeToInterpolate</code>: the vector type associated with the values to interpolate.</li>
+<li><code>Tag</code>: The tag associated with the interpolation procedure. This determines the behavior of the interpolation return value. The default is just interpolation, if <code>Tag</code> has prefix <code><a class="el" href="structTags_1_1Multiplies.html" title="A prefix tag representing the product of two other tags. Note that if non-spin-weighted types are nee...">Tags::Multiplies</a></code> or <code><a class="el" href="structCce_1_1Tags_1_1Du.html" title="The derivative with respect to Bondi retarded time .">Tags::Du</a></code>, the interpolator performs the additional multiplication or time derivative as a step in the interpolation procedure. </li>
+</ul>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="aef81648b4122d1a22e5e327f7a634702"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aef81648b4122d1a22e5e327f7a634702">&#9670;&nbsp;</a></span>first_time_is_ready_to_interpolate()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename VectorTypeToInterpolate , typename Tag &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="structCce_1_1ScriPlusInterpolationManager.html">Cce::ScriPlusInterpolationManager</a>&lt; VectorTypeToInterpolate, Tag &gt;::first_time_is_ready_to_interpolate</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Determines whether enough data before and after the first time in the target time queue has been provided to interpolate. </p>
+<h3>Details</h3>
+<p>If possible, this function will require that the target time to be interpolated is reasonably centered on the range, but will settle for non-centered data if the time is too early for the given data, which is necessary to get the first couple of times out of the simulation. This function always returns false if all of the provided data is earlier than the next target time, indicating that the caller should wait until more data has been provided before interpolating. </p>
+
+</div>
+</div>
+<a id="a2fd508bfdab9eafe3bc14e060aa67ba4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2fd508bfdab9eafe3bc14e060aa67ba4">&#9670;&nbsp;</a></span>insert_data()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename VectorTypeToInterpolate , typename Tag &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="structCce_1_1ScriPlusInterpolationManager.html">Cce::ScriPlusInterpolationManager</a>&lt; VectorTypeToInterpolate, Tag &gt;::insert_data </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>u_bondi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const VectorTypeToInterpolate &amp;&#160;</td>
+          <td class="paramname"><em>to_interpolate</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>provide data to the interpolation manager. </p>
+<h3>Details</h3>
+<p><code>u_bondi</code> is a vector of inertial times, and <code>to_interpolate</code> is the vector of values that will be interpolated to target times. </p>
+
+</div>
+</div>
+<a id="a44a7be58c229ee0836aa0f2bad385eb0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a44a7be58c229ee0836aa0f2bad385eb0">&#9670;&nbsp;</a></span>insert_target_time()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename VectorTypeToInterpolate , typename Tag &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="structCce_1_1ScriPlusInterpolationManager.html">Cce::ScriPlusInterpolationManager</a>&lt; VectorTypeToInterpolate, Tag &gt;::insert_target_time </td>
+          <td>(</td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>time</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Request a target time to be interpolated to when enough data has been accumulated. </p>
+<p>For optimization, we assume that these are inserted in ascending order. </p>
+
+</div>
+</div>
+<a id="ad9709f92a6d7efec4e26ca6688d4cefa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad9709f92a6d7efec4e26ca6688d4cefa">&#9670;&nbsp;</a></span>interpolate_and_pop_first_time()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename VectorTypeToInterpolate , typename Tag &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; double, VectorTypeToInterpolate &gt; <a class="el" href="structCce_1_1ScriPlusInterpolationManager.html">Cce::ScriPlusInterpolationManager</a>&lt; VectorTypeToInterpolate, Tag &gt;::interpolate_and_pop_first_time</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Interpolate to the first target time in the queue, returning both the time and the interpolated data at that time, and remove the first time from the queue. </p>
+<dl class="section note"><dt>Note</dt><dd>If this function is not able to interpolate to the full accuracy using a centered stencil, it will perform the best interpolation available.</dd></dl>
+<dl class="section warning"><dt>Warning</dt><dd>This function will extrapolate if the target times are outside the range of data the class has been provided. This is intentional to support small extrapolation at the end of a simulation when no further data is available, but for full accuracy, check <code>first_time_is_ready_to_interpolate</code> before calling the interpolation functions </dd></dl>
+
+</div>
+</div>
+<a id="a5c56ae8a9f13cc05d030c118ffdb3716"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5c56ae8a9f13cc05d030c118ffdb3716">&#9670;&nbsp;</a></span>interpolate_first_time()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename VectorTypeToInterpolate , typename Tag &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; double, VectorTypeToInterpolate &gt; <a class="el" href="structCce_1_1ScriPlusInterpolationManager.html">Cce::ScriPlusInterpolationManager</a>&lt; VectorTypeToInterpolate, Tag &gt;::interpolate_first_time</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Interpolate to the first target time in the queue, returning both the time and the interpolated data at that time. </p>
+<dl class="section note"><dt>Note</dt><dd>If this function is not able to interpolate to the full accuracy using a centered stencil, it will perform the best interpolation available.</dd></dl>
+<dl class="section warning"><dt>Warning</dt><dd>This function will extrapolate if the target times are outside the range of data the class has been provided. This is intentional to support small extrapolation at the end of a simulation when no further data is available, but for full accuracy, check <code>first_time_is_ready_to_interpolate</code> before calling the interpolation functions </dd></dl>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/Systems/Cce/<a class="el" href="ScriPlusInterpolationManager_8hpp_source.html">ScriPlusInterpolationManager.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: elliptic::dg::Actions Namespace Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceelliptic.html">elliptic</a></li><li class="navelem"><a class="el" href="namespaceelliptic_1_1dg.html">dg</a></li><li class="navelem"><a class="el" href="namespaceelliptic_1_1dg_1_1Actions.html">Actions</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a>  </div>
+  <div class="headertitle">
+<div class="title">elliptic::dg::Actions Namespace Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><a class="el" href="namespaceelliptic_1_1dg_1_1Actions.html" title="Actions related to elliptic discontinuous Galerkin schemes.">Actions</a> related to elliptic discontinuous Galerkin schemes.  
+<a href="namespaceelliptic_1_1dg_1_1Actions.html#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structelliptic_1_1dg_1_1Actions_1_1ImposeInhomogeneousBoundaryConditionsOnSource.html">ImposeInhomogeneousBoundaryConditionsOnSource</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">For linear systems, impose inhomogeneous boundary conditions as contributions to the fixed sources (i.e. the RHS of the equations).  <a href="structelliptic_1_1dg_1_1Actions_1_1ImposeInhomogeneousBoundaryConditionsOnSource.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structelliptic_1_1dg_1_1Actions_1_1InitializeDomain.html">InitializeDomain</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize items related to the basic structure of the element.  <a href="structelliptic_1_1dg_1_1Actions_1_1InitializeDomain.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a1fdabf2e2a3fc25648c3ec33243a3fb0"><td class="memTemplParams" colspan="2">template&lt;typename System , typename BackgroundTag  = void&gt; </td></tr>
+<tr class="memitem:a1fdabf2e2a3fc25648c3ec33243a3fb0"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceelliptic_1_1dg_1_1Actions.html#a1fdabf2e2a3fc25648c3ec33243a3fb0">initialize_operator</a> = tmpl::list&lt; detail::InitializeFacesMortarsAndBackground&lt; System, BackgroundTag &gt; &gt;</td></tr>
+<tr class="memdesc:a1fdabf2e2a3fc25648c3ec33243a3fb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize geometric and background quantities for the elliptic DG operator.  <a href="namespaceelliptic_1_1dg_1_1Actions.html#a1fdabf2e2a3fc25648c3ec33243a3fb0">More...</a><br /></td></tr>
+<tr class="separator:a1fdabf2e2a3fc25648c3ec33243a3fb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acee91348d607459f936cdd944b03c27c"><td class="memTemplParams" colspan="2">template&lt;typename System , bool Linearized, typename TemporalIdTag , typename PrimalFieldsTag , typename PrimalFluxesTag , typename OperatorAppliedToFieldsTag , typename PrimalMortarFieldsTag  = PrimalFieldsTag, typename PrimalMortarFluxesTag  = PrimalFluxesTag&gt; </td></tr>
+<tr class="memitem:acee91348d607459f936cdd944b03c27c"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceelliptic_1_1dg_1_1Actions.html#acee91348d607459f936cdd944b03c27c">apply_operator</a> = tmpl::list&lt; detail::PrepareAndSendMortarData&lt; System, Linearized, TemporalIdTag, PrimalFieldsTag, PrimalFluxesTag, OperatorAppliedToFieldsTag, PrimalMortarFieldsTag, PrimalMortarFluxesTag &gt;, detail::ReceiveMortarDataAndApplyOperator&lt; System, Linearized, TemporalIdTag, PrimalFieldsTag, PrimalFluxesTag, OperatorAppliedToFieldsTag, PrimalMortarFieldsTag, PrimalMortarFluxesTag &gt; &gt;</td></tr>
+<tr class="memdesc:acee91348d607459f936cdd944b03c27c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the DG operator to the <code>PrimalFieldsTag</code> and write the result to the <code>OperatorAppliedToFieldsTag</code>  <a href="namespaceelliptic_1_1dg_1_1Actions.html#acee91348d607459f936cdd944b03c27c">More...</a><br /></td></tr>
+<tr class="separator:acee91348d607459f936cdd944b03c27c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p><a class="el" href="namespaceelliptic_1_1dg_1_1Actions.html" title="Actions related to elliptic discontinuous Galerkin schemes.">Actions</a> related to elliptic discontinuous Galerkin schemes. </p>
+</div><h2 class="groupheader">Typedef Documentation</h2>
+<a id="acee91348d607459f936cdd944b03c27c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acee91348d607459f936cdd944b03c27c">&#9670;&nbsp;</a></span>apply_operator</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename System , bool Linearized, typename TemporalIdTag , typename PrimalFieldsTag , typename PrimalFluxesTag , typename OperatorAppliedToFieldsTag , typename PrimalMortarFieldsTag  = PrimalFieldsTag, typename PrimalMortarFluxesTag  = PrimalFluxesTag&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespaceelliptic_1_1dg_1_1Actions.html#acee91348d607459f936cdd944b03c27c">elliptic::dg::Actions::apply_operator</a> = typedef tmpl::list&lt;detail::PrepareAndSendMortarData&lt; System, Linearized, TemporalIdTag, PrimalFieldsTag, PrimalFluxesTag, OperatorAppliedToFieldsTag, PrimalMortarFieldsTag, PrimalMortarFluxesTag&gt;, detail::ReceiveMortarDataAndApplyOperator&lt; System, Linearized, TemporalIdTag, PrimalFieldsTag, PrimalFluxesTag, OperatorAppliedToFieldsTag, PrimalMortarFieldsTag, PrimalMortarFluxesTag&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apply the DG operator to the <code>PrimalFieldsTag</code> and write the result to the <code>OperatorAppliedToFieldsTag</code> </p>
+<p>Add this list to the action list of a parallel component to compute the elliptic DG operator or its linearization. The operator involves a communication between nearest-neighbor elements. See <code><a class="el" href="namespaceelliptic_1_1dg.html" title="Functionality related to discontinuous Galerkin discretizations of elliptic equations.">elliptic::dg</a></code> for details on the elliptic DG operator. Make sure to add <code><a class="el" href="namespaceelliptic_1_1dg_1_1Actions.html#a1fdabf2e2a3fc25648c3ec33243a3fb0" title="Initialize geometric and background quantities for the elliptic DG operator.">elliptic::dg::Actions::initialize_operator</a></code> to the initialization phase of your parallel component so the required DataBox tags are set up before applying the operator.</p>
+<p>The result of the computation is written to the <code>OperatorAppliedToFieldsTag</code>. Additionally, the primal fluxes are written to the <code>PrimalFluxesTag</code> as an intermediate result. The auxiliary fields and fluxes are discarded to avoid inflating the memory usage.</p>
+<p>You can specify the <code>PrimalMortarFieldsTag</code> and the <code>PrimalMortarFluxesTag</code> to re-use mortar-data memory buffers from other operator applications, for example when applying the nonlinear and linearized operator. They default to the <code>PrimalFieldsTag</code> and the <code>PrimalFluxesTag</code>, meaning memory buffers corresponding to these tags are set up in the DataBox. </p>
+
+</div>
+</div>
+<a id="a1fdabf2e2a3fc25648c3ec33243a3fb0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1fdabf2e2a3fc25648c3ec33243a3fb0">&#9670;&nbsp;</a></span>initialize_operator</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename System , typename BackgroundTag  = void&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespaceelliptic_1_1dg_1_1Actions.html#a1fdabf2e2a3fc25648c3ec33243a3fb0">elliptic::dg::Actions::initialize_operator</a> = typedef tmpl::list&lt; detail::InitializeFacesMortarsAndBackground&lt;System, BackgroundTag&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Initialize geometric and background quantities for the elliptic DG operator. </p>
+<p>The geometric and background quantities are initialized together because the geometry depends on the background metric through the normalization of face normals. Other examples for background fields are curvature quantities associated with the background metric, or matter sources such as a mass-density in the XCTS equations. All <code>System::background_fields</code> are retrieved from the <code>BackgroundTag</code> together, to enable re-using cached temporary quantities in the computations. The <code>variables</code> function is invoked on the <code>BackgroundTag</code> with the inertial coordinates, the element's <code><a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a></code> and the element's inverse Jacobian. These arguments allow computing numeric derivatives, if necessary. The <code>BackgroundTag</code> can be set to <code>void</code> (default) if the <code>System</code> has no background fields.</p>
+<p>DataBox:</p><ul>
+<li>Uses:<ul>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1InitialExtents.html">domain::Tags::InitialExtents</a>&lt;Dim&gt;</code></li>
+<li><code>BackgroundTag</code></li>
+</ul>
+</li>
+<li>Adds:<ul>
+<li><code><a class="el" href="structTags_1_1Mortars.html">Tags::Mortars</a>&lt;<a class="el" href="structdomain_1_1Tags_1_1Mesh.html" title="The computational grid of the Element in the DataBox.">domain::Tags::Mesh</a>&lt;Dim - 1&gt;, Dim&gt;</code></li>
+<li><code><a class="el" href="structTags_1_1Mortars.html">Tags::Mortars</a>&lt;<a class="el" href="structTags_1_1MortarSize.html">Tags::MortarSize</a>&lt;Dim - 1&gt;, Dim&gt;</code></li>
+<li><code><a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt;background_fields&gt;</code></li>
+</ul>
+</li>
+<li>Adds on internal and external faces:<ul>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1Coordinates.html">domain::Tags::Coordinates</a>&lt;Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt;</code></li>
+<li><code><a class="el" href="structTags_1_1Normalized.html">Tags::Normalized</a>&lt;<a class="el" href="structdomain_1_1Tags_1_1UnnormalizedFaceNormal.html">domain::Tags::UnnormalizedFaceNormal</a>&lt;Dim&gt;&gt;</code></li>
+<li><code><a class="el" href="structTags_1_1Magnitude.html">Tags::Magnitude</a>&lt;<a class="el" href="structdomain_1_1Tags_1_1UnnormalizedFaceNormal.html">domain::Tags::UnnormalizedFaceNormal</a>&lt;Dim&gt;&gt;</code></li>
+<li><code><a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt;background_fields&gt;</code></li>
+</ul>
+</li>
+</ul>
+<dl class="section note"><dt>Note</dt><dd>This action relies on the <code>SetupDataBox</code> aggregated initialization mechanism, so <code><a class="el" href="structActions_1_1SetupDataBox.html" title="Add into the DataBox default constructed items for the collection of tags requested by any of the act...">Actions::SetupDataBox</a></code> must be present in the <code>Initialization</code> phase action list prior to this action.</dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="namespaceelliptic_1_1dg_1_1Actions.html#acee91348d607459f936cdd944b03c27c" title="Apply the DG operator to the PrimalFieldsTag and write the result to the OperatorAppliedToFieldsTag">elliptic::dg::Actions::apply_operator</a> </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

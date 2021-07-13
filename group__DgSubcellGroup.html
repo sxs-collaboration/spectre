@@ -1,0 +1,771 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: DG-Subcell</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">DG-Subcell</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Functions and classes specific to the discontinuous Galerkin method supplemented with a finite volume or finite difference subcell limiter. Can also be thought of as a DG-FD hybrid method.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceevolution_1_1dg_1_1subcell_1_1Actions"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceevolution_1_1dg_1_1subcell_1_1Actions.html">evolution::dg::subcell::Actions</a></td></tr>
+<tr class="memdesc:namespaceevolution_1_1dg_1_1subcell_1_1Actions"><td class="mdescLeft">&#160;</td><td class="mdescRight">Actions for the DG-subcell hybrid solver. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceevolution_1_1dg_1_1subcell_1_1fd_1_1Actions"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceevolution_1_1dg_1_1subcell_1_1fd_1_1Actions.html">evolution::dg::subcell::fd::Actions</a></td></tr>
+<tr class="memdesc:namespaceevolution_1_1dg_1_1subcell_1_1fd_1_1Actions"><td class="mdescLeft">&#160;</td><td class="mdescRight">Actions specific to using a finite-difference subcell method. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceevolution_1_1dg_1_1subcell"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceevolution_1_1dg_1_1subcell.html">evolution::dg::subcell</a></td></tr>
+<tr class="memdesc:namespaceevolution_1_1dg_1_1subcell"><td class="mdescLeft">&#160;</td><td class="mdescRight">Implementation of a generic finite volume/conservative finite difference subcell limiter. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceevolution_1_1dg_1_1subcell_1_1fv"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceevolution_1_1dg_1_1subcell_1_1fv.html">evolution::dg::subcell::fv</a></td></tr>
+<tr class="memdesc:namespaceevolution_1_1dg_1_1subcell_1_1fv"><td class="mdescLeft">&#160;</td><td class="mdescRight">Code specific to a finite volume subcell limiter. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceevolution_1_1dg_1_1subcell_1_1fd"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceevolution_1_1dg_1_1subcell_1_1fd.html">evolution::dg::subcell::fd</a></td></tr>
+<tr class="memdesc:namespaceevolution_1_1dg_1_1subcell_1_1fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Code specific to a conservative finite difference subcell limiter. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceevolution_1_1dg_1_1subcell_1_1OptionTags"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceevolution_1_1dg_1_1subcell_1_1OptionTags.html">evolution::dg::subcell::OptionTags</a></td></tr>
+<tr class="memdesc:namespaceevolution_1_1dg_1_1subcell_1_1OptionTags"><td class="mdescLeft">&#160;</td><td class="mdescRight">Option tags for the DG-subcell solver. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceevolution_1_1dg_1_1subcell_1_1Tags"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceevolution_1_1dg_1_1subcell_1_1Tags.html">evolution::dg::subcell::Tags</a></td></tr>
+<tr class="memdesc:namespaceevolution_1_1dg_1_1subcell_1_1Tags"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tags for the DG-subcell solver <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceevolution_1_1dg_1_1subcell_1_1fd_1_1Tags"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceevolution_1_1dg_1_1subcell_1_1fd_1_1Tags.html">evolution::dg::subcell::fd::Tags</a></td></tr>
+<tr class="memdesc:namespaceevolution_1_1dg_1_1subcell_1_1fd_1_1Tags"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tags for the DG-subcell finite difference solver <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:ga97fbd926840d2508e331694db731e18a"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__DgSubcellGroup.html#ga97fbd926840d2508e331694db731e18a">evolution::dg::subcell::ActiveGrid</a> { <b>Dg</b>, 
+<b>Subcell</b>
+ }</td></tr>
+<tr class="separator:ga97fbd926840d2508e331694db731e18a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga6a37be31261116f4c9ed114b00a7f2c8"><td class="memTemplParams" colspan="2"><a id="ga6a37be31261116f4c9ed114b00a7f2c8"></a>
+template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:ga6a37be31261116f4c9ed114b00a7f2c8"><td class="memTemplItemLeft" align="right" valign="top">const <a class="el" href="classMatrix.html">Matrix</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DgSubcellGroup.html#ga6a37be31261116f4c9ed114b00a7f2c8">evolution::dg::subcell::fd::projection_matrix</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;dg_mesh, const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;subcell_extents) noexcept</td></tr>
+<tr class="memdesc:ga6a37be31261116f4c9ed114b00a7f2c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the projection matrix in <code>Dim</code> dimensions going from a DG mesh to a conservative finite difference subcell mesh. <br /></td></tr>
+<tr class="separator:ga6a37be31261116f4c9ed114b00a7f2c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3851975c09d0dfafc23c86df63e3adee"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:ga3851975c09d0dfafc23c86df63e3adee"><td class="memTemplItemLeft" align="right" valign="top">const <a class="el" href="classMatrix.html">Matrix</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DgSubcellGroup.html#ga3851975c09d0dfafc23c86df63e3adee">evolution::dg::subcell::fd::reconstruction_matrix</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;dg_mesh, const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;subcell_extents) noexcept</td></tr>
+<tr class="memdesc:ga3851975c09d0dfafc23c86df63e3adee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the matrix needed for reconstructing the DG solution from the subcell solution.  <a href="group__DgSubcellGroup.html#ga3851975c09d0dfafc23c86df63e3adee">More...</a><br /></td></tr>
+<tr class="separator:ga3851975c09d0dfafc23c86df63e3adee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3de2da997cbfc41fa9b1ab44ee799b42"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:ga3de2da997cbfc41fa9b1ab44ee799b42"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classDataVector.html">DataVector</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DgSubcellGroup.html#ga3de2da997cbfc41fa9b1ab44ee799b42">evolution::dg::subcell::fd::project</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;dg_u, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;dg_mesh, const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;subcell_extents) noexcept</td></tr>
+<tr class="memdesc:ga3de2da997cbfc41fa9b1ab44ee799b42"><td class="mdescLeft">&#160;</td><td class="mdescRight">Project the variable <code>dg_u</code> onto the subcell grid with extents <code>subcell_extents</code>.  <a href="group__DgSubcellGroup.html#ga3de2da997cbfc41fa9b1ab44ee799b42">More...</a><br /></td></tr>
+<tr class="separator:ga3de2da997cbfc41fa9b1ab44ee799b42"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf429e35fd312a8eca0e5f5d625d10212"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:gaf429e35fd312a8eca0e5f5d625d10212"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DgSubcellGroup.html#gaf429e35fd312a8eca0e5f5d625d10212">evolution::dg::subcell::fd::project</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt; subcell_u, const <a class="el" href="classDataVector.html">DataVector</a> &amp;dg_u, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;dg_mesh, const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;subcell_extents) noexcept</td></tr>
+<tr class="memdesc:gaf429e35fd312a8eca0e5f5d625d10212"><td class="mdescLeft">&#160;</td><td class="mdescRight">Project the variable <code>dg_u</code> onto the subcell grid with extents <code>subcell_extents</code>.  <a href="group__DgSubcellGroup.html#gaf429e35fd312a8eca0e5f5d625d10212">More...</a><br /></td></tr>
+<tr class="separator:gaf429e35fd312a8eca0e5f5d625d10212"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga594311fecf15b499a801cafb9297b702"><td class="memTemplParams" colspan="2">template&lt;typename SubcellTagList , typename DgTagList , size_t Dim&gt; </td></tr>
+<tr class="memitem:ga594311fecf15b499a801cafb9297b702"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DgSubcellGroup.html#ga594311fecf15b499a801cafb9297b702">evolution::dg::subcell::fd::project</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; SubcellTagList &gt; * &gt; subcell_u, const Variables&lt; DgTagList &gt; &amp;dg_u, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;dg_mesh, const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;subcell_extents) noexcept</td></tr>
+<tr class="memdesc:ga594311fecf15b499a801cafb9297b702"><td class="mdescLeft">&#160;</td><td class="mdescRight">Project the variable <code>dg_u</code> onto the subcell grid with extents <code>subcell_extents</code>.  <a href="group__DgSubcellGroup.html#ga594311fecf15b499a801cafb9297b702">More...</a><br /></td></tr>
+<tr class="separator:ga594311fecf15b499a801cafb9297b702"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5dd08c0d64a80ed82c8a2a8a506aa17d"><td class="memTemplParams" colspan="2">template&lt;typename TagList , size_t Dim&gt; </td></tr>
+<tr class="memitem:ga5dd08c0d64a80ed82c8a2a8a506aa17d"><td class="memTemplItemLeft" align="right" valign="top">Variables&lt; TagList &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DgSubcellGroup.html#ga5dd08c0d64a80ed82c8a2a8a506aa17d">evolution::dg::subcell::fd::project</a> (const Variables&lt; TagList &gt; &amp;dg_u, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;dg_mesh, const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;subcell_extents) noexcept</td></tr>
+<tr class="memdesc:ga5dd08c0d64a80ed82c8a2a8a506aa17d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Project the variable <code>dg_u</code> onto the subcell grid with extents <code>subcell_extents</code>.  <a href="group__DgSubcellGroup.html#ga5dd08c0d64a80ed82c8a2a8a506aa17d">More...</a><br /></td></tr>
+<tr class="separator:ga5dd08c0d64a80ed82c8a2a8a506aa17d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga25b578ae42ae0ed05d4b74140a6af2d1"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:ga25b578ae42ae0ed05d4b74140a6af2d1"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classDataVector.html">DataVector</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DgSubcellGroup.html#ga25b578ae42ae0ed05d4b74140a6af2d1">evolution::dg::subcell::fd::reconstruct</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;subcell_u_times_projected_det_jac, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;dg_mesh, const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;subcell_extents) noexcept</td></tr>
+<tr class="memdesc:ga25b578ae42ae0ed05d4b74140a6af2d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">reconstruct the variable <code>subcell_u_times_projected_det_jac</code> onto the DG grid <code>dg_mesh</code>.  <a href="group__DgSubcellGroup.html#ga25b578ae42ae0ed05d4b74140a6af2d1">More...</a><br /></td></tr>
+<tr class="separator:ga25b578ae42ae0ed05d4b74140a6af2d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga235dddb94705e3eac0b4cbf77769db2c"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:ga235dddb94705e3eac0b4cbf77769db2c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DgSubcellGroup.html#ga235dddb94705e3eac0b4cbf77769db2c">evolution::dg::subcell::fd::reconstruct</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt; dg_u, const <a class="el" href="classDataVector.html">DataVector</a> &amp;subcell_u_times_projected_det_jac, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;dg_mesh, const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;subcell_extents) noexcept</td></tr>
+<tr class="memdesc:ga235dddb94705e3eac0b4cbf77769db2c"><td class="mdescLeft">&#160;</td><td class="mdescRight">reconstruct the variable <code>subcell_u_times_projected_det_jac</code> onto the DG grid <code>dg_mesh</code>.  <a href="group__DgSubcellGroup.html#ga235dddb94705e3eac0b4cbf77769db2c">More...</a><br /></td></tr>
+<tr class="separator:ga235dddb94705e3eac0b4cbf77769db2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa807eb03a448e0490ce6ccf91b036d1b"><td class="memTemplParams" colspan="2">template&lt;typename SubcellTagList , typename DgTagList , size_t Dim&gt; </td></tr>
+<tr class="memitem:gaa807eb03a448e0490ce6ccf91b036d1b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DgSubcellGroup.html#gaa807eb03a448e0490ce6ccf91b036d1b">evolution::dg::subcell::fd::reconstruct</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; DgTagList &gt; * &gt; dg_u, const Variables&lt; SubcellTagList &gt; &amp;subcell_u, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;dg_mesh, const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;subcell_extents) noexcept</td></tr>
+<tr class="memdesc:gaa807eb03a448e0490ce6ccf91b036d1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">reconstruct the variable <code>subcell_u_times_projected_det_jac</code> onto the DG grid <code>dg_mesh</code>.  <a href="group__DgSubcellGroup.html#gaa807eb03a448e0490ce6ccf91b036d1b">More...</a><br /></td></tr>
+<tr class="separator:gaa807eb03a448e0490ce6ccf91b036d1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9c2d40b29c29b992f78eed45e82df47f"><td class="memTemplParams" colspan="2">template&lt;typename TagList , size_t Dim&gt; </td></tr>
+<tr class="memitem:ga9c2d40b29c29b992f78eed45e82df47f"><td class="memTemplItemLeft" align="right" valign="top">Variables&lt; TagList &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DgSubcellGroup.html#ga9c2d40b29c29b992f78eed45e82df47f">evolution::dg::subcell::fd::reconstruct</a> (const Variables&lt; TagList &gt; &amp;subcell_u, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;dg_mesh, const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;subcell_extents) noexcept</td></tr>
+<tr class="memdesc:ga9c2d40b29c29b992f78eed45e82df47f"><td class="mdescLeft">&#160;</td><td class="mdescRight">reconstruct the variable <code>subcell_u_times_projected_det_jac</code> onto the DG grid <code>dg_mesh</code>.  <a href="group__DgSubcellGroup.html#ga9c2d40b29c29b992f78eed45e82df47f">More...</a><br /></td></tr>
+<tr class="separator:ga9c2d40b29c29b992f78eed45e82df47f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>Functions and classes specific to the discontinuous Galerkin method supplemented with a finite volume or finite difference subcell limiter. Can also be thought of as a DG-FD hybrid method. </p>
+<h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="ga97fbd926840d2508e331694db731e18a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga97fbd926840d2508e331694db731e18a">&#9670;&nbsp;</a></span>ActiveGrid</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="group__DgSubcellGroup.html#ga97fbd926840d2508e331694db731e18a">evolution::dg::subcell::ActiveGrid</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>The grid that is currently being used for the DG-subcell evolution. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="ga3de2da997cbfc41fa9b1ab44ee799b42"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3de2da997cbfc41fa9b1ab44ee799b42">&#9670;&nbsp;</a></span>project() <span class="overload">[1/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classDataVector.html">DataVector</a> evolution::dg::subcell::fd::project </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>dg_u</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>dg_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>subcell_extents</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Project the variable <code>dg_u</code> onto the subcell grid with extents <code>subcell_extents</code>. </p>
+<dl class="section note"><dt>Note</dt><dd>In the return-by-<code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> with <code>Variables</code> interface, the <code>SubcellTagList</code> and the <code>DgtagList</code> must be the same when all tag prefixes are removed. Typically the <code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Inactive.html" title="Mark a tag as holding data for the inactive grid.">Tags::Inactive</a></code> prefix will be used. </dd></dl>
+
+</div>
+</div>
+<a id="ga594311fecf15b499a801cafb9297b702"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga594311fecf15b499a801cafb9297b702">&#9670;&nbsp;</a></span>project() <span class="overload">[2/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename SubcellTagList , typename DgTagList , size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void evolution::dg::subcell::fd::project </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; SubcellTagList &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>subcell_u</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variables&lt; DgTagList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>dg_u</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>dg_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>subcell_extents</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Project the variable <code>dg_u</code> onto the subcell grid with extents <code>subcell_extents</code>. </p>
+<dl class="section note"><dt>Note</dt><dd>In the return-by-<code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> with <code>Variables</code> interface, the <code>SubcellTagList</code> and the <code>DgtagList</code> must be the same when all tag prefixes are removed. Typically the <code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Inactive.html" title="Mark a tag as holding data for the inactive grid.">Tags::Inactive</a></code> prefix will be used. </dd></dl>
+
+</div>
+</div>
+<a id="ga5dd08c0d64a80ed82c8a2a8a506aa17d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5dd08c0d64a80ed82c8a2a8a506aa17d">&#9670;&nbsp;</a></span>project() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename TagList , size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variables&lt;TagList&gt; evolution::dg::subcell::fd::project </td>
+          <td>(</td>
+          <td class="paramtype">const Variables&lt; TagList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>dg_u</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>dg_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>subcell_extents</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Project the variable <code>dg_u</code> onto the subcell grid with extents <code>subcell_extents</code>. </p>
+<dl class="section note"><dt>Note</dt><dd>In the return-by-<code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> with <code>Variables</code> interface, the <code>SubcellTagList</code> and the <code>DgtagList</code> must be the same when all tag prefixes are removed. Typically the <code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Inactive.html" title="Mark a tag as holding data for the inactive grid.">Tags::Inactive</a></code> prefix will be used. </dd></dl>
+
+</div>
+</div>
+<a id="gaf429e35fd312a8eca0e5f5d625d10212"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf429e35fd312a8eca0e5f5d625d10212">&#9670;&nbsp;</a></span>project() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void evolution::dg::subcell::fd::project </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt;&#160;</td>
+          <td class="paramname"><em>subcell_u</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>dg_u</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>dg_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>subcell_extents</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Project the variable <code>dg_u</code> onto the subcell grid with extents <code>subcell_extents</code>. </p>
+<dl class="section note"><dt>Note</dt><dd>In the return-by-<code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> with <code>Variables</code> interface, the <code>SubcellTagList</code> and the <code>DgtagList</code> must be the same when all tag prefixes are removed. Typically the <code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Inactive.html" title="Mark a tag as holding data for the inactive grid.">Tags::Inactive</a></code> prefix will be used. </dd></dl>
+
+</div>
+</div>
+<a id="ga25b578ae42ae0ed05d4b74140a6af2d1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga25b578ae42ae0ed05d4b74140a6af2d1">&#9670;&nbsp;</a></span>reconstruct() <span class="overload">[1/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classDataVector.html">DataVector</a> evolution::dg::subcell::fd::reconstruct </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>subcell_u_times_projected_det_jac</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>dg_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>subcell_extents</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>reconstruct the variable <code>subcell_u_times_projected_det_jac</code> onto the DG grid <code>dg_mesh</code>. </p>
+<p>In general we wish that the reconstruction operator is the pseudo-inverse of the projection operator. On curved meshes this means we either need to compute a (time-dependent) reconstruction and projection matrix on each DG element, or we expand the determinant of the Jacobian on the basis, accepting the aliasing errors from that. We accept the aliasing errors in favor of the significantly reduced computational overhead. This means that the projection and reconstruction operators are only inverses of each other if both operate on \(u J\) where \(u\) is the variable being projected and \(J\) is the determinant of the Jacobian. That is, the matrices are guaranteed to satisfy \(\mathcal{R}(\mathcal{P}(u J))=u J\). If the mesh is regular Cartesian, then this isn't an issue. Furthermore, if we reconstruct \(uJ/\mathcal{P}(J)\) we again recover the exact DG solution. Doing the latter has the advantage that, in general, we are ideally projecting to the subcells much more often than reconstructing from them (a statement that we would rather use DG more than the subcells). </p>
+
+</div>
+</div>
+<a id="gaa807eb03a448e0490ce6ccf91b036d1b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa807eb03a448e0490ce6ccf91b036d1b">&#9670;&nbsp;</a></span>reconstruct() <span class="overload">[2/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename SubcellTagList , typename DgTagList , size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void evolution::dg::subcell::fd::reconstruct </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; DgTagList &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>dg_u</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variables&lt; SubcellTagList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>subcell_u</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>dg_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>subcell_extents</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>reconstruct the variable <code>subcell_u_times_projected_det_jac</code> onto the DG grid <code>dg_mesh</code>. </p>
+<p>In general we wish that the reconstruction operator is the pseudo-inverse of the projection operator. On curved meshes this means we either need to compute a (time-dependent) reconstruction and projection matrix on each DG element, or we expand the determinant of the Jacobian on the basis, accepting the aliasing errors from that. We accept the aliasing errors in favor of the significantly reduced computational overhead. This means that the projection and reconstruction operators are only inverses of each other if both operate on \(u J\) where \(u\) is the variable being projected and \(J\) is the determinant of the Jacobian. That is, the matrices are guaranteed to satisfy \(\mathcal{R}(\mathcal{P}(u J))=u J\). If the mesh is regular Cartesian, then this isn't an issue. Furthermore, if we reconstruct \(uJ/\mathcal{P}(J)\) we again recover the exact DG solution. Doing the latter has the advantage that, in general, we are ideally projecting to the subcells much more often than reconstructing from them (a statement that we would rather use DG more than the subcells). </p>
+
+</div>
+</div>
+<a id="ga9c2d40b29c29b992f78eed45e82df47f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9c2d40b29c29b992f78eed45e82df47f">&#9670;&nbsp;</a></span>reconstruct() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename TagList , size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variables&lt;TagList&gt; evolution::dg::subcell::fd::reconstruct </td>
+          <td>(</td>
+          <td class="paramtype">const Variables&lt; TagList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>subcell_u</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>dg_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>subcell_extents</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>reconstruct the variable <code>subcell_u_times_projected_det_jac</code> onto the DG grid <code>dg_mesh</code>. </p>
+<p>In general we wish that the reconstruction operator is the pseudo-inverse of the projection operator. On curved meshes this means we either need to compute a (time-dependent) reconstruction and projection matrix on each DG element, or we expand the determinant of the Jacobian on the basis, accepting the aliasing errors from that. We accept the aliasing errors in favor of the significantly reduced computational overhead. This means that the projection and reconstruction operators are only inverses of each other if both operate on \(u J\) where \(u\) is the variable being projected and \(J\) is the determinant of the Jacobian. That is, the matrices are guaranteed to satisfy \(\mathcal{R}(\mathcal{P}(u J))=u J\). If the mesh is regular Cartesian, then this isn't an issue. Furthermore, if we reconstruct \(uJ/\mathcal{P}(J)\) we again recover the exact DG solution. Doing the latter has the advantage that, in general, we are ideally projecting to the subcells much more often than reconstructing from them (a statement that we would rather use DG more than the subcells). </p>
+
+</div>
+</div>
+<a id="ga235dddb94705e3eac0b4cbf77769db2c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga235dddb94705e3eac0b4cbf77769db2c">&#9670;&nbsp;</a></span>reconstruct() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void evolution::dg::subcell::fd::reconstruct </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt;&#160;</td>
+          <td class="paramname"><em>dg_u</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>subcell_u_times_projected_det_jac</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>dg_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>subcell_extents</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>reconstruct the variable <code>subcell_u_times_projected_det_jac</code> onto the DG grid <code>dg_mesh</code>. </p>
+<p>In general we wish that the reconstruction operator is the pseudo-inverse of the projection operator. On curved meshes this means we either need to compute a (time-dependent) reconstruction and projection matrix on each DG element, or we expand the determinant of the Jacobian on the basis, accepting the aliasing errors from that. We accept the aliasing errors in favor of the significantly reduced computational overhead. This means that the projection and reconstruction operators are only inverses of each other if both operate on \(u J\) where \(u\) is the variable being projected and \(J\) is the determinant of the Jacobian. That is, the matrices are guaranteed to satisfy \(\mathcal{R}(\mathcal{P}(u J))=u J\). If the mesh is regular Cartesian, then this isn't an issue. Furthermore, if we reconstruct \(uJ/\mathcal{P}(J)\) we again recover the exact DG solution. Doing the latter has the advantage that, in general, we are ideally projecting to the subcells much more often than reconstructing from them (a statement that we would rather use DG more than the subcells). </p>
+
+</div>
+</div>
+<a id="ga3851975c09d0dfafc23c86df63e3adee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3851975c09d0dfafc23c86df63e3adee">&#9670;&nbsp;</a></span>reconstruction_matrix()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classMatrix.html">Matrix</a>&amp; evolution::dg::subcell::fd::reconstruction_matrix </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>dg_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>subcell_extents</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Computes the matrix needed for reconstructing the DG solution from the subcell solution. </p>
+<p>Reconstructing the DG solution from the FD solution is a bit more involved than projecting the DG solution to the FD subcells. Denoting the projection operator by \(\mathcal{P}\) and the reconstruction operator by \(\mathcal{R}\), we desire the property</p>
+<p class="formulaDsp">
+\begin{align*} \mathcal{R}(\mathcal{P}(u_{\breve{\imath}} J_{\breve{\imath}}))=u_{\breve{\imath}} J_{\breve{\imath}}, \end{align*}
+</p>
+<p>where \(\breve{\imath}\) denotes a grid point on the DG grid, \(u\) is the solution on the DG grid, and \(J\) is the determinant of the Jacobian on the DG grid. We also require that the integral of the conserved variables over the subcells is equal to the integral over the DG element. That is,</p>
+<p class="formulaDsp">
+\begin{align*} \int_{\Omega}u \,d^3x =\int_{\Omega} \underline{u} \,d^3x \Longrightarrow \int_{\Omega}u J \,d^3\xi=\int_{\Omega} \underline{u} J \,d^3\xi, \end{align*}
+</p>
+<p>where \(\underline{u}\) is the solution on the subcells. Because the number of subcell points is larger than the number of DG points, we need to solve a constrained linear least squares problem to reconstruct the DG solution from the subcells.</p>
+<p>The final reconstruction matrix is given by</p>
+<p class="formulaDsp">
+\begin{align*} R_{\breve{\jmath}\underline{i}} &amp;=\left\{(2 \mathcal{P}\otimes\mathcal{P})^{-1}2\mathcal{P} - (2 \mathcal{P}\otimes\mathcal{P})^{-1}\vec{w}\left[\mathbf{w}(2 \mathcal{P}\otimes\mathcal{P})^{-1}\vec{w}\right]^{-1}\mathbf{w}(2 \mathcal{P}\otimes\mathcal{P})^{-1}2\mathcal{P} + (2 \mathcal{P}\otimes\mathcal{P})^{-1}\vec{w}\left[\mathbf{w}(2 \mathcal{P}\otimes\mathcal{P})^{-1}\vec{w}\right]^{-1}\vec{\underline{w}} \right\}_{\breve{\jmath}\underline{i}}, \end{align*}
+</p>
+<p>where \(\vec{w}\) is the vector of integration weights on the DG element, \(\mathbf{w}=w_{\breve{l}}\delta_{\breve{l}\breve{\jmath}}\), and \(\vec{\underline{w}}\) is the vector of integration weights over the subcells. The integration weights \(\vec{\underline{w}}\) on the subcells are those for 6th-order integration on a uniform mesh. </p>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

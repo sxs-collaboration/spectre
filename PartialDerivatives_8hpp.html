@@ -1,0 +1,279 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_e67410f72df12b3cc042db20f578e557.html">NumericalAlgorithms</a></li><li class="navelem"><a class="el" href="dir_66130ee82b62ead96b968c156591280f.html">LinearOperators</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a>  </div>
+  <div class="headertitle">
+<div class="title">PartialDerivatives.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/array.html">array</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</code><br />
+<code>#include &quot;DataStructures/DataBox/PrefixHelpers.hpp&quot;</code><br />
+<code>#include &quot;DataStructures/DataBox/Tag.hpp&quot;</code><br />
+<code>#include &quot;DataStructures/DataBox/TagName.hpp&quot;</code><br />
+<code>#include &quot;<a class="el" href="Variables_8hpp_source.html">DataStructures/Variables.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="Requires_8hpp_source.html">Utilities/Requires.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="TMPL_8hpp_source.html">Utilities/TMPL.hpp</a>&quot;</code><br />
+<code>#include &quot;Utilities/TypeTraits/IsA.hpp&quot;</code><br />
+</div>
+<p><a href="PartialDerivatives_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1deriv.html">Tags::deriv&lt; Tag, Dim, Frame, typename &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefix indicating spatial derivatives.  <a href="structTags_1_1deriv.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1deriv_3_01Tag_00_01Dim_00_01Frame_00_01Requires_3_01tt_1_1is__a__v_3_01Tensor_00_0a778efafc2861944aed5cb502634a46e.html">Tags::deriv&lt; Tag, Dim, Frame, Requires&lt; tt::is_a_v&lt; Tensor, typename Tag::type &gt; &gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1spacetime__deriv.html">Tags::spacetime_deriv&lt; Tag, Dim, Frame, typename &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefix indicating spacetime derivatives.  <a href="structTags_1_1spacetime__deriv.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1spacetime__deriv_3_01Tag_00_01Dim_00_01Frame_00_01Requires_3_01tt_1_1is__a__v_3_01b4c0d0ebee23b996aeceedaa4d80a81c.html">Tags::spacetime_deriv&lt; Tag, Dim, Frame, Requires&lt; tt::is_a_v&lt; Tensor, typename Tag::type &gt; &gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1DerivCompute.html">Tags::DerivCompute&lt; VariablesTag, InverseJacobianTag, DerivTags &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the spatial derivatives of tags in a <a class="el" href="structTags_1_1Variables.html">Variables</a>.  <a href="structTags_1_1DerivCompute.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ga2e59acbb52cacebae0fe19506b7fbedd"><td class="memTemplParams" colspan="2">template&lt;typename DerivativeTags , typename VariableTags , size_t Dim&gt; </td></tr>
+<tr class="memitem:ga2e59acbb52cacebae0fe19506b7fbedd"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__NumericalAlgorithmsGroup.html#ga2e59acbb52cacebae0fe19506b7fbedd">logical_partial_derivatives</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; Variables&lt; DerivativeTags &gt;, Dim &gt; * &gt; logical_partial_derivatives_of_u, const Variables&lt; VariableTags &gt; &amp;u, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:ga2e59acbb52cacebae0fe19506b7fbedd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the partial derivatives of each variable with respect to the logical coordinate.  <a href="group__NumericalAlgorithmsGroup.html#ga2e59acbb52cacebae0fe19506b7fbedd">More...</a><br /></td></tr>
+<tr class="separator:ga2e59acbb52cacebae0fe19506b7fbedd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga78fd6b37069b21c0ac640467a98e0abe"><td class="memTemplParams" colspan="2">template&lt;typename DerivativeTags , typename VariableTags , size_t Dim&gt; </td></tr>
+<tr class="memitem:ga78fd6b37069b21c0ac640467a98e0abe"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__NumericalAlgorithmsGroup.html#ga78fd6b37069b21c0ac640467a98e0abe">logical_partial_derivatives</a> (const Variables&lt; VariableTags &gt; &amp;u, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh) noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; Variables&lt; DerivativeTags &gt;, Dim &gt;</td></tr>
+<tr class="memdesc:ga78fd6b37069b21c0ac640467a98e0abe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the partial derivatives of each variable with respect to the logical coordinate.  <a href="group__NumericalAlgorithmsGroup.html#ga78fd6b37069b21c0ac640467a98e0abe">More...</a><br /></td></tr>
+<tr class="separator:ga78fd6b37069b21c0ac640467a98e0abe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ga9e442f4a419b53e05ba0ff98d4233305"><td class="memTemplParams" colspan="2">template&lt;typename SymmList , typename IndexList , size_t Dim&gt; </td></tr>
+<tr class="memitem:ga9e442f4a419b53e05ba0ff98d4233305"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__NumericalAlgorithmsGroup.html#ga9e442f4a419b53e05ba0ff98d4233305">logical_partial_derivative</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga5e4aece332518b3a95c2a73557aaa596">TensorMetafunctions::prepend_spatial_index</a>&lt; Tensor&lt; <a class="el" href="classDataVector.html">DataVector</a>, SymmList, IndexList &gt;, Dim, <a class="el" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28aff50b4aa1c9cc2197ef898436641c911">UpLo::Lo</a>, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt; * &gt; logical_derivative_of_u, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; double &gt; * &gt; buffer, const Tensor&lt; <a class="el" href="classDataVector.html">DataVector</a>, SymmList, IndexList &gt; &amp;u, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:ga9e442f4a419b53e05ba0ff98d4233305"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the logical partial derivative of a tensor, prepending the spatial derivative index, e.g. for \(\partial_i T_{a}{}^{b}\) the C++ call is <code>get(i, a, b)</code>.  <a href="group__NumericalAlgorithmsGroup.html#ga9e442f4a419b53e05ba0ff98d4233305">More...</a><br /></td></tr>
+<tr class="separator:ga9e442f4a419b53e05ba0ff98d4233305"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4f032cdafeba55c60f2afb3b142b679f"><td class="memTemplParams" colspan="2">template&lt;typename SymmList , typename IndexList , size_t Dim&gt; </td></tr>
+<tr class="memitem:ga4f032cdafeba55c60f2afb3b142b679f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__NumericalAlgorithmsGroup.html#ga4f032cdafeba55c60f2afb3b142b679f">logical_partial_derivative</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga5e4aece332518b3a95c2a73557aaa596">TensorMetafunctions::prepend_spatial_index</a>&lt; Tensor&lt; <a class="el" href="classDataVector.html">DataVector</a>, SymmList, IndexList &gt;, Dim, <a class="el" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28aff50b4aa1c9cc2197ef898436641c911">UpLo::Lo</a>, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt; * &gt; logical_derivative_of_u, const Tensor&lt; <a class="el" href="classDataVector.html">DataVector</a>, SymmList, IndexList &gt; &amp;u, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:ga4f032cdafeba55c60f2afb3b142b679f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the logical partial derivative of a tensor, prepending the spatial derivative index, e.g. for \(\partial_i T_{a}{}^{b}\) the C++ call is <code>get(i, a, b)</code>.  <a href="group__NumericalAlgorithmsGroup.html#ga4f032cdafeba55c60f2afb3b142b679f">More...</a><br /></td></tr>
+<tr class="separator:ga4f032cdafeba55c60f2afb3b142b679f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7ae83731da49d678a8607f79e4cad412"><td class="memTemplParams" colspan="2">template&lt;typename SymmList , typename IndexList , size_t Dim&gt; </td></tr>
+<tr class="memitem:ga7ae83731da49d678a8607f79e4cad412"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__NumericalAlgorithmsGroup.html#ga7ae83731da49d678a8607f79e4cad412">logical_partial_derivative</a> (const Tensor&lt; <a class="el" href="classDataVector.html">DataVector</a>, SymmList, IndexList &gt; &amp;u, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh) noexcept -&gt; <a class="el" href="group__TensorGroup.html#ga5e4aece332518b3a95c2a73557aaa596">TensorMetafunctions::prepend_spatial_index</a>&lt; Tensor&lt; <a class="el" href="classDataVector.html">DataVector</a>, SymmList, IndexList &gt;, Dim, <a class="el" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28aff50b4aa1c9cc2197ef898436641c911">UpLo::Lo</a>, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt;</td></tr>
+<tr class="memdesc:ga7ae83731da49d678a8607f79e4cad412"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the logical partial derivative of a tensor, prepending the spatial derivative index, e.g. for \(\partial_i T_{a}{}^{b}\) the C++ call is <code>get(i, a, b)</code>.  <a href="group__NumericalAlgorithmsGroup.html#ga7ae83731da49d678a8607f79e4cad412">More...</a><br /></td></tr>
+<tr class="separator:ga7ae83731da49d678a8607f79e4cad412"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ga3aba17e357844bc9470b7cc273e0ca84"><td class="memTemplParams" colspan="2">template&lt;typename DerivativeTags , size_t Dim, typename DerivativeFrame &gt; </td></tr>
+<tr class="memitem:ga3aba17e357844bc9470b7cc273e0ca84"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__NumericalAlgorithmsGroup.html#ga3aba17e357844bc9470b7cc273e0ca84">partial_derivatives</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; <a class="el" href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e">db::wrap_tags_in</a>&lt; <a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>, DerivativeTags, tmpl::size_t&lt; Dim &gt;, DerivativeFrame &gt;&gt; * &gt; du, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; Variables&lt; DerivativeTags &gt;, Dim &gt; &amp;logical_partial_derivatives_of_u, const InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, DerivativeFrame &gt; &amp;inverse_jacobian) noexcept</td></tr>
+<tr class="memdesc:ga3aba17e357844bc9470b7cc273e0ca84"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the partial derivatives of each variable with respect to the coordinates of <code>DerivativeFrame</code>.  <a href="group__NumericalAlgorithmsGroup.html#ga3aba17e357844bc9470b7cc273e0ca84">More...</a><br /></td></tr>
+<tr class="separator:ga3aba17e357844bc9470b7cc273e0ca84"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga202a4887529b5c9b60f2ad65d19e32ea"><td class="memTemplParams" colspan="2">template&lt;typename DerivativeTags , typename VariableTags , size_t Dim, typename DerivativeFrame &gt; </td></tr>
+<tr class="memitem:ga202a4887529b5c9b60f2ad65d19e32ea"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__NumericalAlgorithmsGroup.html#ga202a4887529b5c9b60f2ad65d19e32ea">partial_derivatives</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; <a class="el" href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e">db::wrap_tags_in</a>&lt; <a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>, DerivativeTags, tmpl::size_t&lt; Dim &gt;, DerivativeFrame &gt;&gt; * &gt; du, const Variables&lt; VariableTags &gt; &amp;u, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh, const InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, DerivativeFrame &gt; &amp;inverse_jacobian) noexcept</td></tr>
+<tr class="memdesc:ga202a4887529b5c9b60f2ad65d19e32ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the partial derivatives of each variable with respect to the coordinates of <code>DerivativeFrame</code>.  <a href="group__NumericalAlgorithmsGroup.html#ga202a4887529b5c9b60f2ad65d19e32ea">More...</a><br /></td></tr>
+<tr class="separator:ga202a4887529b5c9b60f2ad65d19e32ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga17909413f3502347c5adfe37637bb3c4"><td class="memTemplParams" colspan="2">template&lt;typename DerivativeTags , typename VariableTags , size_t Dim, typename DerivativeFrame &gt; </td></tr>
+<tr class="memitem:ga17909413f3502347c5adfe37637bb3c4"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__NumericalAlgorithmsGroup.html#ga17909413f3502347c5adfe37637bb3c4">partial_derivatives</a> (const Variables&lt; VariableTags &gt; &amp;u, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh, const InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, DerivativeFrame &gt; &amp;inverse_jacobian) noexcept -&gt; Variables&lt; <a class="el" href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e">db::wrap_tags_in</a>&lt; <a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>, DerivativeTags, tmpl::size_t&lt; Dim &gt;, DerivativeFrame &gt;&gt;</td></tr>
+<tr class="memdesc:ga17909413f3502347c5adfe37637bb3c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the partial derivatives of each variable with respect to the coordinates of <code>DerivativeFrame</code>.  <a href="group__NumericalAlgorithmsGroup.html#ga17909413f3502347c5adfe37637bb3c4">More...</a><br /></td></tr>
+<tr class="separator:ga17909413f3502347c5adfe37637bb3c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Defines functions computing partial derivatives. </p>
+</div></div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

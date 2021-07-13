@@ -1,0 +1,337 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_e67410f72df12b3cc042db20f578e557.html">NumericalAlgorithms</a></li><li class="navelem"><a class="el" href="dir_7b48095aa11816aac02c32387d4b9934.html">DiscontinuousGalerkin</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">MortarHelpers.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/algorithm.html">algorithm</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/array.html">array</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;boost/functional/hash.hpp&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/functional.html">functional</a>&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/tuple.html">tuple</a>&gt;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a>&gt;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</span>  <span class="comment">// IWYU pragma: keep // for std::forward</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160; </div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;DataStructures/ApplyMatrices.hpp&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataBox/PrefixHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Prefixes_8hpp.html">DataStructures/DataBox/Prefixes.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Matrix_8hpp.html">DataStructures/Matrix.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Variables_8hpp.html">DataStructures/Variables.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Direction_8hpp.html">Domain/Structure/Direction.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ElementId_8hpp.html">Domain/Structure/ElementId.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="LiftFlux_8hpp.html">NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="NumericalAlgorithms_2Spectral_2Mesh_8hpp.html">NumericalAlgorithms/Spectral/Mesh.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Spectral/Projection.hpp&quot;</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;Utilities/Algorithm.hpp&quot;</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Assert_8hpp.html">Utilities/ErrorHandling/Assert.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="MakeArray_8hpp.html">Utilities/MakeArray.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span><span class="comment"></span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keyword">class </span><a class="code" href="classElementId.html">ElementId</a>;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="keyword">class </span><a class="code" href="classOrientationMap.html">OrientationMap</a>;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment">// IWYU pragma: no_forward_declare Variables</span><span class="comment"></span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacedg.html">dg</a> {</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="keyword">using</span> MortarId = <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair&lt;::Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> MortarDim&gt;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="keyword">using</span> MortarSize = <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;Spectral::MortarSize, MortarDim&gt;</a>;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim, <span class="keyword">typename</span> ValueType&gt;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="keyword">using</span> MortarMap = <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map&lt;MortarId&lt;VolumeDim&gt;</a>, ValueType,</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;                                     boost::hash&lt;MortarId&lt;VolumeDim&gt;&gt;&gt;;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment">/// \ingroup DiscontinuousGalerkinGroup</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment">/// Find a mesh for a mortar capable of representing data from either</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment">/// of two faces.</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment">/// \warning Make sure the two face meshes are oriented the same, i.e.</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment">/// their dimensions align. This is facilitated by the `orientation`</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment">/// passed to `domain::Initialization::create_initial_mesh`, for</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment">/// example.</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a> <a class="code" href="group__DiscontinuousGalerkinGroup.html#ga738b600132f1a93efa03fde8c11e950c">mortar_mesh</a>(<span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a>&amp; face_mesh1,</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;                      <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a>&amp; face_mesh2) noexcept;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment">/// \ingroup DiscontinuousGalerkinGroup</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment">/// Determine the size of the mortar (i.e., the part of the face it</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment">/// covers) for communicating with a neighbor.  This is the size</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">/// relative to the size of \p self, and will not generally agree with</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment">/// that determined by \p neighbor.</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;MortarSize&lt;Dim - 1&gt; <a class="code" href="group__DiscontinuousGalerkinGroup.html#gad64bacb048e27950202430591f5ae631">mortar_size</a>(</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="keyword">const</span> <a class="code" href="classElementId.html">ElementId&lt;Dim&gt;</a>&amp; <span class="keyword">self</span>, <span class="keyword">const</span> <a class="code" href="classElementId.html">ElementId&lt;Dim&gt;</a>&amp; neighbor,</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keywordtype">size_t</span> dimension, <span class="keyword">const</span> <a class="code" href="classOrientationMap.html">OrientationMap&lt;Dim&gt;</a>&amp; orientation) noexcept;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment">/// \ingroup DiscontinuousGalerkinGroup</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment">/// Project variables from a face to a mortar.</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tags, <span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00073"></a><span class="lineno"><a class="line" href="group__DiscontinuousGalerkinGroup.html#ga10331f076ed7bf2a80a9feb054f57594">   73</a></span>&#160;Variables&lt;Tags&gt; <a class="code" href="group__DiscontinuousGalerkinGroup.html#ga10331f076ed7bf2a80a9feb054f57594">project_to_mortar</a>(<span class="keyword">const</span> Variables&lt;Tags&gt;&amp; vars,</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;                                  <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a>&amp; face_mesh,</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;                                  <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a>&amp; <a class="code" href="group__DiscontinuousGalerkinGroup.html#ga738b600132f1a93efa03fde8c11e950c">mortar_mesh</a>,</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;                                  <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">MortarSize&lt;Dim&gt;</a>&amp; <a class="code" href="group__DiscontinuousGalerkinGroup.html#gad64bacb048e27950202430591f5ae631">mortar_size</a>) noexcept {</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> projection_matrices = <a class="code" href="namespaceSpectral.html#aae833b82469a8f513e2ebb419836ff90">Spectral::projection_matrix_parent_to_child</a>(</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;      face_mesh, <a class="code" href="group__DiscontinuousGalerkinGroup.html#ga738b600132f1a93efa03fde8c11e950c">mortar_mesh</a>, <a class="code" href="group__DiscontinuousGalerkinGroup.html#gad64bacb048e27950202430591f5ae631">mortar_size</a>);</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;  <span class="keywordflow">return</span> <a class="code" href="group__NumericalAlgorithmsGroup.html#ga49cabadc0d50ce1eaf316301297fd232">apply_matrices</a>(projection_matrices, vars, face_mesh.extents());</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;}</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment">/// \ingroup DiscontinuousGalerkinGroup</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment">/// Project variables from a mortar to a face.</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tags, <span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00085"></a><span class="lineno"><a class="line" href="group__DiscontinuousGalerkinGroup.html#gacb1af7445881ea429e92ec466a2684f0">   85</a></span>&#160;Variables&lt;Tags&gt; <a class="code" href="group__DiscontinuousGalerkinGroup.html#gacb1af7445881ea429e92ec466a2684f0">project_from_mortar</a>(</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <span class="keyword">const</span> Variables&lt;Tags&gt;&amp; vars, <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a>&amp; face_mesh,</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a>&amp; <a class="code" href="group__DiscontinuousGalerkinGroup.html#ga738b600132f1a93efa03fde8c11e950c">mortar_mesh</a>, <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">MortarSize&lt;Dim&gt;</a>&amp; <a class="code" href="group__DiscontinuousGalerkinGroup.html#gad64bacb048e27950202430591f5ae631">mortar_size</a>) noexcept {</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;  <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(<a class="code" href="namespaceSpectral.html#ab967d0118d513235484f3db2f17dca10">Spectral::needs_projection</a>(face_mesh, <a class="code" href="group__DiscontinuousGalerkinGroup.html#ga738b600132f1a93efa03fde8c11e950c">mortar_mesh</a>, <a class="code" href="group__DiscontinuousGalerkinGroup.html#gad64bacb048e27950202430591f5ae631">mortar_size</a>),</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;         <span class="stringliteral">&quot;project_from_mortar should not be called if the interface mesh and &quot;</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;         <span class="stringliteral">&quot;mortar mesh are identical. Please elide the copy instead.&quot;</span>);</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> projection_matrices = <a class="code" href="namespaceSpectral.html#abd64857f2d440cd7353f6c36e0699b9d">Spectral::projection_matrix_child_to_parent</a>(</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;      <a class="code" href="group__DiscontinuousGalerkinGroup.html#ga738b600132f1a93efa03fde8c11e950c">mortar_mesh</a>, face_mesh, <a class="code" href="group__DiscontinuousGalerkinGroup.html#gad64bacb048e27950202430591f5ae631">mortar_size</a>);</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;  <span class="keywordflow">return</span> <a class="code" href="group__NumericalAlgorithmsGroup.html#ga49cabadc0d50ce1eaf316301297fd232">apply_matrices</a>(projection_matrices, vars, <a class="code" href="group__DiscontinuousGalerkinGroup.html#ga738b600132f1a93efa03fde8c11e950c">mortar_mesh</a>.extents());</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;}</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160; </div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;}  <span class="comment">// namespace dg</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="agroup__NumericalAlgorithmsGroup_html_ga49cabadc0d50ce1eaf316301297fd232"><div class="ttname"><a href="group__NumericalAlgorithmsGroup.html#ga49cabadc0d50ce1eaf316301297fd232">apply_matrices</a></div><div class="ttdeci">void apply_matrices(const gsl::not_null&lt; Variables&lt; VariableTags &gt; * &gt; result, const std::array&lt; MatrixType, Dim &gt; &amp;matrices, const Variables&lt; VariableTags &gt; &amp;u, const Index&lt; Dim &gt; &amp;extents) noexcept</div><div class="ttdoc">Multiply by matrices in each dimension.</div><div class="ttdef"><b>Definition:</b> ApplyMatrices.hpp:67</div></div>
+<div class="ttc" id="anamespaceSpectral_html_ab967d0118d513235484f3db2f17dca10"><div class="ttname"><a href="namespaceSpectral.html#ab967d0118d513235484f3db2f17dca10">Spectral::needs_projection</a></div><div class="ttdeci">bool needs_projection(const Mesh&lt; Dim &gt; &amp;mesh1, const Mesh&lt; Dim &gt; &amp;mesh2, const std::array&lt; ChildSize, Dim &gt; &amp;child_sizes) noexcept</div><div class="ttdoc">Determine whether data needs to be projected between a child mesh and its parent mesh....</div></div>
+<div class="ttc" id="autility_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a></div></div>
+<div class="ttc" id="anamespaceSpectral_html_abd64857f2d440cd7353f6c36e0699b9d"><div class="ttname"><a href="namespaceSpectral.html#abd64857f2d440cd7353f6c36e0699b9d">Spectral::projection_matrix_child_to_parent</a></div><div class="ttdeci">const Matrix &amp; projection_matrix_child_to_parent(const Mesh&lt; 1 &gt; &amp;child_mesh, const Mesh&lt; 1 &gt; &amp;parent_mesh, ChildSize size, bool operand_is_massive=false) noexcept</div><div class="ttdoc">The projection matrix from a child mesh to its parent.</div></div>
+<div class="ttc" id="afunctional_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/functional.html">functional</a></div></div>
+<div class="ttc" id="agroup__DiscontinuousGalerkinGroup_html_ga10331f076ed7bf2a80a9feb054f57594"><div class="ttname"><a href="group__DiscontinuousGalerkinGroup.html#ga10331f076ed7bf2a80a9feb054f57594">dg::project_to_mortar</a></div><div class="ttdeci">Variables&lt; Tags &gt; project_to_mortar(const Variables&lt; Tags &gt; &amp;vars, const Mesh&lt; Dim &gt; &amp;face_mesh, const Mesh&lt; Dim &gt; &amp;mortar_mesh, const MortarSize&lt; Dim &gt; &amp;mortar_size) noexcept</div><div class="ttdef"><b>Definition:</b> MortarHelpers.hpp:73</div></div>
+<div class="ttc" id="apair_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a></div></div>
+<div class="ttc" id="aLiftFlux_8hpp_html"><div class="ttname"><a href="LiftFlux_8hpp.html">LiftFlux.hpp</a></div></div>
+<div class="ttc" id="aMakeArray_8hpp_html"><div class="ttname"><a href="MakeArray_8hpp.html">MakeArray.hpp</a></div></div>
+<div class="ttc" id="atuple_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/tuple.html">tuple</a></div></div>
+<div class="ttc" id="aclassOrientationMap_html"><div class="ttname"><a href="classOrientationMap.html">OrientationMap</a></div><div class="ttdoc">A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of th...</div><div class="ttdef"><b>Definition:</b> OrientationMap.hpp:34</div></div>
+<div class="ttc" id="aalgorithm_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/algorithm.html">algorithm</a></div></div>
+<div class="ttc" id="anamespacedg_html"><div class="ttname"><a href="namespacedg.html">dg</a></div><div class="ttdoc">Functionality related to discontinuous Galerkin schemes.</div><div class="ttdef"><b>Definition:</b> ApplyMassMatrix.hpp:13</div></div>
+<div class="ttc" id="aclassElementId_html"><div class="ttname"><a href="classElementId.html">ElementId</a></div><div class="ttdoc">An ElementId uniquely labels an Element.</div><div class="ttdef"><b>Definition:</b> ElementId.hpp:51</div></div>
+<div class="ttc" id="aElementId_8hpp_html"><div class="ttname"><a href="ElementId_8hpp.html">ElementId.hpp</a></div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="aAssert_8hpp_html"><div class="ttname"><a href="Assert_8hpp.html">Assert.hpp</a></div></div>
+<div class="ttc" id="anamespaceSpectral_html_aae833b82469a8f513e2ebb419836ff90"><div class="ttname"><a href="namespaceSpectral.html#aae833b82469a8f513e2ebb419836ff90">Spectral::projection_matrix_parent_to_child</a></div><div class="ttdeci">const Matrix &amp; projection_matrix_parent_to_child(const Mesh&lt; 1 &gt; &amp;parent_mesh, const Mesh&lt; 1 &gt; &amp;child_mesh, ChildSize size) noexcept</div><div class="ttdoc">The projection matrix from a parent mesh to one of its children.</div></div>
+<div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/array.html">array</a></div></div>
+<div class="ttc" id="agroup__DiscontinuousGalerkinGroup_html_gacb1af7445881ea429e92ec466a2684f0"><div class="ttname"><a href="group__DiscontinuousGalerkinGroup.html#gacb1af7445881ea429e92ec466a2684f0">dg::project_from_mortar</a></div><div class="ttdeci">Variables&lt; Tags &gt; project_from_mortar(const Variables&lt; Tags &gt; &amp;vars, const Mesh&lt; Dim &gt; &amp;face_mesh, const Mesh&lt; Dim &gt; &amp;mortar_mesh, const MortarSize&lt; Dim &gt; &amp;mortar_size) noexcept</div><div class="ttdef"><b>Definition:</b> MortarHelpers.hpp:85</div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_gaf170f3984e3d0f809b2558dbd981ca35"><div class="ttname"><a href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a></div><div class="ttdeci">#define ASSERT(a, m)</div><div class="ttdoc">Assert that an expression should be true.</div><div class="ttdef"><b>Definition:</b> Assert.hpp:49</div></div>
+<div class="ttc" id="aVariables_8hpp_html"><div class="ttname"><a href="Variables_8hpp.html">Variables.hpp</a></div></div>
+<div class="ttc" id="aclassMesh_html"><div class="ttname"><a href="classMesh.html">Mesh</a></div><div class="ttdoc">Holds the number of grid points, basis, and quadrature in each direction of the computational grid.</div><div class="ttdef"><b>Definition:</b> Mesh.hpp:49</div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="agroup__DiscontinuousGalerkinGroup_html_ga738b600132f1a93efa03fde8c11e950c"><div class="ttname"><a href="group__DiscontinuousGalerkinGroup.html#ga738b600132f1a93efa03fde8c11e950c">dg::mortar_mesh</a></div><div class="ttdeci">Mesh&lt; Dim &gt; mortar_mesh(const Mesh&lt; Dim &gt; &amp;face_mesh1, const Mesh&lt; Dim &gt; &amp;face_mesh2) noexcept</div></div>
+<div class="ttc" id="aMatrix_8hpp_html"><div class="ttname"><a href="Matrix_8hpp.html">Matrix.hpp</a></div></div>
+<div class="ttc" id="aDirection_8hpp_html"><div class="ttname"><a href="Direction_8hpp.html">Direction.hpp</a></div></div>
+<div class="ttc" id="aPrefixes_8hpp_html"><div class="ttname"><a href="Prefixes_8hpp.html">Prefixes.hpp</a></div></div>
+<div class="ttc" id="aunordered_map_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a></div></div>
+<div class="ttc" id="atype_traits_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a></div></div>
+<div class="ttc" id="agroup__DiscontinuousGalerkinGroup_html_gad64bacb048e27950202430591f5ae631"><div class="ttname"><a href="group__DiscontinuousGalerkinGroup.html#gad64bacb048e27950202430591f5ae631">dg::mortar_size</a></div><div class="ttdeci">MortarSize&lt; Dim - 1 &gt; mortar_size(const ElementId&lt; Dim &gt; &amp;self, const ElementId&lt; Dim &gt; &amp;neighbor, size_t dimension, const OrientationMap&lt; Dim &gt; &amp;orientation) noexcept</div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="aNumericalAlgorithms_2Spectral_2Mesh_8hpp_html"><div class="ttname"><a href="NumericalAlgorithms_2Spectral_2Mesh_8hpp.html">Mesh.hpp</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

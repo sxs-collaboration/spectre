@@ -1,0 +1,249 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::Tags::InverseJacobianCompute&lt; MapTag, SourceCoordsTag &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1Tags.html">Tags</a></li><li class="navelem"><a class="el" href="structdomain_1_1Tags_1_1InverseJacobianCompute.html">InverseJacobianCompute</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="structdomain_1_1Tags_1_1InverseJacobianCompute-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::Tags::InverseJacobianCompute&lt; MapTag, SourceCoordsTag &gt; Struct Template Reference<div class="ingroups"><a class="el" href="group__DataBoxTagsGroup.html">DataBox Tags</a> &#124; <a class="el" href="group__ComputationalDomainGroup.html">Computational Domain</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><code>#include &lt;<a class="el" href="Domain_2Tags_8hpp_source.html">Tags.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ab10020c2399a83a8afc7d4260911a785"><td class="memItemLeft" align="right" valign="top"><a id="ab10020c2399a83a8afc7d4260911a785"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>base</b> = <a class="el" href="structdomain_1_1Tags_1_1InverseJacobian.html">InverseJacobian</a>&lt; MapTag::dim, typename MapTag::source_frame, typename MapTag::target_frame &gt;</td></tr>
+<tr class="separator:ab10020c2399a83a8afc7d4260911a785"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af39d5c2e070a299975650c2034764081"><td class="memItemLeft" align="right" valign="top"><a id="af39d5c2e070a299975650c2034764081"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_type</b> = typename <a class="el" href="structdomain_1_1Tags_1_1InverseJacobian.html">base::type</a></td></tr>
+<tr class="separator:af39d5c2e070a299975650c2034764081"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab01b55cfdc381a98897f7c3b7a3267d3"><td class="memItemLeft" align="right" valign="top"><a id="ab01b55cfdc381a98897f7c3b7a3267d3"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt; MapTag, SourceCoordsTag &gt;</td></tr>
+<tr class="separator:ab01b55cfdc381a98897f7c3b7a3267d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_structdomain_1_1Tags_1_1InverseJacobian"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structdomain_1_1Tags_1_1InverseJacobian')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structdomain_1_1Tags_1_1InverseJacobian.html">domain::Tags::InverseJacobian&lt; MapTag::dim, MapTag::source_frame, MapTag::target_frame &gt;</a></td></tr>
+<tr class="memitem:a4886d18ecb0896cb840b44a4115bd9da inherit pub_types_structdomain_1_1Tags_1_1InverseJacobian"><td class="memItemLeft" align="right" valign="top"><a id="a4886d18ecb0896cb840b44a4115bd9da"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>type</b> = ::<a class="el" href="structdomain_1_1Tags_1_1InverseJacobian.html">InverseJacobian</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, MapTag::source_frame, MapTag::target_frame &gt;</td></tr>
+<tr class="separator:a4886d18ecb0896cb840b44a4115bd9da inherit pub_types_structdomain_1_1Tags_1_1InverseJacobian"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:ac1838f47973d6c947ea61a7b1452d260"><td class="memItemLeft" align="right" valign="top"><a id="ac1838f47973d6c947ea61a7b1452d260"></a>
+static constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><b>function</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; return_type * &gt; inv_jacobian, const typename MapTag::type &amp;element_map, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, MapTag::dim, typename MapTag::source_frame &gt; &amp;source_coords) noexcept</td></tr>
+<tr class="separator:ac1838f47973d6c947ea61a7b1452d260"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_static_methods_structdomain_1_1Tags_1_1InverseJacobian"><td colspan="2" onclick="javascript:toggleInherit('pub_static_methods_structdomain_1_1Tags_1_1InverseJacobian')"><img src="closed.png" alt="-"/>&#160;Static Public Member Functions inherited from <a class="el" href="structdomain_1_1Tags_1_1InverseJacobian.html">domain::Tags::InverseJacobian&lt; MapTag::dim, MapTag::source_frame, MapTag::target_frame &gt;</a></td></tr>
+<tr class="memitem:adce0ede5d99210d160ffcf67af548d13 inherit pub_static_methods_structdomain_1_1Tags_1_1InverseJacobian"><td class="memItemLeft" align="right" valign="top"><a id="adce0ede5d99210d160ffcf67af548d13"></a>
+static <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memItemRight" valign="bottom"><b>name</b> () noexcept</td></tr>
+<tr class="separator:adce0ede5d99210d160ffcf67af548d13 inherit pub_static_methods_structdomain_1_1Tags_1_1InverseJacobian"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename MapTag, typename SourceCoordsTag&gt;<br />
+struct domain::Tags::InverseJacobianCompute&lt; MapTag, SourceCoordsTag &gt;</h3>
+
+<p>Computes the inverse <a class="el" href="structdomain_1_1Tags_1_1Jacobian.html" title="The Jacobian from the source frame to the target frame.">Jacobian</a> of the map held by <code>MapTag</code> at the coordinates held by <code>SourceCoordsTag</code>. The coordinates must be in the source frame of the map. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Domain/<a class="el" href="Domain_2Tags_8hpp_source.html">Tags.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::CoordinateMaps::FocallyLiftedInnerMaps::FlatEndcap Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1CoordinateMaps.html">CoordinateMaps</a></li><li class="navelem"><a class="el" href="namespacedomain_1_1CoordinateMaps_1_1FocallyLiftedInnerMaps.html">FocallyLiftedInnerMaps</a></li><li class="navelem"><a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedInnerMaps_1_1FlatEndcap.html">FlatEndcap</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedInnerMaps_1_1FlatEndcap-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::CoordinateMaps::FocallyLiftedInnerMaps::FlatEndcap Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A FocallyLiftedInnerMap that maps a 3D unit right cylinder to a volume that connects a portion of a plane and a spherical surface.  
+ <a href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedInnerMaps_1_1FlatEndcap.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="FocallyLiftedFlatEndcap_8hpp_source.html">FocallyLiftedFlatEndcap.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a5fede5f2ccfa8dde61a917e8b00d7a85"><td class="memItemLeft" align="right" valign="top"><a id="a5fede5f2ccfa8dde61a917e8b00d7a85"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FlatEndcap</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;center, double radius) noexcept</td></tr>
+<tr class="separator:a5fede5f2ccfa8dde61a917e8b00d7a85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d0e2b8ddf36873096461a8ade00c065"><td class="memItemLeft" align="right" valign="top"><a id="a7d0e2b8ddf36873096461a8ade00c065"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FlatEndcap</b> (<a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedInnerMaps_1_1FlatEndcap.html">FlatEndcap</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a7d0e2b8ddf36873096461a8ade00c065"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a47e77bb583c4e6d53435b4d1ee4e33a5"><td class="memItemLeft" align="right" valign="top"><a id="a47e77bb583c4e6d53435b4d1ee4e33a5"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FlatEndcap</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedInnerMaps_1_1FlatEndcap.html">FlatEndcap</a> &amp;)=default</td></tr>
+<tr class="separator:a47e77bb583c4e6d53435b4d1ee4e33a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac961f7df3c2cb177626d9b03cdf28c94"><td class="memItemLeft" align="right" valign="top"><a id="ac961f7df3c2cb177626d9b03cdf28c94"></a>
+<a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedInnerMaps_1_1FlatEndcap.html">FlatEndcap</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedInnerMaps_1_1FlatEndcap.html">FlatEndcap</a> &amp;)=default</td></tr>
+<tr class="separator:ac961f7df3c2cb177626d9b03cdf28c94"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad22f0f7aa7315e16de4d27faa7be7e72"><td class="memItemLeft" align="right" valign="top"><a id="ad22f0f7aa7315e16de4d27faa7be7e72"></a>
+<a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedInnerMaps_1_1FlatEndcap.html">FlatEndcap</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedInnerMaps_1_1FlatEndcap.html">FlatEndcap</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:ad22f0f7aa7315e16de4d27faa7be7e72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89bc04f79a09f127444df4c14310cf13"><td class="memTemplParams" colspan="2"><a id="a89bc04f79a09f127444df4c14310cf13"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a89bc04f79a09f127444df4c14310cf13"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>forward_map</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3 &gt; * &gt; target_coords, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:a89bc04f79a09f127444df4c14310cf13"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31c9fae4dcf92bd0fca9b6635443d6a6"><td class="memItemLeft" align="right" valign="top"><a id="a31c9fae4dcf92bd0fca9b6635443d6a6"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>inverse</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;target_coords, double sigma_in) const noexcept</td></tr>
+<tr class="separator:a31c9fae4dcf92bd0fca9b6635443d6a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a10f3376f15e6f40a6599d0849df979fb"><td class="memTemplParams" colspan="2"><a id="a10f3376f15e6f40a6599d0849df979fb"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a10f3376f15e6f40a6599d0849df979fb"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>jacobian</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt; * &gt; jacobian_out, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:a10f3376f15e6f40a6599d0849df979fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af6384b06106252a21edc7ea2600a16ca"><td class="memTemplParams" colspan="2"><a id="af6384b06106252a21edc7ea2600a16ca"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:af6384b06106252a21edc7ea2600a16ca"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>inv_jacobian</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt; * &gt; inv_jacobian_out, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:af6384b06106252a21edc7ea2600a16ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae700e0bab0f7fdf6c95134c74342c887"><td class="memTemplParams" colspan="2"><a id="ae700e0bab0f7fdf6c95134c74342c887"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ae700e0bab0f7fdf6c95134c74342c887"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>sigma</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt; * &gt; sigma_out, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:ae700e0bab0f7fdf6c95134c74342c887"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f1f2019fd4130ce313b1819cfe97012"><td class="memTemplParams" colspan="2"><a id="a2f1f2019fd4130ce313b1819cfe97012"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a2f1f2019fd4130ce313b1819cfe97012"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>deriv_sigma</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3 &gt; * &gt; deriv_sigma_out, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:a2f1f2019fd4130ce313b1819cfe97012"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a704736efad99cb381c921cb310b7d0dd"><td class="memTemplParams" colspan="2"><a id="a704736efad99cb381c921cb310b7d0dd"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a704736efad99cb381c921cb310b7d0dd"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>dxbar_dsigma</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3 &gt; * &gt; dxbar_dsigma_out, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:a704736efad99cb381c921cb310b7d0dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef5de4b7569ea8822510e26a24d26ba7"><td class="memItemLeft" align="right" valign="top"><a id="aef5de4b7569ea8822510e26a24d26ba7"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>lambda_tilde</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;parent_mapped_target_coords, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;projection_point, bool source_is_between_focus_and_target) const noexcept</td></tr>
+<tr class="separator:aef5de4b7569ea8822510e26a24d26ba7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3bf671a74a7606a47cae85deef08457c"><td class="memTemplParams" colspan="2"><a id="a3bf671a74a7606a47cae85deef08457c"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a3bf671a74a7606a47cae85deef08457c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>deriv_lambda_tilde</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3 &gt; * &gt; deriv_lambda_tilde_out, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;target_coords, const T &amp;lambda_tilde, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;projection_point) const noexcept</td></tr>
+<tr class="separator:a3bf671a74a7606a47cae85deef08457c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4e9641e16cf962e5b314bcad00d9205"><td class="memItemLeft" align="right" valign="top"><a id="ad4e9641e16cf962e5b314bcad00d9205"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:ad4e9641e16cf962e5b314bcad00d9205"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a6d00a942d4eccd7cf8dfc563924ded60"><td class="memItemLeft" align="right" valign="top"><a id="a6d00a942d4eccd7cf8dfc563924ded60"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_identity</b> () noexcept</td></tr>
+<tr class="separator:a6d00a942d4eccd7cf8dfc563924ded60"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:ae3c4f55297564923ab8e4c84f68d182a"><td class="memItemLeft" align="right" valign="top"><a id="ae3c4f55297564923ab8e4c84f68d182a"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedInnerMaps_1_1FlatEndcap.html">FlatEndcap</a> &amp;lhs, const <a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedInnerMaps_1_1FlatEndcap.html">FlatEndcap</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:ae3c4f55297564923ab8e4c84f68d182a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A FocallyLiftedInnerMap that maps a 3D unit right cylinder to a volume that connects a portion of a plane and a spherical surface. </p>
+<h3>Details</h3>
+<p>The domain of the map is a 3D unit right cylinder with coordinates \((\bar{x},\bar{y},\bar{z})\) such that \(-1\leq\bar{z}\leq 1\) and \(\bar{x}^2+\bar{y}^2 \leq 1\). The range of the map has coordinates \((x,y,z)\).</p>
+<p>Consider a 2D circle in 3D space that is normal to the \(z\) axis and has (3D) center \(C^i\) and radius \(R\). <code><a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedInnerMaps_1_1FlatEndcap.html" title="A FocallyLiftedInnerMap that maps a 3D unit right cylinder to a volume that connects a portion of a p...">FlatEndcap</a></code> provides the following functions:</p>
+<h3><a class="anchor" id="autotoc_md36"></a>
+forward_map()</h3>
+<p><code>forward_map()</code> maps \((\bar{x},\bar{y},\bar{z}=-1)\) to the interior of the circle. The arguments to <code>forward_map()</code> are \((\bar{x},\bar{y},\bar{z})\), but \(\bar{z}\) is ignored. <code>forward_map()</code> returns \(x_0^i\), the 3D coordinates on the circle, which are given by</p>
+<p class="formulaDsp">
+\begin{align} x_0^0 &amp;= R \bar{x} + C^0,\\ x_0^1 &amp;= R \bar{y} + C^1,\\ x_0^2 &amp;= C^2. \end{align}
+</p>
+<h3><a class="anchor" id="autotoc_md37"></a>
+sigma</h3>
+<p>\(\sigma\) is a function that is zero on the plane \(x^i=x_0^i\) and unity at \(\bar{z}=+1\) (corresponding to the upper surface of the <a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html" title="Map from  to the volume contained between a 2D surface and the surface of a 2-sphere.">FocallyLiftedMap</a>). We define</p>
+<p class="formulaDsp">
+\begin{align} \sigma &amp;= \frac{\bar{z}+1}{2}. \end{align}
+</p>
+<h3><a class="anchor" id="autotoc_md38"></a>
+deriv_sigma</h3>
+<p><code>deriv_sigma</code> returns</p>
+<p class="formulaDsp">
+\begin{align} \frac{\partial \sigma}{\partial \bar{x}^j} &amp;= (0,0,1/2). \end{align}
+</p>
+<h3><a class="anchor" id="autotoc_md39"></a>
+jacobian</h3>
+<p><code>jacobian</code> returns \(\partial x_0^k/\partial \bar{x}^j\). The arguments to <code>jacobian</code> are \((\bar{x},\bar{y},\bar{z})\), but \(\bar{z}\) is ignored.</p>
+<p>Differentiating Eqs.(1&ndash;3) above yields</p>
+<p class="formulaDsp">
+\begin{align*} \frac{\partial x_0^0}{\partial \bar{x}} &amp;= R,\\ \frac{\partial x_0^1}{\partial \bar{y}} &amp;= R, \end{align*}
+</p>
+<p> and all other components are zero.</p>
+<h3><a class="anchor" id="autotoc_md40"></a>
+inverse</h3>
+<p><code>inverse</code> takes \(x_0^i\) and \(\sigma\) as arguments, and returns \((\bar{x},\bar{y},\bar{z})\), or a default-constructed <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;double, 3&gt;&gt;</code> if \(x_0^i\) or \(\sigma\) are outside the range of the map. The formula for the inverse is straightforward:</p>
+<p class="formulaDsp">
+\begin{align} \bar{x} &amp;= \frac{x_0^0-C^0}{R},\\ \bar{y} &amp;= \frac{x_0^1-C^1}{R},\\ \bar{z} &amp;= 2\sigma - 1. \end{align}
+</p>
+<p>If \(\bar{z}\) is outside the range \([-1,1]\) or if \(\bar{x}^2+\bar{y}^2 &gt; 1\) then we return a default-constructed <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;double, 3&gt;&gt;</code></p>
+<h3><a class="anchor" id="autotoc_md41"></a>
+lambda_tilde</h3>
+<p><code>lambda_tilde</code> takes as arguments a point \(x^i\) and a projection point \(P^i\), and computes \(\tilde{\lambda}\), the solution to</p>
+<p class="formulaDsp">
+\begin{align} x_0^i = P^i + (x^i - P^i) \tilde{\lambda}.\end{align}
+</p>
+<p>Since \(x_0^i\) must lie on the plane \(x_0^3=C^3\),</p>
+<p class="formulaDsp">
+\begin{align} \tilde{\lambda} &amp;= \frac{C^3-P^3}{x^3-P^3}.\end{align}
+</p>
+<p>For <code><a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedInnerMaps_1_1FlatEndcap.html" title="A FocallyLiftedInnerMap that maps a 3D unit right cylinder to a volume that connects a portion of a p...">FocallyLiftedInnerMaps::FlatEndcap</a></code>, \(x^i\) is always between \(P^i\) and \(x_0^i\), so \(\tilde{\lambda}\ge 1\). Therefore a default-constructed <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt;double&gt;</code> is returned if \(\tilde{\lambda}\) is less than unity (meaning that \(x^i\) is outside the range of the map).</p>
+<h3><a class="anchor" id="autotoc_md42"></a>
+deriv_lambda_tilde</h3>
+<p><code>deriv_lambda_tilde</code> takes as arguments \(x_0^i\), a projection point \(P^i\), and \(\tilde{\lambda}\), and returns \(\partial \tilde{\lambda}/\partial x^i\). We have</p>
+<p class="formulaDsp">
+\begin{align} \frac{\partial\tilde{\lambda}}{\partial x^3} = -\frac{C^3-P^3}{(x^3-P^3)^2} = -\frac{\tilde{\lambda}^2}{C^3-P^3}, \end{align}
+</p>
+<p> and other components are zero.</p>
+<h3><a class="anchor" id="autotoc_md43"></a>
+inv_jacobian</h3>
+<p><code>inv_jacobian</code> returns \(\partial \bar{x}^i/\partial x_0^k\), where \(\sigma\) is held fixed. The arguments to <code>inv_jacobian</code> are \((\bar{x},\bar{y},\bar{z})\), but \(\bar{z}\) is ignored.</p>
+<p>The nonzero components are </p><p class="formulaDsp">
+\begin{align} \frac{\partial \bar{x}}{\partial x_0^0} &amp;= \frac{1}{R},\\ \frac{\partial \bar{y}}{\partial x_0^1} &amp;= \frac{1}{R}. \end{align}
+</p>
+<h3><a class="anchor" id="autotoc_md44"></a>
+dxbar_dsigma</h3>
+<p><code>dxbar_dsigma</code> returns \(\partial \bar{x}^i/\partial \sigma\), where \(x_0^i\) is held fixed.</p>
+<p>From Eq. (6) we have</p>
+<p class="formulaDsp">
+\begin{align} \frac{\partial \bar{x}^i}{\partial \sigma} &amp;= (0,0,2). \end{align}
+</p>
+ </div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/CoordinateMaps/<a class="el" href="FocallyLiftedFlatEndcap_8hpp_source.html">FocallyLiftedFlatEndcap.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

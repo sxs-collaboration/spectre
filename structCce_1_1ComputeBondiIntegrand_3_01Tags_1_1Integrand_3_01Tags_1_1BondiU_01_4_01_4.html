@@ -1,0 +1,265 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Cce::ComputeBondiIntegrand&lt; Tags::Integrand&lt; Tags::BondiU &gt; &gt; Struct Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceCce.html">Cce</a></li><li class="navelem"><a class="el" href="structCce_1_1ComputeBondiIntegrand_3_01Tags_1_1Integrand_3_01Tags_1_1BondiU_01_4_01_4.html">ComputeBondiIntegrand&lt; Tags::Integrand&lt; Tags::BondiU &gt; &gt;</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="structCce_1_1ComputeBondiIntegrand_3_01Tags_1_1Integrand_3_01Tags_1_1BondiU_01_4_01_4-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Cce::ComputeBondiIntegrand&lt; Tags::Integrand&lt; Tags::BondiU &gt; &gt; Struct Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Computes the integrand (right-hand side) of the equation which determines the radial (y) dependence of the Bondi quantity \(U\).  
+ <a href="structCce_1_1ComputeBondiIntegrand_3_01Tags_1_1Integrand_3_01Tags_1_1BondiU_01_4_01_4.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Evolution_2Systems_2Cce_2Equations_8hpp_source.html">Equations.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a857c947c525ea7fa6eb2a5ff1c1b5285"><td class="memItemLeft" align="right" valign="top"><a id="a857c947c525ea7fa6eb2a5ff1c1b5285"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>pre_swsh_derivative_tags</b> = tmpl::list&lt; <a class="el" href="structCce_1_1Tags_1_1Exp2Beta.html">Tags::Exp2Beta</a>, <a class="el" href="structCce_1_1Tags_1_1BondiJ.html">Tags::BondiJ</a>, <a class="el" href="structCce_1_1Tags_1_1BondiQ.html">Tags::BondiQ</a> &gt;</td></tr>
+<tr class="separator:a857c947c525ea7fa6eb2a5ff1c1b5285"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad2b05313bc6dbb08b9410b8b62ea8e77"><td class="memItemLeft" align="right" valign="top"><a id="ad2b05313bc6dbb08b9410b8b62ea8e77"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>swsh_derivative_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:ad2b05313bc6dbb08b9410b8b62ea8e77"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ce6231d6ad3b9c045e74ae949f706f8"><td class="memItemLeft" align="right" valign="top"><a id="a5ce6231d6ad3b9c045e74ae949f706f8"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>integration_independent_tags</b> = tmpl::list&lt; <a class="el" href="structCce_1_1Tags_1_1BondiK.html">Tags::BondiK</a>, <a class="el" href="structCce_1_1Tags_1_1BondiR.html">Tags::BondiR</a> &gt;</td></tr>
+<tr class="separator:a5ce6231d6ad3b9c045e74ae949f706f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9de11836d247c264384befcb5c0755b0"><td class="memItemLeft" align="right" valign="top"><a id="a9de11836d247c264384befcb5c0755b0"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>temporary_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a9de11836d247c264384befcb5c0755b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a95adb1104dad5524ec708a450a1a9f0e"><td class="memItemLeft" align="right" valign="top"><a id="a95adb1104dad5524ec708a450a1a9f0e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_tags</b> = tmpl::append&lt; tmpl::list&lt; <a class="el" href="structCce_1_1Tags_1_1Integrand.html">Tags::Integrand</a>&lt; <a class="el" href="structCce_1_1Tags_1_1BondiU.html">Tags::BondiU</a> &gt; &gt;, temporary_tags &gt;</td></tr>
+<tr class="separator:a95adb1104dad5524ec708a450a1a9f0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a441e8aec8bd1dd4700beabd0ae3f65d1"><td class="memItemLeft" align="right" valign="top"><a id="a441e8aec8bd1dd4700beabd0ae3f65d1"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::append&lt; pre_swsh_derivative_tags, swsh_derivative_tags, integration_independent_tags &gt;</td></tr>
+<tr class="separator:a441e8aec8bd1dd4700beabd0ae3f65d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a8ba250c9be50740e14d6c07e490df90a"><td class="memTemplParams" colspan="2"><a id="a8ba250c9be50740e14d6c07e490df90a"></a>
+template&lt;typename... Args&gt; </td></tr>
+<tr class="memitem:a8ba250c9be50740e14d6c07e490df90a"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>apply</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, 1 &gt;&gt; * &gt; regular_integrand_for_u, const Args &amp;... args) noexcept</td></tr>
+<tr class="separator:a8ba250c9be50740e14d6c07e490df90a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Computes the integrand (right-hand side) of the equation which determines the radial (y) dependence of the Bondi quantity \(U\). </p>
+<h3>Details</h3>
+<p>The quantity \(U\) is defined via the Bondi form of the metric: </p><p class="formulaDsp">
+\[ds^2 = - \left(e^{2 \beta} (1 + r W) - r^2 h_{AB} U^A U^B\right) du^2 - 2 e^{2 \beta} du dr - 2 r^2 h_{AB} U^B du dx^A + r^2 h_{A B} dx^A dx^B. \]
+</p>
+<p> Additional quantities \(J\) and \(K\) are defined using a spherical angular dyad \(q^A\): </p><p class="formulaDsp">
+\[ J \equiv h_{A B} q^A q^B, K \equiv h_{A B} q^A \bar{q}^B,\]
+</p>
+<p> and \(Q\) is defined as a supplemental variable for radial integration of \(U\): </p><p class="formulaDsp">
+\[ Q_A = r^2 e^{-2\beta} h_{AB} \partial_r U^B\]
+</p>
+<p> and \(U = U_A q^A\). See <a class="el" href="citelist.html#CITEREF_Bishop1997ik">[13]</a> <a class="el" href="citelist.html#CITEREF_Handmer2014qha">[51]</a> for full details.</p>
+<p>We write the equations of motion in the compactified coordinate \( y \equiv 1 - 2 R/ r\), where \(r(u, \theta, \phi)\) is the Bondi radius of the \(y=\) constant surface and \(R(u,\theta,\phi)\) is the Bondi radius of the worldtube. The equation which determines \(U\) on a surface of constant \(u\) given \(J\), \(\beta\), and \(Q\) on the same surface is written as </p><p class="formulaDsp">
+\[\partial_y U = \frac{e^{2\beta}}{2 R} (K Q - J \bar{Q}). \]
+</p>
+ </div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/Systems/Cce/<a class="el" href="Evolution_2Systems_2Cce_2Equations_8hpp_source.html">Equations.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

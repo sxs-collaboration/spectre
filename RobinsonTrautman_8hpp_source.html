@@ -1,0 +1,579 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Evolution/Systems/Cce/AnalyticSolutions/RobinsonTrautman.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_d7cddb31ba741ba3a4d5be000d880a30.html">Evolution</a></li><li class="navelem"><a class="el" href="dir_ae9813db12dd9fd3f3106ad3644a1b2a.html">Systems</a></li><li class="navelem"><a class="el" href="dir_b9586a27d0e1f299c51d3004d7f0b675.html">Cce</a></li><li class="navelem"><a class="el" href="dir_d19625050c1af82092c1c6b79f8139fd.html">AnalyticSolutions</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">RobinsonTrautman.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/complex.html">complex</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160; </div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;DataStructures/ComplexDataVector.hpp&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;DataStructures/SpinWeighted.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Tensor_8hpp.html">DataStructures/Tensor/Tensor.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/AnalyticSolutions/SphericalMetricData.hpp&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/OdeIntegration/OdeIntegration.hpp&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Options_8hpp.html">Options/Options.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="CharmPupable_8hpp.html">Parallel/CharmPupable.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;Time/History.hpp&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="RungeKutta3_8hpp.html">Time/TimeSteppers/RungeKutta3.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Literals_8hpp.html">Utilities/Literals.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160; </div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceCce.html">Cce</a> {</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="keyword">namespace </span>Solutions {<span class="comment"></span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment"> * \brief An analytic solution representing a specialization of the radiative</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment"> * Robinson-Trautman solution described in \cite Derry1970fk.</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment"> * \details This solution is not quite analytic, in the sense that there is a</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="comment"> * single scalar field that must be evolved. Ultimately, it is a partial</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment"> * specialization of the Characteristic equations such that \f$J = 0\f$ and the</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment"> * evolution equations have been manipulated to give a time evolution equation</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment"> * for \f$e^{-2 \beta}\f$, which is equivalent to the Robinson-Trautman scalar</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment"> * \f$\omega_{\text{RT}}\f$ (denoted \f$W\f$ in \cite Derry1970fk -- we deviate</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment"> * from their notation because the symbol \f$W\f$ is already used elsewhere in</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="comment"> * the CCE system).</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment"> * \note The value of \f$\omega_{\text{RT}}\f$ should be real and near 1, which</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment"> * is imposed by the solution itself, any modes specified in the input file are</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment"> * treated as perturbations to the leading value of 1.0 for the</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment"> * Robinson-Trautman scalar \f$\omega_{\text{RT}}\f$.</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment"> * \note The use of substep time-steppers in conjunction with `RobinsonTrautman`</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment"> * analytic data is explictly forbidden by checks in</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment"> * `Cce::Actions::InitializeWorldtubeBoundary`. The reason is that any time the</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment"> * `RobinsonTrautman` receives a request for data at a time in the past of its</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment"> * current state, it must re-start its internal time stepper from the beginning</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment"> * of the evolution. This is a reasonable cost for multistep methods that only</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment"> * have non-ordered time steps during self-start, but will lead to</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment"> * \f$\mathcal O(N^2)\f$ internal steps in the `RobinsonTrautman` solution if a</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment"> * substep method is used, where \f$N\f$ is the number of steps performed by the</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment"> * substep method. If you find an unavoidable need to use `RobinsonTrautman`</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment"> * with a substep method, you will either need to only do so for very short</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment"> * evolutions, or need to write more sophisticated caching of the internal time</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment"> * step data.</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="structCce_1_1Solutions_1_1RobinsonTrautman.html">   59</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Solutions_1_1RobinsonTrautman.html">RobinsonTrautman</a> : <span class="keyword">public</span> <a class="code" href="structCce_1_1Solutions_1_1SphericalMetricData.html">SphericalMetricData</a> {</div>
+<div class="line"><a name="l00060"></a><span class="lineno"><a class="line" href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1InitialModes.html">   60</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1InitialModes.html">InitialModes</a> {</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <span class="keyword">using</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">type</a> = <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;std::complex&lt;double&gt;</a>&gt;;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help{</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        <span class="stringliteral">&quot;The initial modes of the Robinson-Trautman scalar, denoted W in &quot;</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        <span class="stringliteral">&quot;[Derry 1970] and omega_RT in the rendered documentation. &quot;</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        <span class="stringliteral">&quot;These are taken in ascending l and m order, m varies fastest. Note &quot;</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        <span class="stringliteral">&quot;that the modes are treated as perturbations to the leading-order &quot;</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        <span class="stringliteral">&quot;solution of 1.0 for omega_RT and only the real part of the field is &quot;</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        <span class="stringliteral">&quot;used.&quot;</span>};</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;  };</div>
+<div class="line"><a name="l00070"></a><span class="lineno"><a class="line" href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1ExtractionRadius.html">   70</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1ExtractionRadius.html">ExtractionRadius</a> {</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keyword">using</span> type = double;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help{</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        <span class="stringliteral">&quot;The extraction radius of the spherical solution&quot;</span>};</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keyword">static</span> type lower_bound() noexcept { <span class="keywordflow">return</span> 0.0; }</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="keyword">static</span> type suggested_value() noexcept { <span class="keywordflow">return</span> 20.0; }</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;  };</div>
+<div class="line"><a name="l00077"></a><span class="lineno"><a class="line" href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1LMax.html">   77</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1LMax.html">LMax</a> {</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="keyword">using</span> type = size_t;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help{</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        <span class="stringliteral">&quot;The maximum l value for the internal computation of the analytic &quot;</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        <span class="stringliteral">&quot;solution&quot;</span>};</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keyword">static</span> type lower_bound() noexcept { <span class="keywordflow">return</span> 4; }</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;  };</div>
+<div class="line"><a name="l00084"></a><span class="lineno"><a class="line" href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1Tolerance.html">   84</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1Tolerance.html">Tolerance</a> {</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <span class="keyword">using</span> type = double;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help{</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        <span class="stringliteral">&quot;The tolerance for the time evolution part of the calculation of the &quot;</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        <span class="stringliteral">&quot;semi-analytic Robinson-Trautman solution&quot;</span>};</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    <span class="keyword">static</span> type lower_bound() noexcept { <span class="keywordflow">return</span> 0.0; }</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    <span class="keyword">static</span> type suggested_value() noexcept { <span class="keywordflow">return</span> 1.0e-11; }</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;  };</div>
+<div class="line"><a name="l00092"></a><span class="lineno"><a class="line" href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1StartTime.html">   92</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1StartTime.html">StartTime</a> {</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    <span class="keyword">using</span> type = double;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help{</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        <span class="stringliteral">&quot;The starting time for the Robinson-Trautman evolution&quot;</span>};</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    <span class="keyword">static</span> type lower_bound() noexcept { <span class="keywordflow">return</span> 0.0; }</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    <span class="keyword">static</span> type suggested_value() noexcept { <span class="keywordflow">return</span> 0.0; }</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;  };</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160; </div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;  <span class="keyword">using</span> options =</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;      tmpl::list&lt;InitialModes, ExtractionRadius, LMax, Tolerance, StartTime&gt;;</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160; </div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;      <span class="stringliteral">&quot;Analytic solution representing worldtube data for the nonlinear &quot;</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;      <span class="stringliteral">&quot;semi-analytic Robinson-Trautman metric, which requires a single &quot;</span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;      <span class="stringliteral">&quot;scalar on the boundary to be evolved to determine the metric&quot;</span>};</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160; </div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;  WRAPPED_PUPable_decl_template(<a class="code" href="structCce_1_1Solutions_1_1RobinsonTrautman.html">RobinsonTrautman</a>);  <span class="comment">// NOLINT</span></div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160; </div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;  <span class="keyword">explicit</span> <a class="code" href="structCce_1_1Solutions_1_1RobinsonTrautman.html">RobinsonTrautman</a>(CkMigrateMessage* msg) noexcept</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;      : <a class="code" href="structCce_1_1Solutions_1_1SphericalMetricData.html">SphericalMetricData</a>(msg) {}</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160; </div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;  RobinsonTrautman() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;  RobinsonTrautman(<a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex&lt;double&gt;</a>&gt; initial_modes,</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;                   <span class="keywordtype">double</span> extraction_radius, <span class="keywordtype">size_t</span> l_max, <span class="keywordtype">double</span> tolerance,</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;                   <span class="keywordtype">double</span> start_time, <span class="keyword">const</span> <a class="code" href="structOptions_1_1Context.html">Options::Context</a>&amp; context);</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160; </div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;WorldtubeData&gt;</a> get_clone() const noexcept override;</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160; </div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;  <span class="keywordtype">void</span> pup(PUP::er&amp; p) noexcept override;</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160; </div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;  <span class="keywordtype">bool</span> use_noninertial_news() const noexcept<span class="keyword"> override </span>{ <span class="keywordflow">return</span> <span class="keyword">true</span>; }</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160; </div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;  <span class="keywordtype">void</span> du_rt_scalar(</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 0&gt;</a>*&gt; local_du_rt_scalar,</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;      <span class="keyword">const</span> <a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&amp; rt_scalar) <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160; </div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;  <span class="keywordtype">void</span> du_bondi_w(</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;*&gt; du_bondi_w,</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;      <span class="keyword">const</span> <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;&amp; local_du_rt_scalar,</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;      <span class="keyword">const</span> <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;&amp; rt_scalar)</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;      <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160; </div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;  <span class="keywordtype">void</span> bondi_u(</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 1&gt;</a>&gt;*&gt; bondi_u,</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;      <span class="keyword">const</span> <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;&amp; rt_scalar)</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;      <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160; </div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;  <span class="keywordtype">void</span> bondi_w(</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;*&gt; bondi_w,</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;      <span class="keyword">const</span> <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;&amp; rt_scalar)</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;      <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160; </div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;  <span class="keywordtype">void</span> dr_bondi_w(</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;*&gt; dr_bondi_w,</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;      <span class="keyword">const</span> <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;&amp; rt_scalar)</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;      <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160; </div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;  <span class="keywordtype">void</span> initialize_stepper_from_start() const noexcept;</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160; </div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160; protected:<span class="comment"></span></div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;<span class="comment">  /*!</span></div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;<span class="comment">   * \brief The Robinson-Trautman solution performs the time-stepping to advance</span></div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;<span class="comment">   * the internal member scalar used to generate the metric solution to the</span></div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;<span class="comment">   * correct state for `time`.</span></div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;<span class="comment">   * \details The generating scalar \f$\omega_{\text{RT}}\f$ is evolved</span></div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;<span class="comment">   * using equation (2.5) from \cite Derry1970fk (manipulated to a form</span></div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;<span class="comment">   * convenient for our numerical utilities)</span></div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;<span class="comment">   * \f[</span></div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;<span class="comment">   * \partial_u \omega_{\text{RT}} = -</span></div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;<span class="comment">   * \left(\omega^4_{\text{RT}} \eth^2 \bar \eth^2 \omega_{\text{RT}}</span></div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;<span class="comment">   *  - \omega_{\text{RT}}^3 (\eth^2 \omega_{\text{RT}})</span></div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;<span class="comment">   * (\bar \eth^2  \omega_{\text{RT}}) \right)</span></div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;<span class="comment">   * \f]</span></div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;<span class="comment">   * As the scalar \f$\omega_{\text{RT}}\f$ is evolved, it is filtered by</span></div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;<span class="comment">   * zeroing the highest two angular modes.</span></div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;<span class="comment">   */</span></div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;  <span class="keywordtype">void</span> <a class="code" href="structCce_1_1Solutions_1_1RobinsonTrautman.html#a293dfb0b6a4c9bc6a684f1876f63deb0">prepare_solution</a>(<span class="keywordtype">size_t</span> output_l_max,</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;                        <span class="keywordtype">double</span> time) const noexcept override;</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;<span class="comment">  /*!</span></div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;<span class="comment">   * \brief Compute the spherical coordinate metric of the Robinson-Trautman</span></div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;<span class="comment">   * solution generated by the time-evolved scalar \f$\omega_{\text{RT}}\f$.</span></div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;<span class="comment">   * \details The spacetime metric of the Robinson-Trautman solution can be</span></div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;<span class="comment">   * expressed as a specialization of the Bondi-Sachs metric (note the metric</span></div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;<span class="comment">   * signature change as compared to equation (1.2) from \cite Derry1970fk)</span></div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;<span class="comment">   * \f[</span></div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;<span class="comment">   * ds^2 = -((r W + 1) \omega_{\text{RT}} - r^2 U \bar U) (dt - dr)^2</span></div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;<span class="comment">   * - 2 \omega_{\text{RT}} (dt - dr) dr</span></div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;<span class="comment">   * - 2 r^2 U^A q_{AB} dx^B (dt - dr) + r^2 q_{A B} dx^A dx^B,</span></div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;<span class="comment">   * \f]</span></div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;<span class="comment">   * where \f$q_{A B}\f$ represents the angular unit sphere metric, and the</span></div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;<span class="comment">   * remaining Bondi-Sachs scalars and angular tensors are defined in terms of</span></div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;<span class="comment">   * the Robinson-Trautman scalar \f$\omega_{\text{RT}}\f$</span></div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;<span class="comment">   * \f{align*}{</span></div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;<span class="comment">   * W &amp;= \frac{1}{r}\left(\omega_{\text{RT}} + \eth \bar \eth</span></div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;<span class="comment">   * \omega_{\text{RT}} - 1\right) - \frac{2}{r^2 \omega_{\text{RT}}^2}\\</span></div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;<span class="comment">   * U &amp;\equiv U^A q_A = \frac{\eth \omega_{\text{RT}}}{r}.</span></div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;<span class="comment">   * \f}</span></div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;<span class="comment">   * and \f$q_A\f$ is the angular dyad on the unit sphere.</span></div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;<span class="comment">   * The angular part of the metric can be expressed in terms of the \f$U\f$</span></div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;<span class="comment">   * scalar as</span></div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;<span class="comment">   * \f{align*}{</span></div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;<span class="comment">   * g_{u \theta} &amp;= r^2 \Re U\\</span></div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;<span class="comment">   * g_{u \phi} &amp;= r^2 \Im U</span></div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;<span class="comment">   * \f}</span></div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;<span class="comment">   */</span></div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;  <span class="keywordtype">void</span> <a class="code" href="structCce_1_1Solutions_1_1RobinsonTrautman.html#ac4773779c09d52316ad30b682bb3a476">spherical_metric</a>(</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;      <a class="code" href="namespacegsl.html">gsl</a>::not_null&lt;</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;          <a class="code" href="namespacetnsr.html">tnsr</a>::aa&lt;<a class="code" href="classDataVector.html">DataVector</a>, 3, ::<a class="code" href="namespaceFrame.html">Frame</a>::Spherical&lt;::<a class="code" href="namespaceFrame.html">Frame</a>::Inertial&gt;&gt;*&gt;</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;          <a class="code" href="structCce_1_1Solutions_1_1RobinsonTrautman.html#ac4773779c09d52316ad30b682bb3a476">spherical_metric</a>,</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;      <span class="keywordtype">size_t</span> l_max, <span class="keywordtype">double</span> time) const noexcept override;</div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;<span class="comment">  /*!</span></div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;<span class="comment">   * \brief Compute radial derivative of the spherical coordinate metric of the</span></div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;<span class="comment">   * Robinson-Trautman solution generated by the time-evolved scalar</span></div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;<span class="comment">   * \f$\omega_{\text{RT}}\f$.</span></div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;<span class="comment">   * \details The radial derivative (at constant time t) of the</span></div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;<span class="comment">   * Robinson-Trautman solution is obtained by differentiating the expressions</span></div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;<span class="comment">   * from the documentation for `RobinsonTrautman::spherical_metric()`:</span></div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;<span class="comment">   * \f{align*}{</span></div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;<span class="comment">   * (\partial_r g_{a b} + \partial_t g_{a b}) dx^a dx^b =</span></div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;<span class="comment">   * - (\omega_{\text{RT}} (r \partial_r W + W) - 2 r U \bar U</span></div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;<span class="comment">   * - r^2 (\bar U\partial_r U + U \partial_r \bar U)) (dt - dr)^2</span></div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;<span class="comment">   * - 2 r U^A q_{A B} dx^B (dt - dr) +  2 r q_{A B} dx^A dx^B</span></div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;<span class="comment">   * \f}</span></div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;<span class="comment">   * where \f$q_{A B}\f$ represents the angular unit sphere metric, and the</span></div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;<span class="comment">   * remaining Bondi-Sachs scalars and angular tensors are defined in terms of</span></div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;<span class="comment">   * the Robinson-Trautman scalar \f$\omega_{\text{RT}}\f$</span></div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;<span class="comment">   * \f{align*}{</span></div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;<span class="comment">   * W &amp;= \frac{1}{r}\left(\omega_{\text{RT}}</span></div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;<span class="comment">   * + \eth \bar \eth \omega_{\text{RT}} - 1\right)</span></div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;<span class="comment">   * - \frac{2}{r^2 \omega_{\text{RT}}^2}\\</span></div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;<span class="comment">   * \partial_r W &amp;= -\frac{1}{r^2} \left(\omega_{\text{RT}}</span></div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;<span class="comment">   * + \eth \bar \eth \omega_{\text{RT}} - 1\right)</span></div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;<span class="comment">   * + \frac{4}{r^3 \omega_{\text{RT}}^2}\\</span></div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;<span class="comment">   * U &amp;\equiv U^A q_A = \frac{\eth \omega_{\text{RT}}}{r}.</span></div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;<span class="comment">   * \f}</span></div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;<span class="comment">   * and \f$q_A\f$ is the angular dyad on the unit sphere. The Robinson-Trautman</span></div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;<span class="comment">   * scalar \f$\omega_{\text{RT}}\f$ is independent of the Bondi radius \f$r\f$,</span></div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;<span class="comment">   * so all radial derivatives of \f$\omega_{\text{RT}}\f$ have been dropped</span></div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;<span class="comment">   */</span></div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;  <span class="keywordtype">void</span> <a class="code" href="structCce_1_1Solutions_1_1RobinsonTrautman.html#ad73ed66fbdde31dd0f287b483b0ddc66">dr_spherical_metric</a>(</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;      <a class="code" href="namespacegsl.html">gsl</a>::not_null&lt;</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;          <a class="code" href="namespacetnsr.html">tnsr</a>::aa&lt;<a class="code" href="classDataVector.html">DataVector</a>, 3, ::<a class="code" href="namespaceFrame.html">Frame</a>::Spherical&lt;::<a class="code" href="namespaceFrame.html">Frame</a>::Inertial&gt;&gt;*&gt;</div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;          <a class="code" href="structCce_1_1Solutions_1_1RobinsonTrautman.html#ad73ed66fbdde31dd0f287b483b0ddc66">dr_spherical_metric</a>,</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;      <span class="keywordtype">size_t</span> l_max, <span class="keywordtype">double</span> time) const noexcept override;</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;<span class="comment">  /*!</span></div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;<span class="comment">   * \brief Compute time derivative of the spherical coordinate metric of the</span></div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;<span class="comment">   * Robinson-Trautman solution generated by the time-evolved scalar</span></div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;<span class="comment">   * \f$\omega_{\text{RT}}\f$.</span></div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;<span class="comment">   * \details The time derivative of the Robinson-Trautman solution is obtained</span></div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;<span class="comment">   * by differentiating the expressions from the documentation for</span></div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;<span class="comment">   * `RobinsonTrautman::spherical_metric()`:</span></div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;<span class="comment">   * \f{align*}{</span></div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;<span class="comment">   * \partial_t g_{a b} dx^a dx^b =  -( \partial_u \omega_{\text{RT}} (r W + 1)</span></div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;<span class="comment">   *  + \omega_{\text{RT}} \partial_u W</span></div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;<span class="comment">   * - r^2 (\bar U \partial_u U + U \partial_u \bar U)) (dt - dr)^2</span></div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;<span class="comment">   * - 2 \partial_u \omega_{\text{RT}} (dt - dr) dr</span></div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;<span class="comment">   * - 2 r^2 \partial_u U^A q_{AB} dx^B (dt - dr),</span></div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;<span class="comment">   * \f}</span></div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;<span class="comment">   * where \f$q_{A B}\f$ represents the angular unit sphere metric, and the</span></div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;<span class="comment">   * remaining Bondi-Sachs scalars and angular tensors are defined in terms of</span></div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;<span class="comment">   * the Robinson-Trautman scalar \f$\omega_{\text{RT}}\f$</span></div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;<span class="comment">   * \f{align*}{</span></div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;<span class="comment">   * W &amp;= \frac{1}{r}\left(\omega_{\text{RT}}</span></div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;<span class="comment">   * + \eth \bar \eth \omega_{\text{RT}} - 1\right)</span></div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;<span class="comment">   * - \frac{2}{r^2 \omega_{\text{RT}}^2}\\</span></div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;<span class="comment">   * \partial_u W &amp;= \frac{1}{r}\left(\partial_u \omega_{\text{RT}}</span></div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;<span class="comment">   * + \eth \bar \eth \partial_u \omega_{\text{RT}}\right)</span></div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;<span class="comment">   * + \frac{4 \partial_u \omega_{\text{RT}}}{r^2 \omega_{\text{RT}}^3} \\</span></div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;<span class="comment">   * \partial_u U &amp;= q_A \partial_u U^A = \frac{\eth \partial_u</span></div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;<span class="comment">   * \omega_{\text{RT}}}{r}, \f}</span></div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;<span class="comment">   * and \f$q_A\f$ is the angular dyad on the unit sphere; and the time</span></div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;<span class="comment">   * derivative of the Robinson-Trautman scalar \f$\omega_{\text{RT}}\f$ is</span></div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;<span class="comment">   * \f[</span></div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;<span class="comment">   * \partial_u \omega_{\text{RT}} =</span></div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;<span class="comment">   * \frac{1}{12} \left(-\omega^4_{\text{RT}} \eth^2 \bar \eth^2</span></div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;<span class="comment">   * \omega_{\text{RT}} + \omega_{\text{RT}}^3 (\eth^2 \omega_{\text{RT}})</span></div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;<span class="comment">   * (\bar \eth^2  \omega_{\text{RT}}) \right)</span></div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;<span class="comment">   * \f]</span></div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;<span class="comment">   */</span></div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;  <span class="keywordtype">void</span> <a class="code" href="structCce_1_1Solutions_1_1RobinsonTrautman.html#ac06cd27d53031aa809916d7d43e6139b">dt_spherical_metric</a>(</div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;      <a class="code" href="namespacegsl.html">gsl</a>::not_null&lt;</div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;          <a class="code" href="namespacetnsr.html">tnsr</a>::aa&lt;<a class="code" href="classDataVector.html">DataVector</a>, 3, ::<a class="code" href="namespaceFrame.html">Frame</a>::Spherical&lt;::<a class="code" href="namespaceFrame.html">Frame</a>::Inertial&gt;&gt;*&gt;</div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;          <a class="code" href="structCce_1_1Solutions_1_1RobinsonTrautman.html#ac06cd27d53031aa809916d7d43e6139b">dt_spherical_metric</a>,</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;      <span class="keywordtype">size_t</span> l_max, <span class="keywordtype">double</span> time) const noexcept override;</div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;<span class="comment">  /*!</span></div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;<span class="comment">   * \brief Compute the news associated with the Robinson-Trautman solution</span></div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;<span class="comment">   * generated by the time-evolved scalar \f$\omega_{\text{RT}}\f$.</span></div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;<span class="comment">   * \details The Bondi-Sachs news in the Robinson-Trautman solution is</span></div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;<span class="comment">   * \f{align*}{</span></div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;<span class="comment">   * N = \frac{\bar \eth \bar \eth \omega_{\text{RT}}}{\omega_{\text{RT}}}</span></div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;<span class="comment">   * \f}</span></div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;<span class="comment">   */</span></div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;  <span class="keywordtype">void</span> <a class="code" href="structCce_1_1Solutions_1_1RobinsonTrautman.html#a85198a2389e630efe16e2b7681585727">variables_impl</a>(</div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;      <a class="code" href="namespacegsl.html">gsl</a>::not_null&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted</a>&lt;<a class="code" href="classComplexDataVector.html">ComplexDataVector</a>, -2&gt;&gt;*&gt; News,</div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;      <span class="keywordtype">size_t</span> l_max, <span class="keywordtype">double</span> time,</div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;      tmpl::type_&lt;Tags::News&gt; <span class="comment">/*meta*/</span>) const noexcept override;</div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160; </div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;  using WorldtubeData::<a class="code" href="structCce_1_1Solutions_1_1RobinsonTrautman.html#a85198a2389e630efe16e2b7681585727">variables_impl</a>;</div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160; </div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;  using SphericalMetricData::<a class="code" href="structCce_1_1Solutions_1_1RobinsonTrautman.html#a85198a2389e630efe16e2b7681585727">variables_impl</a>;</div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160; private:</div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;  mutable std::pair&lt;<span class="keywordtype">double</span>, <span class="keywordtype">double</span>&gt; step_range_;</div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160; </div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;  mutable boost::numeric::odeint::dense_output_runge_kutta&lt;</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;      boost::numeric::odeint::controlled_runge_kutta&lt;</div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;          boost::numeric::odeint::runge_kutta_dopri5&lt;<a class="code" href="classComplexDataVector.html">ComplexDataVector</a>&gt;&gt;&gt;</div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;      stepper_;</div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160; </div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;  mutable <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted</a>&lt;<a class="code" href="classComplexDataVector.html">ComplexDataVector</a>, 0&gt;&gt; dense_output_rt_scalar_;</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;  mutable <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted</a>&lt;<a class="code" href="classComplexDataVector.html">ComplexDataVector</a>, 0&gt;&gt; dense_output_du_rt_scalar_;</div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;  <span class="keywordtype">size_t</span> l_max_ = 0;</div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;  mutable <span class="keywordtype">double</span> prepared_time_ = std::numeric_limits&lt;<span class="keywordtype">double</span>&gt;::signaling_NaN();</div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;  <span class="keywordtype">double</span> tolerance_ = std::numeric_limits&lt;<span class="keywordtype">double</span>&gt;::signaling_NaN();</div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;  <span class="keywordtype">double</span> start_time_ = std::numeric_limits&lt;<span class="keywordtype">double</span>&gt;::signaling_NaN();</div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;  std::vector&lt;std::complex&lt;<span class="keywordtype">double</span>&gt;&gt; initial_modes_;</div>
+<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;};</div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;}  <span class="comment">// namespace Solutions</span></div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;}  <span class="comment">// namespace Cce</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="astructCce_1_1Solutions_1_1RobinsonTrautman_html_ac4773779c09d52316ad30b682bb3a476"><div class="ttname"><a href="structCce_1_1Solutions_1_1RobinsonTrautman.html#ac4773779c09d52316ad30b682bb3a476">Cce::Solutions::RobinsonTrautman::spherical_metric</a></div><div class="ttdeci">void spherical_metric(gsl::not_null&lt; tnsr::aa&lt; DataVector, 3, ::Frame::Spherical&lt;::Frame::Inertial &gt;&gt; * &gt; spherical_metric, size_t l_max, double time) const noexcept override</div><div class="ttdoc">Compute the spherical coordinate metric of the Robinson-Trautman solution generated by the time-evolv...</div></div>
+<div class="ttc" id="astructCce_1_1Solutions_1_1RobinsonTrautman_html_ad73ed66fbdde31dd0f287b483b0ddc66"><div class="ttname"><a href="structCce_1_1Solutions_1_1RobinsonTrautman.html#ad73ed66fbdde31dd0f287b483b0ddc66">Cce::Solutions::RobinsonTrautman::dr_spherical_metric</a></div><div class="ttdeci">void dr_spherical_metric(gsl::not_null&lt; tnsr::aa&lt; DataVector, 3, ::Frame::Spherical&lt;::Frame::Inertial &gt;&gt; * &gt; dr_spherical_metric, size_t l_max, double time) const noexcept override</div><div class="ttdoc">Compute radial derivative of the spherical coordinate metric of the Robinson-Trautman solution genera...</div></div>
+<div class="ttc" id="aCharmPupable_8hpp_html"><div class="ttname"><a href="CharmPupable_8hpp.html">CharmPupable.hpp</a></div></div>
+<div class="ttc" id="astructCce_1_1Solutions_1_1RobinsonTrautman_html_a85198a2389e630efe16e2b7681585727"><div class="ttname"><a href="structCce_1_1Solutions_1_1RobinsonTrautman.html#a85198a2389e630efe16e2b7681585727">Cce::Solutions::RobinsonTrautman::variables_impl</a></div><div class="ttdeci">void variables_impl(gsl::not_null&lt; Scalar&lt; SpinWeighted&lt; ComplexDataVector, -2 &gt;&gt; * &gt; News, size_t l_max, double time, tmpl::type_&lt; Tags::News &gt;) const noexcept override</div><div class="ttdoc">Compute the news associated with the Robinson-Trautman solution generated by the time-evolved scalar ...</div></div>
+<div class="ttc" id="astructCce_1_1Solutions_1_1RobinsonTrautman_1_1StartTime_html"><div class="ttname"><a href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1StartTime.html">Cce::Solutions::RobinsonTrautman::StartTime</a></div><div class="ttdef"><b>Definition:</b> RobinsonTrautman.hpp:92</div></div>
+<div class="ttc" id="astructCce_1_1Solutions_1_1RobinsonTrautman_html_a293dfb0b6a4c9bc6a684f1876f63deb0"><div class="ttname"><a href="structCce_1_1Solutions_1_1RobinsonTrautman.html#a293dfb0b6a4c9bc6a684f1876f63deb0">Cce::Solutions::RobinsonTrautman::prepare_solution</a></div><div class="ttdeci">void prepare_solution(size_t output_l_max, double time) const noexcept override</div><div class="ttdoc">The Robinson-Trautman solution performs the time-stepping to advance the internal member scalar used ...</div></div>
+<div class="ttc" id="aLiterals_8hpp_html"><div class="ttname"><a href="Literals_8hpp.html">Literals.hpp</a></div></div>
+<div class="ttc" id="aOptions_8hpp_html"><div class="ttname"><a href="Options_8hpp.html">Options.hpp</a></div></div>
+<div class="ttc" id="astructCce_1_1Solutions_1_1RobinsonTrautman_1_1Tolerance_html"><div class="ttname"><a href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1Tolerance.html">Cce::Solutions::RobinsonTrautman::Tolerance</a></div><div class="ttdef"><b>Definition:</b> RobinsonTrautman.hpp:84</div></div>
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a></div></div>
+<div class="ttc" id="astructOptions_1_1Context_html"><div class="ttname"><a href="structOptions_1_1Context.html">Options::Context</a></div><div class="ttdef"><b>Definition:</b> Options.hpp:41</div></div>
+<div class="ttc" id="astructSpinWeighted_html"><div class="ttname"><a href="structSpinWeighted.html">SpinWeighted</a></div><div class="ttdoc">Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...</div><div class="ttdef"><b>Definition:</b> SpinWeighted.hpp:24</div></div>
+<div class="ttc" id="astructCce_1_1Solutions_1_1SphericalMetricData_html"><div class="ttname"><a href="structCce_1_1Solutions_1_1SphericalMetricData.html">Cce::Solutions::SphericalMetricData</a></div><div class="ttdoc">Abstract base class for analytic worldtube data most easily derived in spherical coordinate form.</div><div class="ttdef"><b>Definition:</b> SphericalMetricData.hpp:42</div></div>
+<div class="ttc" id="astructCce_1_1Solutions_1_1RobinsonTrautman_1_1LMax_html"><div class="ttname"><a href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1LMax.html">Cce::Solutions::RobinsonTrautman::LMax</a></div><div class="ttdef"><b>Definition:</b> RobinsonTrautman.hpp:77</div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="aclassDataVector_html"><div class="ttname"><a href="classDataVector.html">DataVector</a></div><div class="ttdoc">Stores a collection of function values.</div><div class="ttdef"><b>Definition:</b> DataVector.hpp:46</div></div>
+<div class="ttc" id="amemory_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a></div></div>
+<div class="ttc" id="anamespacetnsr_html"><div class="ttname"><a href="namespacetnsr.html">tnsr</a></div><div class="ttdoc">Type aliases to construct common Tensors.</div><div class="ttdef"><b>Definition:</b> TypeAliases.hpp:31</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga06ebcb38a1f13c246e53378b9e8959ce"><div class="ttname"><a href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a></div><div class="ttdeci">Tensor&lt; T, Symmetry&lt;&gt;, index_list&lt;&gt; &gt; Scalar</div><div class="ttdef"><b>Definition:</b> TypeAliases.hpp:21</div></div>
+<div class="ttc" id="anamespaceCce_html"><div class="ttname"><a href="namespaceCce.html">Cce</a></div><div class="ttdoc">The set of utilities for performing Cauchy characteristic evolution and Cauchy characteristic matchin...</div><div class="ttdef"><b>Definition:</b> CharacteristicExtractFwd.hpp:6</div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="astructCce_1_1Solutions_1_1RobinsonTrautman_1_1ExtractionRadius_html"><div class="ttname"><a href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1ExtractionRadius.html">Cce::Solutions::RobinsonTrautman::ExtractionRadius</a></div><div class="ttdef"><b>Definition:</b> RobinsonTrautman.hpp:70</div></div>
+<div class="ttc" id="anamespaceOptions_html_aa61c7f41f21afa7646811456f673be89"><div class="ttname"><a href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a></div><div class="ttdeci">const char *const String</div><div class="ttdoc">The string used in option structs.</div><div class="ttdef"><b>Definition:</b> Options.hpp:32</div></div>
+<div class="ttc" id="astructCce_1_1Solutions_1_1RobinsonTrautman_html_ac06cd27d53031aa809916d7d43e6139b"><div class="ttname"><a href="structCce_1_1Solutions_1_1RobinsonTrautman.html#ac06cd27d53031aa809916d7d43e6139b">Cce::Solutions::RobinsonTrautman::dt_spherical_metric</a></div><div class="ttdeci">void dt_spherical_metric(gsl::not_null&lt; tnsr::aa&lt; DataVector, 3, ::Frame::Spherical&lt;::Frame::Inertial &gt;&gt; * &gt; dt_spherical_metric, size_t l_max, double time) const noexcept override</div><div class="ttdoc">Compute time derivative of the spherical coordinate metric of the Robinson-Trautman solution generate...</div></div>
+<div class="ttc" id="anamespaceFrame_html"><div class="ttname"><a href="namespaceFrame.html">Frame</a></div><div class="ttdef"><b>Definition:</b> IndexType.hpp:36</div></div>
+<div class="ttc" id="aTensor_8hpp_html"><div class="ttname"><a href="Tensor_8hpp.html">Tensor.hpp</a></div></div>
+<div class="ttc" id="aRungeKutta3_8hpp_html"><div class="ttname"><a href="RungeKutta3_8hpp.html">RungeKutta3.hpp</a></div></div>
+<div class="ttc" id="acomplex_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/complex.html">complex</a></div></div>
+<div class="ttc" id="astructCce_1_1Solutions_1_1RobinsonTrautman_1_1InitialModes_html"><div class="ttname"><a href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1InitialModes.html">Cce::Solutions::RobinsonTrautman::InitialModes</a></div><div class="ttdef"><b>Definition:</b> RobinsonTrautman.hpp:60</div></div>
+<div class="ttc" id="aclassComplexDataVector_html"><div class="ttname"><a href="classComplexDataVector.html">ComplexDataVector</a></div><div class="ttdoc">Stores a collection of complex function values.</div><div class="ttdef"><b>Definition:</b> ComplexDataVector.hpp:53</div></div>
+<div class="ttc" id="aunique_ptr_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></div></div>
+<div class="ttc" id="anamespacegsl_html"><div class="ttname"><a href="namespacegsl.html">gsl</a></div><div class="ttdoc">Implementations from the Guideline Support Library.</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:11</div></div>
+<div class="ttc" id="astructCce_1_1Solutions_1_1RobinsonTrautman_html"><div class="ttname"><a href="structCce_1_1Solutions_1_1RobinsonTrautman.html">Cce::Solutions::RobinsonTrautman</a></div><div class="ttdoc">An analytic solution representing a specialization of the radiative Robinson-Trautman solution descri...</div><div class="ttdef"><b>Definition:</b> RobinsonTrautman.hpp:59</div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

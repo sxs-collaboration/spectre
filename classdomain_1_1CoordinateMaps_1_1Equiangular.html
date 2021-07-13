@@ -1,0 +1,288 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::CoordinateMaps::Equiangular Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1CoordinateMaps.html">CoordinateMaps</a></li><li class="navelem"><a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">Equiangular</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classdomain_1_1CoordinateMaps_1_1Equiangular-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::CoordinateMaps::Equiangular Class Reference<div class="ingroups"><a class="el" href="group__CoordinateMapsGroup.html">Coordinate Maps</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Non-linear map from \(\xi \in [A, B]\rightarrow x \in [a, b]\).  
+ <a href="classdomain_1_1CoordinateMaps_1_1Equiangular.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Equiangular_8hpp_source.html">Equiangular.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a8e5c02ec111c1a7b3c854fbf3ab4164c"><td class="memItemLeft" align="right" valign="top"><a id="a8e5c02ec111c1a7b3c854fbf3ab4164c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Equiangular</b> (double A, double B, double a, double b) noexcept</td></tr>
+<tr class="separator:a8e5c02ec111c1a7b3c854fbf3ab4164c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac114fc026bf15c4eb5f49c40f2814c98"><td class="memItemLeft" align="right" valign="top"><a id="ac114fc026bf15c4eb5f49c40f2814c98"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Equiangular</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">Equiangular</a> &amp;)=default</td></tr>
+<tr class="separator:ac114fc026bf15c4eb5f49c40f2814c98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1039f51867c93ec3ff244de7120bc7c4"><td class="memItemLeft" align="right" valign="top"><a id="a1039f51867c93ec3ff244de7120bc7c4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Equiangular</b> (<a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">Equiangular</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a1039f51867c93ec3ff244de7120bc7c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e00806e81ca5077f965cfd5e36781a8"><td class="memItemLeft" align="right" valign="top"><a id="a7e00806e81ca5077f965cfd5e36781a8"></a>
+<a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">Equiangular</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">Equiangular</a> &amp;)=default</td></tr>
+<tr class="separator:a7e00806e81ca5077f965cfd5e36781a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e5fb788a6ab32877cbd0752e5ed1871"><td class="memItemLeft" align="right" valign="top"><a id="a6e5fb788a6ab32877cbd0752e5ed1871"></a>
+<a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">Equiangular</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">Equiangular</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a6e5fb788a6ab32877cbd0752e5ed1871"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afde6374ccf1692f1672603262584080e"><td class="memTemplParams" colspan="2"><a id="afde6374ccf1692f1672603262584080e"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:afde6374ccf1692f1672603262584080e"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 1 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator()</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 1 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:afde6374ccf1692f1672603262584080e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ef0c493ac243ce005dbee1378e64d37"><td class="memItemLeft" align="right" valign="top"><a id="a4ef0c493ac243ce005dbee1378e64d37"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 1 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html#a4ef0c493ac243ce005dbee1378e64d37">inverse</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 1 &gt; &amp;target_coords) const noexcept</td></tr>
+<tr class="memdesc:a4ef0c493ac243ce005dbee1378e64d37"><td class="mdescLeft">&#160;</td><td class="mdescRight">The inverse function is only callable with doubles because the inverse might fail if called for a point out of range, and it is unclear what should happen if the inverse were to succeed for some points in a <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> but fail for other points. <br /></td></tr>
+<tr class="separator:a4ef0c493ac243ce005dbee1378e64d37"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad25b2cda8e68b2bec93f13abe861968"><td class="memTemplParams" colspan="2"><a id="aad25b2cda8e68b2bec93f13abe861968"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:aad25b2cda8e68b2bec93f13abe861968"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 1, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 1 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:aad25b2cda8e68b2bec93f13abe861968"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c602c5ea8cee96b95accd77d5f2b6a2"><td class="memTemplParams" colspan="2"><a id="a7c602c5ea8cee96b95accd77d5f2b6a2"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a7c602c5ea8cee96b95accd77d5f2b6a2"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 1, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>inv_jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 1 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:a7c602c5ea8cee96b95accd77d5f2b6a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a191756ab33195fa10ff2bf992b94ef45"><td class="memItemLeft" align="right" valign="top"><a id="a191756ab33195fa10ff2bf992b94ef45"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a191756ab33195fa10ff2bf992b94ef45"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:ac944df1ac1e4f7bcc7eb36be2d09d85d"><td class="memItemLeft" align="right" valign="top"><a id="ac944df1ac1e4f7bcc7eb36be2d09d85d"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_identity</b> () noexcept</td></tr>
+<tr class="separator:ac944df1ac1e4f7bcc7eb36be2d09d85d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aa5f1c82963259818b1c38103be307b96"><td class="memItemLeft" align="right" valign="top"><a id="aa5f1c82963259818b1c38103be307b96"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>dim</b> = 1</td></tr>
+<tr class="separator:aa5f1c82963259818b1c38103be307b96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a241e13f387e8aacf7ea133cf25d0131a"><td class="memItemLeft" align="right" valign="top"><a id="a241e13f387e8aacf7ea133cf25d0131a"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">Equiangular</a> &amp;lhs, const <a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">Equiangular</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a241e13f387e8aacf7ea133cf25d0131a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Non-linear map from \(\xi \in [A, B]\rightarrow x \in [a, b]\). </p>
+<p>The formula for the mapping is: </p><p class="formulaDsp">
+\begin{align} x &amp;= \frac{a}{2} \left(1-\mathrm{tan}\left( \frac{\pi(2\xi-B-A)}{4(B-A)}\right)\right) + \frac{b}{2} \left(1+\mathrm{tan}\left( \frac{\pi(2\xi-B-A)}{4(B-A)}\right)\right)\\ \xi &amp;= \frac{A}{2} \left(1-\frac{4}{\pi}\mathrm{arctan}\left( \frac{2x-a-b}{b-a}\right)\right)+ \frac{B}{2} \left(1+\frac{4}{\pi}\mathrm{arctan}\left( \frac{2x-a-b}{b-a}\right)\right) \end{align}
+</p>
+<dl class="section note"><dt>Note</dt><dd>The intermediate step in which a tangent map is applied can be more clearly understood if we define the coordinates: <p class="formulaDsp">
+\begin{align} \xi_{logical} &amp;:= \frac{2\xi-B-A}{B-A} \in [-1, 1]\\ \Xi &amp;:= \mathrm{tan}\left(\frac{\pi\xi_{logical}}{4}\right) \in [-1, 1] \end{align}
+</p>
+</dd></dl>
+<p>This map is intended to be used with the <code><a class="el" href="classdomain_1_1CoordinateMaps_1_1Wedge.html" title="Map from a square or cube to a wedge.">Wedge</a></code> map when equiangular coordinates are chosen for those maps. For more information on this choice of coordinates, see the documentation for <code><a class="el" href="classdomain_1_1CoordinateMaps_1_1Wedge.html" title="Map from a square or cube to a wedge.">Wedge</a></code>. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/CoordinateMaps/<a class="el" href="Equiangular_8hpp_source.html">Equiangular.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

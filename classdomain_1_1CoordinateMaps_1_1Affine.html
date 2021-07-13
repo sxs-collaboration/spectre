@@ -1,0 +1,282 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::CoordinateMaps::Affine Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1CoordinateMaps.html">CoordinateMaps</a></li><li class="navelem"><a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">Affine</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classdomain_1_1CoordinateMaps_1_1Affine-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::CoordinateMaps::Affine Class Reference<div class="ingroups"><a class="el" href="group__CoordinateMapsGroup.html">Coordinate Maps</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html" title="Affine map from .">Affine</a> map from \(\xi \in [A, B]\rightarrow x \in [a, b]\).  
+ <a href="classdomain_1_1CoordinateMaps_1_1Affine.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Affine_8hpp_source.html">Affine.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a26052ed2b2dfc6b33fb67187370f4102"><td class="memItemLeft" align="right" valign="top"><a id="a26052ed2b2dfc6b33fb67187370f4102"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Affine</b> (double A, double B, double a, double b)</td></tr>
+<tr class="separator:a26052ed2b2dfc6b33fb67187370f4102"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee1be06303e00a45a150a362f7727b13"><td class="memItemLeft" align="right" valign="top"><a id="aee1be06303e00a45a150a362f7727b13"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Affine</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">Affine</a> &amp;)=default</td></tr>
+<tr class="separator:aee1be06303e00a45a150a362f7727b13"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1ae6eac8e1a305b70f6a7b63741efbc"><td class="memItemLeft" align="right" valign="top"><a id="af1ae6eac8e1a305b70f6a7b63741efbc"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Affine</b> (<a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">Affine</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:af1ae6eac8e1a305b70f6a7b63741efbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe5d766e7958250e0000bc31cb2c78a0"><td class="memItemLeft" align="right" valign="top"><a id="afe5d766e7958250e0000bc31cb2c78a0"></a>
+<a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">Affine</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">Affine</a> &amp;)=default</td></tr>
+<tr class="separator:afe5d766e7958250e0000bc31cb2c78a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ae6424210f3d5900215ef662152f0bc"><td class="memItemLeft" align="right" valign="top"><a id="a8ae6424210f3d5900215ef662152f0bc"></a>
+<a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">Affine</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">Affine</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a8ae6424210f3d5900215ef662152f0bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a014fddf1ce367baca06554fe12e9ee06"><td class="memTemplParams" colspan="2"><a id="a014fddf1ce367baca06554fe12e9ee06"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a014fddf1ce367baca06554fe12e9ee06"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 1 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator()</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 1 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:a014fddf1ce367baca06554fe12e9ee06"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abac6c6e7a0f0c896a1980202b105b487"><td class="memItemLeft" align="right" valign="top"><a id="abac6c6e7a0f0c896a1980202b105b487"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 1 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html#abac6c6e7a0f0c896a1980202b105b487">inverse</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 1 &gt; &amp;target_coords) const noexcept</td></tr>
+<tr class="memdesc:abac6c6e7a0f0c896a1980202b105b487"><td class="mdescLeft">&#160;</td><td class="mdescRight">The inverse function is only callable with doubles because the inverse might fail if called for a point out of range, and it is unclear what should happen if the inverse were to succeed for some points in a <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> but fail for other points. <br /></td></tr>
+<tr class="separator:abac6c6e7a0f0c896a1980202b105b487"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c749e0388407f471ee6f02982ce38ea"><td class="memTemplParams" colspan="2"><a id="a0c749e0388407f471ee6f02982ce38ea"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a0c749e0388407f471ee6f02982ce38ea"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 1, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 1 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:a0c749e0388407f471ee6f02982ce38ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b1cd57629a56628b3fb09cec6e5487c"><td class="memTemplParams" colspan="2"><a id="a8b1cd57629a56628b3fb09cec6e5487c"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a8b1cd57629a56628b3fb09cec6e5487c"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 1, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>inv_jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 1 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:a8b1cd57629a56628b3fb09cec6e5487c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a086f225d002b439fb2032ac4ccbb264b"><td class="memItemLeft" align="right" valign="top"><a id="a086f225d002b439fb2032ac4ccbb264b"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p)</td></tr>
+<tr class="separator:a086f225d002b439fb2032ac4ccbb264b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affc3b5b67eac7d53a0a115d3a0215980"><td class="memItemLeft" align="right" valign="top"><a id="affc3b5b67eac7d53a0a115d3a0215980"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_identity</b> () const noexcept</td></tr>
+<tr class="separator:affc3b5b67eac7d53a0a115d3a0215980"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aacc9bb0608fd88a6a5e59adccb919d96"><td class="memItemLeft" align="right" valign="top"><a id="aacc9bb0608fd88a6a5e59adccb919d96"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>dim</b> = 1</td></tr>
+<tr class="separator:aacc9bb0608fd88a6a5e59adccb919d96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a8d0d5f0b16cd7df24628a296055ef058"><td class="memItemLeft" align="right" valign="top"><a id="a8d0d5f0b16cd7df24628a296055ef058"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">Affine</a> &amp;lhs, const <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">Affine</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a8d0d5f0b16cd7df24628a296055ef058"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p><a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html" title="Affine map from .">Affine</a> map from \(\xi \in [A, B]\rightarrow x \in [a, b]\). </p>
+<p>The formula for the mapping is... </p><p class="formulaDsp">
+\[ x = \frac{b}{B-A} (\xi-A) +\frac{a}{B-A}(B-\xi) \]
+</p>
+ <p class="formulaDsp">
+\[ \xi =\frac{B}{b-a} (x-a) +\frac{A}{b-a}(b-x) \]
+</p>
+ </div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/CoordinateMaps/<a class="el" href="Affine_8hpp_source.html">Affine.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

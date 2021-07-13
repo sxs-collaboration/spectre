@@ -1,0 +1,240 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: LinearSolver::Actions::MakeIdentityIfSkipped&lt; LinearSolverType &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceLinearSolver.html">LinearSolver</a></li><li class="navelem"><a class="el" href="namespaceLinearSolver_1_1Actions.html">Actions</a></li><li class="navelem"><a class="el" href="structLinearSolver_1_1Actions_1_1MakeIdentityIfSkipped.html">MakeIdentityIfSkipped</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="structLinearSolver_1_1Actions_1_1MakeIdentityIfSkipped-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">LinearSolver::Actions::MakeIdentityIfSkipped&lt; LinearSolverType &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Make the iterative linear solve the identity operation on the source vector if no iterations were performed at all. Useful for disabling a preconditioner by setting its number of iterations to zero.  
+ <a href="structLinearSolver_1_1Actions_1_1MakeIdentityIfSkipped.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="MakeIdentityIfSkipped_8hpp_source.html">MakeIdentityIfSkipped.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:ad3784b7f79d5932d502a5c6249448c67"><td class="memTemplParams" colspan="2"><a id="ad3784b7f79d5932d502a5c6249448c67"></a>
+template&lt;typename DbTagsList , typename... InboxTags, typename Metavariables , typename ArrayIndex , typename ActionList , typename ParallelComponent &gt; </td></tr>
+<tr class="memitem:ad3784b7f79d5932d502a5c6249448c67"><td class="memTemplItemLeft" align="right" valign="top">static <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; db::DataBox&lt; DbTagsList &gt; &amp;&amp; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>apply</b> (db::DataBox&lt; DbTagsList &gt; &amp;box, const <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; InboxTags... &gt; &amp;, const <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt; &amp;, const ArrayIndex &amp;, const ActionList, const ParallelComponent *const) noexcept</td></tr>
+<tr class="separator:ad3784b7f79d5932d502a5c6249448c67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename LinearSolverType&gt;<br />
+struct LinearSolver::Actions::MakeIdentityIfSkipped&lt; LinearSolverType &gt;</h3>
+
+<p>Make the iterative linear solve the identity operation on the source vector if no iterations were performed at all. Useful for disabling a preconditioner by setting its number of iterations to zero. </p>
+<p>When the linear solve is skipped, i.e. when it performs no iterations because its number of iterations is set to zero, this action assumes \(A=1\) so \(Ax=b\) solves to \(x=b\). This is useful when the solver is used as preconditioner, because then we can disable preconditioning by just not iterating the preconditioner, i.e. by setting its number of iterations to zero in the input file.</p>
+<p>To use this action, insert it into the action list just after iterating the linear solver, i.e. after its <code>solve</code> action list:</p>
+<div class="fragment"><div class="line">                 <span class="keyword">typename</span> Preconditioner::template solve&lt;ComputeOperatorAction&lt;</div>
+<div class="line">                     <span class="keyword">typename</span> Preconditioner::operand_tag&gt;&gt;,</div>
+<div class="line">                 <a class="code" href="structLinearSolver_1_1Actions_1_1MakeIdentityIfSkipped.html">LinearSolver::Actions::MakeIdentityIfSkipped&lt;Preconditioner&gt;</a></div>
+</div><!-- fragment --><p> This action will set the <code>LinearSolverType::fields_tag</code> to the <code>LinearSolverType::source_tag</code> whenever the linear solver has converged with the reason <code><a class="el" href="namespaceConvergence.html#a68326988a25b1d31073f46ee6de60f4ca56551fa0631717647ec0f30d0ca3fadd" title="Reached the target number of iterations.">Convergence::Reason::NumIterations</a></code> or <code><a class="el" href="namespaceConvergence.html#a68326988a25b1d31073f46ee6de60f4ca89d18cc81de326d8fc836491777795e0" title="Reached the maximum number of iterations. Can be interpreted as an error condition.">Convergence::Reason::MaxIterations</a></code> without actually having performed any iterations.</p>
+<dl class="section user"><dt>Details:</dt><dd>The standard behaviour of most linear solvers (i.e. when <em>not</em> using this action) is to keep the fields at their initial guess \(x=x_0\) when it performs no iterations. That behaviour is not handled well when the solver is used as preconditioner and its parent always makes it start at \(x_0=0\). This is a reasonable choice to start the preconditioner but it also means that the preconditioner doesn't reduce to the identity when it performs no iterations. Using this action means not iterating the preconditioner at all essentially disables preconditioning, switching the parent solver to an unpreconditioned solve with some runtime and memory overhead associated with initializing the preconditioner. </dd></dl>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/ParallelAlgorithms/LinearSolver/Actions/<a class="el" href="MakeIdentityIfSkipped_8hpp_source.html">MakeIdentityIfSkipped.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="astructLinearSolver_1_1Actions_1_1MakeIdentityIfSkipped_html"><div class="ttname"><a href="structLinearSolver_1_1Actions_1_1MakeIdentityIfSkipped.html">LinearSolver::Actions::MakeIdentityIfSkipped</a></div><div class="ttdoc">Make the iterative linear solve the identity operation on the source vector if no iterations were per...</div><div class="ttdef"><b>Definition:</b> MakeIdentityIfSkipped.hpp:66</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

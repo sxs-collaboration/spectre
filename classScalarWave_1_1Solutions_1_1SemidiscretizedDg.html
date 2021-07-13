@@ -1,0 +1,288 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: ScalarWave::Solutions::SemidiscretizedDg Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceScalarWave.html">ScalarWave</a></li><li class="navelem"><a class="el" href="namespaceScalarWave_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="classScalarWave_1_1Solutions_1_1SemidiscretizedDg.html">SemidiscretizedDg</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classScalarWave_1_1Solutions_1_1SemidiscretizedDg-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">ScalarWave::Solutions::SemidiscretizedDg Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>An exact solution to the semidiscretized DG <a class="el" href="namespaceScalarWave.html" title="Items related to evolving the scalar wave equation.">ScalarWave</a> system with an upwind flux.  
+ <a href="classScalarWave_1_1Solutions_1_1SemidiscretizedDg.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="SemidiscretizedDg_8hpp_source.html">SemidiscretizedDg.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structScalarWave_1_1Solutions_1_1SemidiscretizedDg_1_1Amplitudes.html">Amplitudes</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structScalarWave_1_1Solutions_1_1SemidiscretizedDg_1_1Harmonic.html">Harmonic</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:aa56ce6b3424410fcaa45060f79f78d87"><td class="memItemLeft" align="right" valign="top"><a id="aa56ce6b3424410fcaa45060f79f78d87"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>tags</b> = tmpl::list&lt; <a class="el" href="structScalarWave_1_1Pi.html">ScalarWave::Pi</a>, <a class="el" href="structScalarWave_1_1Phi.html">ScalarWave::Phi</a>&lt; 1 &gt;, <a class="el" href="structScalarWave_1_1Psi.html">ScalarWave::Psi</a> &gt;</td></tr>
+<tr class="separator:aa56ce6b3424410fcaa45060f79f78d87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab091a8e6393e3a1390065752e982a82e"><td class="memItemLeft" align="right" valign="top"><a id="ab091a8e6393e3a1390065752e982a82e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structScalarWave_1_1Solutions_1_1SemidiscretizedDg_1_1Harmonic.html">Harmonic</a>, <a class="el" href="structScalarWave_1_1Solutions_1_1SemidiscretizedDg_1_1Amplitudes.html">Amplitudes</a> &gt;</td></tr>
+<tr class="separator:ab091a8e6393e3a1390065752e982a82e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a07b4f4c9d76ea0f3fa11200f0669aa8f"><td class="memItemLeft" align="right" valign="top"><a id="a07b4f4c9d76ea0f3fa11200f0669aa8f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SemidiscretizedDg</b> (int harmonic, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 4 &gt; &amp;amplitudes) noexcept</td></tr>
+<tr class="separator:a07b4f4c9d76ea0f3fa11200f0669aa8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adaf052d7308873a5f7dd0d5afd1f6a09"><td class="memTemplParams" colspan="2"><a id="adaf052d7308873a5f7dd0d5afd1f6a09"></a>
+template&lt;typename... Tags&gt; </td></tr>
+<tr class="memitem:adaf052d7308873a5f7dd0d5afd1f6a09"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classScalarWave_1_1Solutions_1_1SemidiscretizedDg.html#adaf052d7308873a5f7dd0d5afd1f6a09">variables</a> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 1 &gt; &amp;x, double t, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:adaf052d7308873a5f7dd0d5afd1f6a09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the evolution variables at time <code>t</code> and spatial coordinates <code>x</code> <br /></td></tr>
+<tr class="separator:adaf052d7308873a5f7dd0d5afd1f6a09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee1d941e9538430f58313b1cd7b3e217"><td class="memItemLeft" align="right" valign="top"><a id="aee1d941e9538430f58313b1cd7b3e217"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:aee1d941e9538430f58313b1cd7b3e217"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a08af278b750f9d9b1967d194697c95fa"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a08af278b750f9d9b1967d194697c95fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>An exact solution to the semidiscretized DG <a class="el" href="namespaceScalarWave.html" title="Items related to evolving the scalar wave equation.">ScalarWave</a> system with an upwind flux. </p>
+<p>This solution takes into account the spatial discretization error, and so should show convergence in time integration accuracy to roundoff at any resolution.</p>
+<dl class="section warning"><dt>Warning</dt><dd>This is not really a pointwise function, as the solution depends on the spatial discretization. It will only work on a periodic domain of length \(2 \pi\) (or an integer multiple) with equally sized linear elements. </dd></dl>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a08af278b750f9d9b1967d194697c95fa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a08af278b750f9d9b1967d194697c95fa">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> ScalarWave::Solutions::SemidiscretizedDg::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      <span class="stringliteral">&quot;A solution of the semidiscretized DG system on linear elements\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;with spatial period 2 pi.&quot;</span></div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticSolutions/WaveEquation/<a class="el" href="SemidiscretizedDg_8hpp_source.html">SemidiscretizedDg.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

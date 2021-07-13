@@ -1,0 +1,405 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::creators::BinaryCompactObject Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1creators.html">creators</a></li><li class="navelem"><a class="el" href="classdomain_1_1creators_1_1BinaryCompactObject.html">BinaryCompactObject</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classdomain_1_1creators_1_1BinaryCompactObject-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::creators::BinaryCompactObject Class Reference<div class="ingroups"><a class="el" href="group__ComputationalDomainGroup.html">Computational Domain</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A general domain for two compact objects.  
+ <a href="classdomain_1_1creators_1_1BinaryCompactObject.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="BinaryCompactObject_8hpp_source.html">BinaryCompactObject.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1AdditionToOuterLayerRadialRefinementLevel.html">AdditionToOuterLayerRadialRefinementLevel</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1EnvelopingCube.html">EnvelopingCube</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Excision.html">Excision</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespaceOptions.html" title="Utilities for parsing input files.">Options</a> for an excision region in the domain.  <a href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Excision.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1ExpansionFunctionOfTimeNames.html">ExpansionFunctionOfTimeNames</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The names of the functions of times to be added to the DataBox for the expansion map.  <a href="structdomain_1_1creators_1_1BinaryCompactObject_1_1ExpansionFunctionOfTimeNames.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1ExpansionMap.html">ExpansionMap</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1ExpansionMapOuterBoundary.html">ExpansionMapOuterBoundary</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The outer boundary or pivot point of the <code><a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1CubicScale.html" title="Maps the radius as  where  is the radius of the source coordinates.">domain::CoordinateMaps::TimeDependent::CubicScale</a></code> map.  <a href="structdomain_1_1creators_1_1BinaryCompactObject_1_1ExpansionMapOuterBoundary.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialAngularVelocity.html">InitialAngularVelocity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The angular velocity of the rotation.  <a href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialAngularVelocity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialExpansion.html">InitialExpansion</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The initial values of the expansion factors.  <a href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialExpansion.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialExpansionVelocity.html">InitialExpansionVelocity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The velocity of the expansion factors.  <a href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialExpansionVelocity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialExpirationDeltaT.html">InitialExpirationDeltaT</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The initial time interval for updates of the functions of time.  <a href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialExpirationDeltaT.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialGridPoints.html">InitialGridPoints</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialRefinement.html">InitialRefinement</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialRotationAngle.html">InitialRotationAngle</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The initial value of the rotation angle.  <a href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialRotationAngle.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialSizeMapAccelerations.html">InitialSizeMapAccelerations</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initial accelerations for functions of time for size maps for objects A,B.  <a href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialSizeMapAccelerations.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialSizeMapValues.html">InitialSizeMapValues</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initial values for functions of time for size maps for objects A,B.  <a href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialSizeMapValues.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialSizeMapVelocities.html">InitialSizeMapVelocities</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initial velocities for functions of time for size maps for objects A,B.  <a href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialSizeMapVelocities.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialTime.html">InitialTime</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The initial time of the functions of time.  <a href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialTime.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object.html">Object</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespaceOptions.html" title="Utilities for parsing input files.">Options</a> for one of the two objects in the binary domain.  <a href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1ObjectA.html">ObjectA</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1ObjectB.html">ObjectB</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1OuterBoundaryCondition.html">OuterBoundaryCondition</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1OuterSphere.html">OuterSphere</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1RadiusEnvelopingCube.html">RadiusEnvelopingCube</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1RadiusOuterSphere.html">RadiusOuterSphere</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1RotationAboutZAxisFunctionOfTimeName.html">RotationAboutZAxisFunctionOfTimeName</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The name of the function of time to be added to the added to the DataBox for the rotation-about-the-z-axis map.  <a href="structdomain_1_1creators_1_1BinaryCompactObject_1_1RotationAboutZAxisFunctionOfTimeName.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1RotationAboutZAxisMap.html">RotationAboutZAxisMap</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1SizeMap.html">SizeMap</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1SizeMapFunctionOfTimeNames.html">SizeMapFunctionOfTimeNames</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The names of the functions of times to be added to the added to the DataBox for the size map.  <a href="structdomain_1_1creators_1_1BinaryCompactObject_1_1SizeMapFunctionOfTimeNames.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1TimeDependentMaps.html">TimeDependentMaps</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1UseLogarithmicMapOuterSphericalShell.html">UseLogarithmicMapOuterSphericalShell</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1UseProjectiveMap.html">UseProjectiveMap</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a28beb6acf1f56f1b17c2b63b3b4b319b"><td class="memItemLeft" align="right" valign="top"><a id="a28beb6acf1f56f1b17c2b63b3b4b319b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>maps_list</b> = tmpl::list&lt; <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1ProductOf3Maps.html">CoordinateMaps::ProductOf3Maps</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a> &gt; &gt;, <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1ProductOf3Maps.html">CoordinateMaps::ProductOf3Maps</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">CoordinateMaps::Equiangular</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">CoordinateMaps::Equiangular</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">CoordinateMaps::Equiangular</a> &gt; &gt;, <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1ProductOf3Maps.html">CoordinateMaps::ProductOf3Maps</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a> &gt;, <a class="el" href="classdomain_1_1CoordinateMaps_1_1ProductOf2Maps.html">CoordinateMaps::ProductOf2Maps</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Identity.html">CoordinateMaps::Identity</a>&lt; 2 &gt; &gt;&gt;, <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1DiscreteRotation.html">CoordinateMaps::DiscreteRotation</a>&lt; 3 &gt;, <a class="el" href="classdomain_1_1CoordinateMaps_1_1ProductOf3Maps.html">CoordinateMaps::ProductOf3Maps</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a> &gt; &gt;, <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1ProductOf3Maps.html">CoordinateMaps::ProductOf3Maps</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">CoordinateMaps::Equiangular</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">CoordinateMaps::Equiangular</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">CoordinateMaps::Equiangular</a> &gt; &gt;, <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1ProductOf3Maps.html">CoordinateMaps::ProductOf3Maps</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">CoordinateMaps::Equiangular</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">CoordinateMaps::Equiangular</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">CoordinateMaps::Equiangular</a> &gt;, <a class="el" href="classdomain_1_1CoordinateMaps_1_1ProductOf2Maps.html">CoordinateMaps::ProductOf2Maps</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Identity.html">CoordinateMaps::Identity</a>&lt; 2 &gt; &gt;&gt;, <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Frustum.html">CoordinateMaps::Frustum</a> &gt;, <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Wedge.html">CoordinateMaps::Wedge</a>&lt; 3 &gt; &gt;, <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1CubicScale.html">domain::CoordinateMaps::TimeDependent::CubicScale</a>&lt; 3 &gt;, <a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1ProductOf2Maps.html">domain::CoordinateMaps::TimeDependent::ProductOf2Maps</a>&lt; domain::CoordinateMaps::TimeDependent::Rotation&lt; 2 &gt;, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Identity.html">domain::CoordinateMaps::Identity</a>&lt; 1 &gt; &gt;&gt;, <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1SphericalCompression.html">domain::CoordinateMaps::TimeDependent::SphericalCompression</a>&lt; false &gt;, <a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1CubicScale.html">domain::CoordinateMaps::TimeDependent::CubicScale</a>&lt; 3 &gt;, <a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1ProductOf2Maps.html">domain::CoordinateMaps::TimeDependent::ProductOf2Maps</a>&lt; domain::CoordinateMaps::TimeDependent::Rotation&lt; 2 &gt;, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Identity.html">domain::CoordinateMaps::Identity</a>&lt; 1 &gt; &gt;&gt; &gt;</td></tr>
+<tr class="separator:a28beb6acf1f56f1b17c2b63b3b4b319b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afac519b5eed1106022fc11f820773b9b"><td class="memTemplParams" colspan="2"><a id="afac519b5eed1106022fc11f820773b9b"></a>
+template&lt;typename Metavariables &gt; </td></tr>
+<tr class="memitem:afac519b5eed1106022fc11f820773b9b"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>time_independent_options</b> = tmpl::append&lt; tmpl::list&lt; <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1ObjectA.html">ObjectA</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1ObjectB.html">ObjectB</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1RadiusEnvelopingCube.html">RadiusEnvelopingCube</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1RadiusOuterSphere.html">RadiusOuterSphere</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialRefinement.html">InitialRefinement</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialGridPoints.html">InitialGridPoints</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1UseProjectiveMap.html">UseProjectiveMap</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1UseLogarithmicMapOuterSphericalShell.html">UseLogarithmicMapOuterSphericalShell</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1AdditionToOuterLayerRadialRefinementLevel.html">AdditionToOuterLayerRadialRefinementLevel</a> &gt;, tmpl::conditional_t&lt; domain::BoundaryConditions::has_boundary_conditions_base_v&lt; typename Metavariables::system &gt;, tmpl::list&lt; <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1OuterBoundaryCondition.html">OuterBoundaryCondition</a>&lt; <a class="el" href="namespacedomain_1_1BoundaryConditions.html#afd88b7d4030a22e226b734dd65e6990b">domain::BoundaryConditions::get_boundary_conditions_base</a>&lt; typename Metavariables::system &gt; &gt;&gt;, tmpl::list&lt;&gt; &gt;&gt;</td></tr>
+<tr class="separator:afac519b5eed1106022fc11f820773b9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e70dd3e8e0450dba57e9c8fe787f2bb"><td class="memItemLeft" align="right" valign="top"><a id="a4e70dd3e8e0450dba57e9c8fe787f2bb"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>time_dependent_options</b> = tmpl::list&lt; <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialTime.html">InitialTime</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialExpirationDeltaT.html">InitialExpirationDeltaT</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1ExpansionMapOuterBoundary.html">ExpansionMapOuterBoundary</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialExpansion.html">InitialExpansion</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialExpansionVelocity.html">InitialExpansionVelocity</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1ExpansionFunctionOfTimeNames.html">ExpansionFunctionOfTimeNames</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialRotationAngle.html">InitialRotationAngle</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialAngularVelocity.html">InitialAngularVelocity</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1RotationAboutZAxisFunctionOfTimeName.html">RotationAboutZAxisFunctionOfTimeName</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialSizeMapValues.html">InitialSizeMapValues</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialSizeMapVelocities.html">InitialSizeMapVelocities</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialSizeMapAccelerations.html">InitialSizeMapAccelerations</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1SizeMapFunctionOfTimeNames.html">SizeMapFunctionOfTimeNames</a> &gt;</td></tr>
+<tr class="separator:a4e70dd3e8e0450dba57e9c8fe787f2bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf4c30372e0e6fcc39216c1ddc362a72"><td class="memTemplParams" colspan="2"><a id="aaf4c30372e0e6fcc39216c1ddc362a72"></a>
+template&lt;typename Metavariables &gt; </td></tr>
+<tr class="memitem:aaf4c30372e0e6fcc39216c1ddc362a72"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>options</b> = tmpl::conditional_t&lt; BinaryCompactObject_detail::enable_time_dependent_maps_v&lt; Metavariables &gt;, tmpl::append&lt; time_dependent_options, time_independent_options&lt; Metavariables &gt; &gt;, time_independent_options&lt; Metavariables &gt; &gt;</td></tr>
+<tr class="separator:aaf4c30372e0e6fcc39216c1ddc362a72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a61817a0d87a76582e87a39bab2000bf5"><td class="memItemLeft" align="right" valign="top"><a id="a61817a0d87a76582e87a39bab2000bf5"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BinaryCompactObject</b> (<a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object.html">Object</a> object_A, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object.html">Object</a> object_B, double radius_enveloping_cube, double radius_enveloping_sphere, size_t initial_refinement, size_t initial_grid_points_per_dim, bool use_projective_map=true, bool use_logarithmic_map_outer_spherical_shell=false, size_t addition_to_outer_layer_radial_refinement_level=0, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a> &gt; outer_boundary_condition=nullptr, const <a class="el" href="structOptions_1_1Context.html">Options::Context</a> &amp;context={})</td></tr>
+<tr class="separator:a61817a0d87a76582e87a39bab2000bf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a958fbb3d96126f4e718a660c2c439380"><td class="memItemLeft" align="right" valign="top"><a id="a958fbb3d96126f4e718a660c2c439380"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BinaryCompactObject</b> (double initial_time, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; double &gt; initial_expiration_delta_t, double expansion_map_outer_boundary, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 2 &gt; initial_expansion, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 2 &gt; initial_expansion_velocity, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, 2 &gt; expansion_function_of_time_names, double initial_rotation_angle, double initial_angular_velocity, <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> rotation_about_z_axis_function_of_time_name, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 2 &gt; initial_size_map_values, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 2 &gt; initial_size_map_velocities, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 2 &gt; initial_size_map_accelerations, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, 2 &gt; size_map_function_of_time_names, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object.html">Object</a> object_A, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object.html">Object</a> object_B, double radius_enveloping_cube, double radius_enveloping_sphere, size_t initial_refinement, size_t initial_grid_points_per_dim, bool use_projective_map=true, bool use_logarithmic_map_outer_spherical_shell=false, size_t addition_to_outer_layer_radial_refinement_level=0, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a> &gt; outer_boundary_condition=nullptr, const <a class="el" href="structOptions_1_1Context.html">Options::Context</a> &amp;context={})</td></tr>
+<tr class="separator:a958fbb3d96126f4e718a660c2c439380"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a506fc3e006b7cf46719739ce26e624a0"><td class="memItemLeft" align="right" valign="top"><a id="a506fc3e006b7cf46719739ce26e624a0"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BinaryCompactObject</b> (const <a class="el" href="classdomain_1_1creators_1_1BinaryCompactObject.html">BinaryCompactObject</a> &amp;)=delete</td></tr>
+<tr class="separator:a506fc3e006b7cf46719739ce26e624a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab907a500572fbcdd219a7eaccb9c77f7"><td class="memItemLeft" align="right" valign="top"><a id="ab907a500572fbcdd219a7eaccb9c77f7"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BinaryCompactObject</b> (<a class="el" href="classdomain_1_1creators_1_1BinaryCompactObject.html">BinaryCompactObject</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:ab907a500572fbcdd219a7eaccb9c77f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a020d663c6f8dedfd6f733e76fe8a1d5c"><td class="memItemLeft" align="right" valign="top"><a id="a020d663c6f8dedfd6f733e76fe8a1d5c"></a>
+<a class="el" href="classdomain_1_1creators_1_1BinaryCompactObject.html">BinaryCompactObject</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1creators_1_1BinaryCompactObject.html">BinaryCompactObject</a> &amp;)=delete</td></tr>
+<tr class="separator:a020d663c6f8dedfd6f733e76fe8a1d5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc4bc84c0ea51d88ed3853c987ac1b63"><td class="memItemLeft" align="right" valign="top"><a id="abc4bc84c0ea51d88ed3853c987ac1b63"></a>
+<a class="el" href="classdomain_1_1creators_1_1BinaryCompactObject.html">BinaryCompactObject</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1creators_1_1BinaryCompactObject.html">BinaryCompactObject</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:abc4bc84c0ea51d88ed3853c987ac1b63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f4891f088953efcb299fd2b7bb2839c"><td class="memItemLeft" align="right" valign="top"><a id="a4f4891f088953efcb299fd2b7bb2839c"></a>
+<a class="el" href="classDomain.html">Domain</a>&lt; 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>create_domain</b> () const noexcept override</td></tr>
+<tr class="separator:a4f4891f088953efcb299fd2b7bb2839c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aecd46ed709b7b35bf37b7c65bb732008"><td class="memItemLeft" align="right" valign="top"><a id="aecd46ed709b7b35bf37b7c65bb732008"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, 3 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>initial_extents</b> () const noexcept override</td></tr>
+<tr class="separator:aecd46ed709b7b35bf37b7c65bb732008"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1e33f2b9acedb8cf318bba8d2611d57c"><td class="memItemLeft" align="right" valign="top"><a id="a1e33f2b9acedb8cf318bba8d2611d57c"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, 3 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>initial_refinement_levels</b> () const noexcept override</td></tr>
+<tr class="separator:a1e33f2b9acedb8cf318bba8d2611d57c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad0c65446766abdb023da5da1482d4de5"><td class="memItemLeft" align="right" valign="top"><a id="ad0c65446766abdb023da5da1482d4de5"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>functions_of_time</b> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; override</td></tr>
+<tr class="separator:ad0c65446766abdb023da5da1482d4de5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classDomainCreator"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classDomainCreator')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classDomainCreator.html">DomainCreator&lt; 3 &gt;</a></td></tr>
+<tr class="memitem:a7982cfa2ee131552ace2a80e372b7b1a inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a7982cfa2ee131552ace2a80e372b7b1a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>DomainCreator</b> (const <a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;)=delete</td></tr>
+<tr class="separator:a7982cfa2ee131552ace2a80e372b7b1a inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ceb4d3fea0600788dc3b4bc576ce0cb inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a5ceb4d3fea0600788dc3b4bc576ce0cb"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>DomainCreator</b> (<a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a5ceb4d3fea0600788dc3b4bc576ce0cb inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a7a8b3ba0da17d6418c0b8bcb9e58fe inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a6a7a8b3ba0da17d6418c0b8bcb9e58fe"></a>
+<a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;)=delete</td></tr>
+<tr class="separator:a6a7a8b3ba0da17d6418c0b8bcb9e58fe inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d42c312fdc02e83f685e0c6267f8192 inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a1d42c312fdc02e83f685e0c6267f8192"></a>
+<a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a1d42c312fdc02e83f685e0c6267f8192 inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a193c03e0686458565ff5ac7d58e9ae22 inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a193c03e0686458565ff5ac7d58e9ae22"></a>
+virtual <a class="el" href="classDomain.html">Domain</a>&lt; VolumeDim &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>create_domain</b> () const=0</td></tr>
+<tr class="separator:a193c03e0686458565ff5ac7d58e9ae22 inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b6216ea7714bfb455b771e4f08ae759 inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a1b6216ea7714bfb455b771e4f08ae759"></a>
+virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, VolumeDim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDomainCreator.html#a1b6216ea7714bfb455b771e4f08ae759">initial_extents</a> () const noexcept=0</td></tr>
+<tr class="memdesc:a1b6216ea7714bfb455b771e4f08ae759 inherit pub_methods_classDomainCreator"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain the initial grid extents of the <a class="el" href="classElement.html">Element</a>s in each block. <br /></td></tr>
+<tr class="separator:a1b6216ea7714bfb455b771e4f08ae759 inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b7ffedcf9f508874dde546b5418349f inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a2b7ffedcf9f508874dde546b5418349f"></a>
+virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, VolumeDim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDomainCreator.html#a2b7ffedcf9f508874dde546b5418349f">initial_refinement_levels</a> () const noexcept=0</td></tr>
+<tr class="memdesc:a2b7ffedcf9f508874dde546b5418349f inherit pub_methods_classDomainCreator"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain the initial refinement levels of the blocks. <br /></td></tr>
+<tr class="separator:a2b7ffedcf9f508874dde546b5418349f inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a686f011a0c4399253e62474e1549d8e7 inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a686f011a0c4399253e62474e1549d8e7"></a>
+virtual auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDomainCreator.html#a686f011a0c4399253e62474e1549d8e7">functions_of_time</a> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;</td></tr>
+<tr class="memdesc:a686f011a0c4399253e62474e1549d8e7 inherit pub_methods_classDomainCreator"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the functions of time used for moving meshes. <br /></td></tr>
+<tr class="separator:a686f011a0c4399253e62474e1549d8e7 inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a7b5d8375f7a98c315df3b847f8d547ef"><td class="memItemLeft" align="right" valign="top"><a id="a7b5d8375f7a98c315df3b847f8d547ef"></a>
+static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a7b5d8375f7a98c315df3b847f8d547ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A general domain for two compact objects. </p>
+<div class="image">
+<img src="binary_compact_object_domain.png" alt=""/>
+<div class="caption">
+A BHNS domain.</div></div>
+<p>Creates a 3D <a class="el" href="classDomain.html" title="A wrapper around a vector of Blocks that represent the computational domain.">Domain</a> that represents a binary compact object solution. The <a class="el" href="classDomain.html" title="A wrapper around a vector of Blocks that represent the computational domain.">Domain</a> consists of 4, 5, or 6 nested layers of blocks; these layers are, working from the interior toward the exterior:</p><ul>
+<li>0: (optionally) The block at the center of each compact object, if not excised. If present, this block is a cube. If excised, the hole left by its absence is spherical.</li>
+<li>1: The blocks that resolve each individual compact object. This layer has a spherical outer boundary - if the corresponding layer-0 block exists, then the layer is a cube-to-sphere transition; if the layer-0 block is excised, then the layer is a spherical shell.</li>
+<li>2: The blocks that surround each object with a cube. Around each compact object, this layer transitions from a sphere to a cube.</li>
+<li>3: The blocks that surround each cube with a half-cube. At this layer, the two compact objects are enclosed in a single cube-shaped grid.</li>
+<li>4: The 10 blocks that form the first outer shell. This layer transitions back to spherical. The gridpoints are distributed linearly with respect to radius.</li>
+<li>5: The 10 blocks that form a second outer shell. This layer is spherical, so a logarithmic map can optionally be used in this layer. This allows the domain to extend to large radial distances from the compact objects. This layer can be h-refined radially, creating a layer of multiple concentric spherical shells.</li>
+</ul>
+<p>In the code and options below, <code><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1ObjectA.html">ObjectA</a></code> and <code><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1ObjectB.html">ObjectB</a></code> refer to the two compact objects, and by extension, also refer to the layers that immediately surround each compact object. Note that <code><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1ObjectA.html">ObjectA</a></code> is located to the left of the origin (along the negative x-axis) and <code><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1ObjectB.html">ObjectB</a></code> is located to the right of the origin. <code>enveloping cube</code> refers to the outer surface of Layer 3. <code>outer sphere</code> is the radius of the spherical outer boundary, which is the outer boundary of Layer 5. The <code>enveloping cube</code> and <code>outer sphere</code> are both centered at the origin. <code>cutting plane</code> refers to the plane along which the domain divides into two hemispheres. In the final coordinates, the cutting plane always intersects the x-axis at the origin.</p>
+<dl class="section note"><dt>Note</dt><dd>The x-coordinate locations of the <code><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1ObjectA.html">ObjectA</a></code> and <code><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1ObjectB.html">ObjectB</a></code> should be chosen such that the center of mass is located at x=0.</dd>
+<dd>
+When using this domain, the metavariables struct can contain a struct named <code>domain</code> that conforms to <a class="el" href="structdomain_1_1protocols_1_1Metavariables.html" title="Compile-time options for a Domain.">domain::protocols::Metavariables</a>. If domain::enable_time_dependent_maps is either set to <code>false</code> or not specified in the metavariables, then this domain will be time-independent. If domain::enable_time_dependent_maps is set to <code>true</code>, then this domain also includes a time-dependent map, along with additional options (and a corresponding constructor) for initializing the time-dependent map. These options include <code><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialTime.html" title="The initial time of the functions of time.">InitialTime</a></code> and <code><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1InitialExpirationDeltaT.html" title="The initial time interval for updates of the functions of time.">InitialExpirationDeltaT</a></code>, which specify the initial time and the initial updating time interval, respectively, for the <a class="el" href="namespacedomain_1_1FunctionsOfTime.html" title="Contains functions of time to support the dual frame system.">FunctionsOfTime</a> controlling the map. The time-dependent map itself consists of a composition of a CubicScale expansion map and a Rotation map about the z axis everywhere except possibly in layer 1; in that case, if <code><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1ObjectA.html">ObjectA</a></code> or <code><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1ObjectB.html">ObjectB</a></code> is excised, then the time-dependent map in the corresponding blocks in layer 1 is a composition of a SphericalCompression size map, a CubicScale expansion map, and a Rotation map about the z axis. </dd></dl>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/Creators/<a class="el" href="BinaryCompactObject_8hpp_source.html">BinaryCompactObject.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: StepChoosers::StepToTimes Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceStepChoosers.html">StepChoosers</a></li><li class="navelem"><a class="el" href="classStepChoosers_1_1StepToTimes.html">StepToTimes</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classStepChoosers_1_1StepToTimes-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">StepChoosers::StepToTimes Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Suggests step sizes to place steps at specific times.  
+ <a href="classStepChoosers_1_1StepToTimes.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="StepToTimes_8hpp_source.html">StepToTimes.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structStepChoosers_1_1StepToTimes_1_1Times.html">Times</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a13994ffd29524ef83567c5b4fd7ee420"><td class="memItemLeft" align="right" valign="top"><a id="a13994ffd29524ef83567c5b4fd7ee420"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structStepChoosers_1_1StepToTimes_1_1Times.html">Times</a> &gt;</td></tr>
+<tr class="separator:a13994ffd29524ef83567c5b4fd7ee420"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0bc9a1c44d1208c21da82755355c5202"><td class="memItemLeft" align="right" valign="top"><a id="a0bc9a1c44d1208c21da82755355c5202"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt;::<a class="el" href="structTags_1_1TimeStepId.html">Tags::TimeStepId</a> &gt;</td></tr>
+<tr class="separator:a0bc9a1c44d1208c21da82755355c5202"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7651fe96fe957b0f01b9096e5eaee127"><td class="memItemLeft" align="right" valign="top"><a id="a7651fe96fe957b0f01b9096e5eaee127"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a7651fe96fe957b0f01b9096e5eaee127"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a9635a4e92b6fbc7a08592ed13d0fb11a"><td class="memItemLeft" align="right" valign="top"><a id="a9635a4e92b6fbc7a08592ed13d0fb11a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>StepToTimes</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classTimeSequence.html">TimeSequence</a>&lt; double &gt;&gt; times) noexcept</td></tr>
+<tr class="separator:a9635a4e92b6fbc7a08592ed13d0fb11a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13e3e9a5487187b2f2895c54d28eb46e"><td class="memTemplParams" colspan="2"><a id="a13e3e9a5487187b2f2895c54d28eb46e"></a>
+template&lt;typename Metavariables &gt; </td></tr>
+<tr class="memitem:a13e3e9a5487187b2f2895c54d28eb46e"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; double, bool &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator()</b> (const <a class="el" href="classTimeStepId.html">TimeStepId</a> &amp;time_step_id, const double last_step_magnitude, const <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt; &amp;) const noexcept</td></tr>
+<tr class="separator:a13e3e9a5487187b2f2895c54d28eb46e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a132f2620648a9acae842e75a222f1988"><td class="memItemLeft" align="right" valign="top"><a id="a132f2620648a9acae842e75a222f1988"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:a132f2620648a9acae842e75a222f1988"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classStepChooser_3_01StepChooserUse_1_1Slab_01_4"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classStepChooser_3_01StepChooserUse_1_1Slab_01_4')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classStepChooser_3_01StepChooserUse_1_1Slab_01_4.html">StepChooser&lt; StepChooserUse::Slab &gt;</a></td></tr>
+<tr class="memitem:ab7eca95ac7c0956018b0bb2a5e408cc5 inherit pub_methods_classStepChooser_3_01StepChooserUse_1_1Slab_01_4"><td class="memItemLeft" align="right" valign="top"><a id="ab7eca95ac7c0956018b0bb2a5e408cc5"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_abstract</b> (<a class="el" href="classStepChooser.html">StepChooser</a>)</td></tr>
+<tr class="separator:ab7eca95ac7c0956018b0bb2a5e408cc5 inherit pub_methods_classStepChooser_3_01StepChooserUse_1_1Slab_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a037bac85081d4b617e7fc6c8467e99fb inherit pub_methods_classStepChooser_3_01StepChooserUse_1_1Slab_01_4"><td class="memTemplParams" colspan="2">template&lt;typename Metavariables , typename DbTags &gt; </td></tr>
+<tr class="memitem:a037bac85081d4b617e7fc6c8467e99fb inherit pub_methods_classStepChooser_3_01StepChooserUse_1_1Slab_01_4"><td class="memTemplItemLeft" align="right" valign="top">double&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classStepChooser_3_01StepChooserUse_1_1Slab_01_4.html#a037bac85081d4b617e7fc6c8467e99fb">desired_slab</a> (const double last_step_magnitude, const db::DataBox&lt; DbTags &gt; &amp;box, const <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt; &amp;cache) const noexcept</td></tr>
+<tr class="memdesc:a037bac85081d4b617e7fc6c8467e99fb inherit pub_methods_classStepChooser_3_01StepChooserUse_1_1Slab_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>last_step_magnitude</code> parameter describes the slab size to be adjusted; It may be infinite if the appropriate size cannot be determined.  <a href="classStepChooser_3_01StepChooserUse_1_1Slab_01_4.html#a037bac85081d4b617e7fc6c8467e99fb">More...</a><br /></td></tr>
+<tr class="separator:a037bac85081d4b617e7fc6c8467e99fb inherit pub_methods_classStepChooser_3_01StepChooserUse_1_1Slab_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a9079fcdf4580a5e95637a6499729d750"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a9079fcdf4580a5e95637a6499729d750"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Suggests step sizes to place steps at specific times. </p>
+<p>The suggestion provided depends on the current time, so it should be applied immediately, rather than delayed several slabs. As changing immediately is inefficient, it may be best to use triggers to only activate this check near (within a few slabs of) the desired time. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a9079fcdf4580a5e95637a6499729d750"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9079fcdf4580a5e95637a6499729d750">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> StepChoosers::StepToTimes::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      <span class="stringliteral">&quot;Suggests step sizes to place steps at specific times.\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;The suggestion provided depends on the current time, so it should\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;be applied immediately, rather than delayed several slabs.  As\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;changing immediately is inefficient, it may be best to use\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;triggers to only activate this check near (within a few slabs of)\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;the desired time.\n&quot;</span></div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Time/StepChoosers/<a class="el" href="StepToTimes_8hpp_source.html">StepToTimes.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

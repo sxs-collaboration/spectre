@@ -1,0 +1,249 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: ContinuedFraction&lt; T &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classContinuedFraction-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">ContinuedFraction&lt; T &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__UtilitiesGroup.html">Utilities</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Compute the continued fraction representation of a number.  
+ <a href="classContinuedFraction.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="FractionUtilities_8hpp_source.html">FractionUtilities.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:aff33d7822b3c2deab536167550df37eb"><td class="memItemLeft" align="right" valign="top"><a id="aff33d7822b3c2deab536167550df37eb"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classContinuedFraction.html#aff33d7822b3c2deab536167550df37eb">value_type</a> = typename value_type_helper&lt; T &gt;::type</td></tr>
+<tr class="memdesc:aff33d7822b3c2deab536167550df37eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">The decayed return type of T::numerator() for a fraction, int64_t for other types. <br /></td></tr>
+<tr class="separator:aff33d7822b3c2deab536167550df37eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a7cd80247108ea85fb4ed9cbf353bf00c"><td class="memItemLeft" align="right" valign="top"><a id="a7cd80247108ea85fb4ed9cbf353bf00c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ContinuedFraction</b> (const T &amp;value) noexcept</td></tr>
+<tr class="separator:a7cd80247108ea85fb4ed9cbf353bf00c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac27f25d6164effbe09ec9ee534fec3c"><td class="memItemLeft" align="right" valign="top"><a id="aac27f25d6164effbe09ec9ee534fec3c"></a>
+<a class="el" href="classContinuedFraction.html#aff33d7822b3c2deab536167550df37eb">value_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classContinuedFraction.html#aac27f25d6164effbe09ec9ee534fec3c">operator*</a> () const noexcept</td></tr>
+<tr class="memdesc:aac27f25d6164effbe09ec9ee534fec3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain the current element in the expansion. <br /></td></tr>
+<tr class="separator:aac27f25d6164effbe09ec9ee534fec3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab319fab096709f705605b460be8861bf"><td class="memItemLeft" align="right" valign="top"><a id="ab319fab096709f705605b460be8861bf"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classContinuedFraction.html#ab319fab096709f705605b460be8861bf">operator bool</a> () const noexcept</td></tr>
+<tr class="memdesc:ab319fab096709f705605b460be8861bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if the expansion is incomplete. If T is a fraction type this will be true until the full exact representation of the fraction is produced. If T is a floating point type this will be true until the estimated numerical error is larger than the remaining error in the representation. <br /></td></tr>
+<tr class="separator:ab319fab096709f705605b460be8861bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a815a2ee755b7b68691299f75128987"><td class="memItemLeft" align="right" valign="top"><a id="a2a815a2ee755b7b68691299f75128987"></a>
+<a class="el" href="classContinuedFraction.html">ContinuedFraction</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classContinuedFraction.html#a2a815a2ee755b7b68691299f75128987">operator++</a> () noexcept</td></tr>
+<tr class="memdesc:a2a815a2ee755b7b68691299f75128987"><td class="mdescLeft">&#160;</td><td class="mdescRight">Advance to the next element in the expansion. <br /></td></tr>
+<tr class="separator:a2a815a2ee755b7b68691299f75128987"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;class T&gt;<br />
+class ContinuedFraction&lt; T &gt;</h3>
+
+<p>Compute the continued fraction representation of a number. </p>
+<p>The template argument may be a fraction type or a floating point type. If the expansion is computed exactly then it will be the shorter of the expansions for the given value. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Utilities/<a class="el" href="FractionUtilities_8hpp_source.html">FractionUtilities.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

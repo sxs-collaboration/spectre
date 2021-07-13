@@ -1,0 +1,461 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Cce::InterfaceManagers::GhLocalTimeStepping Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceCce.html">Cce</a></li><li class="navelem"><a class="el" href="namespaceCce_1_1InterfaceManagers.html">InterfaceManagers</a></li><li class="navelem"><a class="el" href="classCce_1_1InterfaceManagers_1_1GhLocalTimeStepping.html">GhLocalTimeStepping</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classCce_1_1InterfaceManagers_1_1GhLocalTimeStepping-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Cce::InterfaceManagers::GhLocalTimeStepping Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Implementation of a <code><a class="el" href="classCce_1_1InterfaceManagers_1_1GhInterfaceManager.html" title="Abstract base class for storage and retrieval of generalized harmonic quantities communicated from a ...">GhInterfaceManager</a></code> that provides data according to local time-stepping dense output.  
+ <a href="classCce_1_1InterfaceManagers_1_1GhLocalTimeStepping.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="GhLocalTimeStepping_8hpp_source.html">GhLocalTimeStepping.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1InterfaceManagers_1_1GhLocalTimeStepping_1_1AdamsBashforthOrder.html">AdamsBashforthOrder</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a4d43f5ae38f17510715aafe8d6eac2aa"><td class="memItemLeft" align="right" valign="top"><a id="a4d43f5ae38f17510715aafe8d6eac2aa"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dt_gh_variables</b> = Variables&lt; tmpl::list&lt; ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Pi.html">GeneralizedHarmonic::Tags::Pi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Phi.html">GeneralizedHarmonic::Tags::Phi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;&gt; &gt;</td></tr>
+<tr class="separator:a4d43f5ae38f17510715aafe8d6eac2aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d9d1f0124d7daa8613d9a60e82cdd95"><td class="memItemLeft" align="right" valign="top"><a id="a6d9d1f0124d7daa8613d9a60e82cdd95"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structCce_1_1InterfaceManagers_1_1GhLocalTimeStepping_1_1AdamsBashforthOrder.html">AdamsBashforthOrder</a> &gt;</td></tr>
+<tr class="separator:a6d9d1f0124d7daa8613d9a60e82cdd95"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classCce_1_1InterfaceManagers_1_1GhInterfaceManager"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classCce_1_1InterfaceManagers_1_1GhInterfaceManager')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classCce_1_1InterfaceManagers_1_1GhInterfaceManager.html">Cce::InterfaceManagers::GhInterfaceManager</a></td></tr>
+<tr class="memitem:ac2a386ac46a02d251c7310ca0cc35198 inherit pub_types_classCce_1_1InterfaceManagers_1_1GhInterfaceManager"><td class="memItemLeft" align="right" valign="top"><a id="ac2a386ac46a02d251c7310ca0cc35198"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>gh_variables</b> = Variables&lt; tmpl::list&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Pi.html">GeneralizedHarmonic::Tags::Pi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Phi.html">GeneralizedHarmonic::Tags::Phi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;&gt;</td></tr>
+<tr class="separator:ac2a386ac46a02d251c7310ca0cc35198 inherit pub_types_classCce_1_1InterfaceManagers_1_1GhInterfaceManager"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63da5315236fa1f8dea05e248093f44f inherit pub_types_classCce_1_1InterfaceManagers_1_1GhInterfaceManager"><td class="memItemLeft" align="right" valign="top"><a id="a63da5315236fa1f8dea05e248093f44f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::list&lt; <a class="el" href="classCce_1_1InterfaceManagers_1_1GhLocalTimeStepping.html">GhLocalTimeStepping</a>, <a class="el" href="classCce_1_1InterfaceManagers_1_1GhLockstep.html">GhLockstep</a> &gt;</td></tr>
+<tr class="separator:a63da5315236fa1f8dea05e248093f44f inherit pub_types_classCce_1_1InterfaceManagers_1_1GhInterfaceManager"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a085ae803d844c1ac1ac0c3e791494a72"><td class="memItemLeft" align="right" valign="top"><a id="a085ae803d844c1ac1ac0c3e791494a72"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>GhLocalTimeStepping</b> (const size_t order)</td></tr>
+<tr class="separator:a085ae803d844c1ac1ac0c3e791494a72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a4deeb2465c16fbf228fc567b283ad8"><td class="memItemLeft" align="right" valign="top"><a id="a8a4deeb2465c16fbf228fc567b283ad8"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>GhLocalTimeStepping</b> (CkMigrateMessage *) noexcept</td></tr>
+<tr class="separator:a8a4deeb2465c16fbf228fc567b283ad8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1e6f245bec7da760f343c74b2f94583a"><td class="memItemLeft" align="right" valign="top"><a id="a1e6f245bec7da760f343c74b2f94583a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_template</b> (<a class="el" href="classCce_1_1InterfaceManagers_1_1GhLocalTimeStepping.html">GhLocalTimeStepping</a>)</td></tr>
+<tr class="separator:a1e6f245bec7da760f343c74b2f94583a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a55425270084dc3a534d1ed2028cda28c"><td class="memItemLeft" align="right" valign="top"><a id="a55425270084dc3a534d1ed2028cda28c"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classCce_1_1InterfaceManagers_1_1GhInterfaceManager.html">GhInterfaceManager</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const noexcept override</td></tr>
+<tr class="separator:a55425270084dc3a534d1ed2028cda28c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c695bf76bd6f5b2bdf22321c071cbdb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCce_1_1InterfaceManagers_1_1GhLocalTimeStepping.html#a2c695bf76bd6f5b2bdf22321c071cbdb">insert_gh_data</a> (<a class="el" href="classTimeStepId.html">TimeStepId</a> time_id, const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;spacetime_metric, const tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;phi, const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;pi, const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;dt_spacetime_metric, const tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;dt_phi, const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;dt_pi) noexcept override</td></tr>
+<tr class="memdesc:a2c695bf76bd6f5b2bdf22321c071cbdb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store the provided data set to prepare for time-stepping dense output.  <a href="classCce_1_1InterfaceManagers_1_1GhLocalTimeStepping.html#a2c695bf76bd6f5b2bdf22321c071cbdb">More...</a><br /></td></tr>
+<tr class="separator:a2c695bf76bd6f5b2bdf22321c071cbdb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a4e1718e29aedc35cc6a6fcd55d98e9"><td class="memItemLeft" align="right" valign="top"><a id="a5a4e1718e29aedc35cc6a6fcd55d98e9"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>insert_next_gh_time</b> (<a class="el" href="classTimeStepId.html">TimeStepId</a> time_id, <a class="el" href="classTimeStepId.html">TimeStepId</a> next_time_id) noexcept override</td></tr>
+<tr class="separator:a5a4e1718e29aedc35cc6a6fcd55d98e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acaf87803d5479846d0ee28517f9efad4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCce_1_1InterfaceManagers_1_1GhLocalTimeStepping.html#acaf87803d5479846d0ee28517f9efad4">request_gh_data</a> (const <a class="el" href="classTimeStepId.html">TimeStepId</a> &amp;time_id) noexcept override</td></tr>
+<tr class="memdesc:acaf87803d5479846d0ee28517f9efad4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store the next time step that will be required by the CCE system to proceed with the evolution.  <a href="classCce_1_1InterfaceManagers_1_1GhLocalTimeStepping.html#acaf87803d5479846d0ee28517f9efad4">More...</a><br /></td></tr>
+<tr class="separator:acaf87803d5479846d0ee28517f9efad4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab2c79a7ecdb72693809f9eba83054d3c"><td class="memItemLeft" align="right" valign="top"><a id="ab2c79a7ecdb72693809f9eba83054d3c"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCce_1_1InterfaceManagers_1_1GhLocalTimeStepping.html#ab2c79a7ecdb72693809f9eba83054d3c">retrieve_and_remove_first_ready_gh_data</a> () noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; <a class="el" href="classTimeStepId.html">TimeStepId</a>, gh_variables &gt;&gt; override</td></tr>
+<tr class="memdesc:ab2c79a7ecdb72693809f9eba83054d3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a></code> of either the dense-output data at the least recently requested time, or <code>std::nullopt</code> if not enough GH data has been supplied yet. <br /></td></tr>
+<tr class="separator:ab2c79a7ecdb72693809f9eba83054d3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca24835c68d5b388bdf99476a9f6321f"><td class="memItemLeft" align="right" valign="top"><a id="aca24835c68d5b388bdf99476a9f6321f"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCce_1_1InterfaceManagers_1_1GhLocalTimeStepping.html#aca24835c68d5b388bdf99476a9f6321f">number_of_pending_requests</a> () const noexcept override</td></tr>
+<tr class="memdesc:aca24835c68d5b388bdf99476a9f6321f"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of requests that have been submitted and not yet retrieved. <br /></td></tr>
+<tr class="separator:aca24835c68d5b388bdf99476a9f6321f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a934249983228e503831f788961d0cbe5"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCce_1_1InterfaceManagers_1_1GhLocalTimeStepping.html#a934249983228e503831f788961d0cbe5">number_of_gh_times</a> () const noexcept override</td></tr>
+<tr class="memdesc:a934249983228e503831f788961d0cbe5"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of times for which data from the GH system is stored.  <a href="classCce_1_1InterfaceManagers_1_1GhLocalTimeStepping.html#a934249983228e503831f788961d0cbe5">More...</a><br /></td></tr>
+<tr class="separator:a934249983228e503831f788961d0cbe5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3233f213a91c62679f7ef1c1f572d99f"><td class="memItemLeft" align="right" valign="top"><a id="a3233f213a91c62679f7ef1c1f572d99f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCce_1_1InterfaceManagers_1_1GhLocalTimeStepping.html#a3233f213a91c62679f7ef1c1f572d99f">pup</a> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="memdesc:a3233f213a91c62679f7ef1c1f572d99f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialization for Charm++. <br /></td></tr>
+<tr class="separator:a3233f213a91c62679f7ef1c1f572d99f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abcb965c5d158e985dab05628787e21f5"><td class="memItemLeft" align="right" valign="top"><a id="abcb965c5d158e985dab05628787e21f5"></a>
+<a class="el" href="namespaceCce_1_1InterfaceManagers.html#ae9ec3751ad7e3dae08d7229796c9e466">InterpolationStrategy</a>&#160;</td><td class="memItemRight" valign="bottom"><b>get_interpolation_strategy</b> () const noexcept override</td></tr>
+<tr class="separator:abcb965c5d158e985dab05628787e21f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classCce_1_1InterfaceManagers_1_1GhInterfaceManager"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classCce_1_1InterfaceManagers_1_1GhInterfaceManager')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classCce_1_1InterfaceManagers_1_1GhInterfaceManager.html">Cce::InterfaceManagers::GhInterfaceManager</a></td></tr>
+<tr class="memitem:a1f194b3c9ef73fc4d416f616383bc812 inherit pub_methods_classCce_1_1InterfaceManagers_1_1GhInterfaceManager"><td class="memItemLeft" align="right" valign="top"><a id="a1f194b3c9ef73fc4d416f616383bc812"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_abstract</b> (<a class="el" href="classCce_1_1InterfaceManagers_1_1GhInterfaceManager.html">GhInterfaceManager</a>)</td></tr>
+<tr class="separator:a1f194b3c9ef73fc4d416f616383bc812 inherit pub_methods_classCce_1_1InterfaceManagers_1_1GhInterfaceManager"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:ab025771dbbd5011c32cd99ef02490465"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:ab025771dbbd5011c32cd99ef02490465"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Implementation of a <code><a class="el" href="classCce_1_1InterfaceManagers_1_1GhInterfaceManager.html" title="Abstract base class for storage and retrieval of generalized harmonic quantities communicated from a ...">GhInterfaceManager</a></code> that provides data according to local time-stepping dense output. </p>
+<h3>Details</h3>
+<p>This class receives data from the Generalized Harmonic system sufficient to perform the time-stepping dense output to arbitrary times required by CCE. From the Generalized Harmonic system, it receives the spacetime metric \(g_{a b}\) and Generalized Harmonic \(\Phi_{i a b}\) and \(\Pi_{ab}\), as well as each of their time derivatives, the current <code><a class="el" href="classTimeStepId.html">TimeStepId</a></code>, and the next <code><a class="el" href="classTimeStepId.html">TimeStepId</a></code> via <code><a class="el" href="classCce_1_1InterfaceManagers_1_1GhLocalTimeStepping.html#a2c695bf76bd6f5b2bdf22321c071cbdb" title="Store the provided data set to prepare for time-stepping dense output.">GhLocalTimeStepping::insert_gh_data()</a></code>. The CCE system supplies requests for time steps via <code><a class="el" href="classCce_1_1InterfaceManagers_1_1GhLocalTimeStepping.html#acaf87803d5479846d0ee28517f9efad4" title="Store the next time step that will be required by the CCE system to proceed with the evolution.">GhLocalTimeStepping::request_gh_data()</a></code> and receives dense output boundary data via <code><a class="el" href="classCce_1_1InterfaceManagers_1_1GhLocalTimeStepping.html#ab2c79a7ecdb72693809f9eba83054d3c" title="Return a std::optional of either the dense-output data at the least recently requested time,...">GhLocalTimeStepping::retrieve_and_remove_first_ready_gh_data()</a></code>. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a2c695bf76bd6f5b2bdf22321c071cbdb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2c695bf76bd6f5b2bdf22321c071cbdb">&#9670;&nbsp;</a></span>insert_gh_data()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Cce::InterfaceManagers::GhLocalTimeStepping::insert_gh_data </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classTimeStepId.html">TimeStepId</a>&#160;</td>
+          <td class="paramname"><em>time_id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>spacetime_metric</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>phi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>pi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>dt_spacetime_metric</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>dt_phi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>dt_pi</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Store the provided data set to prepare for time-stepping dense output. </p>
+<h3>Details</h3>
+<p>The <code>next_time_id</code> is required to infer the span of time values that should be permitted for the dense output, and at what point the CCE system should wait for additional data from the GH system. </p>
+
+<p>Implements <a class="el" href="classCce_1_1InterfaceManagers_1_1GhInterfaceManager.html">Cce::InterfaceManagers::GhInterfaceManager</a>.</p>
+
+</div>
+</div>
+<a id="a934249983228e503831f788961d0cbe5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a934249983228e503831f788961d0cbe5">&#9670;&nbsp;</a></span>number_of_gh_times()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t Cce::InterfaceManagers::GhLocalTimeStepping::number_of_gh_times </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">override</span><span class="mlabel">virtual</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The number of times for which data from the GH system is stored. </p>
+<h3>Details</h3>
+<p>This will be roughly the order of the time stepper plus the number of times that the GH system is ahead of the CCE system. </p>
+
+<p>Implements <a class="el" href="classCce_1_1InterfaceManagers_1_1GhInterfaceManager.html">Cce::InterfaceManagers::GhInterfaceManager</a>.</p>
+
+</div>
+</div>
+<a id="acaf87803d5479846d0ee28517f9efad4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acaf87803d5479846d0ee28517f9efad4">&#9670;&nbsp;</a></span>request_gh_data()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Cce::InterfaceManagers::GhLocalTimeStepping::request_gh_data </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classTimeStepId.html">TimeStepId</a> &amp;&#160;</td>
+          <td class="paramname"><em>time_id</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Store the next time step that will be required by the CCE system to proceed with the evolution. </p>
+<h3>Details</h3>
+<p>The values of these time steps will be used to generate the dense output from the provided GH data. </p>
+
+<p>Implements <a class="el" href="classCce_1_1InterfaceManagers_1_1GhInterfaceManager.html">Cce::InterfaceManagers::GhInterfaceManager</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="ab025771dbbd5011c32cd99ef02490465"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab025771dbbd5011c32cd99ef02490465">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> Cce::InterfaceManagers::GhLocalTimeStepping::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      <span class="stringliteral">&quot;Pass data between GH and CCE systems via Adams-Bashforth local &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;time-stepping&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/Systems/Cce/InterfaceManagers/<a class="el" href="GhLocalTimeStepping_8hpp_source.html">GhLocalTimeStepping.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

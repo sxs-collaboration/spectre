@@ -1,0 +1,402 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Installation</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">Installation </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><p>This page details the installation procedure for SpECTRE on personal computers. For instructions on installing SpECTRE on clusters please refer to the <a class="el" href="installation_on_clusters.html">Installation on clusters</a> page.</p>
+<h2><a class="anchor" id="autotoc_md235"></a>
+Quick-start guide for code development with Docker and Visual Studio Code</h2>
+<p>If you're new to writing code for SpECTRE and would like to jump right into a working development environment, a good place to start is our <a class="el" href="dev_guide_quick_start_docker_vscode.html">Code development quick-start with Docker and Visual Studio Code</a>. If you prefer setting up your development environment differently, read on!</p>
+<h2><a class="anchor" id="autotoc_md236"></a>
+Dependencies</h2>
+<h3><a class="anchor" id="autotoc_md237"></a>
+Required:</h3>
+<ul>
+<li><a href="https://gcc.gnu.org/">GCC</a> 7.0 or later, <a href="https://clang.llvm.org/">Clang</a> 8.0 or later, or AppleClang 11.0.0 or later</li>
+<li><a href="https://cmake.org/">CMake</a> 3.12.0 or later</li>
+<li><a href="http://charm.cs.illinois.edu/">Charm++</a> 6.10.2</li>
+<li><a href="https://git-scm.com/">Git</a></li>
+<li>BLAS (e.g. <a href="http://www.openblas.net">OpenBLAS</a>)</li>
+<li><a href="https://bitbucket.org/blaze-lib/blaze/overview">Blaze</a> v3.7</li>
+<li><a href="http://www.boost.org/">Boost</a> 1.60.0 or later</li>
+<li><a href="https://github.com/edouarda/brigand">Brigand</a></li>
+<li><a href="https://github.com/philsquared/Catch">Catch</a> 2.8.0 or later</li>
+<li><a href="https://www.gnu.org/software/gsl/">GSL</a></li>
+<li><a href="https://support.hdfgroup.org/HDF5/">HDF5</a> (non-mpi version on macOS)</li>
+<li><a href="https://github.com/jemalloc/jemalloc">jemalloc</a></li>
+<li>LAPACK</li>
+<li><a href="https://github.com/Libsharp/libsharp">libsharp</a> should be built with support disabled for openmp and mpi, as we want all of our parallelism to be accomplished via Charm++.</li>
+<li><a href="https://github.com/hfp/libxsmm">LIBXSMM</a> version 1.16.1 or later</li>
+<li><a href="https://github.com/jbeder/yaml-cpp">yaml-cpp</a> version 0.6.3 is recommended. Building with shared library support is also recommended.</li>
+<li><a href="https://www.python.org/">Python</a> 2.7, or 3.5 or later</li>
+<li><a href="http://www.numpy.org/">NumPy</a> 1.10 or later</li>
+<li><a href="https://www.scipy.org">SciPy</a></li>
+<li><a href="https://matplotlib.org/">matplotlib</a></li>
+<li><a href="https://pyyaml.org/">PyYAML</a></li>
+<li><a href="https://www.h5py.org">h5py</a></li>
+</ul>
+<h3><a class="anchor" id="autotoc_md238"></a>
+Optional:</h3>
+<ul>
+<li><a href="https://pybind11.readthedocs.io">Pybind11</a> 2.6.0 or later for SpECTRE Python bindings</li>
+<li><a href="http://www.stack.nl/~dimitri/doxygen/index.html">Doxygen</a> — to generate documentation</li>
+<li><a href="https://www.python.org/">Python</a> with <a href="https://pypi.org/project/beautifulsoup4/">BeautifulSoup4</a> and <a href="https://pybtex.org">Pybtex</a> — for documentation post-processing</li>
+<li><a href="https://github.com/google/benchmark">Google Benchmark</a> - to do microbenchmarking inside the SpECTRE framework. v1.2 or newer is required</li>
+<li><a href="http://ltp.sourceforge.net/coverage/lcov.php">LCOV</a> and <a href="https://gcc.gnu.org/onlinedocs/gcc/Gcov.html">gcov</a> — to check code test coverage</li>
+<li><a href="https://github.com/psycofdj/coverxygen">coverxygen</a> — to check documentation coverage</li>
+<li><a href="http://icl.utk.edu/papi/">PAPI</a> — to access hardware performance counters</li>
+<li><a href="https://clang.llvm.org/docs/ClangFormat.html">ClangFormat</a> — to format C++ code in a clear and consistent fashion</li>
+<li><a href="http://clang.llvm.org/extra/clang-tidy/">Clang-Tidy</a> — to "lint" C++ code</li>
+<li><a href="http://cppcheck.sourceforge.net/">Cppcheck</a> — to analyze C++ code</li>
+<li><a href="https://github.com/google/yapf">yapf</a> 0.29.0 - to format python code</li>
+<li><a href="https://gitlab.inria.fr/scotch/scotch">Scotch</a> - to build the <code>ScotchLB</code> graph partition based load balancer in charm++.</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md239"></a>
+Using Docker to obtain a SpECTRE environment</h1>
+<p>A <a href="https://www.docker.com/">Docker</a> image is available from <a href="https://hub.docker.com/r/sxscollaboration/spectrebuildenv/">DockerHub</a> and can be used to build SpECTRE on a personal machine.</p>
+<p><b>Note</b>: The Docker image is the recommended way of using SpECTRE on a personal Linux machine. Because of the wide variety of operating systems available today it is not possible for us to support all configurations. However, using Spack as outlined below is a supported alternative to Docker images.</p>
+<p><b>Note</b>: If you have SELinux active on your system you must figure out how to enable sharing files with the host OS. If you receive errors that you do not have permission to access a shared directory it is likely that your system has SELinux enabled. One option is to disable SELinux at the expense of reducing the security of your system.</p>
+<p>To build with the docker image:</p>
+<ol type="1">
+<li>Clone SpECTRE into SPECTRE_ROOT, a directory of your choice. You may <code>git clone</code> the <a href="https://github.com/sxs-collaboration/spectre">SpECTRE repository</a> on GitHub, in which case SPECTRE_ROOT will be <code>&lt;your_current_directory&gt;/spectre</code>. That is, inside SPECTRE_ROOT are <code>docs</code>, <code>src</code>, <code>support</code>, <code>tests</code> etc. You can also download the source and extract them to your desired working directory. Make sure not to leave out hidden files when you <code>cp</code> or <code>mv</code> the source files!</li>
+<li>Retrieve the docker image (you may need <code>sudo</code> in front of this command) <div class="fragment"><div class="line">docker pull sxscollaboration/spectrebuildenv:latest</div>
+</div><!-- fragment --></li>
+<li><p class="startli">Start the docker container (you may need <code>sudo</code>) </p><div class="fragment"><div class="line">docker run -v SPECTRE_ROOT:SPECTRE_ROOT --name CONTAINER_NAME \</div>
+<div class="line">           -i -t sxscollaboration/spectrebuildenv:latest /bin/bash</div>
+</div><!-- fragment --><ul>
+<li><code>-v SPECTRE_ROOT:SPECTRE_ROOT</code> binds the directory SPECTRE_ROOT outside the container to SPECTRE_ROOT inside the container. In this way, files in the SPECTRE_ROOT on your host system (outside the container) become accessible within the container through the directory SPECTRE_ROOT inside the container. If you wonder why the same SPECTRE_ROOT needs to be used for both inside and outside the container, which is why <code>SPECTRE_ROOT</code> is repeated in the command above with seperated by a colon, please see one of the notes below regarding <code>-v</code> flag.</li>
+<li>The <code>--name CONTAINER_NAME</code> is optional, where CONTAINER_NAME is a name of your choice. If you don't name your container, docker will generate an arbitrary name.</li>
+<li>On macOS you can significantly increase the performance of file system operations by appending the flag <code>:delegated</code> to <code>-v</code>, e.g. <code>-v SPECTRE_ROOT:SPECTRE_ROOT:delegated</code> (see <a href="https://docs.docker.com/docker-for-mac/osxfs-caching/">https://docs.docker.com/docker-for-mac/osxfs-caching/</a>).</li>
+<li>It can be useful to expose a port to the host so you can run servers such as <a href="https://jupyter.org/index.html">Jupyter</a> for accessing the Python bindings (see <a class="el" href="spectre_using_python.html">Using SpECTRE's Python modules</a>) or a Python web server to view the documentation. To do so, append the <code>-p</code> option, e.g. <code>-p 8000:8000</code>.</li>
+</ul>
+<p class="startli">You will end up in a bash shell in the docker container, as root (you need to be root). Within the container, the files in SPECTRE_ROOT are available and Charm++ is installed in <code>/work/charm_6_10_2</code>. For the following steps, stay inside the docker container as root.</p>
+</li>
+<li>Make a build directory somewhere inside the container, e.g. <code>/work/spectre-build-gcc</code>, and <code>cd</code> into it.</li>
+<li><p class="startli">Build SpECTRE with </p><div class="fragment"><div class="line">cmake -D CMAKE_Fortran_COMPILER=gfortran-8 \</div>
+<div class="line">      -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-gcc</div>
+<div class="line">      SPECTRE_ROOT</div>
+</div><!-- fragment --><p class="startli">To build with clang, the CMake command is </p><div class="fragment"><div class="line">cmake -D CMAKE_CXX_COMPILER=clang++ \</div>
+<div class="line">      -D CMAKE_C_COMPILER=clang \</div>
+<div class="line">      -D CMAKE_Fortran_COMPILER=gfortran-8 \</div>
+<div class="line">      -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-clang</div>
+<div class="line">      SPECTRE_ROOT</div>
+</div><!-- fragment --><p class="startli">When cmake configuration is done, you are ready to build target executables. Compile unit tests with <code>make unit-tests -jN</code> where <code>N</code> is the number of cores to build on in parallel (e.g. <code>-j4</code>).</p><ul>
+<li>You can see the list of available targets by running <code>make list</code>.</li>
+<li>Run <code>make test-executables -jN</code> to compile the test executables, and <code>ctest</code> to run the tests.</li>
+</ul>
+</li>
+</ol>
+<p><b>Notes:</b></p><ul>
+<li>Everything in your build directory is owned by root, and is accessible only within the container.</li>
+<li>You should edit source files in SPECTRE_ROOT in a separate terminal outside the container, and use the container only for compiling and running the code.</li>
+<li>If you exit the container (e.g. ctrl-d), your compilation directories are still saved, as is the patch that you have applied to <code>/work/charm_6_10_2</code> and any other changes to the container that you have made. To restart the container, try the following commands (you may need <code>sudo</code>):<ol type="1">
+<li><code>docker ps -a</code>, to list all containers with their CONTAINER_IDs and CONTAINER_NAMEs,</li>
+<li><code>docker start -i CONTAINER_NAME</code> or <code>docker start -i CONTAINER_ID</code>, to restart your container.</li>
+</ol>
+</li>
+<li>When the Docker container gets updated, you can stop it with <code>docker stop CONTAINER_NAME</code>, remove it with <code>docker rm CONTAINER_NAME</code> and then start at step 2 above to run it again.</li>
+<li>You can run more than one shell in the same container, for instance one shell for compiling with gcc and another for compiling with clang. To add a new shell, run <code>docker exec -it CONTAINER_NAME /bin/bash</code> (or <code>docker exec -it CONTAINER_ID /bin/bash</code>) from a terminal outside the container.</li>
+<li>In step 3 above, technically docker allows you to say <code>-v SPECTRE_ROOT:/my/new/path</code> to map SPECTRE_ROOT outside the container to any path you want inside the container, but <b>do not do this</b>. Compiling inside the container sets up git hooks in SPECTRE_ROOT that contain hardcoded pathnames to SPECTRE_ROOT <em>as seen from inside the container</em>. So if your source paths inside and outside the container are different, commands like <code>git commit</code> run <em>from outside the container</em> will die with <code>No such file or directory</code>.</li>
+<li>To compile the Python bindings, add the option <code>-D BUILD_PYTHON_BINDINGS=ON</code> to the <code>cmake</code> command (see <a class="el" href="spectre_writing_python_bindings.html">Writing Python Bindings</a>). You can specify the Python version, interpreter and libraries used for compiling and testing the bindings by setting the <code>-D Python_EXECUTABLE</code> to an absolute path such as <code>/usr/bin/python3</code>.</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md240"></a>
+Using Singularity to obtain a SpECTRE environment</h1>
+<p><a href="https://sylabs.io">Singularity</a> is a container alternative to Docker with better security and nicer integration.</p>
+<p>To build SpECTRE with Singularity you must:</p>
+<ol type="1">
+<li>Build <a href="https://sylabs.io">Singularity</a> and add it to your <code>$PATH</code></li>
+<li><code>cd</code> to the directory where you want to store the SpECTRE Singularity image, source, and build directories, let's call it WORKDIR. The WORKDIR must be somewhere in your home directory. If this does not work for you, follow the Singularity instructions on setting up additional <a href="https://sylabs.io/guides/3.7/user-guide/bind_paths_and_mounts.html">bind points</a> (version 3.7. For other versions, see the <a href="https://sylabs.io/docs/">docs</a>). Once inside the WORKDIR, clone SpECTRE into <code>WORKDIR/SPECTRE_ROOT</code>.</li>
+<li><p class="startli">Run <code>sudo singularity build spectre.img docker://sxscollaboration/spectrebuildenv:latest</code>.</p>
+<p class="startli">If you get the error message that <code>makesquashfs</code> did not have enough space to create the image you need to set a different <code>SINGULARITY_TMPDIR</code>. This can be done by running: <code>sudo SINGULARITY_TMPDIR=/path/to/new/tmp singularity build spectre.img docker://sxscollaboration/spectrebuildenv:latest</code>. Normally <code>SINGULARITY_TMPDIR</code> is <code>/tmp</code>, but building the image will temporarily need almost 8GB of space.</p>
+<p class="startli">You can control where Singularity stores the downloaded image files from DockerHub by specifying the <code>SINGULARITY_CACHEDIR</code> environment variable. The default is <code>$HOME/.singularity/</code>. Note that <code>$HOME</code> is <code>/root</code> when running using <code>sudo</code>.</p>
+</li>
+<li>To start the container run <code>singularity shell spectre.img</code> and you will be dropped into a bash shell.</li>
+<li><code>cd</code> into SPECTRE_ROOT and run <code>mkdir build &amp;&amp; cd build</code> to set up a build directory.</li>
+<li><p class="startli">To build SpECTRE, run </p><div class="fragment"><div class="line">cmake -D CMAKE_Fortran_COMPILER=gfortran-8 \</div>
+<div class="line">      -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-gcc</div>
+<div class="line">      SPECTRE_ROOT</div>
+</div><!-- fragment --><p class="startli">To build with clang, the CMake command is </p><div class="fragment"><div class="line">cmake -D CMAKE_CXX_COMPILER=clang++ \</div>
+<div class="line">      -D CMAKE_C_COMPILER=clang \</div>
+<div class="line">      -D CMAKE_Fortran_COMPILER=gfortran-8 \</div>
+<div class="line">      -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-clang</div>
+<div class="line">      SPECTRE_ROOT</div>
+</div><!-- fragment --><p class="startli">Compile unit tests with <code>make unit-tests -jN</code> where <code>N</code> is the number of cores to build on in parallel (e.g. <code>-j4</code>).</p><ul>
+<li>You can see the list of available targets by running <code>make list</code>.</li>
+<li>Run <code>make test-executables -jN</code> to compile the test executables, and <code>ctest</code> to run the tests.</li>
+</ul>
+</li>
+</ol>
+<p><b>Notes:</b></p><ul>
+<li>You should edit source files in SPECTRE_ROOT in a separate terminal outside the container, and use the container only for compiling and running the code.</li>
+<li>Unlike Docker, Singularity does not keep the state between runs. However, it shares the home directory with the host OS so you should do all your work somewhere in your home directory.</li>
+<li>To run more than one container just do <code>singularity shell spectre.img</code> in another terminal.</li>
+<li>Since the data you modify lives on the host OS there is no need to worry about losing any data, needing to clean up old containers, or sharing data between containers and the host.</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md241"></a>
+Using Spack to set up a SpECTRE environment</h1>
+<p>SpECTRE's dependencies can be installed with <a href="https://github.com/LLNL/spack">Spack</a>, a package manager tailored for HPC use. Install Spack by cloning it into <code>SPACK_DIR</code> (a directory of your choice), then add <code>SPACK_DIR/bin</code> to your <code>PATH</code>.</p>
+<p>For security, it is good practice to make Spack use the system's OpenSSL rather than allow it to install a new copy — see Spack's documentation for <a href="https://spack.readthedocs.io/en/latest/getting_started.html#openssl">instructions</a>. You may need to install the development version of OpenSSL:</p><ul>
+<li>On Ubuntu (16.04), run <code>sudo apt-get install libssl-dev</code></li>
+<li>On Fedora (27), run <code>sudo dnf install openssl-devel</code></li>
+</ul>
+<p>Spack works well with a module environment. We recommend <a href="https://github.com/TACC/Lmod">LMod</a>, which is available on many systems:</p><ul>
+<li>On macOS, install LMod from <a href="https://brew.sh/">brew</a>, then source the LMod shell script by adding <code>. /usr/local/Cellar/lmod/YOUR_VERSION_NUMBER/init/sh</code> to your <code>.bash_profile</code>.</li>
+<li>On Ubuntu, run <code>sudo apt-get install -y lmod</code> and, for Ubuntu 17.04, add <code>. /etc/profile.d/lmod.sh</code> to your <code>.bashrc</code>. For Ubuntu 16.04, the correct path to add is <code>. /usr/share/lmod/lmod/init/bash</code>.</li>
+<li>On Arch Linux, run <code>yaourt -Sy lmod</code> and add <code>. /etc/profile.d/lmod.sh</code> to your <code>.bashrc</code>,</li>
+<li>On Fedora/RHEL, GNU Environment Modules comes out-of-the-box and works equally well.</li>
+<li>Instructions for other Linux distros are available online.</li>
+</ul>
+<p>To use modules with Spack, enable Spack's shell support by adding <code>. SPACK_DIR/share/spack/setup-env.sh</code> to your <code>.bash_profile</code> or <code>.bashrc</code>.</p>
+<p>Once you have Spack installed and configured with OpenSSL and LMod, you can install the SpECTRE dependencies using </p><div class="fragment"><div class="line">spack install blaze@3.7</div>
+<div class="line">spack install brigand@master</div>
+<div class="line">spack install libsharp -openmp -mpi</div>
+<div class="line">spack install catch2</div>
+<div class="line">spack install gsl</div>
+<div class="line">spack install jemalloc # or from your package manager</div>
+<div class="line">spack install libxsmm</div>
+<div class="line">spack install yaml-cpp@develop</div>
+</div><!-- fragment --><p>You can also install CMake, OpenBLAS, Boost, and HDF5 from Spack. To load the packages you've installed from Spack run <code>spack load PACKAGE</code>, or (equivalently) use the <code>module load</code> command.</p>
+<p><b>Note</b>: Spack allows very flexible configurations and it is recommended you read the <a href="https://spack.readthedocs.io">documentation</a> if you require features such as packages installed with different compilers.</p>
+<p><b>Note</b>: On a Mac, you may need to <code>spack install yaml-cpp@develop~shared</code> (note that is a tilde and not a dash in front of shared) in order to force the building of the static libraries in order to avoid dynamic linking errors.</p>
+<h2><a class="anchor" id="autotoc_md242"></a>
+Building SpECTRE</h2>
+<p>After the dependencies have been installed, Charm++ and SpECTRE can be compiled. Follow these steps:</p>
+<ol type="1">
+<li>Clone <a href="https://github.com/sxs-collaboration/spectre">SpECTRE</a> into <code>SPECTRE_ROOT</code>, a directory of your choice.</li>
+<li>Install Charm++:<ul>
+<li>Clone <a href="http://charm.cs.illinois.edu/software">Charm++</a> into <code>CHARM_DIR</code>, again a directory of your choice.</li>
+<li>In <code>CHARM_DIR</code>, run <code>git checkout v6.10.2</code> to switch to a supported, stable release of Charm++.</li>
+<li>Charm++ is compiled by running <code>./build LIBS ARCH OPTIONS</code>. To figure out the correct target architecture and options, you can simply run <code>./build</code>; the script will then ask you questions to guide you towards the correct settings (see notes below for additional details). Then compile Charm++. The Charm++ build will be located in a new directory, <code>CHARM_DIR/ARCH_OPTS</code>, whose name may (or may not) have some of the options appended to the architecture. In addition to the core <code>charm++</code> target, you will need to compile either the <code>LIBS</code> target or the <code>everylb</code> target. This is needed so that we can support the more sophisticated load balancers in SpECTRE executables.</li>
+<li>On macOS 10.12 it is necessary to patch the STL implementation. Insert <div class="fragment"><div class="line">#ifndef _MACH_PORT_T</div>
+<div class="line">#define _MACH_PORT_T</div>
+<div class="line">#include &lt;sys/_types.h&gt; /* __darwin_mach_port_t */</div>
+<div class="line">typedef __darwin_mach_port_t mach_port_t;</div>
+<div class="line">#include &lt;pthread.h&gt;</div>
+<div class="line">mach_port_t pthread_mach_thread_np(pthread_t);</div>
+<div class="line">#endif /* _MACH_PORT_T */</div>
+</div><!-- fragment --> into the front of <code>/Library/Developer/CommandLineTools/usr/include/c++/v1/__threading_support</code></li>
+</ul>
+</li>
+<li>Return to <code>SPECTRE_ROOT</code>, and create a build dir by running <code>mkdir build &amp;&amp; cd build</code></li>
+<li>Build SpECTRE with <code>cmake -D CHARM_ROOT=CHARM_DIR/ARCH_OPTS SPECTRE_ROOT</code> then <code>make -jN</code> to compile the code.</li>
+<li>Run the tests with <code>make test-executables &amp;&amp; ctest</code>.</li>
+</ol>
+<p><b>Notes</b>:</p><ul>
+<li>For more details on building Charm++, see the directions <a href="http://charm.cs.illinois.edu/manuals/html/charm++/A.html">here</a> The correct target is <code>charm++</code> and, for a personal machine, the correct target architecture is likely to be <code>multicore-linux-x86_64</code> (or <code>multicore-darwin-x86_64</code> on macOS). On an HPC system, the correct Charm++ target architecture depends on the machine's inter-node communication architecture. We will be providing specific instructions for various HPC systems.</li>
+<li><p class="startli">Both Charm++ and SpECTRE must be compiled using the same compiler, otherwise you will receive undefined reference errors while linking SpECTRE. When compiling Charm++ you can specify the compiler using, for example, </p><div class="fragment"><div class="line">./build charm++ ARCH clang</div>
+</div><!-- fragment --><p class="startli">When compiling SpECTRE you can specify the compiler to CMake using, for example, </p><div class="fragment"><div class="line">cmake -D CMAKE_CXX_COMPILER=clang++ \</div>
+<div class="line">      -D CMAKE_C_COMPILER=clang \</div>
+<div class="line">      -D CMAKE_Fortran_COMPILER=gfortran \</div>
+<div class="line">      -D CHARM_ROOT=CHARM_DIR/ARCH_OPTS SPECTRE_ROOT</div>
+</div><!-- fragment --></li>
+<li>Inside the SpECTRE build directory, use <code>make list</code> to see all available targets. This list can be refreshed by running CMake again.</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md243"></a>
+Code Coverage Analysis</h1>
+<p>For any coverage analysis you will need to have LCOV installed on the system. For documentation coverage analysis you will also need to install <a href="https://github.com/psycofdj/coverxygen">coverxygen</a> and for test coverage analysis <a href="https://gcc.gnu.org/onlinedocs/gcc/Gcov.html">gcov</a>.</p>
+<p>If you have these installed (which is already done if you are using the docker container), you can look at code coverage as follows:</p>
+<ol type="1">
+<li>On a gcc build, pass <code>-D COVERAGE=ON</code> to <code>cmake</code></li>
+<li><code>make unit-test-coverage</code></li>
+<li>The output is in <code>docs/html/unit-test-coverage</code>. </li>
+</ol>
+</div></div><!-- contents -->
+</div><!-- PageDoc -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

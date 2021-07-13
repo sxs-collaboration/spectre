@@ -1,0 +1,315 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/DampingFunction.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_d7cddb31ba741ba3a4d5be000d880a30.html">Evolution</a></li><li class="navelem"><a class="el" href="dir_ae9813db12dd9fd3f3106ad3644a1b2a.html">Systems</a></li><li class="navelem"><a class="el" href="dir_24b982142c76a75b8c345633a6cfacb1.html">GeneralizedHarmonic</a></li><li class="navelem"><a class="el" href="dir_b46965fe8897a39c9c7fdd45926ab2f2.html">ConstraintDamping</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">DampingFunction.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/unordered_map.html">unordered_map</a>&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TypeAliases_8hpp.html">DataStructures/Tensor/TypeAliases.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="CharmPupable_8hpp.html">Parallel/CharmPupable.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="comment"></span><span class="keyword">class </span><a class="code" href="classDataVector.html">DataVector</a>;</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacedomain_1_1FunctionsOfTime.html">domain::FunctionsOfTime</a> {</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="keyword">class </span>FunctionOfTime;</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;}  <span class="comment">// namespace domain::FunctionsOfTime</span><span class="comment"></span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment"></span><span class="comment"></span> </div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment">/// Holds classes implementing DampingFunction (functions \f$R^n \to R\f$).</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno"><a class="line" href="namespaceGeneralizedHarmonic_1_1ConstraintDamping.html">   24</a></span>&#160;<span class="comment"></span><span class="keyword">namespace </span><a class="code" href="namespaceGeneralizedHarmonic_1_1ConstraintDamping.html">GeneralizedHarmonic::ConstraintDamping</a> {<span class="comment"></span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim, <span class="keyword">typename</span> Fr&gt;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="keyword">class </span><a class="code" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1GaussianPlusConstant.html">GaussianPlusConstant</a>;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="keyword">class </span><a class="code" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1TimeDependentTripleGaussian.html">TimeDependentTripleGaussian</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment"></span><span class="comment"></span> </div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="comment"> * \brief Base class defining interface for constraint damping functions.</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment"> * Encodes a function \f$R^n \to R\f$ where n is `VolumeDim` that represents</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment"> * a generalized-harmonic constraint-damping parameter (i.e., Gamma0,</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment"> * Gamma1, or Gamma2).</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim, <span class="keyword">typename</span> Fr&gt;</div>
+<div class="line"><a name="l00039"></a><span class="lineno"><a class="line" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1DampingFunction.html">   39</a></span>&#160;<span class="keyword">class </span><a class="code" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1DampingFunction.html">DampingFunction</a> : <span class="keyword">public</span> PUP::able {</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;  <span class="keyword">using</span> creatable_classes = tmpl::conditional_t&lt;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;      (VolumeDim == 3 and <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::is_same&lt;Fr, Frame::Grid&gt;::value</a>),</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;      tmpl::list&lt;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;          <a class="code" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1GaussianPlusConstant.html">GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant</a>&lt;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;              VolumeDim, Fr&gt;,</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;          <a class="code" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1TimeDependentTripleGaussian.html">GeneralizedHarmonic::ConstraintDamping::TimeDependentTripleGaussian</a>&gt;,</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;      tmpl::list&lt;<a class="code" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1GaussianPlusConstant.html">GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant</a>&lt;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;          VolumeDim, Fr&gt;&gt;&gt;;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  constexpr <span class="keyword">static</span> <span class="keywordtype">size_t</span> volume_dim = VolumeDim;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;  <span class="keyword">using</span> frame = Fr;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160; </div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;  WRAPPED_PUPable_abstract(<a class="code" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1DampingFunction.html">DampingFunction</a>);  <span class="comment">// NOLINT</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  <a class="code" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1DampingFunction.html">DampingFunction</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;  <a class="code" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1DampingFunction.html">DampingFunction</a>(<span class="keyword">const</span> <a class="code" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1DampingFunction.html">DampingFunction</a>&amp; <span class="comment">/*rhs*/</span>) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;  <a class="code" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1DampingFunction.html">DampingFunction</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1DampingFunction.html">DampingFunction</a>&amp; <span class="comment">/*rhs*/</span>) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;  <a class="code" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1DampingFunction.html">DampingFunction</a>(<a class="code" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1DampingFunction.html">DampingFunction</a>&amp;&amp; <span class="comment">/*rhs*/</span>) noexcept = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;  <a class="code" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1DampingFunction.html">DampingFunction</a>&amp; operator=(<a class="code" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1DampingFunction.html">DampingFunction</a>&amp;&amp; <span class="comment">/*rhs*/</span>) noexcept = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;  ~<a class="code" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1DampingFunction.html">DampingFunction</a>() <span class="keyword">override</span> = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;  <span class="keyword">explicit</span> <a class="code" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1DampingFunction.html">DampingFunction</a>(CkMigrateMessage* msg) noexcept : PUP::able(msg) {}</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">  /// @{</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment">  /// Returns the value of the function at the coordinate &#39;x&#39;.</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment"></span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1DampingFunction.html#af2bfb5d64858c17ab1a21c507b4e387a">operator()</a>(</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;double&gt;</a>*&gt; value_at_x,</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;      <span class="keyword">const</span> tnsr::I&lt;double, VolumeDim, Fr&gt;&amp; x, <span class="keywordtype">double</span> time,</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;      <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;          <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>,</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;          <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;domain::FunctionsOfTime::FunctionOfTime&gt;</a>&gt;&amp;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;          functions_of_time) <span class="keyword">const</span> noexcept = 0;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;  <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1DampingFunction.html#af2bfb5d64858c17ab1a21c507b4e387a">operator()</a>(</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;DataVector&gt;</a>*&gt; value_at_x,</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;      <span class="keyword">const</span> tnsr::I&lt;DataVector, VolumeDim, Fr&gt;&amp; x, <span class="keywordtype">double</span> time,</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;      <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;          <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>,</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;          <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;domain::FunctionsOfTime::FunctionOfTime&gt;</a>&gt;&amp;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;          functions_of_time) <span class="keyword">const</span> noexcept = 0;<span class="comment"></span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment">  /// @}</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;  <span class="keyword">virtual</span> <span class="keyword">auto</span> get_clone() <span class="keyword">const</span> noexcept</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;      -&gt; <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;DampingFunction&lt;VolumeDim, Fr&gt;</a>&gt; = 0;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;};</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;}  <span class="comment">// namespace GeneralizedHarmonic::ConstraintDamping</span></div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/GaussianPlusConstant.hpp&quot;</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/TimeDependentTripleGaussian.hpp&quot;</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="ais_same_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/is_same.html">std::is_same</a></div></div>
+<div class="ttc" id="anamespaceGeneralizedHarmonic_1_1ConstraintDamping_html"><div class="ttname"><a href="namespaceGeneralizedHarmonic_1_1ConstraintDamping.html">GeneralizedHarmonic::ConstraintDamping</a></div><div class="ttdoc">Holds classes implementing DampingFunction (functions ).</div><div class="ttdef"><b>Definition:</b> DampingFunction.hpp:24</div></div>
+<div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
+<div class="ttc" id="aCharmPupable_8hpp_html"><div class="ttname"><a href="CharmPupable_8hpp.html">CharmPupable.hpp</a></div></div>
+<div class="ttc" id="aclassGeneralizedHarmonic_1_1ConstraintDamping_1_1GaussianPlusConstant_html"><div class="ttname"><a href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1GaussianPlusConstant.html">GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant</a></div><div class="ttdoc">A Gaussian plus a constant: .</div><div class="ttdef"><b>Definition:</b> GaussianPlusConstant.hpp:41</div></div>
+<div class="ttc" id="anamespacedomain_1_1FunctionsOfTime_html"><div class="ttname"><a href="namespacedomain_1_1FunctionsOfTime.html">domain::FunctionsOfTime</a></div><div class="ttdoc">Contains functions of time to support the dual frame system.</div><div class="ttdef"><b>Definition:</b> FixedSpeedCubic.hpp:17</div></div>
+<div class="ttc" id="aclassGeneralizedHarmonic_1_1ConstraintDamping_1_1DampingFunction_html_af2bfb5d64858c17ab1a21c507b4e387a"><div class="ttname"><a href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1DampingFunction.html#af2bfb5d64858c17ab1a21c507b4e387a">GeneralizedHarmonic::ConstraintDamping::DampingFunction::operator()</a></div><div class="ttdeci">virtual void operator()(const gsl::not_null&lt; Scalar&lt; double &gt; * &gt; value_at_x, const tnsr::I&lt; double, VolumeDim, Fr &gt; &amp;x, double time, const std::unordered_map&lt; std::string, std::unique_ptr&lt; domain::FunctionsOfTime::FunctionOfTime &gt;&gt; &amp;functions_of_time) const noexcept=0</div><div class="ttdoc">Returns the value of the function at the coordinate 'x'.</div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="aclassDataVector_html"><div class="ttname"><a href="classDataVector.html">DataVector</a></div><div class="ttdoc">Stores a collection of function values.</div><div class="ttdef"><b>Definition:</b> DataVector.hpp:46</div></div>
+<div class="ttc" id="amemory_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a></div></div>
+<div class="ttc" id="aclassGeneralizedHarmonic_1_1ConstraintDamping_1_1TimeDependentTripleGaussian_html"><div class="ttname"><a href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1TimeDependentTripleGaussian.html">GeneralizedHarmonic::ConstraintDamping::TimeDependentTripleGaussian</a></div><div class="ttdoc">A sum of three Gaussians plus a constant, where the Gaussian widths are scaled by a domain::Functions...</div><div class="ttdef"><b>Definition:</b> TimeDependentTripleGaussian.hpp:51</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga06ebcb38a1f13c246e53378b9e8959ce"><div class="ttname"><a href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a></div><div class="ttdeci">Tensor&lt; T, Symmetry&lt;&gt;, index_list&lt;&gt; &gt; Scalar</div><div class="ttdef"><b>Definition:</b> TypeAliases.hpp:21</div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="aTypeAliases_8hpp_html"><div class="ttname"><a href="TypeAliases_8hpp.html">TypeAliases.hpp</a></div></div>
+<div class="ttc" id="aclassGeneralizedHarmonic_1_1ConstraintDamping_1_1DampingFunction_html"><div class="ttname"><a href="classGeneralizedHarmonic_1_1ConstraintDamping_1_1DampingFunction.html">GeneralizedHarmonic::ConstraintDamping::DampingFunction</a></div><div class="ttdoc">Base class defining interface for constraint damping functions.</div><div class="ttdef"><b>Definition:</b> DampingFunction.hpp:39</div></div>
+<div class="ttc" id="aunique_ptr_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></div></div>
+<div class="ttc" id="aunordered_map_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/unordered_map.html">unordered_map</a></div></div>
+<div class="ttc" id="atype_traits_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a></div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<div class="ttc" id="astring_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/string.html">string</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

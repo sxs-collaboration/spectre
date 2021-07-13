@@ -1,0 +1,482 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_e67410f72df12b3cc042db20f578e557.html">NumericalAlgorithms</a></li><li class="navelem"><a class="el" href="dir_66130ee82b62ead96b968c156591280f.html">LinearOperators</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">PartialDerivatives.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<a href="PartialDerivatives_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment">/// \file</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment">/// Defines functions computing partial derivatives.</span></div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160; </div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/array.html">array</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160; </div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataBox/PrefixHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataBox/Tag.hpp&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataBox/TagName.hpp&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Variables_8hpp.html">DataStructures/Variables.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Requires_8hpp.html">Utilities/Requires.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;Utilities/TypeTraits/IsA.hpp&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment"></span><span class="keyword">class </span><a class="code" href="classDataVector.html">DataVector</a>;</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="keyword">class </span><a class="code" href="classMesh.html">Mesh</a>;</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160; </div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="keyword">namespace </span>domain {</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="keyword">namespace </span>Tags {</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="keyword">struct </span><a class="code" href="classMesh.html">Mesh</a>;</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;}  <span class="comment">// namespace Tags</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;}  <span class="comment">// namespace domain</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keyword">namespace </span>Tags {</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> TagList&gt;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="keyword">struct </span>Variables;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;}  <span class="comment">// namespace Tags</span><span class="comment"></span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="keyword">namespace </span>Tags {<span class="comment"></span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment"> * \ingroup DataBoxTagsGroup</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment"> * \brief Prefix indicating spatial derivatives</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment"> * Prefix indicating the spatial derivatives of a Tensor.</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment"> * \tparam Tag The tag to wrap</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment"> * \tparam Dim The volume dim as a type (e.g. `tmpl::size_t&lt;Dim&gt;`)</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment"> * \tparam Frame The frame of the derivative index</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment"> * \see Tags::DerivCompute</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag, <span class="keyword">typename</span> Dim, <span class="keyword">typename</span> Frame, <span class="keyword">typename</span> = std::<span class="keywordtype">nullptr</span>_t&gt;</div>
+<div class="line"><a name="l00052"></a><span class="lineno"><a class="line" href="structTags_1_1deriv.html">   52</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structTags_1_1deriv.html">deriv</a>;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag, <span class="keyword">typename</span> Dim, <span class="keyword">typename</span> Frame&gt;</div>
+<div class="line"><a name="l00055"></a><span class="lineno"><a class="line" href="structTags_1_1deriv_3_01Tag_00_01Dim_00_01Frame_00_01Requires_3_01tt_1_1is__a__v_3_01Tensor_00_0a778efafc2861944aed5cb502634a46e.html">   55</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structTags_1_1deriv.html">deriv</a>&lt;Tag, Dim, <a class="code" href="namespaceFrame.html">Frame</a>, <a class="code" href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a>&lt;<a class="code" href="namespacett.html">tt</a>::is_a_v&lt;Tensor, typename Tag::type&gt;&gt;&gt;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    : <a class="code" href="structdb_1_1PrefixTag.html">db::PrefixTag</a>, <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;  <span class="keyword">using</span> type =</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;      <a class="code" href="group__TensorGroup.html#ga5e4aece332518b3a95c2a73557aaa596">TensorMetafunctions::prepend_spatial_index</a>&lt;<span class="keyword">typename</span> Tag::type, Dim::value,</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;                                                 <a class="code" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28aff50b4aa1c9cc2197ef898436641c911">UpLo::Lo</a>, <a class="code" href="namespaceFrame.html">Frame</a>&gt;;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;  <span class="keyword">using</span> tag = Tag;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;};</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment"> * \ingroup DataBoxTagsGroup</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment"> * \brief Prefix indicating spacetime derivatives</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment"> * Prefix indicating the spacetime derivatives of a Tensor or that a Variables</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment"> * contains spatial derivatives of Tensors.</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment"> * \tparam Tag The tag to wrap</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment"> * \tparam Dim The volume dim as a type (e.g. `tmpl::size_t&lt;Dim&gt;`)</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment"> * \tparam Frame The frame of the derivative index</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag, <span class="keyword">typename</span> Dim, <span class="keyword">typename</span> Frame, <span class="keyword">typename</span> = std::<span class="keywordtype">nullptr</span>_t&gt;</div>
+<div class="line"><a name="l00075"></a><span class="lineno"><a class="line" href="structTags_1_1spacetime__deriv.html">   75</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structTags_1_1spacetime__deriv.html">spacetime_deriv</a>;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag, <span class="keyword">typename</span> Dim, <span class="keyword">typename</span> Frame&gt;</div>
+<div class="line"><a name="l00078"></a><span class="lineno"><a class="line" href="structTags_1_1spacetime__deriv_3_01Tag_00_01Dim_00_01Frame_00_01Requires_3_01tt_1_1is__a__v_3_01b4c0d0ebee23b996aeceedaa4d80a81c.html">   78</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structTags_1_1spacetime__deriv.html">spacetime_deriv</a>&lt;Tag, Dim, <a class="code" href="namespaceFrame.html">Frame</a>,</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;                       <a class="code" href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a>&lt;<a class="code" href="namespacett.html">tt</a>::is_a_v&lt;Tensor, typename Tag::type&gt;&gt;&gt;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    : <a class="code" href="structdb_1_1PrefixTag.html">db::PrefixTag</a>, <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;  <span class="keyword">using</span> type =</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;      <a class="code" href="group__TensorGroup.html#gaef68ec7e4373c578d0a5885df8ac89fa">TensorMetafunctions::prepend_spacetime_index</a>&lt;<span class="keyword">typename</span> Tag::type,</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;                                                   Dim::value, <a class="code" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28aff50b4aa1c9cc2197ef898436641c911">UpLo::Lo</a>, <a class="code" href="namespaceFrame.html">Frame</a>&gt;;</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;  <span class="keyword">using</span> tag = Tag;</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;};</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160; </div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;}  <span class="comment">// namespace Tags</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment">/// @{</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment">/// \ingroup NumericalAlgorithmsGroup</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment">/// \brief Compute the partial derivatives of each variable with respect to</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment">/// the logical coordinate.</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment">/// \requires `DerivativeTags` to be the head of `VariableTags`</span></div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="comment">/// Returns a `Variables` with a spatial tensor index appended to the front</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment">/// of each tensor within `u` and each `Tag` wrapped with a `Tags::deriv`.</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="comment">/// \tparam DerivativeTags the subset of `VariableTags` for which derivatives</span></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="comment">/// are computed.</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> DerivativeTags, <span class="keyword">typename</span> VariableTags, <span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__NumericalAlgorithmsGroup.html#ga2e59acbb52cacebae0fe19506b7fbedd">logical_partial_derivatives</a>(</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;Variables&lt;DerivativeTags&gt;, Dim&gt;*&gt;</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;        logical_partial_derivatives_of_u,</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    <span class="keyword">const</span> Variables&lt;VariableTags&gt;&amp; u, <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a>&amp; mesh) noexcept;</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160; </div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> DerivativeTags, <span class="keyword">typename</span> VariableTags, <span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="keyword">auto</span> <a class="code" href="group__NumericalAlgorithmsGroup.html#ga2e59acbb52cacebae0fe19506b7fbedd">logical_partial_derivatives</a>(<span class="keyword">const</span> Variables&lt;VariableTags&gt;&amp; u,</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;                                 <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a>&amp; mesh) noexcept</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    -&gt; <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;Variables&lt;DerivativeTags&gt;</a>, Dim&gt;;<span class="comment"></span></div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="comment">/// @}</span></div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="comment"></span><span class="comment"></span> </div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="comment">/// @{</span></div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="comment"></span><span class="comment">/*!</span></div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="comment"> * \ingroup NumericalAlgorithmsGroup</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment"> * \brief Computes the logical partial derivative of a tensor, prepending the</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="comment"> * spatial derivative index, e.g. for \f$\partial_i T_{a}{}^{b}\f$ the C++ call</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="comment"> * is `get(i, a, b)`.</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="comment"> * There is an overload that accepts a `buffer` of size</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="comment"> * `mesh.number_of_grid_points()` or larger. When passed this function performs</span></div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="comment"> * no memory allocations, which helps improve performance.</span></div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;<span class="comment"> * If you have a `Variables` with several tensors you need to differentiate you</span></div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;<span class="comment"> * should use the `logical_partial_derivatives` function that operates on</span></div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;<span class="comment"> * `Variables` since that&#39;ll be more efficient.</span></div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> SymmList, <span class="keyword">typename</span> IndexList, <span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__NumericalAlgorithmsGroup.html#ga9e442f4a419b53e05ba0ff98d4233305">logical_partial_derivative</a>(</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga5e4aece332518b3a95c2a73557aaa596">TensorMetafunctions::prepend_spatial_index</a>&lt;</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;        Tensor&lt;DataVector, SymmList, IndexList&gt;, Dim, <a class="code" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28aff50b4aa1c9cc2197ef898436641c911">UpLo::Lo</a>,</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;        <a class="code" href="structFrame_1_1Logical.html">Frame::Logical</a>&gt;*&gt;</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;        logical_derivative_of_u,</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="classgsl_1_1span.html">gsl::span&lt;double&gt;</a>*&gt; buffer,</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    <span class="keyword">const</span> Tensor&lt;DataVector, SymmList, IndexList&gt;&amp; u,</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;    <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a>&amp; mesh) noexcept;</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160; </div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> SymmList, <span class="keyword">typename</span> IndexList, <span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__NumericalAlgorithmsGroup.html#ga9e442f4a419b53e05ba0ff98d4233305">logical_partial_derivative</a>(</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;    <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga5e4aece332518b3a95c2a73557aaa596">TensorMetafunctions::prepend_spatial_index</a>&lt;</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;        Tensor&lt;DataVector, SymmList, IndexList&gt;, Dim, <a class="code" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28aff50b4aa1c9cc2197ef898436641c911">UpLo::Lo</a>,</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;        <a class="code" href="structFrame_1_1Logical.html">Frame::Logical</a>&gt;*&gt;</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;        logical_derivative_of_u,</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;    <span class="keyword">const</span> Tensor&lt;DataVector, SymmList, IndexList&gt;&amp; u,</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;    <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a>&amp; mesh) noexcept;</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160; </div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> SymmList, <span class="keyword">typename</span> IndexList, <span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;<span class="keyword">auto</span> <a class="code" href="group__NumericalAlgorithmsGroup.html#ga9e442f4a419b53e05ba0ff98d4233305">logical_partial_derivative</a>(</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;    <span class="keyword">const</span> Tensor&lt;DataVector, SymmList, IndexList&gt;&amp; u,</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;    <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a>&amp; mesh) noexcept</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;    -&gt; <a class="code" href="group__TensorGroup.html#ga5e4aece332518b3a95c2a73557aaa596">TensorMetafunctions::prepend_spatial_index</a>&lt;</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;        Tensor&lt;DataVector, SymmList, IndexList&gt;, Dim, <a class="code" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28aff50b4aa1c9cc2197ef898436641c911">UpLo::Lo</a>, <a class="code" href="structFrame_1_1Logical.html">Frame::Logical</a>&gt;;<span class="comment"></span></div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;<span class="comment">/// @}</span></div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;<span class="comment"></span><span class="comment"></span> </div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;<span class="comment">/// @{</span></div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;<span class="comment">/// \ingroup NumericalAlgorithmsGroup</span></div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;<span class="comment">/// \brief Compute the partial derivatives of each variable with respect to</span></div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;<span class="comment">/// the coordinates of `DerivativeFrame`.</span></div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;<span class="comment">/// \requires `DerivativeTags` to be the head of `VariableTags`</span></div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;<span class="comment">/// Returns a `Variables` with a spatial tensor index appended to the front</span></div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;<span class="comment">/// of each tensor within `u` and each `Tag` wrapped with a `Tags::deriv`.</span></div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;<span class="comment">/// \tparam DerivativeTags the subset of `VariableTags` for which derivatives</span></div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;<span class="comment">/// are computed.</span></div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> DerivativeTags, <span class="keywordtype">size_t</span> Dim, <span class="keyword">typename</span> DerivativeFrame&gt;</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__NumericalAlgorithmsGroup.html#ga3aba17e357844bc9470b7cc273e0ca84">partial_derivatives</a>(</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;    <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;Variables&lt;<a class="code" href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e">db::wrap_tags_in</a>&lt;</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;        <a class="code" href="structTags_1_1deriv.html">Tags::deriv</a>, DerivativeTags, tmpl::size_t&lt;Dim&gt;, DerivativeFrame&gt;&gt;*&gt;</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;        du,</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;Variables&lt;DerivativeTags&gt;, Dim&gt;&amp;</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;        logical_partial_derivatives_of_u,</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;    <span class="keyword">const</span> InverseJacobian&lt;DataVector, Dim, Frame::Logical, DerivativeFrame&gt;&amp;</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;        inverse_jacobian) noexcept;</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160; </div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> DerivativeTags, <span class="keyword">typename</span> VariableTags, <span class="keywordtype">size_t</span> Dim,</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;          <span class="keyword">typename</span> DerivativeFrame&gt;</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__NumericalAlgorithmsGroup.html#ga3aba17e357844bc9470b7cc273e0ca84">partial_derivatives</a>(</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;    <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;Variables&lt;<a class="code" href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e">db::wrap_tags_in</a>&lt;</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;        <a class="code" href="structTags_1_1deriv.html">Tags::deriv</a>, DerivativeTags, tmpl::size_t&lt;Dim&gt;, DerivativeFrame&gt;&gt;*&gt;</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;        du,</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;    <span class="keyword">const</span> Variables&lt;VariableTags&gt;&amp; u, <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a>&amp; mesh,</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;    <span class="keyword">const</span> InverseJacobian&lt;DataVector, Dim, Frame::Logical, DerivativeFrame&gt;&amp;</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;        inverse_jacobian) noexcept;</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160; </div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> DerivativeTags, <span class="keyword">typename</span> VariableTags, <span class="keywordtype">size_t</span> Dim,</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;          <span class="keyword">typename</span> DerivativeFrame&gt;</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;<span class="keyword">auto</span> <a class="code" href="group__NumericalAlgorithmsGroup.html#ga3aba17e357844bc9470b7cc273e0ca84">partial_derivatives</a>(</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;    <span class="keyword">const</span> Variables&lt;VariableTags&gt;&amp; u, <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a>&amp; mesh,</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;    <span class="keyword">const</span> InverseJacobian&lt;DataVector, Dim, Frame::Logical, DerivativeFrame&gt;&amp;</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;        inverse_jacobian) noexcept</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;    -&gt; Variables&lt;<a class="code" href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e">db::wrap_tags_in</a>&lt;<a class="code" href="structTags_1_1deriv.html">Tags::deriv</a>, DerivativeTags,</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;                                  tmpl::size_t&lt;Dim&gt;, DerivativeFrame&gt;&gt;;<span class="comment"></span></div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;<span class="comment">/// @}</span></div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;<span class="keyword">namespace </span>Tags {</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;<span class="comment"> * \ingroup DataBoxTagsGroup</span></div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;<span class="comment"> * \brief Compute the spatial derivatives of tags in a Variables</span></div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;<span class="comment"> * Computes the spatial derivatives of the Tensors in the Variables represented</span></div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;<span class="comment"> * by `VariablesTag` in the frame mapped to by `InverseJacobianTag`. To only</span></div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;<span class="comment"> * take the derivatives of a subset of these Tensors you can set the</span></div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;<span class="comment"> * `DerivTags` template parameter. It takes a `tmpl::list` of the desired</span></div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;<span class="comment"> * tags and defaults to the full `tags_list` of the Variables.</span></div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;<span class="comment"> * This tag may be retrieved via `::Tags::Variables&lt;db::wrap_tags_in&lt;deriv,</span></div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;<span class="comment"> * DerivTags, Dim, deriv_frame&gt;`.</span></div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> VariablesTag, <span class="keyword">typename</span> InverseJacobianTag,</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;          <span class="keyword">typename</span> DerivTags = <span class="keyword">typename</span> VariablesTag::type::tags_list&gt;</div>
+<div class="line"><a name="l00214"></a><span class="lineno"><a class="line" href="structTags_1_1DerivCompute.html">  214</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structTags_1_1DerivCompute.html">DerivCompute</a></div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;    : <a class="code" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt;</div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;          deriv, ::Tags::Variables&lt;DerivTags&gt;,</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;          tmpl::size_t&lt;</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;              tmpl::back&lt;typename InverseJacobianTag::type::index_list&gt;::dim&gt;,</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;          typename tmpl::back&lt;</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;              typename InverseJacobianTag::type::index_list&gt;::Frame&gt;,</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;      <a class="code" href="structdb_1_1ComputeTag.html">db::ComputeTag</a> {</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;  <span class="keyword">using</span> inv_jac_indices = <span class="keyword">typename</span> InverseJacobianTag::type::index_list;</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;  <span class="keyword">static</span> constexpr <span class="keyword">auto</span> Dim = tmpl::back&lt;inv_jac_indices&gt;::dim;</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;  <span class="keyword">using</span> deriv_frame = <span class="keyword">typename</span> tmpl::back&lt;inv_jac_indices&gt;::Frame;</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160; </div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;  <span class="keyword">using</span> base = <a class="code" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt;</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;      <a class="code" href="structTags_1_1deriv.html">deriv</a>, <a class="code" href="structTags_1_1Variables.html">::Tags::Variables&lt;DerivTags&gt;</a>,</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;      tmpl::size_t&lt;</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;          tmpl::back&lt;typename InverseJacobianTag::type::index_list&gt;::dim&gt;,</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;      <span class="keyword">typename</span> tmpl::back&lt;</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;          <span class="keyword">typename</span> InverseJacobianTag::type::index_list&gt;::Frame&gt;;</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;  <span class="keyword">using</span> return_type = <span class="keyword">typename</span> base::type;</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;  <span class="keyword">static</span> constexpr void (*<span class="keyword">function</span>)(</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;return_type*&gt;</a>, <span class="keyword">const</span> <span class="keyword">typename</span> VariablesTag::type&amp;,</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;      <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a>&amp;,</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;      <span class="keyword">const</span> InverseJacobian&lt;DataVector, Dim, Frame::Logical, deriv_frame&gt;&amp;) =</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;      <a class="code" href="group__NumericalAlgorithmsGroup.html#ga3aba17e357844bc9470b7cc273e0ca84">partial_derivatives</a>&lt;DerivTags, <span class="keyword">typename</span> VariablesTag::type::tags_list,</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;                          Dim, deriv_frame&gt;;</div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;  <span class="keyword">using</span> argument_tags =</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;      tmpl::list&lt;VariablesTag, domain::Tags::Mesh&lt;Dim&gt;, InverseJacobianTag&gt;;</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;};</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160; </div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;}  <span class="comment">// namespace Tags</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="astructdb_1_1ComputeTag_html"><div class="ttname"><a href="structdb_1_1ComputeTag.html">db::ComputeTag</a></div><div class="ttdoc">Mark a struct as a compute tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:157</div></div>
+<div class="ttc" id="astructdb_1_1PrefixTag_html"><div class="ttname"><a href="structdb_1_1PrefixTag.html">db::PrefixTag</a></div><div class="ttdoc">Mark a struct as a prefix tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:103</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga5e4aece332518b3a95c2a73557aaa596"><div class="ttname"><a href="group__TensorGroup.html#ga5e4aece332518b3a95c2a73557aaa596">TensorMetafunctions::prepend_spatial_index</a></div><div class="ttdeci">::Tensor&lt; typename Tensor::type, tmpl::push_front&lt; typename Tensor::symmetry, tmpl::int32_t&lt; 1+tmpl::fold&lt; typename Tensor::symmetry, tmpl::int32_t&lt; 0 &gt;, tmpl::max&lt; tmpl::_state, tmpl::_element &gt; &gt;::value &gt; &gt;, tmpl::push_front&lt; typename Tensor::index_list, SpatialIndex&lt; VolumeDim, Ul, Fr &gt; &gt;&gt; prepend_spatial_index</div><div class="ttdoc">Add a spatial index to the front of a Tensor.</div><div class="ttdef"><b>Definition:</b> Metafunctions.hpp:85</div></div>
+<div class="ttc" id="agroup__DataBoxTagsGroup_html_gafeeced2a7fb41fdced8c55e76343f63c"><div class="ttname"><a href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a></div><div class="ttdeci">typename detail::add_tag_prefix_impl&lt; Prefix, Tag, Args... &gt;::type add_tag_prefix</div><div class="ttdef"><b>Definition:</b> PrefixHelpers.hpp:51</div></div>
+<div class="ttc" id="astructTags_1_1Variables_html"><div class="ttname"><a href="structTags_1_1Variables.html">Tags::Variables</a></div><div class="ttdef"><b>Definition:</b> VariablesTag.hpp:21</div></div>
+<div class="ttc" id="astructdb_1_1SimpleTag_html"><div class="ttname"><a href="structdb_1_1SimpleTag.html">db::SimpleTag</a></div><div class="ttdoc">Mark a struct as a simple tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:36</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ggaab1181edf2ab2b664b0f174223f08c28aff50b4aa1c9cc2197ef898436641c911"><div class="ttname"><a href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28aff50b4aa1c9cc2197ef898436641c911">UpLo::Lo</a></div><div class="ttdeci">@ Lo</div><div class="ttdoc">Covariant, or Lower index.</div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/array.html">array</a></div></div>
+<div class="ttc" id="astructTags_1_1spacetime__deriv_html"><div class="ttname"><a href="structTags_1_1spacetime__deriv.html">Tags::spacetime_deriv</a></div><div class="ttdoc">Prefix indicating spacetime derivatives.</div><div class="ttdef"><b>Definition:</b> PartialDerivatives.hpp:75</div></div>
+<div class="ttc" id="aclassDataVector_html"><div class="ttname"><a href="classDataVector.html">DataVector</a></div><div class="ttdoc">Stores a collection of function values.</div><div class="ttdef"><b>Definition:</b> DataVector.hpp:46</div></div>
+<div class="ttc" id="astructTags_1_1DerivCompute_html"><div class="ttname"><a href="structTags_1_1DerivCompute.html">Tags::DerivCompute</a></div><div class="ttdoc">Compute the spatial derivatives of tags in a Variables.</div><div class="ttdef"><b>Definition:</b> PartialDerivatives.hpp:214</div></div>
+<div class="ttc" id="aVariables_8hpp_html"><div class="ttname"><a href="Variables_8hpp.html">Variables.hpp</a></div></div>
+<div class="ttc" id="aclassMesh_html"><div class="ttname"><a href="classMesh.html">Mesh</a></div><div class="ttdoc">Holds the number of grid points, basis, and quadrature in each direction of the computational grid.</div><div class="ttdef"><b>Definition:</b> Mesh.hpp:49</div></div>
+<div class="ttc" id="aclassgsl_1_1span_html"><div class="ttname"><a href="classgsl_1_1span.html">gsl::span</a></div><div class="ttdoc">Create a span/view on a range, which is cheap to copy (one pointer).</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:292</div></div>
+<div class="ttc" id="anamespaceFrame_html"><div class="ttname"><a href="namespaceFrame.html">Frame</a></div><div class="ttdef"><b>Definition:</b> IndexType.hpp:36</div></div>
+<div class="ttc" id="aRequires_8hpp_html"><div class="ttname"><a href="Requires_8hpp.html">Requires.hpp</a></div></div>
+<div class="ttc" id="agroup__DataBoxTagsGroup_html_ga3dda5a16c7f6baccd115de2c8f12394e"><div class="ttname"><a href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e">db::wrap_tags_in</a></div><div class="ttdeci">tmpl::transform&lt; TagList, tmpl::bind&lt; Wrapper, tmpl::_1, tmpl::pin&lt; Args &gt;... &gt; &gt; wrap_tags_in</div><div class="ttdoc">Create a new tmpl::list of tags by wrapping each tag in TagList in Wrapper&lt;_, Args....</div><div class="ttdef"><b>Definition:</b> PrefixHelpers.hpp:30</div></div>
+<div class="ttc" id="astructTags_1_1deriv_html"><div class="ttname"><a href="structTags_1_1deriv.html">Tags::deriv</a></div><div class="ttdoc">Prefix indicating spatial derivatives.</div><div class="ttdef"><b>Definition:</b> PartialDerivatives.hpp:52</div></div>
+<div class="ttc" id="astructFrame_1_1Logical_html"><div class="ttname"><a href="structFrame_1_1Logical.html">Frame::Logical</a></div><div class="ttdef"><b>Definition:</b> IndexType.hpp:42</div></div>
+<div class="ttc" id="anamespacett_html"><div class="ttname"><a href="namespacett.html">tt</a></div><div class="ttdef"><b>Definition:</b> TensorIndex.hpp:155</div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga084d535585c18d4e80f8ec6052d341a3"><div class="ttname"><a href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a></div><div class="ttdeci">typename Requires_detail::requires_impl&lt; B &gt;::template_error_type_failed_to_meet_requirements_on_template_parameters Requires</div><div class="ttdoc">Express requirements on the template parameters of a function or class, replaces std::enable_if_t</div><div class="ttdef"><b>Definition:</b> Requires.hpp:67</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_gaef68ec7e4373c578d0a5885df8ac89fa"><div class="ttname"><a href="group__TensorGroup.html#gaef68ec7e4373c578d0a5885df8ac89fa">TensorMetafunctions::prepend_spacetime_index</a></div><div class="ttdeci">::Tensor&lt; typename Tensor::type, tmpl::push_front&lt; typename Tensor::symmetry, tmpl::int32_t&lt; 1+tmpl::fold&lt; typename Tensor::symmetry, tmpl::int32_t&lt; 0 &gt;, tmpl::max&lt; tmpl::_state, tmpl::_element &gt; &gt;::value &gt; &gt;, tmpl::push_front&lt; typename Tensor::index_list, SpacetimeIndex&lt; VolumeDim, Ul, Fr &gt; &gt;&gt; prepend_spacetime_index</div><div class="ttdoc">Add a spacetime index to the front of a Tensor.</div><div class="ttdef"><b>Definition:</b> Metafunctions.hpp:105</div></div>
+<div class="ttc" id="agroup__NumericalAlgorithmsGroup_html_ga9e442f4a419b53e05ba0ff98d4233305"><div class="ttname"><a href="group__NumericalAlgorithmsGroup.html#ga9e442f4a419b53e05ba0ff98d4233305">logical_partial_derivative</a></div><div class="ttdeci">void logical_partial_derivative(gsl::not_null&lt; TensorMetafunctions::prepend_spatial_index&lt; Tensor&lt; DataVector, SymmList, IndexList &gt;, Dim, UpLo::Lo, Frame::Logical &gt; * &gt; logical_derivative_of_u, gsl::not_null&lt; gsl::span&lt; double &gt; * &gt; buffer, const Tensor&lt; DataVector, SymmList, IndexList &gt; &amp;u, const Mesh&lt; Dim &gt; &amp;mesh) noexcept</div><div class="ttdoc">Computes the logical partial derivative of a tensor, prepending the spatial derivative index,...</div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="agroup__NumericalAlgorithmsGroup_html_ga2e59acbb52cacebae0fe19506b7fbedd"><div class="ttname"><a href="group__NumericalAlgorithmsGroup.html#ga2e59acbb52cacebae0fe19506b7fbedd">logical_partial_derivatives</a></div><div class="ttdeci">void logical_partial_derivatives(gsl::not_null&lt; std::array&lt; Variables&lt; DerivativeTags &gt;, Dim &gt; * &gt; logical_partial_derivatives_of_u, const Variables&lt; VariableTags &gt; &amp;u, const Mesh&lt; Dim &gt; &amp;mesh) noexcept</div><div class="ttdoc">Compute the partial derivatives of each variable with respect to the logical coordinate.</div></div>
+<div class="ttc" id="agroup__NumericalAlgorithmsGroup_html_ga3aba17e357844bc9470b7cc273e0ca84"><div class="ttname"><a href="group__NumericalAlgorithmsGroup.html#ga3aba17e357844bc9470b7cc273e0ca84">partial_derivatives</a></div><div class="ttdeci">void partial_derivatives(gsl::not_null&lt; Variables&lt; db::wrap_tags_in&lt; Tags::deriv, DerivativeTags, tmpl::size_t&lt; Dim &gt;, DerivativeFrame &gt;&gt; * &gt; du, const std::array&lt; Variables&lt; DerivativeTags &gt;, Dim &gt; &amp;logical_partial_derivatives_of_u, const InverseJacobian&lt; DataVector, Dim, Frame::Logical, DerivativeFrame &gt; &amp;inverse_jacobian) noexcept</div><div class="ttdoc">Compute the partial derivatives of each variable with respect to the coordinates of DerivativeFrame.</div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<div class="ttc" id="astring_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/string.html">string</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

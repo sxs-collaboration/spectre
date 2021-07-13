@@ -1,0 +1,338 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: NewtonianEuler::Limiters::Minmod&lt; VolumeDim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceNewtonianEuler.html">NewtonianEuler</a></li><li class="navelem"><b>Limiters</b></li><li class="navelem"><a class="el" href="classNewtonianEuler_1_1Limiters_1_1Minmod.html">Minmod</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classNewtonianEuler_1_1Limiters_1_1Minmod-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">NewtonianEuler::Limiters::Minmod&lt; VolumeDim &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__LimitersGroup.html">Limiters</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A minmod-based generalized slope limiter for the <a class="el" href="namespaceNewtonianEuler.html" title="Items related to evolving the Newtonian Euler system.">NewtonianEuler</a> system.  
+ <a href="classNewtonianEuler_1_1Limiters_1_1Minmod.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Evolution_2Systems_2NewtonianEuler_2Limiters_2Minmod_8hpp_source.html">Minmod.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1Limiters_1_1Minmod_1_1ApplyFlattener.html">ApplyFlattener</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1Limiters_1_1Minmod_1_1VariablesToLimit.html">VariablesToLimit</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a1ced3278fb18023635372cf4518bcade"><td class="memItemLeft" align="right" valign="top"><a id="a1ced3278fb18023635372cf4518bcade"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>ConservativeVarsMinmod</b> = ::<a class="el" href="classNewtonianEuler_1_1Limiters_1_1Minmod.html">Limiters::Minmod</a>&lt; VolumeDim, tmpl::list&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1MassDensityCons.html">NewtonianEuler::Tags::MassDensityCons</a>, <a class="el" href="structNewtonianEuler_1_1Tags_1_1MomentumDensity.html">NewtonianEuler::Tags::MomentumDensity</a>&lt; VolumeDim &gt;, <a class="el" href="structNewtonianEuler_1_1Tags_1_1EnergyDensity.html">NewtonianEuler::Tags::EnergyDensity</a> &gt; &gt;</td></tr>
+<tr class="separator:a1ced3278fb18023635372cf4518bcade"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad437c3061d0c7c1f4372b79201703fa0"><td class="memItemLeft" align="right" valign="top"><a id="ad437c3061d0c7c1f4372b79201703fa0"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; typename ConservativeVarsMinmod::Type, <a class="el" href="structNewtonianEuler_1_1Limiters_1_1Minmod_1_1VariablesToLimit.html">VariablesToLimit</a>, typename ConservativeVarsMinmod::TvbConstant, <a class="el" href="structNewtonianEuler_1_1Limiters_1_1Minmod_1_1ApplyFlattener.html">ApplyFlattener</a>, typename ConservativeVarsMinmod::DisableForDebugging &gt;</td></tr>
+<tr class="separator:ad437c3061d0c7c1f4372b79201703fa0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1ed81f3f2e8fe3b248e1684f53db01d1"><td class="memItemLeft" align="right" valign="top"><a id="a1ed81f3f2e8fe3b248e1684f53db01d1"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>PackagedData</b> = typename ConservativeVarsMinmod::PackagedData</td></tr>
+<tr class="separator:a1ed81f3f2e8fe3b248e1684f53db01d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa6fb7a6709763980a91743980dc833d2"><td class="memItemLeft" align="right" valign="top"><a id="aa6fb7a6709763980a91743980dc833d2"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>package_argument_tags</b> = typename ConservativeVarsMinmod::package_argument_tags</td></tr>
+<tr class="separator:aa6fb7a6709763980a91743980dc833d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4edb997d181f938e126a1fe0525197f6"><td class="memItemLeft" align="right" valign="top"><a id="a4edb997d181f938e126a1fe0525197f6"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>limit_tags</b> = tmpl::list&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1MassDensityCons.html">NewtonianEuler::Tags::MassDensityCons</a>, <a class="el" href="structNewtonianEuler_1_1Tags_1_1MomentumDensity.html">NewtonianEuler::Tags::MomentumDensity</a>&lt; VolumeDim &gt;, <a class="el" href="structNewtonianEuler_1_1Tags_1_1EnergyDensity.html">NewtonianEuler::Tags::EnergyDensity</a> &gt;</td></tr>
+<tr class="separator:a4edb997d181f938e126a1fe0525197f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac071bcedd9151d1d9598a6281c435b0d"><td class="memItemLeft" align="right" valign="top"><a id="ac071bcedd9151d1d9598a6281c435b0d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>limit_argument_tags</b> = tmpl::list&lt; <a class="el" href="structdomain_1_1Tags_1_1Mesh.html">domain::Tags::Mesh</a>&lt; VolumeDim &gt;, <a class="el" href="structdomain_1_1Tags_1_1Element.html">domain::Tags::Element</a>&lt; VolumeDim &gt;, <a class="el" href="structdomain_1_1Tags_1_1Coordinates.html">domain::Tags::Coordinates</a>&lt; VolumeDim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt;, <a class="el" href="structdomain_1_1Tags_1_1SizeOfElement.html">domain::Tags::SizeOfElement</a>&lt; VolumeDim &gt;, <a class="el" href="structdomain_1_1Tags_1_1DetInvJacobian.html">domain::Tags::DetInvJacobian</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, ::<a class="el" href="structhydro_1_1Tags_1_1EquationOfStateBase.html">hydro::Tags::EquationOfStateBase</a> &gt;</td></tr>
+<tr class="separator:ac071bcedd9151d1d9598a6281c435b0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a242dd7a7b70f115687f1ebcfa6d19421"><td class="memItemLeft" align="right" valign="top"><a id="a242dd7a7b70f115687f1ebcfa6d19421"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Minmod</b> (::<a class="el" href="group__LimitersGroup.html#ga530a6d3e2a08bb4bd61090a8f9aadd35">Limiters::MinmodType</a> minmod_type, <a class="el" href="group__LimitersGroup.html#ga6aa7b87417527e19d280b0a190c3856d">NewtonianEuler::Limiters::VariablesToLimit</a> vars_to_limit, double tvb_constant, bool apply_flattener, bool disable_for_debugging=false) noexcept</td></tr>
+<tr class="separator:a242dd7a7b70f115687f1ebcfa6d19421"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a972a61c9289afcda9390301c64109a8c"><td class="memItemLeft" align="right" valign="top"><a id="a972a61c9289afcda9390301c64109a8c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Minmod</b> (const <a class="el" href="classNewtonianEuler_1_1Limiters_1_1Minmod.html">Minmod</a> &amp;)=default</td></tr>
+<tr class="separator:a972a61c9289afcda9390301c64109a8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1c6e625367528c514fa5e4d3ea2d6a6"><td class="memItemLeft" align="right" valign="top"><a id="aa1c6e625367528c514fa5e4d3ea2d6a6"></a>
+<a class="el" href="classNewtonianEuler_1_1Limiters_1_1Minmod.html">Minmod</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classNewtonianEuler_1_1Limiters_1_1Minmod.html">Minmod</a> &amp;)=default</td></tr>
+<tr class="separator:aa1c6e625367528c514fa5e4d3ea2d6a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5971ec3a523fe94c125ed2a0da051289"><td class="memItemLeft" align="right" valign="top"><a id="a5971ec3a523fe94c125ed2a0da051289"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Minmod</b> (<a class="el" href="classNewtonianEuler_1_1Limiters_1_1Minmod.html">Minmod</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a5971ec3a523fe94c125ed2a0da051289"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f195ee57efcf0b649783fe937276779"><td class="memItemLeft" align="right" valign="top"><a id="a9f195ee57efcf0b649783fe937276779"></a>
+<a class="el" href="classNewtonianEuler_1_1Limiters_1_1Minmod.html">Minmod</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classNewtonianEuler_1_1Limiters_1_1Minmod.html">Minmod</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a9f195ee57efcf0b649783fe937276779"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca379fe1702fadca9003e99a1e07e33a"><td class="memItemLeft" align="right" valign="top"><a id="aca379fe1702fadca9003e99a1e07e33a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:aca379fe1702fadca9003e99a1e07e33a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab89acd5b9358cebd381a127b1ba82fdb"><td class="memItemLeft" align="right" valign="top"><a id="ab89acd5b9358cebd381a127b1ba82fdb"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNewtonianEuler_1_1Limiters_1_1Minmod.html#ab89acd5b9358cebd381a127b1ba82fdb">package_data</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; PackagedData * &gt; packaged_data, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;mass_density_cons, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim &gt; &amp;momentum_density, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;energy_density, const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim &gt; &amp;mesh, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, VolumeDim &gt; &amp;element_size, const <a class="el" href="classOrientationMap.html">OrientationMap</a>&lt; VolumeDim &gt; &amp;orientation_map) const noexcept</td></tr>
+<tr class="memdesc:ab89acd5b9358cebd381a127b1ba82fdb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Package data for sending to neighbor elements. <br /></td></tr>
+<tr class="separator:ab89acd5b9358cebd381a127b1ba82fdb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad7e64e07e2a694281d123dcd945213d3"><td class="memTemplParams" colspan="2"><a id="ad7e64e07e2a694281d123dcd945213d3"></a>
+template&lt;size_t ThermodynamicDim&gt; </td></tr>
+<tr class="memitem:ad7e64e07e2a694281d123dcd945213d3"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classNewtonianEuler_1_1Limiters_1_1Minmod.html#ad7e64e07e2a694281d123dcd945213d3">operator()</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; mass_density_cons, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim &gt; * &gt; momentum_density, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; energy_density, const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim &gt; &amp;mesh, const <a class="el" href="classElement.html">Element</a>&lt; VolumeDim &gt; &amp;element, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt; &amp;logical_coords, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, VolumeDim &gt; &amp;element_size, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;det_inv_logical_to_inertial_jacobian, const <a class="el" href="classEquationsOfState_1_1EquationOfState.html">EquationsOfState::EquationOfState</a>&lt; false, ThermodynamicDim &gt; &amp;equation_of_state, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt;&gt;, PackagedData, boost::hash&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt;&gt;&gt;&gt; &amp;neighbor_data) const noexcept</td></tr>
+<tr class="memdesc:ad7e64e07e2a694281d123dcd945213d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Limits the solution on the element. <br /></td></tr>
+<tr class="separator:ad7e64e07e2a694281d123dcd945213d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a332a0d3441a88497e14d7f95cf966ff2"><td class="memItemLeft" align="right" valign="top"><a id="a332a0d3441a88497e14d7f95cf966ff2"></a>
+static <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memItemRight" valign="bottom"><b>name</b> () noexcept</td></tr>
+<tr class="separator:a332a0d3441a88497e14d7f95cf966ff2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:ad88c97b3f9afe9b2986a83d899ed9e47"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:ad88c97b3f9afe9b2986a83d899ed9e47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a9d8debfd30f90b4b4820adcf5a385973"><td class="memTemplParams" colspan="2"><a id="a9d8debfd30f90b4b4820adcf5a385973"></a>
+template&lt;size_t LocalDim&gt; </td></tr>
+<tr class="memitem:a9d8debfd30f90b4b4820adcf5a385973"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classNewtonianEuler_1_1Limiters_1_1Minmod.html">Minmod</a>&lt; LocalDim &gt; &amp;lhs, const <a class="el" href="classNewtonianEuler_1_1Limiters_1_1Minmod.html">Minmod</a>&lt; LocalDim &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a9d8debfd30f90b4b4820adcf5a385973"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t VolumeDim&gt;<br />
+class NewtonianEuler::Limiters::Minmod&lt; VolumeDim &gt;</h3>
+
+<p>A minmod-based generalized slope limiter for the <a class="el" href="namespaceNewtonianEuler.html" title="Items related to evolving the Newtonian Euler system.">NewtonianEuler</a> system. </p>
+<p>Implements the three minmod-based generalized slope limiters from <a class="el" href="citelist.html#CITEREF_Cockburn1999">[28]</a> Sec. 2.4: \(\Lambda\Pi^1\), \(\Lambda\Pi^N\), and MUSCL. See the documentation of the system-agnostic <a class="el" href="classLimiters_1_1Minmod.html" title="A minmod-based generalized slope limiter.">Limiters::Minmod</a> limiter for a general discussion of the algorithm and the various options that control the action of the limiter.</p>
+<p>This implemention is specialized to the <a class="el" href="namespaceNewtonianEuler.html" title="Items related to evolving the Newtonian Euler system.">NewtonianEuler</a> evolution system. By specializing the limiter to the system, we can add two features that improve its robustness:</p><ul>
+<li>the limiter can be applied to the system's characteristic variables. This is the recommendation of the reference, because it reduces spurious oscillations in the post-limiter solution.</li>
+<li>after limiting, the solution can be processed to remove any remaining unphysical values like negative densities and pressures. We do this by scaling the solution around its mean (a "flattener" or "bounds-preserving" filter). Note: the flattener is applied to all elements, including those where the limiter did not act to reduce the solution's slopes. </li>
+</ul>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="ad88c97b3f9afe9b2986a83d899ed9e47"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad88c97b3f9afe9b2986a83d899ed9e47">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t VolumeDim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classNewtonianEuler_1_1Limiters_1_1Minmod.html">NewtonianEuler::Limiters::Minmod</a>&lt; VolumeDim &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;A Minmod limiter specialized to the NewtonianEuler system&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/Systems/NewtonianEuler/Limiters/<a class="el" href="Evolution_2Systems_2NewtonianEuler_2Limiters_2Minmod_8hpp_source.html">Minmod.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

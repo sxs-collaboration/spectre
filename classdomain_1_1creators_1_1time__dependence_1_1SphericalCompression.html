@@ -1,0 +1,346 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::creators::time_dependence::SphericalCompression Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1creators.html">creators</a></li><li class="navelem"><a class="el" href="namespacedomain_1_1creators_1_1time__dependence.html">time_dependence</a></li><li class="navelem"><a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1SphericalCompression.html">SphericalCompression</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classdomain_1_1creators_1_1time__dependence_1_1SphericalCompression-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::creators::time_dependence::SphericalCompression Class Reference<span class="mlabels"><span class="mlabel">final</span></span></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A spherical compression about some center, as given by domain::CoordinateMaps::TimeDependent::SphericalCompression&lt;false&gt;.  
+ <a href="classdomain_1_1creators_1_1time__dependence_1_1SphericalCompression.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Creators_2TimeDependence_2SphericalCompression_8hpp_source.html">SphericalCompression.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1Center.html">Center</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1Center.html" title="Center for the SphericalCompression map.">Center</a> for the <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1SphericalCompression.html" title="A spherical compression about some center, as given by domain::CoordinateMaps::TimeDependent::Spheric...">SphericalCompression</a> map.  <a href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1Center.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1FunctionOfTimeName.html">FunctionOfTimeName</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The name of the functions of time to be added to the added to the DataBox for the spherical compression.  <a href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1FunctionOfTimeName.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1InitialAcceleration.html">InitialAcceleration</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initial radial acceleration for the function of time for the spherical compression.  <a href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1InitialAcceleration.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1InitialExpirationDeltaT.html">InitialExpirationDeltaT</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The time interval for updates of the functions of time.  <a href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1InitialExpirationDeltaT.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1InitialTime.html">InitialTime</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The initial time of the function of time.  <a href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1InitialTime.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1InitialValue.html">InitialValue</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initial value for function of time for the spherical compression.  <a href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1InitialValue.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1InitialVelocity.html">InitialVelocity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initial radial velocity for the function of time for the spherical compression.  <a href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1InitialVelocity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1MaxRadius.html">MaxRadius</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum radius for the <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1SphericalCompression.html" title="A spherical compression about some center, as given by domain::CoordinateMaps::TimeDependent::Spheric...">SphericalCompression</a> map.  <a href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1MaxRadius.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1MinRadius.html">MinRadius</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Minimum radius for the <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1SphericalCompression.html" title="A spherical compression about some center, as given by domain::CoordinateMaps::TimeDependent::Spheric...">SphericalCompression</a> map.  <a href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1MinRadius.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:aaa6150adf3429de464ae4c924ae0c67c"><td class="memItemLeft" align="right" valign="top"><a id="aaa6150adf3429de464ae4c924ae0c67c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>maps_list</b> = tmpl::list&lt; <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1SphericalCompression.html">SphericalCompressionMap</a> &gt; &gt;</td></tr>
+<tr class="separator:aaa6150adf3429de464ae4c924ae0c67c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a730f760ee4c37a6d8dabc9b418dd5089"><td class="memItemLeft" align="right" valign="top"><a id="a730f760ee4c37a6d8dabc9b418dd5089"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>MapForComposition</b> = detail::generate_coordinate_map_t&lt; tmpl::list&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1SphericalCompression.html">SphericalCompressionMap</a> &gt; &gt;</td></tr>
+<tr class="separator:a730f760ee4c37a6d8dabc9b418dd5089"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01530a52fdaaae2fdd52e37806c71b72"><td class="memItemLeft" align="right" valign="top"><a id="a01530a52fdaaae2fdd52e37806c71b72"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1InitialTime.html">InitialTime</a>, <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1InitialExpirationDeltaT.html">InitialExpirationDeltaT</a>, <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1MinRadius.html">MinRadius</a>, <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1MaxRadius.html">MaxRadius</a>, <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1Center.html">Center</a>, <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1InitialValue.html">InitialValue</a>, <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1InitialVelocity.html">InitialVelocity</a>, <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1InitialAcceleration.html">InitialAcceleration</a>, <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1FunctionOfTimeName.html">FunctionOfTimeName</a> &gt;</td></tr>
+<tr class="separator:a01530a52fdaaae2fdd52e37806c71b72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">domain::creators::time_dependence::TimeDependence&lt; 3 &gt;</a></td></tr>
+<tr class="memitem:a518a231b9f2b2beef1e2482ab07b5f31 inherit pub_types_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="a518a231b9f2b2beef1e2482ab07b5f31"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::append&lt; creatable_classes_any_dim, tmpl::conditional_t&lt; MeshDim==1, creatable_classes_1d, tmpl::conditional_t&lt; MeshDim==2, creatable_classes_2d, creatable_classes_3d &gt; &gt;&gt;</td></tr>
+<tr class="separator:a518a231b9f2b2beef1e2482ab07b5f31 inherit pub_types_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a3a76e017969ca74d7f6264d09f2f2ca5"><td class="memItemLeft" align="right" valign="top"><a id="a3a76e017969ca74d7f6264d09f2f2ca5"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SphericalCompression</b> (const <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1SphericalCompression.html">SphericalCompression</a> &amp;)=delete</td></tr>
+<tr class="separator:a3a76e017969ca74d7f6264d09f2f2ca5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f62a6077e548bf95c64f8407c68d54a"><td class="memItemLeft" align="right" valign="top"><a id="a1f62a6077e548bf95c64f8407c68d54a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SphericalCompression</b> (<a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1SphericalCompression.html">SphericalCompression</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a1f62a6077e548bf95c64f8407c68d54a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8fecd24aa6946c651dbd9b1958fbe042"><td class="memItemLeft" align="right" valign="top"><a id="a8fecd24aa6946c651dbd9b1958fbe042"></a>
+<a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1SphericalCompression.html">SphericalCompression</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1SphericalCompression.html">SphericalCompression</a> &amp;)=delete</td></tr>
+<tr class="separator:a8fecd24aa6946c651dbd9b1958fbe042"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a34c69db6970ec676ae0af5618745dad0"><td class="memItemLeft" align="right" valign="top"><a id="a34c69db6970ec676ae0af5618745dad0"></a>
+<a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1SphericalCompression.html">SphericalCompression</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1SphericalCompression.html">SphericalCompression</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a34c69db6970ec676ae0af5618745dad0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69237f3da5b56e7ddbd9a6a41f66f37b"><td class="memItemLeft" align="right" valign="top"><a id="a69237f3da5b56e7ddbd9a6a41f66f37b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SphericalCompression</b> (double initial_time, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; double &gt; initial_expiration_delta_t, double min_radius, double max_radius, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; center, double initial_value, double initial_velocity, double initial_acceleration, <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> function_of_time_name=&quot;LambdaFactorA0&quot;, const <a class="el" href="structOptions_1_1Context.html">Options::Context</a> &amp;context={})</td></tr>
+<tr class="separator:a69237f3da5b56e7ddbd9a6a41f66f37b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ea965ac7621ebecb4b4147cf4026bd5"><td class="memItemLeft" align="right" valign="top"><a id="a6ea965ac7621ebecb4b4147cf4026bd5"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a>&lt; mesh_dim &gt;&gt; override</td></tr>
+<tr class="separator:a6ea965ac7621ebecb4b4147cf4026bd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a399532faa18313db70d50aacf28bc831"><td class="memItemLeft" align="right" valign="top"><a id="a399532faa18313db70d50aacf28bc831"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1SphericalCompression.html#a399532faa18313db70d50aacf28bc831">block_maps</a> (size_t number_of_blocks) const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, mesh_dim &gt;&gt;&gt; override</td></tr>
+<tr class="memdesc:a399532faa18313db70d50aacf28bc831"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the coordinate maps from the <code><a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a></code> to the <code><a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a></code> frame for each block. <br /></td></tr>
+<tr class="separator:a399532faa18313db70d50aacf28bc831"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4bf8d73748fb8ccec62b4d16bc420f01"><td class="memItemLeft" align="right" valign="top"><a id="a4bf8d73748fb8ccec62b4d16bc420f01"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>functions_of_time</b> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; override</td></tr>
+<tr class="separator:a4bf8d73748fb8ccec62b4d16bc420f01"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45ab9ed08949465ec0bf365805913fc2"><td class="memItemLeft" align="right" valign="top"><a id="a45ab9ed08949465ec0bf365805913fc2"></a>
+MapForComposition&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1SphericalCompression.html#a45ab9ed08949465ec0bf365805913fc2">map_for_composition</a> () const noexcept</td></tr>
+<tr class="memdesc:a45ab9ed08949465ec0bf365805913fc2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the map for each block to be used in a composition of <code><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html" title="The abstract base class off of which specific classes for adding time dependence into a domain creato...">TimeDependence</a></code>s. <br /></td></tr>
+<tr class="separator:a45ab9ed08949465ec0bf365805913fc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">domain::creators::time_dependence::TimeDependence&lt; 3 &gt;</a></td></tr>
+<tr class="memitem:af36b7b242535cf7f8413624f132f70ca inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="af36b7b242535cf7f8413624f132f70ca"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TimeDependence</b> (const <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;)=default</td></tr>
+<tr class="separator:af36b7b242535cf7f8413624f132f70ca inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ee073dd3ceeea6e9e27f1281dcdc5d6 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="a3ee073dd3ceeea6e9e27f1281dcdc5d6"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TimeDependence</b> (<a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a3ee073dd3ceeea6e9e27f1281dcdc5d6 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbbd44090636dee26dfc280098973128 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="afbbd44090636dee26dfc280098973128"></a>
+<a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;)=default</td></tr>
+<tr class="separator:afbbd44090636dee26dfc280098973128 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a513178e25e84a53826de7fec2edb78 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="a0a513178e25e84a53826de7fec2edb78"></a>
+<a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a0a513178e25e84a53826de7fec2edb78 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac017af3f12a34d66df55ab0682e1e28e inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="ac017af3f12a34d66df55ab0682e1e28e"></a>
+virtual auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html#ac017af3f12a34d66df55ab0682e1e28e">get_clone</a> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &gt;=0</td></tr>
+<tr class="memdesc:ac017af3f12a34d66df55ab0682e1e28e inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></code> pointing to a copy of the <code>TimeDependence</code>. <br /></td></tr>
+<tr class="separator:ac017af3f12a34d66df55ab0682e1e28e inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af55fff9a934fceb260ce00fa08bd724c inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="af55fff9a934fceb260ce00fa08bd724c"></a>
+virtual auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html#af55fff9a934fceb260ce00fa08bd724c">functions_of_time</a> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;=0</td></tr>
+<tr class="memdesc:af55fff9a934fceb260ce00fa08bd724c inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the functions of time for the domain. <br /></td></tr>
+<tr class="separator:af55fff9a934fceb260ce00fa08bd724c inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a6b1a7c7a9d3e2c386720b314ff7d85 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="a2a6b1a7c7a9d3e2c386720b314ff7d85"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html#a2a6b1a7c7a9d3e2c386720b314ff7d85">is_none</a> () const noexcept</td></tr>
+<tr class="memdesc:a2a6b1a7c7a9d3e2c386720b314ff7d85 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>true</code> if the instance is <code>None</code>, meaning no time dependence. <br /></td></tr>
+<tr class="separator:a2a6b1a7c7a9d3e2c386720b314ff7d85 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a7520e5204a7a95021b6ab1d2c8ba77bf"><td class="memItemLeft" align="right" valign="top"><a id="a7520e5204a7a95021b6ab1d2c8ba77bf"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>mesh_dim</b> = 3</td></tr>
+<tr class="separator:a7520e5204a7a95021b6ab1d2c8ba77bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0137dd6bcffdc7a5ad048ebde5f68334"><td class="memItemLeft" align="right" valign="top"><a id="a0137dd6bcffdc7a5ad048ebde5f68334"></a>
+static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b> = {&quot;A spherical compression.&quot;}</td></tr>
+<tr class="separator:a0137dd6bcffdc7a5ad048ebde5f68334"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:aad1ba8b10fbdcead4ad3b06f98dcb55b"><td class="memItemLeft" align="right" valign="top"><a id="aad1ba8b10fbdcead4ad3b06f98dcb55b"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1SphericalCompression.html">SphericalCompression</a> &amp;lhs, const <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1SphericalCompression.html">SphericalCompression</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:aad1ba8b10fbdcead4ad3b06f98dcb55b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A spherical compression about some center, as given by domain::CoordinateMaps::TimeDependent::SphericalCompression&lt;false&gt;. </p>
+<h3>Details</h3>
+<p>This <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html" title="The abstract base class off of which specific classes for adding time dependence into a domain creato...">TimeDependence</a> is suitable for use on a spherical shell, where <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1MinRadius.html" title="Minimum radius for the SphericalCompression map.">MinRadius</a> and <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1SphericalCompression_1_1MaxRadius.html" title="Maximum radius for the SphericalCompression map.">MaxRadius</a> are the inner and outer radii of the shell, respectively. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/Creators/TimeDependence/<a class="el" href="Creators_2TimeDependence_2SphericalCompression_8hpp_source.html">SphericalCompression.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,349 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty&lt; Dim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceGeneralizedHarmonic.html">GeneralizedHarmonic</a></li><li class="navelem"><a class="el" href="namespaceGeneralizedHarmonic_1_1BoundaryCorrections.html">BoundaryCorrections</a></li><li class="navelem"><a class="el" href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1UpwindPenalty.html">UpwindPenalty</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1UpwindPenalty-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty&lt; Dim &gt; Class Template Reference<span class="mlabels"><span class="mlabel">final</span></span></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Computes the generalized harmonic upwind multipenalty boundary correction.  
+ <a href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1UpwindPenalty.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="GeneralizedHarmonic_2BoundaryCorrections_2UpwindPenalty_8hpp_source.html">UpwindPenalty.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a76aa9ee14b3ad49e164eac00d57a52f4"><td class="memItemLeft" align="right" valign="top"><a id="a76aa9ee14b3ad49e164eac00d57a52f4"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a76aa9ee14b3ad49e164eac00d57a52f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8af273b580d204ba1ad016646472adc0"><td class="memItemLeft" align="right" valign="top"><a id="a8af273b580d204ba1ad016646472adc0"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_package_field_tags</b> = tmpl::list&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1VSpacetimeMetric.html">Tags::VSpacetimeMetric</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1VZero.html">Tags::VZero</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1VPlus.html">Tags::VPlus</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1VMinus.html">Tags::VMinus</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, NormalTimesVPlus, NormalTimesVMinus, Gamma2VSpacetimeMetric, CharSpeedsTensor &gt;</td></tr>
+<tr class="separator:a8af273b580d204ba1ad016646472adc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f20a57fa57604cb4441eabb61c62f75"><td class="memItemLeft" align="right" valign="top"><a id="a2f20a57fa57604cb4441eabb61c62f75"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_package_data_temporary_tags</b> = tmpl::list&lt; ::<a class="el" href="structGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1ConstraintGamma1.html">GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1</a>, ::<a class="el" href="structGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1ConstraintGamma2.html">GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2</a>, <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;</td></tr>
+<tr class="separator:a2f20a57fa57604cb4441eabb61c62f75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62858598023a49d02020a40a9c922f04"><td class="memItemLeft" align="right" valign="top"><a id="a62858598023a49d02020a40a9c922f04"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_package_data_primitive_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a62858598023a49d02020a40a9c922f04"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a1a910ada568190bb8719109988659b"><td class="memItemLeft" align="right" valign="top"><a id="a2a1a910ada568190bb8719109988659b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_package_data_volume_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a2a1a910ada568190bb8719109988659b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection.html">GeneralizedHarmonic::BoundaryCorrections::BoundaryCorrection&lt; Dim &gt;</a></td></tr>
+<tr class="memitem:aa1c7741585a7073af22a33bc7018ea4d inherit pub_types_classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="aa1c7741585a7073af22a33bc7018ea4d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::list&lt; <a class="el" href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1UpwindPenalty.html">UpwindPenalty</a>&lt; Dim &gt; &gt;</td></tr>
+<tr class="separator:aa1c7741585a7073af22a33bc7018ea4d inherit pub_types_classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ac05ef8ecf5ac2923e0e9e37882b57f0b"><td class="memItemLeft" align="right" valign="top"><a id="ac05ef8ecf5ac2923e0e9e37882b57f0b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>UpwindPenalty</b> (const <a class="el" href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1UpwindPenalty.html">UpwindPenalty</a> &amp;)=default</td></tr>
+<tr class="separator:ac05ef8ecf5ac2923e0e9e37882b57f0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:addbb47c699480df3b637a3786f0215b6"><td class="memItemLeft" align="right" valign="top"><a id="addbb47c699480df3b637a3786f0215b6"></a>
+<a class="el" href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1UpwindPenalty.html">UpwindPenalty</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1UpwindPenalty.html">UpwindPenalty</a> &amp;)=default</td></tr>
+<tr class="separator:addbb47c699480df3b637a3786f0215b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d129b7cd8333b5ca42926ab700d3f83"><td class="memItemLeft" align="right" valign="top"><a id="a1d129b7cd8333b5ca42926ab700d3f83"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>UpwindPenalty</b> (<a class="el" href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1UpwindPenalty.html">UpwindPenalty</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a1d129b7cd8333b5ca42926ab700d3f83"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae1b2f028ff804f37934de2bd202e3d70"><td class="memItemLeft" align="right" valign="top"><a id="ae1b2f028ff804f37934de2bd202e3d70"></a>
+<a class="el" href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1UpwindPenalty.html">UpwindPenalty</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1UpwindPenalty.html">UpwindPenalty</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:ae1b2f028ff804f37934de2bd202e3d70"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af23b6e2f90d7750ca1e35a63911e2af8"><td class="memItemLeft" align="right" valign="top"><a id="af23b6e2f90d7750ca1e35a63911e2af8"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) override</td></tr>
+<tr class="separator:af23b6e2f90d7750ca1e35a63911e2af8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad66dca40a477f0a25b1bcfb51e2eeaac"><td class="memItemLeft" align="right" valign="top"><a id="ad66dca40a477f0a25b1bcfb51e2eeaac"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a>&lt; Dim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const noexcept override</td></tr>
+<tr class="separator:ad66dca40a477f0a25b1bcfb51e2eeaac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a28ad7f549c67ca96afa117ba48ac403e"><td class="memItemLeft" align="right" valign="top"><a id="a28ad7f549c67ca96afa117ba48ac403e"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>dg_package_data</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; packaged_char_speed_v_spacetime_metric, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; packaged_char_speed_v_zero, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; packaged_char_speed_v_plus, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; packaged_char_speed_v_minus, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; packaged_char_speed_n_times_v_plus, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; packaged_char_speed_n_times_v_minus, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; packaged_char_speed_gamma2_v_spacetime_metric, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::a&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; packaged_char_speeds, const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;spacetime_metric, const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;<a class="el" href="group__GeneralRelativityGroup.html#ga0f8ea77b898950a2a3ab6a5feea01935">pi</a>, const tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;<a class="el" href="group__GeneralRelativityGroup.html#gaecccadb6658f3735cfb7344c780abd97">phi</a>, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;constraint_gamma1, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;constraint_gamma2, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;lapse, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;shift, const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;normal_covector, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;normal_vector, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt; &amp;, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt; &amp;normal_dot_mesh_velocity) const noexcept</td></tr>
+<tr class="separator:a28ad7f549c67ca96afa117ba48ac403e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a06148b65a53043671ec95df14678c9d9"><td class="memItemLeft" align="right" valign="top"><a id="a06148b65a53043671ec95df14678c9d9"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>dg_boundary_terms</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; boundary_correction_spacetime_metric, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; boundary_correction_pi, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; boundary_correction_phi, const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speed_v_spacetime_metric_int, const tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speed_v_zero_int, const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speed_v_plus_int, const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speed_v_minus_int, const tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speed_normal_times_v_plus_int, const tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speed_normal_times_v_minus_int, const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speed_constraint_gamma2_v_spacetime_metric_int, const tnsr::a&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speeds_int, const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speed_v_spacetime_metric_ext, const tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speed_v_zero_ext, const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speed_v_plus_ext, const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speed_v_minus_ext, const tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speed_normal_times_v_plus_ext, const tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speed_normal_times_v_minus_ext, const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speed_constraint_gamma2_v_spacetime_metric_ext, const tnsr::a&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speeds_ext, <a class="el" href="group__DiscontinuousGalerkinGroup.html#ga102ad013b7e4298b4c14c52a39bcd8da">dg::Formulation</a>) const noexcept</td></tr>
+<tr class="separator:a06148b65a53043671ec95df14678c9d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection.html">GeneralizedHarmonic::BoundaryCorrections::BoundaryCorrection&lt; Dim &gt;</a></td></tr>
+<tr class="memitem:a74a1d10190b95e1bcc079be0942438fc inherit pub_methods_classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="a74a1d10190b95e1bcc079be0942438fc"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCorrection</b> (const <a class="el" href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;)=default</td></tr>
+<tr class="separator:a74a1d10190b95e1bcc079be0942438fc inherit pub_methods_classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca70bdd5bafb00bd0affcbe366334e35 inherit pub_methods_classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="aca70bdd5bafb00bd0affcbe366334e35"></a>
+<a class="el" href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;)=default</td></tr>
+<tr class="separator:aca70bdd5bafb00bd0affcbe366334e35 inherit pub_methods_classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63c609fc97cec4b7eb1b14de03ea27ea inherit pub_methods_classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="a63c609fc97cec4b7eb1b14de03ea27ea"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCorrection</b> (<a class="el" href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a63c609fc97cec4b7eb1b14de03ea27ea inherit pub_methods_classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4fc5903726dbc287c25169a2aab625bd inherit pub_methods_classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="a4fc5903726dbc287c25169a2aab625bd"></a>
+<a class="el" href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a4fc5903726dbc287c25169a2aab625bd inherit pub_methods_classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aa33b533a642134bf7fda822211e8736b"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:aa33b533a642134bf7fda822211e8736b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+class GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty&lt; Dim &gt;</h3>
+
+<p>Computes the generalized harmonic upwind multipenalty boundary correction. </p>
+<p>This implements the upwind multipenalty boundary correction term \(D_\beta\). The general form is given by:</p>
+<p class="formulaDsp">
+\begin{align*} D_\beta = T_{\beta\hat{\beta}}^{\mathrm{ext}} \Lambda^{\mathrm{ext},-}_{\hat{\beta}\hat{\alpha}} v^{\mathrm{ext}}_{\hat{\alpha}} -T_{\beta\hat{\beta}}^{\mathrm{int}} \Lambda^{\mathrm{int},-}_{\hat{\beta}\hat{\alpha}} v^{\mathrm{int}}_{\hat{\alpha}}. \end{align*}
+</p>
+<p>We denote the evolved fields by \(u_{\alpha}\), the characteristic fields by \(v_{\hat{\alpha}}\), and implicitly sum over reapeated indices. \(T_{\beta\hat{\beta}}\) transforms characteristic fields to evolved fields, while \(\Lambda_{\hat{\beta}\hat{\alpha}}^-\) is a diagonal matrix with only the negative characteristic speeds, and has zeros on the diagonal for all other entries. The int and ext superscripts denote quantities on the internal and external side of the mortar. Note that Eq. (6.3) of <a class="el" href="citelist.html#CITEREF_Teukolsky2015ega">[102]</a> is not exactly what's implemented since that boundary term does not consistently treat both sides of the interface on the same footing.</p>
+<p>For the first-order generalized harmonic system the correction is:</p>
+<p class="formulaDsp">
+\begin{align*} D_{g_{ab}} &amp;= \lambda_{v^{g}}^{\mathrm{ext},-} v^{\mathrm{ext},g}_{ab} - \lambda_{v^{g}}^{\mathrm{int},-} v^{\mathrm{int},g}_{ab}, \\ D_{\Pi_{ab}} &amp;= \frac{1}{2}\left(\lambda_{v^+}^{\mathrm{ext},-} v^{\mathrm{ext},+}_{ab} + \lambda_{v^-}^{\mathrm{ext},-} v^{\mathrm{ext},-}_{ab}\right) + \lambda_{v^g}^{\mathrm{ext},-}\gamma_2 v^{\mathrm{ext},g}_{ab} \notag \\ &amp;-\frac{1}{2}\left(\lambda_{v^+}^{\mathrm{int},-} v^{\mathrm{int},+}_{ab} + \lambda_{v^-}^{\mathrm{int},-} v^{\mathrm{int},-}_{ab}\right) - \lambda_{v^g}^{\mathrm{int},-}\gamma_2 v^{\mathrm{int},g}_{ab} , \\ D_{\Phi_{iab}} &amp;= \frac{1}{2}\left(\lambda_{v^+}^{\mathrm{ext},-} v^{\mathrm{ext},+}_{ab} - \lambda_{v^-}^{\mathrm{ext},-} v^{\mathrm{ext},-}_{ab}\right)n_i^{\mathrm{ext}} + \lambda_{v^0}^{\mathrm{ext},-} v^{\mathrm{ext},0}_{iab} \notag \\ &amp;- \frac{1}{2}\left(\lambda_{v^+}^{\mathrm{int},-} v^{\mathrm{int},+}_{ab} - \lambda_{v^-}^{\mathrm{int},-} v^{\mathrm{int},-}_{ab}\right)n_i^{\mathrm{int}} - \lambda_{v^0}^{\mathrm{int},-} v^{\mathrm{int},0}_{iab}, \end{align*}
+</p>
+<p>with characteristic fields</p>
+<p class="formulaDsp">
+\begin{align*} v^{g}_{ab} &amp;= g_{ab}, \\ v^{0}_{iab} &amp;= (\delta^k_i-n^k n_i)\Phi_{kab}, \\ v^{\pm}_{ab} &amp;= \Pi_{ab}\pm n^i\Phi_{iab} -\gamma_2 g_{ab}, \end{align*}
+</p>
+<p>and characteristic speeds</p>
+<p class="formulaDsp">
+\begin{align*} \lambda_{v^g} =&amp; -(1+\gamma_1)\beta^i n_i -v^i_g n_i, \\ \lambda_{v^0} =&amp; -\beta^i n_i -v^i_g n_i, \\ \lambda_{v^\pm} =&amp; \pm \alpha - \beta^i n_i - v^i_g n_i, \end{align*}
+</p>
+<p>where \(v_g^i\) is the mesh velocity and \(n_i\) is the outward directed unit normal covector to the interface. We have also defined</p>
+<p class="formulaDsp">
+\begin{align} \lambda^{\pm}_{\hat{\alpha}} = \left\{ \begin{array}{ll} \lambda_{\hat{\alpha}} &amp; \mathrm{if}\;\pm\lambda_{\hat{\alpha}}&gt; 0 \\ 0 &amp; \mathrm{otherwise} \end{array}\right. \end{align}
+</p>
+<p>In the implementation we store the speeds in a rank-4 tensor with the zeroth component being \(\lambda_{v^\Psi}\), the first being \(\lambda_{v^0}\), the second being \(\lambda_{v^+}\), and the third being \(\lambda_{v^-}\).</p>
+<p>Note that we have assumed \(n_i^{\mathrm{ext}}\) points in the same direction as \(n_i^{\mathrm{int}}\), but in the code they point in opposite directions. If \(n_i^{\mathrm{ext}}\) points in the opposite direction the external speeds have their sign flipped and the \(\pm\) fields and their speeds reverse roles (i.e. the \(v^{\mathrm{ext},+}\) field is now flowing into the element, while \(v^{\mathrm{ext},-}\) flows out). In our implementation this reversal actually cancels out, and we have the following equations:</p>
+<p class="formulaDsp">
+\begin{align*} D_{g_{ab}} &amp;= -\lambda_{v^{g}}^{\mathrm{ext},+} v^{\mathrm{ext},g}_{ab} - \lambda_{v^{g}}^{\mathrm{int},-} v^{\mathrm{int},g}_{ab}, \\ D_{\Pi_{ab}} &amp;= \frac{1}{2}\left(-\lambda_{v^+}^{\mathrm{ext},+} v^{\mathrm{ext},+}_{ab} - \lambda_{v^-}^{\mathrm{ext},+} v^{\mathrm{ext},-}_{ab}\right) - \lambda_{v^g}^{\mathrm{ext},+}\gamma_2 v^{\mathrm{ext},g}_{ab} \notag \\ &amp;-\frac{1}{2}\left(\lambda_{v^+}^{\mathrm{int},-} v^{\mathrm{int},+}_{ab} + \lambda_{v^-}^{\mathrm{int},-} v^{\mathrm{int},-}_{ab}\right) - \lambda_{v^g}^{\mathrm{int},-}\gamma_2 v^{\mathrm{int},g}_{ab} , \\ D_{\Phi_{iab}} &amp;= \frac{1}{2}\left(-\lambda_{v^+}^{\mathrm{ext},+} v^{\mathrm{ext},+}_{ab} + \lambda_{v^-}^{\mathrm{ext},+} v^{\mathrm{ext},-}_{ab}\right)n_i^{\mathrm{ext}} - \lambda_{v^0}^{\mathrm{ext},+} v^{\mathrm{ext},0}_{iab} \\ &amp;- \frac{1}{2}\left(\lambda_{v^+}^{\mathrm{int},-} v^{\mathrm{int},+}_{ab} - \lambda_{v^-}^{\mathrm{int},-} v^{\mathrm{int},-}_{ab}\right)n_i^{\mathrm{int}} - \lambda_{v^0}^{\mathrm{int},-} v^{\mathrm{int},0}_{iab}, \end{align*}
+</p>
+ </div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="aa33b533a642134bf7fda822211e8736b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa33b533a642134bf7fda822211e8736b">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1UpwindPenalty.html">GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty</a>&lt; Dim &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Computes the UpwindPenalty boundary correction term for the generalized &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;harmonic system.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/<a class="el" href="GeneralizedHarmonic_2BoundaryCorrections_2UpwindPenalty_8hpp_source.html">UpwindPenalty.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

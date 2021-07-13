@@ -1,0 +1,467 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: DataBox Tags</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a>  </div>
+  <div class="headertitle">
+<div class="title">DataBox Tags</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Structures and metafunctions for labeling the contents of DataBoxes.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1DataBox.html">Tags::DataBox</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag used to retrieve the <a class="el" href="structTags_1_1DataBox.html" title="Tag used to retrieve the DataBox from the db::get function.">DataBox</a> from the <code><a class="el" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1" title="Retrieve the item with tag Tag from the DataBox.">db::get</a></code> function.  <a href="structTags_1_1DataBox.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1dt.html">Tags::dt&lt; Tag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefix indicating a time derivative.  <a href="structTags_1_1dt.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1Flux.html">Tags::Flux&lt; Tag, VolumeDim, Fr, typename &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefix indicating a flux.  <a href="structTags_1_1Flux.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1Source.html">Tags::Source&lt; Tag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefix indicating a source term.  <a href="structTags_1_1Source.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1FixedSource.html">Tags::FixedSource&lt; Tag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefix indicating a source term that is independent of dynamic variables.  <a href="structTags_1_1FixedSource.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1Initial.html">Tags::Initial&lt; Tag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefix indicating the initial value of a quantity.  <a href="structTags_1_1Initial.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1NormalDotFlux.html">Tags::NormalDotFlux&lt; Tag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefix indicating a boundary unit normal vector dotted into the flux.  <a href="structTags_1_1NormalDotFlux.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1NormalDotNumericalFlux.html">Tags::NormalDotNumericalFlux&lt; Tag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefix indicating a boundary unit normal vector dotted into the numerical flux.  <a href="structTags_1_1NormalDotNumericalFlux.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1Next.html">Tags::Next&lt; Tag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefix indicating the value a quantity will take on the next iteration of the algorithm.  <a href="structTags_1_1Next.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1Magnitude.html">Tags::Magnitude&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1EuclideanMagnitude.html">Tags::EuclideanMagnitude&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1NonEuclideanMagnitude.html">Tags::NonEuclideanMagnitude&lt; Tag, MetricTag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1Normalized.html">Tags::Normalized&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1NormalizedCompute.html">Tags::NormalizedCompute&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1Sqrt.html">Tags::Sqrt&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1SqrtCompute.html">Tags::SqrtCompute&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1PointwiseL2Norm.html">Tags::PointwiseL2Norm&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1PointwiseL2NormCompute.html">Tags::PointwiseL2NormCompute&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1L2Norm.html">Tags::L2Norm&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1L2NormCompute.html">Tags::L2NormCompute&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1CoordinateMaps_1_1Tags_1_1CoordinateMap.html">domain::CoordinateMaps::Tags::CoordinateMap&lt; VolumeDim, SourceFrame, TargetFrame &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1UnnormalizedFaceNormal.html">domain::Tags::UnnormalizedFaceNormal&lt; VolumeDim, Frame &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1InterfaceCompute_3_01Tags_1_1BoundaryDirectionsExterior_3_01VolumeDim_0184ce0938d30efe351cc7c3751f2e8f00.html">domain::Tags::InterfaceCompute&lt; Tags::BoundaryDirectionsExterior&lt; VolumeDim &gt;, UnnormalizedFaceNormalCompute&lt; VolumeDim, Frame &gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1InterfaceCompute.html">domain::Tags::InterfaceCompute&lt; DirectionsTag, Tag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute tag for representing items computed on a set of interfaces. Can be retrieved using <code><a class="el" href="structdomain_1_1Tags_1_1Interface.html" title="Tag which is either a SimpleTag for quantities on an interface, base tag to a compute item which acts...">Tags::Interface</a>&lt;DirectionsTag, Tag&gt;</code>  <a href="structdomain_1_1Tags_1_1InterfaceCompute.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1Slice.html">domain::Tags::Slice&lt; DirectionsTag, Tag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute tag for representing a compute item that slices data from the volume to a set of interfaces.  <a href="structdomain_1_1Tags_1_1Slice.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1InterfaceMesh.html">domain::Tags::InterfaceMesh&lt; VolumeDim &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1BoundaryCoordinates.html">domain::Tags::BoundaryCoordinates&lt; VolumeDim, MovingMesh &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1LogicalCoordinates.html">domain::Tags::LogicalCoordinates&lt; VolumeDim &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1MinimumGridSpacing.html">domain::Tags::MinimumGridSpacing&lt; Dim, Frame &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1SizeOfElement.html">domain::Tags::SizeOfElement&lt; VolumeDim &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1Domain.html">domain::Tags::Domain&lt; VolumeDim &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1InitialExtents.html">domain::Tags::InitialExtents&lt; Dim &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1InitialRefinementLevels.html">domain::Tags::InitialRefinementLevels&lt; Dim &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1Element.html">domain::Tags::Element&lt; VolumeDim &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1Mesh.html">domain::Tags::Mesh&lt; VolumeDim &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The computational grid of the <a class="el" href="structdomain_1_1Tags_1_1Element.html">Element</a> in the DataBox.  <a href="structdomain_1_1Tags_1_1Mesh.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1ElementMap.html">domain::Tags::ElementMap&lt; VolumeDim, TargetFrame &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1Coordinates.html">domain::Tags::Coordinates&lt; Dim, Frame &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1MappedCoordinates.html">domain::Tags::MappedCoordinates&lt; MapTag, SourceCoordsTag, CoordinatesTag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1InverseJacobian.html">domain::Tags::InverseJacobian&lt; Dim, SourceFrame, TargetFrame &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The inverse <a class="el" href="structdomain_1_1Tags_1_1Jacobian.html" title="The Jacobian from the source frame to the target frame.">Jacobian</a> from the source frame to the target frame.  <a href="structdomain_1_1Tags_1_1InverseJacobian.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1InverseJacobianCompute.html">domain::Tags::InverseJacobianCompute&lt; MapTag, SourceCoordsTag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1Jacobian.html">domain::Tags::Jacobian&lt; Dim, SourceFrame, TargetFrame &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The <a class="el" href="structdomain_1_1Tags_1_1Jacobian.html" title="The Jacobian from the source frame to the target frame.">Jacobian</a> from the source frame to the target frame.  <a href="structdomain_1_1Tags_1_1Jacobian.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1DetInvJacobian.html">domain::Tags::DetInvJacobian&lt; SourceFrame, TargetFrame &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The determinant of the inverse <a class="el" href="structdomain_1_1Tags_1_1Jacobian.html" title="The Jacobian from the source frame to the target frame.">Jacobian</a> from the source frame to the target frame.  <a href="structdomain_1_1Tags_1_1DetInvJacobian.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1DetInvJacobianCompute.html">domain::Tags::DetInvJacobianCompute&lt; Dim, SourceFrame, TargetFrame &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1VariablesBoundaryData.html">domain::Tags::VariablesBoundaryData</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1InternalDirections.html">domain::Tags::InternalDirections&lt; VolumeDim &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1BoundaryDirectionsInterior.html">domain::Tags::BoundaryDirectionsInterior&lt; VolumeDim &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1BoundaryDirectionsExterior.html">domain::Tags::BoundaryDirectionsExterior&lt; VolumeDim &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1Interface.html">domain::Tags::Interface&lt; DirectionsTag, Tag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag which is either a SimpleTag for quantities on an interface, base tag to a compute item which acts on tags on an interface, or base tag to a compute item which slices a tag from the volume to an interface.  <a href="structdomain_1_1Tags_1_1Interface.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1Direction.html">domain::Tags::Direction&lt; VolumeDim &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1NormalDotFluxCompute.html">Tags::NormalDotFluxCompute&lt; Tag, VolumeDim, Fr &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefix computing a boundary unit normal vector dotted into the flux from a flux on the boundary.  <a href="structTags_1_1NormalDotFluxCompute.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1SimpleMortarData.html">Tags::SimpleMortarData&lt; TemporalId, LocalData, RemoteData &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simple boundary communication data.  <a href="structTags_1_1SimpleMortarData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1Mortars.html">Tags::Mortars&lt; Tag, VolumeDim &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1MortarSize.html">Tags::MortarSize&lt; Dim &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1div.html">Tags::div&lt; Tag, typename &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefix indicating the divergence.  <a href="structTags_1_1div.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1DivVariablesCompute.html">Tags::DivVariablesCompute&lt; Tag, InverseJacobianTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the divergence of a <a class="el" href="structTags_1_1Variables.html">Variables</a>.  <a href="structTags_1_1DivVariablesCompute.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1DivVectorCompute.html">Tags::DivVectorCompute&lt; Tag, InverseJacobianTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the divergence of a <code>tnsr::I</code> (vector)  <a href="structTags_1_1DivVectorCompute.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1deriv.html">Tags::deriv&lt; Tag, Dim, Frame, typename &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefix indicating spatial derivatives.  <a href="structTags_1_1deriv.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1spacetime__deriv.html">Tags::spacetime_deriv&lt; Tag, Dim, Frame, typename &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefix indicating spacetime derivatives.  <a href="structTags_1_1spacetime__deriv.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1DerivCompute.html">Tags::DerivCompute&lt; VariablesTag, InverseJacobianTag, DerivTags &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the spatial derivatives of tags in a <a class="el" href="structTags_1_1Variables.html">Variables</a>.  <a href="structTags_1_1DerivCompute.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParallel_1_1Tags_1_1GlobalCache.html">Parallel::Tags::GlobalCache</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParallel_1_1Tags_1_1FromGlobalCache.html">Parallel::Tags::FromGlobalCache&lt; CacheTag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParallel_1_1Tags_1_1Metavariables.html">Parallel::Tags::Metavariables</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1Analytic.html">Tags::Analytic&lt; Tag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefix indicating the analytic solution value for a quantity.  <a href="structTags_1_1Analytic.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1TimeStepId.html">Tags::TimeStepId</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for <a class="el" href="classTimeStepId.html">TimeStepId</a> for the algorithm state.  <a href="structTags_1_1TimeStepId.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1TimeStep.html">Tags::TimeStep</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for step size.  <a href="structTags_1_1TimeStep.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1SubstepTime.html">Tags::SubstepTime</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for <a class="el" href="classTime.html">Time</a> of the current substep.  <a href="structTags_1_1SubstepTime.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1SubstepTimeCompute.html">Tags::SubstepTimeCompute</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for computing the substep time from (from <code><a class="el" href="structTags_1_1TimeStepId.html" title="Tag for TimeStepId for the algorithm state.">Tags::TimeStepId</a></code>)  <a href="structTags_1_1SubstepTimeCompute.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1Time.html">Tags::Time</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for the current time as a double.  <a href="structTags_1_1Time.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1HistoryEvolvedVariables.html">Tags::HistoryEvolvedVariables&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1StepperError.html">Tags::StepperError&lt; Tag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for the stepper error measure.  <a href="structTags_1_1StepperError.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1BoundaryHistory.html">Tags::BoundaryHistory&lt; LocalVars, RemoteVars, CouplingResult &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1TimeStepper.html">Tags::TimeStepper&lt; StepperType &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for a <a class="el" href="classTimeStepper.html">TimeStepper</a> of type <code>StepperType</code>.  <a href="structTags_1_1TimeStepper.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1StepChoosers.html">Tags::StepChoosers</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for a vector of <a class="el" href="classStepChooser.html" title="StepChoosers suggest upper bounds on step sizes.">StepChooser</a>s.  <a href="structTags_1_1StepChoosers.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1StepController.html">Tags::StepController</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for a <a class="el" href="classStepController.html">StepController</a>.  <a href="structTags_1_1StepController.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:ga3dda5a16c7f6baccd115de2c8f12394e"><td class="memTemplParams" colspan="2"><a id="ga3dda5a16c7f6baccd115de2c8f12394e"></a>
+template&lt;template&lt; typename... &gt; class Wrapper, typename TagList , typename... Args&gt; </td></tr>
+<tr class="memitem:ga3dda5a16c7f6baccd115de2c8f12394e"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e">db::wrap_tags_in</a> = tmpl::transform&lt; TagList, tmpl::bind&lt; Wrapper, tmpl::_1, tmpl::pin&lt; Args &gt;... &gt; &gt;</td></tr>
+<tr class="memdesc:ga3dda5a16c7f6baccd115de2c8f12394e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new <code>tmpl::list</code> of tags by wrapping each tag in <code>TagList</code> in <code>Wrapper&lt;_, Args...&gt;</code>. <br /></td></tr>
+<tr class="separator:ga3dda5a16c7f6baccd115de2c8f12394e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafeeced2a7fb41fdced8c55e76343f63c"><td class="memTemplParams" colspan="2">template&lt;template&lt; typename... &gt; class Prefix, typename Tag , typename... Args&gt; </td></tr>
+<tr class="memitem:gafeeced2a7fb41fdced8c55e76343f63c"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a> = typename detail::add_tag_prefix_impl&lt; Prefix, Tag, Args... &gt;::type</td></tr>
+<tr class="separator:gafeeced2a7fb41fdced8c55e76343f63c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae0f7c7c20a2a4908eebcb234302b1b4f"><td class="memTemplParams" colspan="2">template&lt;typename Tag &gt; </td></tr>
+<tr class="memitem:gae0f7c7c20a2a4908eebcb234302b1b4f"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxTagsGroup.html#gae0f7c7c20a2a4908eebcb234302b1b4f">db::remove_tag_prefix</a> = typename detail::remove_tag_prefix_impl&lt; Tag &gt;::type</td></tr>
+<tr class="separator:gae0f7c7c20a2a4908eebcb234302b1b4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga871c7fbc846eed01d84bd1c00bda6a9e"><td class="memTemplParams" colspan="2">template&lt;typename Tag &gt; </td></tr>
+<tr class="memitem:ga871c7fbc846eed01d84bd1c00bda6a9e"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxTagsGroup.html#ga871c7fbc846eed01d84bd1c00bda6a9e">db::remove_all_prefixes</a> = typename detail::remove_all_prefixes_impl&lt; Tag &gt;::type</td></tr>
+<tr class="separator:ga871c7fbc846eed01d84bd1c00bda6a9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>Structures and metafunctions for labeling the contents of DataBoxes. </p>
+<h2 class="groupheader">Typedef Documentation</h2>
+<a id="gafeeced2a7fb41fdced8c55e76343f63c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gafeeced2a7fb41fdced8c55e76343f63c">&#9670;&nbsp;</a></span>add_tag_prefix</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;template&lt; typename... &gt; class Prefix, typename Tag , typename... Args&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a> = typedef typename detail::add_tag_prefix_impl&lt;Prefix, Tag, Args...&gt;::type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Wrap <code>Tag</code> in <code>Prefix&lt;_, Args...&gt;</code>, unless <code>Tag</code> is a <a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>, in which case this creates a new <a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>, wrapping each tag in <code>Tag::tags_list</code> with <code>Prefix&lt;_, Args...&gt;</code>. </p>
+
+</div>
+</div>
+<a id="ga871c7fbc846eed01d84bd1c00bda6a9e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga871c7fbc846eed01d84bd1c00bda6a9e">&#9670;&nbsp;</a></span>remove_all_prefixes</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Tag &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__DataBoxTagsGroup.html#ga871c7fbc846eed01d84bd1c00bda6a9e">db::remove_all_prefixes</a> = typedef typename detail::remove_all_prefixes_impl&lt;Tag&gt;::type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Completely remove all prefix tags from a Tag, or all prefixes from the tags in <code>Tag::tags_list</code> if <code>Tag</code> is a <a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>. </p>
+
+</div>
+</div>
+<a id="gae0f7c7c20a2a4908eebcb234302b1b4f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae0f7c7c20a2a4908eebcb234302b1b4f">&#9670;&nbsp;</a></span>remove_tag_prefix</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Tag &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__DataBoxTagsGroup.html#gae0f7c7c20a2a4908eebcb234302b1b4f">db::remove_tag_prefix</a> = typedef typename detail::remove_tag_prefix_impl&lt;Tag&gt;::type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Remove the outer prefix from a prefixed tag <code>Tag</code>, or remove the outer prefix of each tag in <code>Tag::tags_list</code> if <code>Tag</code> is a <a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>. </p>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::Tags::FunctionsOfTime Struct Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1Tags.html">Tags</a></li><li class="navelem"><a class="el" href="structdomain_1_1Tags_1_1FunctionsOfTime.html">FunctionsOfTime</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structdomain_1_1Tags_1_1FunctionsOfTime-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::Tags::FunctionsOfTime Struct Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>The <a class="el" href="structdomain_1_1Tags_1_1FunctionsOfTime.html" title="The FunctionsOfTime initialized from a DomainCreator or (if override_functions_of_time is true in the...">FunctionsOfTime</a> initialized from a <a class="el" href="classDomainCreator.html" title="Base class for creating Domains from an option string.">DomainCreator</a> or (if <code>override_functions_of_time</code> is true in the metavariables) read from a file.  
+ <a href="structdomain_1_1Tags_1_1FunctionsOfTime.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Domain_2FunctionsOfTime_2Tags_8hpp_source.html">Tags.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ae1c23cde4ff5474da98402ef73152217"><td class="memItemLeft" align="right" valign="top"><a id="ae1c23cde4ff5474da98402ef73152217"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>type</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt; &gt;</td></tr>
+<tr class="separator:ae1c23cde4ff5474da98402ef73152217"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7823d6847d239007e998d2dc37b2377"><td class="memTemplParams" colspan="2"><a id="ab7823d6847d239007e998d2dc37b2377"></a>
+template&lt;typename Metavariables &gt; </td></tr>
+<tr class="memitem:ab7823d6847d239007e998d2dc37b2377"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>option_tags</b> = typename ::detail::OptionList&lt; Metavariables, ::detail::has_override_functions_of_time_v&lt; Metavariables &gt; &gt;::<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">type</a></td></tr>
+<tr class="separator:ab7823d6847d239007e998d2dc37b2377"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:af88c6f65bc149756fbd6acf938f37d56"><td class="memTemplParams" colspan="2"><a id="af88c6f65bc149756fbd6acf938f37d56"></a>
+template&lt;typename Metavariables &gt; </td></tr>
+<tr class="memitem:af88c6f65bc149756fbd6acf938f37d56"><td class="memTemplItemLeft" align="right" valign="top">static <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">type</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><b>create_from_options</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt;::<a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; Metavariables::volume_dim &gt;&gt; &amp;domain_creator, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt; &amp;function_of_time_file, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt;&gt; &amp;function_of_time_name_map) noexcept</td></tr>
+<tr class="separator:af88c6f65bc149756fbd6acf938f37d56"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f121c7a00eb4df003afc74a27c6bbca"><td class="memTemplParams" colspan="2"><a id="a3f121c7a00eb4df003afc74a27c6bbca"></a>
+template&lt;typename Metavariables &gt; </td></tr>
+<tr class="memitem:a3f121c7a00eb4df003afc74a27c6bbca"><td class="memTemplItemLeft" align="right" valign="top">static <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">type</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><b>create_from_options</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt;::<a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; Metavariables::volume_dim &gt;&gt; &amp;domain_creator) noexcept</td></tr>
+<tr class="separator:a3f121c7a00eb4df003afc74a27c6bbca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a4222ce73e7104f804583a7096c022b02"><td class="memItemLeft" align="right" valign="top"><a id="a4222ce73e7104f804583a7096c022b02"></a>
+static constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><b>pass_metavariables</b> = true</td></tr>
+<tr class="separator:a4222ce73e7104f804583a7096c022b02"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>The <a class="el" href="structdomain_1_1Tags_1_1FunctionsOfTime.html" title="The FunctionsOfTime initialized from a DomainCreator or (if override_functions_of_time is true in the...">FunctionsOfTime</a> initialized from a <a class="el" href="classDomainCreator.html" title="Base class for creating Domains from an option string.">DomainCreator</a> or (if <code>override_functions_of_time</code> is true in the metavariables) read from a file. </p>
+<h3>Details</h3>
+<p>When <code>override_functions_of_time == true</code> in the metavariables, after obtaining the <a class="el" href="structdomain_1_1Tags_1_1FunctionsOfTime.html" title="The FunctionsOfTime initialized from a DomainCreator or (if override_functions_of_time is true in the...">FunctionsOfTime</a> from the <a class="el" href="classDomainCreator.html" title="Base class for creating Domains from an option string.">DomainCreator</a>, one or more of those <a class="el" href="structdomain_1_1Tags_1_1FunctionsOfTime.html" title="The FunctionsOfTime initialized from a DomainCreator or (if override_functions_of_time is true in the...">FunctionsOfTime</a> (which must be cubic piecewise polynomials) is overriden using data read from an HDF5 file via domain::Tags::read_spec_piecewise_polynomial() </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Domain/FunctionsOfTime/<a class="el" href="Domain_2FunctionsOfTime_2Tags_8hpp_source.html">Tags.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,376 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: ScalarWave::BoundaryConditions::DirichletAnalytic&lt; Dim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceScalarWave.html">ScalarWave</a></li><li class="navelem"><a class="el" href="namespaceScalarWave_1_1BoundaryConditions.html">BoundaryConditions</a></li><li class="navelem"><a class="el" href="classScalarWave_1_1BoundaryConditions_1_1DirichletAnalytic.html">DirichletAnalytic</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classScalarWave_1_1BoundaryConditions_1_1DirichletAnalytic-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">ScalarWave::BoundaryConditions::DirichletAnalytic&lt; Dim &gt; Class Template Reference<span class="mlabels"><span class="mlabel">final</span></span></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Sets Dirichlet boundary conditions using the analytic solution or analytic data.  
+ <a href="classScalarWave_1_1BoundaryConditions_1_1DirichletAnalytic.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ScalarWave_2BoundaryConditions_2DirichletAnalytic_8hpp_source.html">DirichletAnalytic.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:af370942887f117e5c6058fb4c32e8e24"><td class="memItemLeft" align="right" valign="top"><a id="af370942887f117e5c6058fb4c32e8e24"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:af370942887f117e5c6058fb4c32e8e24"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adeba6d6e929606aaf2e2dc839a41514b"><td class="memItemLeft" align="right" valign="top"><a id="adeba6d6e929606aaf2e2dc839a41514b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_interior_evolved_variables_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:adeba6d6e929606aaf2e2dc839a41514b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a945a905bc5eb7b5e98059fc2023bccc6"><td class="memItemLeft" align="right" valign="top"><a id="a945a905bc5eb7b5e98059fc2023bccc6"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_interior_temporary_tags</b> = tmpl::list&lt; <a class="el" href="structdomain_1_1Tags_1_1Coordinates.html">domain::Tags::Coordinates</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structScalarWave_1_1Tags_1_1ConstraintGamma2.html">Tags::ConstraintGamma2</a> &gt;</td></tr>
+<tr class="separator:a945a905bc5eb7b5e98059fc2023bccc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abfa45ed5c2f24c8d6b826e6fa0a0c38e"><td class="memItemLeft" align="right" valign="top"><a id="abfa45ed5c2f24c8d6b826e6fa0a0c38e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_gridless_tags</b> = tmpl::list&lt;::<a class="el" href="structTags_1_1Time.html">Tags::Time</a>, ::<a class="el" href="structTags_1_1AnalyticSolutionOrData.html">Tags::AnalyticSolutionOrData</a> &gt;</td></tr>
+<tr class="separator:abfa45ed5c2f24c8d6b826e6fa0a0c38e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition.html">ScalarWave::BoundaryConditions::BoundaryCondition&lt; Dim &gt;</a></td></tr>
+<tr class="memitem:ae30bc16b71e7549ce694e90ee1466821 inherit pub_types_classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="ae30bc16b71e7549ce694e90ee1466821"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::list&lt; <a class="el" href="classScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation.html">ConstraintPreservingSphericalRadiation</a>&lt; Dim &gt;, <a class="el" href="classScalarWave_1_1BoundaryConditions_1_1DirichletAnalytic.html">DirichletAnalytic</a>&lt; Dim &gt;, <a class="el" href="structdomain_1_1BoundaryConditions_1_1Periodic.html">domain::BoundaryConditions::Periodic</a>&lt; <a class="el" href="classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a>&lt; Dim &gt; &gt;, <a class="el" href="classScalarWave_1_1BoundaryConditions_1_1SphericalRadiation.html">SphericalRadiation</a>&lt; Dim &gt; &gt;</td></tr>
+<tr class="separator:ae30bc16b71e7549ce694e90ee1466821 inherit pub_types_classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a8947831aa385f53b3cbbf53ff97bf83f"><td class="memItemLeft" align="right" valign="top"><a id="a8947831aa385f53b3cbbf53ff97bf83f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>DirichletAnalytic</b> (<a class="el" href="classScalarWave_1_1BoundaryConditions_1_1DirichletAnalytic.html">DirichletAnalytic</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a8947831aa385f53b3cbbf53ff97bf83f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40f5a5ba2c3b2eda1ac05edae26e6804"><td class="memItemLeft" align="right" valign="top"><a id="a40f5a5ba2c3b2eda1ac05edae26e6804"></a>
+<a class="el" href="classScalarWave_1_1BoundaryConditions_1_1DirichletAnalytic.html">DirichletAnalytic</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classScalarWave_1_1BoundaryConditions_1_1DirichletAnalytic.html">DirichletAnalytic</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a40f5a5ba2c3b2eda1ac05edae26e6804"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d92f06eb5b4a4d760c120454d7ccb15"><td class="memItemLeft" align="right" valign="top"><a id="a4d92f06eb5b4a4d760c120454d7ccb15"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>DirichletAnalytic</b> (const <a class="el" href="classScalarWave_1_1BoundaryConditions_1_1DirichletAnalytic.html">DirichletAnalytic</a> &amp;)=default</td></tr>
+<tr class="separator:a4d92f06eb5b4a4d760c120454d7ccb15"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff7cd8e97b3740cf667b71088a6a4761"><td class="memItemLeft" align="right" valign="top"><a id="aff7cd8e97b3740cf667b71088a6a4761"></a>
+<a class="el" href="classScalarWave_1_1BoundaryConditions_1_1DirichletAnalytic.html">DirichletAnalytic</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classScalarWave_1_1BoundaryConditions_1_1DirichletAnalytic.html">DirichletAnalytic</a> &amp;)=default</td></tr>
+<tr class="separator:aff7cd8e97b3740cf667b71088a6a4761"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6534c8792b484bbf8b85b1de88d82e3"><td class="memItemLeft" align="right" valign="top"><a id="ab6534c8792b484bbf8b85b1de88d82e3"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>DirichletAnalytic</b> (CkMigrateMessage *msg) noexcept</td></tr>
+<tr class="separator:ab6534c8792b484bbf8b85b1de88d82e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab841028425be65355993539cf82d8fd0"><td class="memItemLeft" align="right" valign="top"><a id="ab841028425be65355993539cf82d8fd0"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_base_template</b> (<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a>, <a class="el" href="classScalarWave_1_1BoundaryConditions_1_1DirichletAnalytic.html">DirichletAnalytic</a>)</td></tr>
+<tr class="separator:ab841028425be65355993539cf82d8fd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ada961b8c8333f801ddbee29ae2b4379a"><td class="memItemLeft" align="right" valign="top"><a id="ada961b8c8333f801ddbee29ae2b4379a"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a> &gt; override</td></tr>
+<tr class="separator:ada961b8c8333f801ddbee29ae2b4379a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52c87ff89970c25aace33947210262c2"><td class="memItemLeft" align="right" valign="top"><a id="a52c87ff89970c25aace33947210262c2"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) override</td></tr>
+<tr class="separator:a52c87ff89970c25aace33947210262c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66db9cd74a9af97f24e9dc56807dc3d4"><td class="memTemplParams" colspan="2"><a id="a66db9cd74a9af97f24e9dc56807dc3d4"></a>
+template&lt;typename AnalyticSolutionOrData &gt; </td></tr>
+<tr class="memitem:a66db9cd74a9af97f24e9dc56807dc3d4"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>dg_ghost</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; pi, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; phi, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; psi, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; gamma2, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt; &amp;, const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;coords, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;interior_gamma2, const double time, const AnalyticSolutionOrData &amp;analytic_solution_or_data) const noexcept</td></tr>
+<tr class="separator:a66db9cd74a9af97f24e9dc56807dc3d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition.html">ScalarWave::BoundaryConditions::BoundaryCondition&lt; Dim &gt;</a></td></tr>
+<tr class="memitem:a93cd310fa1d320fdc2099c71bdc9b3c2 inherit pub_methods_classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a93cd310fa1d320fdc2099c71bdc9b3c2"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (<a class="el" href="classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a93cd310fa1d320fdc2099c71bdc9b3c2 inherit pub_methods_classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6baa867beb54310b521cfca732aa507c inherit pub_methods_classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a6baa867beb54310b521cfca732aa507c"></a>
+<a class="el" href="classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a6baa867beb54310b521cfca732aa507c inherit pub_methods_classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a118d90450ebe9f612b39eba1164db436 inherit pub_methods_classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a118d90450ebe9f612b39eba1164db436"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (const <a class="el" href="classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;)=default</td></tr>
+<tr class="separator:a118d90450ebe9f612b39eba1164db436 inherit pub_methods_classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b3f981eaf3278eb9edb2fca79328bf3 inherit pub_methods_classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a4b3f981eaf3278eb9edb2fca79328bf3"></a>
+<a class="el" href="classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;)=default</td></tr>
+<tr class="separator:a4b3f981eaf3278eb9edb2fca79328bf3 inherit pub_methods_classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c1347124756308f58a258ef7fc3f6ab inherit pub_methods_classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a5c1347124756308f58a258ef7fc3f6ab"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (CkMigrateMessage *msg) noexcept</td></tr>
+<tr class="separator:a5c1347124756308f58a258ef7fc3f6ab inherit pub_methods_classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31d039bacb09edb8180ec03c1b5c2691 inherit pub_methods_classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a31d039bacb09edb8180ec03c1b5c2691"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) override</td></tr>
+<tr class="separator:a31d039bacb09edb8180ec03c1b5c2691 inherit pub_methods_classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a></td></tr>
+<tr class="memitem:a3ce9f36399b12ce36bf1502ee0e85e8f inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a3ce9f36399b12ce36bf1502ee0e85e8f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a3ce9f36399b12ce36bf1502ee0e85e8f inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ed654e75ef4544a679a893f2bae7634 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a9ed654e75ef4544a679a893f2bae7634"></a>
+<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a9ed654e75ef4544a679a893f2bae7634 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abce6f2c0829a37f447cc253097f44c07 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="abce6f2c0829a37f447cc253097f44c07"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (const <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;)=default</td></tr>
+<tr class="separator:abce6f2c0829a37f447cc253097f44c07 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abaaefff13f64678066bbbeeb566c8989 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="abaaefff13f64678066bbbeeb566c8989"></a>
+<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;)=default</td></tr>
+<tr class="separator:abaaefff13f64678066bbbeeb566c8989 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75292db0a162bb159e5bebbc4e10a118 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a75292db0a162bb159e5bebbc4e10a118"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (CkMigrateMessage *const msg) noexcept</td></tr>
+<tr class="separator:a75292db0a162bb159e5bebbc4e10a118 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1ba92c0d19a6e2de8fc1c86e406a539 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="ad1ba92c0d19a6e2de8fc1c86e406a539"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_abstract</b> (<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a>)</td></tr>
+<tr class="separator:ad1ba92c0d19a6e2de8fc1c86e406a539 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aea9b601c8eac2fa80ffc607eb396bf64"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:aea9b601c8eac2fa80ffc607eb396bf64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7678ad186f3710e53ea7a0dcdfd95ea2"><td class="memItemLeft" align="right" valign="top">static constexpr evolution::BoundaryConditions::Type&#160;</td><td class="memItemRight" valign="bottom"><b>bc_type</b></td></tr>
+<tr class="separator:a7678ad186f3710e53ea7a0dcdfd95ea2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+class ScalarWave::BoundaryConditions::DirichletAnalytic&lt; Dim &gt;</h3>
+
+<p>Sets Dirichlet boundary conditions using the analytic solution or analytic data. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a7678ad186f3710e53ea7a0dcdfd95ea2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7678ad186f3710e53ea7a0dcdfd95ea2">&#9670;&nbsp;</a></span>bc_type</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr evolution::BoundaryConditions::Type <a class="el" href="classScalarWave_1_1BoundaryConditions_1_1DirichletAnalytic.html">ScalarWave::BoundaryConditions::DirichletAnalytic</a>&lt; Dim &gt;::bc_type</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      evolution::BoundaryConditions::Type::Ghost</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="aea9b601c8eac2fa80ffc607eb396bf64"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aea9b601c8eac2fa80ffc607eb396bf64">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classScalarWave_1_1BoundaryConditions_1_1DirichletAnalytic.html">ScalarWave::BoundaryConditions::DirichletAnalytic</a>&lt; Dim &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      <span class="stringliteral">&quot;DirichletAnalytic boundary conditions setting the value of Psi, Phi, &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;and Pi to the analytic solution or analytic data.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/Systems/ScalarWave/BoundaryConditions/<a class="el" href="ScalarWave_2BoundaryConditions_2DirichletAnalytic_8hpp_source.html">DirichletAnalytic.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

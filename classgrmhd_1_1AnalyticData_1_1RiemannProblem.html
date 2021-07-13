@@ -1,0 +1,463 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: grmhd::AnalyticData::RiemannProblem Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacegrmhd.html">grmhd</a></li><li class="navelem"><a class="el" href="namespacegrmhd_1_1AnalyticData.html">AnalyticData</a></li><li class="navelem"><a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html">RiemannProblem</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classgrmhd_1_1AnalyticData_1_1RiemannProblem-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">grmhd::AnalyticData::RiemannProblem Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Initial conditions for relativistic MHD Riemann problems.  
+ <a href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="AnalyticData_2GrMhd_2RiemannProblem_8hpp_source.html">RiemannProblem.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1AdiabaticIndex.html">AdiabaticIndex</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1Lapse.html">Lapse</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1LeftMagneticField.html">LeftMagneticField</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1LeftPressure.html">LeftPressure</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1LeftRestMassDensity.html">LeftRestMassDensity</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1LeftSpatialVelocity.html">LeftSpatialVelocity</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1RightMagneticField.html">RightMagneticField</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1RightPressure.html">RightPressure</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1RightRestMassDensity.html">RightRestMassDensity</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1RightSpatialVelocity.html">RightSpatialVelocity</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1ShiftX.html">ShiftX</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a89e148d82d4dcb882a1dbd7f6e49cf41"><td class="memItemLeft" align="right" valign="top"><a id="a89e148d82d4dcb882a1dbd7f6e49cf41"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state_type</b> = <a class="el" href="classEquationsOfState_1_1IdealFluid.html">EquationsOfState::IdealFluid</a>&lt; true &gt;</td></tr>
+<tr class="separator:a89e148d82d4dcb882a1dbd7f6e49cf41"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad5ef62914eda95d19c2066c0107c52a5"><td class="memItemLeft" align="right" valign="top"><a id="ad5ef62914eda95d19c2066c0107c52a5"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1AdiabaticIndex.html">AdiabaticIndex</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1LeftRestMassDensity.html">LeftRestMassDensity</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1RightRestMassDensity.html">RightRestMassDensity</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1LeftPressure.html">LeftPressure</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1RightPressure.html">RightPressure</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1LeftSpatialVelocity.html">LeftSpatialVelocity</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1RightSpatialVelocity.html">RightSpatialVelocity</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1LeftMagneticField.html">LeftMagneticField</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1RightMagneticField.html">RightMagneticField</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1Lapse.html">Lapse</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1ShiftX.html">ShiftX</a> &gt;</td></tr>
+<tr class="separator:ad5ef62914eda95d19c2066c0107c52a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a6c97b9bd4dcf77db73ca3298c1b87885"><td class="memItemLeft" align="right" valign="top"><a id="a6c97b9bd4dcf77db73ca3298c1b87885"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RiemannProblem</b> (const <a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html">RiemannProblem</a> &amp;)=delete</td></tr>
+<tr class="separator:a6c97b9bd4dcf77db73ca3298c1b87885"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a758a525c86f1dbdf7ce60f046865904a"><td class="memItemLeft" align="right" valign="top"><a id="a758a525c86f1dbdf7ce60f046865904a"></a>
+<a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html">RiemannProblem</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html">RiemannProblem</a> &amp;)=delete</td></tr>
+<tr class="separator:a758a525c86f1dbdf7ce60f046865904a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc47be99e5c3c6335e7a9956987fad32"><td class="memItemLeft" align="right" valign="top"><a id="afc47be99e5c3c6335e7a9956987fad32"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RiemannProblem</b> (<a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html">RiemannProblem</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:afc47be99e5c3c6335e7a9956987fad32"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aefaf23627f38eb991adc0f8ad49d8ebb"><td class="memItemLeft" align="right" valign="top"><a id="aefaf23627f38eb991adc0f8ad49d8ebb"></a>
+<a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html">RiemannProblem</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html">RiemannProblem</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:aefaf23627f38eb991adc0f8ad49d8ebb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad2b353dc667bed200be7007ebe123e2b"><td class="memItemLeft" align="right" valign="top"><a id="ad2b353dc667bed200be7007ebe123e2b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RiemannProblem</b> (double adiabatic_index, double left_rest_mass_density, double right_rest_mass_density, double left_pressure, double right_pressure, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;left_spatial_velocity, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;right_spatial_velocity, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;left_magnetic_field, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;right_magnetic_field, double lapse, double shift) noexcept</td></tr>
+<tr class="separator:ad2b353dc667bed200be7007ebe123e2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a39952dfb77599d0fe78bc08a07dee68c"><td class="memItemLeft" align="right" valign="top"><a id="a39952dfb77599d0fe78bc08a07dee68c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RiemannProblem</b> (CkMigrateMessage *) noexcept</td></tr>
+<tr class="separator:a39952dfb77599d0fe78bc08a07dee68c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a16d750c5ed60127a164ebf555d79db22"><td class="memTemplParams" colspan="2"><a id="a16d750c5ed60127a164ebf555d79db22"></a>
+template&lt;typename DataType , typename... Tags&gt; </td></tr>
+<tr class="memitem:a16d750c5ed60127a164ebf555d79db22"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html#a16d750c5ed60127a164ebf555d79db22">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:a16d750c5ed60127a164ebf555d79db22"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a collection of hydrodynamic variables at position x. <br /></td></tr>
+<tr class="separator:a16d750c5ed60127a164ebf555d79db22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f3009e77cc91e18c80a47a5b3a4de68"><td class="memTemplParams" colspan="2"><a id="a4f3009e77cc91e18c80a47a5b3a4de68"></a>
+template&lt;typename DataType , typename Tag &gt; </td></tr>
+<tr class="memitem:a4f3009e77cc91e18c80a47a5b3a4de68"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tag &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html#a4f3009e77cc91e18c80a47a5b3a4de68">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; Tag &gt;) const noexcept</td></tr>
+<tr class="memdesc:a4f3009e77cc91e18c80a47a5b3a4de68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the metric variables. <br /></td></tr>
+<tr class="separator:a4f3009e77cc91e18c80a47a5b3a4de68"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac304af92b59f1e47627bd664da84f60e"><td class="memItemLeft" align="right" valign="top"><a id="ac304af92b59f1e47627bd664da84f60e"></a>
+const <a class="el" href="classEquationsOfState_1_1IdealFluid.html">EquationsOfState::IdealFluid</a>&lt; true &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state</b> () const noexcept</td></tr>
+<tr class="separator:ac304af92b59f1e47627bd664da84f60e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a414e35f4bf12f47adda099b16e296b80"><td class="memItemLeft" align="right" valign="top"><a id="a414e35f4bf12f47adda099b16e296b80"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;) noexcept</td></tr>
+<tr class="separator:a414e35f4bf12f47adda099b16e296b80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:acf04dacb409205840a9c078cb2b646e8"><td class="memTemplParams" colspan="2"><a id="acf04dacb409205840a9c078cb2b646e8"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:acf04dacb409205840a9c078cb2b646e8"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html#acf04dacb409205840a9c078cb2b646e8">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1RestMassDensity.html">hydro::Tags::RestMassDensity</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1RestMassDensity.html">hydro::Tags::RestMassDensity</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:acf04dacb409205840a9c078cb2b646e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:acf04dacb409205840a9c078cb2b646e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a832c318e87da461879dac451efa5aae3"><td class="memTemplParams" colspan="2"><a id="a832c318e87da461879dac451efa5aae3"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a832c318e87da461879dac451efa5aae3"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html#a832c318e87da461879dac451efa5aae3">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificInternalEnergy.html">hydro::Tags::SpecificInternalEnergy</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificInternalEnergy.html">hydro::Tags::SpecificInternalEnergy</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:a832c318e87da461879dac451efa5aae3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:a832c318e87da461879dac451efa5aae3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea95bdcdb92b9ea8bdca5a805df7129d"><td class="memTemplParams" colspan="2"><a id="aea95bdcdb92b9ea8bdca5a805df7129d"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:aea95bdcdb92b9ea8bdca5a805df7129d"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html#aea95bdcdb92b9ea8bdca5a805df7129d">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1Pressure.html">hydro::Tags::Pressure</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1Pressure.html">hydro::Tags::Pressure</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:aea95bdcdb92b9ea8bdca5a805df7129d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:aea95bdcdb92b9ea8bdca5a805df7129d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a39aab0ffa08c676d1f03e390464a810c"><td class="memTemplParams" colspan="2"><a id="a39aab0ffa08c676d1f03e390464a810c"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a39aab0ffa08c676d1f03e390464a810c"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html#a39aab0ffa08c676d1f03e390464a810c">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; DataType, 3 &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; DataType, 3 &gt;&gt;</td></tr>
+<tr class="memdesc:a39aab0ffa08c676d1f03e390464a810c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:a39aab0ffa08c676d1f03e390464a810c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea4cba2c345e5491e9dd3eb99e2e8a75"><td class="memTemplParams" colspan="2"><a id="aea4cba2c345e5491e9dd3eb99e2e8a75"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:aea4cba2c345e5491e9dd3eb99e2e8a75"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html#aea4cba2c345e5491e9dd3eb99e2e8a75">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1MagneticField.html">hydro::Tags::MagneticField</a>&lt; DataType, 3 &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1MagneticField.html">hydro::Tags::MagneticField</a>&lt; DataType, 3 &gt;&gt;</td></tr>
+<tr class="memdesc:aea4cba2c345e5491e9dd3eb99e2e8a75"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:aea4cba2c345e5491e9dd3eb99e2e8a75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af36d716dd8ab98f5a6a9716933e01daa"><td class="memTemplParams" colspan="2"><a id="af36d716dd8ab98f5a6a9716933e01daa"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:af36d716dd8ab98f5a6a9716933e01daa"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html#af36d716dd8ab98f5a6a9716933e01daa">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1DivergenceCleaningField.html">hydro::Tags::DivergenceCleaningField</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1DivergenceCleaningField.html">hydro::Tags::DivergenceCleaningField</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:af36d716dd8ab98f5a6a9716933e01daa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:af36d716dd8ab98f5a6a9716933e01daa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a53c546031cf4ba62eabe4ba7e54c9892"><td class="memTemplParams" colspan="2"><a id="a53c546031cf4ba62eabe4ba7e54c9892"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a53c546031cf4ba62eabe4ba7e54c9892"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html#a53c546031cf4ba62eabe4ba7e54c9892">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:a53c546031cf4ba62eabe4ba7e54c9892"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:a53c546031cf4ba62eabe4ba7e54c9892"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1486763f74ff9eaaa36ebe452bbf1721"><td class="memTemplParams" colspan="2"><a id="a1486763f74ff9eaaa36ebe452bbf1721"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a1486763f74ff9eaaa36ebe452bbf1721"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html#a1486763f74ff9eaaa36ebe452bbf1721">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificEnthalpy.html">hydro::Tags::SpecificEnthalpy</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificEnthalpy.html">hydro::Tags::SpecificEnthalpy</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:a1486763f74ff9eaaa36ebe452bbf1721"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:a1486763f74ff9eaaa36ebe452bbf1721"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2fe6c969a6694def162a13e15fef85f9"><td class="memTemplParams" colspan="2"><a id="a2fe6c969a6694def162a13e15fef85f9"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a2fe6c969a6694def162a13e15fef85f9"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html#a2fe6c969a6694def162a13e15fef85f9">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:a2fe6c969a6694def162a13e15fef85f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:a2fe6c969a6694def162a13e15fef85f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe500fb98e073d7e9849df3a02c72254"><td class="memTemplParams" colspan="2"><a id="abe500fb98e073d7e9849df3a02c72254"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:abe500fb98e073d7e9849df3a02c72254"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html#abe500fb98e073d7e9849df3a02c72254">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, DataType &gt;&gt;</td></tr>
+<tr class="memdesc:abe500fb98e073d7e9849df3a02c72254"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:abe500fb98e073d7e9849df3a02c72254"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:acda9601856172b94cbc8de9eaf7d056b"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:acda9601856172b94cbc8de9eaf7d056b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a3bae75242974c93a7371f937402bb313"><td class="memItemLeft" align="right" valign="top"><a id="a3bae75242974c93a7371f937402bb313"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html">RiemannProblem</a> &amp;lhs, const <a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html">RiemannProblem</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a3bae75242974c93a7371f937402bb313"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff9c0905a868e64c00c6dd9f51980069"><td class="memItemLeft" align="right" valign="top"><a id="aff9c0905a868e64c00c6dd9f51980069"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html">RiemannProblem</a> &amp;lhs, const <a class="el" href="classgrmhd_1_1AnalyticData_1_1RiemannProblem.html">RiemannProblem</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:aff9c0905a868e64c00c6dd9f51980069"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Initial conditions for relativistic MHD Riemann problems. </p>
+<p>The standard problems were first collected in <a class="el" href="citelist.html#CITEREF_Balsara2001">[6]</a>. A complete Riemann solver for the RMHD equations is presented in <a class="el" href="citelist.html#CITEREF_Giacomazzo2006">[47]</a> and can be downloaded from <a href="https://www.brunogiacomazzo.org/?page_id=395">https://www.brunogiacomazzo.org/?page_id=395</a></p>
+<p>The domain is from \([-0.5,0.5]^3\) with periodic boundary conditions in \(y\) and \(z\). The problems are usually run at a resolution of 1600 finite difference/finite volume grid points and the initial discontinuity is located at \(x=0\).</p>
+<p>While the problems were originally run in Minkowski space, changing the lapse \(\alpha\) to a non-unity constant value and/or the shift \(\beta^x\) to a non-zero constant value allows testing some of the metric terms in the evolution equations in a fairly simple setup.</p>
+<p>Below are the initial conditions for the 5 different Balsara Riemann problems. Please note that RP5 has a different final time than the rest, and that RP1 has a different adiabatic index than the rest.</p>
+<p>RP1:</p><ul>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1AdiabaticIndex.html">AdiabaticIndex</a>: 2.0</li>
+<li>LeftDensity: 1.0</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1LeftPressure.html">LeftPressure</a>: 1.0</li>
+<li>LeftVelocity: [0.0, 0.0, 0.0]</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1LeftMagneticField.html">LeftMagneticField</a>: [0.5, 1.0, 0.0]</li>
+<li>RightDensity: 0.125</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1RightPressure.html">RightPressure</a>: 0.1</li>
+<li>RightVelocity: [0.0, 0.0, 0.0]</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1RightMagneticField.html">RightMagneticField</a>: [0.5, -1.0, 0.0]</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1Lapse.html">Lapse</a>: 1.0</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1ShiftX.html">ShiftX</a>: 0.0</li>
+<li>Final time: 0.4</li>
+</ul>
+<p>RP2:</p><ul>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1AdiabaticIndex.html">AdiabaticIndex</a>: 1.66666666666666666</li>
+<li>LeftDensity: 1.0</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1LeftPressure.html">LeftPressure</a>: 30.0</li>
+<li>LeftVelocity: [0.0, 0.0, 0.0]</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1LeftMagneticField.html">LeftMagneticField</a>: [5.0, 6.0, 6.0]</li>
+<li>RightDensity: 1.0</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1RightPressure.html">RightPressure</a>: 1.0</li>
+<li>RightVelocity: [0.0, 0.0, 0.0]</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1RightMagneticField.html">RightMagneticField</a>: [5.0, 0.7, 0.7]</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1Lapse.html">Lapse</a>: 1.0</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1ShiftX.html">ShiftX</a>: 0.0</li>
+<li>Final time: 0.4</li>
+</ul>
+<p>RP3:</p><ul>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1AdiabaticIndex.html">AdiabaticIndex</a>: 1.66666666666666666</li>
+<li>LeftDensity: 1.0</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1LeftPressure.html">LeftPressure</a>: 1000.0</li>
+<li>LeftVelocity: [0.0, 0.0, 0.0]</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1LeftMagneticField.html">LeftMagneticField</a>: [10.0, 7.0, 7.0]</li>
+<li>RightDensity: 1.0</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1RightPressure.html">RightPressure</a>: 0.1</li>
+<li>RightVelocity: [0.0, 0.0, 0.0]</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1RightMagneticField.html">RightMagneticField</a>: [10.0, 0.7, 0.7]</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1Lapse.html">Lapse</a>: 1.0</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1ShiftX.html">ShiftX</a>: 0.0</li>
+<li>Final time: 0.4</li>
+</ul>
+<p>RP4:</p><ul>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1AdiabaticIndex.html">AdiabaticIndex</a>: 1.66666666666666666</li>
+<li>LeftDensity: 1.0</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1LeftPressure.html">LeftPressure</a>: 0.1</li>
+<li>LeftVelocity: [0.999, 0.0, 0.0]</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1LeftMagneticField.html">LeftMagneticField</a>: [10.0, 7.0, 7.0]</li>
+<li>RightDensity: 1.0</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1RightPressure.html">RightPressure</a>: 0.1</li>
+<li>RightVelocity: [-0.999, 0.0, 0.0]</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1RightMagneticField.html">RightMagneticField</a>: [10.0, -7.0, -7.0]</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1Lapse.html">Lapse</a>: 1.0</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1ShiftX.html">ShiftX</a>: 0.0</li>
+<li>Final time: 0.4</li>
+</ul>
+<p>RP5:</p><ul>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1AdiabaticIndex.html">AdiabaticIndex</a>: 1.66666666666666666</li>
+<li>LeftDensity: 1.08</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1LeftPressure.html">LeftPressure</a>: 0.95</li>
+<li>LeftVelocity: [0.4, 0.3, 0.2]</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1LeftMagneticField.html">LeftMagneticField</a>: [2.0, 0.3, 0.3]</li>
+<li>RightDensity: 1.0</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1RightPressure.html">RightPressure</a>: 1.0</li>
+<li>RightVelocity: [-0.45, -0.2, 0.2]</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1RightMagneticField.html">RightMagneticField</a>: [2.0, -0.7, 0.5]</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1Lapse.html">Lapse</a>: 1.0</li>
+<li><a class="el" href="structgrmhd_1_1AnalyticData_1_1RiemannProblem_1_1ShiftX.html">ShiftX</a>: 0.0</li>
+<li>Final time: 0.55 </li>
+</ul>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="acda9601856172b94cbc8de9eaf7d056b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acda9601856172b94cbc8de9eaf7d056b">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> grmhd::AnalyticData::RiemannProblem::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Analytic initial data for a GRMHD Riemann problem. The fluid variables &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;are set homogeneously on either half of the domain left and right of &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;x=0.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticData/GrMhd/<a class="el" href="AnalyticData_2GrMhd_2RiemannProblem_8hpp_source.html">RiemannProblem.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

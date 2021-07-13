@@ -1,0 +1,317 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: evolution::dg::subcell::SubcellOptions Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceevolution.html">evolution</a></li><li class="navelem"><a class="el" href="namespaceevolution_1_1dg.html">dg</a></li><li class="navelem"><a class="el" href="namespaceevolution_1_1dg_1_1subcell.html">subcell</a></li><li class="navelem"><a class="el" href="classevolution_1_1dg_1_1subcell_1_1SubcellOptions.html">SubcellOptions</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classevolution_1_1dg_1_1subcell_1_1SubcellOptions-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">evolution::dg::subcell::SubcellOptions Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Holds the system-agnostic subcell parameters, such as numbers controlling when to switch between DG and subcell.  
+ <a href="classevolution_1_1dg_1_1subcell_1_1SubcellOptions.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="SubcellOptions_8hpp_source.html">SubcellOptions.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1AlwaysUseSubcells.html">AlwaysUseSubcells</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">If true, then we always use the subcell method, not DG.  <a href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1AlwaysUseSubcells.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1InitialData.html">InitialData</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1InitialDataPerssonExponent.html">InitialDataPerssonExponent</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The exponent \(\alpha\) passed to the Persson troubled-cell indicator when applied to the initial data.  <a href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1InitialDataPerssonExponent.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1InitialDataRdmpDelta0.html">InitialDataRdmpDelta0</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The \(\delta_0\) parameter in the relaxed discrete maximum principle troubled-cell indicator when applied to the initial data.  <a href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1InitialDataRdmpDelta0.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1InitialDataRdmpEpsilon.html">InitialDataRdmpEpsilon</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The \(\epsilon\) parameter in the relaxed discrete maximum principle troubled-cell indicator when applied to the initial data.  <a href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1InitialDataRdmpEpsilon.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1PerssonExponent.html">PerssonExponent</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The exponent \(\alpha\) passed to the Persson troubled-cell indicator.  <a href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1PerssonExponent.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1RdmpDelta0.html">RdmpDelta0</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The \(\delta_0\) parameter in the relaxed discrete maximum principle troubled-cell indicator.  <a href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1RdmpDelta0.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1RdmpEpsilon.html">RdmpEpsilon</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The \(\epsilon\) parameter in the relaxed discrete maximum principle troubled-cell indicator.  <a href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1RdmpEpsilon.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:af72a76bb8a813012f0d5a78e7d0a81ec"><td class="memItemLeft" align="right" valign="top"><a id="af72a76bb8a813012f0d5a78e7d0a81ec"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1InitialDataRdmpDelta0.html">InitialDataRdmpDelta0</a>, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1InitialDataRdmpEpsilon.html">InitialDataRdmpEpsilon</a>, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1RdmpDelta0.html">RdmpDelta0</a>, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1RdmpEpsilon.html">RdmpEpsilon</a>, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1InitialDataPerssonExponent.html">InitialDataPerssonExponent</a>, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1PerssonExponent.html">PerssonExponent</a>, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1SubcellOptions_1_1AlwaysUseSubcells.html">AlwaysUseSubcells</a> &gt;</td></tr>
+<tr class="separator:af72a76bb8a813012f0d5a78e7d0a81ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:abab8d2ca020d8c6b4d3757c1b6713350"><td class="memItemLeft" align="right" valign="top"><a id="abab8d2ca020d8c6b4d3757c1b6713350"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SubcellOptions</b> (double initial_data_rdmp_delta0, double initial_data_rdmp_epsilon, double rdmp_delta0, double rdmp_epsilon, double initial_data_persson_exponent, double persson_exponent, bool always_use_subcells) noexcept</td></tr>
+<tr class="separator:abab8d2ca020d8c6b4d3757c1b6713350"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54faa821b869b2240e46c8a03f87e493"><td class="memItemLeft" align="right" valign="top"><a id="a54faa821b869b2240e46c8a03f87e493"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a54faa821b869b2240e46c8a03f87e493"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a03c55c10dda86854a62745eeb7d4824b"><td class="memItemLeft" align="right" valign="top"><a id="a03c55c10dda86854a62745eeb7d4824b"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>initial_data_rdmp_delta0</b> () const noexcept</td></tr>
+<tr class="separator:a03c55c10dda86854a62745eeb7d4824b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc0fbc0dea4c9e1dbd45cfe5386dc688"><td class="memItemLeft" align="right" valign="top"><a id="afc0fbc0dea4c9e1dbd45cfe5386dc688"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>initial_data_rdmp_epsilon</b> () const noexcept</td></tr>
+<tr class="separator:afc0fbc0dea4c9e1dbd45cfe5386dc688"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab37898dc8bc61b1cca96479b6db7cc3b"><td class="memItemLeft" align="right" valign="top"><a id="ab37898dc8bc61b1cca96479b6db7cc3b"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>rdmp_delta0</b> () const noexcept</td></tr>
+<tr class="separator:ab37898dc8bc61b1cca96479b6db7cc3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c3ec7adc75c1e202e7288b2137740b0"><td class="memItemLeft" align="right" valign="top"><a id="a5c3ec7adc75c1e202e7288b2137740b0"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>rdmp_epsilon</b> () const noexcept</td></tr>
+<tr class="separator:a5c3ec7adc75c1e202e7288b2137740b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf110e10366819fee27a47e0c66e0ebc"><td class="memItemLeft" align="right" valign="top"><a id="abf110e10366819fee27a47e0c66e0ebc"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>initial_data_persson_exponent</b> () const noexcept</td></tr>
+<tr class="separator:abf110e10366819fee27a47e0c66e0ebc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1093b651019e5eb1e2b6cfe58c37ca9c"><td class="memItemLeft" align="right" valign="top"><a id="a1093b651019e5eb1e2b6cfe58c37ca9c"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>persson_exponent</b> () const noexcept</td></tr>
+<tr class="separator:a1093b651019e5eb1e2b6cfe58c37ca9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15b021d071f8a036be4d71be6b001c52"><td class="memItemLeft" align="right" valign="top"><a id="a15b021d071f8a036be4d71be6b001c52"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>always_use_subcells</b> () const noexcept</td></tr>
+<tr class="separator:a15b021d071f8a036be4d71be6b001c52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a2130580a6950e7a29ac3498c735588d1"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a2130580a6950e7a29ac3498c735588d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Holds the system-agnostic subcell parameters, such as numbers controlling when to switch between DG and subcell. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a2130580a6950e7a29ac3498c735588d1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2130580a6950e7a29ac3498c735588d1">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> evolution::dg::subcell::SubcellOptions::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      <span class="stringliteral">&quot;System-agnostic options for the DG-subcell method.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/DgSubcell/<a class="el" href="SubcellOptions_8hpp_source.html">SubcellOptions.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

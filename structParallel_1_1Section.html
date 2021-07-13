@@ -1,0 +1,413 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Parallel::Section&lt; ParallelComponent, SectionIdTag &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceParallel.html">Parallel</a></li><li class="navelem"><a class="el" href="structParallel_1_1Section.html">Section</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="structParallel_1_1Section-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Parallel::Section&lt; ParallelComponent, SectionIdTag &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A subset of chares in a parallel component.  
+ <a href="structParallel_1_1Section.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Section_8hpp_source.html">Section.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a326ca11a3550e92f9e8fc21632a7d748"><td class="memItemLeft" align="right" valign="top"><a id="a326ca11a3550e92f9e8fc21632a7d748"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>parallel_component</b> = ParallelComponent</td></tr>
+<tr class="separator:a326ca11a3550e92f9e8fc21632a7d748"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7bf1c85c02f95ada91ff77987b72e32"><td class="memItemLeft" align="right" valign="top"><a id="ae7bf1c85c02f95ada91ff77987b72e32"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>cproxy_section</b> = typename charm_type::cproxy_section</td></tr>
+<tr class="separator:ae7bf1c85c02f95ada91ff77987b72e32"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a662d572ad53742a2b9406ab7c9d51aa4"><td class="memItemLeft" align="right" valign="top"><a id="a662d572ad53742a2b9406ab7c9d51aa4"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>section_id_tag</b> = SectionIdTag</td></tr>
+<tr class="separator:a662d572ad53742a2b9406ab7c9d51aa4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a248bbbc9e67c3e8629492c323e55cecc"><td class="memItemLeft" align="right" valign="top"><a id="a248bbbc9e67c3e8629492c323e55cecc"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Section</b> (IdType <a class="el" href="structParallel_1_1Section.html#a6ba558984c4ace6b1cf090bc74bcd42f">id</a>, cproxy_section <a class="el" href="structParallel_1_1Section.html#a595ddfce0a94bd045e1b519facafa63b">proxy</a>) noexcept</td></tr>
+<tr class="separator:a248bbbc9e67c3e8629492c323e55cecc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae9ed0081e9af4c730ac27ac29efb412b"><td class="memItemLeft" align="right" valign="top"><a id="ae9ed0081e9af4c730ac27ac29efb412b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Section</b> (<a class="el" href="structParallel_1_1Section.html">Section</a> &amp;&amp;rhs)=default</td></tr>
+<tr class="separator:ae9ed0081e9af4c730ac27ac29efb412b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a766e86f5ae02ea116b4ec4b4a78384fe"><td class="memItemLeft" align="right" valign="top"><a id="a766e86f5ae02ea116b4ec4b4a78384fe"></a>
+<a class="el" href="structParallel_1_1Section.html">Section</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="structParallel_1_1Section.html">Section</a> &amp;&amp;rhs)=default</td></tr>
+<tr class="separator:a766e86f5ae02ea116b4ec4b4a78384fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad6582f1e09b652c250bc8193ca2d197d"><td class="memItemLeft" align="right" valign="top"><a id="ad6582f1e09b652c250bc8193ca2d197d"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Section</b> (const <a class="el" href="structParallel_1_1Section.html">Section</a> &amp;)=default</td></tr>
+<tr class="separator:ad6582f1e09b652c250bc8193ca2d197d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a418758a5cf506333835fd81f7ff6f863"><td class="memItemLeft" align="right" valign="top"><a id="a418758a5cf506333835fd81f7ff6f863"></a>
+<a class="el" href="structParallel_1_1Section.html">Section</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="structParallel_1_1Section.html">Section</a> &amp;)=default</td></tr>
+<tr class="separator:a418758a5cf506333835fd81f7ff6f863"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ba558984c4ace6b1cf090bc74bcd42f"><td class="memItemLeft" align="right" valign="top"><a id="a6ba558984c4ace6b1cf090bc74bcd42f"></a>
+const IdType &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParallel_1_1Section.html#a6ba558984c4ace6b1cf090bc74bcd42f">id</a> () const noexcept</td></tr>
+<tr class="memdesc:a6ba558984c4ace6b1cf090bc74bcd42f"><td class="mdescLeft">&#160;</td><td class="mdescRight">The section ID corresponding to the <code>SectionIdTag</code> <br /></td></tr>
+<tr class="separator:a6ba558984c4ace6b1cf090bc74bcd42f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6586053cc48a2425e1f267a2af260b2f"><td class="memItemLeft" align="right" valign="top"><a id="a6586053cc48a2425e1f267a2af260b2f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a6586053cc48a2425e1f267a2af260b2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a595ddfce0a94bd045e1b519facafa63b"><td class="memItemLeft" align="right" valign="top"><a id="a595ddfce0a94bd045e1b519facafa63b"></a>
+const cproxy_section &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParallel_1_1Section.html#a595ddfce0a94bd045e1b519facafa63b">proxy</a> () const noexcept</td></tr>
+<tr class="memdesc:a595ddfce0a94bd045e1b519facafa63b"><td class="mdescLeft">&#160;</td><td class="mdescRight">The Charm++ section proxy. <br /></td></tr>
+<tr class="separator:a595ddfce0a94bd045e1b519facafa63b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2def274c5f6f47ef34918899a87040b1"><td class="memItemLeft" align="right" valign="top"><a id="a2def274c5f6f47ef34918899a87040b1"></a>
+cproxy_section &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParallel_1_1Section.html#a2def274c5f6f47ef34918899a87040b1">proxy</a> () noexcept</td></tr>
+<tr class="memdesc:a2def274c5f6f47ef34918899a87040b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">The Charm++ section proxy. <br /></td></tr>
+<tr class="separator:a2def274c5f6f47ef34918899a87040b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:af0ea74d3752602c291fef3d971216a73"><td class="memItemLeft" align="right" valign="top">const CkSectionInfo &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParallel_1_1Section.html#af0ea74d3752602c291fef3d971216a73">cookie</a> () const noexcept</td></tr>
+<tr class="memdesc:af0ea74d3752602c291fef3d971216a73"><td class="mdescLeft">&#160;</td><td class="mdescRight">The Charm++ section cookie that keeps track of reductions.  <a href="structParallel_1_1Section.html#af0ea74d3752602c291fef3d971216a73">More...</a><br /></td></tr>
+<tr class="separator:af0ea74d3752602c291fef3d971216a73"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3d993750c1217a2372b3b10d58de6ea"><td class="memItemLeft" align="right" valign="top">CkSectionInfo &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParallel_1_1Section.html#ac3d993750c1217a2372b3b10d58de6ea">cookie</a> () noexcept</td></tr>
+<tr class="memdesc:ac3d993750c1217a2372b3b10d58de6ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">The Charm++ section cookie that keeps track of reductions.  <a href="structParallel_1_1Section.html#ac3d993750c1217a2372b3b10d58de6ea">More...</a><br /></td></tr>
+<tr class="separator:ac3d993750c1217a2372b3b10d58de6ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename ParallelComponent, typename SectionIdTag&gt;<br />
+struct Parallel::Section&lt; ParallelComponent, SectionIdTag &gt;</h3>
+
+<p>A subset of chares in a parallel component. </p>
+<p>The section is identified at compile time by the parallel component and a <code>SectionIdTag</code>. The <code>SectionIdTag</code> describes the quantity that partitions the chares into one or more sections. For example, the <code>SectionIdTag</code> could be the block ID in the computational domain, so elements are partitioned per block. Chares can be a member of multiple sections.</p>
+<ul>
+<li><a href="https://charm.readthedocs.io/en/latest/charm++/manual.html#sections-subsets-of-a-chare-array-group">Details on sections in the Charm++ documentation</a></li>
+</ul>
+<p>Here's an example how to work with sections in an array parallel component:</p>
+<div class="fragment"><div class="line">  <span class="keyword">using</span> array_allocation_tags = tmpl::list&lt;</div>
+<div class="line">      <span class="comment">// The section proxy will be stored in each element&#39;s DataBox in this tag</span></div>
+<div class="line">      <span class="comment">// for convenient access</span></div>
+<div class="line">      <a class="code" href="structParallel_1_1Tags_1_1Section.html">Parallel::Tags::Section&lt;ArrayComponent, EvenOrOddTag&gt;</a>,</div>
+<div class="line">      <a class="code" href="structParallel_1_1Tags_1_1Section.html">Parallel::Tags::Section&lt;ArrayComponent, IsFirstElementTag&gt;</a>&gt;;</div>
+<div class="line">  <span class="keyword">using</span> initialization_tags = <a class="code" href="group__ParallelGroup.html#ga1e2e4c961e55eb461d66770393e4f45d">Parallel::get_initialization_tags</a>&lt;</div>
+<div class="line">      <a class="code" href="group__ParallelGroup.html#gac5fb42f8eaf4da2707e32ed37ecf4e66">Parallel::get_initialization_actions_list&lt;phase_dependent_action_list&gt;</a>,</div>
+<div class="line">      array_allocation_tags&gt;;</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">static</span> <span class="keywordtype">void</span> allocate_array(</div>
+<div class="line">      Parallel::CProxy_GlobalCache&lt;Metavariables&gt;&amp; global_cache,</div>
+<div class="line">      tuples::tagged_tuple_from_typelist&lt;initialization_tags&gt;</div>
+<div class="line">          initialization_items) noexcept {</div>
+<div class="line">    <span class="keyword">auto</span>&amp; local_cache = *(global_cache.ckLocalBranch());</div>
+<div class="line">    <span class="keyword">auto</span>&amp; array_proxy =</div>
+<div class="line">        Parallel::get_parallel_component&lt;ArrayComponent&gt;(local_cache);</div>
+<div class="line"> </div>
+<div class="line">    <span class="comment">// Create sections from element IDs (the corresponding elements will be</span></div>
+<div class="line">    <span class="comment">// created below)</span></div>
+<div class="line">    <span class="keyword">const</span> <span class="keywordtype">size_t</span> num_elements = 5;</div>
+<div class="line">    <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;CkArrayIndex&gt;</a> even_elements{};</div>
+<div class="line">    <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;CkArrayIndex&gt;</a> odd_elements{};</div>
+<div class="line">    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; num_elements; ++i) {</div>
+<div class="line">      (i % 2 == 0 ? even_elements : odd_elements)</div>
+<div class="line">          .<a class="code" href="group__ComputationalDomainGroup.html#ga398bdce722c9ba655f479a7712f1a0e5">push_back</a>(<a class="code" href="structParallel_1_1ArrayIndex.html">Parallel::ArrayIndex&lt;int&gt;</a>(<span class="keyword">static_cast&lt;</span><span class="keywordtype">int</span><span class="keyword">&gt;</span>(i)));</div>
+<div class="line">    }</div>
+<div class="line">    <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;CkArrayIndex&gt;</a> first_element{};</div>
+<div class="line">    first_element.push_back(<a class="code" href="structParallel_1_1ArrayIndex.html">Parallel::ArrayIndex&lt;int&gt;</a>(0));</div>
+<div class="line">    <span class="keyword">using</span> EvenOrOddSection = <a class="code" href="structParallel_1_1Section.html">Parallel::Section&lt;ArrayComponent, EvenOrOddTag&gt;</a>;</div>
+<div class="line">    <span class="keyword">const</span> EvenOrOddSection even_section{</div>
+<div class="line">        EvenOrOdd::Even, EvenOrOddSection::cproxy_section::ckNew(</div>
+<div class="line">                             array_proxy.ckGetArrayID(), even_elements.data(),</div>
+<div class="line">                             even_elements.size())};</div>
+<div class="line">    <span class="keyword">const</span> EvenOrOddSection odd_section{</div>
+<div class="line">        EvenOrOdd::Odd, EvenOrOddSection::cproxy_section::ckNew(</div>
+<div class="line">                            array_proxy.ckGetArrayID(), odd_elements.data(),</div>
+<div class="line">                            odd_elements.size())};</div>
+<div class="line">    <span class="keyword">using</span> IsFirstElementSection =</div>
+<div class="line">        <a class="code" href="structParallel_1_1Section.html">Parallel::Section&lt;ArrayComponent, IsFirstElementTag&gt;</a>;</div>
+<div class="line">    <span class="keyword">const</span> IsFirstElementSection is_first_element_section{</div>
+<div class="line">        <span class="keyword">true</span>, IsFirstElementSection::cproxy_section::ckNew(</div>
+<div class="line">                  array_proxy.ckGetArrayID(), first_element.data(),</div>
+<div class="line">                  first_element.size())};</div>
+<div class="line"> </div>
+<div class="line">    <span class="comment">// Create array elements, copying the appropriate section proxy into their</span></div>
+<div class="line">    <span class="comment">// DataBox</span></div>
+<div class="line">    <span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code" href="group__ParallelGroup.html#ga7784b669df07fce82ccaea3a4d8a4ea5">number_of_procs</a> = <a class="code" href="group__ParallelGroup.html#ga7784b669df07fce82ccaea3a4d8a4ea5">sys::number_of_procs</a>();</div>
+<div class="line">    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; 5; ++i) {</div>
+<div class="line">      tuples::get&lt;Parallel::Tags::Section&lt;ArrayComponent, EvenOrOddTag&gt;&gt;(</div>
+<div class="line">          initialization_items) = i % 2 == 0 ? even_section : odd_section;</div>
+<div class="line">      tuples::get&lt;Parallel::Tags::Section&lt;ArrayComponent, IsFirstElementTag&gt;&gt;(</div>
+<div class="line">          initialization_items) =</div>
+<div class="line">          i == 0 ? std::make_optional(is_first_element_section) : std::nullopt;</div>
+<div class="line">      array_proxy[<span class="keyword">static_cast&lt;</span><span class="keywordtype">int</span><span class="keyword">&gt;</span>(i)].insert(</div>
+<div class="line">          global_cache, initialization_items,</div>
+<div class="line">          <span class="keyword">static_cast&lt;</span><span class="keywordtype">int</span><span class="keyword">&gt;</span>(i) % <a class="code" href="group__ParallelGroup.html#ga7784b669df07fce82ccaea3a4d8a4ea5">number_of_procs</a>);</div>
+<div class="line">    }</div>
+<div class="line">    array_proxy.doneInserting();</div>
+<div class="line">  }</div>
+</div><!-- fragment --> <dl class="section warning"><dt>Warning</dt><dd>The Charm++ documentation indicates some <a href="https://charm.readthedocs.io/en/latest/charm++/manual.html#creation-order-restrictions">creation order restrictions</a> for sections that may become relevant if we encounter issues with race conditions in the future. </dd></dl>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="af0ea74d3752602c291fef3d971216a73"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af0ea74d3752602c291fef3d971216a73">&#9670;&nbsp;</a></span>cookie() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename ParallelComponent , typename SectionIdTag &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const CkSectionInfo&amp; <a class="el" href="structParallel_1_1Section.html">Parallel::Section</a>&lt; ParallelComponent, SectionIdTag &gt;::cookie </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The Charm++ section cookie that keeps track of reductions. </p>
+<p>The section cookie must be stored on each element and updated when performing reductions. For details on Charm++ sections and section reductions see: <a href="https://charm.readthedocs.io/en/latest/charm++/manual.html?#sections-subsets-of-a-chare-array-group">https://charm.readthedocs.io/en/latest/charm++/manual.html?#sections-subsets-of-a-chare-array-group</a> </p>
+
+</div>
+</div>
+<a id="ac3d993750c1217a2372b3b10d58de6ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac3d993750c1217a2372b3b10d58de6ea">&#9670;&nbsp;</a></span>cookie() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename ParallelComponent , typename SectionIdTag &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">CkSectionInfo&amp; <a class="el" href="structParallel_1_1Section.html">Parallel::Section</a>&lt; ParallelComponent, SectionIdTag &gt;::cookie </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The Charm++ section cookie that keeps track of reductions. </p>
+<p>The section cookie must be stored on each element and updated when performing reductions. For details on Charm++ sections and section reductions see: <a href="https://charm.readthedocs.io/en/latest/charm++/manual.html?#sections-subsets-of-a-chare-array-group">https://charm.readthedocs.io/en/latest/charm++/manual.html?#sections-subsets-of-a-chare-array-group</a> </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Parallel/<a class="el" href="Section_8hpp_source.html">Section.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a></div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_ga7784b669df07fce82ccaea3a4d8a4ea5"><div class="ttname"><a href="group__ParallelGroup.html#ga7784b669df07fce82ccaea3a4d8a4ea5">Parallel::number_of_procs</a></div><div class="ttdeci">int number_of_procs(const DistribObject &amp;distributed_object) noexcept</div><div class="ttdoc">Number of processing elements.</div><div class="ttdef"><b>Definition:</b> Info.hpp:24</div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_ga1e2e4c961e55eb461d66770393e4f45d"><div class="ttname"><a href="group__ParallelGroup.html#ga1e2e4c961e55eb461d66770393e4f45d">Parallel::get_initialization_tags</a></div><div class="ttdeci">tmpl::remove_duplicates&lt; tmpl::flatten&lt; tmpl::list&lt; AllocationTagsList, tmpl::transform&lt; InitializationActionsList, detail::get_initialization_tags_from_action&lt; tmpl::_1 &gt; &gt;&gt; &gt;&gt; get_initialization_tags</div><div class="ttdoc">Given a list of initialization actions, and possibly a list of tags needed for allocation of an array...</div><div class="ttdef"><b>Definition:</b> ParallelComponentHelpers.hpp:254</div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_gac5fb42f8eaf4da2707e32ed37ecf4e66"><div class="ttname"><a href="group__ParallelGroup.html#gac5fb42f8eaf4da2707e32ed37ecf4e66">Parallel::get_initialization_actions_list</a></div><div class="ttdeci">tmpl::flatten&lt; tmpl::transform&lt; PhaseDepActionList, detail::get_initialization_actions_list&lt; tmpl::_1 &gt; &gt;&gt; get_initialization_actions_list</div><div class="ttdoc">Given the phase dependent action list, return the list of actions in the Initialization phase (or an ...</div><div class="ttdef"><b>Definition:</b> ParallelComponentHelpers.hpp:218</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ga398bdce722c9ba655f479a7712f1a0e5"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ga398bdce722c9ba655f479a7712f1a0e5">domain::push_back</a></div><div class="ttdeci">CoordinateMap&lt; SourceFrame, TargetFrame, Maps..., NewMap &gt; push_back(CoordinateMap&lt; SourceFrame, TargetFrame, Maps... &gt; old_map, NewMap new_map) noexcept</div><div class="ttdoc">Creates a CoordinateMap by appending the new map to the end of the old maps.</div></div>
+<div class="ttc" id="astructParallel_1_1Section_html"><div class="ttname"><a href="structParallel_1_1Section.html">Parallel::Section</a></div><div class="ttdoc">A subset of chares in a parallel component.</div><div class="ttdef"><b>Definition:</b> Section.hpp:36</div></div>
+<div class="ttc" id="astructParallel_1_1ArrayIndex_html"><div class="ttname"><a href="structParallel_1_1ArrayIndex.html">Parallel::ArrayIndex</a></div><div class="ttdoc">The array index used for indexing Chare Arrays, mostly an implementation detail.</div><div class="ttdef"><b>Definition:</b> ArrayIndex.hpp:28</div></div>
+<div class="ttc" id="astructParallel_1_1Tags_1_1Section_html"><div class="ttname"><a href="structParallel_1_1Tags_1_1Section.html">Parallel::Tags::Section</a></div><div class="ttdoc">The Parallel::Section&lt;ParallelComponent, SectionIdTag&gt; that this element belongs to.</div><div class="ttdef"><b>Definition:</b> Section.hpp:29</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

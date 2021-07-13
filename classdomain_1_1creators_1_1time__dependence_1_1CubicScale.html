@@ -1,0 +1,367 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::creators::time_dependence::CubicScale&lt; MeshDim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1creators.html">creators</a></li><li class="navelem"><a class="el" href="namespacedomain_1_1creators_1_1time__dependence.html">time_dependence</a></li><li class="navelem"><a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1CubicScale.html">CubicScale</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classdomain_1_1creators_1_1time__dependence_1_1CubicScale-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::creators::time_dependence::CubicScale&lt; MeshDim &gt; Class Template Reference<span class="mlabels"><span class="mlabel">final</span></span></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A linear or cubic radial scaling time dependence.  
+ <a href="classdomain_1_1creators_1_1time__dependence_1_1CubicScale.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Creators_2TimeDependence_2CubicScale_8hpp_source.html">CubicScale.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1Acceleration.html">Acceleration</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The acceleration of the expansion factors.  <a href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1Acceleration.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1FunctionOfTimeNames.html">FunctionOfTimeNames</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The names of the functions of times to be added to the added to the DataBox.  <a href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1FunctionOfTimeNames.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1InitialExpansion.html">InitialExpansion</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The initial values of the expansion factors.  <a href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1InitialExpansion.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1InitialExpirationDeltaT.html">InitialExpirationDeltaT</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The initial time interval for updates of the functions of time.  <a href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1InitialExpirationDeltaT.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1InitialTime.html">InitialTime</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The initial time of the functions of time.  <a href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1InitialTime.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1OuterBoundary.html">OuterBoundary</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The outer boundary or pivot point of the <code><a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1CubicScale.html" title="Maps the radius as  where  is the radius of the source coordinates.">domain::CoordinateMaps::TimeDependent::CubicScale</a></code> map.  <a href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1OuterBoundary.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1Velocity.html">Velocity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The velocity of the expansion factors.  <a href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1Velocity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a2c50a37e54376ab938ea649643c56690"><td class="memItemLeft" align="right" valign="top"><a id="a2c50a37e54376ab938ea649643c56690"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>maps_list</b> = tmpl::list&lt; <a class="el" href="classdomain_1_1CoordinateMap.html">CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1CubicScale.html">CubicScaleMap</a> &gt; &gt;</td></tr>
+<tr class="separator:a2c50a37e54376ab938ea649643c56690"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aec9b7372fc212fb6a9463f656eb8b11a"><td class="memItemLeft" align="right" valign="top"><a id="aec9b7372fc212fb6a9463f656eb8b11a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1InitialTime.html">InitialTime</a>, <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1InitialExpirationDeltaT.html">InitialExpirationDeltaT</a>, <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1OuterBoundary.html">OuterBoundary</a>, <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1FunctionOfTimeNames.html">FunctionOfTimeNames</a>, <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1InitialExpansion.html">InitialExpansion</a>, <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1Velocity.html">Velocity</a>, <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1CubicScale_1_1Acceleration.html">Acceleration</a> &gt;</td></tr>
+<tr class="separator:aec9b7372fc212fb6a9463f656eb8b11a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6213e1325205834542939c1c301635fd"><td class="memItemLeft" align="right" valign="top"><a id="a6213e1325205834542939c1c301635fd"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>MapForComposition</b> = <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1CubicScale.html">CubicScaleMap</a> &gt;</td></tr>
+<tr class="separator:a6213e1325205834542939c1c301635fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">domain::creators::time_dependence::TimeDependence&lt; MeshDim &gt;</a></td></tr>
+<tr class="memitem:a518a231b9f2b2beef1e2482ab07b5f31 inherit pub_types_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="a518a231b9f2b2beef1e2482ab07b5f31"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::append&lt; creatable_classes_any_dim, tmpl::conditional_t&lt; MeshDim==1, creatable_classes_1d, tmpl::conditional_t&lt; MeshDim==2, creatable_classes_2d, creatable_classes_3d &gt; &gt;&gt;</td></tr>
+<tr class="separator:a518a231b9f2b2beef1e2482ab07b5f31 inherit pub_types_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a2eca16bd45aa5f89cd5a8a8c485d2798"><td class="memItemLeft" align="right" valign="top"><a id="a2eca16bd45aa5f89cd5a8a8c485d2798"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CubicScale</b> (const <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1CubicScale.html">CubicScale</a> &amp;)=delete</td></tr>
+<tr class="separator:a2eca16bd45aa5f89cd5a8a8c485d2798"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab5bd625b95526430f7c31d653c98eb14"><td class="memItemLeft" align="right" valign="top"><a id="ab5bd625b95526430f7c31d653c98eb14"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CubicScale</b> (<a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1CubicScale.html">CubicScale</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:ab5bd625b95526430f7c31d653c98eb14"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67bfa66913e1a7684d9050417daf4799"><td class="memItemLeft" align="right" valign="top"><a id="a67bfa66913e1a7684d9050417daf4799"></a>
+<a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1CubicScale.html">CubicScale</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1CubicScale.html">CubicScale</a> &amp;)=delete</td></tr>
+<tr class="separator:a67bfa66913e1a7684d9050417daf4799"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a35c42e99fdc6a5e319747e58eaac3682"><td class="memItemLeft" align="right" valign="top"><a id="a35c42e99fdc6a5e319747e58eaac3682"></a>
+<a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1CubicScale.html">CubicScale</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1CubicScale.html">CubicScale</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a35c42e99fdc6a5e319747e58eaac3682"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a10ed640808f376626421be312710d8a8"><td class="memItemLeft" align="right" valign="top"><a id="a10ed640808f376626421be312710d8a8"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CubicScale</b> (double initial_time, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; double &gt; initial_expiration_delta_t, double outer_boundary, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, 2 &gt; functions_of_time_names, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 2 &gt; &amp;initial_expansion, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 2 &gt; &amp;velocity, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 2 &gt; &amp;acceleration) noexcept</td></tr>
+<tr class="separator:a10ed640808f376626421be312710d8a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae00b112ea9d8a6fba21fe7a2e5b709a1"><td class="memItemLeft" align="right" valign="top"><a id="ae00b112ea9d8a6fba21fe7a2e5b709a1"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1CubicScale.html#ae00b112ea9d8a6fba21fe7a2e5b709a1">get_clone</a> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a>&lt; MeshDim &gt;&gt; override</td></tr>
+<tr class="memdesc:ae00b112ea9d8a6fba21fe7a2e5b709a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></code> pointing to a copy of the <code><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html" title="The abstract base class off of which specific classes for adding time dependence into a domain creato...">TimeDependence</a></code>. <br /></td></tr>
+<tr class="separator:ae00b112ea9d8a6fba21fe7a2e5b709a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6b02b08d6179ad7733793c15d616e9f5"><td class="memItemLeft" align="right" valign="top"><a id="a6b02b08d6179ad7733793c15d616e9f5"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1CubicScale.html#a6b02b08d6179ad7733793c15d616e9f5">block_maps</a> (size_t number_of_blocks) const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, MeshDim &gt;&gt;&gt; override</td></tr>
+<tr class="memdesc:a6b02b08d6179ad7733793c15d616e9f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the coordinate maps from the <code><a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a></code> to the <code><a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a></code> frame for each block. <br /></td></tr>
+<tr class="separator:a6b02b08d6179ad7733793c15d616e9f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed5cbb8c631bdacdd3a545a74a3dcd25"><td class="memItemLeft" align="right" valign="top"><a id="aed5cbb8c631bdacdd3a545a74a3dcd25"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1CubicScale.html#aed5cbb8c631bdacdd3a545a74a3dcd25">functions_of_time</a> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; override</td></tr>
+<tr class="memdesc:aed5cbb8c631bdacdd3a545a74a3dcd25"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the functions of time for the domain. <br /></td></tr>
+<tr class="separator:aed5cbb8c631bdacdd3a545a74a3dcd25"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5dcea8c267d2ec1fb0e7b311ee76782f"><td class="memItemLeft" align="right" valign="top"><a id="a5dcea8c267d2ec1fb0e7b311ee76782f"></a>
+<a class="el" href="classdomain_1_1CoordinateMap.html">MapForComposition</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1CubicScale.html#a5dcea8c267d2ec1fb0e7b311ee76782f">map_for_composition</a> () const noexcept</td></tr>
+<tr class="memdesc:a5dcea8c267d2ec1fb0e7b311ee76782f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the map for each block to be used in a composition of <code><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html" title="The abstract base class off of which specific classes for adding time dependence into a domain creato...">TimeDependence</a></code>s. <br /></td></tr>
+<tr class="separator:a5dcea8c267d2ec1fb0e7b311ee76782f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">domain::creators::time_dependence::TimeDependence&lt; MeshDim &gt;</a></td></tr>
+<tr class="memitem:af36b7b242535cf7f8413624f132f70ca inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="af36b7b242535cf7f8413624f132f70ca"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TimeDependence</b> (const <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;)=default</td></tr>
+<tr class="separator:af36b7b242535cf7f8413624f132f70ca inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbbd44090636dee26dfc280098973128 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="afbbd44090636dee26dfc280098973128"></a>
+<a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;)=default</td></tr>
+<tr class="separator:afbbd44090636dee26dfc280098973128 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ee073dd3ceeea6e9e27f1281dcdc5d6 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="a3ee073dd3ceeea6e9e27f1281dcdc5d6"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TimeDependence</b> (<a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a3ee073dd3ceeea6e9e27f1281dcdc5d6 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a513178e25e84a53826de7fec2edb78 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="a0a513178e25e84a53826de7fec2edb78"></a>
+<a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a0a513178e25e84a53826de7fec2edb78 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a6b1a7c7a9d3e2c386720b314ff7d85 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="a2a6b1a7c7a9d3e2c386720b314ff7d85"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html#a2a6b1a7c7a9d3e2c386720b314ff7d85">is_none</a> () const noexcept</td></tr>
+<tr class="memdesc:a2a6b1a7c7a9d3e2c386720b314ff7d85 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>true</code> if the instance is <code><a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1None.html" title="Make the mesh time independent so that it isn&#39;t moving.">None</a></code>, meaning no time dependence. <br /></td></tr>
+<tr class="separator:a2a6b1a7c7a9d3e2c386720b314ff7d85 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aa900fef0ef737703f7165bc5ce156548"><td class="memItemLeft" align="right" valign="top"><a id="aa900fef0ef737703f7165bc5ce156548"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>mesh_dim</b> = MeshDim</td></tr>
+<tr class="separator:aa900fef0ef737703f7165bc5ce156548"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a014d1fda835a1eea1c4b17c69699e360"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a014d1fda835a1eea1c4b17c69699e360"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a9c8489d74fba664046920255007dfcc9"><td class="memTemplParams" colspan="2"><a id="a9c8489d74fba664046920255007dfcc9"></a>
+template&lt;size_t LocalDim&gt; </td></tr>
+<tr class="memitem:a9c8489d74fba664046920255007dfcc9"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1CubicScale.html">CubicScale</a>&lt; LocalDim &gt; &amp;lhs, const <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1CubicScale.html">CubicScale</a>&lt; LocalDim &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a9c8489d74fba664046920255007dfcc9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t MeshDim&gt;<br />
+class domain::creators::time_dependence::CubicScale&lt; MeshDim &gt;</h3>
+
+<p>A linear or cubic radial scaling time dependence. </p>
+<p>Adds the <code><a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1CubicScale.html" title="Maps the radius as  where  is the radius of the source coordinates.">domain::CoordinateMaps::TimeDependent::CubicScale</a></code> map. A linear radial scaling can be used by specifying the two functions of time to have the same name. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a014d1fda835a1eea1c4b17c69699e360"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a014d1fda835a1eea1c4b17c69699e360">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t MeshDim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1CubicScale.html">domain::creators::time_dependence::CubicScale</a>&lt; MeshDim &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;A spatial radial scaling either based on a cubic scaling or a simple\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;linear scaling.\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;If the two functions of time have the same name then the scaling is a\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;linear radial scaling.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/Creators/TimeDependence/<a class="el" href="Creators_2TimeDependence_2CubicScale_8hpp_source.html">CubicScale.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: evolution::dg::subcell::Actions::TciAndSwitchToDg&lt; TciMutator &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceevolution.html">evolution</a></li><li class="navelem"><a class="el" href="namespaceevolution_1_1dg.html">dg</a></li><li class="navelem"><a class="el" href="namespaceevolution_1_1dg_1_1subcell.html">subcell</a></li><li class="navelem"><a class="el" href="namespaceevolution_1_1dg_1_1subcell_1_1Actions.html">Actions</a></li><li class="navelem"><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Actions_1_1TciAndSwitchToDg.html">TciAndSwitchToDg</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="structevolution_1_1dg_1_1subcell_1_1Actions_1_1TciAndSwitchToDg-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">evolution::dg::subcell::Actions::TciAndSwitchToDg&lt; TciMutator &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Run the troubled-cell indicator on the subcell solution to see if it is safe to switch back to DG.  
+ <a href="structevolution_1_1dg_1_1subcell_1_1Actions_1_1TciAndSwitchToDg.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="TciAndSwitchToDg_8hpp_source.html">TciAndSwitchToDg.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a5786df2facfafd3463e3f26754a88d28"><td class="memTemplParams" colspan="2"><a id="a5786df2facfafd3463e3f26754a88d28"></a>
+template&lt;typename DbTags , typename... InboxTags, typename Metavariables , typename ArrayIndex , typename ActionList , typename ParallelComponent , size_t Dim = Metavariables::volume_dim&gt; </td></tr>
+<tr class="memitem:a5786df2facfafd3463e3f26754a88d28"><td class="memTemplItemLeft" align="right" valign="top">static <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; db::DataBox&lt; DbTags &gt; &amp;&amp; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>apply</b> (db::DataBox&lt; DbTags &gt; &amp;box, const <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; InboxTags... &gt; &amp;, const <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt; &amp;, const ArrayIndex &amp;, const ActionList, const ParallelComponent *const) noexcept</td></tr>
+<tr class="separator:a5786df2facfafd3463e3f26754a88d28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename TciMutator&gt;<br />
+struct evolution::dg::subcell::Actions::TciAndSwitchToDg&lt; TciMutator &gt;</h3>
+
+<p>Run the troubled-cell indicator on the subcell solution to see if it is safe to switch back to DG. </p>
+<p>In terms of the DG-subcell/FD hybrid solver, this action is run after the FD step has calculated the solution at \(t^{n+1}\). At this point we check if the FD solution at the new time \(t^{n+1}\) is representable on the DG grid.</p>
+<p>The algorithm proceeds as follows:</p><ol type="1">
+<li>If we are using a substep time integrator and are not at the end of a step, or we are in the self-starting stage of a multistep method, or the <code>subcell_options.always_use_subcells() == true</code>, then we do not run any TCI or try to go back to DG. We need to avoid reconstructing (in the sense of the inverse of projecting the DG solution to the subcells) the time stepper history if there are shocks present in the history, and for substep methods this is most easily handled by only switching back at the end of a full time step. During the self-start phase of the multistep time integrators we integrate over the same region of time at increasingly higher order, which means if we were on subcell "previously" (since we use a forward-in-time self-start method the time history is actually in the future of the current step) then we will very likely need to again switch to subcell.</li>
+<li>Reconstruct the subcell solution to the DG grid.</li>
+<li>Run the relaxed discrete maximum principle (RDMP) troubled-cell indicator (TCI), checking both the subcell solution at \(t^{n+1}\) and the reconstructed DG solution at \(t^{n+1}\) to make sure they are admissible.</li>
+<li>If the RDMP TCI marked the DG solution as admissible, run the user-specified mutator TCI <code>TciMutator</code>.</li>
+<li>If the cell is not troubled, and the time integrator type is substep or the TCI history indicates the entire history for the multistep method is free of discontinuities, then we can switch back to DG. Switching back to DG requires swapping the active and inactive evolved variables, reconstructing the time stepper history, marking the active grid as <code>ActiveGrid::Dg</code>, and clearing the subcell neighbor data.</li>
+<li>If we are not using a substep method, then record the TCI decision in the <code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1TciGridHistory.html" title="A record of which grid the TCI requested we use.">subcell::Tags::TciGridHistory</a></code>.</li>
+</ol>
+<dl class="section note"><dt>Note</dt><dd>Unlike <code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Actions_1_1TciAndRollback.html" title="Run the troubled-cell indicator on the candidate solution and perform the time step rollback if neede...">Actions::TciAndRollback</a></code>, this action does <em>not</em> jump back to <code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Actions_1_1Labels_1_1BeginDg.html" title="Label marking the start of the unlimited DG solver.">Labels::BeginDg</a></code>. This is because users may add actions after a time step has been completed. In that sense, it may be more proper to actually check the TCI and switch back to DG at the start of the step rather than the end.</dd>
+<dd>
+This action always sets <code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1DidRollback.html" title="Tag indicating whether we are retrying a step after a rollback of a failed DG step.">subcell::Tags::DidRollback</a></code> to <code>false</code> at the very beginning since this action is called after an FD step has completed.</dd></dl>
+<p>GlobalCache:</p><ul>
+<li>Uses:<ul>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1SubcellOptions.html" title="System-agnostic options for DG-subcell.">subcell::Tags::SubcellOptions</a></code></li>
+</ul>
+</li>
+</ul>
+<p>DataBox:</p><ul>
+<li>Uses:<ul>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1Mesh.html" title="The computational grid of the Element in the DataBox.">domain::Tags::Mesh</a>&lt;Dim&gt;</code></li>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Mesh.html" title="The mesh on the subcells.">subcell::Tags::Mesh</a>&lt;Dim&gt;</code></li>
+<li><code><a class="el" href="structTags_1_1TimeStepId.html" title="Tag for TimeStepId for the algorithm state.">Tags::TimeStepId</a></code></li>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1ActiveGrid.html" title="The grid currently used for the DG-subcell evolution on the element.">subcell::Tags::ActiveGrid</a></code></li>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1NeighborDataForReconstructionAndRdmpTci.html" title="The neighbor data for reconstruction and the RDMP troubled-cell indicator.">subcell::Tags::NeighborDataForReconstructionAndRdmpTci</a>&lt;Dim&gt;</code></li>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1TciGridHistory.html" title="A record of which grid the TCI requested we use.">subcell::Tags::TciGridHistory</a></code></li>
+</ul>
+</li>
+<li>Adds: nothing</li>
+<li>Removes: nothing</li>
+<li>Modifies:<ul>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Inactive.html" title="Mark a tag as holding data for the inactive grid.">subcell::Tags::Inactive</a>&lt;System::variables_tag&gt;</code></li>
+<li><code>System::variables_tag</code> if the cell is not troubled</li>
+<li><code><a class="el" href="structTags_1_1HistoryEvolvedVariables.html">Tags::HistoryEvolvedVariables</a></code> if the cell is not troubled</li>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1ActiveGrid.html" title="The grid currently used for the DG-subcell evolution on the element.">subcell::Tags::ActiveGrid</a></code> if the cell is not troubled</li>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1DidRollback.html" title="Tag indicating whether we are retrying a step after a rollback of a failed DG step.">subcell::Tags::DidRollback</a></code> sets to <code>false</code></li>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1NeighborDataForReconstructionAndRdmpTci.html" title="The neighbor data for reconstruction and the RDMP troubled-cell indicator.">subcell::Tags::NeighborDataForReconstructionAndRdmpTci</a>&lt;Dim&gt;</code> if the cell is not troubled</li>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1TciGridHistory.html" title="A record of which grid the TCI requested we use.">subcell::Tags::TciGridHistory</a></code> if the time stepper is a multistep method </li>
+</ul>
+</li>
+</ul>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/DgSubcell/Actions/<a class="el" href="TciAndSwitchToDg_8hpp_source.html">TciAndSwitchToDg.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

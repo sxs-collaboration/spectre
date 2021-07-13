@@ -1,0 +1,336 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: MathFunctions::Gaussian&lt; VolumeDim, Fr &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceMathFunctions.html">MathFunctions</a></li><li class="navelem"><a class="el" href="classMathFunctions_1_1Gaussian.html">Gaussian</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classMathFunctions_1_1Gaussian-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">MathFunctions::Gaussian&lt; VolumeDim, Fr &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__MathFunctionsGroup.html">Math Functions</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><a class="el" href="classMathFunctions_1_1Gaussian.html" title="Gaussian .">Gaussian</a> \(f = A \exp\left(-\frac{(x-x_0)^2}{w^2}\right)\).  
+ <a href="classMathFunctions_1_1Gaussian.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Gaussian_8hpp_source.html">Gaussian.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMathFunctions_1_1Gaussian_1_1Amplitude.html">Amplitude</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMathFunctions_1_1Gaussian_1_1Center.html">Center</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMathFunctions_1_1Gaussian_1_1Width.html">Width</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a4e76a48f64778c89abd3174b1c41eff9"><td class="memItemLeft" align="right" valign="top"><a id="a4e76a48f64778c89abd3174b1c41eff9"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structMathFunctions_1_1Gaussian_1_1Amplitude.html">Amplitude</a>, <a class="el" href="structMathFunctions_1_1Gaussian_1_1Width.html">Width</a>, <a class="el" href="structMathFunctions_1_1Gaussian_1_1Center.html">Center</a> &gt;</td></tr>
+<tr class="separator:a4e76a48f64778c89abd3174b1c41eff9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a86a2066bf751ef6502ed39c6a6279d63"><td class="memItemLeft" align="right" valign="top"><a id="a86a2066bf751ef6502ed39c6a6279d63"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_base_template</b> (SINGLE_ARG(<a class="el" href="classMathFunction.html">MathFunction</a>&lt; VolumeDim, Fr &gt;), <a class="el" href="classMathFunctions_1_1Gaussian.html">Gaussian</a>)</td></tr>
+<tr class="separator:a86a2066bf751ef6502ed39c6a6279d63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0bb96d1b38d99b3fedfa19c1a6d1ac71"><td class="memItemLeft" align="right" valign="top"><a id="a0bb96d1b38d99b3fedfa19c1a6d1ac71"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Gaussian</b> (CkMigrateMessage *) noexcept</td></tr>
+<tr class="separator:a0bb96d1b38d99b3fedfa19c1a6d1ac71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a123b951c5ccf93e82a0b01ee574ffdb2"><td class="memItemLeft" align="right" valign="top"><a id="a123b951c5ccf93e82a0b01ee574ffdb2"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Gaussian</b> (double amplitude, double width, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, VolumeDim &gt; &amp;center) noexcept</td></tr>
+<tr class="separator:a123b951c5ccf93e82a0b01ee574ffdb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae623283e92c1435e5a97f3265016e121"><td class="memItemLeft" align="right" valign="top"><a id="ae623283e92c1435e5a97f3265016e121"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Gaussian</b> (const <a class="el" href="classMathFunctions_1_1Gaussian.html">Gaussian</a> &amp;)=delete</td></tr>
+<tr class="separator:ae623283e92c1435e5a97f3265016e121"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8339b429823a22916c917ad9aefd0a4e"><td class="memItemLeft" align="right" valign="top"><a id="a8339b429823a22916c917ad9aefd0a4e"></a>
+<a class="el" href="classMathFunctions_1_1Gaussian.html">Gaussian</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classMathFunctions_1_1Gaussian.html">Gaussian</a> &amp;)=delete</td></tr>
+<tr class="separator:a8339b429823a22916c917ad9aefd0a4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac5169c58e68957d38c6b7d2560277553"><td class="memItemLeft" align="right" valign="top"><a id="ac5169c58e68957d38c6b7d2560277553"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Gaussian</b> (<a class="el" href="classMathFunctions_1_1Gaussian.html">Gaussian</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:ac5169c58e68957d38c6b7d2560277553"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a16cd7958a761960f7c10495b2cfe6b46"><td class="memItemLeft" align="right" valign="top"><a id="a16cd7958a761960f7c10495b2cfe6b46"></a>
+<a class="el" href="classMathFunctions_1_1Gaussian.html">Gaussian</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classMathFunctions_1_1Gaussian.html">Gaussian</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a16cd7958a761960f7c10495b2cfe6b46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acff0c8af0508c1c81b6839d57857582d"><td class="memItemLeft" align="right" valign="top"><a id="acff0c8af0508c1c81b6839d57857582d"></a>
+<a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (const tnsr::I&lt; double, VolumeDim, Fr &gt; &amp;x) const noexcept override</td></tr>
+<tr class="separator:acff0c8af0508c1c81b6839d57857582d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4fb9d9c85d842ce6e38a846c95884441"><td class="memItemLeft" align="right" valign="top"><a id="a4fb9d9c85d842ce6e38a846c95884441"></a>
+<a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim, Fr &gt; &amp;x) const noexcept override</td></tr>
+<tr class="separator:a4fb9d9c85d842ce6e38a846c95884441"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ad0e6170ec78d41f6371a0200cd6dc6"><td class="memItemLeft" align="right" valign="top"><a id="a9ad0e6170ec78d41f6371a0200cd6dc6"></a>
+tnsr::i&lt; double, VolumeDim, Fr &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>first_deriv</b> (const tnsr::I&lt; double, VolumeDim, Fr &gt; &amp;x) const noexcept override</td></tr>
+<tr class="separator:a9ad0e6170ec78d41f6371a0200cd6dc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20397d2c805f5865f9436df1a791d328"><td class="memItemLeft" align="right" valign="top"><a id="a20397d2c805f5865f9436df1a791d328"></a>
+tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim, Fr &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>first_deriv</b> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim, Fr &gt; &amp;x) const noexcept override</td></tr>
+<tr class="separator:a20397d2c805f5865f9436df1a791d328"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab62570c9a0c9f225fcb034c5b33002ee"><td class="memItemLeft" align="right" valign="top"><a id="ab62570c9a0c9f225fcb034c5b33002ee"></a>
+tnsr::ii&lt; double, VolumeDim, Fr &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>second_deriv</b> (const tnsr::I&lt; double, VolumeDim, Fr &gt; &amp;x) const noexcept override</td></tr>
+<tr class="separator:ab62570c9a0c9f225fcb034c5b33002ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa17b45b10da2af95773dba33f91d93bf"><td class="memItemLeft" align="right" valign="top"><a id="aa17b45b10da2af95773dba33f91d93bf"></a>
+tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim, Fr &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>second_deriv</b> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim, Fr &gt; &amp;x) const noexcept override</td></tr>
+<tr class="separator:aa17b45b10da2af95773dba33f91d93bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a178afdffad320e3d1fd7cf8b9d477223"><td class="memItemLeft" align="right" valign="top"><a id="a178afdffad320e3d1fd7cf8b9d477223"></a>
+tnsr::iii&lt; double, VolumeDim, Fr &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>third_deriv</b> (const tnsr::I&lt; double, VolumeDim, Fr &gt; &amp;x) const noexcept override</td></tr>
+<tr class="separator:a178afdffad320e3d1fd7cf8b9d477223"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a510cca10401b574f92f8424e6404ac19"><td class="memItemLeft" align="right" valign="top"><a id="a510cca10401b574f92f8424e6404ac19"></a>
+tnsr::iii&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim, Fr &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>third_deriv</b> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim, Fr &gt; &amp;x) const noexcept override</td></tr>
+<tr class="separator:a510cca10401b574f92f8424e6404ac19"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a549b3b7ebf207ab57091f6f1e15d3157"><td class="memItemLeft" align="right" valign="top"><a id="a549b3b7ebf207ab57091f6f1e15d3157"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) override</td></tr>
+<tr class="separator:a549b3b7ebf207ab57091f6f1e15d3157"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a9b45c245f0d3fbf536cfe4ac48ff5283"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a9b45c245f0d3fbf536cfe4ac48ff5283"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a862dd473f9fe733d3fc77c47342690fc"><td class="memItemLeft" align="right" valign="top"><a id="a862dd473f9fe733d3fc77c47342690fc"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classMathFunctions_1_1Gaussian.html">Gaussian</a> &amp;lhs, const <a class="el" href="classMathFunctions_1_1Gaussian.html">Gaussian</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a862dd473f9fe733d3fc77c47342690fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t VolumeDim, typename Fr&gt;<br />
+class MathFunctions::Gaussian&lt; VolumeDim, Fr &gt;</h3>
+
+<p><a class="el" href="classMathFunctions_1_1Gaussian.html" title="Gaussian .">Gaussian</a> \(f = A \exp\left(-\frac{(x-x_0)^2}{w^2}\right)\). </p>
+<h3>Details</h3>
+<p>Input file options are: <a class="el" href="structMathFunctions_1_1Gaussian_1_1Amplitude.html">Amplitude</a>, <a class="el" href="structMathFunctions_1_1Gaussian_1_1Width.html">Width</a>, and <a class="el" href="structMathFunctions_1_1Gaussian_1_1Center.html">Center</a>. The function takes input coordinates of type <code>tnsr::I&lt;T, VolumeDim, Fr&gt;</code>, where <code>T</code> is e.g. <code>double</code> or <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>, <code>Fr</code> is a frame (e.g. <code><a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a></code>), and <code>VolumeDim</code> is the dimension of the spatial volume, i.e. 2 or 3. (The case of VolumeDim == 1 is handled specially by Gaussian&lt;1, T, Frame::Inertial&gt;.) </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a9b45c245f0d3fbf536cfe4ac48ff5283"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9b45c245f0d3fbf536cfe4ac48ff5283">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t VolumeDim, typename Fr &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classMathFunctions_1_1Gaussian.html">MathFunctions::Gaussian</a>&lt; VolumeDim, Fr &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Computes a Gaussian about an arbitrary coordinate center with given &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;width and amplitude&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/MathFunctions/<a class="el" href="Gaussian_8hpp_source.html">Gaussian.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::CoordinateMaps::TimeDependent::ProductOf2Maps&lt; Map1, Map2 &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1CoordinateMaps.html">CoordinateMaps</a></li><li class="navelem"><a class="el" href="namespacedomain_1_1CoordinateMaps_1_1TimeDependent.html">TimeDependent</a></li><li class="navelem"><a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1ProductOf2Maps.html">ProductOf2Maps</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1ProductOf2Maps-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::CoordinateMaps::TimeDependent::ProductOf2Maps&lt; Map1, Map2 &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__CoordMapsTimeDependentGroup.html">Coordinate Maps, Time-dependent</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Product of two codimension=0 <a class="el" href="namespacedomain_1_1CoordinateMaps.html" title="Contains all coordinate maps.">CoordinateMaps</a>, where one or both must be time-dependent.  
+ <a href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1ProductOf2Maps.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="TimeDependent_2ProductMaps_8hpp_source.html">ProductMaps.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ac37863b66ecda6efe4f31f05ee7253ef"><td class="memItemLeft" align="right" valign="top"><a id="ac37863b66ecda6efe4f31f05ee7253ef"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>map_list</b> = tmpl::list&lt; Map1, Map2 &gt;</td></tr>
+<tr class="separator:ac37863b66ecda6efe4f31f05ee7253ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a2b1ca9123fe7d0deae1ac928a8e4c0ea"><td class="memItemLeft" align="right" valign="top"><a id="a2b1ca9123fe7d0deae1ac928a8e4c0ea"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ProductOf2Maps</b> (Map1 map1, Map2 map2) noexcept</td></tr>
+<tr class="separator:a2b1ca9123fe7d0deae1ac928a8e4c0ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad3dc27f6a51e2de6ac3cf85197688c1e"><td class="memTemplParams" colspan="2"><a id="ad3dc27f6a51e2de6ac3cf85197688c1e"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ad3dc27f6a51e2de6ac3cf85197688c1e"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt;, dim &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator()</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, dim &gt; &amp;source_coords, double time, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time) const noexcept</td></tr>
+<tr class="separator:ad3dc27f6a51e2de6ac3cf85197688c1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c2e633986b01ddd0d0084f30ac52ea1"><td class="memItemLeft" align="right" valign="top"><a id="a4c2e633986b01ddd0d0084f30ac52ea1"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, dim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1ProductOf2Maps.html#a4c2e633986b01ddd0d0084f30ac52ea1">inverse</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, dim &gt; &amp;target_coords, double time, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time) const noexcept</td></tr>
+<tr class="memdesc:a4c2e633986b01ddd0d0084f30ac52ea1"><td class="mdescLeft">&#160;</td><td class="mdescRight">The inverse function is only callable with doubles because the inverse might fail if called for a point out of range, and it is unclear what should happen if the inverse were to succeed for some points in a <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> but fail for other points. <br /></td></tr>
+<tr class="separator:a4c2e633986b01ddd0d0084f30ac52ea1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a958a842dfb7f1deabd9aeabeea1e75ce"><td class="memTemplParams" colspan="2"><a id="a958a842dfb7f1deabd9aeabeea1e75ce"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a958a842dfb7f1deabd9aeabeea1e75ce"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt;, dim &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>frame_velocity</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, dim &gt; &amp;source_coords, double time, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time) const noexcept</td></tr>
+<tr class="separator:a958a842dfb7f1deabd9aeabeea1e75ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ee5f9c7d0c7ac4f07b655e5d5942694"><td class="memTemplParams" colspan="2"><a id="a0ee5f9c7d0c7ac4f07b655e5d5942694"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a0ee5f9c7d0c7ac4f07b655e5d5942694"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, dim, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>inv_jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, dim &gt; &amp;source_coords, double time, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time) const noexcept</td></tr>
+<tr class="separator:a0ee5f9c7d0c7ac4f07b655e5d5942694"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b5a5342b62a3b4e52c126e26bc7c030"><td class="memTemplParams" colspan="2"><a id="a0b5a5342b62a3b4e52c126e26bc7c030"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a0b5a5342b62a3b4e52c126e26bc7c030"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, dim, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, dim &gt; &amp;source_coords, double time, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time) const noexcept</td></tr>
+<tr class="separator:a0b5a5342b62a3b4e52c126e26bc7c030"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54ca878e7fbb3606cbde9ab31ea75faf"><td class="memItemLeft" align="right" valign="top"><a id="a54ca878e7fbb3606cbde9ab31ea75faf"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p)</td></tr>
+<tr class="separator:a54ca878e7fbb3606cbde9ab31ea75faf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ac11246f40535a80e2b4cb54cd9c366"><td class="memItemLeft" align="right" valign="top"><a id="a0ac11246f40535a80e2b4cb54cd9c366"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_identity</b> () const noexcept</td></tr>
+<tr class="separator:a0ac11246f40535a80e2b4cb54cd9c366"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a8b0f0abc8fceb0b9e69cef1a6b3a7a76"><td class="memItemLeft" align="right" valign="top"><a id="a8b0f0abc8fceb0b9e69cef1a6b3a7a76"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>dim</b> = Map1::dim + Map2::dim</td></tr>
+<tr class="separator:a8b0f0abc8fceb0b9e69cef1a6b3a7a76"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:aea4e38809c466225dbb49b4219d3d44a"><td class="memItemLeft" align="right" valign="top"><a id="aea4e38809c466225dbb49b4219d3d44a"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1ProductOf2Maps.html">ProductOf2Maps</a> &amp;lhs, const <a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1ProductOf2Maps.html">ProductOf2Maps</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:aea4e38809c466225dbb49b4219d3d44a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename Map1, typename Map2&gt;<br />
+class domain::CoordinateMaps::TimeDependent::ProductOf2Maps&lt; Map1, Map2 &gt;</h3>
+
+<p>Product of two codimension=0 <a class="el" href="namespacedomain_1_1CoordinateMaps.html" title="Contains all coordinate maps.">CoordinateMaps</a>, where one or both must be time-dependent. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Map1</td><td>the map for the first coordinate(s) </td></tr>
+    <tr><td class="paramname">Map2</td><td>the map for the second coordinate(s) </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/CoordinateMaps/TimeDependent/<a class="el" href="TimeDependent_2ProductMaps_8hpp_source.html">ProductMaps.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,317 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::CoordinateMaps::CylindricalEndcap Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1CoordinateMaps.html">CoordinateMaps</a></li><li class="navelem"><a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalEndcap.html">CylindricalEndcap</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classdomain_1_1CoordinateMaps_1_1CylindricalEndcap-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::CoordinateMaps::CylindricalEndcap Class Reference<div class="ingroups"><a class="el" href="group__CoordinateMapsGroup.html">Coordinate Maps</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Map from 3D unit right cylinder to a volume that connects portions of two spherical surfaces.  
+ <a href="classdomain_1_1CoordinateMaps_1_1CylindricalEndcap.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="CylindricalEndcap_8hpp_source.html">CylindricalEndcap.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:aaf3353595b81f7cabad5c0938ff99b42"><td class="memItemLeft" align="right" valign="top"><a id="aaf3353595b81f7cabad5c0938ff99b42"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CylindricalEndcap</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;center_one, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;center_two, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;proj_center, double radius_one, double radius_two, double z_plane) noexcept</td></tr>
+<tr class="separator:aaf3353595b81f7cabad5c0938ff99b42"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72dcec3f04e371a757d148930e318516"><td class="memItemLeft" align="right" valign="top"><a id="a72dcec3f04e371a757d148930e318516"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CylindricalEndcap</b> (<a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalEndcap.html">CylindricalEndcap</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a72dcec3f04e371a757d148930e318516"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af32776595b601545ef112792e66b227c"><td class="memItemLeft" align="right" valign="top"><a id="af32776595b601545ef112792e66b227c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CylindricalEndcap</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalEndcap.html">CylindricalEndcap</a> &amp;)=default</td></tr>
+<tr class="separator:af32776595b601545ef112792e66b227c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa93cce543f58dcbc0069a2891c8d4af4"><td class="memItemLeft" align="right" valign="top"><a id="aa93cce543f58dcbc0069a2891c8d4af4"></a>
+<a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalEndcap.html">CylindricalEndcap</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalEndcap.html">CylindricalEndcap</a> &amp;)=default</td></tr>
+<tr class="separator:aa93cce543f58dcbc0069a2891c8d4af4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a256590a5515ef542ae4fde602d135fc7"><td class="memItemLeft" align="right" valign="top"><a id="a256590a5515ef542ae4fde602d135fc7"></a>
+<a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalEndcap.html">CylindricalEndcap</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalEndcap.html">CylindricalEndcap</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a256590a5515ef542ae4fde602d135fc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad3374ace485067b96900ea6d32e66fc9"><td class="memTemplParams" colspan="2"><a id="ad3374ace485067b96900ea6d32e66fc9"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ad3374ace485067b96900ea6d32e66fc9"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator()</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:ad3374ace485067b96900ea6d32e66fc9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9bcc042f6f2a2f00d0c2ac7abe70d5eb"><td class="memItemLeft" align="right" valign="top"><a id="a9bcc042f6f2a2f00d0c2ac7abe70d5eb"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalEndcap.html#a9bcc042f6f2a2f00d0c2ac7abe70d5eb">inverse</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;target_coords) const noexcept</td></tr>
+<tr class="memdesc:a9bcc042f6f2a2f00d0c2ac7abe70d5eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">The inverse function is only callable with doubles because the inverse might fail if called for a point out of range, and it is unclear what should happen if the inverse were to succeed for some points in a <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> but fail for other points. <br /></td></tr>
+<tr class="separator:a9bcc042f6f2a2f00d0c2ac7abe70d5eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25035d6b58d78490dad828c15c9c450a"><td class="memTemplParams" colspan="2"><a id="a25035d6b58d78490dad828c15c9c450a"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a25035d6b58d78490dad828c15c9c450a"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:a25035d6b58d78490dad828c15c9c450a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7fa9bb13be72b384632e2ec75bd2315"><td class="memTemplParams" colspan="2"><a id="ae7fa9bb13be72b384632e2ec75bd2315"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ae7fa9bb13be72b384632e2ec75bd2315"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>inv_jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:ae7fa9bb13be72b384632e2ec75bd2315"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad68a148c6d35f4a1fa0ac1ee1cf5eecd"><td class="memItemLeft" align="right" valign="top"><a id="ad68a148c6d35f4a1fa0ac1ee1cf5eecd"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:ad68a148c6d35f4a1fa0ac1ee1cf5eecd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a2601d57c5b8375920d9e06e59e635797"><td class="memItemLeft" align="right" valign="top"><a id="a2601d57c5b8375920d9e06e59e635797"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_identity</b> () noexcept</td></tr>
+<tr class="separator:a2601d57c5b8375920d9e06e59e635797"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a66e32df4d514a05a7692691acaf6b7fe"><td class="memItemLeft" align="right" valign="top"><a id="a66e32df4d514a05a7692691acaf6b7fe"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>dim</b> = 3</td></tr>
+<tr class="separator:a66e32df4d514a05a7692691acaf6b7fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a8e215d627dc65cfedc1e75fa0a16cb79"><td class="memItemLeft" align="right" valign="top"><a id="a8e215d627dc65cfedc1e75fa0a16cb79"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalEndcap.html">CylindricalEndcap</a> &amp;lhs, const <a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalEndcap.html">CylindricalEndcap</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a8e215d627dc65cfedc1e75fa0a16cb79"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Map from 3D unit right cylinder to a volume that connects portions of two spherical surfaces. </p>
+<div class="image">
+<object type="image/svg+xml" data="CylindricalEndcap.svg" style="pointer-events: none;"></object>
+<div class="caption">
+A cylinder maps to the shaded region.</div></div>
+<h3>Details</h3>
+<p>Consider two spheres with centers \(C_1\) and \(C_2\), and radii \(R_1\) and \(R_2\). Let sphere 1 be intersected by a plane normal to the \(z\) axis and located at \(z = z_\mathrm{P}\). Also let there be a projection point \(P\).</p>
+<p><a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalEndcap.html" title="Map from 3D unit right cylinder to a volume that connects portions of two spherical surfaces.">CylindricalEndcap</a> maps a 3D unit right cylinder (with coordinates \((\bar{x},\bar{y},\bar{z})\) such that \(-1\leq\bar{z}\leq 1\) and \(\bar{x}^2+\bar{y}^2 \leq 1\)) to the shaded area in the figure above (with coordinates \((x,y,z)\)). The "bottom" of the cylinder \(\bar{z}=-1\) is mapped to the portion of sphere 1 that has \(z \geq z_\mathrm{P}\). Curves of constant \((\bar{x},\bar{y})\) are mapped to portions of lines that pass through \(P\). Along each of these curves, \(\bar{z}=-1\) is mapped to a point on sphere 1 and \(\bar{z}=+1\) is mapped to a point on sphere 2.</p>
+<p>Note that Sphere 1 and Sphere 2 are not equivalent, because the mapped portion of Sphere 1 is bounded by a plane of constant \(z\) but the mapped portion of Sphere 2 is not (except for special choices of \(C_1\), \(C_2\), and \(P\)).</p>
+<p><a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalEndcap.html" title="Map from 3D unit right cylinder to a volume that connects portions of two spherical surfaces.">CylindricalEndcap</a> is intended to be composed with <code><a class="el" href="classdomain_1_1CoordinateMaps_1_1Wedge.html" title="Map from a square or cube to a wedge.">Wedge</a>&lt;2&gt;</code> maps to construct a portion of a cylindrical domain for a binary system.</p>
+<p><a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalEndcap.html" title="Map from 3D unit right cylinder to a volume that connects portions of two spherical surfaces.">CylindricalEndcap</a> is described briefly in the Appendix of <a class="el" href="citelist.html#CITEREF_Buchman:2012dw">[20]</a>. <a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalEndcap.html" title="Map from 3D unit right cylinder to a volume that connects portions of two spherical surfaces.">CylindricalEndcap</a> is used to construct the blocks labeled 'CA wedge', 'EA wedge', 'CB wedge', 'EE wedge', and 'EB wedge' in Figure 20 of that paper. Note that 'CA wedge', 'CB wedge', and 'EE wedge' have Sphere 1 contained in Sphere 2, and 'EA wedge' and 'EB wedge' have Sphere 2 contained in Sphere 1.</p>
+<p><a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalEndcap.html" title="Map from 3D unit right cylinder to a volume that connects portions of two spherical surfaces.">CylindricalEndcap</a> is implemented using <code><a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html" title="Map from  to the volume contained between a 2D surface and the surface of a 2-sphere.">FocallyLiftedMap</a></code> and <code><a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedInnerMaps_1_1Endcap.html" title="A FocallyLiftedInnerMap that maps a 3D unit right cylinder to a volume that connects portions of two ...">FocallyLiftedInnerMaps::Endcap</a></code>; see those classes for details.</p>
+<h3><a class="anchor" id="autotoc_md22"></a>
+Restrictions on map parameters.</h3>
+<p>We demand that either Sphere 1 is fully contained inside Sphere 2, or that Sphere 2 is fully contained inside Sphere 1. It is possible to construct a valid map without this assumption, but the assumption simplifies the code, and the expected use cases obey this restriction.</p>
+<p>We also demand that \(z_\mathrm{P} &gt; C_1^2\), that is, the plane in the above and below figures lies to the right of \(C_1^2\). This restriction not strictly necessary but is made for simplicity.</p>
+<p>The map is invertible only for some choices of the projection point \(P\). Given the above restrictions, the allowed values of \(P\) are illustrated by the following diagram:</p>
+<div class="image">
+<object type="image/svg+xml" data="CylindricalEndcap_Allowed.svg" width="75%" style="pointer-events: none;"></object>
+<div class="caption">
+Allowed region for P.</div></div>
+<p>The plane \(z=z_\mathrm{P}\) intersects sphere 1 on a circle. The cone with apex \(C_1\) that intersects that circle has opening angle \(2\theta\) as shown in the above figure. Construct another cone, the "invertibility cone", with apex \(S\) chosen such that the two cones intersect at right angles on the circle; thus the opening angle of the invertibility cone is \(\pi-2\theta\). A necessary condition for invertibility is that the projection point \(P\) lies inside the invertibility cone, but not between \(S\) and sphere 1. (If \(P\) does not obey this condition, then from the diagram one can find at least one line through \(P\) that twice intersects the surface of sphere 1 with \(z&gt;z_\mathrm{P}\); the inverse map is thus double-valued at those intersection points.) Placing the projection point \(P\) to the right of \(S\) (but inside the invertibility cone) is ok for invertibility.</p>
+<p>In addition to invertibility and the two additional restrictions already mentioned above, we demand a few more restrictions on the map parameters to simplify the logic for the expected use cases and to ensure that jacobians do not get too large. The numbers in the restrictions below were chosen empirically so that the unit tests pass with errors less than 100 times machine roundoff; we do not expect to run into these restrictions in normal usage. We demand:</p>
+<ul>
+<li>\(P\) is not too close to the edge of the invertibility cone. Here we demand that the angle between \(P\) and \(S\) is less than \(0.85 (\pi/2-\theta)\) (note that if this angle is exactly \(\pi/2-\theta\) it is exactly on the invertibility cone); The 0.85 was chosen empirically based on unit tests.</li>
+<li>\(z_\mathrm{P}\) is not too close to the center or the edge of sphere 1. Here we demand that \(0.15 \leq \cos(\theta) \leq 0.95\), where the values 0.15 and 0.95 were chosen empirically based on unit tests.</li>
+<li>\(P\) is contained in sphere 2.</li>
+<li>If sphere 2 is contained in sphere 1, then<ul>
+<li>\(0.1 R_1 \leq R_2 \leq 0.85 (R_1 - |C_1-C_2|)\), This prevents the two spheres from having a very narrow space between them, and it prevents sphere 2 from being very small.</li>
+<li>\(|P - C_2| &lt; 0.1 R_2\), i.e. \(P\) is near the center of sphere 2.</li>
+</ul>
+</li>
+<li>If sphere 1 is contained in sphere 2, then<ul>
+<li>\( R_2 \geq 1.01 (R_1 + |C_1-C_2|)\), where the 1.01 prevents the spheres from (barely) touching.</li>
+<li>If a line segment is drawn between \(P\) and any point on the intersection circle (the circle where sphere 1 intersects the plane \(z=z_\mathrm{P}\)), the angle between the line segment and the z-axis is smaller than \(\pi/3\). </li>
+</ul>
+</li>
+</ul>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/CoordinateMaps/<a class="el" href="CylindricalEndcap_8hpp_source.html">CylindricalEndcap.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

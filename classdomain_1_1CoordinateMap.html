@@ -1,0 +1,437 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::CoordinateMap&lt; SourceFrame, TargetFrame, Maps &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="classdomain_1_1CoordinateMap.html">CoordinateMap</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classdomain_1_1CoordinateMap-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::CoordinateMap&lt; SourceFrame, TargetFrame, Maps &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__CoordinateMapsGroup.html">Coordinate Maps</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A coordinate map or composition of coordinate maps.  
+ <a href="classdomain_1_1CoordinateMap.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="CoordinateMap_8hpp_source.html">CoordinateMap.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:adee300d8e810472aa4d56d8c99648645"><td class="memItemLeft" align="right" valign="top"><a id="adee300d8e810472aa4d56d8c99648645"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>source_frame</b> = SourceFrame</td></tr>
+<tr class="separator:adee300d8e810472aa4d56d8c99648645"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef20b1f39236540af83f10ba38fa3835"><td class="memItemLeft" align="right" valign="top"><a id="aef20b1f39236540af83f10ba38fa3835"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>target_frame</b> = TargetFrame</td></tr>
+<tr class="separator:aef20b1f39236540af83f10ba38fa3835"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62d55c71267a4ef05ceb26a38b4484e7"><td class="memItemLeft" align="right" valign="top"><a id="a62d55c71267a4ef05ceb26a38b4484e7"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>maps_list</b> = tmpl::list&lt; Maps... &gt;</td></tr>
+<tr class="separator:a62d55c71267a4ef05ceb26a38b4484e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classdomain_1_1CoordinateMapBase"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classdomain_1_1CoordinateMapBase')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase&lt; SourceFrame, TargetFrame, CoordinateMaps::map_dim&lt; Maps... &gt; &gt;</a></td></tr>
+<tr class="memitem:a3fdbfbdf70bc4d9ee22fe5c910f1569b inherit pub_types_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="a3fdbfbdf70bc4d9ee22fe5c910f1569b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>source_frame</b> = SourceFrame</td></tr>
+<tr class="separator:a3fdbfbdf70bc4d9ee22fe5c910f1569b inherit pub_types_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29507593307e6927f304b1081819f330 inherit pub_types_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="a29507593307e6927f304b1081819f330"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>target_frame</b> = TargetFrame</td></tr>
+<tr class="separator:a29507593307e6927f304b1081819f330 inherit pub_types_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a48ae7d0aac5a89f400131c671839c6a3"><td class="memItemLeft" align="right" valign="top"><a id="a48ae7d0aac5a89f400131c671839c6a3"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMap.html#a48ae7d0aac5a89f400131c671839c6a3">CoordinateMap</a> ()=default</td></tr>
+<tr class="memdesc:a48ae7d0aac5a89f400131c671839c6a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used for Charm++ serialization. <br /></td></tr>
+<tr class="separator:a48ae7d0aac5a89f400131c671839c6a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7608e9b658b1a85539f4c6a5317aadad"><td class="memItemLeft" align="right" valign="top"><a id="a7608e9b658b1a85539f4c6a5317aadad"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CoordinateMap</b> (const <a class="el" href="classdomain_1_1CoordinateMap.html">CoordinateMap</a> &amp;)=default</td></tr>
+<tr class="separator:a7608e9b658b1a85539f4c6a5317aadad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a623af7d9e7e4f34f5b172120404f3b4f"><td class="memItemLeft" align="right" valign="top"><a id="a623af7d9e7e4f34f5b172120404f3b4f"></a>
+<a class="el" href="classdomain_1_1CoordinateMap.html">CoordinateMap</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1CoordinateMap.html">CoordinateMap</a> &amp;)=default</td></tr>
+<tr class="separator:a623af7d9e7e4f34f5b172120404f3b4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeebe0ab7fae24a1aeaf6b17b9ecab639"><td class="memItemLeft" align="right" valign="top"><a id="aeebe0ab7fae24a1aeaf6b17b9ecab639"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CoordinateMap</b> (<a class="el" href="classdomain_1_1CoordinateMap.html">CoordinateMap</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:aeebe0ab7fae24a1aeaf6b17b9ecab639"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52572c7ac0ebe5529143fdd2c69125b5"><td class="memItemLeft" align="right" valign="top"><a id="a52572c7ac0ebe5529143fdd2c69125b5"></a>
+<a class="el" href="classdomain_1_1CoordinateMap.html">CoordinateMap</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1CoordinateMap.html">CoordinateMap</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a52572c7ac0ebe5529143fdd2c69125b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ada668bea80a111c22bd29f5b04612eb1"><td class="memItemLeft" align="right" valign="top"><a id="ada668bea80a111c22bd29f5b04612eb1"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CoordinateMap</b> (Maps... maps)</td></tr>
+<tr class="separator:ada668bea80a111c22bd29f5b04612eb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26431667ea71ce3824f71249ef21de69"><td class="memItemLeft" align="right" valign="top"><a id="a26431667ea71ce3824f71249ef21de69"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1CoordinateMapBase.html">CoordinateMapBase</a>&lt; SourceFrame, TargetFrame, dim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const override</td></tr>
+<tr class="separator:a26431667ea71ce3824f71249ef21de69"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d5d88d3e7e300371cd2d3d03145a922"><td class="memItemLeft" align="right" valign="top"><a id="a7d5d88d3e7e300371cd2d3d03145a922"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1CoordinateMapBase.html">CoordinateMapBase</a>&lt; SourceFrame, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, dim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_to_grid_frame</b> () const override</td></tr>
+<tr class="separator:a7d5d88d3e7e300371cd2d3d03145a922"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a58a80656ec438ffc3bc3e4ba1d5dc0d0"><td class="memItemLeft" align="right" valign="top"><a id="a58a80656ec438ffc3bc3e4ba1d5dc0d0"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMap.html#a58a80656ec438ffc3bc3e4ba1d5dc0d0">is_identity</a> () const noexcept override</td></tr>
+<tr class="memdesc:a58a80656ec438ffc3bc3e4ba1d5dc0d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>true</code> if the map is the identity. <br /></td></tr>
+<tr class="separator:a58a80656ec438ffc3bc3e4ba1d5dc0d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ffcc3f9b20eb07aac6fc8a22d77f4cf"><td class="memItemLeft" align="right" valign="top"><a id="a8ffcc3f9b20eb07aac6fc8a22d77f4cf"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMap.html#a8ffcc3f9b20eb07aac6fc8a22d77f4cf">inv_jacobian_is_time_dependent</a> () const noexcept override</td></tr>
+<tr class="memdesc:a8ffcc3f9b20eb07aac6fc8a22d77f4cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>true</code> if the inverse Jacobian depends on time. <br /></td></tr>
+<tr class="separator:a8ffcc3f9b20eb07aac6fc8a22d77f4cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a333317b7bd25cf5213fc57ea70fc7666"><td class="memItemLeft" align="right" valign="top"><a id="a333317b7bd25cf5213fc57ea70fc7666"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMap.html#a333317b7bd25cf5213fc57ea70fc7666">jacobian_is_time_dependent</a> () const noexcept override</td></tr>
+<tr class="memdesc:a333317b7bd25cf5213fc57ea70fc7666"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>true</code> if the Jacobian depends on time. <br /></td></tr>
+<tr class="separator:a333317b7bd25cf5213fc57ea70fc7666"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adfe942e051cdbe2aa9438c83f6c16460"><td class="memItemLeft" align="right" valign="top"><a id="adfe942e051cdbe2aa9438c83f6c16460"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_base_template</b> (SINGLE_ARG(<a class="el" href="classdomain_1_1CoordinateMapBase.html">CoordinateMapBase</a>&lt; SourceFrame, TargetFrame, dim &gt;), <a class="el" href="classdomain_1_1CoordinateMap.html">CoordinateMap</a>)</td></tr>
+<tr class="separator:adfe942e051cdbe2aa9438c83f6c16460"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ebce2645ee1333c1c945cf191b181c1"><td class="memItemLeft" align="right" valign="top"><a id="a6ebce2645ee1333c1c945cf191b181c1"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CoordinateMap</b> (CkMigrateMessage *)</td></tr>
+<tr class="separator:a6ebce2645ee1333c1c945cf191b181c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac98c49432ca3915ef0b89995f6b4deb7"><td class="memItemLeft" align="right" valign="top"><a id="ac98c49432ca3915ef0b89995f6b4deb7"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) override</td></tr>
+<tr class="separator:ac98c49432ca3915ef0b89995f6b4deb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ab38ed78b93631c5115cda006e867cb5d"><td class="memItemLeft" align="right" valign="top"><a id="ab38ed78b93631c5115cda006e867cb5d"></a>
+constexpr tnsr::I&lt; double, dim, TargetFrame &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMap.html#ab38ed78b93631c5115cda006e867cb5d">operator()</a> (tnsr::I&lt; double, dim, SourceFrame &gt; source_point, const double time=<a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt; double &gt;::signaling_NaN(), const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time=<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;{}) const noexcept override</td></tr>
+<tr class="memdesc:ab38ed78b93631c5115cda006e867cb5d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the <code>Maps...</code> to the point(s) <code>source_point</code> <br /></td></tr>
+<tr class="separator:ab38ed78b93631c5115cda006e867cb5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0907bc1b2ba2eee3003064cc287c0312"><td class="memItemLeft" align="right" valign="top"><a id="a0907bc1b2ba2eee3003064cc287c0312"></a>
+constexpr tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, dim, TargetFrame &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMap.html#a0907bc1b2ba2eee3003064cc287c0312">operator()</a> (tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, dim, SourceFrame &gt; source_point, const double time=<a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt; double &gt;::signaling_NaN(), const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time=<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;{}) const noexcept override</td></tr>
+<tr class="memdesc:a0907bc1b2ba2eee3003064cc287c0312"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the <code>Maps...</code> to the point(s) <code>source_point</code> <br /></td></tr>
+<tr class="separator:a0907bc1b2ba2eee3003064cc287c0312"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a3cc3617aa24c3c508377eb83053b5585"><td class="memItemLeft" align="right" valign="top"><a id="a3cc3617aa24c3c508377eb83053b5585"></a>
+constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; tnsr::I&lt; double, dim, SourceFrame &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMap.html#a3cc3617aa24c3c508377eb83053b5585">inverse</a> (tnsr::I&lt; double, dim, TargetFrame &gt; target_point, const double time=<a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt; double &gt;::signaling_NaN(), const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time=<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;{}) const noexcept override</td></tr>
+<tr class="memdesc:a3cc3617aa24c3c508377eb83053b5585"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the inverse <code>Maps...</code> to the point(s) <code>target_point</code> <br /></td></tr>
+<tr class="separator:a3cc3617aa24c3c508377eb83053b5585"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a8008ab4bc5ec42c2eb0ed5a5126fef76"><td class="memItemLeft" align="right" valign="top"><a id="a8008ab4bc5ec42c2eb0ed5a5126fef76"></a>
+constexpr InverseJacobian&lt; double, dim, SourceFrame, TargetFrame &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMap.html#a8008ab4bc5ec42c2eb0ed5a5126fef76">inv_jacobian</a> (tnsr::I&lt; double, dim, SourceFrame &gt; source_point, const double time=<a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt; double &gt;::signaling_NaN(), const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time=<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;{}) const noexcept override</td></tr>
+<tr class="memdesc:a8008ab4bc5ec42c2eb0ed5a5126fef76"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the inverse Jacobian of the <code>Maps...</code> at the point(s) <code>source_point</code> <br /></td></tr>
+<tr class="separator:a8008ab4bc5ec42c2eb0ed5a5126fef76"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abb4032a3cb550857afbd50b05377b160"><td class="memItemLeft" align="right" valign="top"><a id="abb4032a3cb550857afbd50b05377b160"></a>
+constexpr InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, dim, SourceFrame, TargetFrame &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMap.html#abb4032a3cb550857afbd50b05377b160">inv_jacobian</a> (tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, dim, SourceFrame &gt; source_point, const double time=<a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt; double &gt;::signaling_NaN(), const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time=<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;{}) const noexcept override</td></tr>
+<tr class="memdesc:abb4032a3cb550857afbd50b05377b160"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the inverse Jacobian of the <code>Maps...</code> at the point(s) <code>source_point</code> <br /></td></tr>
+<tr class="separator:abb4032a3cb550857afbd50b05377b160"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a7f8d625845fda99dee4cb2e2251b9e48"><td class="memItemLeft" align="right" valign="top"><a id="a7f8d625845fda99dee4cb2e2251b9e48"></a>
+constexpr Jacobian&lt; double, dim, SourceFrame, TargetFrame &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMap.html#a7f8d625845fda99dee4cb2e2251b9e48">jacobian</a> (tnsr::I&lt; double, dim, SourceFrame &gt; source_point, const double time=<a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt; double &gt;::signaling_NaN(), const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time=<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;{}) const noexcept override</td></tr>
+<tr class="memdesc:a7f8d625845fda99dee4cb2e2251b9e48"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the Jacobian of the <code>Maps...</code> at the point(s) <code>source_point</code> <br /></td></tr>
+<tr class="separator:a7f8d625845fda99dee4cb2e2251b9e48"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af0efd0b58d08b5cd18cfde5a960715c6"><td class="memItemLeft" align="right" valign="top"><a id="af0efd0b58d08b5cd18cfde5a960715c6"></a>
+constexpr Jacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, dim, SourceFrame, TargetFrame &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMap.html#af0efd0b58d08b5cd18cfde5a960715c6">jacobian</a> (tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, dim, SourceFrame &gt; source_point, const double time=<a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt; double &gt;::signaling_NaN(), const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time=<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;{}) const noexcept override</td></tr>
+<tr class="memdesc:af0efd0b58d08b5cd18cfde5a960715c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the Jacobian of the <code>Maps...</code> at the point(s) <code>source_point</code> <br /></td></tr>
+<tr class="separator:af0efd0b58d08b5cd18cfde5a960715c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a730dc42108032a470da6e6cf36786d2b"><td class="memItemLeft" align="right" valign="top"><a id="a730dc42108032a470da6e6cf36786d2b"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; tnsr::I&lt; double, dim, TargetFrame &gt;, InverseJacobian&lt; double, dim, SourceFrame, TargetFrame &gt;, Jacobian&lt; double, dim, SourceFrame, TargetFrame &gt;, tnsr::I&lt; double, dim, TargetFrame &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMap.html#a730dc42108032a470da6e6cf36786d2b">coords_frame_velocity_jacobians</a> (tnsr::I&lt; double, dim, SourceFrame &gt; source_point, const double time=<a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt; double &gt;::signaling_NaN(), const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time=<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;{}) const noexcept override</td></tr>
+<tr class="memdesc:a730dc42108032a470da6e6cf36786d2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the mapped coordinates, frame velocity, Jacobian, and inverse Jacobian. <br /></td></tr>
+<tr class="separator:a730dc42108032a470da6e6cf36786d2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa198f82cb4e2fad5e642c364bfb56b2d"><td class="memItemLeft" align="right" valign="top"><a id="aa198f82cb4e2fad5e642c364bfb56b2d"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, dim, TargetFrame &gt;, InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, dim, SourceFrame, TargetFrame &gt;, Jacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, dim, SourceFrame, TargetFrame &gt;, tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, dim, TargetFrame &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMap.html#aa198f82cb4e2fad5e642c364bfb56b2d">coords_frame_velocity_jacobians</a> (tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, dim, SourceFrame &gt; source_point, const double time=<a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt; double &gt;::signaling_NaN(), const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time=<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;{}) const noexcept override</td></tr>
+<tr class="memdesc:aa198f82cb4e2fad5e642c364bfb56b2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the mapped coordinates, frame velocity, Jacobian, and inverse Jacobian. <br /></td></tr>
+<tr class="separator:aa198f82cb4e2fad5e642c364bfb56b2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classdomain_1_1CoordinateMapBase"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classdomain_1_1CoordinateMapBase')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase&lt; SourceFrame, TargetFrame, CoordinateMaps::map_dim&lt; Maps... &gt; &gt;</a></td></tr>
+<tr class="memitem:a74e9d061c46aefa20541c58a60495747 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="a74e9d061c46aefa20541c58a60495747"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_abstract</b> (<a class="el" href="classdomain_1_1CoordinateMapBase.html">CoordinateMapBase</a>)</td></tr>
+<tr class="separator:a74e9d061c46aefa20541c58a60495747 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef3964b26024f9e84dd4117e44e9bc14 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="aef3964b26024f9e84dd4117e44e9bc14"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CoordinateMapBase</b> (const <a class="el" href="classdomain_1_1CoordinateMapBase.html">CoordinateMapBase</a> &amp;)=default</td></tr>
+<tr class="separator:aef3964b26024f9e84dd4117e44e9bc14 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb20448fceab555f70374cc622ec277e inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="afb20448fceab555f70374cc622ec277e"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CoordinateMapBase</b> (<a class="el" href="classdomain_1_1CoordinateMapBase.html">CoordinateMapBase</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:afb20448fceab555f70374cc622ec277e inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd50cb8e99885c0a9f899e3c4a0a5736 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="abd50cb8e99885c0a9f899e3c4a0a5736"></a>
+<a class="el" href="classdomain_1_1CoordinateMapBase.html">CoordinateMapBase</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1CoordinateMapBase.html">CoordinateMapBase</a> &amp;)=default</td></tr>
+<tr class="separator:abd50cb8e99885c0a9f899e3c4a0a5736 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade747096e00c6855631fe68043879b73 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="ade747096e00c6855631fe68043879b73"></a>
+<a class="el" href="classdomain_1_1CoordinateMapBase.html">CoordinateMapBase</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1CoordinateMapBase.html">CoordinateMapBase</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:ade747096e00c6855631fe68043879b73 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72a24498afc191281b4c430387257c70 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="a72a24498afc191281b4c430387257c70"></a>
+virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1CoordinateMapBase.html">CoordinateMapBase</a>&lt; SourceFrame, TargetFrame, Dim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const=0</td></tr>
+<tr class="separator:a72a24498afc191281b4c430387257c70 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaff0a7bfa6ba0b493224b3404a4c58ff inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top">virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1CoordinateMapBase.html">CoordinateMapBase</a>&lt; SourceFrame, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, Dim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMapBase.html#aaff0a7bfa6ba0b493224b3404a4c58ff">get_to_grid_frame</a> () const=0</td></tr>
+<tr class="memdesc:aaff0a7bfa6ba0b493224b3404a4c58ff inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the same map but going from <code>SourceFrame</code> to <code><a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a></code>.  <a href="classdomain_1_1CoordinateMapBase.html#aaff0a7bfa6ba0b493224b3404a4c58ff">More...</a><br /></td></tr>
+<tr class="separator:aaff0a7bfa6ba0b493224b3404a4c58ff inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1162902be4ffb9db0efe2764c76a098e inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="a1162902be4ffb9db0efe2764c76a098e"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMapBase.html#a1162902be4ffb9db0efe2764c76a098e">is_identity</a> () const noexcept=0</td></tr>
+<tr class="memdesc:a1162902be4ffb9db0efe2764c76a098e inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>true</code> if the map is the identity. <br /></td></tr>
+<tr class="separator:a1162902be4ffb9db0efe2764c76a098e inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa20467eb96729dbceebaa838009f4ad inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="aaa20467eb96729dbceebaa838009f4ad"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMapBase.html#aaa20467eb96729dbceebaa838009f4ad">inv_jacobian_is_time_dependent</a> () const noexcept=0</td></tr>
+<tr class="memdesc:aaa20467eb96729dbceebaa838009f4ad inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>true</code> if the inverse Jacobian depends on time. <br /></td></tr>
+<tr class="separator:aaa20467eb96729dbceebaa838009f4ad inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af7e1ed182ad9ce3825ce22a87d9cf0e9 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="af7e1ed182ad9ce3825ce22a87d9cf0e9"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMapBase.html#af7e1ed182ad9ce3825ce22a87d9cf0e9">jacobian_is_time_dependent</a> () const noexcept=0</td></tr>
+<tr class="memdesc:af7e1ed182ad9ce3825ce22a87d9cf0e9 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>true</code> if the Jacobian depends on time. <br /></td></tr>
+<tr class="separator:af7e1ed182ad9ce3825ce22a87d9cf0e9 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a34e9e2e3f0bfa699c7680b6cbbef8267 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="a34e9e2e3f0bfa699c7680b6cbbef8267"></a>
+virtual tnsr::I&lt; double, Dim, TargetFrame &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMapBase.html#a34e9e2e3f0bfa699c7680b6cbbef8267">operator()</a> (tnsr::I&lt; double, Dim, SourceFrame &gt; source_point, double time=<a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt; double &gt;::signaling_NaN(), const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time=<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;{}) const noexcept=0</td></tr>
+<tr class="memdesc:a34e9e2e3f0bfa699c7680b6cbbef8267 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the <code>Maps</code> to the point(s) <code>source_point</code> <br /></td></tr>
+<tr class="separator:a34e9e2e3f0bfa699c7680b6cbbef8267 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42e0e2931b41777c1bc50e75e0a7f416 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="a42e0e2931b41777c1bc50e75e0a7f416"></a>
+virtual tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, TargetFrame &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, SourceFrame &gt; source_point, double time=<a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt; double &gt;::signaling_NaN(), const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time=<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;{}) const noexcept=0</td></tr>
+<tr class="memdesc:a42e0e2931b41777c1bc50e75e0a7f416 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the <code>Maps</code> to the point(s) <code>source_point</code> <br /></td></tr>
+<tr class="separator:a42e0e2931b41777c1bc50e75e0a7f416 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa830f142f9c711af0598aa23fe0451b5 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="aa830f142f9c711af0598aa23fe0451b5"></a>
+virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; tnsr::I&lt; double, Dim, SourceFrame &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMapBase.html#aa830f142f9c711af0598aa23fe0451b5">inverse</a> (tnsr::I&lt; double, Dim, TargetFrame &gt; target_point, double time=<a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt; double &gt;::signaling_NaN(), const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time=<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;{}) const noexcept=0</td></tr>
+<tr class="memdesc:aa830f142f9c711af0598aa23fe0451b5 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the inverse <code>Maps</code> to the point(s) <code>target_point</code>. The returned <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a> is invalid if the map is not invertible at <code>target_point</code>, or if <code>target_point</code> can be easily determined to not make sense for the map. An example of the latter is passing a point with a negative value of z into a positive-z Wedge&lt;3&gt; inverse map. The inverse function is only callable with doubles because the inverse might fail if called for a point out of range, and it is unclear what should happen if the inverse were to succeed for some points in a <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> but fail for other points. <br /></td></tr>
+<tr class="separator:aa830f142f9c711af0598aa23fe0451b5 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0168f6c233854e2d54dc1585927a89ad inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="a0168f6c233854e2d54dc1585927a89ad"></a>
+virtual InverseJacobian&lt; double, Dim, SourceFrame, TargetFrame &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMapBase.html#a0168f6c233854e2d54dc1585927a89ad">inv_jacobian</a> (tnsr::I&lt; double, Dim, SourceFrame &gt; source_point, double time=<a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt; double &gt;::signaling_NaN(), const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time=<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;{}) const noexcept=0</td></tr>
+<tr class="memdesc:a0168f6c233854e2d54dc1585927a89ad inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the inverse Jacobian of the <code>Maps</code> at the point(s) <code>source_point</code> <br /></td></tr>
+<tr class="separator:a0168f6c233854e2d54dc1585927a89ad inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d80397a05335831da5ab955e0887390 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="a1d80397a05335831da5ab955e0887390"></a>
+virtual InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, SourceFrame, TargetFrame &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>inv_jacobian</b> (tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, SourceFrame &gt; source_point, double time=<a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt; double &gt;::signaling_NaN(), const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time=<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;{}) const noexcept=0</td></tr>
+<tr class="memdesc:a1d80397a05335831da5ab955e0887390 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the inverse Jacobian of the <code>Maps</code> at the point(s) <code>source_point</code> <br /></td></tr>
+<tr class="separator:a1d80397a05335831da5ab955e0887390 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b81d3f89a329f64ec8ed4ca8ee4ddaa inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="a8b81d3f89a329f64ec8ed4ca8ee4ddaa"></a>
+virtual Jacobian&lt; double, Dim, SourceFrame, TargetFrame &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMapBase.html#a8b81d3f89a329f64ec8ed4ca8ee4ddaa">jacobian</a> (tnsr::I&lt; double, Dim, SourceFrame &gt; source_point, double time=<a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt; double &gt;::signaling_NaN(), const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time=<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;{}) const noexcept=0</td></tr>
+<tr class="memdesc:a8b81d3f89a329f64ec8ed4ca8ee4ddaa inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the Jacobian of the <code>Maps</code> at the point(s) <code>source_point</code> <br /></td></tr>
+<tr class="separator:a8b81d3f89a329f64ec8ed4ca8ee4ddaa inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a02c83082eeeb29d112951611afdd05bc inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="a02c83082eeeb29d112951611afdd05bc"></a>
+virtual Jacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, SourceFrame, TargetFrame &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>jacobian</b> (tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, SourceFrame &gt; source_point, double time=<a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt; double &gt;::signaling_NaN(), const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time=<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;{}) const noexcept=0</td></tr>
+<tr class="memdesc:a02c83082eeeb29d112951611afdd05bc inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the Jacobian of the <code>Maps</code> at the point(s) <code>source_point</code> <br /></td></tr>
+<tr class="separator:a02c83082eeeb29d112951611afdd05bc inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9c2ef71440789bc39fd5e58c2a0fc67 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="ad9c2ef71440789bc39fd5e58c2a0fc67"></a>
+virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; tnsr::I&lt; double, Dim, TargetFrame &gt;, InverseJacobian&lt; double, Dim, SourceFrame, TargetFrame &gt;, Jacobian&lt; double, Dim, SourceFrame, TargetFrame &gt;, tnsr::I&lt; double, Dim, TargetFrame &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMapBase.html#ad9c2ef71440789bc39fd5e58c2a0fc67">coords_frame_velocity_jacobians</a> (tnsr::I&lt; double, Dim, SourceFrame &gt; source_point, double time=<a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt; double &gt;::signaling_NaN(), const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time=<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;{}) const noexcept=0</td></tr>
+<tr class="memdesc:ad9c2ef71440789bc39fd5e58c2a0fc67 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the mapped coordinates, frame velocity, Jacobian, and inverse Jacobian. <br /></td></tr>
+<tr class="separator:ad9c2ef71440789bc39fd5e58c2a0fc67 inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e82875423f945b64f2b3bd8abffe5da inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="a6e82875423f945b64f2b3bd8abffe5da"></a>
+virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, TargetFrame &gt;, InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, SourceFrame, TargetFrame &gt;, Jacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, SourceFrame, TargetFrame &gt;, tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, TargetFrame &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>coords_frame_velocity_jacobians</b> (tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, SourceFrame &gt; source_point, double time=<a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt; double &gt;::signaling_NaN(), const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time=<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;{}) const noexcept=0</td></tr>
+<tr class="memdesc:a6e82875423f945b64f2b3bd8abffe5da inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the mapped coordinates, frame velocity, Jacobian, and inverse Jacobian. <br /></td></tr>
+<tr class="separator:a6e82875423f945b64f2b3bd8abffe5da inherit pub_methods_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a3c49ae20a35a76ef310dc9b22ebef859"><td class="memItemLeft" align="right" valign="top"><a id="a3c49ae20a35a76ef310dc9b22ebef859"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>dim</b> = CoordinateMaps::map_dim&lt;Maps...&gt;</td></tr>
+<tr class="separator:a3c49ae20a35a76ef310dc9b22ebef859"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_static_attribs_classdomain_1_1CoordinateMapBase"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_classdomain_1_1CoordinateMapBase')"><img src="closed.png" alt="-"/>&#160;Static Public Attributes inherited from <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase&lt; SourceFrame, TargetFrame, CoordinateMaps::map_dim&lt; Maps... &gt; &gt;</a></td></tr>
+<tr class="memitem:a2b489400f35e481e00d279b1f002a58a inherit pub_static_attribs_classdomain_1_1CoordinateMapBase"><td class="memItemLeft" align="right" valign="top"><a id="a2b489400f35e481e00d279b1f002a58a"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>dim</b></td></tr>
+<tr class="separator:a2b489400f35e481e00d279b1f002a58a inherit pub_static_attribs_classdomain_1_1CoordinateMapBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:adccb545849cd0a70b3c61332f8c7d3de"><td class="memItemLeft" align="right" valign="top"><a id="adccb545849cd0a70b3c61332f8c7d3de"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classdomain_1_1CoordinateMap.html">CoordinateMap</a> &amp;lhs, const <a class="el" href="classdomain_1_1CoordinateMap.html">CoordinateMap</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:adccb545849cd0a70b3c61332f8c7d3de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2468aaa1ee330525812a5991a27ccdf0"><td class="memTemplParams" colspan="2"><a id="a2468aaa1ee330525812a5991a27ccdf0"></a>
+template&lt;typename NewMap , typename LocalSourceFrame , typename LocalTargetFrame , typename... LocalMaps, size_t... Is&gt; </td></tr>
+<tr class="memitem:a2468aaa1ee330525812a5991a27ccdf0"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classdomain_1_1CoordinateMap.html">CoordinateMap</a>&lt; LocalSourceFrame, LocalTargetFrame, LocalMaps..., NewMap &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>push_back_impl</b> (<a class="el" href="classdomain_1_1CoordinateMap.html">CoordinateMap</a>&lt; LocalSourceFrame, LocalTargetFrame, LocalMaps... &gt; &amp;&amp;old_map, NewMap new_map, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::index_sequence</a>&lt; Is... &gt;) noexcept</td></tr>
+<tr class="separator:a2468aaa1ee330525812a5991a27ccdf0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb5aeab685f7325daf975569d16dc35c"><td class="memTemplParams" colspan="2"><a id="aeb5aeab685f7325daf975569d16dc35c"></a>
+template&lt;typename... NewMaps, typename LocalSourceFrame , typename LocalTargetFrame , typename... LocalMaps, size_t... Is, size_t... Js&gt; </td></tr>
+<tr class="memitem:aeb5aeab685f7325daf975569d16dc35c"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classdomain_1_1CoordinateMap.html">CoordinateMap</a>&lt; LocalSourceFrame, LocalTargetFrame, LocalMaps..., NewMaps... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>push_back_impl</b> (<a class="el" href="classdomain_1_1CoordinateMap.html">CoordinateMap</a>&lt; LocalSourceFrame, LocalTargetFrame, LocalMaps... &gt; &amp;&amp;old_map, <a class="el" href="classdomain_1_1CoordinateMap.html">CoordinateMap</a>&lt; LocalSourceFrame, LocalTargetFrame, NewMaps... &gt; new_map, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::index_sequence</a>&lt; Is... &gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::index_sequence</a>&lt; Js... &gt;) noexcept</td></tr>
+<tr class="separator:aeb5aeab685f7325daf975569d16dc35c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a78bb9d254c7a409f70334ed8169a7c"><td class="memTemplParams" colspan="2"><a id="a1a78bb9d254c7a409f70334ed8169a7c"></a>
+template&lt;typename NewMap , typename LocalSourceFrame , typename LocalTargetFrame , typename... LocalMaps, size_t... Is&gt; </td></tr>
+<tr class="memitem:a1a78bb9d254c7a409f70334ed8169a7c"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classdomain_1_1CoordinateMap.html">CoordinateMap</a>&lt; LocalSourceFrame, LocalTargetFrame, NewMap, LocalMaps... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>push_front_impl</b> (<a class="el" href="classdomain_1_1CoordinateMap.html">CoordinateMap</a>&lt; LocalSourceFrame, LocalTargetFrame, LocalMaps... &gt; &amp;&amp;old_map, NewMap new_map, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::index_sequence</a>&lt; Is... &gt;) noexcept</td></tr>
+<tr class="separator:a1a78bb9d254c7a409f70334ed8169a7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename SourceFrame, typename TargetFrame, typename... Maps&gt;<br />
+class domain::CoordinateMap&lt; SourceFrame, TargetFrame, Maps &gt;</h3>
+
+<p>A coordinate map or composition of coordinate maps. </p>
+<p>Maps coordinates from the <code>SourceFrame</code> to the <code>TargetFrame</code> using the coordinate maps <code>Maps...</code>. The individual maps are applied left to right from the source to the target <a class="el" href="namespaceFrame.html">Frame</a>. The inverse map, as well as Jacobian and inverse Jacobian are also provided. The <code><a class="el" href="classdomain_1_1CoordinateMap.html" title="A coordinate map or composition of coordinate maps.">CoordinateMap</a></code> class must be used even if just wrapping a single coordinate map. It is designed to be an extremely minimal interface to the underlying coordinate maps. For a list of all coordinate maps see the <a class="el" href="namespacedomain_1_1CoordinateMaps.html" title="Contains all coordinate maps.">CoordinateMaps</a> group or namespace.</p>
+<p>Each coordinate map must contain a <code>static constexpr size_t dim</code> variable that is equal to the dimensionality of the map. The Coordinatemap class contains a member <code>static constexpr size_t dim</code>, a type alias <code>source_frame</code>, a type alias <code>target_frame</code> and <code>typelist of the</code>Maps...`. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/CoordinateMaps/<a class="el" href="CoordinateMap_8hpp_source.html">CoordinateMap.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

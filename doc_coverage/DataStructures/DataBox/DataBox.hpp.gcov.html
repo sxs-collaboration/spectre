@@ -1,0 +1,1361 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - 39f3c2b725318dcf91749887b1e61f477736e132 - DataStructures/DataBox/DataBox.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title"> SpECTRE Documentation Coverage Report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">DataStructures/DataBox</a> - DataBox.hpp</td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+             <td class="headerItem">Commit:</td>
+             <td class="headerValue"><a target="_blank" href="https://github.com/sxs-collaboration/spectre/commit/39f3c2b725318dcf91749887b1e61f477736e132">39f3c2b725318dcf91749887b1e61f477736e132</a></td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">28</td>
+            <td class="headerCovTableEntry">49</td>
+            <td class="headerCovTableEntryLo">57.1 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2021-07-13 03:19:40</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineCov">          1 : // Distributed under the MIT License.</span></a>
+<a name="2"><span class="lineNum">       2 </span>            : // See LICENSE.txt for details.</a>
+<a name="3"><span class="lineNum">       3 </span>            : </a>
+<a name="4"><span class="lineNum">       4 </span>            : /// \file</a>
+<a name="5"><span class="lineNum">       5 </span>            : /// Defines classes and functions used for manipulating DataBox's</a>
+<a name="6"><span class="lineNum">       6 </span>            : </a>
+<a name="7"><span class="lineNum">       7 </span>            : #pragma once</a>
+<a name="8"><span class="lineNum">       8 </span>            : </a>
+<a name="9"><span class="lineNum">       9 </span>            : #include &lt;cstddef&gt;</a>
+<a name="10"><span class="lineNum">      10 </span>            : #include &lt;functional&gt;</a>
+<a name="11"><span class="lineNum">      11 </span>            : #include &lt;initializer_list&gt;</a>
+<a name="12"><span class="lineNum">      12 </span>            : #include &lt;ostream&gt;</a>
+<a name="13"><span class="lineNum">      13 </span>            : #include &lt;pup.h&gt;</a>
+<a name="14"><span class="lineNum">      14 </span>            : #include &lt;string&gt;</a>
+<a name="15"><span class="lineNum">      15 </span>            : #include &lt;tuple&gt;</a>
+<a name="16"><span class="lineNum">      16 </span>            : #include &lt;utility&gt;</a>
+<a name="17"><span class="lineNum">      17 </span>            : </a>
+<a name="18"><span class="lineNum">      18 </span>            : #include &quot;DataStructures/DataBox/DataBoxTag.hpp&quot;</a>
+<a name="19"><span class="lineNum">      19 </span>            : #include &quot;DataStructures/DataBox/Item.hpp&quot;</a>
+<a name="20"><span class="lineNum">      20 </span>            : #include &quot;DataStructures/DataBox/SubitemTag.hpp&quot;</a>
+<a name="21"><span class="lineNum">      21 </span>            : #include &quot;DataStructures/DataBox/Subitems.hpp&quot;</a>
+<a name="22"><span class="lineNum">      22 </span>            : #include &quot;DataStructures/DataBox/TagName.hpp&quot;</a>
+<a name="23"><span class="lineNum">      23 </span>            : #include &quot;DataStructures/DataBox/TagTraits.hpp&quot;</a>
+<a name="24"><span class="lineNum">      24 </span>            : #include &quot;Utilities/ErrorHandling/Error.hpp&quot;</a>
+<a name="25"><span class="lineNum">      25 </span>            : #include &quot;Utilities/ErrorHandling/StaticAssert.hpp&quot;</a>
+<a name="26"><span class="lineNum">      26 </span>            : #include &quot;Utilities/ForceInline.hpp&quot;</a>
+<a name="27"><span class="lineNum">      27 </span>            : #include &quot;Utilities/Gsl.hpp&quot;</a>
+<a name="28"><span class="lineNum">      28 </span>            : #include &quot;Utilities/NoSuchType.hpp&quot;</a>
+<a name="29"><span class="lineNum">      29 </span>            : #include &quot;Utilities/Overloader.hpp&quot;</a>
+<a name="30"><span class="lineNum">      30 </span>            : #include &quot;Utilities/Requires.hpp&quot;</a>
+<a name="31"><span class="lineNum">      31 </span>            : #include &quot;Utilities/TMPL.hpp&quot;</a>
+<a name="32"><span class="lineNum">      32 </span>            : #include &quot;Utilities/TypeTraits.hpp&quot;</a>
+<a name="33"><span class="lineNum">      33 </span>            : #include &quot;Utilities/TypeTraits/CreateIsCallable.hpp&quot;</a>
+<a name="34"><span class="lineNum">      34 </span>            : #include &quot;Utilities/TypeTraits/IsA.hpp&quot;</a>
+<a name="35"><span class="lineNum">      35 </span>            : #include &quot;Utilities/TypeTraits/IsCallable.hpp&quot;</a>
+<a name="36"><span class="lineNum">      36 </span>            : </a>
+<a name="37"><span class="lineNum">      37 </span>            : // IWYU pragma: no_forward_declare brigand::get_destination</a>
+<a name="38"><span class="lineNum">      38 </span>            : // IWYU pragma: no_forward_declare brigand::get_source</a>
+<a name="39"><span class="lineNum">      39 </span>            : </a>
+<a name="40"><span class="lineNum">      40 </span>            : /*!</a>
+<a name="41"><span class="lineNum">      41 </span>            :  * \ingroup DataBoxGroup</a>
+<a name="42"><span class="lineNum">      42 </span>            :  * \brief Namespace for DataBox related things</a>
+<a name="43"><span class="lineNum">      43 </span>            :  */</a>
+<a name="44"><span class="lineNum">      44 </span><span class="lineCov">          1 : namespace db {</span></a>
+<a name="45"><span class="lineNum">      45 </span>            : </a>
+<a name="46"><span class="lineNum">      46 </span>            : // Forward declarations</a>
+<a name="47"><span class="lineNum">      47 </span>            : /// \cond</a>
+<a name="48"><span class="lineNum">      48 </span>            : template &lt;typename TagsList&gt;</a>
+<a name="49"><span class="lineNum">      49 </span>            : class DataBox;</a>
+<a name="50"><span class="lineNum">      50 </span>            : /// \endcond</a>
+<a name="51"><span class="lineNum">      51 </span>            : </a>
+<a name="52"><span class="lineNum">      52 </span>            : /// @{</a>
+<a name="53"><span class="lineNum">      53 </span>            : /// \ingroup DataBoxGroup</a>
+<a name="54"><span class="lineNum">      54 </span>            : /// Equal to `true` if `Tag` can be retrieved from a `DataBox` of type</a>
+<a name="55"><span class="lineNum">      55 </span>            : /// `DataBoxType`.</a>
+<a name="56"><span class="lineNum">      56 </span>            : template &lt;typename Tag, typename DataBoxType&gt;</a>
+<a name="57"><span class="lineNum">      57 </span><span class="lineCov">          1 : using tag_is_retrievable = tmpl::any&lt;typename DataBoxType::tags_list,</span></a>
+<a name="58"><span class="lineNum">      58 </span>            :                                      std::is_base_of&lt;tmpl::pin&lt;Tag&gt;, tmpl::_1&gt;&gt;;</a>
+<a name="59"><span class="lineNum">      59 </span>            : </a>
+<a name="60"><span class="lineNum">      60 </span>            : template &lt;typename Tag, typename DataBoxType&gt;</a>
+<a name="61"><span class="lineNum">      61 </span><span class="lineCov">          1 : constexpr bool tag_is_retrievable_v =</span></a>
+<a name="62"><span class="lineNum">      62 </span>            :     tag_is_retrievable&lt;Tag, DataBoxType&gt;::value;</a>
+<a name="63"><span class="lineNum">      63 </span>            : /// @}</a>
+<a name="64"><span class="lineNum">      64 </span>            : </a>
+<a name="65"><span class="lineNum">      65 </span>            : namespace detail {</a>
+<a name="66"><span class="lineNum">      66 </span>            : template &lt;typename Tag&gt;</a>
+<a name="67"><span class="lineNum">      67 </span>            : using has_subitems =</a>
+<a name="68"><span class="lineNum">      68 </span>            :     tmpl::not_&lt;std::is_same&lt;typename Subitems&lt;Tag&gt;::type, tmpl::list&lt;&gt;&gt;&gt;;</a>
+<a name="69"><span class="lineNum">      69 </span>            : </a>
+<a name="70"><span class="lineNum">      70 </span>            : template &lt;typename Tag&gt;</a>
+<a name="71"><span class="lineNum">      71 </span>            : constexpr bool has_subitems_v = has_subitems&lt;Tag&gt;::value;</a>
+<a name="72"><span class="lineNum">      72 </span>            : </a>
+<a name="73"><span class="lineNum">      73 </span>            : template &lt;typename Tag, typename ParentTag&gt;</a>
+<a name="74"><span class="lineNum">      74 </span>            : struct make_subitem_tag {</a>
+<a name="75"><span class="lineNum">      75 </span>            :   using type = ::Tags::Subitem&lt;Tag, ParentTag&gt;;</a>
+<a name="76"><span class="lineNum">      76 </span>            : };</a>
+<a name="77"><span class="lineNum">      77 </span>            : </a>
+<a name="78"><span class="lineNum">      78 </span>            : template &lt;typename Tag, typename = std::nullptr_t&gt;</a>
+<a name="79"><span class="lineNum">      79 </span>            : struct append_subitem_tags {</a>
+<a name="80"><span class="lineNum">      80 </span>            :   using type = tmpl::push_front&lt;typename db::Subitems&lt;Tag&gt;::type, Tag&gt;;</a>
+<a name="81"><span class="lineNum">      81 </span>            : };</a>
+<a name="82"><span class="lineNum">      82 </span>            : </a>
+<a name="83"><span class="lineNum">      83 </span>            : template &lt;typename ParentTag&gt;</a>
+<a name="84"><span class="lineNum">      84 </span>            : struct append_subitem_tags&lt;ParentTag,</a>
+<a name="85"><span class="lineNum">      85 </span>            :                            Requires&lt;has_subitems_v&lt;ParentTag&gt; and</a>
+<a name="86"><span class="lineNum">      86 </span>            :                                     is_immutable_item_tag_v&lt;ParentTag&gt;&gt;&gt; {</a>
+<a name="87"><span class="lineNum">      87 </span>            :   using type = tmpl::push_front&lt;</a>
+<a name="88"><span class="lineNum">      88 </span>            :       tmpl::transform&lt;typename Subitems&lt;ParentTag&gt;::type,</a>
+<a name="89"><span class="lineNum">      89 </span>            :                       make_subitem_tag&lt;tmpl::_1, tmpl::pin&lt;ParentTag&gt;&gt;&gt;,</a>
+<a name="90"><span class="lineNum">      90 </span>            :       ParentTag&gt;;</a>
+<a name="91"><span class="lineNum">      91 </span>            : };</a>
+<a name="92"><span class="lineNum">      92 </span>            : </a>
+<a name="93"><span class="lineNum">      93 </span>            : template &lt;typename Tag&gt;</a>
+<a name="94"><span class="lineNum">      94 </span>            : struct append_subitem_tags&lt;Tag, Requires&lt;not has_subitems_v&lt;Tag&gt;&gt;&gt; {</a>
+<a name="95"><span class="lineNum">      95 </span>            :   using type = tmpl::list&lt;Tag&gt;;</a>
+<a name="96"><span class="lineNum">      96 </span>            : };</a>
+<a name="97"><span class="lineNum">      97 </span>            : </a>
+<a name="98"><span class="lineNum">      98 </span>            : template &lt;typename TagsList&gt;</a>
+<a name="99"><span class="lineNum">      99 </span>            : using expand_subitems =</a>
+<a name="100"><span class="lineNum">     100 </span>            :     tmpl::flatten&lt;tmpl::transform&lt;TagsList, append_subitem_tags&lt;tmpl::_1&gt;&gt;&gt;;</a>
+<a name="101"><span class="lineNum">     101 </span>            : </a>
+<a name="102"><span class="lineNum">     102 </span>            : template &lt;typename ComputeTag, typename ArgumentTag,</a>
+<a name="103"><span class="lineNum">     103 </span>            :           typename FoundArgumentTagInBox&gt;</a>
+<a name="104"><span class="lineNum">     104 </span>            : struct report_missing_compute_item_argument {</a>
+<a name="105"><span class="lineNum">     105 </span>            :   static_assert(std::is_same_v&lt;ComputeTag, void&gt;,</a>
+<a name="106"><span class="lineNum">     106 </span>            :                 &quot;A compute item's argument could not be found in the DataBox &quot;</a>
+<a name="107"><span class="lineNum">     107 </span>            :                 &quot;or was found multiple times.  See the first template argument &quot;</a>
+<a name="108"><span class="lineNum">     108 </span>            :                 &quot;of report_missing_compute_item_argument for the compute item &quot;</a>
+<a name="109"><span class="lineNum">     109 </span>            :                 &quot;and the second for the missing (or duplicated) argument.&quot;);</a>
+<a name="110"><span class="lineNum">     110 </span>            : };</a>
+<a name="111"><span class="lineNum">     111 </span>            : </a>
+<a name="112"><span class="lineNum">     112 </span>            : template &lt;typename ComputeTag, typename ArgumentTag&gt;</a>
+<a name="113"><span class="lineNum">     113 </span>            : struct report_missing_compute_item_argument&lt;ComputeTag, ArgumentTag,</a>
+<a name="114"><span class="lineNum">     114 </span>            :                                             std::true_type&gt; {</a>
+<a name="115"><span class="lineNum">     115 </span>            :   using type = void;</a>
+<a name="116"><span class="lineNum">     116 </span>            : };</a>
+<a name="117"><span class="lineNum">     117 </span>            : </a>
+<a name="118"><span class="lineNum">     118 </span>            : template &lt;typename TagsList, typename ComputeTag&gt;</a>
+<a name="119"><span class="lineNum">     119 </span>            : struct create_compute_tag_argument_edges {</a>
+<a name="120"><span class="lineNum">     120 </span>            : #ifdef SPECTRE_DEBUG</a>
+<a name="121"><span class="lineNum">     121 </span>            :   using argument_check_assertion = tmpl::transform&lt;</a>
+<a name="122"><span class="lineNum">     122 </span>            :       typename ComputeTag::argument_tags,</a>
+<a name="123"><span class="lineNum">     123 </span>            :       report_missing_compute_item_argument&lt;</a>
+<a name="124"><span class="lineNum">     124 </span>            :           tmpl::pin&lt;ComputeTag&gt;, tmpl::_1,</a>
+<a name="125"><span class="lineNum">     125 </span>            :           has_unique_matching_tag&lt;tmpl::pin&lt;TagsList&gt;, tmpl::_1&gt;&gt;&gt;;</a>
+<a name="126"><span class="lineNum">     126 </span>            : #endif  // SPECTRE_DEBUG</a>
+<a name="127"><span class="lineNum">     127 </span>            :   // These edges record that a compute item's value depends on the</a>
+<a name="128"><span class="lineNum">     128 </span>            :   // values of it's arguments.</a>
+<a name="129"><span class="lineNum">     129 </span>            :   using type = tmpl::transform&lt;</a>
+<a name="130"><span class="lineNum">     130 </span>            :       typename ComputeTag::argument_tags,</a>
+<a name="131"><span class="lineNum">     131 </span>            :       tmpl::bind&lt;tmpl::edge,</a>
+<a name="132"><span class="lineNum">     132 </span>            :                  tmpl::bind&lt;first_matching_tag, tmpl::pin&lt;TagsList&gt;, tmpl::_1&gt;,</a>
+<a name="133"><span class="lineNum">     133 </span>            :                  tmpl::pin&lt;ComputeTag&gt;&gt;&gt;;</a>
+<a name="134"><span class="lineNum">     134 </span>            : };</a>
+<a name="135"><span class="lineNum">     135 </span>            : </a>
+<a name="136"><span class="lineNum">     136 </span>            : template &lt;typename Tag&gt;</a>
+<a name="137"><span class="lineNum">     137 </span>            : struct create_subitem_reverse_edge {</a>
+<a name="138"><span class="lineNum">     138 </span>            :   // This edge records that the value of a subitem of a compute</a>
+<a name="139"><span class="lineNum">     139 </span>            :   // item depend on the value of the compute item itself.</a>
+<a name="140"><span class="lineNum">     140 </span>            :   using type = tmpl::edge&lt;typename Tag::parent_tag, Tag&gt;;</a>
+<a name="141"><span class="lineNum">     141 </span>            : };</a>
+<a name="142"><span class="lineNum">     142 </span>            : </a>
+<a name="143"><span class="lineNum">     143 </span>            : template &lt;typename TagsList, typename ComputeTagsList&gt;</a>
+<a name="144"><span class="lineNum">     144 </span>            : struct create_dependency_graph {</a>
+<a name="145"><span class="lineNum">     145 </span>            :   using compute_tag_argument_edges =</a>
+<a name="146"><span class="lineNum">     146 </span>            :       tmpl::join&lt;tmpl::transform&lt;ComputeTagsList,</a>
+<a name="147"><span class="lineNum">     147 </span>            :                                  detail::create_compute_tag_argument_edges&lt;</a>
+<a name="148"><span class="lineNum">     148 </span>            :                                      tmpl::pin&lt;TagsList&gt;, tmpl::_1&gt;&gt;&gt;;</a>
+<a name="149"><span class="lineNum">     149 </span>            :   using subitems_that_need_reverse_edges = tmpl::transform&lt;</a>
+<a name="150"><span class="lineNum">     150 </span>            :       tmpl::filter&lt;compute_tag_argument_edges,</a>
+<a name="151"><span class="lineNum">     151 </span>            :                    db::is_reference_tag&lt;tmpl::get_source&lt;tmpl::_1&gt;&gt;&gt;,</a>
+<a name="152"><span class="lineNum">     152 </span>            :       tmpl::get_source&lt;tmpl::_1&gt;&gt;;</a>
+<a name="153"><span class="lineNum">     153 </span>            :   using subitem_reverse_edges =</a>
+<a name="154"><span class="lineNum">     154 </span>            :       tmpl::transform&lt;subitems_that_need_reverse_edges,</a>
+<a name="155"><span class="lineNum">     155 </span>            :                       create_subitem_reverse_edge&lt;tmpl::_1&gt;&gt;;</a>
+<a name="156"><span class="lineNum">     156 </span>            :   using type = tmpl::append&lt;compute_tag_argument_edges, subitem_reverse_edges&gt;;</a>
+<a name="157"><span class="lineNum">     157 </span>            : };</a>
+<a name="158"><span class="lineNum">     158 </span>            : }  // namespace detail</a>
+<a name="159"><span class="lineNum">     159 </span>            : </a>
+<a name="160"><span class="lineNum">     160 </span>            : /*!</a>
+<a name="161"><span class="lineNum">     161 </span>            :  * \ingroup DataBoxGroup</a>
+<a name="162"><span class="lineNum">     162 </span>            :  * \brief A DataBox stores objects that can be retrieved by using Tags</a>
+<a name="163"><span class="lineNum">     163 </span>            :  * \warning</a>
+<a name="164"><span class="lineNum">     164 </span>            :  * The order of the tags in DataBoxes returned by db::create and</a>
+<a name="165"><span class="lineNum">     165 </span>            :  * db::create_from depends on implementation-defined behavior, and</a>
+<a name="166"><span class="lineNum">     166 </span>            :  * therefore should not be specified in source files. If explicitly</a>
+<a name="167"><span class="lineNum">     167 </span>            :  * naming a DataBox type is necessary they should be generated using</a>
+<a name="168"><span class="lineNum">     168 </span>            :  * db::compute_databox_type.</a>
+<a name="169"><span class="lineNum">     169 </span>            :  *</a>
+<a name="170"><span class="lineNum">     170 </span>            :  * \see db::create db::create_from</a>
+<a name="171"><span class="lineNum">     171 </span>            :  *</a>
+<a name="172"><span class="lineNum">     172 </span>            :  * @tparam Tags list of DataBoxTag's</a>
+<a name="173"><span class="lineNum">     173 </span>            :  */</a>
+<a name="174"><span class="lineNum">     174 </span>            : template &lt;typename... Tags&gt;</a>
+<a name="175"><span class="lineNum">     175 </span><span class="lineCov">          1 : class DataBox&lt;tmpl::list&lt;Tags...&gt;&gt; : private detail::Item&lt;Tags&gt;... {</span></a>
+<a name="176"><span class="lineNum">     176 </span>            : </a>
+<a name="177"><span class="lineNum">     177 </span>            :  public:</a>
+<a name="178"><span class="lineNum">     178 </span>            :   /*!</a>
+<a name="179"><span class="lineNum">     179 </span>            :    * \brief A typelist (`tmpl::list`) of Tags that the DataBox holds</a>
+<a name="180"><span class="lineNum">     180 </span>            :    */</a>
+<a name="181"><span class="lineNum">     181 </span><span class="lineCov">          1 :   using tags_list = tmpl::list&lt;Tags...&gt;;</span></a>
+<a name="182"><span class="lineNum">     182 </span>            : </a>
+<a name="183"><span class="lineNum">     183 </span>            :   /// A list of all the immutable item tags, including their subitems</a>
+<a name="184"><span class="lineNum">     184 </span><span class="lineCov">          1 :   using immutable_item_tags =</span></a>
+<a name="185"><span class="lineNum">     185 </span>            :       tmpl::filter&lt;tags_list, db::is_immutable_item_tag&lt;tmpl::_1&gt;&gt;;</a>
+<a name="186"><span class="lineNum">     186 </span>            : </a>
+<a name="187"><span class="lineNum">     187 </span>            :   /// A list of all the immutable item tags used to create the DataBox</a>
+<a name="188"><span class="lineNum">     188 </span>            :   ///</a>
+<a name="189"><span class="lineNum">     189 </span>            :   /// \note This does not include subitems of immutable items</a>
+<a name="190"><span class="lineNum">     190 </span><span class="lineCov">          1 :   using immutable_item_creation_tags =</span></a>
+<a name="191"><span class="lineNum">     191 </span>            :       tmpl::remove_if&lt;immutable_item_tags, tt::is_a&lt;::Tags::Subitem, tmpl::_1&gt;&gt;;</a>
+<a name="192"><span class="lineNum">     192 </span>            : </a>
+<a name="193"><span class="lineNum">     193 </span>            :   /// A list of all the mutable item tags, including their subitems</a>
+<a name="194"><span class="lineNum">     194 </span><span class="lineCov">          1 :   using mutable_item_tags =</span></a>
+<a name="195"><span class="lineNum">     195 </span>            :       tmpl::filter&lt;tags_list, db::is_mutable_item_tag&lt;tmpl::_1&gt;&gt;;</a>
+<a name="196"><span class="lineNum">     196 </span>            : </a>
+<a name="197"><span class="lineNum">     197 </span>            :   /// A list of the expanded simple subitems, not including the main Subitem</a>
+<a name="198"><span class="lineNum">     198 </span>            :   /// tags themselves.</a>
+<a name="199"><span class="lineNum">     199 </span>            :   ///</a>
+<a name="200"><span class="lineNum">     200 </span>            :   /// Specifically, if there is a `Variables&lt;Tag0, Tag1&gt;`, then this list would</a>
+<a name="201"><span class="lineNum">     201 </span>            :   /// contain `Tag0, Tag1`.</a>
+<a name="202"><span class="lineNum">     202 </span><span class="lineCov">          1 :   using mutable_subitem_tags = tmpl::flatten&lt;</span></a>
+<a name="203"><span class="lineNum">     203 </span>            :       tmpl::transform&lt;mutable_item_tags, db::Subitems&lt;tmpl::_1&gt;&gt;&gt;;</a>
+<a name="204"><span class="lineNum">     204 </span>            : </a>
+<a name="205"><span class="lineNum">     205 </span>            :   /// A list of all the compute item tags</a>
+<a name="206"><span class="lineNum">     206 </span><span class="lineCov">          1 :   using compute_item_tags =</span></a>
+<a name="207"><span class="lineNum">     207 </span>            :       tmpl::filter&lt;immutable_item_tags, db::is_compute_tag&lt;tmpl::_1&gt;&gt;;</a>
+<a name="208"><span class="lineNum">     208 </span>            : </a>
+<a name="209"><span class="lineNum">     209 </span>            :   /// \cond HIDDEN_SYMBOLS</a>
+<a name="210"><span class="lineNum">     210 </span>            :   /*!</a>
+<a name="211"><span class="lineNum">     211 </span>            :    * \note the default constructor is only used for serialization</a>
+<a name="212"><span class="lineNum">     212 </span>            :    */</a>
+<a name="213"><span class="lineNum">     213 </span>            :   DataBox() = default;</a>
+<a name="214"><span class="lineNum">     214 </span>            :   DataBox(DataBox&amp;&amp; rhs) noexcept(</a>
+<a name="215"><span class="lineNum">     215 </span>            :       tmpl2::flat_all_v&lt;</a>
+<a name="216"><span class="lineNum">     216 </span>            :           std::is_nothrow_move_constructible_v&lt;detail::Item&lt;Tags&gt;&gt;...&gt;) =</a>
+<a name="217"><span class="lineNum">     217 </span>            :       default;</a>
+<a name="218"><span class="lineNum">     218 </span>            :   DataBox&amp; operator=(DataBox&amp;&amp; rhs) noexcept(</a>
+<a name="219"><span class="lineNum">     219 </span>            :       tmpl2::flat_all_v&lt;</a>
+<a name="220"><span class="lineNum">     220 </span>            :           std::is_nothrow_move_assignable_v&lt;detail::Item&lt;Tags&gt;&gt;...&gt;) {</a>
+<a name="221"><span class="lineNum">     221 </span>            :     if (&amp;rhs != this) {</a>
+<a name="222"><span class="lineNum">     222 </span>            : #if defined(__GNUC__) &amp;&amp; !defined(__clang__) &amp;&amp; __GNUC__ &lt; 8</a>
+<a name="223"><span class="lineNum">     223 </span>            : #pragma GCC diagnostic push</a>
+<a name="224"><span class="lineNum">     224 </span>            : #pragma GCC diagnostic ignored &quot;-Wmaybe-uninitialized&quot;</a>
+<a name="225"><span class="lineNum">     225 </span>            : #endif  // defined(__GNUC__) &amp;&amp; !defined(__clang__) &amp;&amp; __GNUC__ &lt; 8</a>
+<a name="226"><span class="lineNum">     226 </span>            :       ::expand_pack(</a>
+<a name="227"><span class="lineNum">     227 </span>            :           (get_item&lt;Tags&gt;() = std::move(rhs.template get_item&lt;Tags&gt;()))...);</a>
+<a name="228"><span class="lineNum">     228 </span>            : #if defined(__GNUC__) &amp;&amp; !defined(__clang__) &amp;&amp; __GNUC__ &lt; 8</a>
+<a name="229"><span class="lineNum">     229 </span>            : #pragma GCC diagnostic pop</a>
+<a name="230"><span class="lineNum">     230 </span>            : #endif  // defined(__GNUC__) &amp;&amp; !defined(__clang__) &amp;&amp; __GNUC__ &lt; 8</a>
+<a name="231"><span class="lineNum">     231 </span>            :     }</a>
+<a name="232"><span class="lineNum">     232 </span>            :     return *this;</a>
+<a name="233"><span class="lineNum">     233 </span>            :   }</a>
+<a name="234"><span class="lineNum">     234 </span>            :   DataBox(const DataBox&amp; rhs) = delete;</a>
+<a name="235"><span class="lineNum">     235 </span>            :   DataBox&amp; operator=(const DataBox&amp; rhs) = delete;</a>
+<a name="236"><span class="lineNum">     236 </span>            :   ~DataBox() = default;</a>
+<a name="237"><span class="lineNum">     237 </span>            : </a>
+<a name="238"><span class="lineNum">     238 </span>            :   /// \endcond</a>
+<a name="239"><span class="lineNum">     239 </span>            : </a>
+<a name="240"><span class="lineNum">     240 </span>            :   /// Retrieve the tag `Tag`, should be called by the free function db::get</a>
+<a name="241"><span class="lineNum">     241 </span>            :   template &lt;typename Tag&gt;</a>
+<a name="242"><span class="lineNum">     242 </span><span class="lineCov">          1 :   const auto&amp; get() const noexcept;</span></a>
+<a name="243"><span class="lineNum">     243 </span>            : </a>
+<a name="244"><span class="lineNum">     244 </span>            :   /// Retrieve a mutable reference to the tag `Tag`, should be called</a>
+<a name="245"><span class="lineNum">     245 </span>            :   /// by the free function db::get_mutable_reference</a>
+<a name="246"><span class="lineNum">     246 </span>            :   template &lt;typename Tag&gt;</a>
+<a name="247"><span class="lineNum">     247 </span><span class="lineCov">          1 :   auto&amp; get_mutable_reference() noexcept;</span></a>
+<a name="248"><span class="lineNum">     248 </span>            : </a>
+<a name="249"><span class="lineNum">     249 </span>            :   // clang-tidy: no non-const references</a>
+<a name="250"><span class="lineNum">     250 </span><span class="lineNoCov">          0 :   void pup(PUP::er&amp; p) noexcept {  // NOLINT</span></a>
+<a name="251"><span class="lineNum">     251 </span>            :     using non_subitems_tags =</a>
+<a name="252"><span class="lineNum">     252 </span>            :         tmpl::list_difference&lt;mutable_item_tags,</a>
+<a name="253"><span class="lineNum">     253 </span>            :                               mutable_subitem_tags&gt;;</a>
+<a name="254"><span class="lineNum">     254 </span>            : </a>
+<a name="255"><span class="lineNum">     255 </span>            :     // We do not send subitems for both simple items and compute items since</a>
+<a name="256"><span class="lineNum">     256 </span>            :     // they can be reconstructed very cheaply.</a>
+<a name="257"><span class="lineNum">     257 </span>            :     pup_impl(p, non_subitems_tags{}, immutable_item_creation_tags{});</a>
+<a name="258"><span class="lineNum">     258 </span>            :   }</a>
+<a name="259"><span class="lineNum">     259 </span>            : </a>
+<a name="260"><span class="lineNum">     260 </span>            :   template &lt;typename Box, typename KeepTagsList, typename... AddMutableItemTags,</a>
+<a name="261"><span class="lineNum">     261 </span>            :             typename... AddImmutableItemTags, typename... Args&gt;</a>
+<a name="262"><span class="lineNum">     262 </span><span class="lineNoCov">          0 :   constexpr DataBox(Box&amp;&amp; old_box, KeepTagsList /*meta*/,</span></a>
+<a name="263"><span class="lineNum">     263 </span>            :                     tmpl::list&lt;AddMutableItemTags...&gt; /*meta*/,</a>
+<a name="264"><span class="lineNum">     264 </span>            :                     tmpl::list&lt;AddImmutableItemTags...&gt; /*meta*/,</a>
+<a name="265"><span class="lineNum">     265 </span>            :                     Args&amp;&amp;... args) noexcept;</a>
+<a name="266"><span class="lineNum">     266 </span>            : </a>
+<a name="267"><span class="lineNum">     267 </span>            :   template &lt;typename... AddMutableItemTags, typename AddImmutableItemTagsList,</a>
+<a name="268"><span class="lineNum">     268 </span>            :             typename... Args&gt;</a>
+<a name="269"><span class="lineNum">     269 </span><span class="lineNoCov">          0 :   constexpr DataBox(tmpl::list&lt;AddMutableItemTags...&gt; /*meta*/,</span></a>
+<a name="270"><span class="lineNum">     270 </span>            :                     AddImmutableItemTagsList /*meta*/, Args&amp;&amp;... args) noexcept;</a>
+<a name="271"><span class="lineNum">     271 </span>            : </a>
+<a name="272"><span class="lineNum">     272 </span>            :  private:</a>
+<a name="273"><span class="lineNum">     273 </span>            :   template &lt;typename... MutateTags, typename TagList, typename Invokable,</a>
+<a name="274"><span class="lineNum">     274 </span>            :             typename... Args&gt;</a>
+<a name="275"><span class="lineNum">     275 </span>            :   // clang-tidy: redundant declaration</a>
+<a name="276"><span class="lineNum">     276 </span><span class="lineNoCov">          0 :   friend decltype(auto) mutate(gsl::not_null&lt;DataBox&lt;TagList&gt;*&gt; box,  // NOLINT</span></a>
+<a name="277"><span class="lineNum">     277 </span>            :                                Invokable&amp;&amp; invokable,</a>
+<a name="278"><span class="lineNum">     278 </span>            :                                Args&amp;&amp;... args) noexcept;  // NOLINT</a>
+<a name="279"><span class="lineNum">     279 </span>            : </a>
+<a name="280"><span class="lineNum">     280 </span>            :   // evaluates the compute item corresponding to ComputeTag passing along</a>
+<a name="281"><span class="lineNum">     281 </span>            :   // items fetched via ArgumentTags</a>
+<a name="282"><span class="lineNum">     282 </span>            :   template &lt;typename ComputeTag, typename... ArgumentTags&gt;</a>
+<a name="283"><span class="lineNum">     283 </span><span class="lineNoCov">          0 :   void evaluate_compute_item(tmpl::list&lt;ArgumentTags...&gt; /*meta*/) const</span></a>
+<a name="284"><span class="lineNum">     284 </span>            :       noexcept;</a>
+<a name="285"><span class="lineNum">     285 </span>            : </a>
+<a name="286"><span class="lineNum">     286 </span>            :   // get a constant reference to the item corresponding to Tag</a>
+<a name="287"><span class="lineNum">     287 </span>            :   template &lt;typename Tag&gt;</a>
+<a name="288"><span class="lineNum">     288 </span><span class="lineNoCov">          0 :   const auto&amp; get_item() const noexcept {</span></a>
+<a name="289"><span class="lineNum">     289 </span>            :     return static_cast&lt;const detail::Item&lt;Tag&gt;&amp;&gt;(*this);</a>
+<a name="290"><span class="lineNum">     290 </span>            :   }</a>
+<a name="291"><span class="lineNum">     291 </span>            : </a>
+<a name="292"><span class="lineNum">     292 </span>            :   // get a mutable reference to the item corresponding to Tag</a>
+<a name="293"><span class="lineNum">     293 </span>            :   template &lt;typename Tag&gt;</a>
+<a name="294"><span class="lineNum">     294 </span><span class="lineNoCov">          0 :   auto&amp; get_item() noexcept {</span></a>
+<a name="295"><span class="lineNum">     295 </span>            :     return static_cast&lt;detail::Item&lt;Tag&gt;&amp;&gt;(*this);</a>
+<a name="296"><span class="lineNum">     296 </span>            :   }</a>
+<a name="297"><span class="lineNum">     297 </span>            : </a>
+<a name="298"><span class="lineNum">     298 </span>            :   template &lt;typename ParentTag&gt;</a>
+<a name="299"><span class="lineNum">     299 </span><span class="lineNoCov">          0 :   constexpr void add_mutable_subitems_to_box(tmpl::list&lt;&gt; /*meta*/) noexcept {}</span></a>
+<a name="300"><span class="lineNum">     300 </span>            : </a>
+<a name="301"><span class="lineNum">     301 </span>            :   // add mutable items for the subitems of the item corresponding to ParentTag</a>
+<a name="302"><span class="lineNum">     302 </span>            :   template &lt;typename ParentTag, typename... SubitemTags&gt;</a>
+<a name="303"><span class="lineNum">     303 </span><span class="lineNoCov">          0 :   constexpr void add_mutable_subitems_to_box(</span></a>
+<a name="304"><span class="lineNum">     304 </span>            :       tmpl::list&lt;SubitemTags...&gt; /*meta*/) noexcept;</a>
+<a name="305"><span class="lineNum">     305 </span>            : </a>
+<a name="306"><span class="lineNum">     306 </span>            :   // sets the mutable item corresponding to Tag with the ArgsIndex object in</a>
+<a name="307"><span class="lineNum">     307 </span>            :   // items</a>
+<a name="308"><span class="lineNum">     308 </span>            :   template &lt;size_t ArgsIndex, typename Tag, typename... Ts&gt;</a>
+<a name="309"><span class="lineNum">     309 </span><span class="lineNoCov">          0 :   constexpr char add_mutable_item_to_box(std::tuple&lt;Ts...&gt;&amp; items) noexcept;</span></a>
+<a name="310"><span class="lineNum">     310 </span>            : </a>
+<a name="311"><span class="lineNum">     311 </span>            :   // set the mutable items corresponding to AddMutableItemTags to the</a>
+<a name="312"><span class="lineNum">     312 </span>            :   // appropriate objects from items, and checks the dependencies of the</a>
+<a name="313"><span class="lineNum">     313 </span>            :   // immutable items corresponding to AddImmutableItemTags</a>
+<a name="314"><span class="lineNum">     314 </span>            :   template &lt;typename... Ts, typename... AddMutableItemTags,</a>
+<a name="315"><span class="lineNum">     315 </span>            :             typename... AddImmutableItemTags, size_t... Is&gt;</a>
+<a name="316"><span class="lineNum">     316 </span><span class="lineNoCov">          0 :   void add_items_to_box(std::tuple&lt;Ts...&gt;&amp; items,</span></a>
+<a name="317"><span class="lineNum">     317 </span>            :                         tmpl::list&lt;AddMutableItemTags...&gt; /*meta*/,</a>
+<a name="318"><span class="lineNum">     318 </span>            :                         std::index_sequence&lt;Is...&gt; /*meta*/,</a>
+<a name="319"><span class="lineNum">     319 </span>            :                         tmpl::list&lt;AddImmutableItemTags...&gt; /*meta*/) noexcept;</a>
+<a name="320"><span class="lineNum">     320 </span>            : </a>
+<a name="321"><span class="lineNum">     321 </span>            :   // Merging DataBox's using create_from requires that all instantiations of</a>
+<a name="322"><span class="lineNum">     322 </span>            :   // DataBox be friends with each other.</a>
+<a name="323"><span class="lineNum">     323 </span>            :   template &lt;typename OtherTags&gt;</a>
+<a name="324"><span class="lineNum">     324 </span><span class="lineNoCov">          0 :   friend class DataBox;</span></a>
+<a name="325"><span class="lineNum">     325 </span>            : </a>
+<a name="326"><span class="lineNum">     326 </span>            :   template &lt;typename Box, typename... TagsToCopy&gt;</a>
+<a name="327"><span class="lineNum">     327 </span><span class="lineNoCov">          0 :   constexpr void merge_old_box(Box&amp;&amp; old_box,</span></a>
+<a name="328"><span class="lineNum">     328 </span>            :                                tmpl::list&lt;TagsToCopy...&gt; /*meta*/) noexcept;</a>
+<a name="329"><span class="lineNum">     329 </span>            : </a>
+<a name="330"><span class="lineNum">     330 </span>            :   // clang-tidy: no non-const references</a>
+<a name="331"><span class="lineNum">     331 </span>            :   template &lt;typename... NonSubitemsTags, typename... ComputeTags&gt;</a>
+<a name="332"><span class="lineNum">     332 </span><span class="lineNoCov">          0 :   void pup_impl(PUP::er&amp; p, tmpl::list&lt;NonSubitemsTags...&gt; /*meta*/,  // NOLINT</span></a>
+<a name="333"><span class="lineNum">     333 </span>            :                 tmpl::list&lt;ComputeTags...&gt; /*meta*/) noexcept;</a>
+<a name="334"><span class="lineNum">     334 </span>            : </a>
+<a name="335"><span class="lineNum">     335 </span>            :   // Mutating items in the DataBox</a>
+<a name="336"><span class="lineNum">     336 </span>            :   template &lt;typename ParentTag&gt;</a>
+<a name="337"><span class="lineNum">     337 </span><span class="lineNoCov">          0 :   constexpr void mutate_mutable_subitems(tmpl::list&lt;&gt; /*meta*/) noexcept {}</span></a>
+<a name="338"><span class="lineNum">     338 </span>            : </a>
+<a name="339"><span class="lineNum">     339 </span>            :   template &lt;typename ParentTag, typename... Subtags&gt;</a>
+<a name="340"><span class="lineNum">     340 </span><span class="lineNoCov">          0 :   constexpr void mutate_mutable_subitems(</span></a>
+<a name="341"><span class="lineNum">     341 </span>            :       tmpl::list&lt;Subtags...&gt; /*meta*/) noexcept;</a>
+<a name="342"><span class="lineNum">     342 </span>            : </a>
+<a name="343"><span class="lineNum">     343 </span>            :   template &lt;typename ImmutableItemTag&gt;</a>
+<a name="344"><span class="lineNum">     344 </span><span class="lineNoCov">          0 :   constexpr void reset_compute_item() noexcept;</span></a>
+<a name="345"><span class="lineNum">     345 </span>            : </a>
+<a name="346"><span class="lineNum">     346 </span>            :   template &lt;typename... TagsOfImmutableItemsToReset&gt;</a>
+<a name="347"><span class="lineNum">     347 </span><span class="lineNoCov">          0 :   SPECTRE_ALWAYS_INLINE constexpr void reset_compute_items_after_mutate(</span></a>
+<a name="348"><span class="lineNum">     348 </span>            :       tmpl::list&lt;TagsOfImmutableItemsToReset...&gt; /*meta*/) noexcept;</a>
+<a name="349"><span class="lineNum">     349 </span>            : </a>
+<a name="350"><span class="lineNum">     350 </span><span class="lineNoCov">          0 :   SPECTRE_ALWAYS_INLINE constexpr void reset_compute_items_after_mutate(</span></a>
+<a name="351"><span class="lineNum">     351 </span>            :       tmpl::list&lt;&gt; /*meta*/) noexcept {}</a>
+<a name="352"><span class="lineNum">     352 </span>            :   // End mutating items in the DataBox</a>
+<a name="353"><span class="lineNum">     353 </span>            : </a>
+<a name="354"><span class="lineNum">     354 </span><span class="lineNoCov">          0 :   using edge_list =</span></a>
+<a name="355"><span class="lineNum">     355 </span>            :       typename detail::create_dependency_graph&lt;tags_list,</a>
+<a name="356"><span class="lineNum">     356 </span>            :                                                compute_item_tags&gt;::type;</a>
+<a name="357"><span class="lineNum">     357 </span>            : </a>
+<a name="358"><span class="lineNum">     358 </span><span class="lineNoCov">          0 :   bool mutate_locked_box_{false};</span></a>
+<a name="359"><span class="lineNum">     359 </span>            : };</a>
+<a name="360"><span class="lineNum">     360 </span>            : </a>
+<a name="361"><span class="lineNum">     361 </span>            : namespace detail {</a>
+<a name="362"><span class="lineNum">     362 </span>            : // This function exists so that the user can look at the template</a>
+<a name="363"><span class="lineNum">     363 </span>            : // arguments to find out what triggered the static_assert.</a>
+<a name="364"><span class="lineNum">     364 </span>            : template &lt;typename ImmutableItemTag, typename ArgumentTag, typename TagsList&gt;</a>
+<a name="365"><span class="lineNum">     365 </span>            : constexpr char check_immutable_item_tag_dependency() noexcept {</a>
+<a name="366"><span class="lineNum">     366 </span>            :   using immutable_item_tag_index = tmpl::index_of&lt;TagsList, ImmutableItemTag&gt;;</a>
+<a name="367"><span class="lineNum">     367 </span>            :   static_assert(</a>
+<a name="368"><span class="lineNum">     368 </span>            :       tmpl::less&lt;tmpl::index_if&lt;TagsList,</a>
+<a name="369"><span class="lineNum">     369 </span>            :                                 std::is_same&lt;tmpl::pin&lt;ArgumentTag&gt;, tmpl::_1&gt;,</a>
+<a name="370"><span class="lineNum">     370 </span>            :                                 immutable_item_tag_index&gt;,</a>
+<a name="371"><span class="lineNum">     371 </span>            :                  immutable_item_tag_index&gt;::value,</a>
+<a name="372"><span class="lineNum">     372 </span>            :       &quot;The argument_tags of an immutable item tag must be added before itself. &quot;</a>
+<a name="373"><span class="lineNum">     373 </span>            :       &quot;This is done to ensure no cyclic dependencies arise.  See the first and &quot;</a>
+<a name="374"><span class="lineNum">     374 </span>            :       &quot;second template arguments of check_immutable_item_tag_dependency for &quot;</a>
+<a name="375"><span class="lineNum">     375 </span>            :       &quot;the immutable item tag and its missing (or incorrectly added) argument &quot;</a>
+<a name="376"><span class="lineNum">     376 </span>            :       &quot;tag.  The third template argument is the TagsList of the DataBox (in &quot;</a>
+<a name="377"><span class="lineNum">     377 </span>            :       &quot;which the argument tag should precede the immutable item tag)&quot;);</a>
+<a name="378"><span class="lineNum">     378 </span>            :   return '0';</a>
+<a name="379"><span class="lineNum">     379 </span>            : }</a>
+<a name="380"><span class="lineNum">     380 </span>            : </a>
+<a name="381"><span class="lineNum">     381 </span>            : template &lt;typename ImmutableItemTag, typename TagsList,</a>
+<a name="382"><span class="lineNum">     382 </span>            :           typename... ArgumentsTags&gt;</a>
+<a name="383"><span class="lineNum">     383 </span>            : SPECTRE_ALWAYS_INLINE constexpr void</a>
+<a name="384"><span class="lineNum">     384 </span>            : check_immutable_item_tag_dependencies_impl(</a>
+<a name="385"><span class="lineNum">     385 </span>            :     tmpl::list&lt;ArgumentsTags...&gt; /*meta*/) noexcept {</a>
+<a name="386"><span class="lineNum">     386 </span>            :   DEBUG_STATIC_ASSERT(</a>
+<a name="387"><span class="lineNum">     387 </span>            :       tmpl2::flat_all_v&lt;is_tag_v&lt;ArgumentsTags&gt;...&gt;,</a>
+<a name="388"><span class="lineNum">     388 </span>            :       &quot;Cannot have non-DataBoxTag arguments to a ComputeItem or ReferenceItem. &quot;</a>
+<a name="389"><span class="lineNum">     389 </span>            :       &quot;Please make sure all the specified argument_tags derive from &quot;</a>
+<a name="390"><span class="lineNum">     390 </span>            :       &quot;db::SimpleTag or db::BaseTag.&quot;);</a>
+<a name="391"><span class="lineNum">     391 </span>            :   DEBUG_STATIC_ASSERT(</a>
+<a name="392"><span class="lineNum">     392 </span>            :       not tmpl2::flat_any_v&lt;std::is_same_v&lt;ArgumentsTags, ImmutableItemTag&gt;...&gt;,</a>
+<a name="393"><span class="lineNum">     393 </span>            :       &quot;A ComputeItem cannot take its own Tag as an argument.&quot;);</a>
+<a name="394"><span class="lineNum">     394 </span>            :   expand_pack(detail::check_immutable_item_tag_dependency&lt;</a>
+<a name="395"><span class="lineNum">     395 </span>            :               ImmutableItemTag, ArgumentsTags, TagsList&gt;()...);</a>
+<a name="396"><span class="lineNum">     396 </span>            : }</a>
+<a name="397"><span class="lineNum">     397 </span>            : </a>
+<a name="398"><span class="lineNum">     398 </span>            : template &lt;typename ImmutableItemTag, typename TagsList&gt;</a>
+<a name="399"><span class="lineNum">     399 </span>            : SPECTRE_ALWAYS_INLINE constexpr void</a>
+<a name="400"><span class="lineNum">     400 </span>            : check_immutable_item_tag_dependencies() noexcept {</a>
+<a name="401"><span class="lineNum">     401 </span>            :   check_immutable_item_tag_dependencies_impl&lt;ImmutableItemTag, TagsList&gt;(</a>
+<a name="402"><span class="lineNum">     402 </span>            :       tmpl::transform&lt;typename ImmutableItemTag::argument_tags,</a>
+<a name="403"><span class="lineNum">     403 </span>            :                       tmpl::bind&lt;detail::first_matching_tag,</a>
+<a name="404"><span class="lineNum">     404 </span>            :                                  tmpl::pin&lt;TagsList&gt;, tmpl::_1&gt;&gt;{});</a>
+<a name="405"><span class="lineNum">     405 </span>            : }</a>
+<a name="406"><span class="lineNum">     406 </span>            : }  // namespace detail</a>
+<a name="407"><span class="lineNum">     407 </span>            : </a>
+<a name="408"><span class="lineNum">     408 </span>            : template &lt;typename... Tags&gt;</a>
+<a name="409"><span class="lineNum">     409 </span>            : template &lt;typename ParentTag, typename... SubitemTags&gt;</a>
+<a name="410"><span class="lineNum">     410 </span>            : SPECTRE_ALWAYS_INLINE constexpr void</a>
+<a name="411"><span class="lineNum">     411 </span>            : db::DataBox&lt;tmpl::list&lt;Tags...&gt;&gt;::add_mutable_subitems_to_box(</a>
+<a name="412"><span class="lineNum">     412 </span>            :     tmpl::list&lt;SubitemTags...&gt; /*meta*/) noexcept {</a>
+<a name="413"><span class="lineNum">     413 </span>            :   const auto add_mutable_subitem_to_box = [this](auto tag_v) {</a>
+<a name="414"><span class="lineNum">     414 </span>            :     (void)this;  // Compiler bug warns this is unused</a>
+<a name="415"><span class="lineNum">     415 </span>            :     using subitem_tag = decltype(tag_v);</a>
+<a name="416"><span class="lineNum">     416 </span>            :     get_item&lt;subitem_tag&gt;() =</a>
+<a name="417"><span class="lineNum">     417 </span>            :         detail::Item&lt;subitem_tag&gt;(typename subitem_tag::type{});</a>
+<a name="418"><span class="lineNum">     418 </span>            :     Subitems&lt;ParentTag&gt;::template create_item&lt;subitem_tag&gt;(</a>
+<a name="419"><span class="lineNum">     419 </span>            :         make_not_null(&amp;get_item&lt;ParentTag&gt;().mutate()),</a>
+<a name="420"><span class="lineNum">     420 </span>            :         make_not_null(&amp;get_item&lt;subitem_tag&gt;().mutate()));</a>
+<a name="421"><span class="lineNum">     421 </span>            :   };</a>
+<a name="422"><span class="lineNum">     422 </span>            : </a>
+<a name="423"><span class="lineNum">     423 </span>            :   EXPAND_PACK_LEFT_TO_RIGHT(add_mutable_subitem_to_box(SubitemTags{}));</a>
+<a name="424"><span class="lineNum">     424 </span>            : }</a>
+<a name="425"><span class="lineNum">     425 </span>            : </a>
+<a name="426"><span class="lineNum">     426 </span>            : template &lt;typename... Tags&gt;</a>
+<a name="427"><span class="lineNum">     427 </span>            : template &lt;size_t ArgsIndex, typename MutableItemTag, typename... Ts&gt;</a>
+<a name="428"><span class="lineNum">     428 </span>            : SPECTRE_ALWAYS_INLINE constexpr char</a>
+<a name="429"><span class="lineNum">     429 </span>            : db::DataBox&lt;tmpl::list&lt;Tags...&gt;&gt;::add_mutable_item_to_box(</a>
+<a name="430"><span class="lineNum">     430 </span>            :     std::tuple&lt;Ts...&gt;&amp; items) noexcept {</a>
+<a name="431"><span class="lineNum">     431 </span>            :   using ArgType = std::tuple_element_t&lt;ArgsIndex, std::tuple&lt;Ts...&gt;&gt;;</a>
+<a name="432"><span class="lineNum">     432 </span>            :   get_item&lt;MutableItemTag&gt;() = detail::Item&lt;MutableItemTag&gt;(</a>
+<a name="433"><span class="lineNum">     433 </span>            :       std::forward&lt;ArgType&gt;(std::get&lt;ArgsIndex&gt;(items)));</a>
+<a name="434"><span class="lineNum">     434 </span>            :   add_mutable_subitems_to_box&lt;MutableItemTag&gt;(</a>
+<a name="435"><span class="lineNum">     435 </span>            :       typename Subitems&lt;MutableItemTag&gt;::type{});</a>
+<a name="436"><span class="lineNum">     436 </span>            :   return '0';  // must return in constexpr function</a>
+<a name="437"><span class="lineNum">     437 </span>            : }</a>
+<a name="438"><span class="lineNum">     438 </span>            : </a>
+<a name="439"><span class="lineNum">     439 </span>            : // Add items or compute items to the TaggedDeferredTuple `data`. If</a>
+<a name="440"><span class="lineNum">     440 </span>            : // `AddItemTags...` is an empty pack then only compute items are added, while if</a>
+<a name="441"><span class="lineNum">     441 </span>            : // `AddComputeTags...` is an empty pack only items are added. Items are</a>
+<a name="442"><span class="lineNum">     442 </span>            : // always added before compute items.</a>
+<a name="443"><span class="lineNum">     443 </span>            : template &lt;typename... Tags&gt;</a>
+<a name="444"><span class="lineNum">     444 </span>            : template &lt;typename... Ts, typename... AddMutableItemTags,</a>
+<a name="445"><span class="lineNum">     445 </span>            :           typename... AddImmutableItemTags, size_t... Is&gt;</a>
+<a name="446"><span class="lineNum">     446 </span>            : SPECTRE_ALWAYS_INLINE void DataBox&lt;tmpl::list&lt;Tags...&gt;&gt;::add_items_to_box(</a>
+<a name="447"><span class="lineNum">     447 </span>            :     std::tuple&lt;Ts...&gt;&amp; items, tmpl::list&lt;AddMutableItemTags...&gt; /*meta*/,</a>
+<a name="448"><span class="lineNum">     448 </span>            :     std::index_sequence&lt;Is...&gt; /*meta*/,</a>
+<a name="449"><span class="lineNum">     449 </span>            :     tmpl::list&lt;AddImmutableItemTags...&gt; /*meta*/) noexcept {</a>
+<a name="450"><span class="lineNum">     450 </span>            :   expand_pack(add_mutable_item_to_box&lt;Is, AddMutableItemTags&gt;(items)...);</a>
+<a name="451"><span class="lineNum">     451 </span>            :   EXPAND_PACK_LEFT_TO_RIGHT(</a>
+<a name="452"><span class="lineNum">     452 </span>            :       detail::check_immutable_item_tag_dependencies&lt;AddImmutableItemTags,</a>
+<a name="453"><span class="lineNum">     453 </span>            :                                                     tags_list&gt;());</a>
+<a name="454"><span class="lineNum">     454 </span>            : }</a>
+<a name="455"><span class="lineNum">     455 </span>            : </a>
+<a name="456"><span class="lineNum">     456 </span>            : namespace detail {</a>
+<a name="457"><span class="lineNum">     457 </span>            : // This function (and its unused template argument) exist so that</a>
+<a name="458"><span class="lineNum">     458 </span>            : // users can see what tag has the wrong type when the static_assert</a>
+<a name="459"><span class="lineNum">     459 </span>            : // fails.</a>
+<a name="460"><span class="lineNum">     460 </span>            : template &lt;typename Tag, typename TagType, typename SuppliedType&gt;</a>
+<a name="461"><span class="lineNum">     461 </span>            : constexpr int check_initialization_argument_type() noexcept {</a>
+<a name="462"><span class="lineNum">     462 </span>            :   static_assert(std::is_same_v&lt;TagType, SuppliedType&gt;,</a>
+<a name="463"><span class="lineNum">     463 </span>            :                 &quot;The type of each Tag must be the same as the type being &quot;</a>
+<a name="464"><span class="lineNum">     464 </span>            :                 &quot;passed into the function creating the new DataBox.  See the &quot;</a>
+<a name="465"><span class="lineNum">     465 </span>            :                 &quot;template parameters of check_initialization_argument_type for &quot;</a>
+<a name="466"><span class="lineNum">     466 </span>            :                 &quot;the tag, expected type, and supplied type.&quot;);</a>
+<a name="467"><span class="lineNum">     467 </span>            :   return 0;</a>
+<a name="468"><span class="lineNum">     468 </span>            : }</a>
+<a name="469"><span class="lineNum">     469 </span>            : }  // namespace detail</a>
+<a name="470"><span class="lineNum">     470 </span>            : </a>
+<a name="471"><span class="lineNum">     471 </span>            : /// \cond</a>
+<a name="472"><span class="lineNum">     472 </span>            : template &lt;typename... Tags&gt;</a>
+<a name="473"><span class="lineNum">     473 </span>            : template &lt;typename... AddMutableItemTags, typename AddImmutableItemTagsList,</a>
+<a name="474"><span class="lineNum">     474 </span>            :           typename... Args&gt;</a>
+<a name="475"><span class="lineNum">     475 </span>            : constexpr DataBox&lt;tmpl::list&lt;Tags...&gt;&gt;::DataBox(</a>
+<a name="476"><span class="lineNum">     476 </span>            :     tmpl::list&lt;AddMutableItemTags...&gt; /*meta*/,</a>
+<a name="477"><span class="lineNum">     477 </span>            :     AddImmutableItemTagsList /*meta*/, Args&amp;&amp;... args) noexcept {</a>
+<a name="478"><span class="lineNum">     478 </span>            :   DEBUG_STATIC_ASSERT(sizeof...(AddMutableItemTags) == sizeof...(Args),</a>
+<a name="479"><span class="lineNum">     479 </span>            :                       &quot;Must pass in as many arguments as AddTags&quot;);</a>
+<a name="480"><span class="lineNum">     480 </span>            : #ifdef SPECTRE_DEBUG</a>
+<a name="481"><span class="lineNum">     481 </span>            :   // The check_argument_type call is very expensive compared to the majority of</a>
+<a name="482"><span class="lineNum">     482 </span>            :   // DataBox</a>
+<a name="483"><span class="lineNum">     483 </span>            :   expand_pack(detail::check_initialization_argument_type&lt;</a>
+<a name="484"><span class="lineNum">     484 </span>            :               AddMutableItemTags, typename AddMutableItemTags::type,</a>
+<a name="485"><span class="lineNum">     485 </span>            :               std::decay_t&lt;Args&gt;&gt;()...);</a>
+<a name="486"><span class="lineNum">     486 </span>            : #endif  // SPECTRE_DEBUG</a>
+<a name="487"><span class="lineNum">     487 </span>            : </a>
+<a name="488"><span class="lineNum">     488 </span>            :   std::tuple&lt;Args&amp;&amp;...&gt; args_tuple(std::forward&lt;Args&gt;(args)...);</a>
+<a name="489"><span class="lineNum">     489 </span>            :   add_items_to_box(args_tuple, tmpl::list&lt;AddMutableItemTags...&gt;{},</a>
+<a name="490"><span class="lineNum">     490 </span>            :                    std::make_index_sequence&lt;sizeof...(AddMutableItemTags)&gt;{},</a>
+<a name="491"><span class="lineNum">     491 </span>            :                    AddImmutableItemTagsList{});</a>
+<a name="492"><span class="lineNum">     492 </span>            : }</a>
+<a name="493"><span class="lineNum">     493 </span>            : </a>
+<a name="494"><span class="lineNum">     494 </span>            : ////////////////////////////////////////////////////////////////</a>
+<a name="495"><span class="lineNum">     495 </span>            : // Construct DataBox from an existing one</a>
+<a name="496"><span class="lineNum">     496 </span>            : template &lt;typename... Tags&gt;</a>
+<a name="497"><span class="lineNum">     497 </span>            : template &lt;typename Box, typename... TagsToCopy&gt;</a>
+<a name="498"><span class="lineNum">     498 </span>            : constexpr void DataBox&lt;tmpl::list&lt;Tags...&gt;&gt;::merge_old_box(</a>
+<a name="499"><span class="lineNum">     499 </span>            :     Box&amp;&amp; old_box, tmpl::list&lt;TagsToCopy...&gt; /*meta*/) noexcept {</a>
+<a name="500"><span class="lineNum">     500 </span>            :   EXPAND_PACK_LEFT_TO_RIGHT(get_item&lt;TagsToCopy&gt;() = std::move(</a>
+<a name="501"><span class="lineNum">     501 </span>            :                                 old_box.template get_item&lt;TagsToCopy&gt;()));</a>
+<a name="502"><span class="lineNum">     502 </span>            : }</a>
+<a name="503"><span class="lineNum">     503 </span>            : </a>
+<a name="504"><span class="lineNum">     504 </span>            : template &lt;typename... Tags&gt;</a>
+<a name="505"><span class="lineNum">     505 </span>            : template &lt;typename Box, typename KeepTagsList, typename... AddMutableItemTags,</a>
+<a name="506"><span class="lineNum">     506 </span>            :           typename... AddImmutableItemTags, typename... Args&gt;</a>
+<a name="507"><span class="lineNum">     507 </span>            : constexpr DataBox&lt;tmpl::list&lt;Tags...&gt;&gt;::DataBox(</a>
+<a name="508"><span class="lineNum">     508 </span>            :     Box&amp;&amp; old_box, KeepTagsList /*meta*/,</a>
+<a name="509"><span class="lineNum">     509 </span>            :     tmpl::list&lt;AddMutableItemTags...&gt; /*meta*/,</a>
+<a name="510"><span class="lineNum">     510 </span>            :     tmpl::list&lt;AddImmutableItemTags...&gt; /*meta*/, Args&amp;&amp;... args) noexcept {</a>
+<a name="511"><span class="lineNum">     511 </span>            : #ifdef SPECTRE_DEBUG</a>
+<a name="512"><span class="lineNum">     512 </span>            :   expand_pack(detail::check_initialization_argument_type&lt;</a>
+<a name="513"><span class="lineNum">     513 </span>            :               AddMutableItemTags, typename AddMutableItemTags::type,</a>
+<a name="514"><span class="lineNum">     514 </span>            :               std::decay_t&lt;Args&gt;&gt;()...);</a>
+<a name="515"><span class="lineNum">     515 </span>            : #endif  // SPECTRE_DEBUG</a>
+<a name="516"><span class="lineNum">     516 </span>            : </a>
+<a name="517"><span class="lineNum">     517 </span>            :   merge_old_box(std::forward&lt;Box&gt;(old_box), KeepTagsList{});</a>
+<a name="518"><span class="lineNum">     518 </span>            : </a>
+<a name="519"><span class="lineNum">     519 </span>            :   std::tuple&lt;Args&amp;&amp;...&gt; args_tuple(std::forward&lt;Args&gt;(args)...);</a>
+<a name="520"><span class="lineNum">     520 </span>            : </a>
+<a name="521"><span class="lineNum">     521 </span>            :   add_items_to_box(args_tuple, tmpl::list&lt;AddMutableItemTags...&gt;{},</a>
+<a name="522"><span class="lineNum">     522 </span>            :                    std::make_index_sequence&lt;sizeof...(AddMutableItemTags)&gt;{},</a>
+<a name="523"><span class="lineNum">     523 </span>            :                    tmpl::list&lt;AddImmutableItemTags...&gt;{});</a>
+<a name="524"><span class="lineNum">     524 </span>            : }</a>
+<a name="525"><span class="lineNum">     525 </span>            : /// \endcond</a>
+<a name="526"><span class="lineNum">     526 </span>            : </a>
+<a name="527"><span class="lineNum">     527 </span>            : ////////////////////////////////////////////////////////////////</a>
+<a name="528"><span class="lineNum">     528 </span>            : // Serialization of DataBox</a>
+<a name="529"><span class="lineNum">     529 </span>            : </a>
+<a name="530"><span class="lineNum">     530 </span>            : template &lt;typename... Tags&gt;</a>
+<a name="531"><span class="lineNum">     531 </span>            : template &lt;typename... NonSubitemsTags, typename... ComputeTags&gt;</a>
+<a name="532"><span class="lineNum">     532 </span>            : void DataBox&lt;tmpl::list&lt;Tags...&gt;&gt;::pup_impl(</a>
+<a name="533"><span class="lineNum">     533 </span>            :     PUP::er&amp; p, tmpl::list&lt;NonSubitemsTags...&gt; /*meta*/,</a>
+<a name="534"><span class="lineNum">     534 </span>            :     tmpl::list&lt;ComputeTags...&gt; /*meta*/) noexcept {</a>
+<a name="535"><span class="lineNum">     535 </span>            :   const auto pup_simple_item = [&amp;p, this ](auto current_tag) noexcept {</a>
+<a name="536"><span class="lineNum">     536 </span>            :     (void)this;  // Compiler bug warning this capture is not used</a>
+<a name="537"><span class="lineNum">     537 </span>            :     using tag = decltype(current_tag);</a>
+<a name="538"><span class="lineNum">     538 </span>            :     if (p.isUnpacking()) {</a>
+<a name="539"><span class="lineNum">     539 </span>            :       typename tag::type t{};</a>
+<a name="540"><span class="lineNum">     540 </span>            :       p | t;</a>
+<a name="541"><span class="lineNum">     541 </span>            :       get_item&lt;tag&gt;() = detail::Item&lt;tag&gt;(std::move(t));</a>
+<a name="542"><span class="lineNum">     542 </span>            :       add_mutable_subitems_to_box&lt;tag&gt;(typename Subitems&lt;tag&gt;::type{});</a>
+<a name="543"><span class="lineNum">     543 </span>            :     } else {</a>
+<a name="544"><span class="lineNum">     544 </span>            :       p | get_item&lt;tag&gt;().mutate();</a>
+<a name="545"><span class="lineNum">     545 </span>            :     }</a>
+<a name="546"><span class="lineNum">     546 </span>            :   };</a>
+<a name="547"><span class="lineNum">     547 </span>            :   (void)pup_simple_item;  // Silence GCC warning about unused variable</a>
+<a name="548"><span class="lineNum">     548 </span>            :   EXPAND_PACK_LEFT_TO_RIGHT(pup_simple_item(NonSubitemsTags{}));</a>
+<a name="549"><span class="lineNum">     549 </span>            : </a>
+<a name="550"><span class="lineNum">     550 </span>            :   EXPAND_PACK_LEFT_TO_RIGHT(get_item&lt;ComputeTags&gt;().pup(p));</a>
+<a name="551"><span class="lineNum">     551 </span>            : }</a>
+<a name="552"><span class="lineNum">     552 </span>            : </a>
+<a name="553"><span class="lineNum">     553 </span>            : ////////////////////////////////////////////////////////////////</a>
+<a name="554"><span class="lineNum">     554 </span>            : // Mutating items in the DataBox</a>
+<a name="555"><span class="lineNum">     555 </span>            : // Classes and functions necessary for db::mutate to work</a>
+<a name="556"><span class="lineNum">     556 </span>            : template &lt;typename... Tags&gt;</a>
+<a name="557"><span class="lineNum">     557 </span>            : template &lt;typename ImmutableItemTag&gt;</a>
+<a name="558"><span class="lineNum">     558 </span>            : SPECTRE_ALWAYS_INLINE constexpr void</a>
+<a name="559"><span class="lineNum">     559 </span>            : DataBox&lt;tmpl::list&lt;Tags...&gt;&gt;::reset_compute_item() noexcept {</a>
+<a name="560"><span class="lineNum">     560 </span>            :   // reference items do not need to be reset</a>
+<a name="561"><span class="lineNum">     561 </span>            :   if constexpr (db::is_compute_tag_v&lt;ImmutableItemTag&gt;) {</a>
+<a name="562"><span class="lineNum">     562 </span>            :     get_item&lt;ImmutableItemTag&gt;().reset();</a>
+<a name="563"><span class="lineNum">     563 </span>            :   }</a>
+<a name="564"><span class="lineNum">     564 </span>            : }</a>
+<a name="565"><span class="lineNum">     565 </span>            : </a>
+<a name="566"><span class="lineNum">     566 </span>            : // This function recursively calls itself to reset all compute items</a>
+<a name="567"><span class="lineNum">     567 </span>            : // that depended upon the mutated items.  It starts with</a>
+<a name="568"><span class="lineNum">     568 </span>            : // TagsOfImmutableItemsToReset as the tags of the immutable items that directly</a>
+<a name="569"><span class="lineNum">     569 </span>            : // depended upon the mutated items.  This function resets the compute items in</a>
+<a name="570"><span class="lineNum">     570 </span>            : // TagsOfImmutableItemsToReset and then constructs the list of immutable items</a>
+<a name="571"><span class="lineNum">     571 </span>            : // that directly depend on TagsOfImmutableItemsToReset which will become the</a>
+<a name="572"><span class="lineNum">     572 </span>            : // TagsOfImmutableItemsToReset on the next invocation of the function.  The</a>
+<a name="573"><span class="lineNum">     573 </span>            : // recursion terminates when TagsOfImmutableItemsToReset becomes an empty list</a>
+<a name="574"><span class="lineNum">     574 </span>            : // (using the function overload inlined above in the definition of DataBox).</a>
+<a name="575"><span class="lineNum">     575 </span>            : template &lt;typename... Tags&gt;</a>
+<a name="576"><span class="lineNum">     576 </span>            : template &lt;typename... TagsOfImmutableItemsToReset&gt;</a>
+<a name="577"><span class="lineNum">     577 </span>            : SPECTRE_ALWAYS_INLINE constexpr void</a>
+<a name="578"><span class="lineNum">     578 </span>            : db::DataBox&lt;tmpl::list&lt;Tags...&gt;&gt;::reset_compute_items_after_mutate(</a>
+<a name="579"><span class="lineNum">     579 </span>            :     tmpl::list&lt;TagsOfImmutableItemsToReset...&gt; /*meta*/) noexcept {</a>
+<a name="580"><span class="lineNum">     580 </span>            :   EXPAND_PACK_LEFT_TO_RIGHT(reset_compute_item&lt;TagsOfImmutableItemsToReset&gt;());</a>
+<a name="581"><span class="lineNum">     581 </span>            :   using current_tags_to_reset = tmpl::list&lt;TagsOfImmutableItemsToReset...&gt;;</a>
+<a name="582"><span class="lineNum">     582 </span>            :   using next_compute_tags_to_reset = tmpl::list_difference&lt;</a>
+<a name="583"><span class="lineNum">     583 </span>            :       tmpl::remove_duplicates&lt;tmpl::transform&lt;</a>
+<a name="584"><span class="lineNum">     584 </span>            :           tmpl::append&lt;</a>
+<a name="585"><span class="lineNum">     585 </span>            :               tmpl::filter&lt;typename DataBox&lt;tmpl::list&lt;Tags...&gt;&gt;::edge_list,</a>
+<a name="586"><span class="lineNum">     586 </span>            :                            std::is_same&lt;tmpl::pin&lt;TagsOfImmutableItemsToReset&gt;,</a>
+<a name="587"><span class="lineNum">     587 </span>            :                                         tmpl::get_source&lt;tmpl::_1&gt;&gt;&gt;...&gt;,</a>
+<a name="588"><span class="lineNum">     588 </span>            :           tmpl::get_destination&lt;tmpl::_1&gt;&gt;&gt;,</a>
+<a name="589"><span class="lineNum">     589 </span>            :       current_tags_to_reset&gt;;</a>
+<a name="590"><span class="lineNum">     590 </span>            :   reset_compute_items_after_mutate(next_compute_tags_to_reset{});</a>
+<a name="591"><span class="lineNum">     591 </span>            : }</a>
+<a name="592"><span class="lineNum">     592 </span>            : </a>
+<a name="593"><span class="lineNum">     593 </span>            : template &lt;typename... Tags&gt;</a>
+<a name="594"><span class="lineNum">     594 </span>            : template &lt;typename ParentTag, typename... Subtags&gt;</a>
+<a name="595"><span class="lineNum">     595 </span>            : SPECTRE_ALWAYS_INLINE constexpr void</a>
+<a name="596"><span class="lineNum">     596 </span>            : db::DataBox&lt;tmpl::list&lt;Tags...&gt;&gt;::mutate_mutable_subitems(</a>
+<a name="597"><span class="lineNum">     597 </span>            :     tmpl::list&lt;Subtags...&gt; /*meta*/) noexcept {</a>
+<a name="598"><span class="lineNum">     598 </span>            :   const auto helper = [this](auto tag_v) noexcept {</a>
+<a name="599"><span class="lineNum">     599 </span>            :     (void)this;  // Compiler bug warns about unused this capture</a>
+<a name="600"><span class="lineNum">     600 </span>            :     using tag = decltype(tag_v);</a>
+<a name="601"><span class="lineNum">     601 </span>            :       Subitems&lt;ParentTag&gt;::template create_item&lt;tag&gt;(</a>
+<a name="602"><span class="lineNum">     602 </span>            :           make_not_null(&amp;get_item&lt;ParentTag&gt;().mutate()),</a>
+<a name="603"><span class="lineNum">     603 </span>            :           make_not_null(&amp;get_item&lt;tag&gt;().mutate()));</a>
+<a name="604"><span class="lineNum">     604 </span>            :   };</a>
+<a name="605"><span class="lineNum">     605 </span>            : </a>
+<a name="606"><span class="lineNum">     606 </span>            :   EXPAND_PACK_LEFT_TO_RIGHT(helper(Subtags{}));</a>
+<a name="607"><span class="lineNum">     607 </span>            : }</a>
+<a name="608"><span class="lineNum">     608 </span>            : </a>
+<a name="609"><span class="lineNum">     609 </span>            : /*!</a>
+<a name="610"><span class="lineNum">     610 </span>            :  * \ingroup DataBoxGroup</a>
+<a name="611"><span class="lineNum">     611 </span>            :  * \brief Allows changing the state of one or more non-computed elements in</a>
+<a name="612"><span class="lineNum">     612 </span>            :  * the DataBox</a>
+<a name="613"><span class="lineNum">     613 </span>            :  *</a>
+<a name="614"><span class="lineNum">     614 </span>            :  * `mutate()`'s first argument is the DataBox from which to retrieve the tags</a>
+<a name="615"><span class="lineNum">     615 </span>            :  * `MutateTags`. The objects corresponding to the `MutateTags` are then passed</a>
+<a name="616"><span class="lineNum">     616 </span>            :  * to `invokable`, which is a lambda or a function object taking as many</a>
+<a name="617"><span class="lineNum">     617 </span>            :  * arguments as there are `MutateTags` and with the arguments being of types</a>
+<a name="618"><span class="lineNum">     618 </span>            :  * `gsl::not_null&lt;db::item_type&lt;MutateTags&gt;*&gt;...`. Inside the `invokable` no</a>
+<a name="619"><span class="lineNum">     619 </span>            :  * items can be retrieved from the DataBox `box`. This is to avoid confusing</a>
+<a name="620"><span class="lineNum">     620 </span>            :  * subtleties with order of evaluation of compute items, as well as dangling</a>
+<a name="621"><span class="lineNum">     621 </span>            :  * references. If an `invokable` needs read access to items in `box` they should</a>
+<a name="622"><span class="lineNum">     622 </span>            :  * be passed as additional arguments to `mutate`. Capturing them by reference in</a>
+<a name="623"><span class="lineNum">     623 </span>            :  * a lambda does not work because of a bug in GCC 6.3 and earlier. For a</a>
+<a name="624"><span class="lineNum">     624 </span>            :  * function object the read-only items can also be stored as const references</a>
+<a name="625"><span class="lineNum">     625 </span>            :  * inside the object by passing `db::get&lt;TAG&gt;(t)` to the constructor.</a>
+<a name="626"><span class="lineNum">     626 </span>            :  *</a>
+<a name="627"><span class="lineNum">     627 </span>            :  * \example</a>
+<a name="628"><span class="lineNum">     628 </span>            :  * \snippet Test_DataBox.cpp databox_mutate_example</a>
+<a name="629"><span class="lineNum">     629 </span>            :  *</a>
+<a name="630"><span class="lineNum">     630 </span>            :  * The `invokable` may have function return values, and any returns are</a>
+<a name="631"><span class="lineNum">     631 </span>            :  * forwarded as returns to the `db::mutate` call.</a>
+<a name="632"><span class="lineNum">     632 </span>            :  *</a>
+<a name="633"><span class="lineNum">     633 </span>            :  * \warning Using `db::mutate` returns to obtain non-const references or</a>
+<a name="634"><span class="lineNum">     634 </span>            :  * pointers to box items is potentially very dangerous. The \ref DataBoxGroup</a>
+<a name="635"><span class="lineNum">     635 </span>            :  * &quot;DataBox&quot; cannot track any subsequent changes to quantities that have been</a>
+<a name="636"><span class="lineNum">     636 </span>            :  * &quot;unsafely&quot; extracted in this manner, so we consider it undefined behavior to</a>
+<a name="637"><span class="lineNum">     637 </span>            :  * return pointers or references to \ref DataBoxGroup &quot;DataBox&quot; contents.</a>
+<a name="638"><span class="lineNum">     638 </span>            :  */</a>
+<a name="639"><span class="lineNum">     639 </span>            : template &lt;typename... MutateTags, typename TagList, typename Invokable,</a>
+<a name="640"><span class="lineNum">     640 </span>            :           typename... Args&gt;</a>
+<a name="641"><span class="lineNum">     641 </span><span class="lineCov">          1 : decltype(auto) mutate(const gsl::not_null&lt;DataBox&lt;TagList&gt;*&gt; box,</span></a>
+<a name="642"><span class="lineNum">     642 </span>            :                       Invokable&amp;&amp; invokable, Args&amp;&amp;... args) noexcept {</a>
+<a name="643"><span class="lineNum">     643 </span>            :   static_assert(</a>
+<a name="644"><span class="lineNum">     644 </span>            :       tmpl2::flat_all_v&lt;</a>
+<a name="645"><span class="lineNum">     645 </span>            :           detail::has_unique_matching_tag_v&lt;TagList, MutateTags&gt;...&gt;,</a>
+<a name="646"><span class="lineNum">     646 </span>            :       &quot;One of the tags being mutated could not be found in the DataBox or &quot;</a>
+<a name="647"><span class="lineNum">     647 </span>            :       &quot;is a base tag identifying more than one tag.&quot;);</a>
+<a name="648"><span class="lineNum">     648 </span>            :   static_assert(tmpl2::flat_all_v&lt;tmpl::list_contains_v&lt;</a>
+<a name="649"><span class="lineNum">     649 </span>            :                     typename DataBox&lt;TagList&gt;::mutable_item_tags,</a>
+<a name="650"><span class="lineNum">     650 </span>            :                     detail::first_matching_tag&lt;TagList, MutateTags&gt;&gt;...&gt;,</a>
+<a name="651"><span class="lineNum">     651 </span>            :                 &quot;Can only mutate mutable items&quot;);</a>
+<a name="652"><span class="lineNum">     652 </span>            :   if (UNLIKELY(box-&gt;mutate_locked_box_)) {</a>
+<a name="653"><span class="lineNum">     653 </span>            :     ERROR(</a>
+<a name="654"><span class="lineNum">     654 </span>            :         &quot;Unable to mutate a DataBox that is already being mutated. This &quot;</a>
+<a name="655"><span class="lineNum">     655 </span>            :         &quot;error occurs when mutating a DataBox from inside the invokable &quot;</a>
+<a name="656"><span class="lineNum">     656 </span>            :         &quot;passed to the mutate function.&quot;);</a>
+<a name="657"><span class="lineNum">     657 </span>            :   }</a>
+<a name="658"><span class="lineNum">     658 </span>            :   box-&gt;mutate_locked_box_ = true;</a>
+<a name="659"><span class="lineNum">     659 </span>            :   using mutate_tags_list =</a>
+<a name="660"><span class="lineNum">     660 </span>            :       tmpl::list&lt;detail::first_matching_tag&lt;TagList, MutateTags&gt;...&gt;;</a>
+<a name="661"><span class="lineNum">     661 </span>            :   // For all the tags in the DataBox, check if one of their subtags is</a>
+<a name="662"><span class="lineNum">     662 </span>            :   // being mutated and if so add the parent to the list of tags</a>
+<a name="663"><span class="lineNum">     663 </span>            :   // being mutated. Then, remove any tags that would be passed</a>
+<a name="664"><span class="lineNum">     664 </span>            :   // multiple times.</a>
+<a name="665"><span class="lineNum">     665 </span>            :   using extra_mutated_tags = tmpl::list_difference&lt;</a>
+<a name="666"><span class="lineNum">     666 </span>            :       tmpl::filter&lt;TagList,</a>
+<a name="667"><span class="lineNum">     667 </span>            :                    tmpl::bind&lt;tmpl::found, Subitems&lt;tmpl::_1&gt;,</a>
+<a name="668"><span class="lineNum">     668 </span>            :                               tmpl::pin&lt;tmpl::bind&lt;tmpl::list_contains,</a>
+<a name="669"><span class="lineNum">     669 </span>            :                                                    tmpl::pin&lt;mutate_tags_list&gt;,</a>
+<a name="670"><span class="lineNum">     670 </span>            :                                                    tmpl::_1&gt;&gt;&gt;&gt;,</a>
+<a name="671"><span class="lineNum">     671 </span>            :       mutate_tags_list&gt;;</a>
+<a name="672"><span class="lineNum">     672 </span>            :   // Extract the subtags inside the MutateTags and reset compute items</a>
+<a name="673"><span class="lineNum">     673 </span>            :   // depending on those too.</a>
+<a name="674"><span class="lineNum">     674 </span>            :   using full_mutated_items =</a>
+<a name="675"><span class="lineNum">     675 </span>            :       tmpl::append&lt;detail::expand_subitems&lt;mutate_tags_list&gt;,</a>
+<a name="676"><span class="lineNum">     676 </span>            :                    extra_mutated_tags&gt;;</a>
+<a name="677"><span class="lineNum">     677 </span>            : </a>
+<a name="678"><span class="lineNum">     678 </span>            :   using first_compute_items_to_reset = tmpl::remove_duplicates&lt;</a>
+<a name="679"><span class="lineNum">     679 </span>            :       tmpl::transform&lt;tmpl::filter&lt;typename DataBox&lt;TagList&gt;::edge_list,</a>
+<a name="680"><span class="lineNum">     680 </span>            :                                    tmpl::bind&lt;tmpl::list_contains,</a>
+<a name="681"><span class="lineNum">     681 </span>            :                                               tmpl::pin&lt;full_mutated_items&gt;,</a>
+<a name="682"><span class="lineNum">     682 </span>            :                                               tmpl::get_source&lt;tmpl::_1&gt;&gt;&gt;,</a>
+<a name="683"><span class="lineNum">     683 </span>            :                       tmpl::get_destination&lt;tmpl::_1&gt;&gt;&gt;;</a>
+<a name="684"><span class="lineNum">     684 </span>            :   if constexpr (not std::is_same_v&lt;</a>
+<a name="685"><span class="lineNum">     685 </span>            :                     decltype(invokable(</a>
+<a name="686"><span class="lineNum">     686 </span>            :                         make_not_null(</a>
+<a name="687"><span class="lineNum">     687 </span>            :                             &amp;box-&gt;template get_item&lt;detail::first_matching_tag&lt;</a>
+<a name="688"><span class="lineNum">     688 </span>            :                                  TagList, MutateTags&gt;&gt;()</a>
+<a name="689"><span class="lineNum">     689 </span>            :                                  .mutate())...,</a>
+<a name="690"><span class="lineNum">     690 </span>            :                         std::forward&lt;Args&gt;(args)...)),</a>
+<a name="691"><span class="lineNum">     691 </span>            :                     void&gt;) {</a>
+<a name="692"><span class="lineNum">     692 </span>            :     decltype(auto) return_value = invokable(</a>
+<a name="693"><span class="lineNum">     693 </span>            :         make_not_null(&amp;box-&gt;template get_item&lt;</a>
+<a name="694"><span class="lineNum">     694 </span>            :                               detail::first_matching_tag&lt;TagList, MutateTags&gt;&gt;()</a>
+<a name="695"><span class="lineNum">     695 </span>            :                            .mutate())...,</a>
+<a name="696"><span class="lineNum">     696 </span>            :         std::forward&lt;Args&gt;(args)...);</a>
+<a name="697"><span class="lineNum">     697 </span>            : </a>
+<a name="698"><span class="lineNum">     698 </span>            :     EXPAND_PACK_LEFT_TO_RIGHT(box-&gt;template mutate_mutable_subitems&lt;MutateTags&gt;(</a>
+<a name="699"><span class="lineNum">     699 </span>            :         typename Subitems&lt;MutateTags&gt;::type{}));</a>
+<a name="700"><span class="lineNum">     700 </span>            :     box-&gt;template reset_compute_items_after_mutate(</a>
+<a name="701"><span class="lineNum">     701 </span>            :         first_compute_items_to_reset{});</a>
+<a name="702"><span class="lineNum">     702 </span>            : </a>
+<a name="703"><span class="lineNum">     703 </span>            :     box-&gt;mutate_locked_box_ = false;</a>
+<a name="704"><span class="lineNum">     704 </span>            :     return return_value;</a>
+<a name="705"><span class="lineNum">     705 </span>            :   } else {</a>
+<a name="706"><span class="lineNum">     706 </span>            :     invokable(</a>
+<a name="707"><span class="lineNum">     707 </span>            :         make_not_null(&amp;box-&gt;template get_item&lt;</a>
+<a name="708"><span class="lineNum">     708 </span>            :                               detail::first_matching_tag&lt;TagList, MutateTags&gt;&gt;()</a>
+<a name="709"><span class="lineNum">     709 </span>            :                            .mutate())...,</a>
+<a name="710"><span class="lineNum">     710 </span>            :         std::forward&lt;Args&gt;(args)...);</a>
+<a name="711"><span class="lineNum">     711 </span>            : </a>
+<a name="712"><span class="lineNum">     712 </span>            :     EXPAND_PACK_LEFT_TO_RIGHT(box-&gt;template mutate_mutable_subitems&lt;MutateTags&gt;(</a>
+<a name="713"><span class="lineNum">     713 </span>            :         typename Subitems&lt;MutateTags&gt;::type{}));</a>
+<a name="714"><span class="lineNum">     714 </span>            :     box-&gt;template reset_compute_items_after_mutate(</a>
+<a name="715"><span class="lineNum">     715 </span>            :         first_compute_items_to_reset{});</a>
+<a name="716"><span class="lineNum">     716 </span>            : </a>
+<a name="717"><span class="lineNum">     717 </span>            :     box-&gt;mutate_locked_box_ = false;</a>
+<a name="718"><span class="lineNum">     718 </span>            :   }</a>
+<a name="719"><span class="lineNum">     719 </span>            : }</a>
+<a name="720"><span class="lineNum">     720 </span>            : </a>
+<a name="721"><span class="lineNum">     721 </span>            : ////////////////////////////////////////////////////////////////</a>
+<a name="722"><span class="lineNum">     722 </span>            : // Retrieving items from the DataBox</a>
+<a name="723"><span class="lineNum">     723 </span>            : </a>
+<a name="724"><span class="lineNum">     724 </span>            : /// \cond</a>
+<a name="725"><span class="lineNum">     725 </span>            : template &lt;typename... Tags&gt;</a>
+<a name="726"><span class="lineNum">     726 </span>            : template &lt;typename ComputeTag, typename... ArgumentTags&gt;</a>
+<a name="727"><span class="lineNum">     727 </span>            : void DataBox&lt;tmpl::list&lt;Tags...&gt;&gt;::evaluate_compute_item(</a>
+<a name="728"><span class="lineNum">     728 </span>            :     tmpl::list&lt;ArgumentTags...&gt; /*meta*/) const noexcept {</a>
+<a name="729"><span class="lineNum">     729 </span>            :   get_item&lt;ComputeTag&gt;().evaluate(get&lt;ArgumentTags&gt;()...);</a>
+<a name="730"><span class="lineNum">     730 </span>            : }</a>
+<a name="731"><span class="lineNum">     731 </span>            : </a>
+<a name="732"><span class="lineNum">     732 </span>            : template &lt;typename... Tags&gt;</a>
+<a name="733"><span class="lineNum">     733 </span>            : template &lt;typename Tag&gt;</a>
+<a name="734"><span class="lineNum">     734 </span>            : const auto&amp; DataBox&lt;tmpl::list&lt;Tags...&gt;&gt;::get() const noexcept {</a>
+<a name="735"><span class="lineNum">     735 </span>            :   if constexpr (std::is_same_v&lt;Tag, ::Tags::DataBox&gt;) {</a>
+<a name="736"><span class="lineNum">     736 </span>            :     if (UNLIKELY(mutate_locked_box_)) {</a>
+<a name="737"><span class="lineNum">     737 </span>            :       ERROR(</a>
+<a name="738"><span class="lineNum">     738 </span>            :           &quot;Unable to retrieve a (compute) item 'DataBox' from the DataBox from &quot;</a>
+<a name="739"><span class="lineNum">     739 </span>            :           &quot;within a call to mutate. You must pass these either through the &quot;</a>
+<a name="740"><span class="lineNum">     740 </span>            :           &quot;capture list of the lambda or the constructor of a class, this &quot;</a>
+<a name="741"><span class="lineNum">     741 </span>            :           &quot;restriction exists to avoid complexity.&quot;);</a>
+<a name="742"><span class="lineNum">     742 </span>            :     }</a>
+<a name="743"><span class="lineNum">     743 </span>            :     return *this;</a>
+<a name="744"><span class="lineNum">     744 </span>            :   } else {</a>
+<a name="745"><span class="lineNum">     745 </span>            :     DEBUG_STATIC_ASSERT(</a>
+<a name="746"><span class="lineNum">     746 </span>            :         not detail::has_no_matching_tag_v&lt;tags_list, Tag&gt;,</a>
+<a name="747"><span class="lineNum">     747 </span>            :         &quot;Found no tags in the DataBox that match the tag being retrieved.&quot;);</a>
+<a name="748"><span class="lineNum">     748 </span>            :     DEBUG_STATIC_ASSERT(</a>
+<a name="749"><span class="lineNum">     749 </span>            :         detail::has_unique_matching_tag_v&lt;tags_list, Tag&gt;,</a>
+<a name="750"><span class="lineNum">     750 </span>            :         &quot;Found more than one tag in the DataBox that matches the tag &quot;</a>
+<a name="751"><span class="lineNum">     751 </span>            :         &quot;being retrieved. This happens because more than one tag with the same &quot;</a>
+<a name="752"><span class="lineNum">     752 </span>            :         &quot;base (class) tag was added to the DataBox.&quot;);</a>
+<a name="753"><span class="lineNum">     753 </span>            :     using item_tag = detail::first_matching_tag&lt;tags_list, Tag&gt;;</a>
+<a name="754"><span class="lineNum">     754 </span>            :     if (UNLIKELY(mutate_locked_box_)) {</a>
+<a name="755"><span class="lineNum">     755 </span>            :       ERROR(&quot;Unable to retrieve a (compute) item '&quot;</a>
+<a name="756"><span class="lineNum">     756 </span>            :             &lt;&lt; db::tag_name&lt;item_tag&gt;()</a>
+<a name="757"><span class="lineNum">     757 </span>            :             &lt;&lt; &quot;' from the DataBox from within a &quot;</a>
+<a name="758"><span class="lineNum">     758 </span>            :                &quot;call to mutate. You must pass these either through the capture &quot;</a>
+<a name="759"><span class="lineNum">     759 </span>            :                &quot;list of the lambda or the constructor of a class, this &quot;</a>
+<a name="760"><span class="lineNum">     760 </span>            :                &quot;restriction exists to avoid complexity.&quot;);</a>
+<a name="761"><span class="lineNum">     761 </span>            :     }</a>
+<a name="762"><span class="lineNum">     762 </span>            :     if constexpr (detail::Item&lt;item_tag&gt;::item_type ==</a>
+<a name="763"><span class="lineNum">     763 </span>            :                   detail::ItemType::Reference) {</a>
+<a name="764"><span class="lineNum">     764 </span>            :       return item_tag::get(get&lt;typename item_tag::parent_tag&gt;());</a>
+<a name="765"><span class="lineNum">     765 </span>            :     } else {</a>
+<a name="766"><span class="lineNum">     766 </span>            :       if constexpr (detail::Item&lt;item_tag&gt;::item_type ==</a>
+<a name="767"><span class="lineNum">     767 </span>            :                     detail::ItemType::Compute) {</a>
+<a name="768"><span class="lineNum">     768 </span>            :         if (not get_item&lt;item_tag&gt;().evaluated()) {</a>
+<a name="769"><span class="lineNum">     769 </span>            :           evaluate_compute_item&lt;item_tag&gt;(typename item_tag::argument_tags{});</a>
+<a name="770"><span class="lineNum">     770 </span>            :         }</a>
+<a name="771"><span class="lineNum">     771 </span>            :       }</a>
+<a name="772"><span class="lineNum">     772 </span>            :       if constexpr (tt::is_a_v&lt;std::unique_ptr, typename item_tag::type&gt;) {</a>
+<a name="773"><span class="lineNum">     773 </span>            :         return *(get_item&lt;item_tag&gt;().get());</a>
+<a name="774"><span class="lineNum">     774 </span>            :       } else {</a>
+<a name="775"><span class="lineNum">     775 </span>            :         return get_item&lt;item_tag&gt;().get();</a>
+<a name="776"><span class="lineNum">     776 </span>            :       }</a>
+<a name="777"><span class="lineNum">     777 </span>            :     }</a>
+<a name="778"><span class="lineNum">     778 </span>            :   }</a>
+<a name="779"><span class="lineNum">     779 </span>            : }</a>
+<a name="780"><span class="lineNum">     780 </span>            : /// \endcond</a>
+<a name="781"><span class="lineNum">     781 </span>            : </a>
+<a name="782"><span class="lineNum">     782 </span>            : /*!</a>
+<a name="783"><span class="lineNum">     783 </span>            :  * \ingroup DataBoxGroup</a>
+<a name="784"><span class="lineNum">     784 </span>            :  * \brief Retrieve the item with tag `Tag` from the DataBox</a>
+<a name="785"><span class="lineNum">     785 </span>            :  * \requires Type `Tag` is one of the Tags corresponding to an object stored in</a>
+<a name="786"><span class="lineNum">     786 </span>            :  * the DataBox</a>
+<a name="787"><span class="lineNum">     787 </span>            :  *</a>
+<a name="788"><span class="lineNum">     788 </span>            :  * \return The object corresponding to the tag `Tag`</a>
+<a name="789"><span class="lineNum">     789 </span>            :  */</a>
+<a name="790"><span class="lineNum">     790 </span>            : template &lt;typename Tag, typename TagList&gt;</a>
+<a name="791"><span class="lineNum">     791 </span><span class="lineCov">          1 : SPECTRE_ALWAYS_INLINE const auto&amp; get(const DataBox&lt;TagList&gt;&amp; box) noexcept {</span></a>
+<a name="792"><span class="lineNum">     792 </span>            :   return box.template get&lt;Tag&gt;();</a>
+<a name="793"><span class="lineNum">     793 </span>            : }</a>
+<a name="794"><span class="lineNum">     794 </span>            : </a>
+<a name="795"><span class="lineNum">     795 </span>            : template &lt;typename... Tags&gt;</a>
+<a name="796"><span class="lineNum">     796 </span>            : template &lt;typename Tag&gt;</a>
+<a name="797"><span class="lineNum">     797 </span>            : auto&amp; DataBox&lt;tmpl::list&lt;Tags...&gt;&gt;::get_mutable_reference() noexcept {</a>
+<a name="798"><span class="lineNum">     798 </span>            :   DEBUG_STATIC_ASSERT(</a>
+<a name="799"><span class="lineNum">     799 </span>            :       not detail::has_no_matching_tag_v&lt;tmpl::list&lt;Tags...&gt;, Tag&gt;,</a>
+<a name="800"><span class="lineNum">     800 </span>            :       &quot;Found no tags in the DataBox that match the tag being retrieved.&quot;);</a>
+<a name="801"><span class="lineNum">     801 </span>            :   DEBUG_STATIC_ASSERT(</a>
+<a name="802"><span class="lineNum">     802 </span>            :       detail::has_unique_matching_tag_v&lt;tmpl::list&lt;Tags...&gt;, Tag&gt;,</a>
+<a name="803"><span class="lineNum">     803 </span>            :       &quot;Found more than one tag in the DataBox that matches the tag &quot;</a>
+<a name="804"><span class="lineNum">     804 </span>            :       &quot;being retrieved. This happens because more than one tag with the same &quot;</a>
+<a name="805"><span class="lineNum">     805 </span>            :       &quot;base (class) tag was added to the DataBox.&quot;);</a>
+<a name="806"><span class="lineNum">     806 </span>            : </a>
+<a name="807"><span class="lineNum">     807 </span>            :   using item_tag = detail::first_matching_tag&lt;tmpl::list&lt;Tags...&gt;, Tag&gt;;</a>
+<a name="808"><span class="lineNum">     808 </span>            : </a>
+<a name="809"><span class="lineNum">     809 </span>            :   DEBUG_STATIC_ASSERT(tmpl::list_contains_v&lt;mutable_item_tags, item_tag&gt;,</a>
+<a name="810"><span class="lineNum">     810 </span>            :                       &quot;Can only mutate mutable items&quot;);</a>
+<a name="811"><span class="lineNum">     811 </span>            : </a>
+<a name="812"><span class="lineNum">     812 </span>            :   DEBUG_STATIC_ASSERT(</a>
+<a name="813"><span class="lineNum">     813 </span>            :       not (... or</a>
+<a name="814"><span class="lineNum">     814 </span>            :            tmpl::list_contains_v&lt;typename Subitems&lt;Tags&gt;::type, item_tag&gt;),</a>
+<a name="815"><span class="lineNum">     815 </span>            :       &quot;Cannot extract references to subitems&quot;);</a>
+<a name="816"><span class="lineNum">     816 </span>            :   DEBUG_STATIC_ASSERT(not detail::has_subitems_v&lt;item_tag&gt;,</a>
+<a name="817"><span class="lineNum">     817 </span>            :                       &quot;Cannot extract references to items with subitems.&quot;);</a>
+<a name="818"><span class="lineNum">     818 </span>            : </a>
+<a name="819"><span class="lineNum">     819 </span>            :   DEBUG_STATIC_ASSERT(</a>
+<a name="820"><span class="lineNum">     820 </span>            :       tmpl::none&lt;edge_list, std::is_same&lt;tmpl::pin&lt;item_tag&gt;,</a>
+<a name="821"><span class="lineNum">     821 </span>            :                                          tmpl::get_source&lt;tmpl::_1&gt;&gt;&gt;::value,</a>
+<a name="822"><span class="lineNum">     822 </span>            :       &quot;Cannot extract references to items used by compute items.&quot;);</a>
+<a name="823"><span class="lineNum">     823 </span>            : </a>
+<a name="824"><span class="lineNum">     824 </span>            :   return get_item&lt;item_tag&gt;().mutate();</a>
+<a name="825"><span class="lineNum">     825 </span>            : }</a>
+<a name="826"><span class="lineNum">     826 </span>            : </a>
+<a name="827"><span class="lineNum">     827 </span>            : /*!</a>
+<a name="828"><span class="lineNum">     828 </span>            :  * \ingroup DataBoxGroup</a>
+<a name="829"><span class="lineNum">     829 </span>            :  * \brief Retrieve a mutable reference to the item with tag `Tag` from the</a>
+<a name="830"><span class="lineNum">     830 </span>            :  * DataBox.</a>
+<a name="831"><span class="lineNum">     831 </span>            :  *</a>
+<a name="832"><span class="lineNum">     832 </span>            :  * The tag retrieved cannot be used by any compute tags, cannot have</a>
+<a name="833"><span class="lineNum">     833 </span>            :  * subitems, and cannot itself be a subitem.  These requirements</a>
+<a name="834"><span class="lineNum">     834 </span>            :  * prevent changes to the retrieved item from affecting any other tags</a>
+<a name="835"><span class="lineNum">     835 </span>            :  * in the DataBox, so it can safely be modified without causing</a>
+<a name="836"><span class="lineNum">     836 </span>            :  * internal inconsistencies.</a>
+<a name="837"><span class="lineNum">     837 </span>            :  */</a>
+<a name="838"><span class="lineNum">     838 </span>            : template &lt;typename Tag, typename TagList&gt;</a>
+<a name="839"><span class="lineNum">     839 </span><span class="lineCov">          1 : SPECTRE_ALWAYS_INLINE auto&amp; get_mutable_reference(</span></a>
+<a name="840"><span class="lineNum">     840 </span>            :     const gsl::not_null&lt;DataBox&lt;TagList&gt;*&gt; box) noexcept {</a>
+<a name="841"><span class="lineNum">     841 </span>            :   return box-&gt;template get_mutable_reference&lt;Tag&gt;();</a>
+<a name="842"><span class="lineNum">     842 </span>            : }</a>
+<a name="843"><span class="lineNum">     843 </span>            : </a>
+<a name="844"><span class="lineNum">     844 </span>            : /*!</a>
+<a name="845"><span class="lineNum">     845 </span>            :  * \ingroup DataBoxGroup</a>
+<a name="846"><span class="lineNum">     846 </span>            :  * \brief List of Tags to remove from the DataBox</a>
+<a name="847"><span class="lineNum">     847 </span>            :  */</a>
+<a name="848"><span class="lineNum">     848 </span>            : template &lt;typename... Tags&gt;</a>
+<a name="849"><span class="lineNum">     849 </span><span class="lineCov">          1 : using RemoveTags = tmpl::flatten&lt;tmpl::list&lt;Tags...&gt;&gt;;</span></a>
+<a name="850"><span class="lineNum">     850 </span>            : </a>
+<a name="851"><span class="lineNum">     851 </span>            : /*!</a>
+<a name="852"><span class="lineNum">     852 </span>            :  * \ingroup DataBoxGroup</a>
+<a name="853"><span class="lineNum">     853 </span>            :  * \brief List of Tags to add to the DataBox</a>
+<a name="854"><span class="lineNum">     854 </span>            :  */</a>
+<a name="855"><span class="lineNum">     855 </span>            : template &lt;typename... Tags&gt;</a>
+<a name="856"><span class="lineNum">     856 </span><span class="lineCov">          1 : using AddSimpleTags = tmpl::flatten&lt;tmpl::list&lt;Tags...&gt;&gt;;</span></a>
+<a name="857"><span class="lineNum">     857 </span>            : </a>
+<a name="858"><span class="lineNum">     858 </span>            : /*!</a>
+<a name="859"><span class="lineNum">     859 </span>            :  * \ingroup DataBoxGroup</a>
+<a name="860"><span class="lineNum">     860 </span>            :  * \brief List of Compute Item Tags to add to the DataBox</a>
+<a name="861"><span class="lineNum">     861 </span>            :  */</a>
+<a name="862"><span class="lineNum">     862 </span>            : template &lt;typename... Tags&gt;</a>
+<a name="863"><span class="lineNum">     863 </span><span class="lineCov">          1 : using AddComputeTags = tmpl::flatten&lt;tmpl::list&lt;Tags...&gt;&gt;;</span></a>
+<a name="864"><span class="lineNum">     864 </span>            : </a>
+<a name="865"><span class="lineNum">     865 </span>            : namespace detail {</a>
+<a name="866"><span class="lineNum">     866 </span>            : template &lt;class TagList&gt;</a>
+<a name="867"><span class="lineNum">     867 </span>            : struct compute_dbox_type {</a>
+<a name="868"><span class="lineNum">     868 </span>            :   using immutable_item_tags = detail::expand_subitems&lt;</a>
+<a name="869"><span class="lineNum">     869 </span>            :       tmpl::filter&lt;TagList, db::is_immutable_item_tag&lt;tmpl::_1&gt;&gt;&gt;;</a>
+<a name="870"><span class="lineNum">     870 </span>            :   using mutable_item_tags = detail::expand_subitems&lt;</a>
+<a name="871"><span class="lineNum">     871 </span>            :       tmpl::filter&lt;TagList, db::is_mutable_item_tag&lt;tmpl::_1&gt;&gt;&gt;;</a>
+<a name="872"><span class="lineNum">     872 </span>            :   using type = DataBox&lt;tmpl::append&lt;mutable_item_tags, immutable_item_tags&gt;&gt;;</a>
+<a name="873"><span class="lineNum">     873 </span>            : };</a>
+<a name="874"><span class="lineNum">     874 </span>            : }  // namespace detail</a>
+<a name="875"><span class="lineNum">     875 </span>            : </a>
+<a name="876"><span class="lineNum">     876 </span>            : /*!</a>
+<a name="877"><span class="lineNum">     877 </span>            :  * \ingroup DataBoxGroup</a>
+<a name="878"><span class="lineNum">     878 </span>            :  * \brief Returns the type of the DataBox that would be constructed from the</a>
+<a name="879"><span class="lineNum">     879 </span>            :  * `TagList` of tags.</a>
+<a name="880"><span class="lineNum">     880 </span>            :  */</a>
+<a name="881"><span class="lineNum">     881 </span>            : template &lt;typename TagList&gt;</a>
+<a name="882"><span class="lineNum">     882 </span><span class="lineCov">          1 : using compute_databox_type = typename detail::compute_dbox_type&lt;TagList&gt;::type;</span></a>
+<a name="883"><span class="lineNum">     883 </span>            : </a>
+<a name="884"><span class="lineNum">     884 </span>            : /*!</a>
+<a name="885"><span class="lineNum">     885 </span>            :  * \ingroup DataBoxGroup</a>
+<a name="886"><span class="lineNum">     886 </span>            :  * \brief Create a new DataBox</a>
+<a name="887"><span class="lineNum">     887 </span>            :  *</a>
+<a name="888"><span class="lineNum">     888 </span>            :  * \details</a>
+<a name="889"><span class="lineNum">     889 </span>            :  * Creates a new DataBox holding types Tags::type filled with the arguments</a>
+<a name="890"><span class="lineNum">     890 </span>            :  * passed to the function. Compute and reference items must be added so that</a>
+<a name="891"><span class="lineNum">     891 </span>            :  * their dependencies are added before themselves. For example, say you have</a>
+<a name="892"><span class="lineNum">     892 </span>            :  * compute items `A` and `B` where `B` depends on `A`, then you must add them</a>
+<a name="893"><span class="lineNum">     893 </span>            :  * using `db::AddImmutableItemTags&lt;A, B&gt;`.</a>
+<a name="894"><span class="lineNum">     894 </span>            :  *</a>
+<a name="895"><span class="lineNum">     895 </span>            :  * \example</a>
+<a name="896"><span class="lineNum">     896 </span>            :  * \snippet Test_DataBox.cpp create_databox</a>
+<a name="897"><span class="lineNum">     897 </span>            :  *</a>
+<a name="898"><span class="lineNum">     898 </span>            :  * \see create_from</a>
+<a name="899"><span class="lineNum">     899 </span>            :  *</a>
+<a name="900"><span class="lineNum">     900 </span>            :  * \tparam AddMutableItemTags the tags of the mutable items that are being added</a>
+<a name="901"><span class="lineNum">     901 </span>            :  * \tparam AddImmutableItemTags list of \ref ComputeTag &quot;compute item tags&quot; and</a>
+<a name="902"><span class="lineNum">     902 </span>            :  *         \ref ReferenceTag &quot;refernce item tags&quot; to add to the DataBox</a>
+<a name="903"><span class="lineNum">     903 </span>            :  * \param args the initial values for the mutable items to add to the DataBox</a>
+<a name="904"><span class="lineNum">     904 </span>            :  */</a>
+<a name="905"><span class="lineNum">     905 </span>            : template &lt;typename AddMutableItemTags,</a>
+<a name="906"><span class="lineNum">     906 </span>            :           typename AddImmutableItemTags = tmpl::list&lt;&gt;, typename... Args&gt;</a>
+<a name="907"><span class="lineNum">     907 </span><span class="lineCov">          1 : SPECTRE_ALWAYS_INLINE constexpr auto create(Args&amp;&amp;... args) {</span></a>
+<a name="908"><span class="lineNum">     908 </span>            :   static_assert(tt::is_a_v&lt;tmpl::list, AddImmutableItemTags&gt;,</a>
+<a name="909"><span class="lineNum">     909 </span>            :                 &quot;AddImmutableItemTags must be a tmpl::list&quot;);</a>
+<a name="910"><span class="lineNum">     910 </span>            :   static_assert(tt::is_a_v&lt;tmpl::list, AddMutableItemTags&gt;,</a>
+<a name="911"><span class="lineNum">     911 </span>            :                 &quot;AddMutableItemTags must be a tmpl::list&quot;);</a>
+<a name="912"><span class="lineNum">     912 </span>            :   static_assert(</a>
+<a name="913"><span class="lineNum">     913 </span>            :       tmpl::all&lt;AddMutableItemTags, is_non_base_tag&lt;tmpl::_1&gt;&gt;::value and</a>
+<a name="914"><span class="lineNum">     914 </span>            :           tmpl::all&lt;AddImmutableItemTags, is_non_base_tag&lt;tmpl::_1&gt;&gt;::value,</a>
+<a name="915"><span class="lineNum">     915 </span>            :       &quot;Can only add tags derived from db::SimpleTag.&quot;);</a>
+<a name="916"><span class="lineNum">     916 </span>            :   static_assert(</a>
+<a name="917"><span class="lineNum">     917 </span>            :       tmpl::all&lt;AddMutableItemTags, is_mutable_item_tag&lt;tmpl::_1&gt;&gt;::value,</a>
+<a name="918"><span class="lineNum">     918 </span>            :       &quot;Cannot add any ComputeTags or ReferenceTags in the AddMutableTags list, &quot;</a>
+<a name="919"><span class="lineNum">     919 </span>            :       &quot;must use the AddImmutableItemTags list.&quot;);</a>
+<a name="920"><span class="lineNum">     920 </span>            :   static_assert(</a>
+<a name="921"><span class="lineNum">     921 </span>            :       tmpl::all&lt;AddImmutableItemTags, is_immutable_item_tag&lt;tmpl::_1&gt;&gt;::value,</a>
+<a name="922"><span class="lineNum">     922 </span>            :       &quot;Cannot add any SimpleTags in the AddImmutableItemTags list, must use &quot;</a>
+<a name="923"><span class="lineNum">     923 </span>            :       &quot;the &quot;</a>
+<a name="924"><span class="lineNum">     924 </span>            :       &quot;AddMutableItemTags list.&quot;);</a>
+<a name="925"><span class="lineNum">     925 </span>            : </a>
+<a name="926"><span class="lineNum">     926 </span>            :   using mutable_item_tags = detail::expand_subitems&lt;AddMutableItemTags&gt;;</a>
+<a name="927"><span class="lineNum">     927 </span>            :   using immutable_item_tags = detail::expand_subitems&lt;AddImmutableItemTags&gt;;</a>
+<a name="928"><span class="lineNum">     928 </span>            : </a>
+<a name="929"><span class="lineNum">     929 </span>            :   return db::DataBox&lt;tmpl::append&lt;mutable_item_tags, immutable_item_tags&gt;&gt;(</a>
+<a name="930"><span class="lineNum">     930 </span>            :       AddMutableItemTags{}, AddImmutableItemTags{},</a>
+<a name="931"><span class="lineNum">     931 </span>            :       std::forward&lt;Args&gt;(args)...);</a>
+<a name="932"><span class="lineNum">     932 </span>            : }</a>
+<a name="933"><span class="lineNum">     933 </span>            : </a>
+<a name="934"><span class="lineNum">     934 </span>            : namespace detail {</a>
+<a name="935"><span class="lineNum">     935 </span>            : template &lt;typename RemoveTags, typename AddMutableItemTags,</a>
+<a name="936"><span class="lineNum">     936 </span>            :           typename AddImmutableItemTags, typename Box, typename... Args&gt;</a>
+<a name="937"><span class="lineNum">     937 </span>            : SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&amp;&amp; box,</a>
+<a name="938"><span class="lineNum">     938 </span>            :                                                  Args&amp;&amp;... args) noexcept {</a>
+<a name="939"><span class="lineNum">     939 </span>            :   static_assert(tmpl::size&lt;AddMutableItemTags&gt;::value == sizeof...(Args),</a>
+<a name="940"><span class="lineNum">     940 </span>            :                 &quot;Must pass in as many arguments as AddMutableItemTags to &quot;</a>
+<a name="941"><span class="lineNum">     941 </span>            :                 &quot;db::create_from&quot;);</a>
+<a name="942"><span class="lineNum">     942 </span>            : </a>
+<a name="943"><span class="lineNum">     943 </span>            :   // 1. Full list of old tags, and the derived tags list of the RemoveTags</a>
+<a name="944"><span class="lineNum">     944 </span>            :   using old_tags = typename std::decay_t&lt;Box&gt;::tags_list;</a>
+<a name="945"><span class="lineNum">     945 </span>            :   static_assert(</a>
+<a name="946"><span class="lineNum">     946 </span>            :       tmpl::all&lt;RemoveTags, has_unique_matching_tag&lt;tmpl::pin&lt;old_tags&gt;,</a>
+<a name="947"><span class="lineNum">     947 </span>            :                                                     tmpl::_1&gt;&gt;::value,</a>
+<a name="948"><span class="lineNum">     948 </span>            :       &quot;One of the tags being removed could not be found in the DataBox or &quot;</a>
+<a name="949"><span class="lineNum">     949 </span>            :       &quot;is a base tag identifying more than one tag.&quot;);</a>
+<a name="950"><span class="lineNum">     950 </span>            :   using remove_tags =</a>
+<a name="951"><span class="lineNum">     951 </span>            :       tmpl::transform&lt;RemoveTags, tmpl::bind&lt;first_matching_tag,</a>
+<a name="952"><span class="lineNum">     952 </span>            :                                              tmpl::pin&lt;old_tags&gt;, tmpl::_1&gt;&gt;;</a>
+<a name="953"><span class="lineNum">     953 </span>            : </a>
+<a name="954"><span class="lineNum">     954 </span>            :   // 2. Expand subitems of tags to remove</a>
+<a name="955"><span class="lineNum">     955 </span>            :   using immutable_item_tags_to_remove = expand_subitems&lt;</a>
+<a name="956"><span class="lineNum">     956 </span>            :       tmpl::filter&lt;remove_tags, db::is_immutable_item_tag&lt;tmpl::_1&gt;&gt;&gt;;</a>
+<a name="957"><span class="lineNum">     957 </span>            :   using mutable_item_tags_to_remove = expand_subitems&lt;</a>
+<a name="958"><span class="lineNum">     958 </span>            :       tmpl::filter&lt;remove_tags, db::is_mutable_item_tag&lt;tmpl::_1&gt;&gt;&gt;;</a>
+<a name="959"><span class="lineNum">     959 </span>            : </a>
+<a name="960"><span class="lineNum">     960 </span>            :   // 3. Expand subitems of tags to add</a>
+<a name="961"><span class="lineNum">     961 </span>            :   using mutable_item_tags_to_add = expand_subitems&lt;AddMutableItemTags&gt;;</a>
+<a name="962"><span class="lineNum">     962 </span>            :   using immutable_item_tags_to_add = expand_subitems&lt;AddImmutableItemTags&gt;;</a>
+<a name="963"><span class="lineNum">     963 </span>            : </a>
+<a name="964"><span class="lineNum">     964 </span>            :   // 4. Create lists of tags to keep</a>
+<a name="965"><span class="lineNum">     965 </span>            :   using mutable_item_tags_to_keep =</a>
+<a name="966"><span class="lineNum">     966 </span>            :       tmpl::list_difference&lt;typename std::decay_t&lt;Box&gt;::mutable_item_tags,</a>
+<a name="967"><span class="lineNum">     967 </span>            :                             mutable_item_tags_to_remove&gt;;</a>
+<a name="968"><span class="lineNum">     968 </span>            :   using immutable_item_tags_to_keep =</a>
+<a name="969"><span class="lineNum">     969 </span>            :       tmpl::list_difference&lt;typename std::decay_t&lt;Box&gt;::immutable_item_tags,</a>
+<a name="970"><span class="lineNum">     970 </span>            :                             immutable_item_tags_to_remove&gt;;</a>
+<a name="971"><span class="lineNum">     971 </span>            :   using old_tags_to_keep =</a>
+<a name="972"><span class="lineNum">     972 </span>            :       tmpl::append&lt;mutable_item_tags_to_keep, immutable_item_tags_to_keep&gt;;</a>
+<a name="973"><span class="lineNum">     973 </span>            : </a>
+<a name="974"><span class="lineNum">     974 </span>            :   // 5. List of the new tags</a>
+<a name="975"><span class="lineNum">     975 </span>            :   using new_tags =</a>
+<a name="976"><span class="lineNum">     976 </span>            :       tmpl::append&lt;mutable_item_tags_to_keep, mutable_item_tags_to_add,</a>
+<a name="977"><span class="lineNum">     977 </span>            :                    immutable_item_tags_to_keep, immutable_item_tags_to_add&gt;;</a>
+<a name="978"><span class="lineNum">     978 </span>            : </a>
+<a name="979"><span class="lineNum">     979 </span>            :   DEBUG_STATIC_ASSERT(</a>
+<a name="980"><span class="lineNum">     980 </span>            :       tmpl::size&lt;</a>
+<a name="981"><span class="lineNum">     981 </span>            :           tmpl::list_difference&lt;AddMutableItemTags, RemoveTags&gt;&gt;::value ==</a>
+<a name="982"><span class="lineNum">     982 </span>            :           tmpl::size&lt;AddMutableItemTags&gt;::value,</a>
+<a name="983"><span class="lineNum">     983 </span>            :       &quot;Use db::mutate to mutate mutable items, do not remove and add them with &quot;</a>
+<a name="984"><span class="lineNum">     984 </span>            :       &quot;db::create_from.&quot;);</a>
+<a name="985"><span class="lineNum">     985 </span>            : </a>
+<a name="986"><span class="lineNum">     986 </span>            : #ifdef SPECTRE_DEBUG</a>
+<a name="987"><span class="lineNum">     987 </span>            :   // Check that we're not removing a subitem itself, should remove the parent.</a>
+<a name="988"><span class="lineNum">     988 </span>            :   using old_immutable_subitem_tags =</a>
+<a name="989"><span class="lineNum">     989 </span>            :       tmpl::filter&lt;typename std::decay_t&lt;Box&gt;::immutable_item_creation_tags,</a>
+<a name="990"><span class="lineNum">     990 </span>            :                    tt::is_a&lt;::Tags::Subitem, tmpl::_1&gt;&gt;;</a>
+<a name="991"><span class="lineNum">     991 </span>            :   using old_subitem_tags =</a>
+<a name="992"><span class="lineNum">     992 </span>            :       tmpl::append&lt;typename std::decay_t&lt;Box&gt;::mutable_subitem_tags,</a>
+<a name="993"><span class="lineNum">     993 </span>            :                    old_immutable_subitem_tags&gt;;</a>
+<a name="994"><span class="lineNum">     994 </span>            :   using remove_tags_minus_old_subitem_tags =</a>
+<a name="995"><span class="lineNum">     995 </span>            :       tmpl::list_difference&lt;remove_tags, old_subitem_tags&gt;;</a>
+<a name="996"><span class="lineNum">     996 </span>            :   static_assert(tmpl::size&lt;remove_tags_minus_old_subitem_tags&gt;::value ==</a>
+<a name="997"><span class="lineNum">     997 </span>            :                     tmpl::size&lt;remove_tags&gt;::value,</a>
+<a name="998"><span class="lineNum">     998 </span>            :                 &quot;You are not allowed to remove a subitem of an item from the &quot;</a>
+<a name="999"><span class="lineNum">     999 </span>            :                 &quot;DataBox using db::create_from.&quot;);</a>
+<a name="1000"><span class="lineNum">    1000 </span>            : #endif  // ifdef SPECTRE_DEBUG</a>
+<a name="1001"><span class="lineNum">    1001 </span>            : </a>
+<a name="1002"><span class="lineNum">    1002 </span>            :   return DataBox&lt;new_tags&gt;(std::forward&lt;Box&gt;(box), old_tags_to_keep{},</a>
+<a name="1003"><span class="lineNum">    1003 </span>            :                            AddMutableItemTags{}, AddImmutableItemTags{},</a>
+<a name="1004"><span class="lineNum">    1004 </span>            :                            std::forward&lt;Args&gt;(args)...);</a>
+<a name="1005"><span class="lineNum">    1005 </span>            : }</a>
+<a name="1006"><span class="lineNum">    1006 </span>            : }  // namespace detail</a>
+<a name="1007"><span class="lineNum">    1007 </span>            : </a>
+<a name="1008"><span class="lineNum">    1008 </span>            : /*!</a>
+<a name="1009"><span class="lineNum">    1009 </span>            :  * \ingroup DataBoxGroup</a>
+<a name="1010"><span class="lineNum">    1010 </span>            :  * \brief Create a new DataBox from an existing one adding or removing items</a>
+<a name="1011"><span class="lineNum">    1011 </span>            :  *</a>
+<a name="1012"><span class="lineNum">    1012 </span>            :  * \example</a>
+<a name="1013"><span class="lineNum">    1013 </span>            :  * Removing an item is done using:</a>
+<a name="1014"><span class="lineNum">    1014 </span>            :  * \snippet Test_DataBox.cpp create_from_remove</a>
+<a name="1015"><span class="lineNum">    1015 </span>            :  * Adding a mutable item is done using:</a>
+<a name="1016"><span class="lineNum">    1016 </span>            :  * \snippet Test_DataBox.cpp create_from_add_item</a>
+<a name="1017"><span class="lineNum">    1017 </span>            :  * Adding an immutable item is done using:</a>
+<a name="1018"><span class="lineNum">    1018 </span>            :  * \snippet Test_DataBox.cpp create_from_add_compute_item</a>
+<a name="1019"><span class="lineNum">    1019 </span>            :  *</a>
+<a name="1020"><span class="lineNum">    1020 </span>            :  * \see create DataBox</a>
+<a name="1021"><span class="lineNum">    1021 </span>            :  *</a>
+<a name="1022"><span class="lineNum">    1022 </span>            :  * \tparam RemoveTags typelist of Tags to remove</a>
+<a name="1023"><span class="lineNum">    1023 </span>            :  * \tparam AddMutableItemTags typelist of Tags for mutable items corresponding</a>
+<a name="1024"><span class="lineNum">    1024 </span>            :  *         to the arguments to be added</a>
+<a name="1025"><span class="lineNum">    1025 </span>            :  * \tparam AddImmutableItemTags list of \ref ComputeTag &quot;compute item tags&quot; and</a>
+<a name="1026"><span class="lineNum">    1026 </span>            :  *         \ref ReferenceTag &quot;refernce item tags&quot; to add to the DataBox</a>
+<a name="1027"><span class="lineNum">    1027 </span>            :  * \param box the DataBox the new box should be based off</a>
+<a name="1028"><span class="lineNum">    1028 </span>            :  * \param args the initial values for the mutable items to add to the DataBox</a>
+<a name="1029"><span class="lineNum">    1029 </span>            :  * \return the new DataBox</a>
+<a name="1030"><span class="lineNum">    1030 </span>            :  */</a>
+<a name="1031"><span class="lineNum">    1031 </span>            : template &lt;typename RemoveTags, typename AddMutableItemTags = tmpl::list&lt;&gt;,</a>
+<a name="1032"><span class="lineNum">    1032 </span>            :           typename AddImmutableItemTags = tmpl::list&lt;&gt;, typename TagsList,</a>
+<a name="1033"><span class="lineNum">    1033 </span>            :           typename... Args&gt;</a>
+<a name="1034"><span class="lineNum">    1034 </span><span class="lineCov">          1 : SPECTRE_ALWAYS_INLINE constexpr auto create_from(db::DataBox&lt;TagsList&gt;&amp;&amp; box,</span></a>
+<a name="1035"><span class="lineNum">    1035 </span>            :                                                  Args&amp;&amp;... args) noexcept {</a>
+<a name="1036"><span class="lineNum">    1036 </span>            :   return detail::create_from&lt;RemoveTags, AddMutableItemTags,</a>
+<a name="1037"><span class="lineNum">    1037 </span>            :                              AddImmutableItemTags&gt;(std::move(box),</a>
+<a name="1038"><span class="lineNum">    1038 </span>            :                                                    std::forward&lt;Args&gt;(args)...);</a>
+<a name="1039"><span class="lineNum">    1039 </span>            : }</a>
+<a name="1040"><span class="lineNum">    1040 </span>            : </a>
+<a name="1041"><span class="lineNum">    1041 </span>            : namespace detail {</a>
+<a name="1042"><span class="lineNum">    1042 </span>            : CREATE_IS_CALLABLE(apply)</a>
+<a name="1043"><span class="lineNum">    1043 </span>            : CREATE_IS_CALLABLE_V(apply)</a>
+<a name="1044"><span class="lineNum">    1044 </span>            : </a>
+<a name="1045"><span class="lineNum">    1045 </span>            : template &lt;typename Func, typename... Args&gt;</a>
+<a name="1046"><span class="lineNum">    1046 </span>            : constexpr void error_function_not_callable() noexcept {</a>
+<a name="1047"><span class="lineNum">    1047 </span>            :   static_assert(</a>
+<a name="1048"><span class="lineNum">    1048 </span>            :       std::is_same_v&lt;Func, void&gt;,</a>
+<a name="1049"><span class="lineNum">    1049 </span>            :       &quot;The function is not callable with the expected arguments.  &quot;</a>
+<a name="1050"><span class="lineNum">    1050 </span>            :       &quot;See the first template parameter of &quot;</a>
+<a name="1051"><span class="lineNum">    1051 </span>            :       &quot;error_function_not_callable for the function or object type and &quot;</a>
+<a name="1052"><span class="lineNum">    1052 </span>            :       &quot;the remaining arguments for the parameters that cannot be &quot;</a>
+<a name="1053"><span class="lineNum">    1053 </span>            :       &quot;passed. If all the argument types match, it could be that you &quot;</a>
+<a name="1054"><span class="lineNum">    1054 </span>            :       &quot;have a template parameter that cannot be deduced.&quot;</a>
+<a name="1055"><span class="lineNum">    1055 </span>            :       &quot;Note that for most DataBox functions, you must pass either &quot;</a>
+<a name="1056"><span class="lineNum">    1056 </span>            :       &quot;a function pointer, a lambda, or a class with a call operator &quot;</a>
+<a name="1057"><span class="lineNum">    1057 </span>            :       &quot;or static apply function, and this error will also arise if &quot;</a>
+<a name="1058"><span class="lineNum">    1058 </span>            :       &quot;the provided entity does not satisfy that requirement (e.g. &quot;</a>
+<a name="1059"><span class="lineNum">    1059 </span>            :       &quot;if the provided class defines a function with the incorrect name).&quot;);</a>
+<a name="1060"><span class="lineNum">    1060 </span>            : }</a>
+<a name="1061"><span class="lineNum">    1061 </span>            : </a>
+<a name="1062"><span class="lineNum">    1062 </span>            : template &lt;typename DataBoxTags, typename... TagsToRetrieve&gt;</a>
+<a name="1063"><span class="lineNum">    1063 </span>            : constexpr bool check_tags_are_in_databox(</a>
+<a name="1064"><span class="lineNum">    1064 </span>            :     DataBoxTags /*meta*/, tmpl::list&lt;TagsToRetrieve...&gt; /*meta*/) noexcept {</a>
+<a name="1065"><span class="lineNum">    1065 </span>            :   static_assert(</a>
+<a name="1066"><span class="lineNum">    1066 </span>            :       (tag_is_retrievable_v&lt;TagsToRetrieve, DataBox&lt;DataBoxTags&gt;&gt; and ...),</a>
+<a name="1067"><span class="lineNum">    1067 </span>            :       &quot;A desired tag is not in the DataBox.  See the first template &quot;</a>
+<a name="1068"><span class="lineNum">    1068 </span>            :       &quot;argument of tag_is_retrievable_v for the missing tag, and the &quot;</a>
+<a name="1069"><span class="lineNum">    1069 </span>            :       &quot;second for the available tags.&quot;);</a>
+<a name="1070"><span class="lineNum">    1070 </span>            :   return true;</a>
+<a name="1071"><span class="lineNum">    1071 </span>            : }</a>
+<a name="1072"><span class="lineNum">    1072 </span>            : </a>
+<a name="1073"><span class="lineNum">    1073 </span>            : template &lt;typename... ArgumentTags, typename F, typename BoxTags,</a>
+<a name="1074"><span class="lineNum">    1074 </span>            :           typename... Args&gt;</a>
+<a name="1075"><span class="lineNum">    1075 </span>            : static constexpr auto apply(F&amp;&amp; f, const DataBox&lt;BoxTags&gt;&amp; box,</a>
+<a name="1076"><span class="lineNum">    1076 </span>            :                             tmpl::list&lt;ArgumentTags...&gt; /*meta*/,</a>
+<a name="1077"><span class="lineNum">    1077 </span>            :                             Args&amp;&amp;... args) noexcept {</a>
+<a name="1078"><span class="lineNum">    1078 </span>            :   if constexpr (is_apply_callable_v&lt;</a>
+<a name="1079"><span class="lineNum">    1079 </span>            :                     F, const_item_type&lt;ArgumentTags, BoxTags&gt;..., Args...&gt;) {</a>
+<a name="1080"><span class="lineNum">    1080 </span>            :     return F::apply(::db::get&lt;ArgumentTags&gt;(box)...,</a>
+<a name="1081"><span class="lineNum">    1081 </span>            :                     std::forward&lt;Args&gt;(args)...);</a>
+<a name="1082"><span class="lineNum">    1082 </span>            :   } else if constexpr (::tt::is_callable_v&lt;</a>
+<a name="1083"><span class="lineNum">    1083 </span>            :                            std::remove_pointer_t&lt;F&gt;,</a>
+<a name="1084"><span class="lineNum">    1084 </span>            :                            tmpl::conditional_t&lt;</a>
+<a name="1085"><span class="lineNum">    1085 </span>            :                                std::is_same_v&lt;ArgumentTags, ::Tags::DataBox&gt;,</a>
+<a name="1086"><span class="lineNum">    1086 </span>            :                                const DataBox&lt;BoxTags&gt;&amp;,</a>
+<a name="1087"><span class="lineNum">    1087 </span>            :                                const_item_type&lt;ArgumentTags, BoxTags&gt;&gt;...,</a>
+<a name="1088"><span class="lineNum">    1088 </span>            :                            Args...&gt;) {</a>
+<a name="1089"><span class="lineNum">    1089 </span>            :     return std::forward&lt;F&gt;(f)(::db::get&lt;ArgumentTags&gt;(box)...,</a>
+<a name="1090"><span class="lineNum">    1090 </span>            :                               std::forward&lt;Args&gt;(args)...);</a>
+<a name="1091"><span class="lineNum">    1091 </span>            :   } else {</a>
+<a name="1092"><span class="lineNum">    1092 </span>            :     error_function_not_callable&lt;</a>
+<a name="1093"><span class="lineNum">    1093 </span>            :         std::remove_pointer_t&lt;F&gt;,</a>
+<a name="1094"><span class="lineNum">    1094 </span>            :         tmpl::conditional_t&lt;std::is_same_v&lt;ArgumentTags, ::Tags::DataBox&gt;,</a>
+<a name="1095"><span class="lineNum">    1095 </span>            :                             const DataBox&lt;BoxTags&gt;&amp;,</a>
+<a name="1096"><span class="lineNum">    1096 </span>            :                             const_item_type&lt;ArgumentTags, BoxTags&gt;&gt;...,</a>
+<a name="1097"><span class="lineNum">    1097 </span>            :         Args...&gt;();</a>
+<a name="1098"><span class="lineNum">    1098 </span>            :   }</a>
+<a name="1099"><span class="lineNum">    1099 </span>            : }</a>
+<a name="1100"><span class="lineNum">    1100 </span>            : }  // namespace detail</a>
+<a name="1101"><span class="lineNum">    1101 </span>            : </a>
+<a name="1102"><span class="lineNum">    1102 </span>            : /// @{</a>
+<a name="1103"><span class="lineNum">    1103 </span>            : /*!</a>
+<a name="1104"><span class="lineNum">    1104 </span>            :  * \ingroup DataBoxGroup</a>
+<a name="1105"><span class="lineNum">    1105 </span>            :  * \brief Apply the invokable `f` with argument Tags `TagsList` from</a>
+<a name="1106"><span class="lineNum">    1106 </span>            :  * DataBox `box`</a>
+<a name="1107"><span class="lineNum">    1107 </span>            :  *</a>
+<a name="1108"><span class="lineNum">    1108 </span>            :  * \details</a>
+<a name="1109"><span class="lineNum">    1109 </span>            :  * `f` must either be invokable with the arguments of type</a>
+<a name="1110"><span class="lineNum">    1110 </span>            :  * `db::const_item_type&lt;TagsList&gt;..., Args...` where the first pack expansion</a>
+<a name="1111"><span class="lineNum">    1111 </span>            :  * is over the elements in the type list `ArgumentTags`, or have a static</a>
+<a name="1112"><span class="lineNum">    1112 </span>            :  * `apply` function that is callable with the same types.</a>
+<a name="1113"><span class="lineNum">    1113 </span>            :  * If the class that implements the static `apply` functions also provides an</a>
+<a name="1114"><span class="lineNum">    1114 </span>            :  * `argument_tags` typelist, then it is used and no explicit `ArgumentTags`</a>
+<a name="1115"><span class="lineNum">    1115 </span>            :  * template parameter should be specified.</a>
+<a name="1116"><span class="lineNum">    1116 </span>            :  *</a>
+<a name="1117"><span class="lineNum">    1117 </span>            :  * \usage</a>
+<a name="1118"><span class="lineNum">    1118 </span>            :  * Given a function `func` that takes arguments of types</a>
+<a name="1119"><span class="lineNum">    1119 </span>            :  * `T1`, `T2`, `A1` and `A2`. Let the Tags for the quantities of types `T1` and</a>
+<a name="1120"><span class="lineNum">    1120 </span>            :  * `T2` in the DataBox `box` be `Tag1` and `Tag2`, and objects `a1` of type</a>
+<a name="1121"><span class="lineNum">    1121 </span>            :  * `A1` and `a2` of type `A2`, then</a>
+<a name="1122"><span class="lineNum">    1122 </span>            :  * \code</a>
+<a name="1123"><span class="lineNum">    1123 </span>            :  * auto result = db::apply&lt;tmpl::list&lt;Tag1, Tag2&gt;&gt;(func, box, a1, a2);</a>
+<a name="1124"><span class="lineNum">    1124 </span>            :  * \endcode</a>
+<a name="1125"><span class="lineNum">    1125 </span>            :  * \return `decltype(func(db::get&lt;Tag1&gt;(box), db::get&lt;Tag2&gt;(box), a1, a2))`</a>
+<a name="1126"><span class="lineNum">    1126 </span>            :  *</a>
+<a name="1127"><span class="lineNum">    1127 </span>            :  * \semantics</a>
+<a name="1128"><span class="lineNum">    1128 </span>            :  * For tags `Tags...` in a DataBox `box`, and a function `func` that takes</a>
+<a name="1129"><span class="lineNum">    1129 </span>            :  * `sizeof...(Tags)` arguments of types `db::const_item_type&lt;Tags&gt;...`,  and</a>
+<a name="1130"><span class="lineNum">    1130 </span>            :  * `sizeof...(Args)` arguments of types `Args...`,</a>
+<a name="1131"><span class="lineNum">    1131 </span>            :  * \code</a>
+<a name="1132"><span class="lineNum">    1132 </span>            :  * result = func(box, db::get&lt;Tags&gt;(box)..., args...);</a>
+<a name="1133"><span class="lineNum">    1133 </span>            :  * \endcode</a>
+<a name="1134"><span class="lineNum">    1134 </span>            :  *</a>
+<a name="1135"><span class="lineNum">    1135 </span>            :  * \example</a>
+<a name="1136"><span class="lineNum">    1136 </span>            :  * \snippet Test_DataBox.cpp apply_example</a>
+<a name="1137"><span class="lineNum">    1137 </span>            :  * Using a struct with an `apply` method:</a>
+<a name="1138"><span class="lineNum">    1138 </span>            :  * \snippet Test_DataBox.cpp apply_struct_example</a>
+<a name="1139"><span class="lineNum">    1139 </span>            :  * If the class `F` has no state, you can also use the stateless overload of</a>
+<a name="1140"><span class="lineNum">    1140 </span>            :  * `apply`: \snippet Test_DataBox.cpp apply_stateless_struct_example</a>
+<a name="1141"><span class="lineNum">    1141 </span>            :  *</a>
+<a name="1142"><span class="lineNum">    1142 </span>            :  * \see DataBox</a>
+<a name="1143"><span class="lineNum">    1143 </span>            :  * \tparam ArgumentTags typelist of Tags in the order that they are to be passed</a>
+<a name="1144"><span class="lineNum">    1144 </span>            :  * to `f`</a>
+<a name="1145"><span class="lineNum">    1145 </span>            :  * \tparam F The invokable to apply</a>
+<a name="1146"><span class="lineNum">    1146 </span>            :  */</a>
+<a name="1147"><span class="lineNum">    1147 </span>            : template &lt;typename ArgumentTags, typename F, typename BoxTags, typename... Args&gt;</a>
+<a name="1148"><span class="lineNum">    1148 </span><span class="lineCov">          1 : SPECTRE_ALWAYS_INLINE constexpr auto apply(F&amp;&amp; f, const DataBox&lt;BoxTags&gt;&amp; box,</span></a>
+<a name="1149"><span class="lineNum">    1149 </span>            :                                            Args&amp;&amp;... args) noexcept {</a>
+<a name="1150"><span class="lineNum">    1150 </span>            :   detail::check_tags_are_in_databox(</a>
+<a name="1151"><span class="lineNum">    1151 </span>            :       BoxTags{}, tmpl::remove&lt;ArgumentTags, ::Tags::DataBox&gt;{});</a>
+<a name="1152"><span class="lineNum">    1152 </span>            :   return detail::apply(std::forward&lt;F&gt;(f), box, ArgumentTags{},</a>
+<a name="1153"><span class="lineNum">    1153 </span>            :                        std::forward&lt;Args&gt;(args)...);</a>
+<a name="1154"><span class="lineNum">    1154 </span>            : }</a>
+<a name="1155"><span class="lineNum">    1155 </span>            : </a>
+<a name="1156"><span class="lineNum">    1156 </span>            : template &lt;typename F, typename BoxTags, typename... Args&gt;</a>
+<a name="1157"><span class="lineNum">    1157 </span><span class="lineCov">          1 : SPECTRE_ALWAYS_INLINE constexpr auto apply(F&amp;&amp; f, const DataBox&lt;BoxTags&gt;&amp; box,</span></a>
+<a name="1158"><span class="lineNum">    1158 </span>            :                                            Args&amp;&amp;... args) noexcept {</a>
+<a name="1159"><span class="lineNum">    1159 </span>            :   return apply&lt;typename std::decay_t&lt;F&gt;::argument_tags&gt;(</a>
+<a name="1160"><span class="lineNum">    1160 </span>            :       std::forward&lt;F&gt;(f), box, std::forward&lt;Args&gt;(args)...);</a>
+<a name="1161"><span class="lineNum">    1161 </span>            : }</a>
+<a name="1162"><span class="lineNum">    1162 </span>            : </a>
+<a name="1163"><span class="lineNum">    1163 </span>            : template &lt;typename F, typename BoxTags, typename... Args&gt;</a>
+<a name="1164"><span class="lineNum">    1164 </span><span class="lineCov">          1 : SPECTRE_ALWAYS_INLINE constexpr auto apply(const DataBox&lt;BoxTags&gt;&amp; box,</span></a>
+<a name="1165"><span class="lineNum">    1165 </span>            :                                            Args&amp;&amp;... args) noexcept {</a>
+<a name="1166"><span class="lineNum">    1166 </span>            :   return apply(F{}, box, std::forward&lt;Args&gt;(args)...);</a>
+<a name="1167"><span class="lineNum">    1167 </span>            : }</a>
+<a name="1168"><span class="lineNum">    1168 </span>            : /// @}</a>
+<a name="1169"><span class="lineNum">    1169 </span>            : </a>
+<a name="1170"><span class="lineNum">    1170 </span>            : namespace detail {</a>
+<a name="1171"><span class="lineNum">    1171 </span>            : template &lt;typename... ReturnTags, typename... ArgumentTags, typename F,</a>
+<a name="1172"><span class="lineNum">    1172 </span>            :           typename BoxTags, typename... Args&gt;</a>
+<a name="1173"><span class="lineNum">    1173 </span>            : SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(</a>
+<a name="1174"><span class="lineNum">    1174 </span>            :     F&amp;&amp; f, const gsl::not_null&lt;db::DataBox&lt;BoxTags&gt;*&gt; box,</a>
+<a name="1175"><span class="lineNum">    1175 </span>            :     tmpl::list&lt;ReturnTags...&gt; /*meta*/, tmpl::list&lt;ArgumentTags...&gt; /*meta*/,</a>
+<a name="1176"><span class="lineNum">    1176 </span>            :     Args&amp;&amp;... args) noexcept {</a>
+<a name="1177"><span class="lineNum">    1177 </span>            :   static_assert(</a>
+<a name="1178"><span class="lineNum">    1178 </span>            :       not tmpl2::flat_any_v&lt;std::is_same_v&lt;ArgumentTags, Tags::DataBox&gt;...&gt; and</a>
+<a name="1179"><span class="lineNum">    1179 </span>            :           not tmpl2::flat_any_v&lt;std::is_same_v&lt;ReturnTags, Tags::DataBox&gt;...&gt;,</a>
+<a name="1180"><span class="lineNum">    1180 </span>            :       &quot;Cannot pass a DataBox to mutate_apply since the db::get won't work &quot;</a>
+<a name="1181"><span class="lineNum">    1181 </span>            :       &quot;inside mutate_apply.&quot;);</a>
+<a name="1182"><span class="lineNum">    1182 </span>            :   if constexpr (is_apply_callable_v&lt;</a>
+<a name="1183"><span class="lineNum">    1183 </span>            :                     F, const gsl::not_null&lt;typename ReturnTags::type*&gt;...,</a>
+<a name="1184"><span class="lineNum">    1184 </span>            :                     const_item_type&lt;ArgumentTags, BoxTags&gt;..., Args...&gt;) {</a>
+<a name="1185"><span class="lineNum">    1185 </span>            :     return ::db::mutate&lt;ReturnTags...&gt;(</a>
+<a name="1186"><span class="lineNum">    1186 </span>            :         box,</a>
+<a name="1187"><span class="lineNum">    1187 </span>            :         [](const gsl::not_null&lt;typename ReturnTags::type*&gt;... mutated_items,</a>
+<a name="1188"><span class="lineNum">    1188 </span>            :            const_item_type&lt;ArgumentTags, BoxTags&gt;... args_items,</a>
+<a name="1189"><span class="lineNum">    1189 </span>            :            decltype(std::forward&lt;Args&gt;(args))... l_args) noexcept {</a>
+<a name="1190"><span class="lineNum">    1190 </span>            :           return std::decay_t&lt;F&gt;::apply(mutated_items..., args_items...,</a>
+<a name="1191"><span class="lineNum">    1191 </span>            :                                         std::forward&lt;Args&gt;(l_args)...);</a>
+<a name="1192"><span class="lineNum">    1192 </span>            :         },</a>
+<a name="1193"><span class="lineNum">    1193 </span>            :         db::get&lt;ArgumentTags&gt;(*box)..., std::forward&lt;Args&gt;(args)...);</a>
+<a name="1194"><span class="lineNum">    1194 </span>            :   } else if constexpr (::tt::is_callable_v&lt;</a>
+<a name="1195"><span class="lineNum">    1195 </span>            :                            F,</a>
+<a name="1196"><span class="lineNum">    1196 </span>            :                            const gsl::not_null&lt;typename ReturnTags::type*&gt;...,</a>
+<a name="1197"><span class="lineNum">    1197 </span>            :                            const_item_type&lt;ArgumentTags, BoxTags&gt;...,</a>
+<a name="1198"><span class="lineNum">    1198 </span>            :                            Args...&gt;) {</a>
+<a name="1199"><span class="lineNum">    1199 </span>            :     return ::db::mutate&lt;ReturnTags...&gt;(</a>
+<a name="1200"><span class="lineNum">    1200 </span>            :         box,</a>
+<a name="1201"><span class="lineNum">    1201 </span>            :         [&amp;f](const gsl::not_null&lt;typename ReturnTags::type*&gt;... mutated_items,</a>
+<a name="1202"><span class="lineNum">    1202 </span>            :              const_item_type&lt;ArgumentTags, BoxTags&gt;... args_items,</a>
+<a name="1203"><span class="lineNum">    1203 </span>            :              decltype(std::forward&lt;Args&gt;(args))... l_args) noexcept {</a>
+<a name="1204"><span class="lineNum">    1204 </span>            :           return f(mutated_items..., args_items...,</a>
+<a name="1205"><span class="lineNum">    1205 </span>            :                    std::forward&lt;Args&gt;(l_args)...);</a>
+<a name="1206"><span class="lineNum">    1206 </span>            :         },</a>
+<a name="1207"><span class="lineNum">    1207 </span>            :         db::get&lt;ArgumentTags&gt;(*box)..., std::forward&lt;Args&gt;(args)...);</a>
+<a name="1208"><span class="lineNum">    1208 </span>            :   } else {</a>
+<a name="1209"><span class="lineNum">    1209 </span>            :     error_function_not_callable&lt;F, gsl::not_null&lt;typename ReturnTags::type*&gt;...,</a>
+<a name="1210"><span class="lineNum">    1210 </span>            :                                 const_item_type&lt;ArgumentTags, BoxTags&gt;...,</a>
+<a name="1211"><span class="lineNum">    1211 </span>            :                                 Args...&gt;();</a>
+<a name="1212"><span class="lineNum">    1212 </span>            :   }</a>
+<a name="1213"><span class="lineNum">    1213 </span>            : }</a>
+<a name="1214"><span class="lineNum">    1214 </span>            : }  // namespace detail</a>
+<a name="1215"><span class="lineNum">    1215 </span>            : </a>
+<a name="1216"><span class="lineNum">    1216 </span>            : /// @{</a>
+<a name="1217"><span class="lineNum">    1217 </span>            : /*!</a>
+<a name="1218"><span class="lineNum">    1218 </span>            :  * \ingroup DataBoxGroup</a>
+<a name="1219"><span class="lineNum">    1219 </span>            :  * \brief Apply the invokable `f` mutating items `MutateTags` and taking as</a>
+<a name="1220"><span class="lineNum">    1220 </span>            :  * additional arguments `ArgumentTags` and `args`.</a>
+<a name="1221"><span class="lineNum">    1221 </span>            :  *</a>
+<a name="1222"><span class="lineNum">    1222 </span>            :  * \details</a>
+<a name="1223"><span class="lineNum">    1223 </span>            :  * `f` must either be invokable with the arguments of type</a>
+<a name="1224"><span class="lineNum">    1224 </span>            :  * `gsl::not_null&lt;db::item_type&lt;MutateTags&gt;*&gt;...,</a>
+<a name="1225"><span class="lineNum">    1225 </span>            :  * db::const_item_type&lt;ArgumentTags&gt;..., Args...`</a>
+<a name="1226"><span class="lineNum">    1226 </span>            :  * where the first two pack expansions are over the elements in the typelists</a>
+<a name="1227"><span class="lineNum">    1227 </span>            :  * `MutateTags` and `ArgumentTags`, or have a static `apply` function that is</a>
+<a name="1228"><span class="lineNum">    1228 </span>            :  * callable with the same types. If the type of `f` specifies `return_tags` and</a>
+<a name="1229"><span class="lineNum">    1229 </span>            :  * `argument_tags` typelists, these are used for the `MutateTags` and</a>
+<a name="1230"><span class="lineNum">    1230 </span>            :  * `ArgumentTags`, respectively.</a>
+<a name="1231"><span class="lineNum">    1231 </span>            :  *</a>
+<a name="1232"><span class="lineNum">    1232 </span>            :  * Any return values of the invokable `f` are forwarded as returns to the</a>
+<a name="1233"><span class="lineNum">    1233 </span>            :  * `mutate_apply` call.</a>
+<a name="1234"><span class="lineNum">    1234 </span>            :  *</a>
+<a name="1235"><span class="lineNum">    1235 </span>            :  * \example</a>
+<a name="1236"><span class="lineNum">    1236 </span>            :  * An example of using `mutate_apply` with a lambda:</a>
+<a name="1237"><span class="lineNum">    1237 </span>            :  * \snippet Test_DataBox.cpp mutate_apply_lambda_example</a>
+<a name="1238"><span class="lineNum">    1238 </span>            :  *</a>
+<a name="1239"><span class="lineNum">    1239 </span>            :  * An example of a class with a static `apply` function</a>
+<a name="1240"><span class="lineNum">    1240 </span>            :  * \snippet Test_DataBox.cpp mutate_apply_struct_definition_example</a>
+<a name="1241"><span class="lineNum">    1241 </span>            :  * and how to use `mutate_apply` with the above class</a>
+<a name="1242"><span class="lineNum">    1242 </span>            :  * \snippet Test_DataBox.cpp mutate_apply_struct_example_stateful</a>
+<a name="1243"><span class="lineNum">    1243 </span>            :  * Note that the class exposes `return_tags` and `argument_tags` typelists, so</a>
+<a name="1244"><span class="lineNum">    1244 </span>            :  * we don't specify the template parameters explicitly.</a>
+<a name="1245"><span class="lineNum">    1245 </span>            :  * If the class `F` has no state, like in this example,</a>
+<a name="1246"><span class="lineNum">    1246 </span>            :  * \snippet Test_DataBox.cpp mutate_apply_struct_definition_example</a>
+<a name="1247"><span class="lineNum">    1247 </span>            :  * you can also use the stateless overload of `mutate_apply`:</a>
+<a name="1248"><span class="lineNum">    1248 </span>            :  * \snippet Test_DataBox.cpp mutate_apply_struct_example_stateless</a>
+<a name="1249"><span class="lineNum">    1249 </span>            :  *</a>
+<a name="1250"><span class="lineNum">    1250 </span>            :  * \tparam MutateTags typelist of Tags to mutate</a>
+<a name="1251"><span class="lineNum">    1251 </span>            :  * \tparam ArgumentTags typelist of additional items to retrieve from the</a>
+<a name="1252"><span class="lineNum">    1252 </span>            :  * DataBox</a>
+<a name="1253"><span class="lineNum">    1253 </span>            :  * \tparam F The invokable to apply</a>
+<a name="1254"><span class="lineNum">    1254 </span>            :  */</a>
+<a name="1255"><span class="lineNum">    1255 </span>            : template &lt;typename MutateTags, typename ArgumentTags, typename F,</a>
+<a name="1256"><span class="lineNum">    1256 </span>            :           typename BoxTags, typename... Args&gt;</a>
+<a name="1257"><span class="lineNum">    1257 </span><span class="lineCov">          1 : SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(</span></a>
+<a name="1258"><span class="lineNum">    1258 </span>            :     F&amp;&amp; f, const gsl::not_null&lt;DataBox&lt;BoxTags&gt;*&gt; box,</a>
+<a name="1259"><span class="lineNum">    1259 </span>            :     Args&amp;&amp;... args) noexcept {</a>
+<a name="1260"><span class="lineNum">    1260 </span>            :   detail::check_tags_are_in_databox(BoxTags{}, MutateTags{});</a>
+<a name="1261"><span class="lineNum">    1261 </span>            :   detail::check_tags_are_in_databox(BoxTags{}, ArgumentTags{});</a>
+<a name="1262"><span class="lineNum">    1262 </span>            :   return detail::mutate_apply(std::forward&lt;F&gt;(f), box, MutateTags{},</a>
+<a name="1263"><span class="lineNum">    1263 </span>            :                               ArgumentTags{}, std::forward&lt;Args&gt;(args)...);</a>
+<a name="1264"><span class="lineNum">    1264 </span>            : }</a>
+<a name="1265"><span class="lineNum">    1265 </span>            : </a>
+<a name="1266"><span class="lineNum">    1266 </span>            : template &lt;typename F, typename BoxTags, typename... Args&gt;</a>
+<a name="1267"><span class="lineNum">    1267 </span><span class="lineCov">          1 : SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(</span></a>
+<a name="1268"><span class="lineNum">    1268 </span>            :     F&amp;&amp; f, const gsl::not_null&lt;DataBox&lt;BoxTags&gt;*&gt; box,</a>
+<a name="1269"><span class="lineNum">    1269 </span>            :     Args&amp;&amp;... args) noexcept {</a>
+<a name="1270"><span class="lineNum">    1270 </span>            :   return mutate_apply&lt;typename std::decay_t&lt;F&gt;::return_tags,</a>
+<a name="1271"><span class="lineNum">    1271 </span>            :                       typename std::decay_t&lt;F&gt;::argument_tags&gt;(</a>
+<a name="1272"><span class="lineNum">    1272 </span>            :       std::forward&lt;F&gt;(f), box, std::forward&lt;Args&gt;(args)...);</a>
+<a name="1273"><span class="lineNum">    1273 </span>            : }</a>
+<a name="1274"><span class="lineNum">    1274 </span>            : </a>
+<a name="1275"><span class="lineNum">    1275 </span>            : template &lt;typename F, typename BoxTags, typename... Args&gt;</a>
+<a name="1276"><span class="lineNum">    1276 </span><span class="lineCov">          1 : SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(</span></a>
+<a name="1277"><span class="lineNum">    1277 </span>            :     const gsl::not_null&lt;DataBox&lt;BoxTags&gt;*&gt; box, Args&amp;&amp;... args) noexcept {</a>
+<a name="1278"><span class="lineNum">    1278 </span>            :   return mutate_apply(F{}, box, std::forward&lt;Args&gt;(args)...);</a>
+<a name="1279"><span class="lineNum">    1279 </span>            : }</a>
+<a name="1280"><span class="lineNum">    1280 </span>            : /// @}</a>
+<a name="1281"><span class="lineNum">    1281 </span>            : }  // namespace db</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

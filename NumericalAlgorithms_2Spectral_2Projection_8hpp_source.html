@@ -1,0 +1,325 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/NumericalAlgorithms/Spectral/Projection.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_e67410f72df12b3cc042db20f578e557.html">NumericalAlgorithms</a></li><li class="navelem"><a class="el" href="dir_7a256e711fbf68e6594f644cfc4f7acb.html">Spectral</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">Projection.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/array.html">array</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/functional.html">functional</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/ostream.html">ostream</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="comment"></span><span class="keyword">class </span><a class="code" href="classMatrix.html">Matrix</a>;</div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="keyword">class </span><a class="code" href="classMesh.html">Mesh</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceSpectral.html">Spectral</a> {</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment">/// The portion of a mesh covered by a child mesh.</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno"><a class="line" href="namespaceSpectral.html#a29a5155276364fffc6ecdaadb0ba3935">   20</a></span>&#160;<span class="comment"></span><span class="keyword">enum class</span> <a class="code" href="namespaceSpectral.html#a29a5155276364fffc6ecdaadb0ba3935">ChildSize</a> { Full, UpperHalf, LowerHalf };</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment">/// The portion of an element covered by a mortar.</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno"><a class="line" href="namespaceSpectral.html#a333f93eb48b32a0468af7aa9e01eac5e">   23</a></span>&#160;<span class="comment"></span><span class="keyword">using</span> <a class="code" href="namespaceSpectral.html#a29a5155276364fffc6ecdaadb0ba3935">MortarSize</a> = <a class="code" href="namespaceSpectral.html#a29a5155276364fffc6ecdaadb0ba3935">ChildSize</a>;</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160; </div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<a class="codeRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a>&amp; operator&lt;&lt;(<a class="codeRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a>&amp; os, <a class="code" href="namespaceSpectral.html#a29a5155276364fffc6ecdaadb0ba3935">ChildSize</a> <a class="code" href="group__DiscontinuousGalerkinGroup.html#gad64bacb048e27950202430591f5ae631">mortar_size</a>) noexcept;</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment">/// Determine whether data needs to be projected between a child mesh and its</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment">/// parent mesh. If no projection is necessary the data may be used as-is.</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment">/// Projection is necessary if the child is either p-refined or h-refined</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment">/// relative to its parent, or both. This operation is symmetric, i.e. it is</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment">/// irrelevant in which order the child and the parent mesh are passed in.</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="keywordtype">bool</span> <a class="code" href="namespaceSpectral.html#ab967d0118d513235484f3db2f17dca10">needs_projection</a>(<span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a>&amp; mesh1, <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a>&amp; mesh2,</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;                      <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;ChildSize, Dim&gt;</a>&amp; child_sizes) noexcept;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment"> * \brief The projection matrix from a child mesh to its parent.</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment"> * The projection matrices returned by this function (and by</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment"> * projection_matrix_parent_to_child()) define orthogonal projection operators</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment"> * between the spaces of functions on a parent mesh and its children. These</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment"> * projections are usually the correct way to transfer data between meshes in</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment"> * a mesh-refinement hierarchy, as well as between an element face and its</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment"> * adjacent mortars.</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment"> * These functions assume that the `child_mesh` is at least as fine as the</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment"> * `parent_mesh`, i.e. functions on the `parent_mesh` can be represented exactly</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment"> * on the `child_mesh`. In practice this means that functions can be projected</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment"> * to a mortar (the `child_mesh`) from both adjacent element faces (the</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment"> * `parent_mesh`) without losing accuracy. Similarly, functions in a</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment"> * mesh-refinement hierarchy don&#39;t lose accuracy when an element is split</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment"> * (h-refined). For this reason, the `projection_matrix_child_to_parent` is</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment"> * sometimes referred to as a &quot;restriction operator&quot; and the</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment"> * `projection_matrix_parent_to_child` as a &quot;prolongation operator&quot;.</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment"> * \par Massive quantities</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment"> * If the quantity that should be projected is not a function over the</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment"> * computational grid but a &quot;massive&quot; residual, i.e. a quantity</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment"> * \f$\int_{\Omega_k} f(x) \psi_p(x) \mathrm{d}V\f$ where \f$\psi_p\f$ are the</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment"> * basis functions on the mesh, then pass `true` for the parameter</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment"> * `operand_is_massive` (default is `false`). The restriction operator for this</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment"> * case is just the transpose of the prolongation operator, i.e. just an</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment"> * interpolation matrix transpose. Note that the &quot;massive&quot; residual already</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment"> * takes the difference in element size between parent and children into account</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment"> * by including a Jacobian in the volume element of the integral.</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment"> * \par Implementation details</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment"> * The half-interval projections are based on an equation derived by</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment"> * Saul.  This shows that the projection from the spectral basis for</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment"> * the entire interval to the spectral basis for the upper half</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment"> * interval is</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment"> * \f{equation*}</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment"> * T_{jk} = \frac{2 j + 1}{2} 2^j \sum_{n=0}^{j-k} \binom{j}{k+n}</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment"> * \binom{(j + k + n - 1)/2}{j} \frac{(k + n)!^2}{(2 k + n + 1)! n!}</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment"> * \f}</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="keyword">const</span> <a class="code" href="classMatrix.html">Matrix</a>&amp; <a class="code" href="namespaceSpectral.html#abd64857f2d440cd7353f6c36e0699b9d">projection_matrix_child_to_parent</a>(</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;1&gt;</a>&amp; child_mesh, <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;1&gt;</a>&amp; parent_mesh, <a class="code" href="namespaceSpectral.html#a29a5155276364fffc6ecdaadb0ba3935">ChildSize</a> size,</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keywordtype">bool</span> operand_is_massive = <span class="keyword">false</span>) noexcept;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment">/// The projection matrix from a child mesh to its parent, in `Dim` dimensions.</span></div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment"></span>template &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;std::array&lt;std::reference_wrapper&lt;const <a class="code" href="classMatrix.html">Matrix</a>&gt;, Dim&gt;</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<a class="code" href="namespaceSpectral.html#abd64857f2d440cd7353f6c36e0699b9d">projection_matrix_child_to_parent</a>(const <a class="code" href="classMesh.html">Mesh</a>&lt;Dim&gt;&amp; child_mesh,</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;                                  const <a class="code" href="classMesh.html">Mesh</a>&lt;Dim&gt;&amp; parent_mesh,</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;                                  const std::array&lt;<a class="code" href="namespaceSpectral.html#a29a5155276364fffc6ecdaadb0ba3935">ChildSize</a>, Dim&gt;&amp; child_sizes,</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;                                  <span class="keywordtype">bool</span> operand_is_massive = false) noexcept;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment">/// The projection matrix from a parent mesh to one of its children.</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment">/// \see projection_matrix_child_to_parent()</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment"></span>const <a class="code" href="classMatrix.html">Matrix</a>&amp; <a class="code" href="namespaceSpectral.html#aae833b82469a8f513e2ebb419836ff90">projection_matrix_parent_to_child</a>(const <a class="code" href="classMesh.html">Mesh</a>&lt;1&gt;&amp; parent_mesh,</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;                                                const <a class="code" href="classMesh.html">Mesh</a>&lt;1&gt;&amp; child_mesh,</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;                                                <a class="code" href="namespaceSpectral.html#a29a5155276364fffc6ecdaadb0ba3935">ChildSize</a> size) noexcept;</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="comment">/// The projection matrix from a parent mesh to one of its children, in `Dim`</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment">/// dimensions</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="comment"></span>template &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;std::array&lt;std::reference_wrapper&lt;const <a class="code" href="classMatrix.html">Matrix</a>&gt;, Dim&gt;</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<a class="code" href="namespaceSpectral.html#aae833b82469a8f513e2ebb419836ff90">projection_matrix_parent_to_child</a>(</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    const <a class="code" href="classMesh.html">Mesh</a>&lt;Dim&gt;&amp; parent_mesh, const <a class="code" href="classMesh.html">Mesh</a>&lt;Dim&gt;&amp; child_mesh,</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    const std::array&lt;<a class="code" href="namespaceSpectral.html#a29a5155276364fffc6ecdaadb0ba3935">ChildSize</a>, Dim&gt;&amp; child_sizes) noexcept;</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160; </div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;}  <span class="comment">// namespace Spectral</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="aclassMatrix_html"><div class="ttname"><a href="classMatrix.html">Matrix</a></div><div class="ttdoc">A dynamically sized matrix of doubles with column-major storage.</div><div class="ttdef"><b>Definition:</b> Matrix.hpp:19</div></div>
+<div class="ttc" id="anamespaceSpectral_html_ab967d0118d513235484f3db2f17dca10"><div class="ttname"><a href="namespaceSpectral.html#ab967d0118d513235484f3db2f17dca10">Spectral::needs_projection</a></div><div class="ttdeci">bool needs_projection(const Mesh&lt; Dim &gt; &amp;mesh1, const Mesh&lt; Dim &gt; &amp;mesh2, const std::array&lt; ChildSize, Dim &gt; &amp;child_sizes) noexcept</div><div class="ttdoc">Determine whether data needs to be projected between a child mesh and its parent mesh....</div></div>
+<div class="ttc" id="anamespaceSpectral_html_abd64857f2d440cd7353f6c36e0699b9d"><div class="ttname"><a href="namespaceSpectral.html#abd64857f2d440cd7353f6c36e0699b9d">Spectral::projection_matrix_child_to_parent</a></div><div class="ttdeci">const Matrix &amp; projection_matrix_child_to_parent(const Mesh&lt; 1 &gt; &amp;child_mesh, const Mesh&lt; 1 &gt; &amp;parent_mesh, ChildSize size, bool operand_is_massive=false) noexcept</div><div class="ttdoc">The projection matrix from a child mesh to its parent.</div></div>
+<div class="ttc" id="afunctional_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/functional.html">functional</a></div></div>
+<div class="ttc" id="abasic_ostream_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a></div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="anamespaceSpectral_html_aae833b82469a8f513e2ebb419836ff90"><div class="ttname"><a href="namespaceSpectral.html#aae833b82469a8f513e2ebb419836ff90">Spectral::projection_matrix_parent_to_child</a></div><div class="ttdeci">const Matrix &amp; projection_matrix_parent_to_child(const Mesh&lt; 1 &gt; &amp;parent_mesh, const Mesh&lt; 1 &gt; &amp;child_mesh, ChildSize size) noexcept</div><div class="ttdoc">The projection matrix from a parent mesh to one of its children.</div></div>
+<div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/array.html">array</a></div></div>
+<div class="ttc" id="anamespaceSpectral_html_a29a5155276364fffc6ecdaadb0ba3935"><div class="ttname"><a href="namespaceSpectral.html#a29a5155276364fffc6ecdaadb0ba3935">Spectral::ChildSize</a></div><div class="ttdeci">ChildSize</div><div class="ttdoc">The portion of a mesh covered by a child mesh.</div><div class="ttdef"><b>Definition:</b> Projection.hpp:20</div></div>
+<div class="ttc" id="aclassMesh_html"><div class="ttname"><a href="classMesh.html">Mesh</a></div><div class="ttdoc">Holds the number of grid points, basis, and quadrature in each direction of the computational grid.</div><div class="ttdef"><b>Definition:</b> Mesh.hpp:49</div></div>
+<div class="ttc" id="aostream_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/ostream.html">ostream</a></div></div>
+<div class="ttc" id="agroup__DiscontinuousGalerkinGroup_html_gad64bacb048e27950202430591f5ae631"><div class="ttname"><a href="group__DiscontinuousGalerkinGroup.html#gad64bacb048e27950202430591f5ae631">dg::mortar_size</a></div><div class="ttdeci">MortarSize&lt; Dim - 1 &gt; mortar_size(const ElementId&lt; Dim &gt; &amp;self, const ElementId&lt; Dim &gt; &amp;neighbor, size_t dimension, const OrientationMap&lt; Dim &gt; &amp;orientation) noexcept</div></div>
+<div class="ttc" id="anamespaceSpectral_html"><div class="ttname"><a href="namespaceSpectral.html">Spectral</a></div><div class="ttdoc">Functionality associated with a particular choice of basis functions and quadrature for spectral oper...</div><div class="ttdef"><b>Definition:</b> ComplexDataView.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

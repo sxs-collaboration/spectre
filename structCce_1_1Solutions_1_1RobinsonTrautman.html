@@ -1,0 +1,898 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Cce::Solutions::RobinsonTrautman Struct Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceCce.html">Cce</a></li><li class="navelem"><a class="el" href="namespaceCce_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman.html">RobinsonTrautman</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
+<a href="structCce_1_1Solutions_1_1RobinsonTrautman-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Cce::Solutions::RobinsonTrautman Struct Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>An analytic solution representing a specialization of the radiative Robinson-Trautman solution described in <a class="el" href="citelist.html#CITEREF_Derry1970fk">[35]</a>.  
+ <a href="structCce_1_1Solutions_1_1RobinsonTrautman.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="RobinsonTrautman_8hpp_source.html">RobinsonTrautman.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1ExtractionRadius.html">ExtractionRadius</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1InitialModes.html">InitialModes</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1LMax.html">LMax</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1StartTime.html">StartTime</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1Tolerance.html">Tolerance</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a141746328a622accf67396c39434311c"><td class="memItemLeft" align="right" valign="top"><a id="a141746328a622accf67396c39434311c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1InitialModes.html">InitialModes</a>, <a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1ExtractionRadius.html">ExtractionRadius</a>, <a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1LMax.html">LMax</a>, <a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1Tolerance.html">Tolerance</a>, <a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman_1_1StartTime.html">StartTime</a> &gt;</td></tr>
+<tr class="separator:a141746328a622accf67396c39434311c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_structCce_1_1Solutions_1_1WorldtubeData"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structCce_1_1Solutions_1_1WorldtubeData')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html">Cce::Solutions::WorldtubeData</a></td></tr>
+<tr class="memitem:a8b9e90ccc6cf69ae8b85e3c53f354281 inherit pub_types_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a8b9e90ccc6cf69ae8b85e3c53f354281"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::list&lt; <a class="el" href="structCce_1_1Solutions_1_1BouncingBlackHole.html">BouncingBlackHole</a>, <a class="el" href="structCce_1_1Solutions_1_1GaugeWave.html">GaugeWave</a>, <a class="el" href="structCce_1_1Solutions_1_1LinearizedBondiSachs.html">LinearizedBondiSachs</a>, <a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman.html">RobinsonTrautman</a>, <a class="el" href="structCce_1_1Solutions_1_1RotatingSchwarzschild.html">RotatingSchwarzschild</a>, <a class="el" href="structCce_1_1Solutions_1_1TeukolskyWave.html">TeukolskyWave</a> &gt;</td></tr>
+<tr class="separator:a8b9e90ccc6cf69ae8b85e3c53f354281 inherit pub_types_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ee6a73d9bf50ff19a27f7324d1705ab inherit pub_types_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a5ee6a73d9bf50ff19a27f7324d1705ab"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html#a5ee6a73d9bf50ff19a27f7324d1705ab">tags</a> = tmpl::list&lt; <a class="el" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Tags::CauchyCartesianCoords</a>, <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Tags::CauchyCartesianCoords</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Pi.html">GeneralizedHarmonic::Tags::Pi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Phi.html">GeneralizedHarmonic::Tags::Phi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structCce_1_1Tags_1_1News.html">Tags::News</a> &gt;</td></tr>
+<tr class="memdesc:a5ee6a73d9bf50ff19a27f7324d1705ab inherit pub_types_structCce_1_1Solutions_1_1WorldtubeData"><td class="mdescLeft">&#160;</td><td class="mdescRight">The set of available tags provided by the analytic solution. <br /></td></tr>
+<tr class="separator:a5ee6a73d9bf50ff19a27f7324d1705ab inherit pub_types_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a1dbe1635d7e3b40688e90fbf798700d1"><td class="memItemLeft" align="right" valign="top"><a id="a1dbe1635d7e3b40688e90fbf798700d1"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_template</b> (<a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman.html">RobinsonTrautman</a>)</td></tr>
+<tr class="separator:a1dbe1635d7e3b40688e90fbf798700d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01c487cd2a5840bcf78c2c1a16b32c98"><td class="memItemLeft" align="right" valign="top"><a id="a01c487cd2a5840bcf78c2c1a16b32c98"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RobinsonTrautman</b> (CkMigrateMessage *msg) noexcept</td></tr>
+<tr class="separator:a01c487cd2a5840bcf78c2c1a16b32c98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae1d0cc4aff8291a7d1515f7d40254f60"><td class="memItemLeft" align="right" valign="top"><a id="ae1d0cc4aff8291a7d1515f7d40254f60"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RobinsonTrautman</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt;&gt; initial_modes, double extraction_radius, size_t l_max, double tolerance, double start_time, const <a class="el" href="structOptions_1_1Context.html">Options::Context</a> &amp;context)</td></tr>
+<tr class="separator:ae1d0cc4aff8291a7d1515f7d40254f60"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a34a3c0b983ab8cb6ff02169f47c521"><td class="memItemLeft" align="right" valign="top"><a id="a9a34a3c0b983ab8cb6ff02169f47c521"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html">WorldtubeData</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const noexcept override</td></tr>
+<tr class="separator:a9a34a3c0b983ab8cb6ff02169f47c521"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaece4bf283c663136f0950499e300860"><td class="memItemLeft" align="right" valign="top"><a id="aaece4bf283c663136f0950499e300860"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:aaece4bf283c663136f0950499e300860"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7261084179b74595ca456c19df3af2ca"><td class="memItemLeft" align="right" valign="top"><a id="a7261084179b74595ca456c19df3af2ca"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>use_noninertial_news</b> () const noexcept override</td></tr>
+<tr class="separator:a7261084179b74595ca456c19df3af2ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_structCce_1_1Solutions_1_1SphericalMetricData')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html">Cce::Solutions::SphericalMetricData</a></td></tr>
+<tr class="memitem:a1858de335018db653da6e1f66bc430d3 inherit pub_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top"><a id="a1858de335018db653da6e1f66bc430d3"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_abstract</b> (<a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html">SphericalMetricData</a>)</td></tr>
+<tr class="separator:a1858de335018db653da6e1f66bc430d3 inherit pub_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac49b71f5333956acf6ce7d0c08f9ec89 inherit pub_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top"><a id="ac49b71f5333956acf6ce7d0c08f9ec89"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SphericalMetricData</b> (CkMigrateMessage *msg) noexcept</td></tr>
+<tr class="separator:ac49b71f5333956acf6ce7d0c08f9ec89 inherit pub_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc3887433e88cf8b91c5baabed5fdc0f inherit pub_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top"><a id="adc3887433e88cf8b91c5baabed5fdc0f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SphericalMetricData</b> (const double extraction_radius) noexcept</td></tr>
+<tr class="separator:adc3887433e88cf8b91c5baabed5fdc0f inherit pub_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a57125f7385d1891b5366bba68761083e inherit pub_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html#a57125f7385d1891b5366bba68761083e">jacobian</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; SphericaliCartesianJ * &gt; jacobian, size_t l_max) const noexcept</td></tr>
+<tr class="separator:a57125f7385d1891b5366bba68761083e inherit pub_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4ad11f8beb610652633105ee2fd3dfc inherit pub_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html#ad4ad11f8beb610652633105ee2fd3dfc">inverse_jacobian</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; CartesianiSphericalJ * &gt; inverse_jacobian, size_t l_max) const noexcept</td></tr>
+<tr class="separator:ad4ad11f8beb610652633105ee2fd3dfc inherit pub_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a594558a9710605602ffe75bb46ecb3ce inherit pub_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html#a594558a9710605602ffe75bb46ecb3ce">dr_inverse_jacobian</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; CartesianiSphericalJ * &gt; dr_inverse_jacobian, size_t l_max) const noexcept</td></tr>
+<tr class="separator:a594558a9710605602ffe75bb46ecb3ce inherit pub_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b90771136178c8f2ee63acc58444061 inherit pub_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top"><a id="a4b90771136178c8f2ee63acc58444061"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:a4b90771136178c8f2ee63acc58444061 inherit pub_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_structCce_1_1Solutions_1_1WorldtubeData')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html">Cce::Solutions::WorldtubeData</a></td></tr>
+<tr class="memitem:a3c5a0fe64f2a96f97f63bd44be57204a inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a3c5a0fe64f2a96f97f63bd44be57204a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_abstract</b> (<a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html">WorldtubeData</a>)</td></tr>
+<tr class="separator:a3c5a0fe64f2a96f97f63bd44be57204a inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a683ab11633acdf85e9b210e61f9fffa2 inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a683ab11633acdf85e9b210e61f9fffa2"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WorldtubeData</b> (const double extraction_radius) noexcept</td></tr>
+<tr class="separator:a683ab11633acdf85e9b210e61f9fffa2 inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7d9d2b3081f4b02db940f77c46fcd6b inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="ab7d9d2b3081f4b02db940f77c46fcd6b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WorldtubeData</b> (CkMigrateMessage *msg) noexcept</td></tr>
+<tr class="separator:ab7d9d2b3081f4b02db940f77c46fcd6b inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a656fe16b0af8227986385984ca7f432a inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memTemplParams" colspan="2">template&lt;typename... Tags&gt; </td></tr>
+<tr class="memitem:a656fe16b0af8227986385984ca7f432a inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html#a656fe16b0af8227986385984ca7f432a">variables</a> (const size_t output_l_max, const double time, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:a656fe16b0af8227986385984ca7f432a inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve worldtube data represented by the analytic solution, at boundary angular resolution <code>l_max</code> and time <code>time</code>  <a href="structCce_1_1Solutions_1_1WorldtubeData.html#a656fe16b0af8227986385984ca7f432a">More...</a><br /></td></tr>
+<tr class="separator:a656fe16b0af8227986385984ca7f432a inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f809cb42f3245ccab3e276f5a818687 inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a9f809cb42f3245ccab3e276f5a818687"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:a9f809cb42f3245ccab3e276f5a818687 inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c80c8f69ba596071003a87257d8cfa2 inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a6c80c8f69ba596071003a87257d8cfa2"></a>
+virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="structCce_1_1InitializeJ_1_1InitializeJ.html">Cce::InitializeJ::InitializeJ</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_initialize_j</b> (const double) const noexcept</td></tr>
+<tr class="separator:a6c80c8f69ba596071003a87257d8cfa2 inherit pub_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a245a2334899663dca9e865c97dd35e33"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a245a2334899663dca9e865c97dd35e33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:a293dfb0b6a4c9bc6a684f1876f63deb0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman.html#a293dfb0b6a4c9bc6a684f1876f63deb0">prepare_solution</a> (size_t output_l_max, double time) const noexcept override</td></tr>
+<tr class="memdesc:a293dfb0b6a4c9bc6a684f1876f63deb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">The Robinson-Trautman solution performs the time-stepping to advance the internal member scalar used to generate the metric solution to the correct state for <code>time</code>.  <a href="structCce_1_1Solutions_1_1RobinsonTrautman.html#a293dfb0b6a4c9bc6a684f1876f63deb0">More...</a><br /></td></tr>
+<tr class="separator:a293dfb0b6a4c9bc6a684f1876f63deb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4773779c09d52316ad30b682bb3a476"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman.html#ac4773779c09d52316ad30b682bb3a476">spherical_metric</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, ::<a class="el" href="structFrame_1_1Spherical.html">Frame::Spherical</a>&lt;::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt; * &gt; spherical_metric, size_t l_max, double time) const noexcept override</td></tr>
+<tr class="memdesc:ac4773779c09d52316ad30b682bb3a476"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the spherical coordinate metric of the Robinson-Trautman solution generated by the time-evolved scalar \(\omega_{\text{RT}}\).  <a href="structCce_1_1Solutions_1_1RobinsonTrautman.html#ac4773779c09d52316ad30b682bb3a476">More...</a><br /></td></tr>
+<tr class="separator:ac4773779c09d52316ad30b682bb3a476"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad73ed66fbdde31dd0f287b483b0ddc66"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman.html#ad73ed66fbdde31dd0f287b483b0ddc66">dr_spherical_metric</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, ::<a class="el" href="structFrame_1_1Spherical.html">Frame::Spherical</a>&lt;::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt; * &gt; dr_spherical_metric, size_t l_max, double time) const noexcept override</td></tr>
+<tr class="memdesc:ad73ed66fbdde31dd0f287b483b0ddc66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute radial derivative of the spherical coordinate metric of the Robinson-Trautman solution generated by the time-evolved scalar \(\omega_{\text{RT}}\).  <a href="structCce_1_1Solutions_1_1RobinsonTrautman.html#ad73ed66fbdde31dd0f287b483b0ddc66">More...</a><br /></td></tr>
+<tr class="separator:ad73ed66fbdde31dd0f287b483b0ddc66"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac06cd27d53031aa809916d7d43e6139b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman.html#ac06cd27d53031aa809916d7d43e6139b">dt_spherical_metric</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, ::<a class="el" href="structFrame_1_1Spherical.html">Frame::Spherical</a>&lt;::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt; * &gt; dt_spherical_metric, size_t l_max, double time) const noexcept override</td></tr>
+<tr class="memdesc:ac06cd27d53031aa809916d7d43e6139b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute time derivative of the spherical coordinate metric of the Robinson-Trautman solution generated by the time-evolved scalar \(\omega_{\text{RT}}\).  <a href="structCce_1_1Solutions_1_1RobinsonTrautman.html#ac06cd27d53031aa809916d7d43e6139b">More...</a><br /></td></tr>
+<tr class="separator:ac06cd27d53031aa809916d7d43e6139b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85198a2389e630efe16e2b7681585727"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman.html#a85198a2389e630efe16e2b7681585727">variables_impl</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, -2 &gt;&gt; * &gt; News, size_t l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1News.html">Tags::News</a> &gt;) const noexcept override</td></tr>
+<tr class="memdesc:a85198a2389e630efe16e2b7681585727"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the news associated with the Robinson-Trautman solution generated by the time-evolved scalar \(\omega_{\text{RT}}\).  <a href="structCce_1_1Solutions_1_1RobinsonTrautman.html#a85198a2389e630efe16e2b7681585727">More...</a><br /></td></tr>
+<tr class="separator:a85198a2389e630efe16e2b7681585727"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9765260eec9be583717225ad75dbc9c"><td class="memItemLeft" align="right" valign="top"><a id="ab9765260eec9be583717225ad75dbc9c"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; cartesian_coordinates, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Tags::CauchyCartesianCoords</a> &gt;) const noexcept</td></tr>
+<tr class="separator:ab9765260eec9be583717225ad75dbc9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea78278bb48494a69aeb1a8066a8f281"><td class="memItemLeft" align="right" valign="top"><a id="aea78278bb48494a69aeb1a8066a8f281"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dr_cartesian_coordinates, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Tags::CauchyCartesianCoords</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:aea78278bb48494a69aeb1a8066a8f281"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af60554b526e65f28dcf29e6181085fa6"><td class="memItemLeft" align="right" valign="top"><a id="af60554b526e65f28dcf29e6181085fa6"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; spacetime_metric, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept=0</td></tr>
+<tr class="separator:af60554b526e65f28dcf29e6181085fa6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a53a02d37d8f474573cf896a2b9342576"><td class="memItemLeft" align="right" valign="top"><a id="a53a02d37d8f474573cf896a2b9342576"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dt_spacetime_metric, size_t output_l_max, double time, tmpl::type_&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept=0</td></tr>
+<tr class="separator:a53a02d37d8f474573cf896a2b9342576"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91d1e9688e8bff946def057036b58971"><td class="memItemLeft" align="right" valign="top"><a id="a91d1e9688e8bff946def057036b58971"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; pi, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Pi.html">GeneralizedHarmonic::Tags::Pi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a91d1e9688e8bff946def057036b58971"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a37dad7778eed0abb6d2774049170e4b4"><td class="memItemLeft" align="right" valign="top"><a id="a37dad7778eed0abb6d2774049170e4b4"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; d_spacetime_metric, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Phi.html">GeneralizedHarmonic::Tags::Phi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt;) const noexcept=0</td></tr>
+<tr class="separator:a37dad7778eed0abb6d2774049170e4b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac16028ba30bc7a1a50707b4058fc10d7"><td class="memItemLeft" align="right" valign="top"><a id="ac16028ba30bc7a1a50707b4058fc10d7"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; spatial_metric, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:ac16028ba30bc7a1a50707b4058fc10d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84a42a9daa329d4d3379e0cdabc363a6"><td class="memItemLeft" align="right" valign="top"><a id="a84a42a9daa329d4d3379e0cdabc363a6"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dt_spatial_metric, size_t output_l_max, double time, tmpl::type_&lt; ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a84a42a9daa329d4d3379e0cdabc363a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a00c44643f0cf2859b2eb4399f7207744"><td class="memItemLeft" align="right" valign="top"><a id="a00c44643f0cf2859b2eb4399f7207744"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dr_spatial_metric, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a00c44643f0cf2859b2eb4399f7207744"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0281fc5c38a9b2a74976f2fd2e932543"><td class="memItemLeft" align="right" valign="top"><a id="a0281fc5c38a9b2a74976f2fd2e932543"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; shift, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a0281fc5c38a9b2a74976f2fd2e932543"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc8e6bfd2d02d330698f7556b66c87ce"><td class="memItemLeft" align="right" valign="top"><a id="abc8e6bfd2d02d330698f7556b66c87ce"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dt_shift, size_t output_l_max, double time, tmpl::type_&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:abc8e6bfd2d02d330698f7556b66c87ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d37439a67540392492c1471247e82d0"><td class="memItemLeft" align="right" valign="top"><a id="a2d37439a67540392492c1471247e82d0"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dr_shift, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a2d37439a67540392492c1471247e82d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0484059e6cd3271bf52c8d82453f212c"><td class="memItemLeft" align="right" valign="top"><a id="a0484059e6cd3271bf52c8d82453f212c"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; lapse, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a0484059e6cd3271bf52c8d82453f212c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6283b33616b262925ff52e72182176f"><td class="memItemLeft" align="right" valign="top"><a id="ab6283b33616b262925ff52e72182176f"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; dt_lapse, size_t output_l_max, double time, tmpl::type_&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:ab6283b33616b262925ff52e72182176f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a478d23825c68ec9904314afc78b086ec"><td class="memItemLeft" align="right" valign="top"><a id="a478d23825c68ec9904314afc78b086ec"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; dr_lapse, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a478d23825c68ec9904314afc78b086ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4595e07cdd789af4673e057d3c7bf56"><td class="memItemLeft" align="right" valign="top"><a id="ac4595e07cdd789af4673e057d3c7bf56"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, -2 &gt;&gt; * &gt; news, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1News.html">Tags::News</a> &gt;) const noexcept=0</td></tr>
+<tr class="separator:ac4595e07cdd789af4673e057d3c7bf56"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12977ffade3de430ed9ffba1b5dd0294"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman.html#a12977ffade3de430ed9ffba1b5dd0294">variables_impl</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; spacetime_metric, size_t l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept override</td></tr>
+<tr class="memdesc:a12977ffade3de430ed9ffba1b5dd0294"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the Cartesian spacetime metric from the spherical solution provided by the derived classes.  <a href="structCce_1_1Solutions_1_1RobinsonTrautman.html#a12977ffade3de430ed9ffba1b5dd0294">More...</a><br /></td></tr>
+<tr class="separator:a12977ffade3de430ed9ffba1b5dd0294"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ae344aa74360d70eafce42328aab18b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman.html#a4ae344aa74360d70eafce42328aab18b">variables_impl</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dt_spacetime_metric, size_t l_max, double time, tmpl::type_&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept override</td></tr>
+<tr class="memdesc:a4ae344aa74360d70eafce42328aab18b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the time derivative of the Cartesian spacetime metric from the spherical solution provided by the derived classes.  <a href="structCce_1_1Solutions_1_1RobinsonTrautman.html#a4ae344aa74360d70eafce42328aab18b">More...</a><br /></td></tr>
+<tr class="separator:a4ae344aa74360d70eafce42328aab18b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8165f51e803de1aa0f7e8ba814ce23ad"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman.html#a8165f51e803de1aa0f7e8ba814ce23ad">variables_impl</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; d_spacetime_metric, size_t l_max, double time, tmpl::type_&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Phi.html">GeneralizedHarmonic::Tags::Phi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt;) const noexcept override</td></tr>
+<tr class="memdesc:a8165f51e803de1aa0f7e8ba814ce23ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the spatial derivatives of the Cartesian spacetime metric from the spherical solution provided by the derived classes.  <a href="structCce_1_1Solutions_1_1RobinsonTrautman.html#a8165f51e803de1aa0f7e8ba814ce23ad">More...</a><br /></td></tr>
+<tr class="separator:a8165f51e803de1aa0f7e8ba814ce23ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_structCce_1_1Solutions_1_1SphericalMetricData')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html">Cce::Solutions::SphericalMetricData</a></td></tr>
+<tr class="memitem:a12977ffade3de430ed9ffba1b5dd0294 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html#a12977ffade3de430ed9ffba1b5dd0294">variables_impl</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; spacetime_metric, size_t l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept override</td></tr>
+<tr class="memdesc:a12977ffade3de430ed9ffba1b5dd0294 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the Cartesian spacetime metric from the spherical solution provided by the derived classes.  <a href="structCce_1_1Solutions_1_1SphericalMetricData.html#a12977ffade3de430ed9ffba1b5dd0294">More...</a><br /></td></tr>
+<tr class="separator:a12977ffade3de430ed9ffba1b5dd0294 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ae344aa74360d70eafce42328aab18b inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html#a4ae344aa74360d70eafce42328aab18b">variables_impl</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dt_spacetime_metric, size_t l_max, double time, tmpl::type_&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept override</td></tr>
+<tr class="memdesc:a4ae344aa74360d70eafce42328aab18b inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the time derivative of the Cartesian spacetime metric from the spherical solution provided by the derived classes.  <a href="structCce_1_1Solutions_1_1SphericalMetricData.html#a4ae344aa74360d70eafce42328aab18b">More...</a><br /></td></tr>
+<tr class="separator:a4ae344aa74360d70eafce42328aab18b inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8165f51e803de1aa0f7e8ba814ce23ad inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html#a8165f51e803de1aa0f7e8ba814ce23ad">variables_impl</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; d_spacetime_metric, size_t l_max, double time, tmpl::type_&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Phi.html">GeneralizedHarmonic::Tags::Phi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt;) const noexcept override</td></tr>
+<tr class="memdesc:a8165f51e803de1aa0f7e8ba814ce23ad inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the spatial derivatives of the Cartesian spacetime metric from the spherical solution provided by the derived classes.  <a href="structCce_1_1Solutions_1_1SphericalMetricData.html#a8165f51e803de1aa0f7e8ba814ce23ad">More...</a><br /></td></tr>
+<tr class="separator:a8165f51e803de1aa0f7e8ba814ce23ad inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9765260eec9be583717225ad75dbc9c inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top"><a id="ab9765260eec9be583717225ad75dbc9c"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; cartesian_coordinates, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Tags::CauchyCartesianCoords</a> &gt;) const noexcept</td></tr>
+<tr class="separator:ab9765260eec9be583717225ad75dbc9c inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea78278bb48494a69aeb1a8066a8f281 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top"><a id="aea78278bb48494a69aeb1a8066a8f281"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dr_cartesian_coordinates, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Tags::CauchyCartesianCoords</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:aea78278bb48494a69aeb1a8066a8f281 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af60554b526e65f28dcf29e6181085fa6 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top"><a id="af60554b526e65f28dcf29e6181085fa6"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; spacetime_metric, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept=0</td></tr>
+<tr class="separator:af60554b526e65f28dcf29e6181085fa6 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a53a02d37d8f474573cf896a2b9342576 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top"><a id="a53a02d37d8f474573cf896a2b9342576"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dt_spacetime_metric, size_t output_l_max, double time, tmpl::type_&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept=0</td></tr>
+<tr class="separator:a53a02d37d8f474573cf896a2b9342576 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91d1e9688e8bff946def057036b58971 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top"><a id="a91d1e9688e8bff946def057036b58971"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; pi, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Pi.html">GeneralizedHarmonic::Tags::Pi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a91d1e9688e8bff946def057036b58971 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a37dad7778eed0abb6d2774049170e4b4 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top"><a id="a37dad7778eed0abb6d2774049170e4b4"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; d_spacetime_metric, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Phi.html">GeneralizedHarmonic::Tags::Phi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt;) const noexcept=0</td></tr>
+<tr class="separator:a37dad7778eed0abb6d2774049170e4b4 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac16028ba30bc7a1a50707b4058fc10d7 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top"><a id="ac16028ba30bc7a1a50707b4058fc10d7"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; spatial_metric, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:ac16028ba30bc7a1a50707b4058fc10d7 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84a42a9daa329d4d3379e0cdabc363a6 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top"><a id="a84a42a9daa329d4d3379e0cdabc363a6"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dt_spatial_metric, size_t output_l_max, double time, tmpl::type_&lt; ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a84a42a9daa329d4d3379e0cdabc363a6 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a00c44643f0cf2859b2eb4399f7207744 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top"><a id="a00c44643f0cf2859b2eb4399f7207744"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dr_spatial_metric, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a00c44643f0cf2859b2eb4399f7207744 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0281fc5c38a9b2a74976f2fd2e932543 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top"><a id="a0281fc5c38a9b2a74976f2fd2e932543"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; shift, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a0281fc5c38a9b2a74976f2fd2e932543 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc8e6bfd2d02d330698f7556b66c87ce inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top"><a id="abc8e6bfd2d02d330698f7556b66c87ce"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dt_shift, size_t output_l_max, double time, tmpl::type_&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:abc8e6bfd2d02d330698f7556b66c87ce inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d37439a67540392492c1471247e82d0 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top"><a id="a2d37439a67540392492c1471247e82d0"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dr_shift, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a2d37439a67540392492c1471247e82d0 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0484059e6cd3271bf52c8d82453f212c inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top"><a id="a0484059e6cd3271bf52c8d82453f212c"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; lapse, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a0484059e6cd3271bf52c8d82453f212c inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6283b33616b262925ff52e72182176f inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top"><a id="ab6283b33616b262925ff52e72182176f"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; dt_lapse, size_t output_l_max, double time, tmpl::type_&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:ab6283b33616b262925ff52e72182176f inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a478d23825c68ec9904314afc78b086ec inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top"><a id="a478d23825c68ec9904314afc78b086ec"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; dr_lapse, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a478d23825c68ec9904314afc78b086ec inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4595e07cdd789af4673e057d3c7bf56 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top"><a id="ac4595e07cdd789af4673e057d3c7bf56"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, -2 &gt;&gt; * &gt; news, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1News.html">Tags::News</a> &gt;) const noexcept=0</td></tr>
+<tr class="separator:ac4595e07cdd789af4673e057d3c7bf56 inherit pro_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_structCce_1_1Solutions_1_1WorldtubeData')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html">Cce::Solutions::WorldtubeData</a></td></tr>
+<tr class="memitem:a44475110f23b15986822d5cc7350ac21 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memTemplParams" colspan="2"><a id="a44475110f23b15986822d5cc7350ac21"></a>
+template&lt;typename Tag &gt; </td></tr>
+<tr class="memitem:a44475110f23b15986822d5cc7350ac21 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memTemplItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>cache_or_compute</b> (const size_t output_l_max, const double time) const noexcept</td></tr>
+<tr class="separator:a44475110f23b15986822d5cc7350ac21 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9765260eec9be583717225ad75dbc9c inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="ab9765260eec9be583717225ad75dbc9c"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; cartesian_coordinates, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Tags::CauchyCartesianCoords</a> &gt;) const noexcept</td></tr>
+<tr class="separator:ab9765260eec9be583717225ad75dbc9c inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea78278bb48494a69aeb1a8066a8f281 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="aea78278bb48494a69aeb1a8066a8f281"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dr_cartesian_coordinates, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Tags::CauchyCartesianCoords</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:aea78278bb48494a69aeb1a8066a8f281 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91d1e9688e8bff946def057036b58971 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a91d1e9688e8bff946def057036b58971"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; pi, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Pi.html">GeneralizedHarmonic::Tags::Pi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a91d1e9688e8bff946def057036b58971 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac16028ba30bc7a1a50707b4058fc10d7 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="ac16028ba30bc7a1a50707b4058fc10d7"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; spatial_metric, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:ac16028ba30bc7a1a50707b4058fc10d7 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84a42a9daa329d4d3379e0cdabc363a6 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a84a42a9daa329d4d3379e0cdabc363a6"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dt_spatial_metric, size_t output_l_max, double time, tmpl::type_&lt; ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a84a42a9daa329d4d3379e0cdabc363a6 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a00c44643f0cf2859b2eb4399f7207744 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a00c44643f0cf2859b2eb4399f7207744"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dr_spatial_metric, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a00c44643f0cf2859b2eb4399f7207744 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0281fc5c38a9b2a74976f2fd2e932543 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a0281fc5c38a9b2a74976f2fd2e932543"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; shift, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a0281fc5c38a9b2a74976f2fd2e932543 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc8e6bfd2d02d330698f7556b66c87ce inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="abc8e6bfd2d02d330698f7556b66c87ce"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dt_shift, size_t output_l_max, double time, tmpl::type_&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:abc8e6bfd2d02d330698f7556b66c87ce inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d37439a67540392492c1471247e82d0 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a2d37439a67540392492c1471247e82d0"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; * &gt; dr_shift, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a2d37439a67540392492c1471247e82d0 inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0484059e6cd3271bf52c8d82453f212c inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a0484059e6cd3271bf52c8d82453f212c"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; lapse, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a0484059e6cd3271bf52c8d82453f212c inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6283b33616b262925ff52e72182176f inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="ab6283b33616b262925ff52e72182176f"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; dt_lapse, size_t output_l_max, double time, tmpl::type_&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:ab6283b33616b262925ff52e72182176f inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a478d23825c68ec9904314afc78b086ec inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a478d23825c68ec9904314afc78b086ec"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>variables_impl</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; dr_lapse, size_t output_l_max, double time, tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a478d23825c68ec9904314afc78b086ec inherit pro_methods_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header pub_static_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td colspan="2" onclick="javascript:toggleInherit('pub_static_methods_structCce_1_1Solutions_1_1SphericalMetricData')"><img src="closed.png" alt="-"/>&#160;Static Public Member Functions inherited from <a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html">Cce::Solutions::SphericalMetricData</a></td></tr>
+<tr class="memitem:a7a39169334118f0771e84fe2ce36fe36 inherit pub_static_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html#a7a39169334118f0771e84fe2ce36fe36">dr_jacobian</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; SphericaliCartesianJ * &gt; dr_jacobian, size_t l_max) noexcept</td></tr>
+<tr class="separator:a7a39169334118f0771e84fe2ce36fe36 inherit pub_static_methods_structCce_1_1Solutions_1_1SphericalMetricData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_types_structCce_1_1Solutions_1_1WorldtubeData"><td colspan="2" onclick="javascript:toggleInherit('pro_types_structCce_1_1Solutions_1_1WorldtubeData')"><img src="closed.png" alt="-"/>&#160;Protected Types inherited from <a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html">Cce::Solutions::WorldtubeData</a></td></tr>
+<tr class="memitem:ac0ff8140807f63097b5e202743b6b4bc inherit pro_types_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="ac0ff8140807f63097b5e202743b6b4bc"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>IntermediateCacheTuple</b> = tuples::tagged_tuple_from_typelist&lt; tmpl::transform&lt; tmpl::list&lt; <a class="el" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Tags::CauchyCartesianCoords</a>, <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Tags::CauchyCartesianCoords</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Pi.html">GeneralizedHarmonic::Tags::Pi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Phi.html">GeneralizedHarmonic::Tags::Phi</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, ::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structCce_1_1Tags_1_1Dr.html">Tags::Dr</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structCce_1_1Tags_1_1News.html">Tags::News</a> &gt;, tmpl::bind&lt; <a class="el" href="structCce_1_1Solutions_1_1WorldtubeData_1_1IntermediateCacheTag.html">IntermediateCacheTag</a>, tmpl::_1 &gt; &gt;&gt;</td></tr>
+<tr class="separator:ac0ff8140807f63097b5e202743b6b4bc inherit pro_types_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_attribs_structCce_1_1Solutions_1_1WorldtubeData"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_structCce_1_1Solutions_1_1WorldtubeData')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html">Cce::Solutions::WorldtubeData</a></td></tr>
+<tr class="memitem:a4e31fc36bb7a0643cf30d8d5420e1447 inherit pro_attribs_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a4e31fc36bb7a0643cf30d8d5420e1447"></a>
+IntermediateCacheTuple&#160;</td><td class="memItemRight" valign="bottom"><b>intermediate_cache_</b></td></tr>
+<tr class="separator:a4e31fc36bb7a0643cf30d8d5420e1447 inherit pro_attribs_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a57a9b50a228cb183c27ff1bc3578d572 inherit pro_attribs_structCce_1_1Solutions_1_1WorldtubeData"><td class="memItemLeft" align="right" valign="top"><a id="a57a9b50a228cb183c27ff1bc3578d572"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>extraction_radius_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::quiet_NaN()</td></tr>
+<tr class="separator:a57a9b50a228cb183c27ff1bc3578d572 inherit pro_attribs_structCce_1_1Solutions_1_1WorldtubeData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>An analytic solution representing a specialization of the radiative Robinson-Trautman solution described in <a class="el" href="citelist.html#CITEREF_Derry1970fk">[35]</a>. </p>
+<h3>Details</h3>
+<p>This solution is not quite analytic, in the sense that there is a single scalar field that must be evolved. Ultimately, it is a partial specialization of the Characteristic equations such that \(J = 0\) and the evolution equations have been manipulated to give a time evolution equation for \(e^{-2 \beta}\), which is equivalent to the Robinson-Trautman scalar \(\omega_{\text{RT}}\) (denoted \(W\) in <a class="el" href="citelist.html#CITEREF_Derry1970fk">[35]</a> &ndash; we deviate from their notation because the symbol \(W\) is already used elsewhere in the CCE system).</p>
+<dl class="section note"><dt>Note</dt><dd>The value of \(\omega_{\text{RT}}\) should be real and near 1, which is imposed by the solution itself, any modes specified in the input file are treated as perturbations to the leading value of 1.0 for the Robinson-Trautman scalar \(\omega_{\text{RT}}\).</dd>
+<dd>
+The use of substep time-steppers in conjunction with <code><a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman.html" title="An analytic solution representing a specialization of the radiative Robinson-Trautman solution descri...">RobinsonTrautman</a></code> analytic data is explictly forbidden by checks in <code><a class="el" href="structCce_1_1Actions_1_1InitializeWorldtubeBoundary.html" title="Generic action for initializing various worldtube boundary components.">Cce::Actions::InitializeWorldtubeBoundary</a></code>. The reason is that any time the <code><a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman.html" title="An analytic solution representing a specialization of the radiative Robinson-Trautman solution descri...">RobinsonTrautman</a></code> receives a request for data at a time in the past of its current state, it must re-start its internal time stepper from the beginning of the evolution. This is a reasonable cost for multistep methods that only have non-ordered time steps during self-start, but will lead to \(\mathcal O(N^2)\) internal steps in the <code><a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman.html" title="An analytic solution representing a specialization of the radiative Robinson-Trautman solution descri...">RobinsonTrautman</a></code> solution if a substep method is used, where \(N\) is the number of steps performed by the substep method. If you find an unavoidable need to use <code><a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman.html" title="An analytic solution representing a specialization of the radiative Robinson-Trautman solution descri...">RobinsonTrautman</a></code> with a substep method, you will either need to only do so for very short evolutions, or need to write more sophisticated caching of the internal time step data. </dd></dl>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="ad73ed66fbdde31dd0f287b483b0ddc66"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad73ed66fbdde31dd0f287b483b0ddc66">&#9670;&nbsp;</a></span>dr_spherical_metric()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Cce::Solutions::RobinsonTrautman::dr_spherical_metric </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, ::<a class="el" href="structFrame_1_1Spherical.html">Frame::Spherical</a>&lt;::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt; * &gt;&#160;</td>
+          <td class="paramname"><em>dr_spherical_metric</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>time</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">protected</span><span class="mlabel">virtual</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute radial derivative of the spherical coordinate metric of the Robinson-Trautman solution generated by the time-evolved scalar \(\omega_{\text{RT}}\). </p>
+<h3>Details</h3>
+<p>The radial derivative (at constant time t) of the Robinson-Trautman solution is obtained by differentiating the expressions from the documentation for <code><a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman.html#ac4773779c09d52316ad30b682bb3a476" title="Compute the spherical coordinate metric of the Robinson-Trautman solution generated by the time-evolv...">RobinsonTrautman::spherical_metric()</a></code>:</p>
+<p class="formulaDsp">
+\begin{align*} (\partial_r g_{a b} + \partial_t g_{a b}) dx^a dx^b = - (\omega_{\text{RT}} (r \partial_r W + W) - 2 r U \bar U - r^2 (\bar U\partial_r U + U \partial_r \bar U)) (dt - dr)^2 - 2 r U^A q_{A B} dx^B (dt - dr) + 2 r q_{A B} dx^A dx^B \end{align*}
+</p>
+<p>where \(q_{A B}\) represents the angular unit sphere metric, and the remaining Bondi-Sachs scalars and angular tensors are defined in terms of the Robinson-Trautman scalar \(\omega_{\text{RT}}\)</p>
+<p class="formulaDsp">
+\begin{align*} W &amp;= \frac{1}{r}\left(\omega_{\text{RT}} + \eth \bar \eth \omega_{\text{RT}} - 1\right) - \frac{2}{r^2 \omega_{\text{RT}}^2}\\ \partial_r W &amp;= -\frac{1}{r^2} \left(\omega_{\text{RT}} + \eth \bar \eth \omega_{\text{RT}} - 1\right) + \frac{4}{r^3 \omega_{\text{RT}}^2}\\ U &amp;\equiv U^A q_A = \frac{\eth \omega_{\text{RT}}}{r}. \end{align*}
+</p>
+<p> and \(q_A\) is the angular dyad on the unit sphere. The Robinson-Trautman scalar \(\omega_{\text{RT}}\) is independent of the Bondi radius \(r\), so all radial derivatives of \(\omega_{\text{RT}}\) have been dropped </p>
+
+<p>Implements <a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html#a6a5ca08cb6c35e91d52e5f315a29ac46">Cce::Solutions::SphericalMetricData</a>.</p>
+
+</div>
+</div>
+<a id="ac06cd27d53031aa809916d7d43e6139b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac06cd27d53031aa809916d7d43e6139b">&#9670;&nbsp;</a></span>dt_spherical_metric()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Cce::Solutions::RobinsonTrautman::dt_spherical_metric </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, ::<a class="el" href="structFrame_1_1Spherical.html">Frame::Spherical</a>&lt;::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt; * &gt;&#160;</td>
+          <td class="paramname"><em>dt_spherical_metric</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>time</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">protected</span><span class="mlabel">virtual</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute time derivative of the spherical coordinate metric of the Robinson-Trautman solution generated by the time-evolved scalar \(\omega_{\text{RT}}\). </p>
+<h3>Details</h3>
+<p>The time derivative of the Robinson-Trautman solution is obtained by differentiating the expressions from the documentation for <code><a class="el" href="structCce_1_1Solutions_1_1RobinsonTrautman.html#ac4773779c09d52316ad30b682bb3a476" title="Compute the spherical coordinate metric of the Robinson-Trautman solution generated by the time-evolv...">RobinsonTrautman::spherical_metric()</a></code>:</p>
+<p class="formulaDsp">
+\begin{align*} \partial_t g_{a b} dx^a dx^b = -( \partial_u \omega_{\text{RT}} (r W + 1) + \omega_{\text{RT}} \partial_u W - r^2 (\bar U \partial_u U + U \partial_u \bar U)) (dt - dr)^2 - 2 \partial_u \omega_{\text{RT}} (dt - dr) dr - 2 r^2 \partial_u U^A q_{AB} dx^B (dt - dr), \end{align*}
+</p>
+<p>where \(q_{A B}\) represents the angular unit sphere metric, and the remaining Bondi-Sachs scalars and angular tensors are defined in terms of the Robinson-Trautman scalar \(\omega_{\text{RT}}\)</p>
+<p class="formulaDsp">
+\begin{align*} W &amp;= \frac{1}{r}\left(\omega_{\text{RT}} + \eth \bar \eth \omega_{\text{RT}} - 1\right) - \frac{2}{r^2 \omega_{\text{RT}}^2}\\ \partial_u W &amp;= \frac{1}{r}\left(\partial_u \omega_{\text{RT}} + \eth \bar \eth \partial_u \omega_{\text{RT}}\right) + \frac{4 \partial_u \omega_{\text{RT}}}{r^2 \omega_{\text{RT}}^3} \\ \partial_u U &amp;= q_A \partial_u U^A = \frac{\eth \partial_u \omega_{\text{RT}}}{r}, \end{align*}
+</p>
+<p>and \(q_A\) is the angular dyad on the unit sphere; and the time derivative of the Robinson-Trautman scalar \(\omega_{\text{RT}}\) is</p>
+<p class="formulaDsp">
+\[ \partial_u \omega_{\text{RT}} = \frac{1}{12} \left(-\omega^4_{\text{RT}} \eth^2 \bar \eth^2 \omega_{\text{RT}} + \omega_{\text{RT}}^3 (\eth^2 \omega_{\text{RT}}) (\bar \eth^2 \omega_{\text{RT}}) \right) \]
+</p>
+ 
+<p>Implements <a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html#a7184ade63eb24f58e2e0500053c386f0">Cce::Solutions::SphericalMetricData</a>.</p>
+
+</div>
+</div>
+<a id="a293dfb0b6a4c9bc6a684f1876f63deb0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a293dfb0b6a4c9bc6a684f1876f63deb0">&#9670;&nbsp;</a></span>prepare_solution()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Cce::Solutions::RobinsonTrautman::prepare_solution </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>output_l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>time</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">protected</span><span class="mlabel">virtual</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The Robinson-Trautman solution performs the time-stepping to advance the internal member scalar used to generate the metric solution to the correct state for <code>time</code>. </p>
+<h3>Details</h3>
+<p>The generating scalar \(\omega_{\text{RT}}\) is evolved using equation (2.5) from <a class="el" href="citelist.html#CITEREF_Derry1970fk">[35]</a> (manipulated to a form convenient for our numerical utilities)</p>
+<p class="formulaDsp">
+\[ \partial_u \omega_{\text{RT}} = - \left(\omega^4_{\text{RT}} \eth^2 \bar \eth^2 \omega_{\text{RT}} - \omega_{\text{RT}}^3 (\eth^2 \omega_{\text{RT}}) (\bar \eth^2 \omega_{\text{RT}}) \right) \]
+</p>
+<p>As the scalar \(\omega_{\text{RT}}\) is evolved, it is filtered by zeroing the highest two angular modes. </p>
+
+<p>Implements <a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html">Cce::Solutions::WorldtubeData</a>.</p>
+
+</div>
+</div>
+<a id="ac4773779c09d52316ad30b682bb3a476"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac4773779c09d52316ad30b682bb3a476">&#9670;&nbsp;</a></span>spherical_metric()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Cce::Solutions::RobinsonTrautman::spherical_metric </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, ::<a class="el" href="structFrame_1_1Spherical.html">Frame::Spherical</a>&lt;::<a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt; * &gt;&#160;</td>
+          <td class="paramname"><em>spherical_metric</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>time</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">protected</span><span class="mlabel">virtual</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the spherical coordinate metric of the Robinson-Trautman solution generated by the time-evolved scalar \(\omega_{\text{RT}}\). </p>
+<h3>Details</h3>
+<p>The spacetime metric of the Robinson-Trautman solution can be expressed as a specialization of the Bondi-Sachs metric (note the metric signature change as compared to equation (1.2) from <a class="el" href="citelist.html#CITEREF_Derry1970fk">[35]</a>)</p>
+<p class="formulaDsp">
+\[ ds^2 = -((r W + 1) \omega_{\text{RT}} - r^2 U \bar U) (dt - dr)^2 - 2 \omega_{\text{RT}} (dt - dr) dr - 2 r^2 U^A q_{AB} dx^B (dt - dr) + r^2 q_{A B} dx^A dx^B, \]
+</p>
+<p>where \(q_{A B}\) represents the angular unit sphere metric, and the remaining Bondi-Sachs scalars and angular tensors are defined in terms of the Robinson-Trautman scalar \(\omega_{\text{RT}}\)</p>
+<p class="formulaDsp">
+\begin{align*} W &amp;= \frac{1}{r}\left(\omega_{\text{RT}} + \eth \bar \eth \omega_{\text{RT}} - 1\right) - \frac{2}{r^2 \omega_{\text{RT}}^2}\\ U &amp;\equiv U^A q_A = \frac{\eth \omega_{\text{RT}}}{r}. \end{align*}
+</p>
+<p> and \(q_A\) is the angular dyad on the unit sphere.</p>
+<p>The angular part of the metric can be expressed in terms of the \(U\) scalar as</p>
+<p class="formulaDsp">
+\begin{align*} g_{u \theta} &amp;= r^2 \Re U\\ g_{u \phi} &amp;= r^2 \Im U \end{align*}
+</p>
+ 
+<p>Implements <a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html#a3bca5d17c2faba19fe4c12f35fabefcd">Cce::Solutions::SphericalMetricData</a>.</p>
+
+</div>
+</div>
+<a id="a85198a2389e630efe16e2b7681585727"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a85198a2389e630efe16e2b7681585727">&#9670;&nbsp;</a></span>variables_impl() <span class="overload">[1/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Cce::Solutions::RobinsonTrautman::variables_impl </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, -2 &gt;&gt; * &gt;&#160;</td>
+          <td class="paramname"><em>News</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>time</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">tmpl::type_&lt; <a class="el" href="structCce_1_1Tags_1_1News.html">Tags::News</a> &gt;&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">protected</span><span class="mlabel">virtual</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the news associated with the Robinson-Trautman solution generated by the time-evolved scalar \(\omega_{\text{RT}}\). </p>
+<h3>Details</h3>
+<p>The Bondi-Sachs news in the Robinson-Trautman solution is</p>
+<p class="formulaDsp">
+\begin{align*} N = \frac{\bar \eth \bar \eth \omega_{\text{RT}}}{\omega_{\text{RT}}} \end{align*}
+</p>
+ 
+<p>Implements <a class="el" href="structCce_1_1Solutions_1_1WorldtubeData.html">Cce::Solutions::WorldtubeData</a>.</p>
+
+</div>
+</div>
+<a id="a4ae344aa74360d70eafce42328aab18b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4ae344aa74360d70eafce42328aab18b">&#9670;&nbsp;</a></span>variables_impl() <span class="overload">[2/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Cce::Solutions::SphericalMetricData::variables_impl</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">protected</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Computes the time derivative of the Cartesian spacetime metric from the spherical solution provided by the derived classes. </p>
+<h3>Details</h3>
+<p>The derived classes provide the time derivative of the spherical metric data via the virtual function <code><a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html#a7184ade63eb24f58e2e0500053c386f0" title="Must be overriden in the derived class; should compute the first time derivative of the spacetime met...">SphericalMetricData::dt_spherical_metric()</a></code> at a resolution determined by the <code>l_max</code> argument. This function performs the coordinate transformation using the Jacobian computed from <code><a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html#ad4ad11f8beb610652633105ee2fd3dfc">SphericalMetricData::inverse_jacobian()</a></code>. </p>
+
+</div>
+</div>
+<a id="a12977ffade3de430ed9ffba1b5dd0294"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a12977ffade3de430ed9ffba1b5dd0294">&#9670;&nbsp;</a></span>variables_impl() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Cce::Solutions::SphericalMetricData::variables_impl</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">protected</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Computes the Cartesian spacetime metric from the spherical solution provided by the derived classes. </p>
+<h3>Details</h3>
+<p>The derived classes provide spherical metric data via the virtual function <code><a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html#a3bca5d17c2faba19fe4c12f35fabefcd" title="Must be overriden in the derived class; should compute the spacetime metric of the analytic solution ...">SphericalMetricData::spherical_metric()</a></code> at a resolution determined by the <code>l_max</code> argument. This function performs the coordinate transformation using the Jacobian computed from <code><a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html#ad4ad11f8beb610652633105ee2fd3dfc">SphericalMetricData::inverse_jacobian()</a></code>. </p>
+
+</div>
+</div>
+<a id="a8165f51e803de1aa0f7e8ba814ce23ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8165f51e803de1aa0f7e8ba814ce23ad">&#9670;&nbsp;</a></span>variables_impl() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Cce::Solutions::SphericalMetricData::variables_impl</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">protected</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Computes the spatial derivatives of the Cartesian spacetime metric from the spherical solution provided by the derived classes. </p>
+<h3>Details</h3>
+<p>The derived classes provide the radial derivative of the spherical metric data via the virtual function <code><a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html#a6a5ca08cb6c35e91d52e5f315a29ac46" title="Must be overriden in the derived class; should compute the first radial derivative of the spacetime m...">SphericalMetricData::dr_spherical_metric()</a></code> at a resolution determined by the <code>l_max_</code> argument. This function performs the additional angular derivatives necessary to assemble the full spatial derivative and performs the coordinate transformation to Cartesian coordinates via the Jacobians computed in <code><a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html#ad4ad11f8beb610652633105ee2fd3dfc">SphericalMetricData::inverse_jacobian()</a></code> and <code><a class="el" href="structCce_1_1Solutions_1_1SphericalMetricData.html#ad4ad11f8beb610652633105ee2fd3dfc">SphericalMetricData::inverse_jacobian()</a></code>. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="a245a2334899663dca9e865c97dd35e33"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a245a2334899663dca9e865c97dd35e33">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> Cce::Solutions::RobinsonTrautman::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Analytic solution representing worldtube data for the nonlinear &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;semi-analytic Robinson-Trautman metric, which requires a single &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;scalar on the boundary to be evolved to determine the metric&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/Systems/Cce/AnalyticSolutions/<a class="el" href="RobinsonTrautman_8hpp_source.html">RobinsonTrautman.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

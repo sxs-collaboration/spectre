@@ -1,0 +1,330 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: TimeSteppers::BoundaryHistory&lt; LocalVars, RemoteVars, CouplingResult &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceTimeSteppers.html">TimeSteppers</a></li><li class="navelem"><a class="el" href="classTimeSteppers_1_1BoundaryHistory.html">BoundaryHistory</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classTimeSteppers_1_1BoundaryHistory-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">TimeSteppers::BoundaryHistory&lt; LocalVars, RemoteVars, CouplingResult &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__TimeSteppersGroup.html">Time Steppers</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><code>#include &lt;<a class="el" href="BoundaryHistory_8hpp_source.html">BoundaryHistory.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:aa53ce64a9a5fab0e85e236e200d9b6ae"><td class="memItemLeft" align="right" valign="top"><a id="aa53ce64a9a5fab0e85e236e200d9b6ae"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>local_iterator</b> = IteratorType&lt; LocalVars &gt;</td></tr>
+<tr class="separator:aa53ce64a9a5fab0e85e236e200d9b6ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3113d9799c810e3ce46f969836c9e79b"><td class="memItemLeft" align="right" valign="top"><a id="a3113d9799c810e3ce46f969836c9e79b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>remote_iterator</b> = IteratorType&lt; RemoteVars &gt;</td></tr>
+<tr class="separator:a3113d9799c810e3ce46f969836c9e79b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a254a7a75305be5f866cbc5b86a9a664c"><td class="memItemLeft" align="right" valign="top"><a id="a254a7a75305be5f866cbc5b86a9a664c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryHistory</b> (const <a class="el" href="classTimeSteppers_1_1BoundaryHistory.html">BoundaryHistory</a> &amp;)=delete</td></tr>
+<tr class="separator:a254a7a75305be5f866cbc5b86a9a664c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91ce4ba2899ba41be9559a7f34745d12"><td class="memItemLeft" align="right" valign="top"><a id="a91ce4ba2899ba41be9559a7f34745d12"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryHistory</b> (<a class="el" href="classTimeSteppers_1_1BoundaryHistory.html">BoundaryHistory</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a91ce4ba2899ba41be9559a7f34745d12"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac685acf5c7cc33ed8f2d968366e118f9"><td class="memItemLeft" align="right" valign="top"><a id="ac685acf5c7cc33ed8f2d968366e118f9"></a>
+<a class="el" href="classTimeSteppers_1_1BoundaryHistory.html">BoundaryHistory</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classTimeSteppers_1_1BoundaryHistory.html">BoundaryHistory</a> &amp;)=delete</td></tr>
+<tr class="separator:ac685acf5c7cc33ed8f2d968366e118f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac7a9703e36aac407e15b2e642336f490"><td class="memItemLeft" align="right" valign="top"><a id="ac7a9703e36aac407e15b2e642336f490"></a>
+<a class="el" href="classTimeSteppers_1_1BoundaryHistory.html">BoundaryHistory</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classTimeSteppers_1_1BoundaryHistory.html">BoundaryHistory</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:ac7a9703e36aac407e15b2e642336f490"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d614962c9435b32b44a09bc1b4ea915"><td class="memItemLeft" align="right" valign="top"><a id="a5d614962c9435b32b44a09bc1b4ea915"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryHistory</b> (const size_t <a class="el" href="classTimeSteppers_1_1BoundaryHistory.html#a9c4de37f24a80ef33ea47016a1af89fb">integration_order</a>) noexcept</td></tr>
+<tr class="separator:a5d614962c9435b32b44a09bc1b4ea915"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ace5ebb61a45824d5132afff8d259c9a6"><td class="memItemLeft" align="right" valign="top"><a id="ace5ebb61a45824d5132afff8d259c9a6"></a>
+const LocalVars &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1BoundaryHistory.html#ace5ebb61a45824d5132afff8d259c9a6">local_data</a> (const <a class="el" href="classTimeStepId.html">TimeStepId</a> &amp;time_id) const noexcept</td></tr>
+<tr class="memdesc:ace5ebb61a45824d5132afff8d259c9a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Look up the stored local data at the <code>time_id</code>. It is an error to request data at a <code>time_id</code> that has not been inserted yet. <br /></td></tr>
+<tr class="separator:ace5ebb61a45824d5132afff8d259c9a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c129e60609c723d56d18b45b008a9ae"><td class="memTemplParams" colspan="2"><a id="a0c129e60609c723d56d18b45b008a9ae"></a>
+template&lt;typename Coupling &gt; </td></tr>
+<tr class="memitem:a0c129e60609c723d56d18b45b008a9ae"><td class="memTemplItemLeft" align="right" valign="top">const CouplingResult &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1BoundaryHistory.html#a0c129e60609c723d56d18b45b008a9ae">coupling</a> (Coupling &amp;&amp;c, const local_iterator &amp;local, const remote_iterator &amp;remote) const noexcept</td></tr>
+<tr class="memdesc:a0c129e60609c723d56d18b45b008a9ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate the coupling function at the given local and remote history entries. The coupling function will be passed the local and remote FluxVars and should return a CouplingResult. Values are cached internally, so callers should ensure that the coupling functions provided on separate calls produce the same result. <br /></td></tr>
+<tr class="separator:a0c129e60609c723d56d18b45b008a9ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a524e974cdb9edf26d6524d52486d62bd"><td class="memItemLeft" align="right" valign="top"><a id="a524e974cdb9edf26d6524d52486d62bd"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a524e974cdb9edf26d6524d52486d62bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a9c4de37f24a80ef33ea47016a1af89fb"><td class="memItemLeft" align="right" valign="top"><a id="a9c4de37f24a80ef33ea47016a1af89fb"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1BoundaryHistory.html#a9c4de37f24a80ef33ea47016a1af89fb">integration_order</a> () const noexcept</td></tr>
+<tr class="memdesc:a9c4de37f24a80ef33ea47016a1af89fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">The current order of integration. This should match the value in the <a class="el" href="classTimeSteppers_1_1History.html">History</a>. <br /></td></tr>
+<tr class="separator:a9c4de37f24a80ef33ea47016a1af89fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a487c0193469b02bc7b6b44f18253f83c"><td class="memItemLeft" align="right" valign="top"><a id="a487c0193469b02bc7b6b44f18253f83c"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1BoundaryHistory.html#a487c0193469b02bc7b6b44f18253f83c">integration_order</a> (const size_t integration_order) noexcept</td></tr>
+<tr class="memdesc:a487c0193469b02bc7b6b44f18253f83c"><td class="mdescLeft">&#160;</td><td class="mdescRight">The current order of integration. This should match the value in the <a class="el" href="classTimeSteppers_1_1History.html">History</a>. <br /></td></tr>
+<tr class="separator:a487c0193469b02bc7b6b44f18253f83c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a5f3340437f5d3108fd56364bc2724e2f"><td class="memItemLeft" align="right" valign="top"><a id="a5f3340437f5d3108fd56364bc2724e2f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1BoundaryHistory.html#a5f3340437f5d3108fd56364bc2724e2f">local_insert</a> (const <a class="el" href="classTimeStepId.html">TimeStepId</a> &amp;time_id, LocalVars vars) noexcept</td></tr>
+<tr class="memdesc:a5f3340437f5d3108fd56364bc2724e2f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a new value to the end of the history of the indicated side. <br /></td></tr>
+<tr class="separator:a5f3340437f5d3108fd56364bc2724e2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab618c2c0825926f8b9b132380bc422ae"><td class="memItemLeft" align="right" valign="top"><a id="ab618c2c0825926f8b9b132380bc422ae"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1BoundaryHistory.html#ab618c2c0825926f8b9b132380bc422ae">remote_insert</a> (const <a class="el" href="classTimeStepId.html">TimeStepId</a> &amp;time_id, RemoteVars vars) noexcept</td></tr>
+<tr class="memdesc:ab618c2c0825926f8b9b132380bc422ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a new value to the end of the history of the indicated side. <br /></td></tr>
+<tr class="separator:ab618c2c0825926f8b9b132380bc422ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a955fb391df713e018b18b5474773d69c"><td class="memItemLeft" align="right" valign="top"><a id="a955fb391df713e018b18b5474773d69c"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1BoundaryHistory.html#a955fb391df713e018b18b5474773d69c">local_insert_initial</a> (const <a class="el" href="classTimeStepId.html">TimeStepId</a> &amp;time_id, LocalVars vars) noexcept</td></tr>
+<tr class="memdesc:a955fb391df713e018b18b5474773d69c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a new value to the front of the history of the indicated side. This is often convenient for setting initial data. <br /></td></tr>
+<tr class="separator:a955fb391df713e018b18b5474773d69c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a5f6c9fdf1c05d05504ae09e4f4af80"><td class="memItemLeft" align="right" valign="top"><a id="a9a5f6c9fdf1c05d05504ae09e4f4af80"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1BoundaryHistory.html#a9a5f6c9fdf1c05d05504ae09e4f4af80">remote_insert_initial</a> (const <a class="el" href="classTimeStepId.html">TimeStepId</a> &amp;time_id, RemoteVars vars) noexcept</td></tr>
+<tr class="memdesc:a9a5f6c9fdf1c05d05504ae09e4f4af80"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a new value to the front of the history of the indicated side. This is often convenient for setting initial data. <br /></td></tr>
+<tr class="separator:a9a5f6c9fdf1c05d05504ae09e4f4af80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a0cf542a24e379a2e13d99ad3597c5b2d"><td class="memItemLeft" align="right" valign="top"><a id="a0cf542a24e379a2e13d99ad3597c5b2d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1BoundaryHistory.html#a0cf542a24e379a2e13d99ad3597c5b2d">local_mark_unneeded</a> (const local_iterator &amp;first_needed) noexcept</td></tr>
+<tr class="memdesc:a0cf542a24e379a2e13d99ad3597c5b2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mark all data before the passed point in history on the indicated side as unneeded so it can be removed. Calling this directly should not often be necessary, as it is handled internally by the time steppers. <br /></td></tr>
+<tr class="separator:a0cf542a24e379a2e13d99ad3597c5b2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0074a72bb84b19e00136a2dcf20c0820"><td class="memItemLeft" align="right" valign="top"><a id="a0074a72bb84b19e00136a2dcf20c0820"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1BoundaryHistory.html#a0074a72bb84b19e00136a2dcf20c0820">remote_mark_unneeded</a> (const remote_iterator &amp;first_needed) noexcept</td></tr>
+<tr class="memdesc:a0074a72bb84b19e00136a2dcf20c0820"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mark all data before the passed point in history on the indicated side as unneeded so it can be removed. Calling this directly should not often be necessary, as it is handled internally by the time steppers. <br /></td></tr>
+<tr class="separator:a0074a72bb84b19e00136a2dcf20c0820"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ab728a14e9407a6003a3a522b3a5fd22a"><td class="memItemLeft" align="right" valign="top"><a id="ab728a14e9407a6003a3a522b3a5fd22a"></a>
+local_iterator&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1BoundaryHistory.html#ab728a14e9407a6003a3a522b3a5fd22a">local_begin</a> () const noexcept</td></tr>
+<tr class="memdesc:ab728a14e9407a6003a3a522b3a5fd22a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access to the sequence of times on the indicated side. <br /></td></tr>
+<tr class="separator:ab728a14e9407a6003a3a522b3a5fd22a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa81e0228563b2077a93dc1e5a687d506"><td class="memItemLeft" align="right" valign="top"><a id="aa81e0228563b2077a93dc1e5a687d506"></a>
+local_iterator&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1BoundaryHistory.html#aa81e0228563b2077a93dc1e5a687d506">local_end</a> () const noexcept</td></tr>
+<tr class="memdesc:aa81e0228563b2077a93dc1e5a687d506"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access to the sequence of times on the indicated side. <br /></td></tr>
+<tr class="separator:aa81e0228563b2077a93dc1e5a687d506"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a150d0a99dbe7b2508cbfb28fc3c84aff"><td class="memItemLeft" align="right" valign="top"><a id="a150d0a99dbe7b2508cbfb28fc3c84aff"></a>
+remote_iterator&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1BoundaryHistory.html#a150d0a99dbe7b2508cbfb28fc3c84aff">remote_begin</a> () const noexcept</td></tr>
+<tr class="memdesc:a150d0a99dbe7b2508cbfb28fc3c84aff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access to the sequence of times on the indicated side. <br /></td></tr>
+<tr class="separator:a150d0a99dbe7b2508cbfb28fc3c84aff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc938cbc361e14e9cb77b001aae287d7"><td class="memItemLeft" align="right" valign="top"><a id="abc938cbc361e14e9cb77b001aae287d7"></a>
+remote_iterator&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1BoundaryHistory.html#abc938cbc361e14e9cb77b001aae287d7">remote_end</a> () const noexcept</td></tr>
+<tr class="memdesc:abc938cbc361e14e9cb77b001aae287d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access to the sequence of times on the indicated side. <br /></td></tr>
+<tr class="separator:abc938cbc361e14e9cb77b001aae287d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a03ea0eacaa4255a2179f2353b02daf76"><td class="memItemLeft" align="right" valign="top"><a id="a03ea0eacaa4255a2179f2353b02daf76"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1BoundaryHistory.html#a03ea0eacaa4255a2179f2353b02daf76">local_size</a> () const noexcept</td></tr>
+<tr class="memdesc:a03ea0eacaa4255a2179f2353b02daf76"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access to the sequence of times on the indicated side. <br /></td></tr>
+<tr class="separator:a03ea0eacaa4255a2179f2353b02daf76"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1706dee0e456069357a89fc09de555f3"><td class="memItemLeft" align="right" valign="top"><a id="a1706dee0e456069357a89fc09de555f3"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1BoundaryHistory.html#a1706dee0e456069357a89fc09de555f3">remote_size</a> () const noexcept</td></tr>
+<tr class="memdesc:a1706dee0e456069357a89fc09de555f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access to the sequence of times on the indicated side. <br /></td></tr>
+<tr class="separator:a1706dee0e456069357a89fc09de555f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename LocalVars, typename RemoteVars, typename CouplingResult&gt;<br />
+class TimeSteppers::BoundaryHistory&lt; LocalVars, RemoteVars, CouplingResult &gt;</h3>
+
+<p><a class="el" href="classTimeSteppers_1_1History.html">History</a> data used by a <a class="el" href="classTimeStepper.html">TimeStepper</a> for boundary integration. </p><dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">LocalVars</td><td>local variables passed to the boundary coupling </td></tr>
+    <tr><td class="paramname">RemoteVars</td><td>remote variables passed to the boundary coupling </td></tr>
+    <tr><td class="paramname">CouplingResult</td><td>result of the coupling function </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Time/<a class="el" href="BoundaryHistory_8hpp_source.html">BoundaryHistory.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

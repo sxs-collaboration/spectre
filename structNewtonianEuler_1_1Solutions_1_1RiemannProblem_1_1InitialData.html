@@ -1,0 +1,297 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: NewtonianEuler::Solutions::RiemannProblem&lt; Dim &gt;::InitialData Struct Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceNewtonianEuler.html">NewtonianEuler</a></li><li class="navelem"><a class="el" href="namespaceNewtonianEuler_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="classNewtonianEuler_1_1Solutions_1_1RiemannProblem.html">RiemannProblem</a></li><li class="navelem"><a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1InitialData.html">InitialData</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1InitialData-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">NewtonianEuler::Solutions::RiemannProblem&lt; Dim &gt;::InitialData Struct Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Holds initial data on a side of the discontinuity and related quantities.  
+ <a href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1InitialData.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="AnalyticSolutions_2NewtonianEuler_2RiemannProblem_8hpp_source.html">RiemannProblem.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a384f2c8b5e15bc61e9ed15d7b25809cd"><td class="memItemLeft" align="right" valign="top"><a id="a384f2c8b5e15bc61e9ed15d7b25809cd"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>InitialData</b> (const <a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1InitialData.html">InitialData</a> &amp;)=default</td></tr>
+<tr class="separator:a384f2c8b5e15bc61e9ed15d7b25809cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa6428a2db4b028a8981825f1e35a7473"><td class="memItemLeft" align="right" valign="top"><a id="aa6428a2db4b028a8981825f1e35a7473"></a>
+<a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1InitialData.html">InitialData</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1InitialData.html">InitialData</a> &amp;)=default</td></tr>
+<tr class="separator:aa6428a2db4b028a8981825f1e35a7473"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad1ab65217be7c8b867155112028fdbf"><td class="memItemLeft" align="right" valign="top"><a id="aad1ab65217be7c8b867155112028fdbf"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>InitialData</b> (<a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1InitialData.html">InitialData</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:aad1ab65217be7c8b867155112028fdbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a451136a09118493b43bb3d25cda55327"><td class="memItemLeft" align="right" valign="top"><a id="a451136a09118493b43bb3d25cda55327"></a>
+<a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1InitialData.html">InitialData</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1InitialData.html">InitialData</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a451136a09118493b43bb3d25cda55327"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c24bc98d1b9094c80d8d33fc4329f4e"><td class="memItemLeft" align="right" valign="top"><a id="a5c24bc98d1b9094c80d8d33fc4329f4e"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>InitialData</b> (double mass_density, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, Dim &gt; &amp;velocity, double pressure, double adiabatic_index, size_t propagation_axis) noexcept</td></tr>
+<tr class="separator:a5c24bc98d1b9094c80d8d33fc4329f4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa5a9853321e9ac04c4ae09011fda961a"><td class="memItemLeft" align="right" valign="top"><a id="aa5a9853321e9ac04c4ae09011fda961a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;) noexcept</td></tr>
+<tr class="separator:aa5a9853321e9ac04c4ae09011fda961a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:a977d08f09c8800a45a07090b22ec1f29"><td class="memItemLeft" align="right" valign="top"><a id="a977d08f09c8800a45a07090b22ec1f29"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>mass_density_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:a977d08f09c8800a45a07090b22ec1f29"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af7fbed083caca775e52fbd7622e242a4"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, Dim &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>velocity_</b></td></tr>
+<tr class="separator:af7fbed083caca775e52fbd7622e242a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afd277e3015eaaed81ed47b471a5539ab"><td class="memItemLeft" align="right" valign="top"><a id="afd277e3015eaaed81ed47b471a5539ab"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>pressure_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:afd277e3015eaaed81ed47b471a5539ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c938d126cf14b5b207a48608b71295d"><td class="memItemLeft" align="right" valign="top"><a id="a0c938d126cf14b5b207a48608b71295d"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>sound_speed_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:a0c938d126cf14b5b207a48608b71295d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adcde130c18e441f84878bc0a137adab4"><td class="memItemLeft" align="right" valign="top"><a id="adcde130c18e441f84878bc0a137adab4"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>normal_velocity_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:adcde130c18e441f84878bc0a137adab4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2098f0768f63e1d9e400c0ff87020acf"><td class="memItemLeft" align="right" valign="top"><a id="a2098f0768f63e1d9e400c0ff87020acf"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>constant_a_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:a2098f0768f63e1d9e400c0ff87020acf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afef1853097d53362433d1b9190c77b28"><td class="memItemLeft" align="right" valign="top"><a id="afef1853097d53362433d1b9190c77b28"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>constant_b_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:afef1853097d53362433d1b9190c77b28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:ab2f964d0a5579724b2f087374233b296"><td class="memItemLeft" align="right" valign="top"><a id="ab2f964d0a5579724b2f087374233b296"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1InitialData.html">InitialData</a> &amp;lhs, const <a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1InitialData.html">InitialData</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:ab2f964d0a5579724b2f087374233b296"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+struct NewtonianEuler::Solutions::RiemannProblem&lt; Dim &gt;::InitialData</h3>
+
+<p>Holds initial data on a side of the discontinuity and related quantities. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="af7fbed083caca775e52fbd7622e242a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af7fbed083caca775e52fbd7622e242a4">&#9670;&nbsp;</a></span>velocity_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;double, Dim&gt; <a class="el" href="classNewtonianEuler_1_1Solutions_1_1RiemannProblem.html">NewtonianEuler::Solutions::RiemannProblem</a>&lt; Dim &gt;::InitialData::velocity_</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">        make_array&lt;Dim&gt;(<a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>())</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticSolutions/NewtonianEuler/<a class="el" href="AnalyticSolutions_2NewtonianEuler_2RiemannProblem_8hpp_source.html">RiemannProblem.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="anumeric_limits_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

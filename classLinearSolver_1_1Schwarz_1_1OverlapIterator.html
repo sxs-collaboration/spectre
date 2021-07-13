@@ -1,0 +1,272 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: LinearSolver::Schwarz::OverlapIterator Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceLinearSolver.html">LinearSolver</a></li><li class="navelem"><a class="el" href="namespaceLinearSolver_1_1Schwarz.html">Schwarz</a></li><li class="navelem"><a class="el" href="classLinearSolver_1_1Schwarz_1_1OverlapIterator.html">OverlapIterator</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classLinearSolver_1_1Schwarz_1_1OverlapIterator-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">LinearSolver::Schwarz::OverlapIterator Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Iterate over grid points in a region that extends partially into the volume.  
+ <a href="classLinearSolver_1_1Schwarz_1_1OverlapIterator.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="OverlapHelpers_8hpp_source.html">OverlapHelpers.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a44f94d3e52736d703786e6cd658e493a"><td class="memTemplParams" colspan="2"><a id="a44f94d3e52736d703786e6cd658e493a"></a>
+template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:a44f94d3e52736d703786e6cd658e493a"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><b>OverlapIterator</b> (const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;volume_extents, size_t <a class="el" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>, const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; &amp;direction) noexcept</td></tr>
+<tr class="separator:a44f94d3e52736d703786e6cd658e493a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64e605e101965d795d16138d19696afa"><td class="memItemLeft" align="right" valign="top"><a id="a64e605e101965d795d16138d19696afa"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>operator bool</b> () const noexcept</td></tr>
+<tr class="separator:a64e605e101965d795d16138d19696afa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6512ac19fc3492398e5010f6e77a08b4"><td class="memItemLeft" align="right" valign="top"><a id="a6512ac19fc3492398e5010f6e77a08b4"></a>
+<a class="el" href="classLinearSolver_1_1Schwarz_1_1OverlapIterator.html">OverlapIterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator++</b> ()</td></tr>
+<tr class="separator:a6512ac19fc3492398e5010f6e77a08b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e2b7aa0e5cb2e04f4965eb2ecf0b855"><td class="memItemLeft" align="right" valign="top"><a id="a3e2b7aa0e5cb2e04f4965eb2ecf0b855"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLinearSolver_1_1Schwarz_1_1OverlapIterator.html#a3e2b7aa0e5cb2e04f4965eb2ecf0b855">volume_offset</a> () const noexcept</td></tr>
+<tr class="memdesc:a3e2b7aa0e5cb2e04f4965eb2ecf0b855"><td class="mdescLeft">&#160;</td><td class="mdescRight">Offset into a <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> that holds full volume data. <br /></td></tr>
+<tr class="separator:a3e2b7aa0e5cb2e04f4965eb2ecf0b855"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac169aed33090a72199466b72037229c3"><td class="memItemLeft" align="right" valign="top"><a id="ac169aed33090a72199466b72037229c3"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLinearSolver_1_1Schwarz_1_1OverlapIterator.html#ac169aed33090a72199466b72037229c3">overlap_offset</a> () const noexcept</td></tr>
+<tr class="memdesc:ac169aed33090a72199466b72037229c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Offset into a <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> that holds data only on the overlap region. <br /></td></tr>
+<tr class="separator:ac169aed33090a72199466b72037229c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aafb1d804d6ec8e369f5bb001260db135"><td class="memItemLeft" align="right" valign="top"><a id="aafb1d804d6ec8e369f5bb001260db135"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>reset</b> () noexcept</td></tr>
+<tr class="separator:aafb1d804d6ec8e369f5bb001260db135"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Iterate over grid points in a region that extends partially into the volume. </p>
+<p>Here's an example how to use this iterator:</p>
+<div class="fragment"><div class="line">      <span class="comment">// Overlap region:</span></div>
+<div class="line">      <span class="comment">// + - - - + -xi-&gt;</span></div>
+<div class="line">      <span class="comment">// | X X O |</span></div>
+<div class="line">      <span class="comment">// | X X O |</span></div>
+<div class="line">      <span class="comment">// + - - - +</span></div>
+<div class="line">      <span class="comment">// v eta</span></div>
+<div class="line">      <span class="keyword">const</span> <a class="code" href="classIndex.html">Index&lt;2&gt;</a> volume_extents{{{3, 2}}};</div>
+<div class="line">      <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a> = 2;</div>
+<div class="line">      <span class="keyword">const</span> <span class="keyword">auto</span> direction = <a class="code" href="classDirection.html#a1ce15c014af29c4065b154f680675d24">Direction&lt;2&gt;::lower_xi</a>();</div>
+<div class="line">      <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;size_t, 4&gt;</a> expected_volume_offsets{{0, 1, 3, 4}};</div>
+<div class="line">      <span class="keywordtype">size_t</span> i = 0;</div>
+<div class="line">      <span class="keywordflow">for</span> (OverlapIterator overlap_iterator{volume_extents, <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>,</div>
+<div class="line">                                            direction};</div>
+<div class="line">           overlap_iterator; ++overlap_iterator) {</div>
+<div class="line">        CHECK(overlap_iterator.volume_offset() ==</div>
+<div class="line">              <a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(expected_volume_offsets, i));</div>
+<div class="line">        CHECK(overlap_iterator.overlap_offset() == i);</div>
+<div class="line">        ++i;</div>
+<div class="line">      }</div>
+<div class="line">      CHECK(i == expected_volume_offsets.size());</div>
+</div><!-- fragment --></div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/ParallelAlgorithms/LinearSolver/Schwarz/<a class="el" href="OverlapHelpers_8hpp_source.html">OverlapHelpers.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga818f101f2f8bd824a3bc7c2c2361c560"><div class="ttname"><a href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a></div><div class="ttdeci">constexpr T &amp; at(std::array&lt; T, N &gt; &amp;arr, Size index)</div><div class="ttdoc">Retrieve a entry from a container, with checks in Debug mode that the index being retrieved is valid.</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:125</div></div>
+<div class="ttc" id="anamespaceLinearSolver_1_1Schwarz_html_a1366a47573e66a972bda3027b35dc5cd"><div class="ttname"><a href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">LinearSolver::Schwarz::overlap_extent</a></div><div class="ttdeci">size_t overlap_extent(size_t volume_extent, size_t max_overlap) noexcept</div><div class="ttdoc">The number of points that an overlap extends into the volume_extent</div></div>
+<div class="ttc" id="aclassIndex_html"><div class="ttname"><a href="classIndex.html">Index</a></div><div class="ttdef"><b>Definition:</b> Index.hpp:31</div></div>
+<div class="ttc" id="aclassDirection_html_a1ce15c014af29c4065b154f680675d24"><div class="ttname"><a href="classDirection.html#a1ce15c014af29c4065b154f680675d24">Direction::lower_xi</a></div><div class="ttdeci">static Direction&lt; VolumeDim &gt; lower_xi() noexcept</div><div class="ttdoc">Helper functions for creating specific Directions. These are labeled by the logical-coordinate names ...</div></div>
+<div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,375 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: grmhd::ValenciaDivClean::BoundaryConditions::Outflow Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacegrmhd.html">grmhd</a></li><li class="navelem"><a class="el" href="namespacegrmhd_1_1ValenciaDivClean.html">ValenciaDivClean</a></li><li class="navelem"><a class="el" href="namespacegrmhd_1_1ValenciaDivClean_1_1BoundaryConditions.html">BoundaryConditions</a></li><li class="navelem"><a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1Outflow.html">Outflow</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1Outflow-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">grmhd::ValenciaDivClean::BoundaryConditions::Outflow Class Reference<span class="mlabels"><span class="mlabel">final</span></span></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A <code><a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition.html" title="The base class off of which all boundary conditions must inherit.">BoundaryCondition</a></code> that only verifies that all characteristic speeds are directed out of the domain; no boundary data is altered by this boundary condition.  
+ <a href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1Outflow.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="GrMhd_2ValenciaDivClean_2BoundaryConditions_2Outflow_8hpp_source.html">Outflow.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ac9a387c9e7975e158210670eb365b865"><td class="memItemLeft" align="right" valign="top"><a id="ac9a387c9e7975e158210670eb365b865"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:ac9a387c9e7975e158210670eb365b865"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a353b8d5743284587758b150c23371bd7"><td class="memItemLeft" align="right" valign="top"><a id="a353b8d5743284587758b150c23371bd7"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_interior_evolved_variables_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a353b8d5743284587758b150c23371bd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60186deb1a10f705fc6105ada82e995f"><td class="memItemLeft" align="right" valign="top"><a id="a60186deb1a10f705fc6105ada82e995f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_interior_temporary_tags</b> = tmpl::list&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;</td></tr>
+<tr class="separator:a60186deb1a10f705fc6105ada82e995f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae19e5124617c328f704942aa0ea7543f"><td class="memItemLeft" align="right" valign="top"><a id="ae19e5124617c328f704942aa0ea7543f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_gridless_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:ae19e5124617c328f704942aa0ea7543f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac058cfd842c66e1eb720486aa4eb57af"><td class="memItemLeft" align="right" valign="top"><a id="ac058cfd842c66e1eb720486aa4eb57af"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_interior_primitive_variables_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:ac058cfd842c66e1eb720486aa4eb57af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition.html">grmhd::ValenciaDivClean::BoundaryConditions::BoundaryCondition</a></td></tr>
+<tr class="memitem:a4b95d3f4ba7b3cc21ecc6a98b70c8cdb inherit pub_types_classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a4b95d3f4ba7b3cc21ecc6a98b70c8cdb"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::list&lt; <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1DirichletAnalytic.html">DirichletAnalytic</a>, <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1Outflow.html">Outflow</a>, <a class="el" href="structdomain_1_1BoundaryConditions_1_1Periodic.html">domain::BoundaryConditions::Periodic</a>&lt; <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &gt; &gt;</td></tr>
+<tr class="separator:a4b95d3f4ba7b3cc21ecc6a98b70c8cdb inherit pub_types_classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ae37a3b9d2e8080e0915699e1766893ec"><td class="memItemLeft" align="right" valign="top"><a id="ae37a3b9d2e8080e0915699e1766893ec"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Outflow</b> (<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1Outflow.html">Outflow</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:ae37a3b9d2e8080e0915699e1766893ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b0241b0cd3a80b372606274be67ef5e"><td class="memItemLeft" align="right" valign="top"><a id="a8b0241b0cd3a80b372606274be67ef5e"></a>
+<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1Outflow.html">Outflow</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1Outflow.html">Outflow</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a8b0241b0cd3a80b372606274be67ef5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a893e06890862260f7e79674e90f0ba93"><td class="memItemLeft" align="right" valign="top"><a id="a893e06890862260f7e79674e90f0ba93"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Outflow</b> (const <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1Outflow.html">Outflow</a> &amp;)=default</td></tr>
+<tr class="separator:a893e06890862260f7e79674e90f0ba93"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd54465f8b26da4316520670452acc24"><td class="memItemLeft" align="right" valign="top"><a id="abd54465f8b26da4316520670452acc24"></a>
+<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1Outflow.html">Outflow</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1Outflow.html">Outflow</a> &amp;)=default</td></tr>
+<tr class="separator:abd54465f8b26da4316520670452acc24"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5208572379e251853827f5b4d58d4a37"><td class="memItemLeft" align="right" valign="top"><a id="a5208572379e251853827f5b4d58d4a37"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Outflow</b> (CkMigrateMessage *msg) noexcept</td></tr>
+<tr class="separator:a5208572379e251853827f5b4d58d4a37"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a558e8e11d5ffcd5bcc07104f662ec67d"><td class="memItemLeft" align="right" valign="top"><a id="a558e8e11d5ffcd5bcc07104f662ec67d"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_base_template</b> (<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a>, <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1Outflow.html">Outflow</a>)</td></tr>
+<tr class="separator:a558e8e11d5ffcd5bcc07104f662ec67d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38c69825d7662cba8409c1d27489258e"><td class="memItemLeft" align="right" valign="top"><a id="a38c69825d7662cba8409c1d27489258e"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a> &gt; override</td></tr>
+<tr class="separator:a38c69825d7662cba8409c1d27489258e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3f807c183f99b97c0d5b410555f9257"><td class="memItemLeft" align="right" valign="top"><a id="aa3f807c183f99b97c0d5b410555f9257"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) override</td></tr>
+<tr class="separator:aa3f807c183f99b97c0d5b410555f9257"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition.html">grmhd::ValenciaDivClean::BoundaryConditions::BoundaryCondition</a></td></tr>
+<tr class="memitem:acbf08f03e36499eb2dab5d94f7b2b88f inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="acbf08f03e36499eb2dab5d94f7b2b88f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:acbf08f03e36499eb2dab5d94f7b2b88f inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64cde06d44f197f185290e2076c0f6fd inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a64cde06d44f197f185290e2076c0f6fd"></a>
+<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a64cde06d44f197f185290e2076c0f6fd inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab27b9f151a613bc6d14211cfe63a745b inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="ab27b9f151a613bc6d14211cfe63a745b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (const <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;)=default</td></tr>
+<tr class="separator:ab27b9f151a613bc6d14211cfe63a745b inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a471e5552471dd926009155f00c534356 inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a471e5552471dd926009155f00c534356"></a>
+<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;)=default</td></tr>
+<tr class="separator:a471e5552471dd926009155f00c534356 inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6be685101736b63498598e44ccc8a8fe inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a6be685101736b63498598e44ccc8a8fe"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (CkMigrateMessage *msg) noexcept</td></tr>
+<tr class="separator:a6be685101736b63498598e44ccc8a8fe inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed23934339ab39fb3e89bd28184d3a9c inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="aed23934339ab39fb3e89bd28184d3a9c"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) override</td></tr>
+<tr class="separator:aed23934339ab39fb3e89bd28184d3a9c inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a></td></tr>
+<tr class="memitem:a3ce9f36399b12ce36bf1502ee0e85e8f inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a3ce9f36399b12ce36bf1502ee0e85e8f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a3ce9f36399b12ce36bf1502ee0e85e8f inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ed654e75ef4544a679a893f2bae7634 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a9ed654e75ef4544a679a893f2bae7634"></a>
+<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a9ed654e75ef4544a679a893f2bae7634 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abce6f2c0829a37f447cc253097f44c07 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="abce6f2c0829a37f447cc253097f44c07"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (const <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;)=default</td></tr>
+<tr class="separator:abce6f2c0829a37f447cc253097f44c07 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abaaefff13f64678066bbbeeb566c8989 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="abaaefff13f64678066bbbeeb566c8989"></a>
+<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;)=default</td></tr>
+<tr class="separator:abaaefff13f64678066bbbeeb566c8989 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75292db0a162bb159e5bebbc4e10a118 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a75292db0a162bb159e5bebbc4e10a118"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (CkMigrateMessage *const msg) noexcept</td></tr>
+<tr class="separator:a75292db0a162bb159e5bebbc4e10a118 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1ba92c0d19a6e2de8fc1c86e406a539 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="ad1ba92c0d19a6e2de8fc1c86e406a539"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_abstract</b> (<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a>)</td></tr>
+<tr class="separator:ad1ba92c0d19a6e2de8fc1c86e406a539 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:adc3587a441d965cafc5b9e52f208a70c"><td class="memItemLeft" align="right" valign="top"><a id="adc3587a441d965cafc5b9e52f208a70c"></a>
+static <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>dg_outflow</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt; &amp;face_mesh_velocity, const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;outward_directed_normal_covector, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;shift, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;lapse) noexcept</td></tr>
+<tr class="separator:adc3587a441d965cafc5b9e52f208a70c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a3a7d8c59ad29662203bb32ef4dfef1df"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a3a7d8c59ad29662203bb32ef4dfef1df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d05347b2f876087176de1fc03a721cc"><td class="memItemLeft" align="right" valign="top">static constexpr evolution::BoundaryConditions::Type&#160;</td><td class="memItemRight" valign="bottom"><b>bc_type</b></td></tr>
+<tr class="separator:a0d05347b2f876087176de1fc03a721cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A <code><a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition.html" title="The base class off of which all boundary conditions must inherit.">BoundaryCondition</a></code> that only verifies that all characteristic speeds are directed out of the domain; no boundary data is altered by this boundary condition. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a0d05347b2f876087176de1fc03a721cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d05347b2f876087176de1fc03a721cc">&#9670;&nbsp;</a></span>bc_type</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr evolution::BoundaryConditions::Type grmhd::ValenciaDivClean::BoundaryConditions::Outflow::bc_type</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      evolution::BoundaryConditions::Type::Outflow</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a3a7d8c59ad29662203bb32ef4dfef1df"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3a7d8c59ad29662203bb32ef4dfef1df">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> grmhd::ValenciaDivClean::BoundaryConditions::Outflow::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      <span class="stringliteral">&quot;Outflow boundary condition that only verifies the characteristic speeds &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;are all directed out of the domain.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/<a class="el" href="GrMhd_2ValenciaDivClean_2BoundaryConditions_2Outflow_8hpp_source.html">Outflow.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

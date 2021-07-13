@@ -1,0 +1,278 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: dg::SimpleMortarData&lt; TemporalId, LocalVars, RemoteVars &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacedg.html">dg</a></li><li class="navelem"><a class="el" href="classdg_1_1SimpleMortarData.html">SimpleMortarData</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classdg_1_1SimpleMortarData-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">dg::SimpleMortarData&lt; TemporalId, LocalVars, RemoteVars &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__DiscontinuousGalerkinGroup.html">Discontinuous Galerkin</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Storage of boundary data on two sides of a mortar.  
+ <a href="classdg_1_1SimpleMortarData.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="SimpleMortarData_8hpp_source.html">SimpleMortarData.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a40e779900015ab5084f0109dda4e9306"><td class="memItemLeft" align="right" valign="top"><a id="a40e779900015ab5084f0109dda4e9306"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SimpleMortarData</b> (const <a class="el" href="classdg_1_1SimpleMortarData.html">SimpleMortarData</a> &amp;)=default</td></tr>
+<tr class="separator:a40e779900015ab5084f0109dda4e9306"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa3582a8d317b9aa767d55fad2560b89"><td class="memItemLeft" align="right" valign="top"><a id="afa3582a8d317b9aa767d55fad2560b89"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SimpleMortarData</b> (<a class="el" href="classdg_1_1SimpleMortarData.html">SimpleMortarData</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:afa3582a8d317b9aa767d55fad2560b89"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5767faedac1c518df737988f175b9c44"><td class="memItemLeft" align="right" valign="top"><a id="a5767faedac1c518df737988f175b9c44"></a>
+<a class="el" href="classdg_1_1SimpleMortarData.html">SimpleMortarData</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdg_1_1SimpleMortarData.html">SimpleMortarData</a> &amp;)=default</td></tr>
+<tr class="separator:a5767faedac1c518df737988f175b9c44"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a9ef56d6fd6b3253e1cf73c8af6e906"><td class="memItemLeft" align="right" valign="top"><a id="a4a9ef56d6fd6b3253e1cf73c8af6e906"></a>
+<a class="el" href="classdg_1_1SimpleMortarData.html">SimpleMortarData</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdg_1_1SimpleMortarData.html">SimpleMortarData</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a4a9ef56d6fd6b3253e1cf73c8af6e906"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f9347d4ef172ad0b9f6f0f56112c4bc"><td class="memItemLeft" align="right" valign="top"><a id="a3f9347d4ef172ad0b9f6f0f56112c4bc"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdg_1_1SimpleMortarData.html#a3f9347d4ef172ad0b9f6f0f56112c4bc">SimpleMortarData</a> (const size_t) noexcept</td></tr>
+<tr class="memdesc:a3f9347d4ef172ad0b9f6f0f56112c4bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">The argument is ignored. It exists for compatibility with BoundaryHistory. <br /></td></tr>
+<tr class="separator:a3f9347d4ef172ad0b9f6f0f56112c4bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae325b61083824043f3fd904a4b0fa378"><td class="memItemLeft" align="right" valign="top"><a id="ae325b61083824043f3fd904a4b0fa378"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; LocalVars, RemoteVars &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdg_1_1SimpleMortarData.html#ae325b61083824043f3fd904a4b0fa378">extract</a> () noexcept</td></tr>
+<tr class="memdesc:ae325b61083824043f3fd904a4b0fa378"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the inserted data and reset the state to empty. <br /></td></tr>
+<tr class="separator:ae325b61083824043f3fd904a4b0fa378"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f71b46d110c4dc85d713815ecff9130"><td class="memItemLeft" align="right" valign="top"><a id="a8f71b46d110c4dc85d713815ecff9130"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a8f71b46d110c4dc85d713815ecff9130"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54674498a651f11b1e3d750ceae887c2"><td class="memItemLeft" align="right" valign="top"><a id="a54674498a651f11b1e3d750ceae887c2"></a>
+const LocalVars &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdg_1_1SimpleMortarData.html#a54674498a651f11b1e3d750ceae887c2">local_data</a> (const TemporalId &amp;temporal_id) const noexcept</td></tr>
+<tr class="memdesc:a54674498a651f11b1e3d750ceae887c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the local data at <code>temporal_id</code> <br /></td></tr>
+<tr class="separator:a54674498a651f11b1e3d750ceae887c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a78d29295ad13c24137d9cc419bdf409d"><td class="memItemLeft" align="right" valign="top"><a id="a78d29295ad13c24137d9cc419bdf409d"></a>
+const RemoteVars &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdg_1_1SimpleMortarData.html#a78d29295ad13c24137d9cc419bdf409d">remote_data</a> (const TemporalId &amp;temporal_id) const noexcept</td></tr>
+<tr class="memdesc:a78d29295ad13c24137d9cc419bdf409d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the remote data at <code>temporal_id</code> <br /></td></tr>
+<tr class="separator:a78d29295ad13c24137d9cc419bdf409d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a75322b78f39c5b1e69b6f0749d7575b3"><td class="memItemLeft" align="right" valign="top"><a id="a75322b78f39c5b1e69b6f0749d7575b3"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdg_1_1SimpleMortarData.html#a75322b78f39c5b1e69b6f0749d7575b3">integration_order</a> () const noexcept</td></tr>
+<tr class="memdesc:a75322b78f39c5b1e69b6f0749d7575b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">These functions do nothing. They exist for compatibility with BoundaryHistory. <br /></td></tr>
+<tr class="separator:a75322b78f39c5b1e69b6f0749d7575b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a817fc19797f1f38fdba70552f896ced0"><td class="memItemLeft" align="right" valign="top"><a id="a817fc19797f1f38fdba70552f896ced0"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdg_1_1SimpleMortarData.html#a817fc19797f1f38fdba70552f896ced0">integration_order</a> (const size_t) noexcept</td></tr>
+<tr class="memdesc:a817fc19797f1f38fdba70552f896ced0"><td class="mdescLeft">&#160;</td><td class="mdescRight">These functions do nothing. They exist for compatibility with BoundaryHistory. <br /></td></tr>
+<tr class="separator:a817fc19797f1f38fdba70552f896ced0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:aed1dc38bb7de48f4f8f3dc202bb15ef0"><td class="memItemLeft" align="right" valign="top"><a id="aed1dc38bb7de48f4f8f3dc202bb15ef0"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdg_1_1SimpleMortarData.html#aed1dc38bb7de48f4f8f3dc202bb15ef0">local_insert</a> (TemporalId temporal_id, LocalVars vars) noexcept</td></tr>
+<tr class="memdesc:aed1dc38bb7de48f4f8f3dc202bb15ef0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a value. This function must be called once between calls to extract. <br /></td></tr>
+<tr class="separator:aed1dc38bb7de48f4f8f3dc202bb15ef0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ff1f1ec23196cb20fadb501392a1b59"><td class="memItemLeft" align="right" valign="top"><a id="a0ff1f1ec23196cb20fadb501392a1b59"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdg_1_1SimpleMortarData.html#a0ff1f1ec23196cb20fadb501392a1b59">remote_insert</a> (TemporalId temporal_id, RemoteVars vars) noexcept</td></tr>
+<tr class="memdesc:a0ff1f1ec23196cb20fadb501392a1b59"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a value. This function must be called once between calls to extract. <br /></td></tr>
+<tr class="separator:a0ff1f1ec23196cb20fadb501392a1b59"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename TemporalId, typename LocalVars, typename RemoteVars&gt;<br />
+class dg::SimpleMortarData&lt; TemporalId, LocalVars, RemoteVars &gt;</h3>
+
+<p>Storage of boundary data on two sides of a mortar. </p>
+<p>Typically, values are inserted into this container by the flux communication actions. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/NumericalAlgorithms/DiscontinuousGalerkin/<a class="el" href="SimpleMortarData_8hpp_source.html">SimpleMortarData.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

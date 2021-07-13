@@ -1,0 +1,337 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: TimeSteppers::History&lt; Vars, DerivVars &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceTimeSteppers.html">TimeSteppers</a></li><li class="navelem"><a class="el" href="classTimeSteppers_1_1History.html">History</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classTimeSteppers_1_1History-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">TimeSteppers::History&lt; Vars, DerivVars &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__TimeSteppersGroup.html">Time Steppers</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><code>#include &lt;<a class="el" href="History_8hpp_source.html">History.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a971a5da8b8453ef780917ba509c1179b"><td class="memItemLeft" align="right" valign="top"><a id="a971a5da8b8453ef780917ba509c1179b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>value_type</b> = <a class="el" href="classTime.html">Time</a></td></tr>
+<tr class="separator:a971a5da8b8453ef780917ba509c1179b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9a9a861acec91a6ac5630b60e825d98"><td class="memItemLeft" align="right" valign="top"><a id="aa9a9a861acec91a6ac5630b60e825d98"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>const_reference</b> = const <a class="el" href="classTime.html">value_type</a> &amp;</td></tr>
+<tr class="separator:aa9a9a861acec91a6ac5630b60e825d98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89f1f11ad955d191b19f3c19f07309c3"><td class="memItemLeft" align="right" valign="top"><a id="a89f1f11ad955d191b19f3c19f07309c3"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>const_iterator</b> = <a class="el" href="classTimeSteppers_1_1HistoryIterator.html">HistoryIterator</a>&lt; Vars, DerivVars &gt;</td></tr>
+<tr class="separator:a89f1f11ad955d191b19f3c19f07309c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d028d16c51fb38e6ca2353fbcd1adb4"><td class="memItemLeft" align="right" valign="top"><a id="a2d028d16c51fb38e6ca2353fbcd1adb4"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>difference_type</b> = typename <a class="elRef" href="http://en.cppreference.com/w/cpp/iterator/iterator_traits.html">std::iterator_traits</a>&lt; <a class="el" href="classTimeSteppers_1_1HistoryIterator.html">const_iterator</a> &gt;::difference_type</td></tr>
+<tr class="separator:a2d028d16c51fb38e6ca2353fbcd1adb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74c129ee8d04fdfffc0efa1f300df52d"><td class="memItemLeft" align="right" valign="top"><a id="a74c129ee8d04fdfffc0efa1f300df52d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>size_type</b> = size_t</td></tr>
+<tr class="separator:a74c129ee8d04fdfffc0efa1f300df52d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a6c7a840e8140105330d9a746d9c2d96a"><td class="memItemLeft" align="right" valign="top"><a id="a6c7a840e8140105330d9a746d9c2d96a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>History</b> (const <a class="el" href="classTimeSteppers_1_1History.html">History</a> &amp;)=default</td></tr>
+<tr class="separator:a6c7a840e8140105330d9a746d9c2d96a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a02179679f84a6bf0b649135b763a6b70"><td class="memItemLeft" align="right" valign="top"><a id="a02179679f84a6bf0b649135b763a6b70"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>History</b> (<a class="el" href="classTimeSteppers_1_1History.html">History</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a02179679f84a6bf0b649135b763a6b70"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af93c31dd699f52bb65662dba376d1127"><td class="memItemLeft" align="right" valign="top"><a id="af93c31dd699f52bb65662dba376d1127"></a>
+<a class="el" href="classTimeSteppers_1_1History.html">History</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classTimeSteppers_1_1History.html">History</a> &amp;)=default</td></tr>
+<tr class="separator:af93c31dd699f52bb65662dba376d1127"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a225d19b79898a7543e44c0a1266dc5a9"><td class="memItemLeft" align="right" valign="top"><a id="a225d19b79898a7543e44c0a1266dc5a9"></a>
+<a class="el" href="classTimeSteppers_1_1History.html">History</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classTimeSteppers_1_1History.html">History</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a225d19b79898a7543e44c0a1266dc5a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2f3c65185baeb89a7b407fdbf42a694"><td class="memItemLeft" align="right" valign="top"><a id="ae2f3c65185baeb89a7b407fdbf42a694"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>History</b> (const size_t <a class="el" href="classTimeSteppers_1_1History.html#a2f61fbeea4155e24d1b6f709aaad5325">integration_order</a>) noexcept</td></tr>
+<tr class="separator:ae2f3c65185baeb89a7b407fdbf42a694"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a44c30c2b06d0fc1087f383a90d4a6f57"><td class="memItemLeft" align="right" valign="top"><a id="a44c30c2b06d0fc1087f383a90d4a6f57"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1History.html#a44c30c2b06d0fc1087f383a90d4a6f57">insert</a> (const <a class="el" href="classTimeStepId.html">TimeStepId</a> &amp;time_step_id, const DerivVars &amp;deriv) noexcept</td></tr>
+<tr class="memdesc:a44c30c2b06d0fc1087f383a90d4a6f57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a new set of values to the end of the history. <br /></td></tr>
+<tr class="separator:a44c30c2b06d0fc1087f383a90d4a6f57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a441c17fdcb43cbc249d8bd603ff08ea2"><td class="memItemLeft" align="right" valign="top"><a id="a441c17fdcb43cbc249d8bd603ff08ea2"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1History.html#a441c17fdcb43cbc249d8bd603ff08ea2">insert_initial</a> (<a class="el" href="classTimeStepId.html">TimeStepId</a> time_step_id, DerivVars deriv) noexcept</td></tr>
+<tr class="memdesc:a441c17fdcb43cbc249d8bd603ff08ea2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a new derivative to the front of the history. This is often convenient for setting initial data. The function value must be set separately before this object is used, using <code><a class="el" href="classTimeSteppers_1_1History.html#a9bf05bb8b5ca4161eb5af2ef4ab6a533" title="The most recent value of the integrated variables.">most_recent_value()</a></code>. <br /></td></tr>
+<tr class="separator:a441c17fdcb43cbc249d8bd603ff08ea2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adf7bbb86f36603bda75bd5e01e335839"><td class="memItemLeft" align="right" valign="top"><a id="adf7bbb86f36603bda75bd5e01e335839"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1History.html#adf7bbb86f36603bda75bd5e01e335839">mark_unneeded</a> (const <a class="el" href="classTimeSteppers_1_1HistoryIterator.html">const_iterator</a> &amp;first_needed) noexcept</td></tr>
+<tr class="memdesc:adf7bbb86f36603bda75bd5e01e335839"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mark all data before the passed point in history as unneeded so it can be removed. Calling this directly should not often be necessary, as it is handled internally by the time steppers. <br /></td></tr>
+<tr class="separator:adf7bbb86f36603bda75bd5e01e335839"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a43a0b474dd3ce664e1dfb2dcd2d470d1"><td class="memItemLeft" align="right" valign="top"><a id="a43a0b474dd3ce664e1dfb2dcd2d470d1"></a>
+size_type&#160;</td><td class="memItemRight" valign="bottom"><b>size</b> () const noexcept</td></tr>
+<tr class="separator:a43a0b474dd3ce664e1dfb2dcd2d470d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a99fe294b185235047cdfe77b383a576d"><td class="memItemLeft" align="right" valign="top"><a id="a99fe294b185235047cdfe77b383a576d"></a>
+size_type&#160;</td><td class="memItemRight" valign="bottom"><b>capacity</b> () const noexcept</td></tr>
+<tr class="separator:a99fe294b185235047cdfe77b383a576d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a10579c3288230ca5ec866a82bdf2f6fd"><td class="memItemLeft" align="right" valign="top"><a id="a10579c3288230ca5ec866a82bdf2f6fd"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>shrink_to_fit</b> () noexcept</td></tr>
+<tr class="separator:a10579c3288230ca5ec866a82bdf2f6fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e1a5a6ff0efada35e5cf7b9e00890cb"><td class="memItemLeft" align="right" valign="top"><a id="a6e1a5a6ff0efada35e5cf7b9e00890cb"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a6e1a5a6ff0efada35e5cf7b9e00890cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a9bf05bb8b5ca4161eb5af2ef4ab6a533"><td class="memItemLeft" align="right" valign="top"><a id="a9bf05bb8b5ca4161eb5af2ef4ab6a533"></a>
+Vars &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1History.html#a9bf05bb8b5ca4161eb5af2ef4ab6a533">most_recent_value</a> () noexcept</td></tr>
+<tr class="memdesc:a9bf05bb8b5ca4161eb5af2ef4ab6a533"><td class="mdescLeft">&#160;</td><td class="mdescRight">The most recent value of the integrated variables. <br /></td></tr>
+<tr class="separator:a9bf05bb8b5ca4161eb5af2ef4ab6a533"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae9b427fe009579125d12aeed57fd7680"><td class="memItemLeft" align="right" valign="top"><a id="ae9b427fe009579125d12aeed57fd7680"></a>
+const Vars &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1History.html#ae9b427fe009579125d12aeed57fd7680">most_recent_value</a> () const noexcept</td></tr>
+<tr class="memdesc:ae9b427fe009579125d12aeed57fd7680"><td class="mdescLeft">&#160;</td><td class="mdescRight">The most recent value of the integrated variables. <br /></td></tr>
+<tr class="separator:ae9b427fe009579125d12aeed57fd7680"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ac95b862bda5549b8ac7e5d9a32cb0277"><td class="memItemLeft" align="right" valign="top"><a id="ac95b862bda5549b8ac7e5d9a32cb0277"></a>
+<a class="el" href="classTimeSteppers_1_1HistoryIterator.html">const_iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1History.html#ac95b862bda5549b8ac7e5d9a32cb0277">begin</a> () const noexcept</td></tr>
+<tr class="memdesc:ac95b862bda5549b8ac7e5d9a32cb0277"><td class="mdescLeft">&#160;</td><td class="mdescRight">These iterators directly return the <a class="el" href="classTime.html">Time</a> of the past values. The derivative data can be accessed through the iterators using HistoryIterator::derivative(). <br /></td></tr>
+<tr class="separator:ac95b862bda5549b8ac7e5d9a32cb0277"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0db89a58042d29a9956e40e1d6e5028a"><td class="memItemLeft" align="right" valign="top"><a id="a0db89a58042d29a9956e40e1d6e5028a"></a>
+<a class="el" href="classTimeSteppers_1_1HistoryIterator.html">const_iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1History.html#a0db89a58042d29a9956e40e1d6e5028a">end</a> () const noexcept</td></tr>
+<tr class="memdesc:a0db89a58042d29a9956e40e1d6e5028a"><td class="mdescLeft">&#160;</td><td class="mdescRight">These iterators directly return the <a class="el" href="classTime.html">Time</a> of the past values. The derivative data can be accessed through the iterators using HistoryIterator::derivative(). <br /></td></tr>
+<tr class="separator:a0db89a58042d29a9956e40e1d6e5028a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab1f2d5e832fa4770fa7d332ff71bb0f4"><td class="memItemLeft" align="right" valign="top"><a id="ab1f2d5e832fa4770fa7d332ff71bb0f4"></a>
+<a class="el" href="classTimeSteppers_1_1HistoryIterator.html">const_iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1History.html#ab1f2d5e832fa4770fa7d332ff71bb0f4">cbegin</a> () const noexcept</td></tr>
+<tr class="memdesc:ab1f2d5e832fa4770fa7d332ff71bb0f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">These iterators directly return the <a class="el" href="classTime.html">Time</a> of the past values. The derivative data can be accessed through the iterators using HistoryIterator::derivative(). <br /></td></tr>
+<tr class="separator:ab1f2d5e832fa4770fa7d332ff71bb0f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45a692273adedfebe59d96d41ead9a38"><td class="memItemLeft" align="right" valign="top"><a id="a45a692273adedfebe59d96d41ead9a38"></a>
+<a class="el" href="classTimeSteppers_1_1HistoryIterator.html">const_iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1History.html#a45a692273adedfebe59d96d41ead9a38">cend</a> () const noexcept</td></tr>
+<tr class="memdesc:a45a692273adedfebe59d96d41ead9a38"><td class="mdescLeft">&#160;</td><td class="mdescRight">These iterators directly return the <a class="el" href="classTime.html">Time</a> of the past values. The derivative data can be accessed through the iterators using HistoryIterator::derivative(). <br /></td></tr>
+<tr class="separator:a45a692273adedfebe59d96d41ead9a38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a6ea33849c1680f7091d2336e19455d1f"><td class="memItemLeft" align="right" valign="top"><a id="a6ea33849c1680f7091d2336e19455d1f"></a>
+<a class="el" href="classTime.html">const_reference</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1History.html#a6ea33849c1680f7091d2336e19455d1f">operator[]</a> (size_type n) const noexcept</td></tr>
+<tr class="memdesc:a6ea33849c1680f7091d2336e19455d1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">These return the past times. The other data can be accessed through <a class="el" href="classTimeSteppers_1_1HistoryIterator.html">HistoryIterator</a> methods. <br /></td></tr>
+<tr class="separator:a6ea33849c1680f7091d2336e19455d1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae970909091c94811bea0c7e1c816a473"><td class="memItemLeft" align="right" valign="top"><a id="ae970909091c94811bea0c7e1c816a473"></a>
+<a class="el" href="classTime.html">const_reference</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1History.html#ae970909091c94811bea0c7e1c816a473">front</a> () const noexcept</td></tr>
+<tr class="memdesc:ae970909091c94811bea0c7e1c816a473"><td class="mdescLeft">&#160;</td><td class="mdescRight">These return the past times. The other data can be accessed through <a class="el" href="classTimeSteppers_1_1HistoryIterator.html">HistoryIterator</a> methods. <br /></td></tr>
+<tr class="separator:ae970909091c94811bea0c7e1c816a473"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac113e421bb39c4c9d49a2dd5d34b0840"><td class="memItemLeft" align="right" valign="top"><a id="ac113e421bb39c4c9d49a2dd5d34b0840"></a>
+<a class="el" href="classTime.html">const_reference</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1History.html#ac113e421bb39c4c9d49a2dd5d34b0840">back</a> () const noexcept</td></tr>
+<tr class="memdesc:ac113e421bb39c4c9d49a2dd5d34b0840"><td class="mdescLeft">&#160;</td><td class="mdescRight">These return the past times. The other data can be accessed through <a class="el" href="classTimeSteppers_1_1HistoryIterator.html">HistoryIterator</a> methods. <br /></td></tr>
+<tr class="separator:ac113e421bb39c4c9d49a2dd5d34b0840"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a2f61fbeea4155e24d1b6f709aaad5325"><td class="memItemLeft" align="right" valign="top"><a id="a2f61fbeea4155e24d1b6f709aaad5325"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1History.html#a2f61fbeea4155e24d1b6f709aaad5325">integration_order</a> () const noexcept</td></tr>
+<tr class="memdesc:a2f61fbeea4155e24d1b6f709aaad5325"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get or set the current order of integration. <a class="el" href="namespaceTimeSteppers.html">TimeSteppers</a> may impose restrictions on the valid values. <br /></td></tr>
+<tr class="separator:a2f61fbeea4155e24d1b6f709aaad5325"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aceda5e0a28213b8054d07abff22cc4bf"><td class="memItemLeft" align="right" valign="top"><a id="aceda5e0a28213b8054d07abff22cc4bf"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1History.html#aceda5e0a28213b8054d07abff22cc4bf">integration_order</a> (const size_t integration_order) noexcept</td></tr>
+<tr class="memdesc:aceda5e0a28213b8054d07abff22cc4bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get or set the current order of integration. <a class="el" href="namespaceTimeSteppers.html">TimeSteppers</a> may impose restrictions on the valid values. <br /></td></tr>
+<tr class="separator:aceda5e0a28213b8054d07abff22cc4bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename Vars, typename DerivVars&gt;<br />
+class TimeSteppers::History&lt; Vars, DerivVars &gt;</h3>
+
+<p><a class="el" href="classTimeSteppers_1_1History.html">History</a> data used by a <a class="el" href="classTimeStepper.html">TimeStepper</a>. </p><dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Vars</td><td>type of variables being integrated </td></tr>
+    <tr><td class="paramname">DerivVars</td><td>type of derivative variables </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Time/<a class="el" href="History_8hpp_source.html">History.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

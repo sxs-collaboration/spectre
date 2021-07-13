@@ -1,0 +1,523 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Initialization</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">Initialization</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Actions and metafunctions used for initialization of parallel components.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceInitialization_1_1Tags"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceInitialization_1_1Tags.html">Initialization::Tags</a></td></tr>
+<tr class="memdesc:namespaceInitialization_1_1Tags"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tags used during initialization of parallel components. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceInitialization_1_1Actions"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceInitialization_1_1Actions.html">Initialization::Actions</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structelliptic_1_1dg_1_1Actions_1_1InitializeDomain.html">elliptic::dg::Actions::InitializeDomain&lt; Dim &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize items related to the basic structure of the element.  <a href="structelliptic_1_1dg_1_1Actions_1_1InitializeDomain.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structInitialization_1_1Actions_1_1ConservativeSystem.html">Initialization::Actions::ConservativeSystem&lt; System, EquationOfStateTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate variables needed for evolution of conservative systems.  <a href="structInitialization_1_1Actions_1_1ConservativeSystem.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structevolution_1_1dg_1_1Initialization_1_1Domain.html">evolution::dg::Initialization::Domain&lt; Dim, OverrideCubicFunctionsOfTime &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize items related to the basic structure of the element.  <a href="structevolution_1_1dg_1_1Initialization_1_1Domain.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structInitialization_1_1Actions_1_1DiscontinuousGalerkin.html">Initialization::Actions::DiscontinuousGalerkin&lt; Metavariables &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize items related to the discontinuous Galerkin method.  <a href="structInitialization_1_1Actions_1_1DiscontinuousGalerkin.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structInitialization_1_1Actions_1_1TimeAndTimeStep.html">Initialization::Actions::TimeAndTimeStep&lt; Metavariables &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize items related to time, such as the time step.  <a href="structInitialization_1_1Actions_1_1TimeAndTimeStep.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structInitialization_1_1Actions_1_1TimeStepperHistory.html">Initialization::Actions::TimeStepperHistory&lt; Metavariables &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize time-stepper items.  <a href="structInitialization_1_1Actions_1_1TimeStepperHistory.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structInitialization_1_1Actions_1_1GrTagsForHydro.html">Initialization::Actions::GrTagsForHydro&lt; System &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate and set general relativity quantities needed for evolution of some hydro systems.  <a href="structInitialization_1_1Actions_1_1GrTagsForHydro.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structInitialization_1_1Actions_1_1Minmod.html">Initialization::Actions::Minmod&lt; Dim &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate items for minmod limiter.  <a href="structInitialization_1_1Actions_1_1Minmod.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structInitialization_1_1Actions_1_1NonconservativeSystem.html">Initialization::Actions::NonconservativeSystem&lt; System &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate variables needed for evolution of nonconservative systems.  <a href="structInitialization_1_1Actions_1_1NonconservativeSystem.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structevolution_1_1Initialization_1_1Actions_1_1SetVariables.html">evolution::Initialization::Actions::SetVariables&lt; LogicalCoordinatesTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets variables needed for evolution of hyperbolic systems.  <a href="structevolution_1_1Initialization_1_1Actions_1_1SetVariables.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structInitialization_1_1subcell_1_1GrTagsForHydro.html">Initialization::subcell::GrTagsForHydro&lt; System, Dim &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate and set general relativity quantities needed for evolution of hydro systems when using a DG-subcell hybrid scheme.  <a href="structInitialization_1_1subcell_1_1GrTagsForHydro.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structScalarWave_1_1Actions_1_1InitializeConstraints.html">ScalarWave::Actions::InitializeConstraints&lt; Dim &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize items related to constraints of the <a class="el" href="namespaceScalarWave.html" title="Items related to evolving the scalar wave equation.">ScalarWave</a> system.  <a href="structScalarWave_1_1Actions_1_1InitializeConstraints.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdg_1_1Actions_1_1InitializeInterfaces.html">dg::Actions::InitializeInterfaces&lt; System, SliceTagsToFace, SliceTagsToExterior, FaceComputeTags, ExteriorComputeTags, AddExteriorVariables, UseMovingMesh &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize items related to the interfaces between Elements and on external boundaries.  <a href="structdg_1_1Actions_1_1InitializeInterfaces.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdg_1_1Actions_1_1InitializeMortars.html">dg::Actions::InitializeMortars&lt; BoundaryScheme, AddFluxBoundaryConditionMortars &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize mortars between elements for exchanging fluxes.  <a href="structdg_1_1Actions_1_1InitializeMortars.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structInitialization_1_1Actions_1_1RemoveOptionsAndTerminatePhase.html">Initialization::Actions::RemoveOptionsAndTerminatePhase</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:gac7e9ce406b34fcda759c6e47155b4bbd"><td class="memTemplParams" colspan="2">template&lt;typename... Tags&gt; </td></tr>
+<tr class="memitem:gac7e9ce406b34fcda759c6e47155b4bbd"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__InitializationGroup.html#gac7e9ce406b34fcda759c6e47155b4bbd">dg::Initialization::slice_tags_to_face</a> = tmpl::list&lt; Tags... &gt;</td></tr>
+<tr class="separator:gac7e9ce406b34fcda759c6e47155b4bbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab5ce0161b6bc0216d3634622be66c9bb"><td class="memTemplParams" colspan="2">template&lt;typename... Tags&gt; </td></tr>
+<tr class="memitem:gab5ce0161b6bc0216d3634622be66c9bb"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__InitializationGroup.html#gab5ce0161b6bc0216d3634622be66c9bb">dg::Initialization::slice_tags_to_exterior</a> = tmpl::list&lt; Tags... &gt;</td></tr>
+<tr class="separator:gab5ce0161b6bc0216d3634622be66c9bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7a1d6838963187d5b11c4efd34491438"><td class="memTemplParams" colspan="2">template&lt;typename... Tags&gt; </td></tr>
+<tr class="memitem:ga7a1d6838963187d5b11c4efd34491438"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__InitializationGroup.html#ga7a1d6838963187d5b11c4efd34491438">dg::Initialization::face_compute_tags</a> = tmpl::list&lt; Tags... &gt;</td></tr>
+<tr class="separator:ga7a1d6838963187d5b11c4efd34491438"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae51ec91ec661ea95819662f122fb6d84"><td class="memTemplParams" colspan="2">template&lt;typename... Tags&gt; </td></tr>
+<tr class="memitem:gae51ec91ec661ea95819662f122fb6d84"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__InitializationGroup.html#gae51ec91ec661ea95819662f122fb6d84">dg::Initialization::exterior_compute_tags</a> = tmpl::list&lt; Tags... &gt;</td></tr>
+<tr class="separator:gae51ec91ec661ea95819662f122fb6d84"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga24801c905faae90d8c0f599466df84db"><td class="memTemplParams" colspan="2">template&lt;size_t VolumeDim&gt; </td></tr>
+<tr class="memitem:ga24801c905faae90d8c0f599466df84db"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classElement.html">Element</a>&lt; VolumeDim &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__InitializationGroup.html#ga24801c905faae90d8c0f599466df84db">domain::Initialization::create_initial_element</a> (const <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt; &amp;element_id, const <a class="el" href="classBlock.html">Block</a>&lt; VolumeDim &gt; &amp;block, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, VolumeDim &gt;&gt; &amp;initial_refinement_levels) noexcept</td></tr>
+<tr class="memdesc:ga24801c905faae90d8c0f599466df84db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates an initial element of a <a class="el" href="classBlock.html">Block</a>.  <a href="group__InitializationGroup.html#ga24801c905faae90d8c0f599466df84db">More...</a><br /></td></tr>
+<tr class="separator:ga24801c905faae90d8c0f599466df84db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabf44965c988255ec93380b5f054343f3"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:gabf44965c988255ec93380b5f054343f3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__InitializationGroup.html#gabf44965c988255ec93380b5f054343f3">domain::Initialization::create_initial_mesh</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, Dim &gt;&gt; &amp;initial_extents, const <a class="el" href="classElementId.html">ElementId</a>&lt; Dim &gt; &amp;element_id, <a class="el" href="group__SpectralGroup.html#ga7744e520f6d553caf358a6f09f5978c1">Spectral::Quadrature</a> quadrature, const <a class="el" href="classOrientationMap.html">OrientationMap</a>&lt; Dim &gt; &amp;orientation={}) noexcept</td></tr>
+<tr class="memdesc:gabf44965c988255ec93380b5f054343f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct the initial <a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a> of an <a class="el" href="classElement.html">Element</a>.  <a href="group__InitializationGroup.html#gabf44965c988255ec93380b5f054343f3">More...</a><br /></td></tr>
+<tr class="separator:gabf44965c988255ec93380b5f054343f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafc4ef63b38e015766414946b0b5523b5"><td class="memTemplParams" colspan="2">template&lt;typename AddingAction , typename SimpleTagsList , typename ComputeTagsList  = tmpl::list&lt;&gt;, MergePolicy Policy = MergePolicy::Error, typename... SimpleTags, typename DbTagsList , typename... Args&gt; </td></tr>
+<tr class="memitem:gafc4ef63b38e015766414946b0b5523b5"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__InitializationGroup.html#gafc4ef63b38e015766414946b0b5523b5">Initialization::merge_into_databox</a> (db::DataBox&lt; DbTagsList &gt; &amp;&amp;box, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:gafc4ef63b38e015766414946b0b5523b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add tags that are not yet in the DataBox.  <a href="group__InitializationGroup.html#gafc4ef63b38e015766414946b0b5523b5">More...</a><br /></td></tr>
+<tr class="separator:gafc4ef63b38e015766414946b0b5523b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>Actions and metafunctions used for initialization of parallel components. </p>
+<h2 class="groupheader">Typedef Documentation</h2>
+<a id="gae51ec91ec661ea95819662f122fb6d84"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae51ec91ec661ea95819662f122fb6d84">&#9670;&nbsp;</a></span>exterior_compute_tags</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Tags&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__InitializationGroup.html#gae51ec91ec661ea95819662f122fb6d84">dg::Initialization::exterior_compute_tags</a> = typedef tmpl::list&lt;Tags...&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Compute tags on the exterior side of the faces of the element </p>
+
+</div>
+</div>
+<a id="ga7a1d6838963187d5b11c4efd34491438"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7a1d6838963187d5b11c4efd34491438">&#9670;&nbsp;</a></span>face_compute_tags</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Tags&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__InitializationGroup.html#ga7a1d6838963187d5b11c4efd34491438">dg::Initialization::face_compute_tags</a> = typedef tmpl::list&lt;Tags...&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Compute tags on the faces of the element </p>
+
+</div>
+</div>
+<a id="gab5ce0161b6bc0216d3634622be66c9bb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab5ce0161b6bc0216d3634622be66c9bb">&#9670;&nbsp;</a></span>slice_tags_to_exterior</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Tags&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__InitializationGroup.html#gab5ce0161b6bc0216d3634622be66c9bb">dg::Initialization::slice_tags_to_exterior</a> = typedef tmpl::list&lt;Tags...&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Tags that are to be sliced to the exterior side of the faces of the element </p>
+
+</div>
+</div>
+<a id="gac7e9ce406b34fcda759c6e47155b4bbd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac7e9ce406b34fcda759c6e47155b4bbd">&#9670;&nbsp;</a></span>slice_tags_to_face</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Tags&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__InitializationGroup.html#gac7e9ce406b34fcda759c6e47155b4bbd">dg::Initialization::slice_tags_to_face</a> = typedef tmpl::list&lt;Tags...&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Tags that are to be sliced to the faces of the element </p>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="ga24801c905faae90d8c0f599466df84db"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga24801c905faae90d8c0f599466df84db">&#9670;&nbsp;</a></span>create_initial_element()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t VolumeDim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classElement.html">Element</a>&lt;VolumeDim&gt; domain::Initialization::create_initial_element </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>element_id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classBlock.html">Block</a>&lt; VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>block</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, VolumeDim &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>initial_refinement_levels</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Creates an initial element of a <a class="el" href="classBlock.html">Block</a>. </p>
+<h3>Details</h3>
+<p>This function creates an element at the refinement level and position specified by the <code>element_id</code> within the <code>block</code>. It assumes that all elements in a given block have the same refinement level, given in <code>initial_refinement_levels</code>. </p>
+
+</div>
+</div>
+<a id="gabf44965c988255ec93380b5f054343f3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gabf44965c988255ec93380b5f054343f3">&#9670;&nbsp;</a></span>create_initial_mesh()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classMesh.html">Mesh</a>&lt;Dim&gt; domain::Initialization::create_initial_mesh </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, Dim &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>initial_extents</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classElementId.html">ElementId</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>element_id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__SpectralGroup.html#ga7744e520f6d553caf358a6f09f5978c1">Spectral::Quadrature</a>&#160;</td>
+          <td class="paramname"><em>quadrature</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classOrientationMap.html">OrientationMap</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>orientation</em> = <code>{}</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Construct the initial <a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a> of an <a class="el" href="classElement.html">Element</a>. </p>
+<h3>Details</h3>
+<p>When constructing the <a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a> of an <a class="el" href="classElement.html">Element</a>, pass its id, and use the default argument for orientation. When constructing the mesh of a neighboring <a class="el" href="classElement.html">Element</a> (when constructing mortars), pass the id and orientation of the neighbor.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">initial_extents</td><td>the initial extents of each <a class="el" href="classBlock.html">Block</a> in the <a class="el" href="classDomain.html" title="A wrapper around a vector of Blocks that represent the computational domain.">Domain</a> </td></tr>
+    <tr><td class="paramname">element_id</td><td>id of an <a class="el" href="classElement.html">Element</a> or its neighbor </td></tr>
+    <tr><td class="paramname">quadrature</td><td>the quadrature rule/grid point distribution </td></tr>
+    <tr><td class="paramname">orientation</td><td><a class="el" href="classOrientationMap.html" title="A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of th...">OrientationMap</a> of (neighboring) <code>element_id</code> </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gafc4ef63b38e015766414946b0b5523b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gafc4ef63b38e015766414946b0b5523b5">&#9670;&nbsp;</a></span>merge_into_databox()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename AddingAction , typename SimpleTagsList , typename ComputeTagsList  = tmpl::list&lt;&gt;, MergePolicy Policy = MergePolicy::Error, typename... SimpleTags, typename DbTagsList , typename... Args&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto Initialization::merge_into_databox </td>
+          <td>(</td>
+          <td class="paramtype">db::DataBox&lt; DbTagsList &gt; &amp;&amp;&#160;</td>
+          <td class="paramname"><em>box</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Args &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Add tags that are not yet in the DataBox. </p>
+<p>How duplicate tags are handled depends on the <code>MergePolicy</code> passed. The default merge policy is to error if the simple tag being added does not have an equivalence operator and is being added again. <code>MergePolicy::IgnoreIncomparable</code> means that nothing is done if the simple tag being added does not have an equivalence operator. <a class="el" href="namespaceInitialization_1_1Tags.html" title="Tags used during initialization of parallel components.">Tags</a> that have an equivalence operator are check that the value being added and that is already in the DataBox are the same. If they aren't, an error occurs. Finally, <code>MergePolicy::Overwrite</code> means the current simple tag in the DataBox is overwritten with the new value passed in.</p>
+<p>Compute tags that are not in the DataBox are added, ones that are in the DataBox already are ignored. </p>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Profiling With Charm++ Projections</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">Profiling With Charm++ Projections </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><h1><a class="anchor" id="autotoc_md187"></a>
+Basic Setup and Compilation</h1>
+<p>To view trace data after a profiling run you must download Charm++'s Projections software from their <a href="http://charm.cs.illinois.edu/">website</a>. If you encounter issues it may be necessary to clone the git repository and build the correct version from scratch. Note that the version of Charm++ used to compile SpECTRE should match the version of Projections used to analyze the trace data. You can collect the trace data on a different machine than the one you will be analyzing the data on. For example, you can collect the data on a supercomputer and analyze it on your desktop or laptop.</p>
+<p>For profiling you will want to use a production build of Charm++, which means compiling Charm++ with the <code>--with-production</code> flag. To enable trace collecting you must build with the <code>--enable-tracing</code> flag as well. For example, on a multicore 64-bit Linux machine the build command would be </p><div class="fragment"><div class="line">./build charm++ multicore-linux64 gcc -j8 --with-production --enable-tracing</div>
+</div><!-- fragment --><p>When building SpECTRE for profiling there are several options to control what is profiled. First, you'll want to compile in Release mode by specifying <code>-D CMAKE_BUILD_TYPE=Release</code>. To enable tracing with Projections you must specify the CMake variable <code>-D PROJECTIONS=ON</code>. By default only Charm++ entry methods will be profiled, which will not provide very much insight because the AlgorithmChare infrastructure has only one entry method, which happens to be a function template. You must specify a typelist of which Actions you would like to profile before the first time <code>Evolution/EvolveSystem.hpp</code> is included in the main executable. This typically means right after the <code>the_ordered_actions_list</code> list is defined in the main executable. For example,</p>
+<div class="fragment"><div class="line"><span class="keyword">using</span> the_ordered_actions_list = tmpl::list&lt;</div>
+<div class="line">    Algorithms::CheckTriggers&lt;the_system, the_volume_dim&gt;,</div>
+<div class="line">    Algorithms::SendDataForFluxes&lt;the_system, the_volume_dim&gt;,</div>
+<div class="line">    Algorithms::ComputeVolumeDtU&lt;the_system, the_volume_dim&gt;,</div>
+<div class="line">    Algorithms::ComputeBoundaryFlux&lt;the_system, the_volume_dim&gt;,</div>
+<div class="line">    Algorithms::ImposeExternalBoundaryConditions&lt;the_system, the_volume_dim&gt;,</div>
+<div class="line">    Algorithms::ComputeU&lt;the_system, the_volume_dim&gt;,</div>
+<div class="line">    Algorithms::AdvanceSlab&lt;the_system, the_volume_dim&gt;,</div>
+<div class="line">    Algorithms::UpdateInstance&lt;the_system, the_volume_dim&gt;&gt;;</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">using</span> the_trace_actions_list = tmpl::list&lt;</div>
+<div class="line">    Algorithms::CheckTriggers&lt;the_system, the_volume_dim&gt;,</div>
+<div class="line">    Algorithms::ComputeVolumeDtU&lt;the_system, the_volume_dim&gt;,</div>
+<div class="line">    Algorithms::ComputeBoundaryFlux&lt;the_system, the_volume_dim&gt;,</div>
+<div class="line">    Algorithms::ImposeExternalBoundaryConditions&lt;the_system, the_volume_dim&gt;,</div>
+<div class="line">    Algorithms::ComputeU&lt;the_system, the_volume_dim&gt;&gt;;</div>
+</div><!-- fragment --><p>Actions not in <code>the_trace_actions_list</code> will not be traced but will still be executed. The code also records time in the AlgorithmChare's <code>receive_data</code> method that is not taken up by Actions (typically checking if all data needed for the next Action has been received) and also time spent saving the received data into local memory.</p>
+<h1><a class="anchor" id="autotoc_md188"></a>
+Using PAPI With Projections</h1>
+<dl class="section warning"><dt>Warning</dt><dd>Using PAPI with Projections's stat counters requires Charm++ v6.8.0 or newer.</dd></dl>
+<p>It is possible to collect information from hardware counters using PAPI for the Actions by specifying <code>-D PROJECTIONS_PAPI_COUNTERS="PAPI_L1_DCM,PAPI_L2_DCM"</code>. That is, a comma separated list of PAPI counters to record. To see the list of available counters on your hardware run <code>papi_avail -a</code>. The recorded user statistics can then be analyzed inside Charm++ Projections. It is also possible to record custom user statistics using Charm++ by specifying <code>-D PROJECTIONS_USER_STATS=ON</code> and defining the variable <code>user_stat_names</code> as</p>
+<div class="fragment"><div class="line"><span class="keyword">static</span> constexpr <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;const char*, 2&gt;</a> user_stat_names{</div>
+<div class="line">    {<span class="stringliteral">&quot;name_1&quot;</span>, <span class="stringliteral">&quot;name_2&quot;</span>}};</div>
+</div><!-- fragment --><p>The variable needs to be defined before <code>Evolution/EvolveSystem.hpp</code> is included. To record statistics of PAPI counters it is recommended you disable counters for Actions (you can still time profile them, though) and specify the CMake variable <code>-D USE_PAPI=ON</code>. An example of how to record statistics from PAPI counters is given below.</p>
+<p>To provide a concrete example of tracing and analyzing hardware PMUs using PAPI for only a subset of functions in an Action we will profile the function <code>ScalarWaveEquations&lt;Dim&gt;::compute_volume_dt_u</code>. There are several helper functions provided in <code>Utilities/PAPI.hpp</code> that will come in useful. To start the PAPI counters and record the time at the beginning of the function we call</p>
+<div class="fragment"><div class="line">start_papi_counters(<a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;int, 2&gt;</a>{{PAPI_L1_DCM, PAPI_L2_DCM}});</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> start_time = get_time_from_papi();</div>
+</div><!-- fragment --><p>and wherever we want to finish recording we run</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> stop_time = get_time_from_papi();</div>
+<div class="line"><span class="keyword">auto</span> counters = stop_papi_counters&lt;2&gt;();</div>
+</div><!-- fragment --><p>The template parameter to <code>stop_papi_counters</code> must be the number of PAPI counters being recorded, two in our example. The function <code>get_time_from_papi</code> returns the time in seconds and <code>stop_time - start_time</code> gives the elapsed time in seconds between the two calls. Using <code>get_time_from_papi</code> it is possible to compute FLOP/s, or any other metric related to time. Finally, to store the counter read outs into Projections's stat counter we use</p>
+<div class="fragment"><div class="line">updateStat(projections_user_stat_offset, counters[0]);</div>
+<div class="line">updateStat(projections_user_stat_offset + 1, counters[1]);</div>
+</div><!-- fragment --><p>The variable <code>projections_user_stat_offset</code> is used to ensure that the stat numbers used by Charm++ internally do not collide with any used in the Actions, unless you have over 9000 Actions.</p>
+<h1><a class="anchor" id="autotoc_md189"></a>
+Running SpECTRE With Trace Output</h1>
+<p>When running SpECTRE you must specify a directory to output trace data into. This is done by adding the command line argument <code>+traceroot DIR</code> where <code>DIR</code> is the directory to dump the trace data into. Note that <code>DIR</code> must already exist, the application will not create it. For example, to run the 3D scalar wave executable on a multicore build with tracing enabled use</p>
+<div class="fragment"><div class="line">./Evolve3DScalarWave +p4 +traceroot ./traces</div>
+</div><!-- fragment --><p>For more information on runtime options to control trace data see the <a href="http://charm.cs.illinois.edu/manuals/html/projections/1.html">Charm++ Projections manual</a>.</p>
+<h1><a class="anchor" id="autotoc_md190"></a>
+Visualizing Trace %Data In Projections</h1>
+<p>See the <a href="http://charm.cs.illinois.edu/manuals/html/projections/2.html">Charm++ Projections manual</a> for details. </p>
+</div></div><!-- contents -->
+</div><!-- PageDoc -->
+<div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

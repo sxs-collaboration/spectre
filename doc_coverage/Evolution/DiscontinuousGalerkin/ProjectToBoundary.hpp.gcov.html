@@ -1,0 +1,350 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - 39f3c2b725318dcf91749887b1e61f477736e132 - Evolution/DiscontinuousGalerkin/ProjectToBoundary.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title"> SpECTRE Documentation Coverage Report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">Evolution/DiscontinuousGalerkin</a> - ProjectToBoundary.hpp</td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+             <td class="headerItem">Commit:</td>
+             <td class="headerValue"><a target="_blank" href="https://github.com/sxs-collaboration/spectre/commit/39f3c2b725318dcf91749887b1e61f477736e132">39f3c2b725318dcf91749887b1e61f477736e132</a></td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntry">4</td>
+            <td class="headerCovTableEntryMed">75.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2021-07-13 03:19:40</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineNoCov">          0 : // Distributed under the MIT License.</span></a>
+<a name="2"><span class="lineNum">       2 </span>            : // See LICENSE.txt for details.</a>
+<a name="3"><span class="lineNum">       3 </span>            : </a>
+<a name="4"><span class="lineNum">       4 </span>            : #pragma once</a>
+<a name="5"><span class="lineNum">       5 </span>            : </a>
+<a name="6"><span class="lineNum">       6 </span>            : #include &lt;cstddef&gt;</a>
+<a name="7"><span class="lineNum">       7 </span>            : #include &lt;type_traits&gt;</a>
+<a name="8"><span class="lineNum">       8 </span>            : </a>
+<a name="9"><span class="lineNum">       9 </span>            : #include &quot;DataStructures/ApplyMatrices.hpp&quot;</a>
+<a name="10"><span class="lineNum">      10 </span>            : #include &quot;DataStructures/DataVector.hpp&quot;</a>
+<a name="11"><span class="lineNum">      11 </span>            : #include &quot;DataStructures/Matrix.hpp&quot;</a>
+<a name="12"><span class="lineNum">      12 </span>            : #include &quot;DataStructures/SliceIterator.hpp&quot;</a>
+<a name="13"><span class="lineNum">      13 </span>            : #include &quot;DataStructures/Variables.hpp&quot;</a>
+<a name="14"><span class="lineNum">      14 </span>            : #include &quot;Domain/Structure/Direction.hpp&quot;</a>
+<a name="15"><span class="lineNum">      15 </span>            : #include &quot;NumericalAlgorithms/Spectral/Mesh.hpp&quot;</a>
+<a name="16"><span class="lineNum">      16 </span>            : #include &quot;NumericalAlgorithms/Spectral/Spectral.hpp&quot;</a>
+<a name="17"><span class="lineNum">      17 </span>            : #include &quot;Utilities/ErrorHandling/Assert.hpp&quot;</a>
+<a name="18"><span class="lineNum">      18 </span>            : #include &quot;Utilities/Gsl.hpp&quot;</a>
+<a name="19"><span class="lineNum">      19 </span>            : #include &quot;Utilities/MakeArray.hpp&quot;</a>
+<a name="20"><span class="lineNum">      20 </span>            : #include &quot;Utilities/TMPL.hpp&quot;</a>
+<a name="21"><span class="lineNum">      21 </span>            : </a>
+<a name="22"><span class="lineNum">      22 </span>            : namespace evolution::dg {</a>
+<a name="23"><span class="lineNum">      23 </span>            : namespace detail {</a>
+<a name="24"><span class="lineNum">      24 </span>            : template &lt;typename TagsList&gt;</a>
+<a name="25"><span class="lineNum">      25 </span>            : struct NumberOfIndependentComponents;</a>
+<a name="26"><span class="lineNum">      26 </span>            : </a>
+<a name="27"><span class="lineNum">      27 </span>            : template &lt;typename... Tags&gt;</a>
+<a name="28"><span class="lineNum">      28 </span>            : struct NumberOfIndependentComponents&lt;tmpl::list&lt;Tags...&gt;&gt; {</a>
+<a name="29"><span class="lineNum">      29 </span>            :   static constexpr size_t value = (... + Tags::type::size());</a>
+<a name="30"><span class="lineNum">      30 </span>            : };</a>
+<a name="31"><span class="lineNum">      31 </span>            : }  // namespace detail</a>
+<a name="32"><span class="lineNum">      32 </span>            : </a>
+<a name="33"><span class="lineNum">      33 </span>            : /*!</a>
+<a name="34"><span class="lineNum">      34 </span>            :  * \brief Projects a `Variables` of volume data to a contiguous subset of</a>
+<a name="35"><span class="lineNum">      35 </span>            :  * a boundary `Variables`</a>
+<a name="36"><span class="lineNum">      36 </span>            :  *</a>
+<a name="37"><span class="lineNum">      37 </span>            :  * The `volume_fields` are all projected into the `face_fields` in the direction</a>
+<a name="38"><span class="lineNum">      38 </span>            :  * `direction`. The tags in `VolumeVarsTagsList` must be a contiguous subset of</a>
+<a name="39"><span class="lineNum">      39 </span>            :  * the tags in `FaceVarsTagsList`. That is, `FaceVarsTagsList` must be</a>
+<a name="40"><span class="lineNum">      40 </span>            :  * equivalent to `tmpl::append&lt;Before, VolumeVarsTagsList, After&gt;` where</a>
+<a name="41"><span class="lineNum">      41 </span>            :  * `Before` and `After` are `tmpl::list`s of arbitrary size. This is because the</a>
+<a name="42"><span class="lineNum">      42 </span>            :  * projection is applied on all of the tensor components of the volume variables</a>
+<a name="43"><span class="lineNum">      43 </span>            :  * and is written into contiguous memory on the boundary.</a>
+<a name="44"><span class="lineNum">      44 </span>            :  *</a>
+<a name="45"><span class="lineNum">      45 </span>            :  * In general, this function will be used for projecting all the evolved</a>
+<a name="46"><span class="lineNum">      46 </span>            :  * variables or all the volume fluxes to the faces. The function</a>
+<a name="47"><span class="lineNum">      47 </span>            :  * `evolution::dg::project_tensors_to_boundary()` should be used for projecting</a>
+<a name="48"><span class="lineNum">      48 </span>            :  * individual tensors to the face.</a>
+<a name="49"><span class="lineNum">      49 </span>            :  *</a>
+<a name="50"><span class="lineNum">      50 </span>            :  * \note This function works for both Gauss and Gauss-Lobatto uniform meshes.</a>
+<a name="51"><span class="lineNum">      51 </span>            :  */</a>
+<a name="52"><span class="lineNum">      52 </span>            : template &lt;typename VolumeVarsTagsList, typename FaceVarsTagsList, size_t Dim&gt;</a>
+<a name="53"><span class="lineNum">      53 </span><span class="lineCov">          1 : void project_contiguous_data_to_boundary(</span></a>
+<a name="54"><span class="lineNum">      54 </span>            :     const gsl::not_null&lt;Variables&lt;FaceVarsTagsList&gt;*&gt; face_fields,</a>
+<a name="55"><span class="lineNum">      55 </span>            :     const Variables&lt;VolumeVarsTagsList&gt;&amp; volume_fields,</a>
+<a name="56"><span class="lineNum">      56 </span>            :     const Mesh&lt;Dim&gt;&amp; volume_mesh, const Direction&lt;Dim&gt;&amp; direction) noexcept {</a>
+<a name="57"><span class="lineNum">      57 </span>            :   static_assert(tmpl::size&lt;VolumeVarsTagsList&gt;::value != 0,</a>
+<a name="58"><span class="lineNum">      58 </span>            :                 &quot;Must have non-zero number of volume fields&quot;);</a>
+<a name="59"><span class="lineNum">      59 </span>            :   static_assert(tmpl::size&lt;FaceVarsTagsList&gt;::value &gt;=</a>
+<a name="60"><span class="lineNum">      60 </span>            :                     tmpl::size&lt;VolumeVarsTagsList&gt;::value,</a>
+<a name="61"><span class="lineNum">      61 </span>            :                 &quot;There must not be more volume tags than there are face tags.&quot;);</a>
+<a name="62"><span class="lineNum">      62 </span>            :   static_assert(</a>
+<a name="63"><span class="lineNum">      63 </span>            :       tmpl::list_contains_v&lt;FaceVarsTagsList, tmpl::front&lt;VolumeVarsTagsList&gt;&gt;,</a>
+<a name="64"><span class="lineNum">      64 </span>            :       &quot;The first tag of VolumeVarsTagsList is not in the face tags. The &quot;</a>
+<a name="65"><span class="lineNum">      65 </span>            :       &quot;VolumeVarsTagsList must be a subset of the FaceVarsTagsList&quot;);</a>
+<a name="66"><span class="lineNum">      66 </span>            :   static_assert(</a>
+<a name="67"><span class="lineNum">      67 </span>            :       tmpl::list_contains_v&lt;FaceVarsTagsList, tmpl::back&lt;VolumeVarsTagsList&gt;&gt;,</a>
+<a name="68"><span class="lineNum">      68 </span>            :       &quot;The last tag of VolumeVarsTagsList is not in the face tags. The &quot;</a>
+<a name="69"><span class="lineNum">      69 </span>            :       &quot;VolumeVarsTagsList must be a subset of the FaceVarsTagsList&quot;);</a>
+<a name="70"><span class="lineNum">      70 </span>            :   using face_vars_excluding_extras_at_end = tmpl::front&lt;</a>
+<a name="71"><span class="lineNum">      71 </span>            :       tmpl::split_at&lt;FaceVarsTagsList,</a>
+<a name="72"><span class="lineNum">      72 </span>            :                      tmpl::next&lt;tmpl::index_of&lt;</a>
+<a name="73"><span class="lineNum">      73 </span>            :                          FaceVarsTagsList, tmpl::back&lt;VolumeVarsTagsList&gt;&gt;&gt;&gt;&gt;;</a>
+<a name="74"><span class="lineNum">      74 </span>            :   using front_face_vars_split = tmpl::split_at&lt;</a>
+<a name="75"><span class="lineNum">      75 </span>            :       face_vars_excluding_extras_at_end,</a>
+<a name="76"><span class="lineNum">      76 </span>            :       tmpl::index_of&lt;FaceVarsTagsList, tmpl::front&lt;VolumeVarsTagsList&gt;&gt;&gt;;</a>
+<a name="77"><span class="lineNum">      77 </span>            :   using volume_vars_face_subset_list = tmpl::back&lt;front_face_vars_split&gt;;</a>
+<a name="78"><span class="lineNum">      78 </span>            :   static_assert(</a>
+<a name="79"><span class="lineNum">      79 </span>            :       std::is_same_v&lt;volume_vars_face_subset_list, VolumeVarsTagsList&gt;,</a>
+<a name="80"><span class="lineNum">      80 </span>            :       &quot;The VolumeVarsTagsList must be a subset of the FaceVarsTagsList.&quot;);</a>
+<a name="81"><span class="lineNum">      81 </span>            :   constexpr const size_t number_of_independent_components =</a>
+<a name="82"><span class="lineNum">      82 </span>            :       Variables&lt;VolumeVarsTagsList&gt;::number_of_independent_components;</a>
+<a name="83"><span class="lineNum">      83 </span>            :   using first_volume_tag = tmpl::front&lt;VolumeVarsTagsList&gt;;</a>
+<a name="84"><span class="lineNum">      84 </span>            :   const size_t sliced_dim = direction.dimension();</a>
+<a name="85"><span class="lineNum">      85 </span>            :   if (volume_mesh.quadrature(sliced_dim) == Spectral::Quadrature::Gauss) {</a>
+<a name="86"><span class="lineNum">      86 </span>            :     const Matrix identity{};</a>
+<a name="87"><span class="lineNum">      87 </span>            :     auto interpolation_matrices = make_array&lt;Dim&gt;(std::cref(identity));</a>
+<a name="88"><span class="lineNum">      88 </span>            :     const auto&amp; matrix = Spectral::boundary_interpolation_matrices(</a>
+<a name="89"><span class="lineNum">      89 </span>            :         volume_mesh.slice_through(sliced_dim));</a>
+<a name="90"><span class="lineNum">      90 </span>            :     gsl::at(interpolation_matrices, sliced_dim) =</a>
+<a name="91"><span class="lineNum">      91 </span>            :         direction.side() == Side::Upper ? matrix.second : matrix.first;</a>
+<a name="92"><span class="lineNum">      92 </span>            : </a>
+<a name="93"><span class="lineNum">      93 </span>            :     auto&amp; first_face_field = get&lt;first_volume_tag&gt;(*face_fields);</a>
+<a name="94"><span class="lineNum">      94 </span>            :     auto&amp; first_volume_field = get&lt;first_volume_tag&gt;(volume_fields);</a>
+<a name="95"><span class="lineNum">      95 </span>            : </a>
+<a name="96"><span class="lineNum">      96 </span>            :     // The size is the number of tensor components we are projecting times the</a>
+<a name="97"><span class="lineNum">      97 </span>            :     // number of grid points on the face. Note that this is _not_ equal to the</a>
+<a name="98"><span class="lineNum">      98 </span>            :     // size of face_fields-&gt;size() since face_fields is a superset of the</a>
+<a name="99"><span class="lineNum">      99 </span>            :     // volume variables.</a>
+<a name="100"><span class="lineNum">     100 </span>            :     DataVector face_view{</a>
+<a name="101"><span class="lineNum">     101 </span>            :         first_face_field[0].data(),</a>
+<a name="102"><span class="lineNum">     102 </span>            :         first_face_field[0].size() * number_of_independent_components};</a>
+<a name="103"><span class="lineNum">     103 </span>            : </a>
+<a name="104"><span class="lineNum">     104 </span>            :     apply_matrices(make_not_null(&amp;face_view), interpolation_matrices,</a>
+<a name="105"><span class="lineNum">     105 </span>            :                    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)</a>
+<a name="106"><span class="lineNum">     106 </span>            :                    DataVector{const_cast&lt;double*&gt;(first_volume_field[0].data()),</a>
+<a name="107"><span class="lineNum">     107 </span>            :                               first_volume_field[0].size() *</a>
+<a name="108"><span class="lineNum">     108 </span>            :                                   number_of_independent_components},</a>
+<a name="109"><span class="lineNum">     109 </span>            :                    volume_mesh.extents());</a>
+<a name="110"><span class="lineNum">     110 </span>            :   } else {</a>
+<a name="111"><span class="lineNum">     111 </span>            :     const size_t fixed_index = direction.side() == Side::Upper</a>
+<a name="112"><span class="lineNum">     112 </span>            :                                    ? volume_mesh.extents(sliced_dim) - 1</a>
+<a name="113"><span class="lineNum">     113 </span>            :                                    : 0;</a>
+<a name="114"><span class="lineNum">     114 </span>            : </a>
+<a name="115"><span class="lineNum">     115 </span>            :     const size_t interface_grid_points =</a>
+<a name="116"><span class="lineNum">     116 </span>            :         volume_mesh.extents().slice_away(sliced_dim).product();</a>
+<a name="117"><span class="lineNum">     117 </span>            :     const size_t volume_grid_points = volume_mesh.number_of_grid_points();</a>
+<a name="118"><span class="lineNum">     118 </span>            : </a>
+<a name="119"><span class="lineNum">     119 </span>            :     const double* vars_data = volume_fields.data();</a>
+<a name="120"><span class="lineNum">     120 </span>            :     // Since the face fields are a superset of the volume tags we need to find</a>
+<a name="121"><span class="lineNum">     121 </span>            :     // the first volume tag on the face and get the pointer for that.</a>
+<a name="122"><span class="lineNum">     122 </span>            :     double* interface_vars_data = get&lt;first_volume_tag&gt;(*face_fields)[0].data();</a>
+<a name="123"><span class="lineNum">     123 </span>            : </a>
+<a name="124"><span class="lineNum">     124 </span>            :     // The reason we can't use data_on_slice is because the volume and face tags</a>
+<a name="125"><span class="lineNum">     125 </span>            :     // are not the same, but data_on_slice assumes they are. In general, this</a>
+<a name="126"><span class="lineNum">     126 </span>            :     // function should replace data_on_slice in the long term since in</a>
+<a name="127"><span class="lineNum">     127 </span>            :     // additional to supporting different volume and face tags, it also supports</a>
+<a name="128"><span class="lineNum">     128 </span>            :     // Gauss and Gauss-Lobatto points.</a>
+<a name="129"><span class="lineNum">     129 </span>            :     //</a>
+<a name="130"><span class="lineNum">     130 </span>            :     // Run the SliceIterator as the outer-most loop since incrementing the slice</a>
+<a name="131"><span class="lineNum">     131 </span>            :     // iterator is surprisingly expensive.</a>
+<a name="132"><span class="lineNum">     132 </span>            :     for (SliceIterator si(volume_mesh.extents(), sliced_dim, fixed_index); si;</a>
+<a name="133"><span class="lineNum">     133 </span>            :          ++si) {</a>
+<a name="134"><span class="lineNum">     134 </span>            :       for (size_t i = 0; i &lt; number_of_independent_components; ++i) {</a>
+<a name="135"><span class="lineNum">     135 </span>            :         // clang-tidy: do not use pointer arithmetic</a>
+<a name="136"><span class="lineNum">     136 </span>            :         interface_vars_data[si.slice_offset() +                      // NOLINT</a>
+<a name="137"><span class="lineNum">     137 </span>            :                             i * interface_grid_points] =             // NOLINT</a>
+<a name="138"><span class="lineNum">     138 </span>            :             vars_data[si.volume_offset() + i * volume_grid_points];  // NOLINT</a>
+<a name="139"><span class="lineNum">     139 </span>            :       }</a>
+<a name="140"><span class="lineNum">     140 </span>            :     }</a>
+<a name="141"><span class="lineNum">     141 </span>            :   }</a>
+<a name="142"><span class="lineNum">     142 </span>            : }</a>
+<a name="143"><span class="lineNum">     143 </span>            : </a>
+<a name="144"><span class="lineNum">     144 </span>            : /*!</a>
+<a name="145"><span class="lineNum">     145 </span>            :  * \brief Projects a subset of the tensors in the `volume_fields` onto the face</a>
+<a name="146"><span class="lineNum">     146 </span>            :  *</a>
+<a name="147"><span class="lineNum">     147 </span>            :  * The tensors to project are listed in the `TagsToProjectList`.</a>
+<a name="148"><span class="lineNum">     148 </span>            :  *</a>
+<a name="149"><span class="lineNum">     149 </span>            :  * \note This function works for both Gauss and Gauss-Lobatto uniform meshes.</a>
+<a name="150"><span class="lineNum">     150 </span>            :  */</a>
+<a name="151"><span class="lineNum">     151 </span>            : template &lt;typename TagsToProjectList, typename VolumeVarsTagsList,</a>
+<a name="152"><span class="lineNum">     152 </span>            :           typename FaceVarsTagsList, size_t Dim&gt;</a>
+<a name="153"><span class="lineNum">     153 </span><span class="lineCov">          1 : void project_tensors_to_boundary(</span></a>
+<a name="154"><span class="lineNum">     154 </span>            :     const gsl::not_null&lt;Variables&lt;FaceVarsTagsList&gt;*&gt; face_fields,</a>
+<a name="155"><span class="lineNum">     155 </span>            :     const Variables&lt;VolumeVarsTagsList&gt;&amp; volume_fields,</a>
+<a name="156"><span class="lineNum">     156 </span>            :     const Mesh&lt;Dim&gt;&amp; volume_mesh, const Direction&lt;Dim&gt;&amp; direction) noexcept {</a>
+<a name="157"><span class="lineNum">     157 </span>            :   static_assert(tmpl::size&lt;VolumeVarsTagsList&gt;::value != 0,</a>
+<a name="158"><span class="lineNum">     158 </span>            :                 &quot;Must have non-zero number of volume fields&quot;);</a>
+<a name="159"><span class="lineNum">     159 </span>            :   static_assert(</a>
+<a name="160"><span class="lineNum">     160 </span>            :       tmpl::size&lt;</a>
+<a name="161"><span class="lineNum">     161 </span>            :           tmpl::list_difference&lt;TagsToProjectList, FaceVarsTagsList&gt;&gt;::value ==</a>
+<a name="162"><span class="lineNum">     162 </span>            :           0,</a>
+<a name="163"><span class="lineNum">     163 </span>            :       &quot;All of the tags in TagsToProjectList must be in FaceVarsTagsList&quot;);</a>
+<a name="164"><span class="lineNum">     164 </span>            :   static_assert(</a>
+<a name="165"><span class="lineNum">     165 </span>            :       tmpl::size&lt;tmpl::list_difference&lt;TagsToProjectList,</a>
+<a name="166"><span class="lineNum">     166 </span>            :                                        VolumeVarsTagsList&gt;&gt;::value == 0,</a>
+<a name="167"><span class="lineNum">     167 </span>            :       &quot;All of the tags in TagsToProjectList must be in VolumeVarsTagsList&quot;);</a>
+<a name="168"><span class="lineNum">     168 </span>            :   const size_t sliced_dim = direction.dimension();</a>
+<a name="169"><span class="lineNum">     169 </span>            :   if (volume_mesh.quadrature(sliced_dim) == Spectral::Quadrature::Gauss) {</a>
+<a name="170"><span class="lineNum">     170 </span>            :     const Matrix identity{};</a>
+<a name="171"><span class="lineNum">     171 </span>            :     auto interpolation_matrices = make_array&lt;Dim&gt;(std::cref(identity));</a>
+<a name="172"><span class="lineNum">     172 </span>            :     const std::pair&lt;Matrix, Matrix&gt;&amp; matrices =</a>
+<a name="173"><span class="lineNum">     173 </span>            :         Spectral::boundary_interpolation_matrices(</a>
+<a name="174"><span class="lineNum">     174 </span>            :             volume_mesh.slice_through(sliced_dim));</a>
+<a name="175"><span class="lineNum">     175 </span>            :     gsl::at(interpolation_matrices, sliced_dim) =</a>
+<a name="176"><span class="lineNum">     176 </span>            :         direction.side() == Side::Upper ? matrices.second : matrices.first;</a>
+<a name="177"><span class="lineNum">     177 </span>            :     tmpl::for_each&lt;TagsToProjectList&gt;([&amp;face_fields, &amp;interpolation_matrices,</a>
+<a name="178"><span class="lineNum">     178 </span>            :                                        &amp;volume_fields,</a>
+<a name="179"><span class="lineNum">     179 </span>            :                                        &amp;volume_mesh](auto tag_v) noexcept {</a>
+<a name="180"><span class="lineNum">     180 </span>            :       using tag = typename decltype(tag_v)::type;</a>
+<a name="181"><span class="lineNum">     181 </span>            :       auto&amp; face_field = get&lt;tag&gt;(*face_fields);</a>
+<a name="182"><span class="lineNum">     182 </span>            :       const auto&amp; volume_field = get&lt;tag&gt;(volume_fields);</a>
+<a name="183"><span class="lineNum">     183 </span>            :       DataVector face_view{face_field[0].data(),</a>
+<a name="184"><span class="lineNum">     184 </span>            :                            face_field[0].size() * face_field.size()};</a>
+<a name="185"><span class="lineNum">     185 </span>            :       apply_matrices(make_not_null(&amp;face_view), interpolation_matrices,</a>
+<a name="186"><span class="lineNum">     186 </span>            :                      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)</a>
+<a name="187"><span class="lineNum">     187 </span>            :                      DataVector{const_cast&lt;double*&gt;(volume_field[0].data()),</a>
+<a name="188"><span class="lineNum">     188 </span>            :                                 volume_field[0].size() * volume_field.size()},</a>
+<a name="189"><span class="lineNum">     189 </span>            :                      volume_mesh.extents());</a>
+<a name="190"><span class="lineNum">     190 </span>            :     });</a>
+<a name="191"><span class="lineNum">     191 </span>            :   } else {</a>
+<a name="192"><span class="lineNum">     192 </span>            :     const size_t fixed_index = direction.side() == Side::Upper</a>
+<a name="193"><span class="lineNum">     193 </span>            :                                    ? volume_mesh.extents(sliced_dim) - 1</a>
+<a name="194"><span class="lineNum">     194 </span>            :                                    : 0;</a>
+<a name="195"><span class="lineNum">     195 </span>            : </a>
+<a name="196"><span class="lineNum">     196 </span>            :     const size_t interface_grid_points =</a>
+<a name="197"><span class="lineNum">     197 </span>            :         volume_mesh.extents().slice_away(sliced_dim).product();</a>
+<a name="198"><span class="lineNum">     198 </span>            :     const size_t volume_grid_points = volume_mesh.number_of_grid_points();</a>
+<a name="199"><span class="lineNum">     199 </span>            : </a>
+<a name="200"><span class="lineNum">     200 </span>            :     // Run the SliceIterator as the outer-most loop since incrementing the slice</a>
+<a name="201"><span class="lineNum">     201 </span>            :     // iterator is surprisingly expensive.</a>
+<a name="202"><span class="lineNum">     202 </span>            :     for (SliceIterator si(volume_mesh.extents(), sliced_dim, fixed_index); si;</a>
+<a name="203"><span class="lineNum">     203 </span>            :          ++si) {</a>
+<a name="204"><span class="lineNum">     204 </span>            :       tmpl::for_each&lt;TagsToProjectList&gt;([&amp;face_fields, interface_grid_points,</a>
+<a name="205"><span class="lineNum">     205 </span>            :                                          &amp;si, &amp;volume_fields,</a>
+<a name="206"><span class="lineNum">     206 </span>            :                                          volume_grid_points](</a>
+<a name="207"><span class="lineNum">     207 </span>            :                                             auto tag_v) noexcept {</a>
+<a name="208"><span class="lineNum">     208 </span>            :         using tag = typename decltype(tag_v)::type;</a>
+<a name="209"><span class="lineNum">     209 </span>            : </a>
+<a name="210"><span class="lineNum">     210 </span>            :         const double* vars_data = get&lt;tag&gt;(volume_fields)[0].data();</a>
+<a name="211"><span class="lineNum">     211 </span>            :         double* interface_vars_data = get&lt;tag&gt;(*face_fields)[0].data();</a>
+<a name="212"><span class="lineNum">     212 </span>            :         static constexpr size_t number_of_independent_components_in_tensor =</a>
+<a name="213"><span class="lineNum">     213 </span>            :             std::decay_t&lt;decltype(get&lt;tag&gt;(volume_fields))&gt;::size();</a>
+<a name="214"><span class="lineNum">     214 </span>            : </a>
+<a name="215"><span class="lineNum">     215 </span>            :         for (size_t i = 0; i &lt; number_of_independent_components_in_tensor;</a>
+<a name="216"><span class="lineNum">     216 </span>            :              ++i) {</a>
+<a name="217"><span class="lineNum">     217 </span>            :           // clang-tidy: do not use pointer arithmetic</a>
+<a name="218"><span class="lineNum">     218 </span>            :           interface_vars_data[si.slice_offset() +                      // NOLINT</a>
+<a name="219"><span class="lineNum">     219 </span>            :                               i * interface_grid_points] =             // NOLINT</a>
+<a name="220"><span class="lineNum">     220 </span>            :               vars_data[si.volume_offset() + i * volume_grid_points];  // NOLINT</a>
+<a name="221"><span class="lineNum">     221 </span>            :         }</a>
+<a name="222"><span class="lineNum">     222 </span>            :       });</a>
+<a name="223"><span class="lineNum">     223 </span>            :     }</a>
+<a name="224"><span class="lineNum">     224 </span>            :   }</a>
+<a name="225"><span class="lineNum">     225 </span>            : }</a>
+<a name="226"><span class="lineNum">     226 </span>            : </a>
+<a name="227"><span class="lineNum">     227 </span>            : /*!</a>
+<a name="228"><span class="lineNum">     228 </span>            :  * \brief Projects a tensor to the face</a>
+<a name="229"><span class="lineNum">     229 </span>            :  *</a>
+<a name="230"><span class="lineNum">     230 </span>            :  * \note This function works for both Gauss and Gauss-Lobatto uniform meshes.</a>
+<a name="231"><span class="lineNum">     231 </span>            :  */</a>
+<a name="232"><span class="lineNum">     232 </span>            : template &lt;typename Symm, typename IndexList, size_t Dim&gt;</a>
+<a name="233"><span class="lineNum">     233 </span><span class="lineCov">          1 : void project_tensor_to_boundary(</span></a>
+<a name="234"><span class="lineNum">     234 </span>            :     const gsl::not_null&lt;Tensor&lt;DataVector, Symm, IndexList&gt;*&gt; face_field,</a>
+<a name="235"><span class="lineNum">     235 </span>            :     const Tensor&lt;DataVector, Symm, IndexList&gt;&amp; volume_field,</a>
+<a name="236"><span class="lineNum">     236 </span>            :     const Mesh&lt;Dim&gt;&amp; volume_mesh, const Direction&lt;Dim&gt;&amp; direction) noexcept {</a>
+<a name="237"><span class="lineNum">     237 </span>            :   const size_t sliced_dim = direction.dimension();</a>
+<a name="238"><span class="lineNum">     238 </span>            :   if (volume_mesh.quadrature(sliced_dim) ==</a>
+<a name="239"><span class="lineNum">     239 </span>            :       Spectral::Quadrature::Gauss) {</a>
+<a name="240"><span class="lineNum">     240 </span>            :     const Matrix identity{};</a>
+<a name="241"><span class="lineNum">     241 </span>            :     auto interpolation_matrices = make_array&lt;Dim&gt;(std::cref(identity));</a>
+<a name="242"><span class="lineNum">     242 </span>            :     const std::pair&lt;Matrix, Matrix&gt;&amp; matrices =</a>
+<a name="243"><span class="lineNum">     243 </span>            :         Spectral::boundary_interpolation_matrices(</a>
+<a name="244"><span class="lineNum">     244 </span>            :             volume_mesh.slice_through(sliced_dim));</a>
+<a name="245"><span class="lineNum">     245 </span>            :     gsl::at(interpolation_matrices, sliced_dim) =</a>
+<a name="246"><span class="lineNum">     246 </span>            :         direction.side() == Side::Upper ? matrices.second : matrices.first;</a>
+<a name="247"><span class="lineNum">     247 </span>            :     for (size_t tensor_storage_index = 0;</a>
+<a name="248"><span class="lineNum">     248 </span>            :          tensor_storage_index &lt; volume_field.size(); ++tensor_storage_index) {</a>
+<a name="249"><span class="lineNum">     249 </span>            :       apply_matrices(make_not_null(&amp;(*face_field)[tensor_storage_index]),</a>
+<a name="250"><span class="lineNum">     250 </span>            :                      interpolation_matrices, volume_field[tensor_storage_index],</a>
+<a name="251"><span class="lineNum">     251 </span>            :                      volume_mesh.extents());</a>
+<a name="252"><span class="lineNum">     252 </span>            :     }</a>
+<a name="253"><span class="lineNum">     253 </span>            :   } else {</a>
+<a name="254"><span class="lineNum">     254 </span>            :     const size_t fixed_index = direction.side() == Side::Upper</a>
+<a name="255"><span class="lineNum">     255 </span>            :                                    ? volume_mesh.extents(sliced_dim) - 1</a>
+<a name="256"><span class="lineNum">     256 </span>            :                                    : 0;</a>
+<a name="257"><span class="lineNum">     257 </span>            : </a>
+<a name="258"><span class="lineNum">     258 </span>            :     // Run the SliceIterator as the outer-most loop since incrementing the slice</a>
+<a name="259"><span class="lineNum">     259 </span>            :     // iterator is surprisingly expensive.</a>
+<a name="260"><span class="lineNum">     260 </span>            :     for (SliceIterator si(volume_mesh.extents(), sliced_dim, fixed_index); si;</a>
+<a name="261"><span class="lineNum">     261 </span>            :          ++si) {</a>
+<a name="262"><span class="lineNum">     262 </span>            :       for (size_t tensor_storage_index = 0;</a>
+<a name="263"><span class="lineNum">     263 </span>            :            tensor_storage_index &lt; volume_field.size(); ++tensor_storage_index) {</a>
+<a name="264"><span class="lineNum">     264 </span>            :         (*face_field)[tensor_storage_index][si.slice_offset()] =</a>
+<a name="265"><span class="lineNum">     265 </span>            :             volume_field[tensor_storage_index][si.volume_offset()];</a>
+<a name="266"><span class="lineNum">     266 </span>            :       }</a>
+<a name="267"><span class="lineNum">     267 </span>            :     }</a>
+<a name="268"><span class="lineNum">     268 </span>            :   }</a>
+<a name="269"><span class="lineNum">     269 </span>            : }</a>
+<a name="270"><span class="lineNum">     270 </span>            : }  // namespace evolution::dg</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

@@ -1,0 +1,666 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Evolution/Systems/Cce/Tags.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_d7cddb31ba741ba3a4d5be000d880a30.html">Evolution</a></li><li class="navelem"><a class="el" href="dir_ae9813db12dd9fd3f3106ad3644a1b2a.html">Systems</a></li><li class="navelem"><a class="el" href="dir_b9586a27d0e1f299c51d3004d7f0b675.html">Cce</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">Tags.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Prefixes_8hpp.html">DataStructures/DataBox/Prefixes.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataBox/Tag.hpp&quot;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataBox/TagName.hpp&quot;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;DataStructures/SpinWeighted.hpp&quot;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Tensor_8hpp.html">DataStructures/Tensor/Tensor.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TypeAliases_8hpp.html">DataStructures/Tensor/TypeAliases.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Spectral/SwshTags.hpp&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TimeStepId_8hpp.html">Time/TimeStepId.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160; </div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceCce.html">Cce</a> {</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment"></span><span class="keyword">struct </span>MetricWorldtubeDataManager;</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> ToInterpolate, <span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="keyword">struct </span>ScriPlusInterpolationManager;<span class="comment"></span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment"></span><span class="comment"></span> </div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment">/// Tags for Cauchy Characteristic Extraction routines</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment"></span><span class="keyword">namespace </span>Tags {</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160; </div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment">// Bondi parameter tags</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment">/// Bondi parameter \f$\beta\f$</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1BondiBeta.html">   31</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1BondiBeta.html">BondiBeta</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;};</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment">/// Bondi parameter \f$J\f$</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1BondiJ.html">   36</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1BondiJ.html">BondiJ</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 2&gt;</a>&gt;;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> <span class="stringliteral">&quot;J&quot;</span>; }</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;};</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160; </div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;}  <span class="comment">// namespace Tags</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;}  <span class="comment">// namespace Cce</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160; </div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="keyword">namespace </span>Tags {<span class="comment"></span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;&gt;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="keyword">struct </span>dt&lt;<a class="code" href="namespaceCce.html">Cce</a>::Tags::BondiJ&gt; : <a class="code" href="structdb_1_1PrefixTag.html">db::PrefixTag</a>, <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> <span class="stringliteral">&quot;H&quot;</span>; }</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;::SpinWeighted&lt;ComplexDataVector, 2&gt;</a>&gt;;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;  <span class="keyword">using</span> tag = <a class="code" href="structCce_1_1Tags_1_1BondiJ.html">Cce::Tags::BondiJ</a>;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;};<span class="comment"></span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment"></span>}  <span class="comment">// namespace Tags</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160; </div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceCce.html">Cce</a> {</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="keyword">namespace </span>Tags {<span class="comment"></span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment">/// \brief Bondi parameter \f$H = \partial_u J\f$.</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment">/// \note The notation in the literature is not consistent regarding this</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment">/// quantity, or whether it is denoted by an \f$H\f$ at all. The SpECTRE CCE</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment">/// module consistently uses it to describe the (retarded) partial time</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment">/// derivative of \f$J\f$ at fixed compactified radius \f$y\f$ (to be contrasted</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment">/// with the physical Bondi radius, which is not directly used for numerical</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">/// grids).</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno"><a class="line" href="namespaceCce_1_1Tags.html#a1987e592fa6f5a8aafaa0273b4e94505">   64</a></span>&#160;<span class="comment"></span><span class="keyword">using</span> <a class="code" href="structTags_1_1dt.html">BondiH</a> = <a class="code" href="structTags_1_1dt.html">::Tags::dt&lt;BondiJ&gt;</a>;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment">/// Bondi parameter \f$\bar{J}\f$</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1BondiJbar.html">   67</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1BondiJbar.html">BondiJbar</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted</a>&lt;<a class="code" href="classComplexDataVector.html">ComplexDataVector</a>, -2&gt;&gt;;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> <span class="stringliteral">&quot;Jbar&quot;</span>; }</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;};</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment">/// Bondi parameter \f$K = \sqrt{1 + J \bar{J}}\f$</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1BondiK.html">   73</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1BondiK.html">BondiK</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> <span class="stringliteral">&quot;K&quot;</span>; }</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;};</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment">/// Bondi parameter \f$Q\f$</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1BondiQ.html">   79</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1BondiQ.html">BondiQ</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 1&gt;</a>&gt;;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> <span class="stringliteral">&quot;Q&quot;</span>; }</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;};</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment">/// Bondi parameter \f$\bar{Q}\f$</span></div>
+<div class="line"><a name="l00085"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1BondiQbar.html">   85</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1BondiQbar.html">BondiQbar</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted</a>&lt;<a class="code" href="classComplexDataVector.html">ComplexDataVector</a>, -1&gt;&gt;;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> <span class="stringliteral">&quot;Qbar&quot;</span>; }</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;};</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment">/// Bondi parameter \f$U\f$</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1BondiU.html">   91</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1BondiU.html">BondiU</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 1&gt;</a>&gt;;</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> <span class="stringliteral">&quot;U&quot;</span>; }</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;};</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="comment">/// The surface quantity of Bondi \f$U\f$ evaluated at the null spacetime</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment">/// boundary \f$\mathcal I^+\f$</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1BondiUAtScri.html">   98</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1BondiUAtScri.html">BondiUAtScri</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 1&gt;</a>&gt;;</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;};</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="comment">/// Bondi parameter \f$\bar{U}\f$</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1BondiUbar.html">  103</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1BondiUbar.html">BondiUbar</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted</a>&lt;<a class="code" href="classComplexDataVector.html">ComplexDataVector</a>, -1&gt;&gt;;</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> <span class="stringliteral">&quot;Ubar&quot;</span>; }</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;};</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="comment">/// Bondi parameter \f$W\f$</span></div>
+<div class="line"><a name="l00109"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1BondiW.html">  109</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1BondiW.html">BondiW</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;;</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> <span class="stringliteral">&quot;W&quot;</span>; }</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;};</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="comment">/// The derivative with respect to the numerical coordinate \f$y = 1 - 2R/r\f$,</span></div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="comment">/// where \f$R(u, \theta, \phi)\f$ is Bondi radius of the worldtube.</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00117"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1Dy.html">  117</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1Dy.html">Dy</a> : <a class="code" href="structdb_1_1PrefixTag.html">db::PrefixTag</a>, <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, Tag::type::type::spin&gt;</a>&gt;;</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;  <span class="keyword">using</span> tag = Tag;</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;  <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">size_t</span> dimension_to_differentiate = 2;</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;};</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="comment">/// The derivative with respect to Bondi \f$r\f$</span></div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00125"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1Dr.html">  125</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1Dr.html">Dr</a> : <a class="code" href="structdb_1_1PrefixTag.html">db::PrefixTag</a>, <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;  <span class="keyword">using</span> type = <span class="keyword">typename</span> Tag::type;</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;  <span class="keyword">using</span> tag = Tag;</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;};</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;<span class="comment">/// The derivative with respect to Bondi retarded time \f$u\f$</span></div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00132"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1Du.html">  132</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1Du.html">Du</a> : <a class="code" href="structdb_1_1PrefixTag.html">db::PrefixTag</a>, <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, Tag::type::type::spin&gt;</a>&gt;;</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;  <span class="keyword">using</span> tag = Tag;</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;};</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;<span class="comment">/// The spin-weight 2 angular Jacobian factor</span></div>
+<div class="line"><a name="l00138"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1GaugeC.html">  138</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1GaugeC.html">GaugeC</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 2&gt;</a>&gt;;</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;};</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;<span class="comment">/// The spin-weight 0 angular Jacobian factor</span></div>
+<div class="line"><a name="l00143"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1GaugeD.html">  143</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1GaugeD.html">GaugeD</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;;</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;};</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;<span class="comment">/// The conformal factor associated with an angular transformation</span></div>
+<div class="line"><a name="l00148"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1GaugeOmega.html">  148</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1GaugeOmega.html">GaugeOmega</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;;</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;};</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160; </div>
+<div class="line"><a name="l00152"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1News.html">  152</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1News.html">News</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted</a>&lt;<a class="code" href="classComplexDataVector.html">ComplexDataVector</a>, -2&gt;&gt;;</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;};</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160; </div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;<span class="comment">// For expressing the Cauchy angular coordinates for the worldtube data in terms</span></div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;<span class="comment">// of the evolution angular coordinates.</span></div>
+<div class="line"><a name="l00158"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1CauchyAngularCoords.html">  158</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1CauchyAngularCoords.html">CauchyAngularCoords</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;  <span class="keyword">using</span> type = tnsr::i&lt;DataVector, 2, ::Frame::Spherical&lt;::Frame::Inertial&gt;&gt;;</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;};</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160; </div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;<span class="comment">// For expressing the Cauchy Cartesian coordinates for the worldtube data in</span></div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;<span class="comment">// terms of the evolution angular coordinates.</span></div>
+<div class="line"><a name="l00164"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">  164</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">CauchyCartesianCoords</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;  <span class="keyword">using</span> type = tnsr::i&lt;DataVector, 3&gt;;</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;};</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;<span class="comment">/// The asymptotically inertial retarded time in terms of the evolution time</span></div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;<span class="comment">/// variable</span></div>
+<div class="line"><a name="l00170"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1InertialRetardedTime.html">  170</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1InertialRetardedTime.html">InertialRetardedTime</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;DataVector&gt;</a>;</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;};</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;<span class="comment">/// Represents \f$\eth u_{\rm inertial}\f$, which is a useful quantity for</span></div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;<span class="comment">/// asymptotic coordinate transformations.</span></div>
+<div class="line"><a name="l00176"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1EthInertialRetardedTime.html">  176</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1EthInertialRetardedTime.html">EthInertialRetardedTime</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 1&gt;</a>&gt;;</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;};</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;<span class="comment">/// Complex storage form for the asymptotically inertial retarded time, for</span></div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;<span class="comment">/// taking spin-weighted derivatives</span></div>
+<div class="line"><a name="l00182"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1ComplexInertialRetardedTime.html">  182</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1ComplexInertialRetardedTime.html">ComplexInertialRetardedTime</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;;</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;};</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160; </div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;<span class="comment">// prefix tags associated with the integrands which are used as input to solvers</span></div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;<span class="comment">// for the CCE equations</span></div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;<span class="comment">/// A prefix tag representing a quantity that will appear on the right-hand side</span></div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;<span class="comment">/// of an explicitly regular differential equation</span></div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00192"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1Integrand.html">  192</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1Integrand.html">Integrand</a> : <a class="code" href="structdb_1_1PrefixTag.html">db::PrefixTag</a>, <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, Tag::type::type::spin&gt;</a>&gt;;</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;  <span class="keyword">using</span> tag = Tag;</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;};</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;<span class="comment">/// A prefix tag representing the boundary data for a quantity on the extraction</span></div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;<span class="comment">/// surface.</span></div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00200"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1BoundaryValue.html">  200</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1BoundaryValue.html">BoundaryValue</a> : <a class="code" href="structdb_1_1PrefixTag.html">db::PrefixTag</a>, <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, Tag::type::type::spin&gt;</a>&gt;;</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;  <span class="keyword">using</span> tag = Tag;</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;};</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;<span class="comment">/// A prefix tag representing the gauge-transformed boundary data for a quantity</span></div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;<span class="comment">/// on the extraction surface.</span></div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00208"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1EvolutionGaugeBoundaryValue.html">  208</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1EvolutionGaugeBoundaryValue.html">EvolutionGaugeBoundaryValue</a> : <a class="code" href="structdb_1_1PrefixTag.html">db::PrefixTag</a>, <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, Tag::type::type::spin&gt;</a>&gt;;</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;  <span class="keyword">using</span> tag = Tag;</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;};</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;<span class="comment">/// A prefix tag representing the coefficient of a pole part of the right-hand</span></div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;<span class="comment">/// side of a singular differential equation</span></div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00216"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1PoleOfIntegrand.html">  216</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1PoleOfIntegrand.html">PoleOfIntegrand</a> : <a class="code" href="structdb_1_1PrefixTag.html">db::PrefixTag</a>, <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, Tag::type::type::spin&gt;</a>&gt;;</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;  <span class="keyword">using</span> tag = Tag;</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;};</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;<span class="comment">/// A prefix tag representing the regular part of the right-hand side of a</span></div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;<span class="comment">/// regular differential equation</span></div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00224"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1RegularIntegrand.html">  224</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1RegularIntegrand.html">RegularIntegrand</a> : <a class="code" href="structdb_1_1PrefixTag.html">db::PrefixTag</a>, <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, Tag::type::type::spin&gt;</a>&gt;;</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;  <span class="keyword">using</span> tag = Tag;</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;};</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;<span class="comment">/// A prefix tag representing a linear factor that acts on `Tag`. To determine</span></div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;<span class="comment">/// the spin weight, It is assumed that the linear factor plays the role of</span></div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;<span class="comment">/// \f$L\f$ in an equation of the form,</span></div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;<span class="comment">/// \f$ (y - 1) \partial_y H + L H + L^\prime \bar{H} = A + (1 - y) B \f$</span></div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00234"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1LinearFactor.html">  234</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1LinearFactor.html">LinearFactor</a> : <a class="code" href="structdb_1_1PrefixTag.html">db::PrefixTag</a>, <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;;</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;  <span class="keyword">using</span> tag = Tag;</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;};</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;<span class="comment">/// A prefix tag representing a linear factor that acts on `Tag`. To determine</span></div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;<span class="comment">/// the spin weight, it is assumed that the linear factor plays the role of</span></div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;<span class="comment">/// \f$L^\prime\f$ in an equation of the form,</span></div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;<span class="comment">/// \f$ (y - 1) \partial_y H + L H + L^\prime \bar{H} = A + (1 - y) B \f$</span></div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00244"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1LinearFactorForConjugate.html">  244</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1LinearFactorForConjugate.html">LinearFactorForConjugate</a> : <a class="code" href="structdb_1_1PrefixTag.html">db::PrefixTag</a>, <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;  <span class="keyword">using</span> type =</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;      <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 2 * Tag::type::type::spin&gt;</a>&gt;;</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;  <span class="keyword">using</span> tag = Tag;</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;};</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160; </div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;<span class="comment">// Below are additional tags for values which are frequently used in CCE</span></div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;<span class="comment">// calculations, and therefore worth caching</span></div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;<span class="comment">/// Coordinate value \f$(1 - y)\f$, which will be cached and sent to the</span></div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;<span class="comment">/// implementing functions</span></div>
+<div class="line"><a name="l00255"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1OneMinusY.html">  255</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1OneMinusY.html">OneMinusY</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;;</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;};</div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;<span class="comment">/// A tag for the first time derivative of the worldtube parameter</span></div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;<span class="comment">/// \f$\partial_u R\f$, where \f$R(u, \theta, \phi)\f$ is Bondi</span></div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;<span class="comment">/// radius of the worldtube.</span></div>
+<div class="line"><a name="l00262"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1DuR.html">  262</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1DuR.html">DuR</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;;</div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;};</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;<span class="comment">/// The value \f$\partial_u R / R\f$, where \f$R(u, \theta, \phi)\f$ is Bondi</span></div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;<span class="comment">/// radius of the worldtube.</span></div>
+<div class="line"><a name="l00268"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1DuRDividedByR.html">  268</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1DuRDividedByR.html">DuRDividedByR</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;;</div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;};</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;<span class="comment">/// The value \f$\eth R / R\f$, where \f$R(u, \theta, \phi)\f$ is Bondi</span></div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;<span class="comment">/// radius of the worldtube.</span></div>
+<div class="line"><a name="l00274"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1EthRDividedByR.html">  274</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1EthRDividedByR.html">EthRDividedByR</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 1&gt;</a>&gt;;</div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;  <span class="keyword">using</span> <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Eth.html">derivative_kind</a> = <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Eth.html">Spectral::Swsh::Tags::Eth</a>;</div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;  <span class="keyword">static</span> constexpr <span class="keywordtype">int</span> spin = 1;</div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;};</div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;<span class="comment">/// The value \f$\eth \eth R / R\f$, where \f$R(u, \theta, \phi)\f$ is Bondi</span></div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;<span class="comment">/// radius of the worldtube.</span></div>
+<div class="line"><a name="l00282"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1EthEthRDividedByR.html">  282</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1EthEthRDividedByR.html">EthEthRDividedByR</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 2&gt;</a>&gt;;</div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;  <span class="keyword">using</span> <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1EthEth.html">derivative_kind</a> = <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1EthEth.html">Spectral::Swsh::Tags::EthEth</a>;</div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;  <span class="keyword">static</span> constexpr <span class="keywordtype">int</span> spin = 2;</div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;};</div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;<span class="comment">/// The value \f$\eth \bar{\eth} R / R\f$, where \f$R(u, \theta, \phi)\f$ is</span></div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;<span class="comment">/// Bondi radius of the worldtube.</span></div>
+<div class="line"><a name="l00290"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1EthEthbarRDividedByR.html">  290</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1EthEthbarRDividedByR.html">EthEthbarRDividedByR</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;;</div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;  <span class="keyword">using</span> <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1EthEthbar.html">derivative_kind</a> = <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1EthEthbar.html">Spectral::Swsh::Tags::EthEthbar</a>;</div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;  <span class="keyword">static</span> constexpr <span class="keywordtype">int</span> spin = 0;</div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;};</div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;<span class="comment">/// The value \f$\exp(2\beta)\f$.</span></div>
+<div class="line"><a name="l00297"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1Exp2Beta.html">  297</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1Exp2Beta.html">Exp2Beta</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;;</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;};</div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;<span class="comment">/// The value \f$ \bar{J} (Q - 2 \eth \beta ) \f$.</span></div>
+<div class="line"><a name="l00302"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1JbarQMinus2EthBeta.html">  302</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1JbarQMinus2EthBeta.html">JbarQMinus2EthBeta</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted</a>&lt;<a class="code" href="classComplexDataVector.html">ComplexDataVector</a>, -1&gt;&gt;;</div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;};</div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;<span class="comment">/// The Bondi radius \f$R(u, \theta, \phi)\f$ is of the worldtube.</span></div>
+<div class="line"><a name="l00307"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1BondiR.html">  307</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1BondiR.html">BondiR</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;;</div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> <span class="stringliteral">&quot;R&quot;</span>; }</div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;};</div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160; </div>
+<div class="line"><a name="l00312"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1EndTime.html">  312</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1EndTime.html">EndTime</a> : <a class="code" href="structdb_1_1BaseTag.html">db::BaseTag</a> {};</div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160; </div>
+<div class="line"><a name="l00314"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1StartTime.html">  314</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1StartTime.html">StartTime</a> : <a class="code" href="structdb_1_1BaseTag.html">db::BaseTag</a> {};</div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;<span class="comment">/// The Weyl scalar \f$\Psi_0\f$</span></div>
+<div class="line"><a name="l00317"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1Psi0.html">  317</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1Psi0.html">Psi0</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 2&gt;</a>&gt;;</div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;};</div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;<span class="comment">/// The Weyl scalar \f$\Psi_1\f$</span></div>
+<div class="line"><a name="l00322"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1Psi1.html">  322</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1Psi1.html">Psi1</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 1&gt;</a>&gt;;</div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;};</div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;<span class="comment">/// The Weyl scalar \f$\Psi_2\f$</span></div>
+<div class="line"><a name="l00327"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1Psi2.html">  327</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1Psi2.html">Psi2</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;;</div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;};</div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;<span class="comment">/// The Weyl scalar \f$\Psi_3\f$</span></div>
+<div class="line"><a name="l00332"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1Psi3.html">  332</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1Psi3.html">Psi3</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted</a>&lt;<a class="code" href="classComplexDataVector.html">ComplexDataVector</a>, -1&gt;&gt;;</div>
+<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;};</div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;<span class="comment">/// The Weyl scalar \f$\Psi_4\f$</span></div>
+<div class="line"><a name="l00337"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1Psi4.html">  337</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1Psi4.html">Psi4</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted</a>&lt;<a class="code" href="classComplexDataVector.html">ComplexDataVector</a>, -2&gt;&gt;;</div>
+<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;};</div>
+<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;<span class="comment">/// The gravitational wave strain \f$h\f$</span></div>
+<div class="line"><a name="l00342"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1Strain.html">  342</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1Strain.html">Strain</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted</a>&lt;<a class="code" href="classComplexDataVector.html">ComplexDataVector</a>, -2&gt;&gt;;</div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;};</div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;<span class="comment">/// A prefix tag representing the time integral of the value it prefixes</span></div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00348"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1TimeIntegral.html">  348</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1TimeIntegral.html">TimeIntegral</a> : <a class="code" href="structdb_1_1PrefixTag.html">db::PrefixTag</a>, <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, Tag::type::type::spin&gt;</a>&gt;;</div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;  <span class="keyword">using</span> tag = Tag;</div>
+<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;};</div>
+<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;<span class="comment">/// A prefix tag representing the value at \f$\mathcal I^+\f$</span></div>
+<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00355"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1ScriPlus.html">  355</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1ScriPlus.html">ScriPlus</a> : <a class="code" href="structdb_1_1PrefixTag.html">db::PrefixTag</a>, <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, Tag::type::type::spin&gt;</a>&gt;;</div>
+<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;  <span class="keyword">using</span> tag = Tag;</div>
+<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;};</div>
+<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;<span class="comment">/// A prefix tag representing an additional correction factor necessary to</span></div>
+<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;<span class="comment">/// compute the quantity at \f$\mathcal I^+\f$</span></div>
+<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00363"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1ScriPlusFactor.html">  363</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1ScriPlusFactor.html">ScriPlusFactor</a> : <a class="code" href="structdb_1_1PrefixTag.html">db::PrefixTag</a>, <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;;</div>
+<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;  <span class="keyword">using</span> tag = Tag;</div>
+<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;};</div>
+<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160; </div>
+<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> ToInterpolate, <span class="keyword">typename</span> ObservationTag&gt;</div>
+<div class="line"><a name="l00369"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1InterpolationManager.html">  369</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1InterpolationManager.html">InterpolationManager</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;  <span class="keyword">using</span> <a class="code" href="structCce_1_1ScriPlusInterpolationManager.html">type</a> = <a class="code" href="structCce_1_1ScriPlusInterpolationManager.html">ScriPlusInterpolationManager&lt;ToInterpolate, ObservationTag&gt;</a>;</div>
+<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept {</div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;    <span class="keywordflow">return</span> <span class="stringliteral">&quot;InterpolationManager(&quot;</span> + db::tag_name&lt;ObservationTag&gt;() + <span class="stringliteral">&quot;)&quot;</span>;</div>
+<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;  }</div>
+<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;};</div>
+<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;<span class="comment">/// During self-start, we must be in lockstep with the GH system (if running</span></div>
+<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;<span class="comment">/// concurrently), because the step size is unchangable during self-start.</span></div>
+<div class="line"><a name="l00378"></a><span class="lineno"><a class="line" href="structCce_1_1Tags_1_1SelfStartGhInterfaceManager.html">  378</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1SelfStartGhInterfaceManager.html">SelfStartGhInterfaceManager</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;  <span class="keyword">using</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">type</a> = <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;InterfaceManagers::GhInterfaceManager&gt;</a>;</div>
+<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;  <span class="keyword">using</span> option_tags = tmpl::list&lt;&gt;;</div>
+<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160; </div>
+<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;  <span class="keyword">static</span> constexpr <span class="keywordtype">bool</span> pass_metavariables = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;InterfaceManagers::GhInterfaceManager&gt;</a></div>
+<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;  create_from_options() noexcept {</div>
+<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;    <span class="keywordflow">return</span> std::make_unique&lt;Cce::InterfaceManagers::GhLockstep&gt;();</div>
+<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;  }</div>
+<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;};</div>
+<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;}  <span class="comment">// namespace Tags</span></div>
+<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;}  <span class="comment">// namespace Cce</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="astructCce_1_1Tags_1_1Integrand_html"><div class="ttname"><a href="structCce_1_1Tags_1_1Integrand.html">Cce::Tags::Integrand</a></div><div class="ttdoc">A prefix tag representing a quantity that will appear on the right-hand side of an explicitly regular...</div><div class="ttdef"><b>Definition:</b> Tags.hpp:192</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1LinearFactor_html"><div class="ttname"><a href="structCce_1_1Tags_1_1LinearFactor.html">Cce::Tags::LinearFactor</a></div><div class="ttdoc">A prefix tag representing a linear factor that acts on Tag. To determine the spin weight,...</div><div class="ttdef"><b>Definition:</b> Tags.hpp:234</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1SelfStartGhInterfaceManager_html"><div class="ttname"><a href="structCce_1_1Tags_1_1SelfStartGhInterfaceManager.html">Cce::Tags::SelfStartGhInterfaceManager</a></div><div class="ttdoc">During self-start, we must be in lockstep with the GH system (if running concurrently),...</div><div class="ttdef"><b>Definition:</b> Tags.hpp:378</div></div>
+<div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1BondiW_html"><div class="ttname"><a href="structCce_1_1Tags_1_1BondiW.html">Cce::Tags::BondiW</a></div><div class="ttdoc">Bondi parameter .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:109</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1EthRDividedByR_html"><div class="ttname"><a href="structCce_1_1Tags_1_1EthRDividedByR.html">Cce::Tags::EthRDividedByR</a></div><div class="ttdoc">The value , where  is Bondi radius of the worldtube.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:274</div></div>
+<div class="ttc" id="astructdb_1_1PrefixTag_html"><div class="ttname"><a href="structdb_1_1PrefixTag.html">db::PrefixTag</a></div><div class="ttdoc">Mark a struct as a prefix tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:103</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1BondiK_html"><div class="ttname"><a href="structCce_1_1Tags_1_1BondiK.html">Cce::Tags::BondiK</a></div><div class="ttdoc">Bondi parameter .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:73</div></div>
+<div class="ttc" id="astructSpectral_1_1Swsh_1_1Tags_1_1Eth_html"><div class="ttname"><a href="structSpectral_1_1Swsh_1_1Tags_1_1Eth.html">Spectral::Swsh::Tags::Eth</a></div><div class="ttdoc">Struct for labeling the  spin-weighted derivative in tags.</div><div class="ttdef"><b>Definition:</b> SwshTags.hpp:30</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1Psi4_html"><div class="ttname"><a href="structCce_1_1Tags_1_1Psi4.html">Cce::Tags::Psi4</a></div><div class="ttdoc">The Weyl scalar .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:337</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1CauchyAngularCoords_html"><div class="ttname"><a href="structCce_1_1Tags_1_1CauchyAngularCoords.html">Cce::Tags::CauchyAngularCoords</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:158</div></div>
+<div class="ttc" id="astructSpectral_1_1Swsh_1_1Tags_1_1EthEthbar_html"><div class="ttname"><a href="structSpectral_1_1Swsh_1_1Tags_1_1EthEthbar.html">Spectral::Swsh::Tags::EthEthbar</a></div><div class="ttdoc">Struct for labeling the  spin-weighted derivative in tags.</div><div class="ttdef"><b>Definition:</b> SwshTags.hpp:45</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1InterpolationManager_html"><div class="ttname"><a href="structCce_1_1Tags_1_1InterpolationManager.html">Cce::Tags::InterpolationManager</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:369</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1BondiBeta_html"><div class="ttname"><a href="structCce_1_1Tags_1_1BondiBeta.html">Cce::Tags::BondiBeta</a></div><div class="ttdoc">Bondi parameter .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:31</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1BondiQ_html"><div class="ttname"><a href="structCce_1_1Tags_1_1BondiQ.html">Cce::Tags::BondiQ</a></div><div class="ttdoc">Bondi parameter .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:79</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1Strain_html"><div class="ttname"><a href="structCce_1_1Tags_1_1Strain.html">Cce::Tags::Strain</a></div><div class="ttdoc">The gravitational wave strain .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:342</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1TimeIntegral_html"><div class="ttname"><a href="structCce_1_1Tags_1_1TimeIntegral.html">Cce::Tags::TimeIntegral</a></div><div class="ttdoc">A prefix tag representing the time integral of the value it prefixes.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:348</div></div>
+<div class="ttc" id="astructdb_1_1SimpleTag_html"><div class="ttname"><a href="structdb_1_1SimpleTag.html">db::SimpleTag</a></div><div class="ttdoc">Mark a struct as a simple tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:36</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1PoleOfIntegrand_html"><div class="ttname"><a href="structCce_1_1Tags_1_1PoleOfIntegrand.html">Cce::Tags::PoleOfIntegrand</a></div><div class="ttdoc">A prefix tag representing the coefficient of a pole part of the right-hand side of a singular differe...</div><div class="ttdef"><b>Definition:</b> Tags.hpp:216</div></div>
+<div class="ttc" id="astructSpinWeighted_html"><div class="ttname"><a href="structSpinWeighted.html">SpinWeighted</a></div><div class="ttdoc">Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...</div><div class="ttdef"><b>Definition:</b> SpinWeighted.hpp:24</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1RegularIntegrand_html"><div class="ttname"><a href="structCce_1_1Tags_1_1RegularIntegrand.html">Cce::Tags::RegularIntegrand</a></div><div class="ttdoc">A prefix tag representing the regular part of the right-hand side of a regular differential equation.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:224</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1LinearFactorForConjugate_html"><div class="ttname"><a href="structCce_1_1Tags_1_1LinearFactorForConjugate.html">Cce::Tags::LinearFactorForConjugate</a></div><div class="ttdoc">A prefix tag representing a linear factor that acts on Tag. To determine the spin weight,...</div><div class="ttdef"><b>Definition:</b> Tags.hpp:244</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1OneMinusY_html"><div class="ttname"><a href="structCce_1_1Tags_1_1OneMinusY.html">Cce::Tags::OneMinusY</a></div><div class="ttdoc">Coordinate value , which will be cached and sent to the implementing functions.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:255</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1Psi2_html"><div class="ttname"><a href="structCce_1_1Tags_1_1Psi2.html">Cce::Tags::Psi2</a></div><div class="ttdoc">The Weyl scalar .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:327</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1BondiUAtScri_html"><div class="ttname"><a href="structCce_1_1Tags_1_1BondiUAtScri.html">Cce::Tags::BondiUAtScri</a></div><div class="ttdoc">The surface quantity of Bondi  evaluated at the null spacetime boundary .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:98</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1EndTime_html"><div class="ttname"><a href="structCce_1_1Tags_1_1EndTime.html">Cce::Tags::EndTime</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:312</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1BondiUbar_html"><div class="ttname"><a href="structCce_1_1Tags_1_1BondiUbar.html">Cce::Tags::BondiUbar</a></div><div class="ttdoc">Bondi parameter .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:103</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1BondiJ_html"><div class="ttname"><a href="structCce_1_1Tags_1_1BondiJ.html">Cce::Tags::BondiJ</a></div><div class="ttdoc">Bondi parameter .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:36</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1Exp2Beta_html"><div class="ttname"><a href="structCce_1_1Tags_1_1Exp2Beta.html">Cce::Tags::Exp2Beta</a></div><div class="ttdoc">The value .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:297</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1Psi3_html"><div class="ttname"><a href="structCce_1_1Tags_1_1Psi3.html">Cce::Tags::Psi3</a></div><div class="ttdoc">The Weyl scalar .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:332</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1InertialRetardedTime_html"><div class="ttname"><a href="structCce_1_1Tags_1_1InertialRetardedTime.html">Cce::Tags::InertialRetardedTime</a></div><div class="ttdoc">The asymptotically inertial retarded time in terms of the evolution time variable.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:170</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1BondiR_html"><div class="ttname"><a href="structCce_1_1Tags_1_1BondiR.html">Cce::Tags::BondiR</a></div><div class="ttdoc">The Bondi radius  is of the worldtube.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:307</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1BondiQbar_html"><div class="ttname"><a href="structCce_1_1Tags_1_1BondiQbar.html">Cce::Tags::BondiQbar</a></div><div class="ttdoc">Bondi parameter .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:85</div></div>
+<div class="ttc" id="astructSpectral_1_1Swsh_1_1Tags_1_1EthEth_html"><div class="ttname"><a href="structSpectral_1_1Swsh_1_1Tags_1_1EthEth.html">Spectral::Swsh::Tags::EthEth</a></div><div class="ttdoc">Struct for labeling the  spin-weighted derivative in tags.</div><div class="ttdef"><b>Definition:</b> SwshTags.hpp:37</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1Dy_html"><div class="ttname"><a href="structCce_1_1Tags_1_1Dy.html">Cce::Tags::Dy</a></div><div class="ttdoc">The derivative with respect to the numerical coordinate , where  is Bondi radius of the worldtube.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:117</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1BoundaryValue_html"><div class="ttname"><a href="structCce_1_1Tags_1_1BoundaryValue.html">Cce::Tags::BoundaryValue</a></div><div class="ttdoc">A prefix tag representing the boundary data for a quantity on the extraction surface.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:200</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1Psi1_html"><div class="ttname"><a href="structCce_1_1Tags_1_1Psi1.html">Cce::Tags::Psi1</a></div><div class="ttdoc">The Weyl scalar .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:322</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1Du_html"><div class="ttname"><a href="structCce_1_1Tags_1_1Du.html">Cce::Tags::Du</a></div><div class="ttdoc">The derivative with respect to Bondi retarded time .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:132</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1EthEthRDividedByR_html"><div class="ttname"><a href="structCce_1_1Tags_1_1EthEthRDividedByR.html">Cce::Tags::EthEthRDividedByR</a></div><div class="ttdoc">The value , where  is Bondi radius of the worldtube.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:282</div></div>
+<div class="ttc" id="astructdb_1_1BaseTag_html"><div class="ttname"><a href="structdb_1_1BaseTag.html">db::BaseTag</a></div><div class="ttdoc">Mark a (usually) empty struct as a base tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:69</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1EthInertialRetardedTime_html"><div class="ttname"><a href="structCce_1_1Tags_1_1EthInertialRetardedTime.html">Cce::Tags::EthInertialRetardedTime</a></div><div class="ttdoc">Represents , which is a useful quantity for asymptotic coordinate transformations.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:176</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1BondiU_html"><div class="ttname"><a href="structCce_1_1Tags_1_1BondiU.html">Cce::Tags::BondiU</a></div><div class="ttdoc">Bondi parameter .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:91</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1News_html"><div class="ttname"><a href="structCce_1_1Tags_1_1News.html">Cce::Tags::News</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:152</div></div>
+<div class="ttc" id="aTimeStepId_8hpp_html"><div class="ttname"><a href="TimeStepId_8hpp.html">TimeStepId.hpp</a></div></div>
+<div class="ttc" id="astructTags_1_1dt_html"><div class="ttname"><a href="structTags_1_1dt.html">Tags::dt</a></div><div class="ttdoc">Prefix indicating a time derivative.</div><div class="ttdef"><b>Definition:</b> Prefixes.hpp:29</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1ScriPlusFactor_html"><div class="ttname"><a href="structCce_1_1Tags_1_1ScriPlusFactor.html">Cce::Tags::ScriPlusFactor</a></div><div class="ttdoc">A prefix tag representing an additional correction factor necessary to compute the quantity at .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:363</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga06ebcb38a1f13c246e53378b9e8959ce"><div class="ttname"><a href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a></div><div class="ttdeci">Tensor&lt; T, Symmetry&lt;&gt;, index_list&lt;&gt; &gt; Scalar</div><div class="ttdef"><b>Definition:</b> TypeAliases.hpp:21</div></div>
+<div class="ttc" id="anamespaceCce_html"><div class="ttname"><a href="namespaceCce.html">Cce</a></div><div class="ttdoc">The set of utilities for performing Cauchy characteristic evolution and Cauchy characteristic matchin...</div><div class="ttdef"><b>Definition:</b> CharacteristicExtractFwd.hpp:6</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1GaugeD_html"><div class="ttname"><a href="structCce_1_1Tags_1_1GaugeD.html">Cce::Tags::GaugeD</a></div><div class="ttdoc">The spin-weight 0 angular Jacobian factor.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:143</div></div>
+<div class="ttc" id="aTypeAliases_8hpp_html"><div class="ttname"><a href="TypeAliases_8hpp.html">TypeAliases.hpp</a></div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1Psi0_html"><div class="ttname"><a href="structCce_1_1Tags_1_1Psi0.html">Cce::Tags::Psi0</a></div><div class="ttdoc">The Weyl scalar .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:317</div></div>
+<div class="ttc" id="aTensor_8hpp_html"><div class="ttname"><a href="Tensor_8hpp.html">Tensor.hpp</a></div></div>
+<div class="ttc" id="astructCce_1_1ScriPlusInterpolationManager_html"><div class="ttname"><a href="structCce_1_1ScriPlusInterpolationManager.html">Cce::ScriPlusInterpolationManager</a></div><div class="ttdoc">Stores necessary data and interpolates on to new time points at scri+.</div><div class="ttdef"><b>Definition:</b> ScriPlusInterpolationManager.hpp:48</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1DuRDividedByR_html"><div class="ttname"><a href="structCce_1_1Tags_1_1DuRDividedByR.html">Cce::Tags::DuRDividedByR</a></div><div class="ttdoc">The value , where  is Bondi radius of the worldtube.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:268</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1EthEthbarRDividedByR_html"><div class="ttname"><a href="structCce_1_1Tags_1_1EthEthbarRDividedByR.html">Cce::Tags::EthEthbarRDividedByR</a></div><div class="ttdoc">The value , where  is Bondi radius of the worldtube.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:290</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1ComplexInertialRetardedTime_html"><div class="ttname"><a href="structCce_1_1Tags_1_1ComplexInertialRetardedTime.html">Cce::Tags::ComplexInertialRetardedTime</a></div><div class="ttdoc">Complex storage form for the asymptotically inertial retarded time, for taking spin-weighted derivati...</div><div class="ttdef"><b>Definition:</b> Tags.hpp:182</div></div>
+<div class="ttc" id="aclassComplexDataVector_html"><div class="ttname"><a href="classComplexDataVector.html">ComplexDataVector</a></div><div class="ttdoc">Stores a collection of complex function values.</div><div class="ttdef"><b>Definition:</b> ComplexDataVector.hpp:53</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1BondiJbar_html"><div class="ttname"><a href="structCce_1_1Tags_1_1BondiJbar.html">Cce::Tags::BondiJbar</a></div><div class="ttdoc">Bondi parameter .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:67</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1DuR_html"><div class="ttname"><a href="structCce_1_1Tags_1_1DuR.html">Cce::Tags::DuR</a></div><div class="ttdoc">A tag for the first time derivative of the worldtube parameter , where  is Bondi radius of the worldt...</div><div class="ttdef"><b>Definition:</b> Tags.hpp:262</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1EvolutionGaugeBoundaryValue_html"><div class="ttname"><a href="structCce_1_1Tags_1_1EvolutionGaugeBoundaryValue.html">Cce::Tags::EvolutionGaugeBoundaryValue</a></div><div class="ttdoc">A prefix tag representing the gauge-transformed boundary data for a quantity on the extraction surfac...</div><div class="ttdef"><b>Definition:</b> Tags.hpp:208</div></div>
+<div class="ttc" id="aunique_ptr_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></div></div>
+<div class="ttc" id="aPrefixes_8hpp_html"><div class="ttname"><a href="Prefixes_8hpp.html">Prefixes.hpp</a></div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1JbarQMinus2EthBeta_html"><div class="ttname"><a href="structCce_1_1Tags_1_1JbarQMinus2EthBeta.html">Cce::Tags::JbarQMinus2EthBeta</a></div><div class="ttdoc">The value .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:302</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1StartTime_html"><div class="ttname"><a href="structCce_1_1Tags_1_1StartTime.html">Cce::Tags::StartTime</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:314</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1GaugeC_html"><div class="ttname"><a href="structCce_1_1Tags_1_1GaugeC.html">Cce::Tags::GaugeC</a></div><div class="ttdoc">The spin-weight 2 angular Jacobian factor.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:138</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1CauchyCartesianCoords_html"><div class="ttname"><a href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Cce::Tags::CauchyCartesianCoords</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:164</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1ScriPlus_html"><div class="ttname"><a href="structCce_1_1Tags_1_1ScriPlus.html">Cce::Tags::ScriPlus</a></div><div class="ttdoc">A prefix tag representing the value at .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:355</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1Dr_html"><div class="ttname"><a href="structCce_1_1Tags_1_1Dr.html">Cce::Tags::Dr</a></div><div class="ttdoc">The derivative with respect to Bondi .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:125</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1GaugeOmega_html"><div class="ttname"><a href="structCce_1_1Tags_1_1GaugeOmega.html">Cce::Tags::GaugeOmega</a></div><div class="ttdoc">The conformal factor associated with an angular transformation.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:148</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

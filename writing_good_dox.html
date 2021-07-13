@@ -1,0 +1,313 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Writing Good Documentation</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">Writing Good Documentation </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="toc"><h3>Table of Contents</h3>
+<ul><li class="level1"><a href="#writing_dox_writing_help">Tutorials, Instructions, and Dev Guide</a></li>
+<li class="level1"><a href="#writing_dox_cpp_dox_help">C++ Documentation</a><ul><li class="level2"><a href="#autotoc_md213">Add your object to an existing Topic:</a></li>
+<li class="level2"><a href="#autotoc_md214">Add a new Topic:</a></li>
+<li class="level2"><a href="#autotoc_md215">Add a new namespace:</a></li>
+<li class="level2"><a href="#autotoc_md216">Put any mathematical expressions in your documentation into LaTeX form:</a></li>
+<li class="level2"><a href="#writing_dox_citations">Cite publications in your documentation</a></li>
+<li class="level2"><a href="#autotoc_md217">Include any pictures that aid in the understanding of your documentation:</a></li>
+</ul>
+</li>
+<li class="level1"><a href="#writing_dox_python_dox_help">Python Documentation</a></li>
+</ul>
+</div>
+<div class="textblock"><h1><a class="anchor" id="writing_dox_writing_help"></a>
+Tutorials, Instructions, and Dev Guide</h1>
+<p>All non-code documentation such as tutorials, installation instructions, and the developer guide is written inside Markdown files such as this one. These files must be placed inside <code>docs/Tutorials</code>, <code>docs/MainSite</code>, or <code>docs/DevGuide</code> according to what they document. Each Markdown file must start with the following line</p>
+<div class="fragment"><div class="line"># The title {#the_tag}</div>
+</div><!-- fragment --><p>where <code>The title</code> is replaced with your desired title, and <code>the_tag</code> with the tag you want to use to reference the Markdown file and documentation. Each main heading of the file starts with a single octothorpe and can have a tag. For example,</p>
+<div class="fragment"><div class="line"># My Section {#file_name_my_section}</div>
+</div><!-- fragment --><p>While the <code>file_name</code> portion is not necessary, it is useful for reducing the likelihood of reference collisions. You can add a table of contents using the Doxygen command <code>\tableofcontents</code>. All sections, subsections, subsubsections, etc. are shown in the table of contents if they have a tag, if not they do not appear.</p>
+<h1><a class="anchor" id="writing_dox_cpp_dox_help"></a>
+C++ Documentation</h1>
+<p>We require you to add Doxygen documentation for any of the following you may have added to the public interface in any hpp file:</p>
+<ul>
+<li>classes</li>
+<li>structs</li>
+<li>enums</li>
+<li>functions</li>
+<li>namespaces</li>
+<li>macros</li>
+<li>type aliases</li>
+</ul>
+<p>Documentation begins on the line immediately above the declaration with either a triple slash <code>///</code> or a <code>/*!</code>.</p>
+<p>Examples: </p><pre class="fragment">/// A brief description of the object to be documented
+///
+/// Doxygen comments can be made
+/// using triple slashes...
+class ExampleClass{
+  ... rest of code
+}
+</pre><pre class="fragment">/*!
+ * \brief A brief description of the object to be documented
+ *
+ * Doxygen comments can also be made
+ * using the "slash-star, star-slash" pattern, in this way.
+ */
+class ExampleClass{
+  ... rest of code
+}
+</pre><p>Build your documentation by running <code>make doc</code> in your build directory. You can then view it by opening <code>BUILD_DIR/docs/html/index.html</code> in a browser and using the file navigator in Doxygen to locate your file.</p>
+<p>In addition to providing a file directory of all the source files in SpECTRE, Doxygen also conveniently provides two additional organizations of the files, Topics and Namespaces. To ensure that your documentation is easily found from within Doxygen, we recommend that you add any new objects to Topics and any new namespaces to Namespaces.</p>
+<dl class="section note"><dt>Note</dt><dd>The <code>///</code> Doxygen syntax does not require a <code>\brief</code>, while the C-style <code>/*!</code> does.</dd></dl>
+<h2><a class="anchor" id="autotoc_md213"></a>
+Add your object to an existing Topic:</h2>
+<p>Within a Doxygen comment, use the Doxygen keyword </p><pre class="fragment">\ingroup
+</pre><p>followed by the name of the Topic (you can find the list of existing Topics in <code><a class="el" href="____w_2spectre_2spectre_2docs_2GroupDefs_8hpp.html">docs/GroupDefs.hpp</a></code>).</p>
+<h2><a class="anchor" id="autotoc_md214"></a>
+Add a new Topic:</h2>
+<p>Within <code><a class="el" href="____w_2spectre_2spectre_2docs_2GroupDefs_8hpp.html">docs/GroupDefs.hpp</a></code>, add the name of your Topic (which follows the naming convention "YourNameForTopic" followed by "Group") among the rest, taking care to keep the list of Topics in alphabetical order.</p>
+<h2><a class="anchor" id="autotoc_md215"></a>
+Add a new namespace:</h2>
+<p>In the hpp file in which the namespace is declared for the first time, add a Doxygen comment to the line directly above the namespace. Subsequent files which use this namespace will not need a Doxygen comment.</p>
+<p>We also strongly encourage you to:</p>
+<h2><a class="anchor" id="autotoc_md216"></a>
+Put any mathematical expressions in your documentation into LaTeX form:</h2>
+<p>Within a Doxygen comment, begin and conclude your expression with</p>
+<pre class="fragment">\f$
+</pre><p>Example: </p><pre class="fragment">\\\ We define \f$ \xi : = \eta^2 \f$
+</pre><p>Note that if this expression spans more than one line, your Doxygen comment must of the "slash-star, star-slash" form shown in the previous section. One can also use (within a Doxygen comment) the form</p>
+<pre class="fragment">\f[ expression \f]
+</pre><p>to put the expression on its own line. We also encourage you to use the latex env <code>align</code> for formatting these multiple-line equations. Please prefer the <code>align</code> environment over the <code>eqnarray</code> environment. See the <a href="https://texfaq.org/FAQ-eqnarray">texfaq</a> for an explanation as to why. When using out-of-line equations it is important to have a blank Doxygen line above and below the equation so that ClangFormat does not merge the equation with other lines. For example,</p>
+<pre class="fragment"> * word word word
+ *
+ * \f{align}{
+ *   a &amp;= b \\
+ *   c &amp;= d
+ * \f}
+ *
+ * word word word
+</pre><p>prevents ClangFormat from changing the code to</p>
+<pre class="fragment">word word word \f{align}{ a &amp;= b \\ c &amp;= d \f}
+</pre><p>which may not render properly and makes the source code harder to read.</p>
+<h2><a class="anchor" id="writing_dox_citations"></a>
+Cite publications in your documentation</h2>
+<p>When you refer to publications or books in the documentation, add a corresponding entry to <code>docs/References.bib</code>. Follow these guidelines when editing <code>docs/References.bib</code>:</p>
+<ul>
+<li>Ideally, find the publication on <a href="https://inspirehep.net">INSPIRE HEP</a>, copy its BibTeX entry, remove the colon <code>:</code> from its key and add the <code>url</code> field (see below). We remove the colon because it can create problems in HTML related to its function as a CSS selector.</li>
+<li>For publications that are not listed on <a href="https://inspirehep.net">INSPIRE HEP</a>, make sure to format the new entry's key in the same style, i.e. <code>(&lt;Author&gt;[a-zA-Z]+)(&lt;Year&gt;[0-9]{4})(&lt;ID&gt;[a-z]*)</code>. Good keys are, for instance, <code>Einstein1915</code> or <code>LVC2016a</code>. For books you may omit the year.</li>
+<li>Sort the list of BibTeX entries in the file alphabetically by their keys.</li>
+<li>Provide open access or preprint information whenever possible. For publications available on <a href="https://arxiv.org">arXiv</a>, for instance, add the following fields (filling in the correct values): <div class="fragment"><div class="line">archivePrefix = {arXiv},</div>
+<div class="line">eprint = {1609.00098},</div>
+<div class="line">primaryClass = {astro-ph.HE},</div>
+</div><!-- fragment --></li>
+<li>Provide the <code>url</code> field whenever possible. If a DOI has been issued by the publisher, use <code><a href="https://doi.org/">https://doi.org/</a>&lt;doi&gt;</code> and also fill the <code>doi</code> field of the entry. Else, use the URL provided by the publisher.</li>
+<li>Make sure to wrap strings in the BibTeX entries in <code>{}</code> when capitalization is important, or when BibTeX keywords should be ignored (e.g. <code>and</code> in author lists).</li>
+</ul>
+<p>To cite an entry from the <code>docs/References.bib</code> file in the documentation, use the Doxygen keyword </p><pre class="fragment">\cite
+</pre><p> followed by the BibTeX key at the place in the documentation where you want the citation to appear. It will render as a numbered link to the bibliography page. It will also show a popover when hovering over the link, which displays the bibliographic information and provides quick access to the publication.</p>
+<h2><a class="anchor" id="autotoc_md217"></a>
+Include any pictures that aid in the understanding of your documentation:</h2>
+<p>First, please compress your image to be under 130kB. As most images will be diagrammatical in nature this is certainly achievable!</p>
+<p>Second, add the directory that will contain your image to the <code>docs/Images/</code> directory. Create the appropriate directories such that the directory structure in <code>docs/Images</code> matches that of <code>src</code> and <code>tests/Unit</code>.</p>
+<p>Finally, include the image by using the Doxygen keyword</p>
+<pre class="fragment">\image html NameOfImage.png
+</pre><p>in your hpp file.</p>
+<h1><a class="anchor" id="writing_dox_python_dox_help"></a>
+Python Documentation</h1>
+<p>DocStrings... </p>
+</div></div><!-- contents -->
+</div><!-- PageDoc -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

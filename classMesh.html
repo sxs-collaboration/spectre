@@ -1,0 +1,716 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Mesh&lt; Dim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classMesh-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Mesh&lt; Dim &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__DataStructuresGroup.html">Data Structures</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Holds the number of grid points, basis, and quadrature in each direction of the computational grid.  
+ <a href="classMesh.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="NumericalAlgorithms_2Spectral_2Mesh_8hpp_source.html">Mesh.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMesh_1_1Basis.html">Basis</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMesh_1_1Extents.html">Extents</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMesh_1_1Quadrature.html">Quadrature</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a34062038bc76cf751e6faad04229c8f6"><td class="memItemLeft" align="right" valign="top"><a id="a34062038bc76cf751e6faad04229c8f6"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structMesh_1_1Extents.html">Extents</a>, <a class="el" href="structMesh_1_1Basis.html">Basis</a>, <a class="el" href="structMesh_1_1Quadrature.html">Quadrature</a> &gt;</td></tr>
+<tr class="separator:a34062038bc76cf751e6faad04229c8f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a647940330ed894804e4ae7e5e86828a4"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classMesh.html#a647940330ed894804e4ae7e5e86828a4">Mesh</a> (const size_t isotropic_extents, const <a class="el" href="group__SpectralGroup.html#ga37c9c17d05dccca652060d117f72ee21">Spectral::Basis</a> <a class="el" href="classMesh.html#a74d1b3c5ee929d2b144217d80f38f336">basis</a>, const <a class="el" href="group__SpectralGroup.html#ga7744e520f6d553caf358a6f09f5978c1">Spectral::Quadrature</a> <a class="el" href="classMesh.html#abd3c4a7bb42d4d9696c889e2899e455e">quadrature</a>) noexcept</td></tr>
+<tr class="memdesc:a647940330ed894804e4ae7e5e86828a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a computational grid with the same number of collocation points in each dimension.  <a href="classMesh.html#a647940330ed894804e4ae7e5e86828a4">More...</a><br /></td></tr>
+<tr class="separator:a647940330ed894804e4ae7e5e86828a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ba8d066b13c0ed07efa4435e5e276c3"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classMesh.html#a7ba8d066b13c0ed07efa4435e5e276c3">Mesh</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, Dim &gt; <a class="el" href="classMesh.html#af9a050a87833aa6efd8d3c37afee0c03">extents</a>, const <a class="el" href="group__SpectralGroup.html#ga37c9c17d05dccca652060d117f72ee21">Spectral::Basis</a> <a class="el" href="classMesh.html#a74d1b3c5ee929d2b144217d80f38f336">basis</a>, const <a class="el" href="group__SpectralGroup.html#ga7744e520f6d553caf358a6f09f5978c1">Spectral::Quadrature</a> <a class="el" href="classMesh.html#abd3c4a7bb42d4d9696c889e2899e455e">quadrature</a>) noexcept</td></tr>
+<tr class="memdesc:a7ba8d066b13c0ed07efa4435e5e276c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a computational grid where each dimension can have a different number of collocation points.  <a href="classMesh.html#a7ba8d066b13c0ed07efa4435e5e276c3">More...</a><br /></td></tr>
+<tr class="separator:a7ba8d066b13c0ed07efa4435e5e276c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81dd3e4a1e84a907e33ab2180312e9cf"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classMesh.html#a81dd3e4a1e84a907e33ab2180312e9cf">Mesh</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, Dim &gt; <a class="el" href="classMesh.html#af9a050a87833aa6efd8d3c37afee0c03">extents</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="group__SpectralGroup.html#ga37c9c17d05dccca652060d117f72ee21">Spectral::Basis</a>, Dim &gt; bases, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="group__SpectralGroup.html#ga7744e520f6d553caf358a6f09f5978c1">Spectral::Quadrature</a>, Dim &gt; quadratures) noexcept</td></tr>
+<tr class="memdesc:a81dd3e4a1e84a907e33ab2180312e9cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a computational grid where each dimension can have both a different number and placement of collocation points.  <a href="classMesh.html#a81dd3e4a1e84a907e33ab2180312e9cf">More...</a><br /></td></tr>
+<tr class="separator:a81dd3e4a1e84a907e33ab2180312e9cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9a050a87833aa6efd8d3c37afee0c03"><td class="memItemLeft" align="right" valign="top"><a id="af9a050a87833aa6efd8d3c37afee0c03"></a>
+const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classMesh.html#af9a050a87833aa6efd8d3c37afee0c03">extents</a> () const noexcept</td></tr>
+<tr class="memdesc:af9a050a87833aa6efd8d3c37afee0c03"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of grid points in each dimension of the grid. <br /></td></tr>
+<tr class="separator:af9a050a87833aa6efd8d3c37afee0c03"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d9bbd4e117d2c6ca5b3b0c98899f89c"><td class="memItemLeft" align="right" valign="top"><a id="a7d9bbd4e117d2c6ca5b3b0c98899f89c"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classMesh.html#a7d9bbd4e117d2c6ca5b3b0c98899f89c">extents</a> (const size_t d) const noexcept</td></tr>
+<tr class="memdesc:a7d9bbd4e117d2c6ca5b3b0c98899f89c"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of grid points in dimension <code>d</code> of the grid (zero-indexed). <br /></td></tr>
+<tr class="separator:a7d9bbd4e117d2c6ca5b3b0c98899f89c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a094b317e6113c50a0b8159c46ccae563"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classMesh.html#a094b317e6113c50a0b8159c46ccae563">number_of_grid_points</a> () const noexcept</td></tr>
+<tr class="memdesc:a094b317e6113c50a0b8159c46ccae563"><td class="mdescLeft">&#160;</td><td class="mdescRight">The total number of grid points in all dimensions.  <a href="classMesh.html#a094b317e6113c50a0b8159c46ccae563">More...</a><br /></td></tr>
+<tr class="separator:a094b317e6113c50a0b8159c46ccae563"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a499ed7ee22b7c5da23b09a13d319f4fe"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classMesh.html#a499ed7ee22b7c5da23b09a13d319f4fe">storage_index</a> (const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;index) const noexcept</td></tr>
+<tr class="memdesc:a499ed7ee22b7c5da23b09a13d319f4fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the 1-dimensional index corresponding to the <code>Dim</code> dimensional <code>index</code>.  <a href="classMesh.html#a499ed7ee22b7c5da23b09a13d319f4fe">More...</a><br /></td></tr>
+<tr class="separator:a499ed7ee22b7c5da23b09a13d319f4fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74d1b3c5ee929d2b144217d80f38f336"><td class="memItemLeft" align="right" valign="top"><a id="a74d1b3c5ee929d2b144217d80f38f336"></a>
+const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="group__SpectralGroup.html#ga37c9c17d05dccca652060d117f72ee21">Spectral::Basis</a>, Dim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classMesh.html#a74d1b3c5ee929d2b144217d80f38f336">basis</a> () const noexcept</td></tr>
+<tr class="memdesc:a74d1b3c5ee929d2b144217d80f38f336"><td class="mdescLeft">&#160;</td><td class="mdescRight">The basis chosen in each dimension of the grid. <br /></td></tr>
+<tr class="separator:a74d1b3c5ee929d2b144217d80f38f336"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adfdfa82afc848de8495db5369c432ebd"><td class="memItemLeft" align="right" valign="top"><a id="adfdfa82afc848de8495db5369c432ebd"></a>
+<a class="el" href="group__SpectralGroup.html#ga37c9c17d05dccca652060d117f72ee21">Spectral::Basis</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classMesh.html#adfdfa82afc848de8495db5369c432ebd">basis</a> (const size_t d) const noexcept</td></tr>
+<tr class="memdesc:adfdfa82afc848de8495db5369c432ebd"><td class="mdescLeft">&#160;</td><td class="mdescRight">The basis chosen in dimension <code>d</code> of the grid (zero-indexed). <br /></td></tr>
+<tr class="separator:adfdfa82afc848de8495db5369c432ebd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd3c4a7bb42d4d9696c889e2899e455e"><td class="memItemLeft" align="right" valign="top"><a id="abd3c4a7bb42d4d9696c889e2899e455e"></a>
+const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="group__SpectralGroup.html#ga7744e520f6d553caf358a6f09f5978c1">Spectral::Quadrature</a>, Dim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classMesh.html#abd3c4a7bb42d4d9696c889e2899e455e">quadrature</a> () const noexcept</td></tr>
+<tr class="memdesc:abd3c4a7bb42d4d9696c889e2899e455e"><td class="mdescLeft">&#160;</td><td class="mdescRight">The quadrature chosen in each dimension of the grid. <br /></td></tr>
+<tr class="separator:abd3c4a7bb42d4d9696c889e2899e455e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe7140f2f9521c2337552ce31470759e"><td class="memItemLeft" align="right" valign="top"><a id="afe7140f2f9521c2337552ce31470759e"></a>
+<a class="el" href="group__SpectralGroup.html#ga7744e520f6d553caf358a6f09f5978c1">Spectral::Quadrature</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classMesh.html#afe7140f2f9521c2337552ce31470759e">quadrature</a> (const size_t d) const noexcept</td></tr>
+<tr class="memdesc:afe7140f2f9521c2337552ce31470759e"><td class="mdescLeft">&#160;</td><td class="mdescRight">The quadrature chosen in dimension <code>d</code> of the grid (zero-indexed). <br /></td></tr>
+<tr class="separator:afe7140f2f9521c2337552ce31470759e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c7ec56a25f0e3a3e49733ef699e0e37"><td class="memTemplParams" colspan="2">template&lt;size_t N = Dim, Requires&lt;(N &gt; 0 and N==Dim)&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a7c7ec56a25f0e3a3e49733ef699e0e37"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classMesh.html">Mesh</a>&lt; Dim - 1 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classMesh.html#a7c7ec56a25f0e3a3e49733ef699e0e37">slice_away</a> (size_t d) const noexcept</td></tr>
+<tr class="memdesc:a7c7ec56a25f0e3a3e49733ef699e0e37"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a <a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a> with dimension <code>d</code> removed (zero-indexed).  <a href="classMesh.html#a7c7ec56a25f0e3a3e49733ef699e0e37">More...</a><br /></td></tr>
+<tr class="separator:a7c7ec56a25f0e3a3e49733ef699e0e37"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a08a856ef3898e9def37c9568dfed2b52"><td class="memTemplParams" colspan="2">template&lt;typename... D, Requires&lt;(sizeof...(D)&lt;=Dim)&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a08a856ef3898e9def37c9568dfed2b52"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classMesh.html">Mesh</a>&lt; sizeof...(D)&gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classMesh.html#a08a856ef3898e9def37c9568dfed2b52">slice_through</a> (D... d) const noexcept</td></tr>
+<tr class="memdesc:a08a856ef3898e9def37c9568dfed2b52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a <a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a> with the dimensions <code>d</code>, ... present (zero-indexed).  <a href="classMesh.html#a08a856ef3898e9def37c9568dfed2b52">More...</a><br /></td></tr>
+<tr class="separator:a08a856ef3898e9def37c9568dfed2b52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6b9f17c0f1d924047d6e9025c675d051"><td class="memTemplParams" colspan="2">template&lt;size_t SliceDim, Requires&lt;(SliceDim&lt;=Dim)&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a6b9f17c0f1d924047d6e9025c675d051"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classMesh.html">Mesh</a>&lt; SliceDim &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classMesh.html#a6b9f17c0f1d924047d6e9025c675d051">slice_through</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, SliceDim &gt; &amp;dims) const noexcept</td></tr>
+<tr class="memdesc:a6b9f17c0f1d924047d6e9025c675d051"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a <a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a> with the dimensions <code>dims</code> present (zero-indexed).  <a href="classMesh.html#a6b9f17c0f1d924047d6e9025c675d051">More...</a><br /></td></tr>
+<tr class="separator:a6b9f17c0f1d924047d6e9025c675d051"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad6de316e8a00b500133a8656209da886"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classMesh.html">Mesh</a>&lt; 1 &gt;, Dim &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classMesh.html#ad6de316e8a00b500133a8656209da886">slices</a> () const noexcept</td></tr>
+<tr class="memdesc:ad6de316e8a00b500133a8656209da886"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the Meshes representing 1D slices of this <a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a>.  <a href="classMesh.html#ad6de316e8a00b500133a8656209da886">More...</a><br /></td></tr>
+<tr class="separator:ad6de316e8a00b500133a8656209da886"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a339fa4b117fdf796c46a3d2097421c4a"><td class="memItemLeft" align="right" valign="top"><a id="a339fa4b117fdf796c46a3d2097421c4a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a339fa4b117fdf796c46a3d2097421c4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a4a466d56574517c9bc296889a9d63938"><td class="memItemLeft" align="right" valign="top"><a id="a4a466d56574517c9bc296889a9d63938"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>dim</b> = Dim</td></tr>
+<tr class="separator:a4a466d56574517c9bc296889a9d63938"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad480b964b2f9aea6b15a89f5132a8d88"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:ad480b964b2f9aea6b15a89f5132a8d88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+class Mesh&lt; Dim &gt;</h3>
+
+<p>Holds the number of grid points, basis, and quadrature in each direction of the computational grid. </p>
+<h3>Details</h3>
+<p>A mesh encapsulates all information necessary to construct the placement of grid points in the computational domain. It does so through a choice of basis functions, quadrature and number of points \(N\) in each dimension. The grid points are the associated collocation points and can be obtained from <a class="el" href="namespaceSpectral.html#abdea51c8da9163a169b375fa91a4ffba" title="Collocation points for a one-dimensional mesh.">Spectral::collocation_points(const Mesh&lt;1&gt;&amp;)</a>:</p>
+<div class="fragment"><div class="line">  <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;2&gt;</a> mesh2d{</div>
+<div class="line">      {{3, 4}},</div>
+<div class="line">      {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},</div>
+<div class="line">      {{Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}}};</div>
+<div class="line">  <span class="keyword">const</span> <span class="keyword">auto</span> collocation_points_in_first_dim =</div>
+<div class="line">      <a class="code" href="namespaceSpectral.html#ae2433e9284c6284a25ee9fc45a4eb538">Spectral::collocation_points</a>(mesh2d.slice_through(0));</div>
+</div><!-- fragment --><p> A simulated physical field can be represented by a <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> of length <a class="el" href="classMesh.html#a094b317e6113c50a0b8159c46ccae563" title="The total number of grid points in all dimensions.">number_of_grid_points()</a> that holds the field value on each point of the computational grid. These values are identical to the field's nodal expansion coefficients. They approximate the field by a polynomial of degree \(p=N-1\) through a linear combination of Lagrange polynomials.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Dim</td><td>the number of dimensions of the computational grid. </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a647940330ed894804e4ae7e5e86828a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a647940330ed894804e4ae7e5e86828a4">&#9670;&nbsp;</a></span>Mesh() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt;::<a class="el" href="classMesh.html">Mesh</a> </td>
+          <td>(</td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>isotropic_extents</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__SpectralGroup.html#ga37c9c17d05dccca652060d117f72ee21">Spectral::Basis</a>&#160;</td>
+          <td class="paramname"><em>basis</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__SpectralGroup.html#ga7744e520f6d553caf358a6f09f5978c1">Spectral::Quadrature</a>&#160;</td>
+          <td class="paramname"><em>quadrature</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Construct a computational grid with the same number of collocation points in each dimension. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">isotropic_extents</td><td>The number of collocation points in each dimension. </td></tr>
+    <tr><td class="paramname">basis</td><td>The choice of spectral basis to compute the collocation points </td></tr>
+    <tr><td class="paramname">quadrature</td><td>The choice of quadrature to compute the collocation points</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>Note</dt><dd>Because a <code><a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a>&lt;0&gt;</code> extends over no dimensions, it has 1 grid point independent of the value of <code>isotropic_extents</code>. </dd></dl>
+
+</div>
+</div>
+<a id="a7ba8d066b13c0ed07efa4435e5e276c3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7ba8d066b13c0ed07efa4435e5e276c3">&#9670;&nbsp;</a></span>Mesh() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt;::<a class="el" href="classMesh.html">Mesh</a> </td>
+          <td>(</td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, Dim &gt;&#160;</td>
+          <td class="paramname"><em>extents</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__SpectralGroup.html#ga37c9c17d05dccca652060d117f72ee21">Spectral::Basis</a>&#160;</td>
+          <td class="paramname"><em>basis</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__SpectralGroup.html#ga7744e520f6d553caf358a6f09f5978c1">Spectral::Quadrature</a>&#160;</td>
+          <td class="paramname"><em>quadrature</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Construct a computational grid where each dimension can have a different number of collocation points. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">extents</td><td>The number of collocation points per dimension </td></tr>
+    <tr><td class="paramname">basis</td><td>The choice of spectral basis to compute the collocation points </td></tr>
+    <tr><td class="paramname">quadrature</td><td>The choice of quadrature to compute the collocation points </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a81dd3e4a1e84a907e33ab2180312e9cf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a81dd3e4a1e84a907e33ab2180312e9cf">&#9670;&nbsp;</a></span>Mesh() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt;::<a class="el" href="classMesh.html">Mesh</a> </td>
+          <td>(</td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, Dim &gt;&#160;</td>
+          <td class="paramname"><em>extents</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="group__SpectralGroup.html#ga37c9c17d05dccca652060d117f72ee21">Spectral::Basis</a>, Dim &gt;&#160;</td>
+          <td class="paramname"><em>bases</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="group__SpectralGroup.html#ga7744e520f6d553caf358a6f09f5978c1">Spectral::Quadrature</a>, Dim &gt;&#160;</td>
+          <td class="paramname"><em>quadratures</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Construct a computational grid where each dimension can have both a different number and placement of collocation points. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">extents</td><td>The number of collocation points per dimension </td></tr>
+    <tr><td class="paramname">bases</td><td>The choice of spectral bases to compute the collocation points per dimension </td></tr>
+    <tr><td class="paramname">quadratures</td><td>The choice of quadratures to compute the collocation points per dimension </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a094b317e6113c50a0b8159c46ccae563"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a094b317e6113c50a0b8159c46ccae563">&#9670;&nbsp;</a></span>number_of_grid_points()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt;::number_of_grid_points </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The total number of grid points in all dimensions. </p>
+<h3>Details</h3>
+<p><code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>s that represent field values on the grid have this many entries.</p>
+<dl class="section note"><dt>Note</dt><dd>A zero-dimensional mesh has one grid point, since it is the slice through a one-dimensional mesh (a line). </dd></dl>
+
+</div>
+</div>
+<a id="a7c7ec56a25f0e3a3e49733ef699e0e37"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7c7ec56a25f0e3a3e49733ef699e0e37">&#9670;&nbsp;</a></span>slice_away()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<div class="memtemplate">
+template&lt;size_t N = Dim, Requires&lt;(N &gt; 0 and N==Dim)&gt;  = nullptr&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classMesh.html">Mesh</a>&lt;Dim - 1&gt; <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt;::slice_away </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>d</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns a <a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a> with dimension <code>d</code> removed (zero-indexed). </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classMesh.html#a08a856ef3898e9def37c9568dfed2b52" title="Returns a Mesh with the dimensions d, ... present (zero-indexed).">slice_through()</a> </dd></dl>
+
+</div>
+</div>
+<a id="a6b9f17c0f1d924047d6e9025c675d051"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6b9f17c0f1d924047d6e9025c675d051">&#9670;&nbsp;</a></span>slice_through() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<div class="memtemplate">
+template&lt;size_t SliceDim, Requires&lt;(SliceDim&lt;=Dim)&gt;  = nullptr&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classMesh.html">Mesh</a>&lt;SliceDim&gt; <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt;::slice_through </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, SliceDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>dims</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns a <a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a> with the dimensions <code>dims</code> present (zero-indexed). </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classMesh.html#a08a856ef3898e9def37c9568dfed2b52" title="Returns a Mesh with the dimensions d, ... present (zero-indexed).">slice_through()</a> The templated overload of this function </dd></dl>
+
+</div>
+</div>
+<a id="a08a856ef3898e9def37c9568dfed2b52"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a08a856ef3898e9def37c9568dfed2b52">&#9670;&nbsp;</a></span>slice_through() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<div class="memtemplate">
+template&lt;typename... D, Requires&lt;(sizeof...(D)&lt;=Dim)&gt;  = nullptr&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classMesh.html">Mesh</a>&lt;sizeof...(D)&gt; <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt;::slice_through </td>
+          <td>(</td>
+          <td class="paramtype">D...&#160;</td>
+          <td class="paramname"><em>d</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns a <a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a> with the dimensions <code>d</code>, ... present (zero-indexed). </p>
+<h3>Details</h3>
+<p>Generally you use this method to obtain a lower-dimensional <a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a> by slicing through a subset of the dimensions. However, you can also reorder dimensions using this method by slicing through the dimensions in an order you choose.</p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classMesh.html#a7c7ec56a25f0e3a3e49733ef699e0e37" title="Returns a Mesh with dimension d removed (zero-indexed).">slice_away()</a> </dd></dl>
+
+</div>
+</div>
+<a id="ad6de316e8a00b500133a8656209da886"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad6de316e8a00b500133a8656209da886">&#9670;&nbsp;</a></span>slices()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;<a class="el" href="classMesh.html">Mesh</a>&lt;1&gt;, Dim&gt; <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt;::slices </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the Meshes representing 1D slices of this <a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a>. </p>
+<p>The is the same as the array filled with <code>slice_through(d)</code> for <code>d</code> from <code>0</code> to <code>Dim - 1</code> except in dimension 0 where <code>slice_through(d)</code> is not defined. </p>
+
+</div>
+</div>
+<a id="a499ed7ee22b7c5da23b09a13d319f4fe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a499ed7ee22b7c5da23b09a13d319f4fe">&#9670;&nbsp;</a></span>storage_index()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt;::storage_index </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>index</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the 1-dimensional index corresponding to the <code>Dim</code> dimensional <code>index</code>. </p>
+<p>The first dimension varies fastest.</p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__DataStructuresGroup.html#gac2de486a64a176604f89cbbfbb8fffc9">collapsed_index()</a> </dd></dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="ad480b964b2f9aea6b15a89f5132a8d88"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad480b964b2f9aea6b15a89f5132a8d88">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      <span class="stringliteral">&quot;Holds the number of grid points, basis, and quadrature in each &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;direction of the computational grid. &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;A mesh encapsulates all information necessary to construct the &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;placement of grid points in the computational domain. It does so &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;through a choice of basis functions, quadrature and number of points &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;in each dimension.&quot;</span></div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/NumericalAlgorithms/Spectral/<a class="el" href="NumericalAlgorithms_2Spectral_2Mesh_8hpp_source.html">Mesh.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="anamespaceSpectral_html_ae2433e9284c6284a25ee9fc45a4eb538"><div class="ttname"><a href="namespaceSpectral.html#ae2433e9284c6284a25ee9fc45a4eb538">Spectral::collocation_points</a></div><div class="ttdeci">const DataVector &amp; collocation_points(size_t num_points) noexcept</div><div class="ttdoc">Collocation points.</div></div>
+<div class="ttc" id="aclassMesh_html"><div class="ttname"><a href="classMesh.html">Mesh</a></div><div class="ttdoc">Holds the number of grid points, basis, and quadrature in each direction of the computational grid.</div><div class="ttdef"><b>Definition:</b> Mesh.hpp:49</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

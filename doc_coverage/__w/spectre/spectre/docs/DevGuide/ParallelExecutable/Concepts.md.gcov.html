@@ -1,0 +1,389 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - 39f3c2b725318dcf91749887b1e61f477736e132 - /__w/spectre/spectre/docs/DevGuide/ParallelExecutable/Concepts.md</title>
+  <link rel="stylesheet" type="text/css" href="../../../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title"> SpECTRE Documentation Coverage Report</td></tr>
+    <tr><td class="ruler"><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../../../index.html">top level</a> - <a href="index.html">__w/spectre/spectre/docs/DevGuide/ParallelExecutable</a> - Concepts.md</td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+             <td class="headerItem">Commit:</td>
+             <td class="headerValue"><a target="_blank" href="https://github.com/sxs-collaboration/spectre/commit/39f3c2b725318dcf91749887b1e61f477736e132">39f3c2b725318dcf91749887b1e61f477736e132</a></td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2021-07-13 03:19:40</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineNoCov">          0 : \cond NEVER</span></a>
+<a name="2"><span class="lineNum">       2 </span>            : Distributed under the MIT License.</a>
+<a name="3"><span class="lineNum">       3 </span>            : See LICENSE.txt for details.</a>
+<a name="4"><span class="lineNum">       4 </span>            : \endcond</a>
+<a name="5"><span class="lineNum">       5 </span>            : # Parallelization in SpECTRE {#tutorial_parallel_concepts}</a>
+<a name="6"><span class="lineNum">       6 </span>            : </a>
+<a name="7"><span class="lineNum">       7 </span>            : This overview describes the concepts and terminology that SpECTRE uses</a>
+<a name="8"><span class="lineNum">       8 </span>            : to enable parallelism.  This overview is a general discussion with no</a>
+<a name="9"><span class="lineNum">       9 </span>            : code examples.  Subsequent tutorials will provide a more in-depth</a>
+<a name="10"><span class="lineNum">      10 </span>            : exploration of the parallelization infrastructure, including code</a>
+<a name="11"><span class="lineNum">      11 </span>            : examples.</a>
+<a name="12"><span class="lineNum">      12 </span>            : </a>
+<a name="13"><span class="lineNum">      13 </span>            : Unlike many parallel scientific codes which use data-based</a>
+<a name="14"><span class="lineNum">      14 </span>            : parallelism, SpECTRE uses task-based parallelism.  The classical</a>
+<a name="15"><span class="lineNum">      15 </span>            : strategy for parallelism (data-based parallelism) is to assign a</a>
+<a name="16"><span class="lineNum">      16 </span>            : portion of the data to processes (or threads) that synchronously</a>
+<a name="17"><span class="lineNum">      17 </span>            : execute compute kernels.  This is implemented in many codes but it is</a>
+<a name="18"><span class="lineNum">      18 </span>            : difficult to design codes with this strategy that will efficiently</a>
+<a name="19"><span class="lineNum">      19 </span>            : scale for complex multi-scale, multi-physics workloads. Task-based</a>
+<a name="20"><span class="lineNum">      20 </span>            : parallelism provides a solution: Instead of dividing work between</a>
+<a name="21"><span class="lineNum">      21 </span>            : parallel processes based on data ownership, there is a set of tasks</a>
+<a name="22"><span class="lineNum">      22 </span>            : and their inter-dependencies. Tasks are scheduled and assigned to</a>
+<a name="23"><span class="lineNum">      23 </span>            : processes dynamically, providing opportunities for load balancing and</a>
+<a name="24"><span class="lineNum">      24 </span>            : minimization of idle threads.  By dividing the program into small</a>
+<a name="25"><span class="lineNum">      25 </span>            : enough tasks such that you have several tasks per thread,</a>
+<a name="26"><span class="lineNum">      26 </span>            : communication time is hidden by interleaving tasks that are ready to</a>
+<a name="27"><span class="lineNum">      27 </span>            : be executed with tasks that are waiting for data.</a>
+<a name="28"><span class="lineNum">      28 </span>            : </a>
+<a name="29"><span class="lineNum">      29 </span>            : In order to implement task-based parallelism, SpECTRE is built on top</a>
+<a name="30"><span class="lineNum">      30 </span>            : of the parallel programming framework of the Charm++ library, which is</a>
+<a name="31"><span class="lineNum">      31 </span>            : developed by the [Parallel Programming</a>
+<a name="32"><span class="lineNum">      32 </span>            : Laboratory](http://charm.cs.illinois.edu/) at the University of</a>
+<a name="33"><span class="lineNum">      33 </span>            : Illinois.  Charm++ is a mature parallel programming framework that</a>
+<a name="34"><span class="lineNum">      34 </span>            : provides intra-node threading and can use a variety of communication</a>
+<a name="35"><span class="lineNum">      35 </span>            : interfaces (including MPI) to communicate between nodes.  Charm++ has</a>
+<a name="36"><span class="lineNum">      36 </span>            : a large user base, which includes users of the cosmological</a>
+<a name="37"><span class="lineNum">      37 </span>            : \f$N\f$-body code</a>
+<a name="38"><span class="lineNum">      38 </span>            : [ChaNGa](https://github.com/N-BodyShop/changa/wiki/ChaNGa) and of the</a>
+<a name="39"><span class="lineNum">      39 </span>            : molecular dynamics code</a>
+<a name="40"><span class="lineNum">      40 </span>            : [NAMD](https://www.ks.uiuc.edu/Research/namd/).</a>
+<a name="41"><span class="lineNum">      41 </span>            : </a>
+<a name="42"><span class="lineNum">      42 </span>            : ## Charm++ basic concepts</a>
+<a name="43"><span class="lineNum">      43 </span>            : </a>
+<a name="44"><span class="lineNum">      44 </span>            : In order to understand how parallelization works in SpECTRE, it is</a>
+<a name="45"><span class="lineNum">      45 </span>            : useful to understand the basic concepts in the design of Charm++.</a>
+<a name="46"><span class="lineNum">      46 </span>            : Much of the following is quoted verbatim from the [Charm++</a>
+<a name="47"><span class="lineNum">      47 </span>            : documentation](https://charm.readthedocs.io), interspersed with</a>
+<a name="48"><span class="lineNum">      48 </span>            : comments on how SpECTRE interacts with Charm++.</a>
+<a name="49"><span class="lineNum">      49 </span>            : </a>
+<a name="50"><span class="lineNum">      50 </span>            : &gt; Charm++ is a C++-based parallel programming system, founded on the</a>
+<a name="51"><span class="lineNum">      51 </span>            : &gt; migratable-objects programming model, and supported by a novel and</a>
+<a name="52"><span class="lineNum">      52 </span>            : &gt; powerful adaptive runtime system. It supports both irregular as well</a>
+<a name="53"><span class="lineNum">      53 </span>            : &gt; as regular applications, and can be used to specify task-parallelism</a>
+<a name="54"><span class="lineNum">      54 </span>            : &gt; as well as data parallelism in a single application. It automates</a>
+<a name="55"><span class="lineNum">      55 </span>            : &gt; dynamic load balancing for task-parallel as well as data-parallel</a>
+<a name="56"><span class="lineNum">      56 </span>            : &gt; applications, via separate suites of load-balancing strategies. Via</a>
+<a name="57"><span class="lineNum">      57 </span>            : &gt; its message-driven execution model, it supports automatic latency</a>
+<a name="58"><span class="lineNum">      58 </span>            : &gt; tolerance, modularity and parallel composition. Charm++ also supports</a>
+<a name="59"><span class="lineNum">      59 </span>            : &gt; automatic checkpoint/restart, as well as fault tolerance based on</a>
+<a name="60"><span class="lineNum">      60 </span>            : &gt; distributed checkpoints.</a>
+<a name="61"><span class="lineNum">      61 </span>            : </a>
+<a name="62"><span class="lineNum">      62 </span>            : SpECTRE currently wraps only some of the features of Charm++,</a>
+<a name="63"><span class="lineNum">      63 </span>            : primarily the ones that support task-parallelism.  We are just</a>
+<a name="64"><span class="lineNum">      64 </span>            : beginning our exploration of dynamic load balancing.  Coming soon we</a>
+<a name="65"><span class="lineNum">      65 </span>            : will utilize automatic checkpoint/restart.  At present we do not use</a>
+<a name="66"><span class="lineNum">      66 </span>            : Charm++ support for fault tolerance.</a>
+<a name="67"><span class="lineNum">      67 </span>            : </a>
+<a name="68"><span class="lineNum">      68 </span>            : &gt; The key feature of the migratable-objects programming model is</a>
+<a name="69"><span class="lineNum">      69 </span>            : &gt; over-decomposition: The programmer decomposes the program into a</a>
+<a name="70"><span class="lineNum">      70 </span>            : &gt; large number of work units and data units, and specifies the</a>
+<a name="71"><span class="lineNum">      71 </span>            : &gt; computation in terms of creation of and interactions between these</a>
+<a name="72"><span class="lineNum">      72 </span>            : &gt; units, without any direct reference to the processor on which any</a>
+<a name="73"><span class="lineNum">      73 </span>            : &gt; unit resides. This empowers the runtime system to assign units to</a>
+<a name="74"><span class="lineNum">      74 </span>            : &gt; processors, and to change the assignment at runtime as necessary.</a>
+<a name="75"><span class="lineNum">      75 </span>            : </a>
+<a name="76"><span class="lineNum">      76 </span>            : SpECTRE's parallelization module is designed to make it easy for users</a>
+<a name="77"><span class="lineNum">      77 </span>            : to exploit the migratable-object model by providing a framework to</a>
+<a name="78"><span class="lineNum">      78 </span>            : define the units into which a program can be decomposed.</a>
+<a name="79"><span class="lineNum">      79 </span>            : </a>
+<a name="80"><span class="lineNum">      80 </span>            : &gt; A basic unit of parallel computation in Charm++ programs is a</a>
+<a name="81"><span class="lineNum">      81 </span>            : &gt; chare.  At its most basic level, it is just a C++ object. A Charm++</a>
+<a name="82"><span class="lineNum">      82 </span>            : &gt; computation consists of a large number of chares distributed on</a>
+<a name="83"><span class="lineNum">      83 </span>            : &gt; available processors of the system, and interacting with each other</a>
+<a name="84"><span class="lineNum">      84 </span>            : &gt; via asynchronous method invocations. Asynchronously invoking a</a>
+<a name="85"><span class="lineNum">      85 </span>            : &gt; method on a remote object can also be thought of as sending a</a>
+<a name="86"><span class="lineNum">      86 </span>            : &gt; “message” to it. So, these method invocations are sometimes referred</a>
+<a name="87"><span class="lineNum">      87 </span>            : &gt; to as messages. (besides, in the implementation, the method</a>
+<a name="88"><span class="lineNum">      88 </span>            : &gt; invocations are packaged as messages anyway). Chares can be created</a>
+<a name="89"><span class="lineNum">      89 </span>            : &gt; dynamically.</a>
+<a name="90"><span class="lineNum">      90 </span>            : </a>
+<a name="91"><span class="lineNum">      91 </span>            : In SpECTRE, we wrap Charm++ chares in struct templates that we call</a>
+<a name="92"><span class="lineNum">      92 </span>            : __parallel components__ that represent a collection of distributed</a>
+<a name="93"><span class="lineNum">      93 </span>            : objects.  We wrap the asynchronous method invocations between the</a>
+<a name="94"><span class="lineNum">      94 </span>            : elements of parallel components in struct templates that we call</a>
+<a name="95"><span class="lineNum">      95 </span>            : __actions__.  Thus, each element of a parallel component can be</a>
+<a name="96"><span class="lineNum">      96 </span>            : thought of as a C++ object that exists on one core on the</a>
+<a name="97"><span class="lineNum">      97 </span>            : supercomputer, and an action as calling a member function of that</a>
+<a name="98"><span class="lineNum">      98 </span>            : object, even if the caller is on another core.</a>
+<a name="99"><span class="lineNum">      99 </span>            : </a>
+<a name="100"><span class="lineNum">     100 </span>            : &gt; Conceptually, the system maintains a “work-pool” consisting of seeds</a>
+<a name="101"><span class="lineNum">     101 </span>            : &gt; for new chares, and messages for existing chares. The Charm++</a>
+<a name="102"><span class="lineNum">     102 </span>            : &gt; runtime system (Charm RTS) may pick multiple items,</a>
+<a name="103"><span class="lineNum">     103 </span>            : &gt; non-deterministically, from this pool and execute them, with the</a>
+<a name="104"><span class="lineNum">     104 </span>            : &gt; proviso that two different methods cannot be simultaneously</a>
+<a name="105"><span class="lineNum">     105 </span>            : &gt; executing on the same chare object (say, on different</a>
+<a name="106"><span class="lineNum">     106 </span>            : &gt; processors). Although one can define a reasonable theoretical</a>
+<a name="107"><span class="lineNum">     107 </span>            : &gt; operational semantics of Charm++ in this fashion, a more practical</a>
+<a name="108"><span class="lineNum">     108 </span>            : &gt; description of execution is useful to understand Charm++. A Charm++</a>
+<a name="109"><span class="lineNum">     109 </span>            : &gt; application’s execution is distributed among Processing Elements</a>
+<a name="110"><span class="lineNum">     110 </span>            : &gt; (PEs), which are OS threads or processes depending on the selected</a>
+<a name="111"><span class="lineNum">     111 </span>            : &gt; Charm++ build options. On each PE, there is a scheduler operating</a>
+<a name="112"><span class="lineNum">     112 </span>            : &gt; with its own private pool of messages. Each instantiated chare has</a>
+<a name="113"><span class="lineNum">     113 </span>            : &gt; one PE which is where it currently resides. The pool on each PE</a>
+<a name="114"><span class="lineNum">     114 </span>            : &gt; includes messages meant for chares residing on that PE, and seeds</a>
+<a name="115"><span class="lineNum">     115 </span>            : &gt; for new chares that are tentatively meant to be instantiated on that</a>
+<a name="116"><span class="lineNum">     116 </span>            : &gt; PE. The scheduler picks a message, creates a new chare if the</a>
+<a name="117"><span class="lineNum">     117 </span>            : &gt; message is a seed (i.e. a constructor invocation) for a new chare,</a>
+<a name="118"><span class="lineNum">     118 </span>            : &gt; and invokes the method specified by the message. When the method</a>
+<a name="119"><span class="lineNum">     119 </span>            : &gt; returns control back to the scheduler, it repeats the cycle</a>
+<a name="120"><span class="lineNum">     120 </span>            : &gt; (i.e. there is no pre-emptive scheduling of other invocations).</a>
+<a name="121"><span class="lineNum">     121 </span>            : </a>
+<a name="122"><span class="lineNum">     122 </span>            : It is very important to keep in mind that the actions that are</a>
+<a name="123"><span class="lineNum">     123 </span>            : executed on elements of parallel components are done so</a>
+<a name="124"><span class="lineNum">     124 </span>            : non-deterministically by the run-time system.  Therefore it is the</a>
+<a name="125"><span class="lineNum">     125 </span>            : responsibility of the programmer to ensure that actions are not called</a>
+<a name="126"><span class="lineNum">     126 </span>            : out of order.  This means that if action B must be executed after</a>
+<a name="127"><span class="lineNum">     127 </span>            : action A on a given element of a parallel component, the programmer</a>
+<a name="128"><span class="lineNum">     128 </span>            : must ensure that either action B is called after the completion of</a>
+<a name="129"><span class="lineNum">     129 </span>            : action A (i.e. it is not sufficient that action B is invoked after</a>
+<a name="130"><span class="lineNum">     130 </span>            : action A is invoked), or that action B checks that action A has</a>
+<a name="131"><span class="lineNum">     131 </span>            : completed before running.</a>
+<a name="132"><span class="lineNum">     132 </span>            : </a>
+<a name="133"><span class="lineNum">     133 </span>            : &gt; When a chare method executes, it may create method invocations for</a>
+<a name="134"><span class="lineNum">     134 </span>            : &gt; other chares. The Charm Runtime System (RTS) locates the PE where</a>
+<a name="135"><span class="lineNum">     135 </span>            : &gt; the targeted chare resides, and delivers the invocation to the</a>
+<a name="136"><span class="lineNum">     136 </span>            : &gt; scheduler on that PE.</a>
+<a name="137"><span class="lineNum">     137 </span>            : </a>
+<a name="138"><span class="lineNum">     138 </span>            : In SpECTRE, this is done by one element of a parallel component</a>
+<a name="139"><span class="lineNum">     139 </span>            : calling an action on an element of a another parallel component.</a>
+<a name="140"><span class="lineNum">     140 </span>            : </a>
+<a name="141"><span class="lineNum">     141 </span>            : &gt; Methods of a chare that can be remotely invoked are called entry</a>
+<a name="142"><span class="lineNum">     142 </span>            : &gt; methods. Entry methods may take serializable parameters, or a</a>
+<a name="143"><span class="lineNum">     143 </span>            : &gt; pointer to a message object. Since chares can be created on remote</a>
+<a name="144"><span class="lineNum">     144 </span>            : &gt; processors, obviously some constructor of a chare needs to be an</a>
+<a name="145"><span class="lineNum">     145 </span>            : &gt; entry method. Ordinary entry methods are completely non-preemptive-</a>
+<a name="146"><span class="lineNum">     146 </span>            : &gt; Charm++ will not interrupt an executing method to start any other</a>
+<a name="147"><span class="lineNum">     147 </span>            : &gt; work, and all calls made are asynchronous.</a>
+<a name="148"><span class="lineNum">     148 </span>            : </a>
+<a name="149"><span class="lineNum">     149 </span>            : In SpECTRE, the struct template that defines a parallel component has</a>
+<a name="150"><span class="lineNum">     150 </span>            : taken care of creating the entry methods for the underlying chare,</a>
+<a name="151"><span class="lineNum">     151 </span>            : which are then called by invoking actions.</a>
+<a name="152"><span class="lineNum">     152 </span>            : </a>
+<a name="153"><span class="lineNum">     153 </span>            : &gt; Charm++ provides dynamic seed-based load balancing. Thus location</a>
+<a name="154"><span class="lineNum">     154 </span>            : &gt; (processor number) need not be specified while creating a remote</a>
+<a name="155"><span class="lineNum">     155 </span>            : &gt; chare. The Charm RTS will then place the remote chare on a suitable</a>
+<a name="156"><span class="lineNum">     156 </span>            : &gt; processor. Thus one can imagine chare creation as generating only a</a>
+<a name="157"><span class="lineNum">     157 </span>            : &gt; seed for the new chare, which may take root on some specific</a>
+<a name="158"><span class="lineNum">     158 </span>            : &gt; processor at a later time.</a>
+<a name="159"><span class="lineNum">     159 </span>            : </a>
+<a name="160"><span class="lineNum">     160 </span>            : We are just in the process of beginning to explore the load-balancing</a>
+<a name="161"><span class="lineNum">     161 </span>            : features of Charm++, but plan to have new elements of parallel</a>
+<a name="162"><span class="lineNum">     162 </span>            : components (the wrapped chares) be creatable using actions, without</a>
+<a name="163"><span class="lineNum">     163 </span>            : specifying the location on which the new element is created.</a>
+<a name="164"><span class="lineNum">     164 </span>            : </a>
+<a name="165"><span class="lineNum">     165 </span>            : &gt; Chares can be grouped into collections. The types of collections of</a>
+<a name="166"><span class="lineNum">     166 </span>            : &gt; chares supported in Charm++ are: chare-arrays, chare-groups, and</a>
+<a name="167"><span class="lineNum">     167 </span>            : &gt; chare-nodegroups, referred to as arrays, groups, and nodegroups</a>
+<a name="168"><span class="lineNum">     168 </span>            : &gt; throughout this manual for brevity. A Chare-array is a collection of</a>
+<a name="169"><span class="lineNum">     169 </span>            : &gt; an arbitrary number of migratable chares, indexed by some index</a>
+<a name="170"><span class="lineNum">     170 </span>            : &gt; type, and mapped to processors according to a user-defined map</a>
+<a name="171"><span class="lineNum">     171 </span>            : &gt; group. A group (nodegroup) is a collection of chares, with exactly</a>
+<a name="172"><span class="lineNum">     172 </span>            : &gt; one member element on each PE (“node”).</a>
+<a name="173"><span class="lineNum">     173 </span>            : </a>
+<a name="174"><span class="lineNum">     174 </span>            : Each of SpECTRE's parallel components has a type alias `chare_type`</a>
+<a name="175"><span class="lineNum">     175 </span>            : corresponding to whether it is a chare-array, chare-group, or</a>
+<a name="176"><span class="lineNum">     176 </span>            : chare-nodegroup.  In addition we support a singleton which is</a>
+<a name="177"><span class="lineNum">     177 </span>            : essentially a one-element array.</a>
+<a name="178"><span class="lineNum">     178 </span>            : </a>
+<a name="179"><span class="lineNum">     179 </span>            : &gt; Charm++ does not allow global variables, except readonly</a>
+<a name="180"><span class="lineNum">     180 </span>            : &gt; variables. A chare can normally only access its own data</a>
+<a name="181"><span class="lineNum">     181 </span>            : &gt; directly. However, each chare is accessible by a globally valid</a>
+<a name="182"><span class="lineNum">     182 </span>            : &gt; name. So, one can think of Charm++ as supporting a global object</a>
+<a name="183"><span class="lineNum">     183 </span>            : &gt; space.</a>
+<a name="184"><span class="lineNum">     184 </span>            : </a>
+<a name="185"><span class="lineNum">     185 </span>            : SpECTRE does not use the readonly global variables provided by</a>
+<a name="186"><span class="lineNum">     186 </span>            : Charm++.  Instead SpECTRE provides a nodegroup called the</a>
+<a name="187"><span class="lineNum">     187 </span>            : `GlobalCache` which provides global access to both read-only</a>
+<a name="188"><span class="lineNum">     188 </span>            : and writable objects, as well as a way to access every parallel component.</a>
+<a name="189"><span class="lineNum">     189 </span>            : </a>
+<a name="190"><span class="lineNum">     190 </span>            : &gt; Every Charm++ program must have at least one mainchare. Each</a>
+<a name="191"><span class="lineNum">     191 </span>            : &gt; mainchare is created by the system on processor 0 when the Charm++</a>
+<a name="192"><span class="lineNum">     192 </span>            : &gt; program starts up. Execution of a Charm++ program begins with the</a>
+<a name="193"><span class="lineNum">     193 </span>            : &gt; Charm RTS constructing all the designated mainchares. For a</a>
+<a name="194"><span class="lineNum">     194 </span>            : &gt; mainchare named X, execution starts at constructor X() or X(CkArgMsg</a>
+<a name="195"><span class="lineNum">     195 </span>            : &gt; *) which are equivalent. Typically, the mainchare constructor starts</a>
+<a name="196"><span class="lineNum">     196 </span>            : &gt; the computation by creating arrays, other chares, and groups. It can</a>
+<a name="197"><span class="lineNum">     197 </span>            : &gt; also be used to initialize shared readonly objects.</a>
+<a name="198"><span class="lineNum">     198 </span>            : </a>
+<a name="199"><span class="lineNum">     199 </span>            : SpECTRE provides a pre-defined mainchare called `Main` that is run</a>
+<a name="200"><span class="lineNum">     200 </span>            : when a SpECTRE executable is started.  `Main` will create the other</a>
+<a name="201"><span class="lineNum">     201 </span>            : parallel components, and initialize items in the `GlobalCache`</a>
+<a name="202"><span class="lineNum">     202 </span>            : whose items can be used by any parallel component.</a>
+<a name="203"><span class="lineNum">     203 </span>            : </a>
+<a name="204"><span class="lineNum">     204 </span>            : &gt; Charm++ program execution is terminated by the CkExit call. Like the</a>
+<a name="205"><span class="lineNum">     205 </span>            : &gt; exit system call, CkExit never returns, and it optionally accepts an</a>
+<a name="206"><span class="lineNum">     206 </span>            : &gt; integer value to specify the exit code that is returned to the</a>
+<a name="207"><span class="lineNum">     207 </span>            : &gt; calling shell. If no exit code is specified, a value of zero</a>
+<a name="208"><span class="lineNum">     208 </span>            : &gt; (indicating successful execution) is returned. The Charm RTS ensures</a>
+<a name="209"><span class="lineNum">     209 </span>            : &gt; that no more messages are processed and no entry methods are called</a>
+<a name="210"><span class="lineNum">     210 </span>            : &gt; after a CkExit. CkExit need not be called on all processors; it is</a>
+<a name="211"><span class="lineNum">     211 </span>            : &gt; enough to call it from just one processor at the end of the</a>
+<a name="212"><span class="lineNum">     212 </span>            : &gt; computation.</a>
+<a name="213"><span class="lineNum">     213 </span>            : </a>
+<a name="214"><span class="lineNum">     214 </span>            : SpECTRE wraps `CkExit` with the function `sys::exit`.  As no more</a>
+<a name="215"><span class="lineNum">     215 </span>            : messages are processed by Charm++ after this call, SpECTRE also</a>
+<a name="216"><span class="lineNum">     216 </span>            : defines a special `Exit` phase that is guaranteed to be executed after</a>
+<a name="217"><span class="lineNum">     217 </span>            : all messages and entry methods have been processed.</a>
+<a name="218"><span class="lineNum">     218 </span>            : </a>
+<a name="219"><span class="lineNum">     219 </span>            : &gt; As described so far, the execution of individual Chares is</a>
+<a name="220"><span class="lineNum">     220 </span>            : &gt; “reactive”: When method A is invoked the chare executes this code,</a>
+<a name="221"><span class="lineNum">     221 </span>            : &gt; and so on. But very often, chares have specific life-cycles, and the</a>
+<a name="222"><span class="lineNum">     222 </span>            : &gt; sequence of entry methods they execute can be specified in a</a>
+<a name="223"><span class="lineNum">     223 </span>            : &gt; structured manner, while allowing for some localized non-determinism</a>
+<a name="224"><span class="lineNum">     224 </span>            : &gt; (e.g. a pair of methods may execute in any order, but when they both</a>
+<a name="225"><span class="lineNum">     225 </span>            : &gt; finish, the execution continues in a pre-determined manner, say</a>
+<a name="226"><span class="lineNum">     226 </span>            : &gt; executing a 3rd entry method).</a>
+<a name="227"><span class="lineNum">     227 </span>            : </a>
+<a name="228"><span class="lineNum">     228 </span>            : Charm++ provides a special notation to simplify expression of such</a>
+<a name="229"><span class="lineNum">     229 </span>            : control structures, but this requires writing specialized interface</a>
+<a name="230"><span class="lineNum">     230 </span>            : files that are parsed by Charm++.  SpECTRE does not support this;</a>
+<a name="231"><span class="lineNum">     231 </span>            : rather we split the executable into a set of user-defined phases. In</a>
+<a name="232"><span class="lineNum">     232 </span>            : each phase, each parallel component will execute a user-defined list</a>
+<a name="233"><span class="lineNum">     233 </span>            : of actions.</a>
+<a name="234"><span class="lineNum">     234 </span>            : </a>
+<a name="235"><span class="lineNum">     235 </span>            : &gt; The normal entry methods, being asynchronous, are not allowed to</a>
+<a name="236"><span class="lineNum">     236 </span>            : &gt; return any value, and are declared with a void return type.</a>
+<a name="237"><span class="lineNum">     237 </span>            : </a>
+<a name="238"><span class="lineNum">     238 </span>            : SpECTRE's actions do not return any value to the calling component.</a>
+<a name="239"><span class="lineNum">     239 </span>            : Instead when the action is finished it can call another action to send</a>
+<a name="240"><span class="lineNum">     240 </span>            : data to an element of any parallel component.</a>
+<a name="241"><span class="lineNum">     241 </span>            : </a>
+<a name="242"><span class="lineNum">     242 </span>            : &gt; To support asynchronous method invocation and global object space,</a>
+<a name="243"><span class="lineNum">     243 </span>            : &gt; the RTS needs to be able to serialize (“marshall”) the parameters,</a>
+<a name="244"><span class="lineNum">     244 </span>            : &gt; and be able to generate global “names” for chares. For this purpose,</a>
+<a name="245"><span class="lineNum">     245 </span>            : &gt; programmers have to declare the chare classes and the signature of</a>
+<a name="246"><span class="lineNum">     246 </span>            : &gt; their entry methods in a special “.ci” file, called an interface</a>
+<a name="247"><span class="lineNum">     247 </span>            : &gt; file. Other than the interface file, the rest of a Charm++ program</a>
+<a name="248"><span class="lineNum">     248 </span>            : &gt; consists of just normal C++ code. The system generates several</a>
+<a name="249"><span class="lineNum">     249 </span>            : &gt; classes based on the declarations in the interface file, including</a>
+<a name="250"><span class="lineNum">     250 </span>            : &gt; “Proxy” classes for each chare class. Those familiar with various</a>
+<a name="251"><span class="lineNum">     251 </span>            : &gt; component models (such as CORBA) in the distributed computing world</a>
+<a name="252"><span class="lineNum">     252 </span>            : &gt; will recognize “proxy” to be a dummy, standin entity that refers to</a>
+<a name="253"><span class="lineNum">     253 </span>            : &gt; an actual entity. For each chare type, a “proxy” class exists. The</a>
+<a name="254"><span class="lineNum">     254 </span>            : &gt; methods of this “proxy” class correspond to the remote methods of</a>
+<a name="255"><span class="lineNum">     255 </span>            : &gt; the actual class, and act as “forwarders”. That is, when one invokes</a>
+<a name="256"><span class="lineNum">     256 </span>            : &gt; a method on a proxy to a remote object, the proxy marshalls the</a>
+<a name="257"><span class="lineNum">     257 </span>            : &gt; parameters into a message, puts adequate information about the</a>
+<a name="258"><span class="lineNum">     258 </span>            : &gt; target chare on the envelope of the message, and forwards it to the</a>
+<a name="259"><span class="lineNum">     259 </span>            : &gt; remote object. Individual chares, chare array, groups, node-groups,</a>
+<a name="260"><span class="lineNum">     260 </span>            : &gt; as well as the individual elements of these collections have a such</a>
+<a name="261"><span class="lineNum">     261 </span>            : &gt; a proxy. Multiple methods for obtaining such proxies are described</a>
+<a name="262"><span class="lineNum">     262 </span>            : &gt; in the manual. Proxies for each type of entity in Charm++ have some</a>
+<a name="263"><span class="lineNum">     263 </span>            : &gt; differences among the features they support, but the basic syntax</a>
+<a name="264"><span class="lineNum">     264 </span>            : &gt; and semantics remain the same - that of invoking methods on the</a>
+<a name="265"><span class="lineNum">     265 </span>            : &gt; remote object by invoking methods on proxies.</a>
+<a name="266"><span class="lineNum">     266 </span>            : </a>
+<a name="267"><span class="lineNum">     267 </span>            : SpECTRE has wrapped all of this functionality in order to make it</a>
+<a name="268"><span class="lineNum">     268 </span>            : easier to use.  SpECTRE automatically creates the interface files for</a>
+<a name="269"><span class="lineNum">     269 </span>            : each parallel component using template metaprogramming.  SpECTRE</a>
+<a name="270"><span class="lineNum">     270 </span>            : provides proxies for each parallel component that are all held in the</a>
+<a name="271"><span class="lineNum">     271 </span>            : `GlobalCache` which is available to every parallel component.  In</a>
+<a name="272"><span class="lineNum">     272 </span>            : order for actions to be called as entry methods on remote parallel</a>
+<a name="273"><span class="lineNum">     273 </span>            : components, the arguments to the function call must be serializable.</a>
+<a name="274"><span class="lineNum">     274 </span>            : Charm++ provides the `PUP` framework to serialize objects where `PUP`</a>
+<a name="275"><span class="lineNum">     275 </span>            : stands for pack-unpack.  Since the PUP framework is used by Charm++</a>
+<a name="276"><span class="lineNum">     276 </span>            : for checkpointing, load-balancing, and passing arguments when calling</a>
+<a name="277"><span class="lineNum">     277 </span>            : actions, all user-defined classes with member data must define a `pup`</a>
+<a name="278"><span class="lineNum">     278 </span>            : function.</a>
+<a name="279"><span class="lineNum">     279 </span>            : </a>
+<a name="280"><span class="lineNum">     280 </span>            : &gt; In terms of physical resources, we assume the parallel machine</a>
+<a name="281"><span class="lineNum">     281 </span>            : &gt; consists of one or more nodes, where a node is a largest unit over</a>
+<a name="282"><span class="lineNum">     282 </span>            : &gt; which cache coherent shared memory is feasible (and therefore, the</a>
+<a name="283"><span class="lineNum">     283 </span>            : &gt; maximal set of cores per which a single process can run. Each node</a>
+<a name="284"><span class="lineNum">     284 </span>            : &gt; may include one or more processor chips, with shared or private</a>
+<a name="285"><span class="lineNum">     285 </span>            : &gt; caches between them. Each chip may contain multiple cores, and each</a>
+<a name="286"><span class="lineNum">     286 </span>            : &gt; core may support multiple hardware threads (SMT for example).</a>
+<a name="287"><span class="lineNum">     287 </span>            : &gt; Charm++ recognizes two logical entities: a PE (processing element)</a>
+<a name="288"><span class="lineNum">     288 </span>            : &gt; and a logical node, or simply “node”. In a Charm++ program, a PE is</a>
+<a name="289"><span class="lineNum">     289 </span>            : &gt; a unit of mapping and scheduling: each PE has a scheduler with an</a>
+<a name="290"><span class="lineNum">     290 </span>            : &gt; associated pool of messages. Each chare is assumed to reside on one</a>
+<a name="291"><span class="lineNum">     291 </span>            : &gt; PE at a time. A logical node is implemented as an OS process. In</a>
+<a name="292"><span class="lineNum">     292 </span>            : &gt; non-SMP mode there is no distinction between a PE and a logical</a>
+<a name="293"><span class="lineNum">     293 </span>            : &gt; node. Otherwise, a PE takes the form of an OS thread, and a logical</a>
+<a name="294"><span class="lineNum">     294 </span>            : &gt; node may contain one or more PEs. Physical nodes may be partitioned</a>
+<a name="295"><span class="lineNum">     295 </span>            : &gt; into one or more logical nodes. Since PEs within a logical node</a>
+<a name="296"><span class="lineNum">     296 </span>            : &gt; share the same memory address space, the Charm++ runtime system</a>
+<a name="297"><span class="lineNum">     297 </span>            : &gt; optimizes communication between them by using shared</a>
+<a name="298"><span class="lineNum">     298 </span>            : &gt; memory. Depending on the runtime command-line parameters, a PE may</a>
+<a name="299"><span class="lineNum">     299 </span>            : &gt; optionally be associated with a subset of cores or hardware threads.</a>
+<a name="300"><span class="lineNum">     300 </span>            : </a>
+<a name="301"><span class="lineNum">     301 </span>            : In other words, how Charm++ defines a node and a PE depends upon how</a>
+<a name="302"><span class="lineNum">     302 </span>            : Charm++ was installed on a system.  The executable</a>
+<a name="303"><span class="lineNum">     303 </span>            : `Executables/ParallelInfo` can be used to determine how many nodes and</a>
+<a name="304"><span class="lineNum">     304 </span>            : PEs exist for a given Charm++ build and the runtime command-line</a>
+<a name="305"><span class="lineNum">     305 </span>            : parameters passed when calling the executable.</a>
+<a name="306"><span class="lineNum">     306 </span>            : </a>
+<a name="307"><span class="lineNum">     307 </span>            : For more details see the [Charm++</a>
+<a name="308"><span class="lineNum">     308 </span>            : documentation](https://charm.readthedocs.io) and \ref</a>
+<a name="309"><span class="lineNum">     309 </span>            : dev_guide_parallelization_foundations.</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

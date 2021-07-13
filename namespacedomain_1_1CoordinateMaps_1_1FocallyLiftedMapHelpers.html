@@ -1,0 +1,451 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::CoordinateMaps::FocallyLiftedMapHelpers Namespace Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1CoordinateMaps.html">CoordinateMaps</a></li><li class="navelem"><a class="el" href="namespacedomain_1_1CoordinateMaps_1_1FocallyLiftedMapHelpers.html">FocallyLiftedMapHelpers</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::CoordinateMaps::FocallyLiftedMapHelpers Namespace Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Holds helper functions for use with <a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html" title="Map from  to the volume contained between a 2D surface and the surface of a 2-sphere.">domain::CoordinateMaps::FocallyLiftedMap</a>.  
+<a href="namespacedomain_1_1CoordinateMaps_1_1FocallyLiftedMapHelpers.html#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a439a10ca5ed514c04133bf9fe6af87e5"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a439a10ca5ed514c04133bf9fe6af87e5"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacedomain_1_1CoordinateMaps_1_1FocallyLiftedMapHelpers.html#a439a10ca5ed514c04133bf9fe6af87e5">scale_factor</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt; * &gt; &amp;result, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;src_point, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;proj_center, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;sphere_center, double radius, bool src_is_between_proj_and_target) noexcept</td></tr>
+<tr class="memdesc:a439a10ca5ed514c04133bf9fe6af87e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds how long to extend a line segment to have it intersect a point on a 2-sphere.  <a href="namespacedomain_1_1CoordinateMaps_1_1FocallyLiftedMapHelpers.html#a439a10ca5ed514c04133bf9fe6af87e5">More...</a><br /></td></tr>
+<tr class="separator:a439a10ca5ed514c04133bf9fe6af87e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a213bebc506a4abd8de63051c06efecf5"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedomain_1_1CoordinateMaps_1_1FocallyLiftedMapHelpers.html#a213bebc506a4abd8de63051c06efecf5">try_scale_factor</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;src_point, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;proj_center, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;sphere_center, double radius, bool pick_larger_root, bool pick_root_greater_than_one) noexcept</td></tr>
+<tr class="separator:a213bebc506a4abd8de63051c06efecf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a58562e82e4d37cf21f7e3ecbc07d8a71"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a58562e82e4d37cf21f7e3ecbc07d8a71"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacedomain_1_1CoordinateMaps_1_1FocallyLiftedMapHelpers.html#a58562e82e4d37cf21f7e3ecbc07d8a71">d_scale_factor_d_src_point</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3 &gt; * &gt; &amp;result, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;intersection_point, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;proj_center, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;sphere_center, const T &amp;lambda) noexcept</td></tr>
+<tr class="separator:a58562e82e4d37cf21f7e3ecbc07d8a71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Holds helper functions for use with <a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html" title="Map from  to the volume contained between a 2D surface and the surface of a 2-sphere.">domain::CoordinateMaps::FocallyLiftedMap</a>. </p>
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="a58562e82e4d37cf21f7e3ecbc07d8a71"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a58562e82e4d37cf21f7e3ecbc07d8a71">&#9670;&nbsp;</a></span>d_scale_factor_d_src_point()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void domain::CoordinateMaps::FocallyLiftedMapHelpers::d_scale_factor_d_src_point </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3 &gt; * &gt; &amp;&#160;</td>
+          <td class="paramname"><em>result</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>intersection_point</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>proj_center</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>sphere_center</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const T &amp;&#160;</td>
+          <td class="paramname"><em>lambda</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Computes \(\partial \lambda/\partial x_0^i\), where \(\lambda\) is the quantity returned by <code>scale_factor</code> and <code>x_0</code> is <code>src_point</code> in the <code>scale_factor</code> function.</p>
+<p>The formula (see <code><a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html" title="Map from  to the volume contained between a 2D surface and the surface of a 2-sphere.">FocallyLiftedMap</a></code>) is </p><p class="formulaDsp">
+\begin{align*} \frac{\partial\lambda}{\partial x_0^j} &amp;= \lambda^2 \frac{C_j - x_1^j}{|x_1^i - P^i|^2 + (x_1^i - P^i)(P_i - C_i)}. \end{align*}
+</p>
+<p>Note that it takes <code>intersection_point</code> and not <code>src_point</code> as a parameter.</p>
+<p>In the arguments to the function below, <code>intersection_point</code> is \(x_1\), <code>proj_center</code> is \(P^i\), <code>sphere_center</code> is \(C^i\), and <code>radius</code> is \(R\). </p>
+
+</div>
+</div>
+<a id="a439a10ca5ed514c04133bf9fe6af87e5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a439a10ca5ed514c04133bf9fe6af87e5">&#9670;&nbsp;</a></span>scale_factor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void domain::CoordinateMaps::FocallyLiftedMapHelpers::scale_factor </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt; * &gt; &amp;&#160;</td>
+          <td class="paramname"><em>result</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>src_point</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>proj_center</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>sphere_center</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>radius</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>src_is_between_proj_and_target</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Finds how long to extend a line segment to have it intersect a point on a 2-sphere. </p>
+<h3>Details</h3>
+<p>Consider a 2-sphere with center \(C^i\) and radius \(R\), and and let \(P^i\) and \(x_0^i\) be two arbitrary 3D points.</p>
+<p>Consider the line passing through \(P^i\) and \(x_0^i\). If this line intersects the sphere at a point \(x_1^i\), then we can write</p>
+<p class="formulaDsp">
+\[ x_1^i = P^i + (x_0^i-P^i) \lambda, \]
+</p>
+<p>where \(\lambda\) is a scale factor.</p>
+<p><code>scale_factor</code> computes and returns \(\lambda\).</p>
+<h3><a class="anchor" id="autotoc_md58"></a>
+Even more detail:</h3>
+<p>To solve for \(\lambda\), we note that \(x_1^i\) is on the surface of the sphere, so</p>
+<p class="formulaDsp">
+\[ |x_1^i-C^i|^2 = R^2, \]
+</p>
+<p>(where \(|A^i|^2\) means \(\delta_{ij} A^i A^j\)),</p>
+<p>or equivalently</p>
+<p class="formulaDsp">
+\[ | P^i-C^i + (x_0^i-P^i)\lambda |^2 = R^2. \]
+</p>
+<p>This is a quadratic equation for \(\lambda\) and it generally has more than one real root. It takes the usual form \(a\lambda^2+b\lambda+c=0\), with</p>
+<p class="formulaDsp">
+\begin{align*} a &amp;= |x_0^i-P^i|^2,\\ b &amp;= 2(x_0^i-P^i)(P^j-C^j)\delta_{ij},\\ c &amp;= |P^i-C^i|^2 - R^2, \end{align*}
+</p>
+<p>So how do we choose between multiple roots? Some of the maps that use <code>scale_factor</code> assume that <em>for all points</em>, \(x_0^i\) is between \(P^i\) and \(x_1^i\). Those maps should set the parameter <code>src_is_between_proj_and_target</code> to true. Other maps assume that <em>for all points</em>, \(x^i\) is always between \(x_0^i\) and \(P^i\). Those maps should set the parameter <code>src_is_between_proj_and_target</code> to false.</p>
+<dl class="section warning"><dt>Warning</dt><dd>If we ever add maps where <code>src_is_between_proj_and_target</code> can change from point to point, the logic of <code>scale_factor</code> needs to be changed.</dd></dl>
+<p>In the arguments to the function below, <code>src_point</code> is \(x_0^i\), <code>proj_center</code> is \(P^i\), <code>sphere_center</code> is \(C^i\), and <code>radius</code> is \(R\). </p>
+
+</div>
+</div>
+<a id="a213bebc506a4abd8de63051c06efecf5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a213bebc506a4abd8de63051c06efecf5">&#9670;&nbsp;</a></span>try_scale_factor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt;double&gt; domain::CoordinateMaps::FocallyLiftedMapHelpers::try_scale_factor </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>src_point</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>proj_center</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>sphere_center</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>radius</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>pick_larger_root</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>pick_root_greater_than_one</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Solves a problem of the same form as <code>scale_factor</code>, but is used only by the inverse function to compute \(\tilde{\lambda}\) and \(\bar{\lambda}\). <code>try_scale_factor</code> is used in two contexts:</p>
+<p><code>try_scale_factor</code> is used to determine \(\bar{\lambda}\) given \(x^i\). \(\bar{\lambda}\) is defined by </p><p class="formulaDsp">
+\begin{align*} x_1^i = P^i + (x^i - P^i) \bar{\lambda}.\end{align*}
+</p>
+<p><code>try_scale_factor</code> is used by the <code>lambda_tilde</code> functions of some of the <code>InnerMap</code> classes (namely those <code>InnerMap</code> classes where \(x_0^i\) is a spherical surface) to solve for \(\tilde{\lambda}\) given \(x^i\). \(\tilde{\lambda}\) is defined by </p><p class="formulaDsp">
+\begin{align*} x_0^i = P^i + (x^i - P^i) \tilde{\lambda}.\end{align*}
+</p>
+<p>In both of these contexts, the input parameter <code>src_point</code> is \(x^i\), a point that is supposed to be in the range of the <code><a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html" title="Map from  to the volume contained between a 2D surface and the surface of a 2-sphere.">FocallyLiftedMap</a></code>. Because the inverse function can be and is called for an arbitrary \(x^i\) that might not be in the range of the <code><a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html" title="Map from  to the volume contained between a 2D surface and the surface of a 2-sphere.">FocallyLiftedMap</a></code>, <code>try_scale_factor</code> returns a <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>, with a default-constructed <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a> if the roots it finds are not as expected (i.e. if the inverse map was called for a point not in the range of the map).</p>
+<p>Because <code>try_scale_factor</code> can be called in different situations, it has additional boolean arguments <code>pick_larger_root</code> and <code>pick_root_greater_than_one</code> that allow the caller to choose which root to return.</p>
+<p><code>try_scale_factor</code> is not templated on type because it is used only by the inverse function, which works only on doubles. </p>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

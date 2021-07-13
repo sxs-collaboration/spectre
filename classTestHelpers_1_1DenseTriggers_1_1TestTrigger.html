@@ -1,0 +1,271 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: TestHelpers::DenseTriggers::TestTrigger Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>TestHelpers</b></li><li class="navelem"><b>DenseTriggers</b></li><li class="navelem"><a class="el" href="classTestHelpers_1_1DenseTriggers_1_1TestTrigger.html">TestTrigger</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classTestHelpers_1_1DenseTriggers_1_1TestTrigger-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">TestHelpers::DenseTriggers::TestTrigger Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTestHelpers_1_1DenseTriggers_1_1TestTrigger_1_1IsReady.html">IsReady</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTestHelpers_1_1DenseTriggers_1_1TestTrigger_1_1IsTriggered.html">IsTriggered</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTestHelpers_1_1DenseTriggers_1_1TestTrigger_1_1NextCheck.html">NextCheck</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:aa4298add21d7247b1bde58219396e74f"><td class="memItemLeft" align="right" valign="top"><a id="aa4298add21d7247b1bde58219396e74f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structTestHelpers_1_1DenseTriggers_1_1TestTrigger_1_1IsReady.html">IsReady</a>, <a class="el" href="structTestHelpers_1_1DenseTriggers_1_1TestTrigger_1_1IsTriggered.html">IsTriggered</a>, <a class="el" href="structTestHelpers_1_1DenseTriggers_1_1TestTrigger_1_1NextCheck.html">NextCheck</a> &gt;</td></tr>
+<tr class="separator:aa4298add21d7247b1bde58219396e74f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad944719db8310107c75e47d6d806a984"><td class="memItemLeft" align="right" valign="top"><a id="ad944719db8310107c75e47d6d806a984"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>is_triggered_argument_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:ad944719db8310107c75e47d6d806a984"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adf1ff23feb3f5841ae7bccd119fb9a80"><td class="memItemLeft" align="right" valign="top"><a id="adf1ff23feb3f5841ae7bccd119fb9a80"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>is_ready_argument_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:adf1ff23feb3f5841ae7bccd119fb9a80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a5c60dedf3807b98122062a3f43d6a548"><td class="memItemLeft" align="right" valign="top"><a id="a5c60dedf3807b98122062a3f43d6a548"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TestTrigger</b> (const bool is_ready, const bool is_triggered, const double next_check) noexcept</td></tr>
+<tr class="separator:a5c60dedf3807b98122062a3f43d6a548"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad5a9d41ddf7017e85f2a4f9857ebb563"><td class="memItemLeft" align="right" valign="top"><a id="ad5a9d41ddf7017e85f2a4f9857ebb563"></a>
+<a class="el" href="structDenseTrigger_1_1Result.html">Result</a>&#160;</td><td class="memItemRight" valign="bottom"><b>is_triggered</b> () const noexcept</td></tr>
+<tr class="separator:ad5a9d41ddf7017e85f2a4f9857ebb563"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a06b4312bfe2adfc9310471d42e7a94c7"><td class="memItemLeft" align="right" valign="top"><a id="a06b4312bfe2adfc9310471d42e7a94c7"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_ready</b> () const noexcept</td></tr>
+<tr class="separator:a06b4312bfe2adfc9310471d42e7a94c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeededf6fe1ff5ce9bcd60f380c359d0f"><td class="memItemLeft" align="right" valign="top"><a id="aeededf6fe1ff5ce9bcd60f380c359d0f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:aeededf6fe1ff5ce9bcd60f380c359d0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classDenseTrigger"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classDenseTrigger')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classDenseTrigger.html">DenseTrigger</a></td></tr>
+<tr class="memitem:a3ce1715a29b02d0647e050a7cc518738 inherit pub_methods_classDenseTrigger"><td class="memTemplParams" colspan="2"><a id="a3ce1715a29b02d0647e050a7cc518738"></a>
+template&lt;typename DbTags &gt; </td></tr>
+<tr class="memitem:a3ce1715a29b02d0647e050a7cc518738 inherit pub_methods_classDenseTrigger"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structDenseTrigger_1_1Result.html">Result</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classDenseTrigger.html#a3ce1715a29b02d0647e050a7cc518738">is_triggered</a> (const db::DataBox&lt; DbTags &gt; &amp;box) const noexcept</td></tr>
+<tr class="memdesc:a3ce1715a29b02d0647e050a7cc518738 inherit pub_methods_classDenseTrigger"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check whether the trigger fires. <br /></td></tr>
+<tr class="separator:a3ce1715a29b02d0647e050a7cc518738 inherit pub_methods_classDenseTrigger"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af296aeb8820d537c3056807d5c93bc51 inherit pub_methods_classDenseTrigger"><td class="memTemplParams" colspan="2"><a id="af296aeb8820d537c3056807d5c93bc51"></a>
+template&lt;typename DbTags &gt; </td></tr>
+<tr class="memitem:af296aeb8820d537c3056807d5c93bc51 inherit pub_methods_classDenseTrigger"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classDenseTrigger.html#af296aeb8820d537c3056807d5c93bc51">is_ready</a> (const db::DataBox&lt; DbTags &gt; &amp;box) const noexcept</td></tr>
+<tr class="memdesc:af296aeb8820d537c3056807d5c93bc51 inherit pub_methods_classDenseTrigger"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check whether all data required to evaluate the trigger is available. The trigger is not responsible for checking whether dense output of the evolved variables is possible, but may need to check things such as the availability of FunctionOfTime data. <br /></td></tr>
+<tr class="separator:af296aeb8820d537c3056807d5c93bc51 inherit pub_methods_classDenseTrigger"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:acf55aca890220e380d9bf8766ced4ae6"><td class="memItemLeft" align="right" valign="top"><a id="acf55aca890220e380d9bf8766ced4ae6"></a>
+constexpr static <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b> = &quot;help&quot;</td></tr>
+<tr class="separator:acf55aca890220e380d9bf8766ced4ae6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>tests/Unit/Helpers/Evolution/EventsAndDenseTriggers/DenseTriggers/<a class="el" href="TestTrigger_8hpp_source.html">TestTrigger.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

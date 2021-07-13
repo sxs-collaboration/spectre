@@ -1,0 +1,340 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: intrp::OptionHolders::WedgeSectionTorus Struct Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceintrp.html">intrp</a></li><li class="navelem"><b>OptionHolders</b></li><li class="navelem"><a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus.html">WedgeSectionTorus</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">intrp::OptionHolders::WedgeSectionTorus Struct Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A solid torus of points, useful, e.g., when measuring data from an accretion disc.  
+ <a href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="InterpolationTargetWedgeSectionTorus_8hpp_source.html">InterpolationTargetWedgeSectionTorus.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1MaxRadius.html">MaxRadius</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1MaxTheta.html">MaxTheta</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1MinRadius.html">MinRadius</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1MinTheta.html">MinTheta</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1NumberPhiPoints.html">NumberPhiPoints</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1NumberRadialPoints.html">NumberRadialPoints</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1NumberThetaPoints.html">NumberThetaPoints</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1UniformRadialGrid.html">UniformRadialGrid</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1UniformThetaGrid.html">UniformThetaGrid</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a27a5faa6e4aa8e9af15b394a79402aed"><td class="memItemLeft" align="right" valign="top"><a id="a27a5faa6e4aa8e9af15b394a79402aed"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1MinRadius.html">MinRadius</a>, <a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1MaxRadius.html">MaxRadius</a>, <a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1MinTheta.html">MinTheta</a>, <a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1MaxTheta.html">MaxTheta</a>, <a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1NumberRadialPoints.html">NumberRadialPoints</a>, <a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1NumberThetaPoints.html">NumberThetaPoints</a>, <a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1NumberPhiPoints.html">NumberPhiPoints</a>, <a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1UniformRadialGrid.html">UniformRadialGrid</a>, <a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1UniformThetaGrid.html">UniformThetaGrid</a> &gt;</td></tr>
+<tr class="separator:a27a5faa6e4aa8e9af15b394a79402aed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a63ac13d3891f580385b310b99e132413"><td class="memItemLeft" align="right" valign="top"><a id="a63ac13d3891f580385b310b99e132413"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WedgeSectionTorus</b> (double min_radius_in, double max_radius_in, double min_theta_in, double max_theta_in, size_t number_of_radial_points_in, size_t number_of_theta_points_in, size_t number_of_phi_points_in, bool use_uniform_radial_grid_in, bool use_uniform_theta_grid_in, const <a class="el" href="structOptions_1_1Context.html">Options::Context</a> &amp;context={})</td></tr>
+<tr class="separator:a63ac13d3891f580385b310b99e132413"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4614242c6a914780b545bdd9a55f0e86"><td class="memItemLeft" align="right" valign="top"><a id="a4614242c6a914780b545bdd9a55f0e86"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WedgeSectionTorus</b> (const <a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus.html">WedgeSectionTorus</a> &amp;)=default</td></tr>
+<tr class="separator:a4614242c6a914780b545bdd9a55f0e86"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a333857aebce530e208024bacecdaf440"><td class="memItemLeft" align="right" valign="top"><a id="a333857aebce530e208024bacecdaf440"></a>
+<a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus.html">WedgeSectionTorus</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus.html">WedgeSectionTorus</a> &amp;)=delete</td></tr>
+<tr class="separator:a333857aebce530e208024bacecdaf440"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c773517cc7cb7c0c7c7f4be36cd3411"><td class="memItemLeft" align="right" valign="top"><a id="a3c773517cc7cb7c0c7c7f4be36cd3411"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WedgeSectionTorus</b> (<a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus.html">WedgeSectionTorus</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a3c773517cc7cb7c0c7c7f4be36cd3411"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80101bfcbf20f04a30335ea7b45d9dfb"><td class="memItemLeft" align="right" valign="top"><a id="a80101bfcbf20f04a30335ea7b45d9dfb"></a>
+<a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus.html">WedgeSectionTorus</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus.html">WedgeSectionTorus</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a80101bfcbf20f04a30335ea7b45d9dfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab292a7d0424aa6ee68bed95af87695ff"><td class="memItemLeft" align="right" valign="top"><a id="ab292a7d0424aa6ee68bed95af87695ff"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:ab292a7d0424aa6ee68bed95af87695ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:aab16ac02dd05a84c4bd772a1d3c6cdce"><td class="memItemLeft" align="right" valign="top"><a id="aab16ac02dd05a84c4bd772a1d3c6cdce"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>min_radius</b></td></tr>
+<tr class="separator:aab16ac02dd05a84c4bd772a1d3c6cdce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f3a359075e4f625dd5a5d55fc7a2b35"><td class="memItemLeft" align="right" valign="top"><a id="a3f3a359075e4f625dd5a5d55fc7a2b35"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>max_radius</b></td></tr>
+<tr class="separator:a3f3a359075e4f625dd5a5d55fc7a2b35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aafabd7dfe312ec56f0958ad3f4d6f20c"><td class="memItemLeft" align="right" valign="top"><a id="aafabd7dfe312ec56f0958ad3f4d6f20c"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>min_theta</b></td></tr>
+<tr class="separator:aafabd7dfe312ec56f0958ad3f4d6f20c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a708245a899394fb1260e458ec7ff0dc7"><td class="memItemLeft" align="right" valign="top"><a id="a708245a899394fb1260e458ec7ff0dc7"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>max_theta</b></td></tr>
+<tr class="separator:a708245a899394fb1260e458ec7ff0dc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9b5b0871decc242aef51bf7a88c62f05"><td class="memItemLeft" align="right" valign="top"><a id="a9b5b0871decc242aef51bf7a88c62f05"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>number_of_radial_points</b></td></tr>
+<tr class="separator:a9b5b0871decc242aef51bf7a88c62f05"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c2780c22a53206219ceace64cdeadd6"><td class="memItemLeft" align="right" valign="top"><a id="a6c2780c22a53206219ceace64cdeadd6"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>number_of_theta_points</b></td></tr>
+<tr class="separator:a6c2780c22a53206219ceace64cdeadd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a39a7a7b80e04021ea15a9bc974bdeca1"><td class="memItemLeft" align="right" valign="top"><a id="a39a7a7b80e04021ea15a9bc974bdeca1"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>number_of_phi_points</b></td></tr>
+<tr class="separator:a39a7a7b80e04021ea15a9bc974bdeca1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa85d0caaf9b1bd0526a0fa36c2634e1e"><td class="memItemLeft" align="right" valign="top"><a id="aa85d0caaf9b1bd0526a0fa36c2634e1e"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>use_uniform_radial_grid</b></td></tr>
+<tr class="separator:aa85d0caaf9b1bd0526a0fa36c2634e1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a777c48056eb8690444fce240299699ff"><td class="memItemLeft" align="right" valign="top"><a id="a777c48056eb8690444fce240299699ff"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>use_uniform_theta_grid</b></td></tr>
+<tr class="separator:a777c48056eb8690444fce240299699ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a171652b4ba61bdb2315215db2097d622"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a171652b4ba61bdb2315215db2097d622"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A solid torus of points, useful, e.g., when measuring data from an accretion disc. </p>
+<p>The torus's cross section (e.g., a cut at \(\phi=0\)) is a wedge-like shape bounded by \(r_{\text{min}} \le r \le r_{\text{max}}\) and \(\theta_{\text{min}} \le \theta \le \theta_{\text{max}}\).</p>
+<p>The grid points are located on surfaces of constant \(r\), \(\theta\), and \(\phi\). There are <code><a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1NumberRadialPoints.html">NumberRadialPoints</a></code> points in the radial direction between <code><a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1MinRadius.html">MinRadius</a></code> and <code><a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1MaxRadius.html">MaxRadius</a></code> (including these endpoints); <code><a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1NumberThetaPoints.html">NumberThetaPoints</a></code> points in the \(\theta\) direction between <code><a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1MinTheta.html">MinTheta</a></code> and <code><a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1MaxTheta.html">MaxTheta</a></code> (including these endpoints); <code><a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1NumberPhiPoints.html">NumberPhiPoints</a></code> points in the \(\phi\) direction (with one point always at \(\phi=0\)).</p>
+<p>By default, the points follow a Legendre Gauss-Lobatto distribution in the \(r\) and \(\theta\) directions, and a uniform distribution in the \(\phi\) direction. The distribution in the \(r\) (and/or \(\theta\)) direction can be made uniform using the <code><a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1UniformRadialGrid.html">UniformRadialGrid</a></code> (and/or <code><a class="el" href="structintrp_1_1OptionHolders_1_1WedgeSectionTorus_1_1UniformThetaGrid.html">UniformThetaGrid</a></code>) option.</p>
+<p>The <code>target_points</code> form a 3D mesh ordered with \(r\) varying fastest, then \(\theta\), and finally \(\phi\) varying slowest.</p>
+<dl class="section note"><dt>Note</dt><dd>Input coordinates (radii, angles) are interpreted in the <code><a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a></code> </dd></dl>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a171652b4ba61bdb2315215db2097d622"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a171652b4ba61bdb2315215db2097d622">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> intrp::OptionHolders::WedgeSectionTorus::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;A torus extending from MinRadius to MaxRadius in r, MinTheta to MaxTheta&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot; in theta, and 2pi in phi.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/NumericalAlgorithms/Interpolation/<a class="el" href="InterpolationTargetWedgeSectionTorus_8hpp_source.html">InterpolationTargetWedgeSectionTorus.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

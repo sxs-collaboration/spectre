@@ -1,0 +1,254 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/DataStructures/Tensor/Metafunctions.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_f794354f56b7b0ecf5e40827268a3615.html">DataStructures</a></li><li class="navelem"><a class="el" href="dir_e969dbac9dfe3edfad5e001128532f32.html">Tensor</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#var-members">Variables</a>  </div>
+  <div class="headertitle">
+<div class="title">Metafunctions.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &quot;<a class="el" href="IndexType_8hpp_source.html">DataStructures/Tensor/IndexType.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="TMPL_8hpp_source.html">Utilities/TMPL.hpp</a>&quot;</code><br />
+</div>
+<p><a href="Metafunctions_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceTensorMetafunctions"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTensorMetafunctions.html">TensorMetafunctions</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:gaf6f86692d77435c9721e1ab051232407"><td class="memTemplParams" colspan="2">
+template&lt;typename Symm , typename... IndexPack&gt; </td></tr>
+<tr class="memitem:gaf6f86692d77435c9721e1ab051232407"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#gaf6f86692d77435c9721e1ab051232407">TensorMetafunctions::check_index_symmetry</a> = typename detail::check_index_symmetry_impl&lt; tmpl::size&lt; Symm &gt;::value==0 or tmpl::size&lt; Symm &gt;::value==1 ? 0 :2 &gt;::template f&lt; Symm, tmpl::map&lt;&gt;, IndexPack... &gt;</td></tr>
+<tr class="memdesc:gaf6f86692d77435c9721e1ab051232407"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check that each of symmetric indices is in the same frame and have the same dimensionality. <br /></td></tr>
+<tr class="separator:gaf6f86692d77435c9721e1ab051232407"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5e4aece332518b3a95c2a73557aaa596"><td class="memTemplParams" colspan="2">template&lt;typename Tensor , std::size_t VolumeDim, UpLo Ul, typename Fr  = Frame::Grid&gt; </td></tr>
+<tr class="memitem:ga5e4aece332518b3a95c2a73557aaa596"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga5e4aece332518b3a95c2a73557aaa596">TensorMetafunctions::prepend_spatial_index</a> = ::Tensor&lt; typename Tensor::type, tmpl::push_front&lt; typename Tensor::symmetry, tmpl::int32_t&lt; 1+tmpl::fold&lt; typename Tensor::symmetry, tmpl::int32_t&lt; 0 &gt;, tmpl::max&lt; tmpl::_state, tmpl::_element &gt; &gt;::value &gt; &gt;, tmpl::push_front&lt; typename Tensor::index_list, <a class="el" href="group__TensorGroup.html#ga557beda9bce6c7f236213ec8b24b3ff3">SpatialIndex</a>&lt; VolumeDim, Ul, Fr &gt; &gt;&gt;</td></tr>
+<tr class="memdesc:ga5e4aece332518b3a95c2a73557aaa596"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a spatial index to the front of a Tensor.  <a href="group__TensorGroup.html#ga5e4aece332518b3a95c2a73557aaa596">More...</a><br /></td></tr>
+<tr class="separator:ga5e4aece332518b3a95c2a73557aaa596"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaef68ec7e4373c578d0a5885df8ac89fa"><td class="memTemplParams" colspan="2">template&lt;typename Tensor , std::size_t VolumeDim, UpLo Ul, typename Fr  = Frame::Grid&gt; </td></tr>
+<tr class="memitem:gaef68ec7e4373c578d0a5885df8ac89fa"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#gaef68ec7e4373c578d0a5885df8ac89fa">TensorMetafunctions::prepend_spacetime_index</a> = ::Tensor&lt; typename Tensor::type, tmpl::push_front&lt; typename Tensor::symmetry, tmpl::int32_t&lt; 1+tmpl::fold&lt; typename Tensor::symmetry, tmpl::int32_t&lt; 0 &gt;, tmpl::max&lt; tmpl::_state, tmpl::_element &gt; &gt;::value &gt; &gt;, tmpl::push_front&lt; typename Tensor::index_list, <a class="el" href="group__TensorGroup.html#ga05c512b755e913cdbddce8634bdb4fa6">SpacetimeIndex</a>&lt; VolumeDim, Ul, Fr &gt; &gt;&gt;</td></tr>
+<tr class="memdesc:gaef68ec7e4373c578d0a5885df8ac89fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a spacetime index to the front of a Tensor.  <a href="group__TensorGroup.html#gaef68ec7e4373c578d0a5885df8ac89fa">More...</a><br /></td></tr>
+<tr class="separator:gaef68ec7e4373c578d0a5885df8ac89fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga897a0492a08b8d3493fe552796c1cf02"><td class="memTemplParams" colspan="2">template&lt;typename Tensor &gt; </td></tr>
+<tr class="memitem:ga897a0492a08b8d3493fe552796c1cf02"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga897a0492a08b8d3493fe552796c1cf02">TensorMetafunctions::remove_first_index</a> = ::Tensor&lt; typename Tensor::type, tmpl::pop_front&lt; typename Tensor::symmetry &gt;, tmpl::pop_front&lt; typename Tensor::index_list &gt; &gt;</td></tr>
+<tr class="memdesc:ga897a0492a08b8d3493fe552796c1cf02"><td class="mdescLeft">&#160;</td><td class="mdescRight">remove the first index of a tensor  <a href="group__TensorGroup.html#ga897a0492a08b8d3493fe552796c1cf02">More...</a><br /></td></tr>
+<tr class="separator:ga897a0492a08b8d3493fe552796c1cf02"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga25fd6050b5c828f90dd353a44dbd8c1e"><td class="memTemplParams" colspan="2">template&lt;typename NewType , typename Tensor &gt; </td></tr>
+<tr class="memitem:ga25fd6050b5c828f90dd353a44dbd8c1e"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga25fd6050b5c828f90dd353a44dbd8c1e">TensorMetafunctions::swap_type</a> = ::Tensor&lt; NewType, typename Tensor::symmetry, typename Tensor::index_list &gt;</td></tr>
+<tr class="memdesc:ga25fd6050b5c828f90dd353a44dbd8c1e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Swap the data type of a tensor for a new type.  <a href="group__TensorGroup.html#ga25fd6050b5c828f90dd353a44dbd8c1e">More...</a><br /></td></tr>
+<tr class="separator:ga25fd6050b5c828f90dd353a44dbd8c1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:ac653fc3a82033431e00ca8ed7b1af83f"><td class="memTemplParams" colspan="2">template&lt;typename Symm , typename... IndexPack&gt; </td></tr>
+<tr class="memitem:ac653fc3a82033431e00ca8ed7b1af83f"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>TensorMetafunctions::check_index_symmetry_v</b></td></tr>
+<tr class="separator:ac653fc3a82033431e00ca8ed7b1af83f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Defines metafunctions used by Tensor </p>
+</div></div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

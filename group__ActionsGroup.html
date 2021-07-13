@@ -1,0 +1,427 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Actions</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a>  </div>
+  <div class="headertitle">
+<div class="title">Actions</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A collection of steps used in algorithms.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActions_1_1ComputeTimeDerivative.html">Actions::ComputeTimeDerivative&lt; TimeDerivativeComputer &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the time derivative of the system variables.  <a href="structActions_1_1ComputeTimeDerivative.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActions_1_1ComputeVolumeFluxes.html">Actions::ComputeVolumeFluxes</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the volume fluxes of the evolved variables.  <a href="structActions_1_1ComputeVolumeFluxes.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structevolution_1_1Actions_1_1RunEventsAndDenseTriggers.html">evolution::Actions::RunEventsAndDenseTriggers&lt; PrimFromCon &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Run the events and dense triggers.  <a href="structevolution_1_1Actions_1_1RunEventsAndDenseTriggers.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActions_1_1UpdateConservatives.html">Actions::UpdateConservatives</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the conservative variables from the primitive variables.  <a href="structActions_1_1UpdateConservatives.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActions_1_1UpdatePrimitives.html">Actions::UpdatePrimitives</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the primitive variables from the conservative variables.  <a href="structActions_1_1UpdatePrimitives.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLimiters_1_1Actions_1_1Limit.html">Limiters::Actions::Limit&lt; Metavariables &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive limiter data from neighbors, then apply limiter.  <a href="structLimiters_1_1Actions_1_1Limit.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLimiters_1_1Actions_1_1SendData.html">Limiters::Actions::SendData&lt; Metavariables &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send local data needed for limiting.  <a href="structLimiters_1_1Actions_1_1SendData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1BoundaryComputeAndSendToEvolution.html">Cce::Actions::BoundaryComputeAndSendToEvolution&lt; BoundaryComponent, EvolutionComponent &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtains the CCE boundary data at the specified <code>time</code>, and reports it to the <code>EvolutionComponent</code> via <code><a class="el" href="structCce_1_1Actions_1_1ReceiveWorldtubeData.html" title="Takes the boundary data needed to perform the CCE linear solves as arguments and puts them in the Dat...">Actions::ReceiveWorldtubeData</a></code>.  <a href="structCce_1_1Actions_1_1BoundaryComputeAndSendToEvolution.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1SendToEvolution.html">Cce::Actions::SendToEvolution&lt; BoundaryComponent, EvolutionComponent &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes Bondi boundary data from GH evolution variables and sends the result to the <code>EvolutionComponent</code> (template argument).  <a href="structCce_1_1Actions_1_1SendToEvolution.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1BoundaryComputeAndSendToEvolution_3_01H5WorldtubeBoundary_3_01Metavariab2720165c4102831c31774805948353a6.html">Cce::Actions::BoundaryComputeAndSendToEvolution&lt; H5WorldtubeBoundary&lt; Metavariables &gt;, EvolutionComponent &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtains the CCE boundary data at the specified <code>time</code>, and reports it to the <code>EvolutionComponent</code> via <code><a class="el" href="structCce_1_1Actions_1_1ReceiveWorldtubeData.html" title="Takes the boundary data needed to perform the CCE linear solves as arguments and puts them in the Dat...">Actions::ReceiveWorldtubeData</a></code>.  <a href="structCce_1_1Actions_1_1BoundaryComputeAndSendToEvolution_3_01H5WorldtubeBoundary_3_01Metavariab2720165c4102831c31774805948353a6.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1BoundaryComputeAndSendToEvolution_3_01AnalyticWorldtubeBoundary_3_01Meta300913f36ce20adde03c0b7667dadbfa.html">Cce::Actions::BoundaryComputeAndSendToEvolution&lt; AnalyticWorldtubeBoundary&lt; Metavariables &gt;, EvolutionComponent &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculates the analytic boundary data at the specified <code>time</code>, and sends the resulting Bondi-Sachs boundary data to the <code>EvolutionComponent</code>  <a href="structCce_1_1Actions_1_1BoundaryComputeAndSendToEvolution_3_01AnalyticWorldtubeBoundary_3_01Meta300913f36ce20adde03c0b7667dadbfa.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1BoundaryComputeAndSendToEvolution_3_01GhWorldtubeBoundary_3_01Metavariabd47a093e8633db61615becf383a9b05d.html">Cce::Actions::BoundaryComputeAndSendToEvolution&lt; GhWorldtubeBoundary&lt; Metavariables &gt;, EvolutionComponent &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Submits a request for CCE boundary data at the specified <code>time</code> to the <code><a class="el" href="classCce_1_1InterfaceManagers_1_1GhInterfaceManager.html" title="Abstract base class for storage and retrieval of generalized harmonic quantities communicated from a ...">Cce::InterfaceManagers::GhInterfaceManager</a></code>, and sends the data to the <code>EvolutionComponent</code> (template argument) if it is ready.  <a href="structCce_1_1Actions_1_1BoundaryComputeAndSendToEvolution_3_01GhWorldtubeBoundary_3_01Metavariabd47a093e8633db61615becf383a9b05d.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1CalculateScriInputs.html">Cce::Actions::CalculateScriInputs</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculates the Bondi quantities that are required for any of the <code><a class="el" href="structCce_1_1CalculateScriPlusValue.html">CalculateScriPlusValue</a></code> mutators.  <a href="structCce_1_1Actions_1_1CalculateScriInputs.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1CalculateIntegrandInputsForTag.html">Cce::Actions::CalculateIntegrandInputsForTag&lt; BondiTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepare the input quantities in the <a class="el" href="group__DataBoxGroup.html">DataBox</a> for the evaluation of the hypersurface integral used to compute <code>BondiTag</code>.  <a href="structCce_1_1Actions_1_1CalculateIntegrandInputsForTag.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1PrecomputeGlobalCceDependencies.html">Cce::Actions::PrecomputeGlobalCceDependencies</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform all of the computations for dependencies of the hypersurface equations that do not themselves depend on any hypersurface integrations.  <a href="structCce_1_1Actions_1_1PrecomputeGlobalCceDependencies.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1FilterSwshVolumeQuantity.html">Cce::Actions::FilterSwshVolumeQuantity&lt; BondiTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Filters the spherical volume data stored in <code>BondiTag</code> according to the filter parameters in the <code><a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a></code>.  <a href="structCce_1_1Actions_1_1FilterSwshVolumeQuantity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1InitializeCharacteristicEvolutionScri.html">Cce::Actions::InitializeCharacteristicEvolutionScri&lt; ScriValuesToObserve, BoundaryComponent &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the <code><a class="el" href="structCce_1_1CharacteristicEvolution.html" title="The component for handling the CCE evolution and waveform output.">CharacteristicEvolution</a></code> component with contents needed to perform the interpolation at scri+.  <a href="structCce_1_1Actions_1_1InitializeCharacteristicEvolutionScri.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1InitializeCharacteristicEvolutionTime.html">Cce::Actions::InitializeCharacteristicEvolutionTime&lt; EvolvedCoordinatesVariablesTag, EvolvedSwshTag, local_time_stepping &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the contents of the <code><a class="el" href="structCce_1_1CharacteristicEvolution.html" title="The component for handling the CCE evolution and waveform output.">CharacteristicEvolution</a></code> component for performing the time evolution of the system, which is the singleton that handles the main evolution system for CCE computations.  <a href="structCce_1_1Actions_1_1InitializeCharacteristicEvolutionTime.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1InitializeCharacteristicEvolutionVariables.html">Cce::Actions::InitializeCharacteristicEvolutionVariables&lt; Metavariables &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the main data storage for the <code><a class="el" href="structCce_1_1CharacteristicEvolution.html" title="The component for handling the CCE evolution and waveform output.">CharacteristicEvolution</a></code> component, which is the singleton that handles the main evolution system for CCE computations.  <a href="structCce_1_1Actions_1_1InitializeCharacteristicEvolutionVariables.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1InitializeFirstHypersurface.html">Cce::Actions::InitializeFirstHypersurface</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given initial boundary data for \(J\) and \(\partial_r J\), computes the initial hypersurface quantities \(J\) and gauge values.  <a href="structCce_1_1Actions_1_1InitializeFirstHypersurface.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1InitializeWorldtubeBoundary.html">Cce::Actions::InitializeWorldtubeBoundary&lt; WorldtubeComponent &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generic action for initializing various worldtube boundary components.  <a href="structCce_1_1Actions_1_1InitializeWorldtubeBoundary.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1InitializeWorldtubeBoundary_3_01H5WorldtubeBoundary_3_01Metavariables_01_4_01_4.html">Cce::Actions::InitializeWorldtubeBoundary&lt; H5WorldtubeBoundary&lt; Metavariables &gt; &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes a <a class="el" href="classCce_1_1H5WorldtubeBoundary.html" title="Component that supplies CCE worldtube boundary data.">H5WorldtubeBoundary</a>.  <a href="structCce_1_1Actions_1_1InitializeWorldtubeBoundary_3_01H5WorldtubeBoundary_3_01Metavariables_01_4_01_4.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1InitializeWorldtubeBoundary_3_01GhWorldtubeBoundary_3_01Metavariables_01_4_01_4.html">Cce::Actions::InitializeWorldtubeBoundary&lt; GhWorldtubeBoundary&lt; Metavariables &gt; &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes a <a class="el" href="structCce_1_1GhWorldtubeBoundary.html" title="Component that supplies CCE worldtube boundary data sourced from a running GH system.">GhWorldtubeBoundary</a>.  <a href="structCce_1_1Actions_1_1InitializeWorldtubeBoundary_3_01GhWorldtubeBoundary_3_01Metavariables_01_4_01_4.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1InitializeWorldtubeBoundary_3_01AnalyticWorldtubeBoundary_3_01Metavariables_01_4_01_4.html">Cce::Actions::InitializeWorldtubeBoundary&lt; AnalyticWorldtubeBoundary&lt; Metavariables &gt; &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes an <a class="el" href="classCce_1_1AnalyticWorldtubeBoundary.html" title="Component that supplies CCE worldtube boundary data sourced from an analytic solution.">AnalyticWorldtubeBoundary</a>.  <a href="structCce_1_1Actions_1_1InitializeWorldtubeBoundary_3_01AnalyticWorldtubeBoundary_3_01Metavariables_01_4_01_4.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1InsertInterpolationScriData.html">Cce::Actions::InsertInterpolationScriData&lt; Tag, BoundaryComponent &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Places the data from the current hypersurface necessary to compute <code>Tag</code> in the <code><a class="el" href="structCce_1_1ScriPlusInterpolationManager.html" title="Stores necessary data and interpolates on to new time points at scri+.">ScriPlusInterpolationManager</a></code> associated with the <code>Tag</code>.  <a href="structCce_1_1Actions_1_1InsertInterpolationScriData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1ReceiveGhWorldtubeData.html">Cce::Actions::ReceiveGhWorldtubeData&lt; EvolutionComponent &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stores the boundary data from the GH evolution in the <code><a class="el" href="classCce_1_1InterfaceManagers_1_1GhInterfaceManager.html" title="Abstract base class for storage and retrieval of generalized harmonic quantities communicated from a ...">Cce::InterfaceManagers::GhInterfaceManager</a></code>, and sends to the <code>EvolutionComponent</code> (template argument) if the data fulfills a prior request.  <a href="structCce_1_1Actions_1_1ReceiveGhWorldtubeData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1ReceiveWorldtubeData.html">Cce::Actions::ReceiveWorldtubeData&lt; Metavariables &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Takes the boundary data needed to perform the CCE linear solves as arguments and puts them in the <a class="el" href="group__DataBoxGroup.html">DataBox</a>, updating the <code>Cce::Tags::BoundaryTime</code> accordingly.  <a href="structCce_1_1Actions_1_1ReceiveWorldtubeData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1RequestBoundaryData.html">Cce::Actions::RequestBoundaryData&lt; WorldtubeBoundaryComponent, EvolutionComponent &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Requests boundary data be sent from <code>WorldtubeBoundaryComponent</code> to <code>EvolutionComponent</code> (template parameters).  <a href="structCce_1_1Actions_1_1RequestBoundaryData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1RequestNextBoundaryData.html">Cce::Actions::RequestNextBoundaryData&lt; WorldtubeBoundaryComponent, EvolutionComponent &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Requests boundary data be sent from <code>WorldtubeBoundaryComponent</code> to <code>EvolutionComponent</code>.  <a href="structCce_1_1Actions_1_1RequestNextBoundaryData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1ScriObserveInterpolated.html">Cce::Actions::ScriObserveInterpolated&lt; ObserverWriterComponent, BoundaryComponent &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks the interpolation managers and if they are ready, performs the interpolation and sends the data to file via <code><a class="el" href="structobservers_1_1ThreadedActions_1_1WriteSimpleData.html" title="Append data to an h5::Dat subfile of Tags::VolumeFileName.">observers::ThreadedActions::WriteSimpleData</a></code>.  <a href="structCce_1_1Actions_1_1ScriObserveInterpolated.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1SendNextTimeToCce.html">Cce::Actions::SendNextTimeToCce&lt; InterpolationTargetTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">If the element contains the first point in the interpolation collection, sends the next (full) <code><a class="el" href="classTimeStepId.html">TimeStepId</a></code> to the <code>Metavariables::cce_boundary_component</code> to inform the boundary local-time-stepping interpolation/extrapolation.  <a href="structCce_1_1Actions_1_1SendNextTimeToCce.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1ReceiveNextElementTime.html">Cce::Actions::ReceiveNextElementTime</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stash the <code>next_time</code> in the <code><a class="el" href="classCce_1_1InterfaceManagers_1_1GhInterfaceManager.html" title="Abstract base class for storage and retrieval of generalized harmonic quantities communicated from a ...">Cce::InterfaceManagers::GhInterfaceManager</a></code> to inform the local time-stepping logic for boundary interpolation/extrapolation.  <a href="structCce_1_1Actions_1_1ReceiveNextElementTime.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1ExitIfEndTimeReached.html">Cce::Actions::ExitIfEndTimeReached</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Terminates if the current <code><a class="el" href="structTags_1_1TimeStepId.html" title="Tag for TimeStepId for the algorithm state.">Tags::TimeStepId</a></code> has time value later or equal to <code><a class="el" href="structCce_1_1Tags_1_1EndTime.html">Tags::EndTime</a></code>.  <a href="structCce_1_1Actions_1_1ExitIfEndTimeReached.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structCce_1_1Actions_1_1UpdateGauge.html">Cce::Actions::UpdateGauge</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates all of the gauge quantities associated with the additional regularity-preserving gauge transformation on the boundaries for a new set of Cauchy coordinates.  <a href="structCce_1_1Actions_1_1UpdateGauge.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structVariableFixing_1_1Actions_1_1FixVariables.html">VariableFixing::Actions::FixVariables&lt; VariableFixer &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adjust variables with a variable fixer.  <a href="structVariableFixing_1_1Actions_1_1FixVariables.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Actions_1_1ElementInitInterpPoints.html">intrp::Actions::ElementInitInterpPoints&lt; InterpPointInfoTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds interpolation point holders to the <a class="el" href="classElement.html">Element</a>'s DataBox.  <a href="structintrp_1_1Actions_1_1ElementInitInterpPoints.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Actions_1_1ElementReceiveInterpPoints.html">intrp::Actions::ElementReceiveInterpPoints&lt; InterpolationTargetTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receives interpolation points from an <a class="el" href="structintrp_1_1InterpolationTarget.html" title="ParallelComponent representing a set of points to be interpolated to and a function to call upon inte...">InterpolationTarget</a>.  <a href="structintrp_1_1Actions_1_1ElementReceiveInterpPoints.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Actions_1_1InterpolateToTarget.html">intrp::Actions::InterpolateToTarget&lt; InterpolationTargetTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interpolates and sends points to an <a class="el" href="structintrp_1_1InterpolationTarget.html" title="ParallelComponent representing a set of points to be interpolated to and a function to call upon inte...">InterpolationTarget</a>.  <a href="structintrp_1_1Actions_1_1InterpolateToTarget.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Actions_1_1InterpolationTargetSendTimeIndepPointsToElements.html">intrp::Actions::InterpolationTargetSendTimeIndepPointsToElements&lt; InterpolationTargetTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sends interpolation points to all the Elements.  <a href="structintrp_1_1Actions_1_1InterpolationTargetSendTimeIndepPointsToElements.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Actions_1_1InterpolationTargetVarsFromElement.html">intrp::Actions::InterpolationTargetVarsFromElement&lt; InterpolationTargetTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receives interpolated variables from an <code><a class="el" href="classElement.html">Element</a></code> on a subset of the target points.  <a href="structintrp_1_1Actions_1_1InterpolationTargetVarsFromElement.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Actions_1_1SendPointsToInterpolator.html">intrp::Actions::SendPointsToInterpolator&lt; InterpolationTargetTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets up points on an <code><a class="el" href="structintrp_1_1InterpolationTarget.html" title="ParallelComponent representing a set of points to be interpolated to and a function to call upon inte...">InterpolationTarget</a></code> at a new <code>temporal_id</code> and sends these points to an <code><a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a></code>.  <a href="structintrp_1_1Actions_1_1SendPointsToInterpolator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Actions_1_1VerifyTemporalIdsAndSendPoints.html">intrp::Actions::VerifyTemporalIdsAndSendPoints&lt; InterpolationTargetTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sends points to an <a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a> for verified temporal_ids.  <a href="structintrp_1_1Actions_1_1VerifyTemporalIdsAndSendPoints.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Actions_1_1AddTemporalIdsToInterpolationTarget.html">intrp::Actions::AddTemporalIdsToInterpolationTarget&lt; InterpolationTargetTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds <code>temporal_id</code>s on which this <a class="el" href="structintrp_1_1InterpolationTarget.html" title="ParallelComponent representing a set of points to be interpolated to and a function to call upon inte...">InterpolationTarget</a> should be triggered.  <a href="structintrp_1_1Actions_1_1AddTemporalIdsToInterpolationTarget.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Actions_1_1CleanUpInterpolator.html">intrp::Actions::CleanUpInterpolator&lt; InterpolationTargetTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cleans up stored volume data that is no longer needed.  <a href="structintrp_1_1Actions_1_1CleanUpInterpolator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Actions_1_1InitializeInterpolationTarget.html">intrp::Actions::InitializeInterpolationTarget&lt; Metavariables, InterpolationTargetTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes an <a class="el" href="structintrp_1_1InterpolationTarget.html" title="ParallelComponent representing a set of points to be interpolated to and a function to call upon inte...">InterpolationTarget</a>.  <a href="structintrp_1_1Actions_1_1InitializeInterpolationTarget.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Actions_1_1InitializeInterpolator.html">intrp::Actions::InitializeInterpolator&lt; VolumeVarsInfo, InterpolatedVarsHolders &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes an <a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a>.  <a href="structintrp_1_1Actions_1_1InitializeInterpolator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Actions_1_1InterpolationTargetReceiveVars.html">intrp::Actions::InterpolationTargetReceiveVars&lt; InterpolationTargetTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receives interpolated variables from an <code><a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a></code> on a subset of the target points.  <a href="structintrp_1_1Actions_1_1InterpolationTargetReceiveVars.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Actions_1_1ReceivePoints.html">intrp::Actions::ReceivePoints&lt; InterpolationTargetTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receives target points from an <a class="el" href="structintrp_1_1InterpolationTarget.html" title="ParallelComponent representing a set of points to be interpolated to and a function to call upon inte...">InterpolationTarget</a>.  <a href="structintrp_1_1Actions_1_1ReceivePoints.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Actions_1_1InterpolatorReceiveVolumeData.html">intrp::Actions::InterpolatorReceiveVolumeData</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds volume data from an <code><a class="el" href="classElement.html">Element</a></code>.  <a href="structintrp_1_1Actions_1_1InterpolatorReceiveVolumeData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Actions_1_1RegisterElement.html">intrp::Actions::RegisterElement</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoked on the <code><a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a></code> ParallelComponent to register an element with the <code><a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a></code>.  <a href="structintrp_1_1Actions_1_1RegisterElement.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Actions_1_1DeregisterElement.html">intrp::Actions::DeregisterElement</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoked on the <code><a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a></code> ParallelComponent to deregister an element with the <code><a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a></code>.  <a href="structintrp_1_1Actions_1_1DeregisterElement.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Actions_1_1RegisterElementWithInterpolator.html">intrp::Actions::RegisterElementWithInterpolator</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoked on <code><a class="el" href="structDgElementArray.html" title="The parallel component responsible for managing the DG elements that compose the computational domain...">DgElementArray</a></code> to register all its elements with the <code><a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a></code>.  <a href="structintrp_1_1Actions_1_1RegisterElementWithInterpolator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActions_1_1Label.html">Actions::Label&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActions_1_1Goto.html">Actions::Goto&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParallel_1_1Actions_1_1TerminatePhase.html">Parallel::Actions::TerminatePhase</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Terminate the algorithm to proceed to the next phase.  <a href="structParallel_1_1Actions_1_1TerminatePhase.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structPhaseControl_1_1Actions_1_1ExecutePhaseChange.html">PhaseControl::Actions::ExecutePhaseChange&lt; PhaseChangeRegistrars &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if any triggers are activated, and perform phase changes as needed.  <a href="structPhaseControl_1_1Actions_1_1ExecutePhaseChange.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActions_1_1MutateApply.html">Actions::MutateApply&lt; Mutator &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the function <code>Mutator::apply</code> to the DataBox.  <a href="structActions_1_1MutateApply.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActions_1_1SetData.html">Actions::SetData&lt; TagsList &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mutate the DataBox tags in <code>TagsList</code> according to the <code>data</code>.  <a href="structActions_1_1SetData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdg_1_1Actions_1_1CollectDataForFluxes.html">dg::Actions::CollectDataForFluxes&lt; BoundaryScheme, DirectionsTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Collect data that is needed to compute numerical fluxes and store it on mortars, projecting it if necessary.  <a href="structdg_1_1Actions_1_1CollectDataForFluxes.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdg_1_1Actions_1_1SendDataForFluxes.html">dg::Actions::SendDataForFluxes&lt; BoundaryScheme &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send local boundary data needed for fluxes to neighbors.  <a href="structdg_1_1Actions_1_1SendDataForFluxes.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdg_1_1Actions_1_1ReceiveDataForFluxes.html">dg::Actions::ReceiveDataForFluxes&lt; BoundaryScheme, typename &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive boundary data needed for fluxes from neighbors.  <a href="structdg_1_1Actions_1_1ReceiveDataForFluxes.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActions_1_1RunEventsAndTriggers.html">Actions::RunEventsAndTriggers</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Run the events and triggers.  <a href="structActions_1_1RunEventsAndTriggers.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structInitialization_1_1Actions_1_1AddComputeTags.html">Initialization::Actions::AddComputeTags&lt; ComputeTagsList &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the list of compute tags in <code>ComputeTagsList</code>  <a href="structInitialization_1_1Actions_1_1AddComputeTags.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structInitialization_1_1Actions_1_1AddSimpleTags.html">Initialization::Actions::AddSimpleTags&lt; Mutators &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the list of simple tags in <code>Mutators::return_tags</code> by calling each mutator in the order they are specified.  <a href="structInitialization_1_1Actions_1_1AddSimpleTags.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActions_1_1AdvanceTime.html">Actions::AdvanceTime</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Advance time one substep.  <a href="structActions_1_1AdvanceTime.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActions_1_1ChangeSlabSize.html">Actions::ChangeSlabSize</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActions_1_1ChangeStepSize.html">Actions::ChangeStepSize</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adjust the step size for local time stepping.  <a href="structActions_1_1ChangeStepSize.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActions_1_1RecordTimeStepperData.html">Actions::RecordTimeStepperData&lt; VariablesTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Records the variables and their time derivatives in the time stepper history.  <a href="structActions_1_1RecordTimeStepperData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSelfStart_1_1Actions_1_1Initialize.html">SelfStart::Actions::Initialize&lt; System &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSelfStart_1_1Actions_1_1CheckForCompletion.html">SelfStart::Actions::CheckForCompletion&lt; ExitTag, System &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSelfStart_1_1Actions_1_1CheckForOrderIncrease.html">SelfStart::Actions::CheckForOrderIncrease</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSelfStart_1_1Actions_1_1Cleanup.html">SelfStart::Actions::Cleanup</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActions_1_1UpdateU.html">Actions::UpdateU&lt; VariablesTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform variable updates for one substep.  <a href="structActions_1_1UpdateU.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>A collection of steps used in algorithms. </p>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

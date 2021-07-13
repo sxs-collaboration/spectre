@@ -1,0 +1,416 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Implementing SpECTRE vectors</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">Implementing SpECTRE vectors </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="toc"><h3>Table of Contents</h3>
+<ul><li class="level1"><a href="#general_structure">Overview of SpECTRE Vectors</a></li>
+<li class="level1"><a href="#class_definition">The class definition</a></li>
+<li class="level1"><a href="#blaze_definitions">Allowed operator specification</a></li>
+<li class="level1"><a href="#array_vector_definitions">Supporting operations for &lt;tt&gt;std::array&lt;/tt&gt;s of vectors</a></li>
+<li class="level1"><a href="#Vector_type_equivalence">Equivalence operators</a></li>
+<li class="level1"><a href="#Vector_MakeWithValueImpl">MakeWithValueImpl</a></li>
+<li class="level1"><a href="#Vector_tensor_and_variables">Interoperability with other data types</a></li>
+<li class="level1"><a href="#Vector_tests">Writing tests</a><ul><li class="level2"><a href="#autotoc_md154">Utility check functions</a><ul><li class="level3"><a href="#autotoc_md155">&lt;tt&gt;TestHelpers::VectorImpl::vector_test_construct_and_assign()&lt;/tt&gt;</a></li>
+<li class="level3"><a href="#autotoc_md156">&lt;tt&gt;TestHelpers::VectorImpl::vector_test_serialize()&lt;/tt&gt;</a></li>
+<li class="level3"><a href="#autotoc_md157">&lt;tt&gt;TestHelpers::VectorImpl::vector_test_ref()&lt;/tt&gt;</a></li>
+<li class="level3"><a href="#autotoc_md158">&lt;tt&gt;TestHelpers::VectorImpl::vector_test_math_after_move()&lt;/tt&gt;</a></li>
+<li class="level3"><a href="#autotoc_md159">&lt;tt&gt;TestHelpers::VectorImpl::vector_ref_test_size_error()&lt;/tt&gt;</a></li>
+</ul>
+</li>
+<li class="level2"><a href="#autotoc_md160">&lt;tt&gt;TestHelpers::VectorImpl::test_functions_with_vector_arguments()&lt;/tt&gt;</a></li>
+</ul>
+</li>
+<li class="level1"><a href="#Vector_storage">Vector storage nuts and bolts</a></li>
+</ul>
+</div>
+<div class="textblock"><h1><a class="anchor" id="general_structure"></a>
+Overview of SpECTRE Vectors</h1>
+<p>In SpECTRE, sets of contiguous or related data are stored in specializations of vector data types. The canonical implementation of this is the <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>, which is used for storage of a contiguous sequence of doubles which support a wide variety of mathematical operations and represent data on a grid used during an evolution or elliptic solve. However, we support the ability to easily generate similar vector types which can hold data of a different type (e.g. <code><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt;double&gt;</code>), or support a different set of mathematical operations. SpECTRE vector classes are derived from the class template <code><a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a></code>. The remainder of this brief guide gives a description of the tools for defining additional vector types.</p>
+<p>For reference, all functions described here can also be found in brief in the Doxygen documentation for <a class="el" href="VectorImpl_8hpp_source.html">VectorImpl.hpp</a>, and a simple reference implementation can be found in <a class="el" href="DataVector_8hpp_source.html">DataVector.hpp</a> and DataVector.cpp.</p>
+<h1><a class="anchor" id="class_definition"></a>
+The class definition</h1>
+<p>SpECTRE vector types inherit from vector types implemented in the high-performance arithmetic library <a href="https://bitbucket.org/blaze-lib/blaze">Blaze</a>. Using inheritance, SpECTRE vectors gracefully make use of the math functions defined for the Blaze types, but can be customized for the specific needs in SpECTRE computations.</p>
+<p>The pair of template parameters for <code><a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a></code> are the type of the stored data (e.g. <code>double</code> for <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>), and the result type for mathematical operations. The result type is used by Blaze to ensure that only compatible vector types are used together in mathematical expressions. For example, a vector representing <code>double</code> data on a grid (<code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>) cannot be added to a vector representing spectral coefficients (<code><a class="el" href="classModalVector.html" title="A class for storing spectral coefficients on a spectral grid.">ModalVector</a></code>). This avoids subtle bugs that arise when vector types are unintentionally mixed. In nearly all cases the result type will be the vector type that is being defined, so, for instance, <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> is a derived class of <code><a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a>&lt;double, <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a>&gt;</code>. This template pattern is known as the <a href="https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern">"Curiously Recurring Template Pattern"</a> (CRTP).</p>
+<p>For the Blaze system to use the CRTP inheritance appropriately, it requires the specification of separate type traits in the <code>blaze</code> namespace. These traits can usually be declared in a standard form, so are abstracted in a macro. For any new vector <code>MyNewVector</code>, the pattern that must appear at the beginning of the file (i.e. before the class definition) is: </p><div class="fragment"><div class="line">/// </div>
+<div class="line"> </div>
+<div class="line">namespace blaze {</div>
+<div class="line">DECLARE_GENERAL_VECTOR_BLAZE_TRAITS(MyNewVector);</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>The class template <code><a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a></code> defines various constructors, assignment operators, and iterator generation members. Most of these are inherited from Blaze types, but in addition, the methods <code>set_data_ref</code>, and <code>pup</code> are defined for use in SpECTRE. All except for the assignment operators and constructors will be implicitly inherited from <code><a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a></code>. The assignment and constructors may be inherited calling the following alias code in the vector class definition: </p><div class="fragment"><div class="line">using VectorImpl&lt;T,VectorType&gt;::operator=;</div>
+<div class="line">using VectorImpl&lt;T,VectorType&gt;::VectorImpl;</div>
+</div><!-- fragment --><p>Only the mathematical operations supported on the base Blaze types are supported by default. Those operations are determined by the storage type <code>T</code> and by the Blaze library. See <a href="https://bitbucket.org/blaze-lib/blaze/wiki/Vector%20Operations">blaze-wiki/Vector_Operations</a>.</p>
+<h1><a class="anchor" id="blaze_definitions"></a>
+Allowed operator specification</h1>
+<p>Blaze keeps track of the return type of unary and binary operations using "type
+trait" structs. These specializations for vector types should be placed in the header file associated with the <code><a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a></code> specialization. For <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>, the specializations are defined in <code><a class="el" href="DataVector_8hpp_source.html">DataStructures/DataVector.hpp</a></code>. The presence or absence of template specializations of these structs also determines the set of allowed operations between the vector type and other types. For example, if adding a <code>double</code> to a <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> should be allowed and the result should be treated as a <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> for subsequent operations, then the struct <code>blaze::AddTrait&lt;<a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a>, double&gt;</code> needs to be defined as follows:</p>
+<div class="fragment"><div class="line">namespace blaze {</div>
+<div class="line">// the `template &lt;&gt;` head tells the compiler that</div>
+<div class="line">// `AddTrait&lt;DataVector, double&gt;` is a class template specialization</div>
+<div class="line">template &lt;&gt;</div>
+<div class="line">struct AddTrait&lt;DataVector, double&gt; {</div>
+<div class="line">    // the `Type` alias tells blaze that the result should be treated like a</div>
+<div class="line">    // `DataVector` for any further operations</div>
+<div class="line">    using Type = DataVector;</div>
+<div class="line">};</div>
+<div class="line">}  // namespace blaze</div>
+</div><!-- fragment --><p>Note that this only adds support for <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> + double</code>, not <code>double + <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>. To get the latter the following AddTrait specialization must be defined</p>
+<div class="fragment"><div class="line">namespace blaze {</div>
+<div class="line">// the `template &lt;&gt;` head tells the compiler that</div>
+<div class="line">// `AddTrait&lt;double, DataVector&gt;` is a class template specialization</div>
+<div class="line">template &lt;&gt;</div>
+<div class="line">struct AddTrait&lt;double, DataVector&gt; {</div>
+<div class="line">    // the `Type` alias tells blaze that the result should be treated like a</div>
+<div class="line">    // `DataVector` for any further operations</div>
+<div class="line">    using Type = DataVector;</div>
+<div class="line">};</div>
+<div class="line">}  // namespace blaze</div>
+</div><!-- fragment --><p>Four helper macros are defined to assist with generating the many specializations that binary operations may require. Both of these macros must be put inside the blaze namespace for them to work correctly.</p>
+<p>The first of these helper macros is <code><a class="el" href="group__DataStructuresGroup.html#gafecda8db57d55c644d6cf13c9321883c" title="Instructs Blaze to provide the appropriate vector result type after math operations....">BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, BLAZE_MATH_TRAIT)</a></code>, which will define all of the pairwise operations (<code>BLAZE_MATH_TRAIT</code>) for the vector type (<code>VECTOR_TYPE</code>) with itself and for the vector type with its <code>value_type</code>. This reduces the three specializations similar to the above code blocks to a single line call,</p>
+<div class="fragment"><div class="line">namespace blaze {</div>
+<div class="line">BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(DataVector, AddTrait)</div>
+<div class="line">}  // namespace blaze</div>
+</div><!-- fragment --><p>The second helper macro is provided to easily define all of the arithmetic operations that will typically be supported for a vector type with its value type. The macro is <code><a class="el" href="group__DataStructuresGroup.html#gac6e23b3575c630977f52a42c99af6aec" title="Instructs Blaze to provide the appropriate vector result type of arithmetic operations for VECTOR_TYP...">VECTOR_BLAZE_TRAIT_SPECIALIZE_ARITHMETIC_TRAITS(VECTOR_TYPE)</a></code>, and defines all of:</p><ul>
+<li><code>IsVector&lt;VECTOR_TYPE&gt;</code> to <code><a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a></code></li>
+<li><code>TransposeFlag&lt;VECTOR_TYPE&gt;</code>, which informs Blaze of the interpretation of the data as a "column" or "row" vector</li>
+<li><code>AddTrait</code> for the <code>VECTOR_TYPE</code> and its value type (3 Blaze struct specializations)</li>
+<li><code>SubTrait</code> for the <code>VECTOR_TYPE</code> and its value type (3 Blaze struct specializations)</li>
+<li><code>MultTrait</code> for the <code>VECTOR_TYPE</code> and its value type (3 Blaze struct specializations)</li>
+<li><code>DivTrait</code> for the <code>VECTOR_TYPE</code> and its value type (3 Blaze struct specializations)</li>
+</ul>
+<p>This macro is similarly intended to be used in the <code>blaze</code> namespace and can substantially simplify these specializations for new vector types. For instance, the call for <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> is:</p>
+<div class="fragment"><div class="line">namespace blaze {</div>
+<div class="line">VECTOR_BLAZE_TRAIT_SPECIALIZE_ARITHMETIC_TRAITS(DataVector)</div>
+<div class="line">}  // namespace blaze</div>
+</div><!-- fragment --><p>The third helper macro is provided to define a combination of Blaze traits for symmetric operations of a vector type with a second type (which may or may not be a vector type). The macro is <code><a class="el" href="group__DataStructuresGroup.html#gad678231c651cb6e4e6b428467c860f0d" title="Instructs Blaze to provide the appropriate vector result type of an operator between VECTOR_TYPE and ...">BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(VECTOR, COMPATIBLE, TRAIT)</a></code>, and defines the appropriate trait for the two combinations <code>&lt;VECTOR, COMPATIBLE&gt;</code> and <code>&lt;COMPATIBLE, VECTOR&gt;</code>, and defines the result type to be <code>VECTOR</code>. For instance, to support the multiplication of a <code><a class="el" href="classComplexDataVector.html" title="Stores a collection of complex function values.">ComplexDataVector</a></code> with a <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> and have the result be a <code><a class="el" href="classComplexDataVector.html" title="Stores a collection of complex function values.">ComplexDataVector</a></code>, the following macro call should be included in the <code>blaze</code> namespace:</p>
+<div class="fragment"><div class="line">namespace blaze {</div>
+<div class="line">BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDataVector, DataVector,</div>
+<div class="line">                                               MultTrait);</div>
+<div class="line">}  // namespace blaze</div>
+</div><!-- fragment --><p>Finally, the fourth helper macro is provided to define all of the blaze traits which are considered either unary or binary maps. This comprises most named unary functions (like <code>sin()</code> or <code><a class="el" href="group__TensorExpressionsGroup.html#gaf9042e362077610ab68fd91c2dd55e18" title="Returns the tensor expression representing the square root of a tensor expression that evaluates to a...">sqrt()</a></code>) and named binary functions (like <code>hypot()</code> and <code>atan2()</code>). The macro <code><a class="el" href="group__DataStructuresGroup.html#ga7174934f57eac4f19e94aaabbcf4f5fc" title="Instructs Blaze to provide the appropriate vector result type of Map operations (unary and binary) ac...">VECTOR_BLAZE_TRAIT_SPECIALIZE_ALL_MAP_TRAITS(VECTOR_TYPE)</a></code> broadly specializes all blaze-defined maps in which the given <code>VECTOR_TYPE</code> as the sole argument (for unary maps) or both arguments (for binary maps). This macro is also intended to be used in the blaze namespace. The call for <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> is:</p>
+<div class="fragment"><div class="line">namespace blaze {</div>
+<div class="line">VECTOR_BLAZE_TRAIT_SPECIALIZE_ALL_MAP_TRAITS(DataVector)</div>
+<div class="line">}  // namespace blaze</div>
+</div><!-- fragment --><h1><a class="anchor" id="array_vector_definitions"></a>
+Supporting operations for &lt;tt&gt;std::array&lt;/tt&gt;s of vectors</h1>
+<p>In addition to operations between SpECTRE vectors, it is useful to gracefully handle operations between <code>std::arrays</code> of vectors element-wise. There are general macros defined for handling operations between array specializations: <code>DEFINE_STD_ARRAY_BINOP</code> and <code>DEFINE_STD_ARRAY_INPLACE_BINOP</code> from <code><a class="el" href="StdArrayHelpers_8hpp.html">Utilities/StdArrayHelpers.hpp</a></code>.</p>
+<p>In addition, there is a macro for rapidly generating addition and subtraction between arrays of vectors and arrays of their data types. The macro <code><a class="el" href="group__DataStructuresGroup.html#ga05d20a8d7699c607544de057dcb975ee" title="Defines the set of binary operations often supported for std::array&lt;VECTOR_TYPE, size&gt;,...">MAKE_STD_ARRAY_VECTOR_BINOPS(VECTOR_TYPE)</a></code> will define:</p><ul>
+<li>the element-wise <code>+</code> and <code>-</code> with <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;VECTOR_TYPE, N&gt;</code> and <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;VECTOR_TYPE, N&gt;</code></li>
+<li>the element-wise <code>+</code> and <code>-</code> of either ordering of <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;VECTOR_TYPE, N&gt;</code> with <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;VECTOR_TYPE::value_type, N&gt;</code></li>
+<li>the <code>+=</code> and <code>-=</code> of <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;VECTOR_TYPE, N&gt;</code> with a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;VECTOR_TYPE, N&gt;</code></li>
+<li>the <code>+=</code> and <code>-=</code> of <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;VECTOR_TYPE, N&gt;</code> with a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;VECTOR_TYPE::value_type, N&gt;</code>.</li>
+</ul>
+<h1><a class="anchor" id="Vector_type_equivalence"></a>
+Equivalence operators</h1>
+<p>Equivalence operators are supported by the Blaze type inheritance. The equivalence operator <code>==</code> evaluates to true on a pair of vectors if they are the same size and contain the same values, regardless of ownership.</p>
+<h1><a class="anchor" id="Vector_MakeWithValueImpl"></a>
+MakeWithValueImpl</h1>
+<p>SpECTRE offers the convenience function <code>make_with_value</code> for various types. The typical behavior for a SpECTRE vector type is to create a new vector type of the same type and length initialized with the value provided as the second argument in all entries. This behavior may be created by placing the macro <code><a class="el" href="group__DataStructuresGroup.html#gabe9b48242b12719bc435709531049d47" title="Defines the MakeWithValueImpl apply specialization.">MAKE_WITH_VALUE_IMPL_DEFINITION_FOR(VECTOR_TYPE)</a></code> in the .hpp file. Any other specializations of <code>MakeWithValueImpl</code> will need to be written manually.</p>
+<h1><a class="anchor" id="Vector_tensor_and_variables"></a>
+Interoperability with other data types</h1>
+<p>When additional vector types are added, small changes are necessary if they are to be used as the base container type either for <code>Tensor</code>s or for <code>Variables</code> (a <code>Variables</code> contains <code>Tensor</code>s), which contain some vector type.</p>
+<p>In <code><a class="el" href="Tensor_8hpp.html">Tensor.hpp</a></code>, there is a <code>static_assert</code> which white-lists the possible types that can be used as the storage type in <code>Tensor</code>s. Any new vectors must be added to that white-list if they are to be used within <code>Tensor</code>s.</p>
+<p><code>Variables</code> is templated on the storage type of the stored <code>Tensor</code>s. However, any new data type should be appropriately tested. New vector types should be tested by invoking new versions of existing testing functions templated on the new vector type, rather than <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>.</p>
+<h1><a class="anchor" id="Vector_tests"></a>
+Writing tests</h1>
+<p>In addition to the utilities for generating new vector types, there are a number of convenience functions and utilities for easily generating the tests necessary to verify that the vectors function appropriately. These utilities are in <code><a class="el" href="VectorImplTestHelper_8hpp_source.html">VectorImplTestHelper.hpp</a></code>, and documented individually in the TestingFrameworkGroup. Presented here are the salient details for rapidly assembling basic tests for vectors.</p>
+<h2><a class="anchor" id="autotoc_md154"></a>
+Utility check functions</h2>
+<p>Each of these functions is intended to encapsulate a single frequently used unit test and is templated (in order) on the vector type and the value type to be generated. The default behavior is to uniformly sample values between -100 and 100, but alternative bounds may be passed in via the function arguments.</p>
+<h3><a class="anchor" id="autotoc_md155"></a>
+&lt;tt&gt;TestHelpers::VectorImpl::vector_test_construct_and_assign()&lt;/tt&gt;</h3>
+<p>This function tests a battery of construction and assignment operators for the vector type.</p>
+<h3><a class="anchor" id="autotoc_md156"></a>
+&lt;tt&gt;TestHelpers::VectorImpl::vector_test_serialize()&lt;/tt&gt;</h3>
+<p>This function tests that vector types can be serialized and deserialized, retaining their data.</p>
+<h3><a class="anchor" id="autotoc_md157"></a>
+&lt;tt&gt;TestHelpers::VectorImpl::vector_test_ref()&lt;/tt&gt;</h3>
+<p>This function tests the <code>set_data_ref</code> method of sharing data between vectors, and that the appropriate owning flags and move operations are handled correctly.</p>
+<h3><a class="anchor" id="autotoc_md158"></a>
+&lt;tt&gt;TestHelpers::VectorImpl::vector_test_math_after_move()&lt;/tt&gt;</h3>
+<p>Tests several combinations of math operations and ownership before and after use of <code>std::move</code>.</p>
+<h3><a class="anchor" id="autotoc_md159"></a>
+&lt;tt&gt;TestHelpers::VectorImpl::vector_ref_test_size_error()&lt;/tt&gt;</h3>
+<p>This function intentionally generates an error when assigning values from one vector to a differently sized, non-owning vector (made non-owning by use of <code>set_data_ref</code>). The assertion test which calls this function should search for the string "Must copy into same size". Three forms of the test are provided, which are switched between using a value from the enum <code>RefSizeErrorTestKind</code> in the first function argument:</p><ul>
+<li><code>RefSizeErrorTestKind::Copy</code>: tests that the size error is appropriately generated when copying to a non-owning vector of the wrong size.</li>
+<li><code>RefSizeErrorTestKind::ExpressionAssign</code>: tests that the size error is appropriately generated when assigning the result of a mathematical expression to a non-owning vector of the wrong size.</li>
+<li><code>RefSizeErrorTestKind::Move</code>: tests that the size error is appropriately generated when a vector is <code>std::move</code>d into a non-owning vector of the wrong size</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md160"></a>
+&lt;tt&gt;TestHelpers::VectorImpl::test_functions_with_vector_arguments()&lt;/tt&gt;</h2>
+<p>This is a general function for testing the mathematical operation of vector types with other vector types and/or their base types, with or without various reference wrappers. This may be used to efficiently test the full set of permitted math operations on a vector. See the documentation of <code><a class="el" href="group__TestingFrameworkGroup.html#ga990527392f1401e09d2d9799b1a663a7" title="General entry function for testing arbitrary math functions on vector types.">test_functions_with_vector_arguments()</a></code> for full usage details.</p>
+<p>An example simple use case for the math test utility: </p><div class="fragment"><div class="line">  <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">TestHelpers::VectorImpl::Bound</a> <span class="keyword">generic</span>{{-100.0, 100.0}};</div>
+<div class="line">  <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">TestHelpers::VectorImpl::Bound</a> mone_one{{-1.0, 1.0}};</div>
+<div class="line">  <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">TestHelpers::VectorImpl::Bound</a> gt_one{{1.0, 100.0}};</div>
+<div class="line">  <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">TestHelpers::VectorImpl::Bound</a> positive{{0.01, 100.0}};</div>
+<div class="line">  <span class="keyword">const</span> <span class="keyword">auto</span> unary_ops = std::make_tuple(</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Abs.html">funcl::Abs&lt;&gt;</a>{}, std::make_tuple(<span class="keyword">generic</span>)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Acos.html">funcl::Acos&lt;&gt;</a>{}, std::make_tuple(mone_one)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Acosh.html">funcl::Acosh&lt;&gt;</a>{}, std::make_tuple(gt_one)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Asin.html">funcl::Asin&lt;&gt;</a>{}, std::make_tuple(mone_one)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Asinh.html">funcl::Asinh&lt;&gt;</a>{}, std::make_tuple(<span class="keyword">generic</span>)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Atan.html">funcl::Atan&lt;&gt;</a>{}, std::make_tuple(<span class="keyword">generic</span>)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Atanh.html">funcl::Atanh&lt;&gt;</a>{}, std::make_tuple(mone_one)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Cbrt.html">funcl::Cbrt&lt;&gt;</a>{}, std::make_tuple(<span class="keyword">generic</span>)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Cos.html">funcl::Cos&lt;&gt;</a>{}, std::make_tuple(<span class="keyword">generic</span>)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Cosh.html">funcl::Cosh&lt;&gt;</a>{}, std::make_tuple(<span class="keyword">generic</span>)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Erf.html">funcl::Erf&lt;&gt;</a>{}, std::make_tuple(<span class="keyword">generic</span>)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Exp.html">funcl::Exp&lt;&gt;</a>{}, std::make_tuple(<span class="keyword">generic</span>)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Exp2.html">funcl::Exp2&lt;&gt;</a>{}, std::make_tuple(<span class="keyword">generic</span>)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Fabs.html">funcl::Fabs&lt;&gt;</a>{}, std::make_tuple(<span class="keyword">generic</span>)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1InvCbrt.html">funcl::InvCbrt&lt;&gt;</a>{}, std::make_tuple(<span class="keyword">generic</span>)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1InvSqrt.html">funcl::InvSqrt&lt;&gt;</a>{}, std::make_tuple(positive)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Log.html">funcl::Log&lt;&gt;</a>{}, std::make_tuple(positive)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Log10.html">funcl::Log10&lt;&gt;</a>{}, std::make_tuple(positive)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Log2.html">funcl::Log2&lt;&gt;</a>{}, std::make_tuple(positive)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Sin.html">funcl::Sin&lt;&gt;</a>{}, std::make_tuple(<span class="keyword">generic</span>)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Sinh.html">funcl::Sinh&lt;&gt;</a>{}, std::make_tuple(<span class="keyword">generic</span>)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1StepFunction.html">funcl::StepFunction&lt;&gt;</a>{}, std::make_tuple(<span class="keyword">generic</span>)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Square.html">funcl::Square&lt;&gt;</a>{}, std::make_tuple(<span class="keyword">generic</span>)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Sqrt.html">funcl::Sqrt&lt;&gt;</a>{}, std::make_tuple(positive)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Tan.html">funcl::Tan&lt;&gt;</a>{}, std::make_tuple(<span class="keyword">generic</span>)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1Tanh.html">funcl::Tanh&lt;&gt;</a>{}, std::make_tuple(<span class="keyword">generic</span>)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1UnaryPow.html">funcl::UnaryPow&lt;1&gt;</a>{}, std::make_tuple(<span class="keyword">generic</span>)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1UnaryPow.html">funcl::UnaryPow&lt;-2&gt;</a>{}, std::make_tuple(<span class="keyword">generic</span>)),</div>
+<div class="line">      std::make_tuple(<a class="code" href="structfuncl_1_1UnaryPow.html">funcl::UnaryPow&lt;3&gt;</a>{}, std::make_tuple(<span class="keyword">generic</span>)));</div>
+<div class="line"> </div>
+<div class="line">  <a class="code" href="group__TestingFrameworkGroup.html#ga990527392f1401e09d2d9799b1a663a7">TestHelpers::VectorImpl::test_functions_with_vector_arguments</a>&lt;</div>
+<div class="line">      TestHelpers::VectorImpl::TestKind::Normal, <a class="code" href="classDataVector.html">DataVector</a>&gt;(unary_ops);</div>
+</div><!-- fragment --><p> More use cases of this functionality can be found in <code>Test_DataVector.cpp</code>.</p>
+<h1><a class="anchor" id="Vector_storage"></a>
+Vector storage nuts and bolts</h1>
+<p>Internally, all vector classes inherit from the templated <code><a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a></code>, which inherits from a <code>blaze::CustomVector</code>. Most of the mathematical operations are supported through the Blaze inheritance, which ensures that the math operations execute the optimized forms in Blaze.</p>
+<p>Blaze also offers the possibility of restricting operations via <code>groups</code> in the <code>blaze::CustomVector</code> template arguments. Currently, we do not use the <code>blaze::GroupTag</code> functionality to determine available operations for vectors, but in principle this feature could allow us to further simplify our operator choice logic in the SpECTRE vector code.</p>
+<p>SpECTRE vectors can be either "owning" or "non-owning". If a vector is owning, it allocates and controls the data it has access to, and is responsible for eventually freeing that data when the vector goes out of scope. If the vector is non-owning, it acts as a (possibly complete) "view" of otherwise allocated memory. Non-owning vectors do not manage memory, nor can they change size. The two cases of data ownership cause the underlying data to be handled fairly differently, so we will discuss each in turn.</p>
+<p>When a SpECTRE vector is constructed as owning, or becomes owning, it allocates its own block of memory of appropriate size, and stores a pointer to that memory in a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></code> named <code>owned_data_</code>. The <code><a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></code> ensures that the SpECTRE vector needs to perform no further direct memory management, and that the memory will be appropriately managed whenever the <code><a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a> owned_data_</code> member is deleted or moved. The base <code>blaze::CustomVector</code> must also be told about the pointer, which is always accomplished by calling the protected function <code>VectorImpl.reset_pointer_vector(const size_t set_size)</code>, which sets the <code>blaze::CustomVector</code> internal pointer to the pointer obtained by <code><a class="el" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1" title="Retrieve the item with tag Tag from the DataBox.">std::unique_pointer.get()</a></code>.</p>
+<p>When a SpECTRE vector is constructed as non-owning by the <code><a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a>(ValueType* start, size_t set_size)</code> constructor, or becomes non-owning by the <code>set_data_ref</code> function, the internal <code><a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></code> named <code>owned_data_</code> no longer points to the data represented by the vector and can be thought of as "inactive" for the purposes of computation and memory management. This behavior is desirable, because otherwise the <code><a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></code> would attempt to free memory that is presumed to be also used elsewhere, causing difficult to diagnose memory errors. The non-owning SpECTRE vector updates the base <code>blaze::CustomVector</code> pointer directly by calling <code>blaze::CustomVector.reset</code> from the derived class (on itself). </p>
+</div></div><!-- contents -->
+</div><!-- PageDoc -->
+<div class="ttc" id="astructfuncl_1_1Sin_html"><div class="ttname"><a href="structfuncl_1_1Sin.html">funcl::Sin</a></div><div class="ttdoc">Functional for computing sin on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:273</div></div>
+<div class="ttc" id="astructfuncl_1_1StepFunction_html"><div class="ttname"><a href="structfuncl_1_1StepFunction.html">funcl::StepFunction</a></div><div class="ttdoc">Functional for computing step_function on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:276</div></div>
+<div class="ttc" id="astructfuncl_1_1Log_html"><div class="ttname"><a href="structfuncl_1_1Log.html">funcl::Log</a></div><div class="ttdoc">Functional for computing log on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:269</div></div>
+<div class="ttc" id="astructfuncl_1_1Exp_html"><div class="ttname"><a href="structfuncl_1_1Exp.html">funcl::Exp</a></div><div class="ttdoc">Functional for computing exp on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:263</div></div>
+<div class="ttc" id="astructfuncl_1_1Atan_html"><div class="ttname"><a href="structfuncl_1_1Atan.html">funcl::Atan</a></div><div class="ttdoc">Functional for computing atan on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:256</div></div>
+<div class="ttc" id="astructfuncl_1_1Log2_html"><div class="ttname"><a href="structfuncl_1_1Log2.html">funcl::Log2</a></div><div class="ttdoc">Functional for computing log2 on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:271</div></div>
+<div class="ttc" id="astructfuncl_1_1Atanh_html"><div class="ttname"><a href="structfuncl_1_1Atanh.html">funcl::Atanh</a></div><div class="ttdoc">Functional for computing atanh on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:257</div></div>
+<div class="ttc" id="astructfuncl_1_1InvCbrt_html"><div class="ttname"><a href="structfuncl_1_1InvCbrt.html">funcl::InvCbrt</a></div><div class="ttdoc">Functional for computing invcbrt on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:267</div></div>
+<div class="ttc" id="astructfuncl_1_1Cos_html"><div class="ttname"><a href="structfuncl_1_1Cos.html">funcl::Cos</a></div><div class="ttdoc">Functional for computing cos on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:260</div></div>
+<div class="ttc" id="astructfuncl_1_1Sqrt_html"><div class="ttname"><a href="structfuncl_1_1Sqrt.html">funcl::Sqrt</a></div><div class="ttdoc">Functional for computing sqrt on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:275</div></div>
+<div class="ttc" id="astructfuncl_1_1Tan_html"><div class="ttname"><a href="structfuncl_1_1Tan.html">funcl::Tan</a></div><div class="ttdoc">Functional for computing tan on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:277</div></div>
+<div class="ttc" id="astructfuncl_1_1Acos_html"><div class="ttname"><a href="structfuncl_1_1Acos.html">funcl::Acos</a></div><div class="ttdoc">Functional for computing acos on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:252</div></div>
+<div class="ttc" id="astructfuncl_1_1Acosh_html"><div class="ttname"><a href="structfuncl_1_1Acosh.html">funcl::Acosh</a></div><div class="ttdoc">Functional for computing acosh on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:253</div></div>
+<div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt; double, 2 &gt;</a></div></div>
+<div class="ttc" id="astructfuncl_1_1Cbrt_html"><div class="ttname"><a href="structfuncl_1_1Cbrt.html">funcl::Cbrt</a></div><div class="ttdoc">Functional for computing cbrt on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:258</div></div>
+<div class="ttc" id="astructfuncl_1_1Erf_html"><div class="ttname"><a href="structfuncl_1_1Erf.html">funcl::Erf</a></div><div class="ttdoc">Functional for computing erf on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:262</div></div>
+<div class="ttc" id="aclassDataVector_html"><div class="ttname"><a href="classDataVector.html">DataVector</a></div><div class="ttdoc">Stores a collection of function values.</div><div class="ttdef"><b>Definition:</b> DataVector.hpp:46</div></div>
+<div class="ttc" id="astructfuncl_1_1Exp2_html"><div class="ttname"><a href="structfuncl_1_1Exp2.html">funcl::Exp2</a></div><div class="ttdoc">Functional for computing exp2 on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:264</div></div>
+<div class="ttc" id="astructfuncl_1_1Sinh_html"><div class="ttname"><a href="structfuncl_1_1Sinh.html">funcl::Sinh</a></div><div class="ttdoc">Functional for computing sinh on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:274</div></div>
+<div class="ttc" id="astructfuncl_1_1Cosh_html"><div class="ttname"><a href="structfuncl_1_1Cosh.html">funcl::Cosh</a></div><div class="ttdoc">Functional for computing cosh on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:261</div></div>
+<div class="ttc" id="astructfuncl_1_1UnaryPow_html"><div class="ttname"><a href="structfuncl_1_1UnaryPow.html">funcl::UnaryPow</a></div><div class="ttdoc">Function for computing an integer power, forwards to template pow&lt;N&gt;()</div><div class="ttdef"><b>Definition:</b> Functional.hpp:283</div></div>
+<div class="ttc" id="astructfuncl_1_1Abs_html"><div class="ttname"><a href="structfuncl_1_1Abs.html">funcl::Abs</a></div><div class="ttdoc">Functional for computing abs on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:251</div></div>
+<div class="ttc" id="astructfuncl_1_1Log10_html"><div class="ttname"><a href="structfuncl_1_1Log10.html">funcl::Log10</a></div><div class="ttdoc">Functional for computing log10 on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:270</div></div>
+<div class="ttc" id="astructfuncl_1_1Tanh_html"><div class="ttname"><a href="structfuncl_1_1Tanh.html">funcl::Tanh</a></div><div class="ttdoc">Functional for computing tanh on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:278</div></div>
+<div class="ttc" id="astructfuncl_1_1Asin_html"><div class="ttname"><a href="structfuncl_1_1Asin.html">funcl::Asin</a></div><div class="ttdoc">Functional for computing asin on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:254</div></div>
+<div class="ttc" id="astructfuncl_1_1InvSqrt_html"><div class="ttname"><a href="structfuncl_1_1InvSqrt.html">funcl::InvSqrt</a></div><div class="ttdoc">Functional for computing invsqrt on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:268</div></div>
+<div class="ttc" id="astructfuncl_1_1Fabs_html"><div class="ttname"><a href="structfuncl_1_1Fabs.html">funcl::Fabs</a></div><div class="ttdoc">Functional for computing fabs on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:265</div></div>
+<div class="ttc" id="astructfuncl_1_1Asinh_html"><div class="ttname"><a href="structfuncl_1_1Asinh.html">funcl::Asinh</a></div><div class="ttdoc">Functional for computing asinh on an object.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:255</div></div>
+<div class="ttc" id="astructfuncl_1_1Square_html"><div class="ttname"><a href="structfuncl_1_1Square.html">funcl::Square</a></div><div class="ttdoc">Function for squaring a quantity.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:305</div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_ga990527392f1401e09d2d9799b1a663a7"><div class="ttname"><a href="group__TestingFrameworkGroup.html#ga990527392f1401e09d2d9799b1a663a7">TestHelpers::VectorImpl::test_functions_with_vector_arguments</a></div><div class="ttdeci">void test_functions_with_vector_arguments(const std::tuple&lt; FunctionsAndArgumentBounds... &gt; &amp;tuple_of_functions_and_argument_bounds) noexcept</div><div class="ttdoc">General entry function for testing arbitrary math functions on vector types.</div><div class="ttdef"><b>Definition:</b> VectorImplTestHelper.hpp:877</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

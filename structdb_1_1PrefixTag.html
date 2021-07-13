@@ -1,0 +1,242 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: db::PrefixTag Struct Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacedb.html">db</a></li><li class="navelem"><a class="el" href="structdb_1_1PrefixTag.html">PrefixTag</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">db::PrefixTag Struct Reference<div class="ingroups"><a class="el" href="group__DataBoxGroup.html">DataBox</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Mark a struct as a prefix tag by inheriting from this.  
+ <a href="structdb_1_1PrefixTag.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DataStructures_2DataBox_2Tag_8hpp_source.html">Tag.hpp</a>&gt;</code></p>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Mark a struct as a prefix tag by inheriting from this. </p>
+<h3>Details</h3>
+<p>A prefix tag is used to create a new simple tag from another simple tag, and therefore should also be marked as a simple tag by inheriting from <a class="el" href="structdb_1_1SimpleTag.html" title="Mark a struct as a simple tag by inheriting from this.">db::SimpleTag</a>.</p>
+<p>The primary reason to mark a simple tag as a prefix tag is that the name generated by <a class="el" href="group__DataBoxGroup.html#ga2f660914f4e986327a7ec1a61dddb2f4" title="Get the name of a DataBox tag, including prefixes.">db::tag_name</a> will be constructed from the names of the prefix tag and the wrapped simple tag.</p>
+<p><em>Derived Class Requires:</em></p><ul>
+<li>type alias <code>tag</code> of the wrapped simple tag</li>
+<li>type alias <code>type</code> of the type of the item corresponding to the prefix tag</li>
+</ul>
+<p>A prefix tag may optionally specify a static <code><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name()</code> method to override the default name produced by <a class="el" href="group__DataBoxGroup.html#ga2f660914f4e986327a7ec1a61dddb2f4" title="Get the name of a DataBox tag, including prefixes.">db::tag_name</a>.</p>
+<dl class="section warning"><dt>Warning</dt><dd>A prefix tag should only be derived from <a class="el" href="structdb_1_1PrefixTag.html" title="Mark a struct as a prefix tag by inheriting from this.">db::PrefixTag</a> and <a class="el" href="structdb_1_1SimpleTag.html" title="Mark a struct as a simple tag by inheriting from this.">db::SimpleTag</a>.</dd>
+<dd>
+A prefix tag should only wrap a single tag. This is assumed by all metafunctions that make use of the <code>tag</code> type alias of a prefix tag.</dd></dl>
+<h3>Example</h3>
+<p>A <a class="el" href="structdb_1_1PrefixTag.html" title="Mark a struct as a prefix tag by inheriting from this.">PrefixTag</a> tag has the structure: </p><div class="fragment"><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><span class="keyword">struct </span>TagPrefix : <a class="code" href="structdb_1_1PrefixTag.html">db::PrefixTag</a>, <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = <span class="keyword">typename</span> Tag::type;</div>
+<div class="line">  <span class="keyword">using</span> tag = Tag;</div>
+<div class="line">  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept {</div>
+<div class="line">    <span class="keywordflow">return</span> <span class="stringliteral">&quot;TagPrefix(&quot;</span> + db::tag_name&lt;Tag&gt;() + <span class="stringliteral">&quot;)&quot;</span>;</div>
+<div class="line">  }</div>
+<div class="line">};</div>
+</div><!-- fragment --> <dl class="section see"><dt>See also</dt><dd><a class="el" href="structdb_1_1SimpleTag.html" title="Mark a struct as a simple tag by inheriting from this.">SimpleTag</a> </dd></dl>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/DataStructures/DataBox/<a class="el" href="DataStructures_2DataBox_2Tag_8hpp_source.html">Tag.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
+<div class="ttc" id="astructdb_1_1PrefixTag_html"><div class="ttname"><a href="structdb_1_1PrefixTag.html">db::PrefixTag</a></div><div class="ttdoc">Mark a struct as a prefix tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:103</div></div>
+<div class="ttc" id="astructdb_1_1SimpleTag_html"><div class="ttname"><a href="structdb_1_1SimpleTag.html">db::SimpleTag</a></div><div class="ttdoc">Mark a struct as a simple tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:36</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

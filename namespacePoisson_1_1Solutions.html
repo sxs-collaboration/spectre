@@ -1,0 +1,270 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Poisson::Solutions Namespace Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacePoisson.html">Poisson</a></li><li class="navelem"><a class="el" href="namespacePoisson_1_1Solutions.html">Solutions</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">Poisson::Solutions Namespace Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Analytic solutions of the <a class="el" href="namespacePoisson.html" title="Items related to solving a Poisson equation .">Poisson</a> equation.  
+<a href="namespacePoisson_1_1Solutions.html#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPoisson_1_1Solutions_1_1AnalyticSolution.html">AnalyticSolution</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base class for analytic solutions of the <a class="el" href="namespacePoisson.html" title="Items related to solving a Poisson equation .">Poisson</a> equation.  <a href="classPoisson_1_1Solutions_1_1AnalyticSolution.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPoisson_1_1Solutions_1_1Lorentzian.html">Lorentzian</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A <a class="el" href="classPoisson_1_1Solutions_1_1Lorentzian.html" title="A Lorentzian solution to the Poisson equation.">Lorentzian</a> solution to the <a class="el" href="namespacePoisson.html" title="Items related to solving a Poisson equation .">Poisson</a> equation.  <a href="classPoisson_1_1Solutions_1_1Lorentzian.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPoisson_1_1Solutions_1_1Moustache.html">Moustache</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A solution to the <a class="el" href="namespacePoisson.html" title="Items related to solving a Poisson equation .">Poisson</a> equation with a discontinuous first derivative.  <a href="classPoisson_1_1Solutions_1_1Moustache.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPoisson_1_1Solutions_1_1ProductOfSinusoids.html">ProductOfSinusoids</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A product of sinusoids \(u(\boldsymbol{x}) = \prod_i \sin(k_i x_i)\).  <a href="classPoisson_1_1Solutions_1_1ProductOfSinusoids.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPoisson_1_1Solutions_1_1Zero.html">Zero</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The trivial solution \(u=0\) of a <a class="el" href="namespacePoisson.html" title="Items related to solving a Poisson equation .">Poisson</a> equation. Useful as initial guess.  <a href="classPoisson_1_1Solutions_1_1Zero.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a70a38ff3382e4e69d5923bfa019e178b"><td class="memTemplParams" colspan="2"><a id="a70a38ff3382e4e69d5923bfa019e178b"></a>
+template&lt;size_t Dim, typename Registrars &gt; </td></tr>
+<tr class="memitem:a70a38ff3382e4e69d5923bfa019e178b"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classPoisson_1_1Solutions_1_1Lorentzian.html">Lorentzian</a>&lt; Dim, Registrars &gt; &amp;, const <a class="el" href="classPoisson_1_1Solutions_1_1Lorentzian.html">Lorentzian</a>&lt; Dim, Registrars &gt; &amp;) noexcept</td></tr>
+<tr class="separator:a70a38ff3382e4e69d5923bfa019e178b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e2d5ea00d735a2c7e8e284a635b5229"><td class="memTemplParams" colspan="2"><a id="a2e2d5ea00d735a2c7e8e284a635b5229"></a>
+template&lt;size_t Dim, typename Registrars &gt; </td></tr>
+<tr class="memitem:a2e2d5ea00d735a2c7e8e284a635b5229"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="classPoisson_1_1Solutions_1_1Lorentzian.html">Lorentzian</a>&lt; Dim, Registrars &gt; &amp;lhs, const <a class="el" href="classPoisson_1_1Solutions_1_1Lorentzian.html">Lorentzian</a>&lt; Dim, Registrars &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a2e2d5ea00d735a2c7e8e284a635b5229"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adbe3e6bbc24fdb5d473c54be49135beb"><td class="memTemplParams" colspan="2"><a id="adbe3e6bbc24fdb5d473c54be49135beb"></a>
+template&lt;size_t Dim, typename Registrars &gt; </td></tr>
+<tr class="memitem:adbe3e6bbc24fdb5d473c54be49135beb"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classPoisson_1_1Solutions_1_1Moustache.html">Moustache</a>&lt; Dim, Registrars &gt; &amp;, const <a class="el" href="classPoisson_1_1Solutions_1_1Moustache.html">Moustache</a>&lt; Dim, Registrars &gt; &amp;) noexcept</td></tr>
+<tr class="separator:adbe3e6bbc24fdb5d473c54be49135beb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91c1cd10d1b2ae38b7d4cb4c02ef4411"><td class="memTemplParams" colspan="2"><a id="a91c1cd10d1b2ae38b7d4cb4c02ef4411"></a>
+template&lt;size_t Dim, typename Registrars &gt; </td></tr>
+<tr class="memitem:a91c1cd10d1b2ae38b7d4cb4c02ef4411"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="classPoisson_1_1Solutions_1_1Moustache.html">Moustache</a>&lt; Dim, Registrars &gt; &amp;lhs, const <a class="el" href="classPoisson_1_1Solutions_1_1Moustache.html">Moustache</a>&lt; Dim, Registrars &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a91c1cd10d1b2ae38b7d4cb4c02ef4411"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ba018630c12382b93ac53a4dcb89c24"><td class="memTemplParams" colspan="2"><a id="a0ba018630c12382b93ac53a4dcb89c24"></a>
+template&lt;size_t Dim, typename Registrars &gt; </td></tr>
+<tr class="memitem:a0ba018630c12382b93ac53a4dcb89c24"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classPoisson_1_1Solutions_1_1ProductOfSinusoids.html">ProductOfSinusoids</a>&lt; Dim, Registrars &gt; &amp;lhs, const <a class="el" href="classPoisson_1_1Solutions_1_1ProductOfSinusoids.html">ProductOfSinusoids</a>&lt; Dim, Registrars &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a0ba018630c12382b93ac53a4dcb89c24"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa31852e39bb0ed69429be14f9d3f420"><td class="memTemplParams" colspan="2"><a id="afa31852e39bb0ed69429be14f9d3f420"></a>
+template&lt;size_t Dim, typename Registrars &gt; </td></tr>
+<tr class="memitem:afa31852e39bb0ed69429be14f9d3f420"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="classPoisson_1_1Solutions_1_1ProductOfSinusoids.html">ProductOfSinusoids</a>&lt; Dim, Registrars &gt; &amp;lhs, const <a class="el" href="classPoisson_1_1Solutions_1_1ProductOfSinusoids.html">ProductOfSinusoids</a>&lt; Dim, Registrars &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:afa31852e39bb0ed69429be14f9d3f420"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9c746f9010a093a6300e587a8c49dc9"><td class="memTemplParams" colspan="2"><a id="ac9c746f9010a093a6300e587a8c49dc9"></a>
+template&lt;size_t Dim, typename Registrars &gt; </td></tr>
+<tr class="memitem:ac9c746f9010a093a6300e587a8c49dc9"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classPoisson_1_1Solutions_1_1Zero.html">Zero</a>&lt; Dim, Registrars &gt; &amp;, const <a class="el" href="classPoisson_1_1Solutions_1_1Zero.html">Zero</a>&lt; Dim, Registrars &gt; &amp;) noexcept</td></tr>
+<tr class="separator:ac9c746f9010a093a6300e587a8c49dc9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5087c0e80cf9e290db02cd3f5bbfadbc"><td class="memTemplParams" colspan="2"><a id="a5087c0e80cf9e290db02cd3f5bbfadbc"></a>
+template&lt;size_t Dim, typename Registrars &gt; </td></tr>
+<tr class="memitem:a5087c0e80cf9e290db02cd3f5bbfadbc"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="classPoisson_1_1Solutions_1_1Zero.html">Zero</a>&lt; Dim, Registrars &gt; &amp;lhs, const <a class="el" href="classPoisson_1_1Solutions_1_1Zero.html">Zero</a>&lt; Dim, Registrars &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a5087c0e80cf9e290db02cd3f5bbfadbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Analytic solutions of the <a class="el" href="namespacePoisson.html" title="Items related to solving a Poisson equation .">Poisson</a> equation. </p>
+</div></div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

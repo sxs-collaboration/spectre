@@ -1,0 +1,345 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::creators::Disk Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1creators.html">creators</a></li><li class="navelem"><a class="el" href="classdomain_1_1creators_1_1Disk.html">Disk</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classdomain_1_1creators_1_1Disk-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::creators::Disk Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Create a 2D <a class="el" href="classDomain.html" title="A wrapper around a vector of Blocks that represent the computational domain.">Domain</a> in the shape of a disk from a square surrounded by four wedges.  
+ <a href="classdomain_1_1creators_1_1Disk.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Disk_8hpp_source.html">Disk.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Disk_1_1BoundaryCondition.html">BoundaryCondition</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Disk_1_1InitialGridPoints.html">InitialGridPoints</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Disk_1_1InitialRefinement.html">InitialRefinement</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Disk_1_1InnerRadius.html">InnerRadius</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Disk_1_1OuterRadius.html">OuterRadius</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Disk_1_1UseEquiangularMap.html">UseEquiangularMap</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:addd5f448d4abeeb17876319ef7b166a8"><td class="memItemLeft" align="right" valign="top"><a id="addd5f448d4abeeb17876319ef7b166a8"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>maps_list</b> = tmpl::list&lt; <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1ProductOf2Maps.html">CoordinateMaps::ProductOf2Maps</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a> &gt; &gt;, <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1ProductOf2Maps.html">CoordinateMaps::ProductOf2Maps</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">CoordinateMaps::Equiangular</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">CoordinateMaps::Equiangular</a> &gt; &gt;, <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Wedge.html">CoordinateMaps::Wedge</a>&lt; 2 &gt; &gt;&gt;</td></tr>
+<tr class="separator:addd5f448d4abeeb17876319ef7b166a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20c658b6c34d8c526f99b81a57e973be"><td class="memItemLeft" align="right" valign="top"><a id="a20c658b6c34d8c526f99b81a57e973be"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>basic_options</b> = tmpl::list&lt; <a class="el" href="structdomain_1_1creators_1_1Disk_1_1InnerRadius.html">InnerRadius</a>, <a class="el" href="structdomain_1_1creators_1_1Disk_1_1OuterRadius.html">OuterRadius</a>, <a class="el" href="structdomain_1_1creators_1_1Disk_1_1InitialRefinement.html">InitialRefinement</a>, <a class="el" href="structdomain_1_1creators_1_1Disk_1_1InitialGridPoints.html">InitialGridPoints</a>, <a class="el" href="structdomain_1_1creators_1_1Disk_1_1UseEquiangularMap.html">UseEquiangularMap</a> &gt;</td></tr>
+<tr class="separator:a20c658b6c34d8c526f99b81a57e973be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad3129f9049e80e8a0c1e93a6b302461a"><td class="memTemplParams" colspan="2"><a id="ad3129f9049e80e8a0c1e93a6b302461a"></a>
+template&lt;typename Metavariables &gt; </td></tr>
+<tr class="memitem:ad3129f9049e80e8a0c1e93a6b302461a"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>options</b> = tmpl::conditional_t&lt; domain::BoundaryConditions::has_boundary_conditions_base_v&lt; typename Metavariables::system &gt;, tmpl::push_back&lt; basic_options, <a class="el" href="structdomain_1_1creators_1_1Disk_1_1BoundaryCondition.html">BoundaryCondition</a>&lt; <a class="el" href="namespacedomain_1_1BoundaryConditions.html#afd88b7d4030a22e226b734dd65e6990b">domain::BoundaryConditions::get_boundary_conditions_base</a>&lt; typename Metavariables::system &gt; &gt;&gt;, basic_options &gt;</td></tr>
+<tr class="separator:ad3129f9049e80e8a0c1e93a6b302461a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a6f891b0751edf2a6ab6e346b1b2940cf"><td class="memItemLeft" align="right" valign="top"><a id="a6f891b0751edf2a6ab6e346b1b2940cf"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Disk</b> (typename InnerRadius::type inner_radius, typename OuterRadius::type outer_radius, typename InitialRefinement::type initial_refinement, typename <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">InitialGridPoints::type</a> initial_number_of_grid_points, typename UseEquiangularMap::type use_equiangular_map, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a> &gt; boundary_condition=nullptr, const <a class="el" href="structOptions_1_1Context.html">Options::Context</a> &amp;context={})</td></tr>
+<tr class="separator:a6f891b0751edf2a6ab6e346b1b2940cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30b6324c4cef12bf63b546fe20f96a6b"><td class="memItemLeft" align="right" valign="top"><a id="a30b6324c4cef12bf63b546fe20f96a6b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Disk</b> (const <a class="el" href="classdomain_1_1creators_1_1Disk.html">Disk</a> &amp;)=delete</td></tr>
+<tr class="separator:a30b6324c4cef12bf63b546fe20f96a6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abccb3e81b6f16154f74fabb2f93d89dc"><td class="memItemLeft" align="right" valign="top"><a id="abccb3e81b6f16154f74fabb2f93d89dc"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Disk</b> (<a class="el" href="classdomain_1_1creators_1_1Disk.html">Disk</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:abccb3e81b6f16154f74fabb2f93d89dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc09398d1fcafc92e03fab1c50c6d8d5"><td class="memItemLeft" align="right" valign="top"><a id="afc09398d1fcafc92e03fab1c50c6d8d5"></a>
+<a class="el" href="classdomain_1_1creators_1_1Disk.html">Disk</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1creators_1_1Disk.html">Disk</a> &amp;)=delete</td></tr>
+<tr class="separator:afc09398d1fcafc92e03fab1c50c6d8d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbc53eb5a19037f6bf484338776d6f70"><td class="memItemLeft" align="right" valign="top"><a id="afbc53eb5a19037f6bf484338776d6f70"></a>
+<a class="el" href="classdomain_1_1creators_1_1Disk.html">Disk</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1creators_1_1Disk.html">Disk</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:afbc53eb5a19037f6bf484338776d6f70"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad521cc4ca9a07e4b224020a4047eb577"><td class="memItemLeft" align="right" valign="top"><a id="ad521cc4ca9a07e4b224020a4047eb577"></a>
+<a class="el" href="classDomain.html">Domain</a>&lt; 2 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>create_domain</b> () const noexcept override</td></tr>
+<tr class="separator:ad521cc4ca9a07e4b224020a4047eb577"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a414c482e2a93d3a428829aa0eec0f1e4"><td class="memItemLeft" align="right" valign="top"><a id="a414c482e2a93d3a428829aa0eec0f1e4"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, 2 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>initial_extents</b> () const noexcept override</td></tr>
+<tr class="separator:a414c482e2a93d3a428829aa0eec0f1e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af6368a8b59518b088cb98d9b0a5de672"><td class="memItemLeft" align="right" valign="top"><a id="af6368a8b59518b088cb98d9b0a5de672"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, 2 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>initial_refinement_levels</b> () const noexcept override</td></tr>
+<tr class="separator:af6368a8b59518b088cb98d9b0a5de672"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classDomainCreator"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classDomainCreator')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classDomainCreator.html">DomainCreator&lt; 2 &gt;</a></td></tr>
+<tr class="memitem:a7982cfa2ee131552ace2a80e372b7b1a inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a7982cfa2ee131552ace2a80e372b7b1a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>DomainCreator</b> (const <a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;)=delete</td></tr>
+<tr class="separator:a7982cfa2ee131552ace2a80e372b7b1a inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ceb4d3fea0600788dc3b4bc576ce0cb inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a5ceb4d3fea0600788dc3b4bc576ce0cb"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>DomainCreator</b> (<a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a5ceb4d3fea0600788dc3b4bc576ce0cb inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a7a8b3ba0da17d6418c0b8bcb9e58fe inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a6a7a8b3ba0da17d6418c0b8bcb9e58fe"></a>
+<a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;)=delete</td></tr>
+<tr class="separator:a6a7a8b3ba0da17d6418c0b8bcb9e58fe inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d42c312fdc02e83f685e0c6267f8192 inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a1d42c312fdc02e83f685e0c6267f8192"></a>
+<a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a1d42c312fdc02e83f685e0c6267f8192 inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a193c03e0686458565ff5ac7d58e9ae22 inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a193c03e0686458565ff5ac7d58e9ae22"></a>
+virtual <a class="el" href="classDomain.html">Domain</a>&lt; VolumeDim &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>create_domain</b> () const=0</td></tr>
+<tr class="separator:a193c03e0686458565ff5ac7d58e9ae22 inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b6216ea7714bfb455b771e4f08ae759 inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a1b6216ea7714bfb455b771e4f08ae759"></a>
+virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, VolumeDim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDomainCreator.html#a1b6216ea7714bfb455b771e4f08ae759">initial_extents</a> () const noexcept=0</td></tr>
+<tr class="memdesc:a1b6216ea7714bfb455b771e4f08ae759 inherit pub_methods_classDomainCreator"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain the initial grid extents of the <a class="el" href="classElement.html">Element</a>s in each block. <br /></td></tr>
+<tr class="separator:a1b6216ea7714bfb455b771e4f08ae759 inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b7ffedcf9f508874dde546b5418349f inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a2b7ffedcf9f508874dde546b5418349f"></a>
+virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, VolumeDim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDomainCreator.html#a2b7ffedcf9f508874dde546b5418349f">initial_refinement_levels</a> () const noexcept=0</td></tr>
+<tr class="memdesc:a2b7ffedcf9f508874dde546b5418349f inherit pub_methods_classDomainCreator"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain the initial refinement levels of the blocks. <br /></td></tr>
+<tr class="separator:a2b7ffedcf9f508874dde546b5418349f inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a686f011a0c4399253e62474e1549d8e7 inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a686f011a0c4399253e62474e1549d8e7"></a>
+virtual auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDomainCreator.html#a686f011a0c4399253e62474e1549d8e7">functions_of_time</a> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;</td></tr>
+<tr class="memdesc:a686f011a0c4399253e62474e1549d8e7 inherit pub_methods_classDomainCreator"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the functions of time used for moving meshes. <br /></td></tr>
+<tr class="separator:a686f011a0c4399253e62474e1549d8e7 inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a4be84cf9b17f91a72023b9b1d1491216"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a4be84cf9b17f91a72023b9b1d1491216"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Create a 2D <a class="el" href="classDomain.html" title="A wrapper around a vector of Blocks that represent the computational domain.">Domain</a> in the shape of a disk from a square surrounded by four wedges. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a4be84cf9b17f91a72023b9b1d1491216"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4be84cf9b17f91a72023b9b1d1491216">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> domain::creators::Disk::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      <span class="stringliteral">&quot;Creates a 2D Disk with five Blocks.\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;Only one refinement level for both dimensions is currently supported.\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;The number of gridpoints in each dimension can be set independently.\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;The number of gridpoints along the dimensions of the square is equal\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;to the number of gridpoints along the angular dimension of the wedges.\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;Equiangular coordinates give better gridpoint spacings in the angular\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;direction, while equidistant coordinates give better gridpoint\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;spacings in the center block.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/Creators/<a class="el" href="Disk_8hpp_source.html">Disk.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

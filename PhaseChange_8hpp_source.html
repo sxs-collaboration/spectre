@@ -1,0 +1,456 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Parallel/PhaseControl/PhaseChange.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_f1a490c609eea752f5cd0b5c139209b7.html">Parallel</a></li><li class="navelem"><a class="el" href="dir_eff9ee7d99ff9f92398c6ef344024c3d.html">PhaseControl</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">PhaseChange.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/optional.html">optional</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a>&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataBox_8hpp.html">DataStructures/DataBox/DataBox.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="GlobalCache_8hpp.html">Parallel/GlobalCache.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;ParallelAlgorithms/EventsAndTriggers/Trigger.hpp&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;Utilities/FakeVirtual.hpp&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;Utilities/Registration.hpp&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;Utilities/TaggedTuple.hpp&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160; </div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment">/// Contains utilities for determining control-flow among phases</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment"></span><span class="keyword">namespace </span><a class="code" href="namespacePhaseControl.html">PhaseControl</a> {<span class="comment"></span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment">/// The possible options for instructing the Main chare in deciding the next</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment">/// phase to jump to.</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment">/// An object of this enum type is packaged with a requested phase in the</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment">/// `PhaseChange::arbitrate_phase_change` function.</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno"><a class="line" href="namespacePhaseControl.html#aca18e7afb80938d20c0a73b2efd903e0">   29</a></span>&#160;<span class="comment"></span><span class="keyword">enum</span> <a class="code" href="namespacePhaseControl.html#aca18e7afb80938d20c0a73b2efd903e0">ArbitrationStrategy</a> {<span class="comment"></span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment">  /// Jump to the requested phase immediately, before considering other</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment">  /// requested phases.</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="comment">  ///</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment">  /// This will ensure that the requested phase is always run, where</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment">  /// alternative methods could have &#39;double-jumps&#39; where the Main chare</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment">  /// replaces a requested phase immediately without actually entering the</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment">  /// phase.</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno"><a class="line" href="namespacePhaseControl.html#aca18e7afb80938d20c0a73b2efd903e0a318dbdf61cd457cf811853f1c68ca063">   37</a></span>&#160;<span class="comment"></span>  <a class="code" href="namespacePhaseControl.html#aca18e7afb80938d20c0a73b2efd903e0a318dbdf61cd457cf811853f1c68ca063">RunPhaseImmediately</a>,<span class="comment"></span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="comment">  /// After the requested phase is considered, continue considering other</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment">  /// requests, potentially replacing this request.</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment">  ///</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment">  /// This will permit reprocessing the phase-jumps to help with cases where</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment">  /// multiple phases are simultaneously requested.</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment">  /// The `PermitAdditionalJumps` permits &#39;double-jumps&#39; where a requested phase</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment">  /// is immediately replaced by another phase to jump to.</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno"><a class="line" href="namespacePhaseControl.html#aca18e7afb80938d20c0a73b2efd903e0ab335f67499c3154e8a054723809a2a11">   45</a></span>&#160;<span class="comment"></span>  <a class="code" href="namespacePhaseControl.html#aca18e7afb80938d20c0a73b2efd903e0ab335f67499c3154e8a054723809a2a11">PermitAdditionalJumps</a></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;};</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;}  <span class="comment">// namespace PhaseControl</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment"> * \brief `PhaseChange` objects determine the storage types and logic for</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment"> * moving between phases based on runtime data.</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment"> * The phase control flow must have the cooperation of each parallel component,</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment"> * but make phase decisions centrally so that at any point, all components are</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment"> * in the same phase. The operations needed by the parallel components and by</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment"> * the Main chare, are:</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment"> * 1. Parallel components must select and/or compute the runtime data necessary</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment"> *    for choosing the next phase, then contribute it to a global reduction to</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment"> *    the Main component.</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment"> *    The components must then halt at a globally-valid state for the phase</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment"> *    change.</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment"> *    The requirements for the state will vary depending on the phase choices,</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment"> *    so triggers must be selected appropriately for the `PhaseChange` object.</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment"> *    For instance, selecting a common slab will usually represent a globally</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment"> *    well-behaved state for a `DgElementArray`.</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment"> * 2. On the Main chare, the `PhaseChange` objects must use the collected</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment"> *    reduction data, or other persistent data stored in</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment"> *    `phase_change_decision_data` to decide on a phase to request and an</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment"> *    `PhaseControl::ArbitrationStrategy` to determine how to resolve multiple</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment"> *    simultaneous requests.</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment"> *    Additionally, the `PhaseChange` objects must specify initialization</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment"> *    functions to set the starting state of the tags in</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment"> *    `phase_change_decision_data` for which they are responsible.</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment"> * In addition to the `options` type alias and `static constexpr Options::String</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment"> * help` variable needed to be option-creatable, a derived class of</span></div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment"> * `PhaseChange` must specify the type aliases:</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment"> * - `argument_tags`: A `tmpl::list` of tags from the</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment"> *   \ref DataBoxGroup &quot;DataBox&quot; to be passed to `contribute_phase_data_impl` as</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment"> *   const references.</span></div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment"> * - `return_tags`: A `tmpl::list` of mutable tags from the</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment"> *   \ref DataBoxGroup &quot;DataBox&quot; to be passed to `contribute_phase_data_impl` as</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment"> *   `gsl::not_null` pointers. This should be used only for tags that may be</span></div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="comment"> *   altered during the `contribute_phase_data_impl` function.</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment"> * - `phase_change_tags_and_combines_list`: A `tmpl::list` of tags for</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment"> *   populating the `phase_change_decision_data` in the Main chare. Each tag in</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment"> *   this list must also define a `combine_method` and a `main_combine_method`</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment"> *   for performing the aggregation during reduction.</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment"> * - `participating_components` (templated on `Metavariables`): A `tmpl::list`</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment"> *   of components that contribute data during this reduction. This can be used</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment"> *   to screen out components that will not have the necessary information to</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment"> *   contribute to the reduction. If all components should participate, this</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment"> *   type alias can be set to simply `typename Metavariables::component_list`.</span></div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="comment"> * And member functions with signatures:</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="comment"> * ```</span></div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="comment"> * template &lt;typename... DecisionTags&gt;</span></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="comment"> * void initialize_phase_data_impl(</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="comment"> *     const gsl::not_null&lt;tuples::TaggedTuple&lt;DecisionTags...&gt;*&gt;</span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="comment"> *         phase_change_decision_data) const noexcept;</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="comment"> * ```</span></div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="comment"> * - Must set all tags in `phase_change_tags_and_combines_list` to useful</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="comment"> *   initial states in the `phase_change_decision_data`.</span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="comment"> * ```</span></div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="comment"> * template &lt;typename ParallelComponent, typename ArrayIndex&gt;</span></div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="comment"> * void contribute_phase_data_impl(</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="comment"> *     [DataBox return tags...], [DataBox argument tags...],</span></div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="comment"> *     Parallel::GlobalCache&lt;Metavariables&gt;&amp; cache,</span></div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="comment"> *     const ArrayIndex&amp; array_index) const noexcept;</span></div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="comment"> * ```</span></div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="comment"> * - Should send any data relevant for the associated phase change decision made</span></div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="comment"> *   in `arbitrate_phase_change_impl` to the Main chare via function</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment"> *   `Parallel::contribute_to_phase_change_reduction`.</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="comment"> * ```</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="comment"> * template &lt;typename... DecisionTags, typename Metavariables&gt;</span></div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="comment"> * typename std::optional&lt;</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="comment"> *     std::pair&lt;typename Metavariables::Phase, ArbitrationStrategy&gt;&gt;</span></div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="comment"> * arbitrate_phase_change_impl(</span></div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="comment"> *     const gsl::not_null&lt;tuples::TaggedTuple&lt;DecisionTags...&gt;*&gt;</span></div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;<span class="comment"> *         phase_change_decision_data,</span></div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;<span class="comment"> *     const typename Metavariables::Phase current_phase,</span></div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;<span class="comment"> *     const Parallel::GlobalCache&lt;Metavariables&gt;&amp; cache) const noexcept;</span></div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;<span class="comment"> * ```</span></div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;<span class="comment"> * - Should examine the collected data in `phase_change_decision_data` and</span></div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;<span class="comment"> *   optionally return a `std::pair` with the desired `Metavariables::Phase` and</span></div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;<span class="comment"> *   an `PhaseControl::ArbitrationStrategy` indicating a method for arbitrating</span></div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;<span class="comment"> *   multiple simultaneous requests. Alternatively, it may return `std::nullopt`</span></div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;<span class="comment"> *   to abstain from the phase decision.</span></div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;<span class="comment"> *   The `arbitrate_phase_change_impl` may (and often will) mutate the</span></div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;<span class="comment"> *   `phase_change_decision_data`. For instance, it may be desirable to &#39;reset&#39;</span></div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;<span class="comment"> *   the data to allow for future jumps associated with the same `PhaseChange`,</span></div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;<span class="comment"> *   or the `PhaseChange` will describe multiple changes in sequence, and the</span></div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;<span class="comment"> *   state of that sequential process can be recorded in</span></div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;<span class="comment"> *   `phase_change_decision_data`.</span></div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> PhaseChangeRegistrars&gt;</div>
+<div class="line"><a name="l00141"></a><span class="lineno"><a class="line" href="structPhaseChange.html">  141</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structPhaseChange.html">PhaseChange</a> : <span class="keyword">public</span> PUP::able {</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160; <span class="keyword">protected</span>:<span class="comment"></span></div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;<span class="comment">  /// \cond</span></div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;<span class="comment"></span>  <a class="code" href="structPhaseChange.html">PhaseChange</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;  <a class="code" href="structPhaseChange.html">PhaseChange</a>(<span class="keyword">const</span> <a class="code" href="structPhaseChange.html">PhaseChange</a>&amp;) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;  <a class="code" href="structPhaseChange.html">PhaseChange</a>(<a class="code" href="structPhaseChange.html">PhaseChange</a>&amp;&amp;) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;  <a class="code" href="structPhaseChange.html">PhaseChange</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="structPhaseChange.html">PhaseChange</a>&amp;) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;  <a class="code" href="structPhaseChange.html">PhaseChange</a>&amp; operator=(<a class="code" href="structPhaseChange.html">PhaseChange</a>&amp;&amp;) = <span class="keywordflow">default</span>;<span class="comment"></span></div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;<span class="comment">  /// \endcond</span></div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;  <a class="code" href="structPhaseChange.html">PhaseChange</a>(CkMigrateMessage* msg) noexcept : PUP::able(msg) {};</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160; </div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;  ~<a class="code" href="structPhaseChange.html">PhaseChange</a>() <span class="keyword">override</span> = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160; </div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;  WRAPPED_PUPable_abstract(<a class="code" href="structPhaseChange.html">PhaseChange</a>);  <span class="comment">// NOLINT</span></div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160; </div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;  <span class="keyword">using</span> creatable_classes = <a class="code" href="namespaceRegistration.html#abfd9ae1266be994041d2cfaa4199eed2">Registration::registrants&lt;PhaseChangeRegistrars&gt;</a>;</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;<span class="comment">  /// Send data from all `participating_components` to the Main chare for</span></div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;<span class="comment">  /// determining the next phase.</span></div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;<span class="comment"></span>  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ParallelComponent, <span class="keyword">typename</span> DbTags, <span class="keyword">typename</span> Metavariables,</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;            <span class="keyword">typename</span> ArrayIndex&gt;</div>
+<div class="line"><a name="l00164"></a><span class="lineno"><a class="line" href="structPhaseChange.html#a67dd0c45c46cbc63f101c24b53698639">  164</a></span>&#160;  <span class="keywordtype">void</span> <a class="code" href="structPhaseChange.html#a67dd0c45c46cbc63f101c24b53698639">contribute_phase_data</a>(<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;db::DataBox&lt;DbTags&gt;*&gt; box,</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;                             <a class="code" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache&lt;Metavariables&gt;</a>&amp; <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>,</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;                             <span class="keyword">const</span> ArrayIndex&amp; array_index) <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;    <a class="code" href="group__UtilitiesGroup.html#gaa46b024995f6a5d70ed31882a9a0bcab">call_with_dynamic_type</a>&lt;</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;        void, creatable_classes&gt;(<span class="keyword">this</span>, [&amp;box, &amp;<a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>, &amp;array_index](</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;                                           <span class="keyword">const</span> <span class="keyword">auto</span>* <span class="keyword">const</span></div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;                                               phase_change) noexcept {</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;      <span class="keyword">using</span> phase_change_t = <span class="keyword">typename</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/decay.html">std::decay_t</a>&lt;decltype(*phase_change)&gt;;</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;      <span class="keywordflow">if</span> constexpr (tmpl::list_contains_v&lt;</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;                        <span class="keyword">typename</span> phase_change_t::</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;                            <span class="keyword">template</span> participating_components&lt;Metavariables&gt;,</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;                        ParallelComponent&gt;) {</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;        <a class="code" href="group__DataBoxGroup.html#ga257e835a1b216b347b3e3eb429f97984">db::mutate_apply</a>&lt;<span class="keyword">typename</span> phase_change_t::return_tags,</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;                         <span class="keyword">typename</span> phase_change_t::argument_tags&gt;(</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;            [&amp;phase_change, &amp;<a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>, &amp;array_index](<span class="keyword">auto</span>&amp;&amp;... args) noexcept {</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;              phase_change</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;                  -&gt;template contribute_phase_data_impl&lt;ParallelComponent&gt;(</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;                      args..., <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>, array_index);</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;            },</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;            box);</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;      }</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;    });</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;  }</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;<span class="comment">  /// Determine a phase request and `PhaseControl::ArbitrationStrategy` based on</span></div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;<span class="comment">  /// aggregated `phase_change_decision_data` on the Main Chare.</span></div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;<span class="comment"></span>  <span class="keyword">template</span> &lt;<span class="keyword">typename</span>... DecisionTags, <span class="keyword">typename</span> Metavariables&gt;</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt;<span class="keyword">typename</span> Metavariables::Phase,</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;                          <a class="code" href="namespacePhaseControl.html#aca18e7afb80938d20c0a73b2efd903e0">PhaseControl::ArbitrationStrategy</a>&gt;&gt;</div>
+<div class="line"><a name="l00193"></a><span class="lineno"><a class="line" href="structPhaseChange.html#a0f4db04b107929469ab82d809070ddf8">  193</a></span>&#160;  <a class="code" href="structPhaseChange.html#a0f4db04b107929469ab82d809070ddf8">arbitrate_phase_change</a>(</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;DecisionTags...&gt;</a>*&gt;</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;          phase_change_decision_data,</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;      <span class="keyword">const</span> <span class="keyword">typename</span> Metavariables::Phase current_phase,</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;      <span class="keyword">const</span> <a class="code" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache&lt;Metavariables&gt;</a>&amp; <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>) <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="group__UtilitiesGroup.html#gaa46b024995f6a5d70ed31882a9a0bcab">call_with_dynamic_type</a>&lt;</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt;<span class="keyword">typename</span> Metavariables::Phase,</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;                                <a class="code" href="namespacePhaseControl.html#aca18e7afb80938d20c0a73b2efd903e0">PhaseControl::ArbitrationStrategy</a>&gt;&gt;,</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;        creatable_classes&gt;(</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;        <span class="keyword">this</span>, [&amp;current_phase, &amp;phase_change_decision_data,</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;               &amp;<a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>](<span class="keyword">const</span> <span class="keyword">auto</span>* <span class="keyword">const</span> phase_change) noexcept {</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;          <span class="keywordflow">return</span> phase_change-&gt;arbitrate_phase_change_impl(</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;              phase_change_decision_data, current_phase, <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>);</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;        });</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;  }</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;<span class="comment">  /// Initialize the `phase_change_decision_data` on the main chare to starting</span></div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;<span class="comment">  /// values.</span></div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;<span class="comment"></span>  <span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Tags&gt;</div>
+<div class="line"><a name="l00212"></a><span class="lineno"><a class="line" href="structPhaseChange.html#aafd6b3e8d7db5ee99153c3d65457fc47">  212</a></span>&#160;  <span class="keywordtype">void</span> <a class="code" href="structPhaseChange.html#aafd6b3e8d7db5ee99153c3d65457fc47">initialize_phase_data</a>(</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;Tags...&gt;</a>*&gt;</div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;          phase_change_decision_data) <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;    <span class="keywordflow">return</span> call_with_dynamic_type&lt;void, creatable_classes&gt;(</div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;        <span class="keyword">this</span>, [&amp;phase_change_decision_data](</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;                  <span class="keyword">const</span> <span class="keyword">auto</span>* <span class="keyword">const</span> phase_change) noexcept {</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;          <span class="keywordflow">return</span> phase_change-&gt;initialize_phase_data_impl(</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;              phase_change_decision_data);</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;        });</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;  }</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;};</div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="anamespacePhaseControl_html"><div class="ttname"><a href="namespacePhaseControl.html">PhaseControl</a></div><div class="ttdoc">Contains utilities for determining control-flow among phases.</div><div class="ttdef"><b>Definition:</b> ExecutePhaseChange.hpp:17</div></div>
+<div class="ttc" id="autility_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a></div></div>
+<div class="ttc" id="aclassParallel_1_1GlobalCache_html"><div class="ttname"><a href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a></div><div class="ttdef"><b>Definition:</b> ElementReceiveInterpPoints.hpp:15</div></div>
+<div class="ttc" id="apair_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a></div></div>
+<div class="ttc" id="aGlobalCache_8hpp_html"><div class="ttname"><a href="GlobalCache_8hpp.html">GlobalCache.hpp</a></div></div>
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a></div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_gaa46b024995f6a5d70ed31882a9a0bcab"><div class="ttname"><a href="group__UtilitiesGroup.html#gaa46b024995f6a5d70ed31882a9a0bcab">call_with_dynamic_type</a></div><div class="ttdeci">Result call_with_dynamic_type(Base *const obj, Callable &amp;&amp;f) noexcept</div><div class="ttdoc">Call a functor with the derived type of a base class pointer.</div><div class="ttdef"><b>Definition:</b> FakeVirtual.hpp:103</div></div>
+<div class="ttc" id="anamespacePhaseControl_html_aca18e7afb80938d20c0a73b2efd903e0"><div class="ttname"><a href="namespacePhaseControl.html#aca18e7afb80938d20c0a73b2efd903e0">PhaseControl::ArbitrationStrategy</a></div><div class="ttdeci">ArbitrationStrategy</div><div class="ttdoc">The possible options for instructing the Main chare in deciding the next phase to jump to.</div><div class="ttdef"><b>Definition:</b> PhaseChange.hpp:29</div></div>
+<div class="ttc" id="aDataBox_8hpp_html"><div class="ttname"><a href="DataBox_8hpp.html">DataBox.hpp</a></div></div>
+<div class="ttc" id="aclasstuples_1_1TaggedTuple_html"><div class="ttname"><a href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a></div><div class="ttdoc">An associative container that is indexed by structs.</div><div class="ttdef"><b>Definition:</b> TaggedTuple.hpp:271</div></div>
+<div class="ttc" id="amemory_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a></div></div>
+<div class="ttc" id="adecay_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/decay.html">std::decay_t</a></div></div>
+<div class="ttc" id="anamespaceActionTesting_html_af2cb56d7012b27cab5d118a9fa0783d2"><div class="ttname"><a href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">ActionTesting::cache</a></div><div class="ttdeci">Parallel::GlobalCache&lt; Metavariables &gt; &amp; cache(MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const ArrayIndex &amp;array_index) noexcept</div><div class="ttdoc">Returns the GlobalCache of Component with index array_index.</div><div class="ttdef"><b>Definition:</b> MockRuntimeSystemFreeFunctions.hpp:382</div></div>
+<div class="ttc" id="astructPhaseChange_html"><div class="ttname"><a href="structPhaseChange.html">PhaseChange</a></div><div class="ttdoc">PhaseChange objects determine the storage types and logic for moving between phases based on runtime ...</div><div class="ttdef"><b>Definition:</b> PhaseChange.hpp:141</div></div>
+<div class="ttc" id="anamespacePhaseControl_html_aca18e7afb80938d20c0a73b2efd903e0ab335f67499c3154e8a054723809a2a11"><div class="ttname"><a href="namespacePhaseControl.html#aca18e7afb80938d20c0a73b2efd903e0ab335f67499c3154e8a054723809a2a11">PhaseControl::PermitAdditionalJumps</a></div><div class="ttdeci">@ PermitAdditionalJumps</div><div class="ttdoc">After the requested phase is considered, continue considering other requests, potentially replacing t...</div><div class="ttdef"><b>Definition:</b> PhaseChange.hpp:45</div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="agroup__DataBoxGroup_html_ga257e835a1b216b347b3e3eb429f97984"><div class="ttname"><a href="group__DataBoxGroup.html#ga257e835a1b216b347b3e3eb429f97984">db::mutate_apply</a></div><div class="ttdeci">constexpr decltype(auto) mutate_apply(F &amp;&amp;f, const gsl::not_null&lt; DataBox&lt; BoxTags &gt; * &gt; box, Args &amp;&amp;... args) noexcept</div><div class="ttdoc">Apply the invokable f mutating items MutateTags and taking as additional arguments ArgumentTags and a...</div><div class="ttdef"><b>Definition:</b> DataBox.hpp:1257</div></div>
+<div class="ttc" id="astructPhaseChange_html_a67dd0c45c46cbc63f101c24b53698639"><div class="ttname"><a href="structPhaseChange.html#a67dd0c45c46cbc63f101c24b53698639">PhaseChange::contribute_phase_data</a></div><div class="ttdeci">void contribute_phase_data(const gsl::not_null&lt; db::DataBox&lt; DbTags &gt; * &gt; box, Parallel::GlobalCache&lt; Metavariables &gt; &amp;cache, const ArrayIndex &amp;array_index) const noexcept</div><div class="ttdoc">Send data from all participating_components to the Main chare for determining the next phase.</div><div class="ttdef"><b>Definition:</b> PhaseChange.hpp:164</div></div>
+<div class="ttc" id="astructPhaseChange_html_a0f4db04b107929469ab82d809070ddf8"><div class="ttname"><a href="structPhaseChange.html#a0f4db04b107929469ab82d809070ddf8">PhaseChange::arbitrate_phase_change</a></div><div class="ttdeci">std::optional&lt; std::pair&lt; typename Metavariables::Phase, PhaseControl::ArbitrationStrategy &gt; &gt; arbitrate_phase_change(const gsl::not_null&lt; tuples::TaggedTuple&lt; DecisionTags... &gt; * &gt; phase_change_decision_data, const typename Metavariables::Phase current_phase, const Parallel::GlobalCache&lt; Metavariables &gt; &amp;cache) const noexcept</div><div class="ttdoc">Determine a phase request and PhaseControl::ArbitrationStrategy based on aggregated phase_change_deci...</div><div class="ttdef"><b>Definition:</b> PhaseChange.hpp:193</div></div>
+<div class="ttc" id="aoptional_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/optional.html">optional</a></div></div>
+<div class="ttc" id="astructPhaseChange_html_aafd6b3e8d7db5ee99153c3d65457fc47"><div class="ttname"><a href="structPhaseChange.html#aafd6b3e8d7db5ee99153c3d65457fc47">PhaseChange::initialize_phase_data</a></div><div class="ttdeci">void initialize_phase_data(const gsl::not_null&lt; tuples::TaggedTuple&lt; Tags... &gt; * &gt; phase_change_decision_data) const noexcept</div><div class="ttdoc">Initialize the phase_change_decision_data on the main chare to starting values.</div><div class="ttdef"><b>Definition:</b> PhaseChange.hpp:212</div></div>
+<div class="ttc" id="anamespacePhaseControl_html_aca18e7afb80938d20c0a73b2efd903e0a318dbdf61cd457cf811853f1c68ca063"><div class="ttname"><a href="namespacePhaseControl.html#aca18e7afb80938d20c0a73b2efd903e0a318dbdf61cd457cf811853f1c68ca063">PhaseControl::RunPhaseImmediately</a></div><div class="ttdeci">@ RunPhaseImmediately</div><div class="ttdoc">Jump to the requested phase immediately, before considering other requested phases.</div><div class="ttdef"><b>Definition:</b> PhaseChange.hpp:37</div></div>
+<div class="ttc" id="anamespaceRegistration_html_abfd9ae1266be994041d2cfaa4199eed2"><div class="ttname"><a href="namespaceRegistration.html#abfd9ae1266be994041d2cfaa4199eed2">Registration::registrants</a></div><div class="ttdeci">tmpl::transform&lt; tmpl::remove_duplicates&lt; RegistrarList &gt;, detail::registrant&lt; tmpl::pin&lt; tmpl::remove_duplicates&lt; RegistrarList &gt; &gt;, tmpl::_1 &gt; &gt; registrants</div><div class="ttdoc">Transform a list of registrars into the list of associated registrants. This is usually used to defin...</div><div class="ttdef"><b>Definition:</b> Registration.hpp:65</div></div>
+<div class="ttc" id="atype_traits_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a></div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

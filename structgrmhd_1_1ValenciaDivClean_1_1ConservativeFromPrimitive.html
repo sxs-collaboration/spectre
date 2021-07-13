@@ -1,0 +1,245 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: grmhd::ValenciaDivClean::ConservativeFromPrimitive Struct Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacegrmhd.html">grmhd</a></li><li class="navelem"><a class="el" href="namespacegrmhd_1_1ValenciaDivClean.html">ValenciaDivClean</a></li><li class="navelem"><a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1ConservativeFromPrimitive.html">ConservativeFromPrimitive</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="structgrmhd_1_1ValenciaDivClean_1_1ConservativeFromPrimitive-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">grmhd::ValenciaDivClean::ConservativeFromPrimitive Struct Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Compute the conservative variables from primitive variables.  
+ <a href="structgrmhd_1_1ValenciaDivClean_1_1ConservativeFromPrimitive.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="GrMhd_2ValenciaDivClean_2ConservativeFromPrimitive_8hpp_source.html">ConservativeFromPrimitive.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a1190da37370e43c777ecfcfb71461113"><td class="memItemLeft" align="right" valign="top"><a id="a1190da37370e43c777ecfcfb71461113"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_tags</b> = tmpl::list&lt; <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1Tags_1_1TildeD.html">grmhd::ValenciaDivClean::Tags::TildeD</a>, <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1Tags_1_1TildeTau.html">grmhd::ValenciaDivClean::Tags::TildeTau</a>, <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1Tags_1_1TildeS.html">grmhd::ValenciaDivClean::Tags::TildeS</a>&lt;&gt;, <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1Tags_1_1TildeB.html">grmhd::ValenciaDivClean::Tags::TildeB</a>&lt;&gt;, <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1Tags_1_1TildePhi.html">grmhd::ValenciaDivClean::Tags::TildePhi</a> &gt;</td></tr>
+<tr class="separator:a1190da37370e43c777ecfcfb71461113"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a5b48ffe925452eb40289bd0eb97743"><td class="memItemLeft" align="right" valign="top"><a id="a6a5b48ffe925452eb40289bd0eb97743"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1RestMassDensity.html">hydro::Tags::RestMassDensity</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structhydro_1_1Tags_1_1SpecificInternalEnergy.html">hydro::Tags::SpecificInternalEnergy</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structhydro_1_1Tags_1_1SpecificEnthalpy.html">hydro::Tags::SpecificEnthalpy</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structhydro_1_1Tags_1_1Pressure.html">hydro::Tags::Pressure</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt;, <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structhydro_1_1Tags_1_1MagneticField.html">hydro::Tags::MagneticField</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt;, <a class="el" href="structgr_1_1Tags_1_1SqrtDetSpatialMetric.html">gr::Tags::SqrtDetSpatialMetric</a>&lt;&gt;, <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3 &gt;, <a class="el" href="structhydro_1_1Tags_1_1DivergenceCleaningField.html">hydro::Tags::DivergenceCleaningField</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;</td></tr>
+<tr class="separator:a6a5b48ffe925452eb40289bd0eb97743"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:adcf8942282e79013f90fa9c15b1f5fb5"><td class="memItemLeft" align="right" valign="top"><a id="adcf8942282e79013f90fa9c15b1f5fb5"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>apply</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; tilde_d, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; tilde_tau, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; tilde_s, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; tilde_b, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; tilde_phi, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;rest_mass_density, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;specific_internal_energy, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;specific_enthalpy, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;pressure, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;spatial_velocity, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;lorentz_factor, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;magnetic_field, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;sqrt_det_spatial_metric, const tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;spatial_metric, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;divergence_cleaning_field) noexcept</td></tr>
+<tr class="separator:adcf8942282e79013f90fa9c15b1f5fb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Compute the conservative variables from primitive variables. </p>
+<p class="formulaDsp">
+\begin{align*} {\tilde D} = &amp; \sqrt{\gamma} \rho W \\ {\tilde S}_i = &amp; \sqrt{\gamma} \left( \rho h W^2 v_i + B^m B_m v_i - B^m v_m B_i \right) \\ {\tilde \tau} = &amp; \sqrt{\gamma} \left[ \rho h W^2 - p - \rho W - \frac{1}{2} (B^m v_m)^2 + \frac{1}{2} B^m B_m \left( 1 + v^m v_m \right) \right] \\ {\tilde B}^i = &amp; \sqrt{\gamma} B^i \\ {\tilde \Phi} = &amp; \sqrt{\gamma} \Phi \end{align*}
+</p>
+<p>where the conserved variables \({\tilde D}\), \({\tilde S}_i\), \({\tilde \tau}\), \({\tilde B}^i\), and \({\tilde \Phi}\) are a generalized mass-energy density, momentum density, specific internal energy density, magnetic field, and divergence cleaning field. Furthermore \(\gamma\) is the determinant of the spatial metric, \(\rho\) is the rest mass density, \(W = 1/\sqrt{1-v_i v^i}\) is the Lorentz factor, \(h = 1 + \epsilon + \frac{p}{\rho}\) is the specific enthalpy, \(v^i\) is the spatial velocity, \(\epsilon\) is the specific internal energy, \(p\) is the pressure, \(B^i\) is the spatial magnetic field measured by an Eulerian observer, and \(\Phi\) is a divergence cleaning field.</p>
+<p>The quantity \({\tilde \tau}\) is rewritten as in <code><a class="el" href="namespaceRelativisticEuler.html" title="Items related to evolving the relativistic Euler system.">RelativisticEuler</a></code> to avoid cancellation error in the non-relativistic limit: </p><p class="formulaDsp">
+\[ \left( \rho h W^2 - p - \rho W \right) \longrightarrow W^2 \left[ \rho \left( \epsilon + v^2 \frac{W}{W + 1} \right) + p v^2 \right] .\]
+</p>
+ </div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/Systems/GrMhd/ValenciaDivClean/<a class="el" href="GrMhd_2ValenciaDivClean_2ConservativeFromPrimitive_8hpp_source.html">ConservativeFromPrimitive.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

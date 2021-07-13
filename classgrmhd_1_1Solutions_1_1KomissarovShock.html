@@ -1,0 +1,552 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: grmhd::Solutions::KomissarovShock Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacegrmhd.html">grmhd</a></li><li class="navelem"><a class="el" href="namespacegrmhd_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html">KomissarovShock</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#pro-attribs">Protected Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classgrmhd_1_1Solutions_1_1KomissarovShock-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">grmhd::Solutions::KomissarovShock Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A one-dimensional shock solution for an ideal fluid in Minkowski spacetime.  
+ <a href="classgrmhd_1_1Solutions_1_1KomissarovShock.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="KomissarovShock_8hpp_source.html">KomissarovShock.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1Solutions_1_1KomissarovShock_1_1AdiabaticIndex.html">AdiabaticIndex</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1Solutions_1_1KomissarovShock_1_1LeftMagneticField.html">LeftMagneticField</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1Solutions_1_1KomissarovShock_1_1LeftPressure.html">LeftPressure</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1Solutions_1_1KomissarovShock_1_1LeftRestMassDensity.html">LeftRestMassDensity</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1Solutions_1_1KomissarovShock_1_1LeftSpatialVelocity.html">LeftSpatialVelocity</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1Solutions_1_1KomissarovShock_1_1RightMagneticField.html">RightMagneticField</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1Solutions_1_1KomissarovShock_1_1RightPressure.html">RightPressure</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1Solutions_1_1KomissarovShock_1_1RightRestMassDensity.html">RightRestMassDensity</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1Solutions_1_1KomissarovShock_1_1RightSpatialVelocity.html">RightSpatialVelocity</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1Solutions_1_1KomissarovShock_1_1ShockSpeed.html">ShockSpeed</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a50a3d0a7609e7407386b72c185c9aef3"><td class="memItemLeft" align="right" valign="top"><a id="a50a3d0a7609e7407386b72c185c9aef3"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state_type</b> = <a class="el" href="classEquationsOfState_1_1IdealFluid.html">EquationsOfState::IdealFluid</a>&lt; true &gt;</td></tr>
+<tr class="separator:a50a3d0a7609e7407386b72c185c9aef3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9191411013988c46be31d100b51e8313"><td class="memItemLeft" align="right" valign="top"><a id="a9191411013988c46be31d100b51e8313"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structgrmhd_1_1Solutions_1_1KomissarovShock_1_1AdiabaticIndex.html">AdiabaticIndex</a>, <a class="el" href="structgrmhd_1_1Solutions_1_1KomissarovShock_1_1LeftRestMassDensity.html">LeftRestMassDensity</a>, <a class="el" href="structgrmhd_1_1Solutions_1_1KomissarovShock_1_1RightRestMassDensity.html">RightRestMassDensity</a>, <a class="el" href="structgrmhd_1_1Solutions_1_1KomissarovShock_1_1LeftPressure.html">LeftPressure</a>, <a class="el" href="structgrmhd_1_1Solutions_1_1KomissarovShock_1_1RightPressure.html">RightPressure</a>, <a class="el" href="structgrmhd_1_1Solutions_1_1KomissarovShock_1_1LeftSpatialVelocity.html">LeftSpatialVelocity</a>, <a class="el" href="structgrmhd_1_1Solutions_1_1KomissarovShock_1_1RightSpatialVelocity.html">RightSpatialVelocity</a>, <a class="el" href="structgrmhd_1_1Solutions_1_1KomissarovShock_1_1LeftMagneticField.html">LeftMagneticField</a>, <a class="el" href="structgrmhd_1_1Solutions_1_1KomissarovShock_1_1RightMagneticField.html">RightMagneticField</a>, <a class="el" href="structgrmhd_1_1Solutions_1_1KomissarovShock_1_1ShockSpeed.html">ShockSpeed</a> &gt;</td></tr>
+<tr class="separator:a9191411013988c46be31d100b51e8313"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_structgrmhd_1_1AnalyticSolution"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structgrmhd_1_1AnalyticSolution')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structgrmhd_1_1AnalyticSolution.html">grmhd::AnalyticSolution</a></td></tr>
+<tr class="memitem:a40bf7f5047fc5e354ba0b0a708df4c9c inherit pub_types_structgrmhd_1_1AnalyticSolution"><td class="memTemplParams" colspan="2"><a id="a40bf7f5047fc5e354ba0b0a708df4c9c"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a40bf7f5047fc5e354ba0b0a708df4c9c inherit pub_types_structgrmhd_1_1AnalyticSolution"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>tags</b> = tmpl::push_back&lt; typename <a class="el" href="structgr_1_1AnalyticSolution.html">gr::AnalyticSolution</a>&lt; 3 &gt;::template tags&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1RestMassDensity.html">hydro::Tags::RestMassDensity</a>&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1SpecificInternalEnergy.html">hydro::Tags::SpecificInternalEnergy</a>&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1Pressure.html">hydro::Tags::Pressure</a>&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; DataType, 3 &gt;, <a class="el" href="structhydro_1_1Tags_1_1MagneticField.html">hydro::Tags::MagneticField</a>&lt; DataType, 3 &gt;, <a class="el" href="structhydro_1_1Tags_1_1DivergenceCleaningField.html">hydro::Tags::DivergenceCleaningField</a>&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1SpecificEnthalpy.html">hydro::Tags::SpecificEnthalpy</a>&lt; DataType &gt; &gt;</td></tr>
+<tr class="separator:a40bf7f5047fc5e354ba0b0a708df4c9c inherit pub_types_structgrmhd_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ae262ce2d53e9332a65092ca6382560ab"><td class="memItemLeft" align="right" valign="top"><a id="ae262ce2d53e9332a65092ca6382560ab"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>KomissarovShock</b> (const <a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html">KomissarovShock</a> &amp;)=delete</td></tr>
+<tr class="separator:ae262ce2d53e9332a65092ca6382560ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a08f55a92a7423e5432240a3131179f66"><td class="memItemLeft" align="right" valign="top"><a id="a08f55a92a7423e5432240a3131179f66"></a>
+<a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html">KomissarovShock</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html">KomissarovShock</a> &amp;)=delete</td></tr>
+<tr class="separator:a08f55a92a7423e5432240a3131179f66"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89fd562a2d1839ae8c5abb0dcabd5823"><td class="memItemLeft" align="right" valign="top"><a id="a89fd562a2d1839ae8c5abb0dcabd5823"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>KomissarovShock</b> (<a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html">KomissarovShock</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a89fd562a2d1839ae8c5abb0dcabd5823"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac5f8f35bb2446e620ae56525a3624230"><td class="memItemLeft" align="right" valign="top"><a id="ac5f8f35bb2446e620ae56525a3624230"></a>
+<a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html">KomissarovShock</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html">KomissarovShock</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:ac5f8f35bb2446e620ae56525a3624230"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24c46ead3439d117e47b769e87c3fa8d"><td class="memItemLeft" align="right" valign="top"><a id="a24c46ead3439d117e47b769e87c3fa8d"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>KomissarovShock</b> (double adiabatic_index, double left_rest_mass_density, double right_rest_mass_density, double left_pressure, double right_pressure, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;left_spatial_velocity, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;right_spatial_velocity, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;left_magnetic_field, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;right_magnetic_field, double shock_speed) noexcept</td></tr>
+<tr class="separator:a24c46ead3439d117e47b769e87c3fa8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18f8a58181cb031dd9e1e8792ed2ff17"><td class="memItemLeft" align="right" valign="top"><a id="a18f8a58181cb031dd9e1e8792ed2ff17"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>KomissarovShock</b> (CkMigrateMessage *) noexcept</td></tr>
+<tr class="separator:a18f8a58181cb031dd9e1e8792ed2ff17"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7152b9700de34f07e78262d2162bd932"><td class="memTemplParams" colspan="2"><a id="a7152b9700de34f07e78262d2162bd932"></a>
+template&lt;typename DataType , typename... Tags&gt; </td></tr>
+<tr class="memitem:a7152b9700de34f07e78262d2162bd932"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html#a7152b9700de34f07e78262d2162bd932">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, double t, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:a7152b9700de34f07e78262d2162bd932"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a collection of hydrodynamic variables at position x. <br /></td></tr>
+<tr class="separator:a7152b9700de34f07e78262d2162bd932"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ef96ac810925779c9b8979e262ea240"><td class="memTemplParams" colspan="2"><a id="a9ef96ac810925779c9b8979e262ea240"></a>
+template&lt;typename DataType , typename Tag &gt; </td></tr>
+<tr class="memitem:a9ef96ac810925779c9b8979e262ea240"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tag &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html#a9ef96ac810925779c9b8979e262ea240">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, double t, tmpl::list&lt; Tag &gt;) const noexcept</td></tr>
+<tr class="memdesc:a9ef96ac810925779c9b8979e262ea240"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the metric variables. <br /></td></tr>
+<tr class="separator:a9ef96ac810925779c9b8979e262ea240"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe1d2ba7e2b5d80b42ed97f85e346b34"><td class="memItemLeft" align="right" valign="top"><a id="afe1d2ba7e2b5d80b42ed97f85e346b34"></a>
+const <a class="el" href="classEquationsOfState_1_1IdealFluid.html">EquationsOfState::IdealFluid</a>&lt; true &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state</b> () const noexcept</td></tr>
+<tr class="separator:afe1d2ba7e2b5d80b42ed97f85e346b34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af223a4688d8b5da6eb630775cac8538c"><td class="memItemLeft" align="right" valign="top"><a id="af223a4688d8b5da6eb630775cac8538c"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;) noexcept</td></tr>
+<tr class="separator:af223a4688d8b5da6eb630775cac8538c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a2eb4ed433e72a99260fd81089858cbf8"><td class="memTemplParams" colspan="2"><a id="a2eb4ed433e72a99260fd81089858cbf8"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a2eb4ed433e72a99260fd81089858cbf8"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html#a2eb4ed433e72a99260fd81089858cbf8">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, double t, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1RestMassDensity.html">hydro::Tags::RestMassDensity</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1RestMassDensity.html">hydro::Tags::RestMassDensity</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:a2eb4ed433e72a99260fd81089858cbf8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:a2eb4ed433e72a99260fd81089858cbf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85928bc5f04c64182f74660861411f6f"><td class="memTemplParams" colspan="2"><a id="a85928bc5f04c64182f74660861411f6f"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a85928bc5f04c64182f74660861411f6f"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html#a85928bc5f04c64182f74660861411f6f">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, double t, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificInternalEnergy.html">hydro::Tags::SpecificInternalEnergy</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificInternalEnergy.html">hydro::Tags::SpecificInternalEnergy</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:a85928bc5f04c64182f74660861411f6f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:a85928bc5f04c64182f74660861411f6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4661ddd5a31294850a9903e7a0fc28c2"><td class="memTemplParams" colspan="2"><a id="a4661ddd5a31294850a9903e7a0fc28c2"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a4661ddd5a31294850a9903e7a0fc28c2"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html#a4661ddd5a31294850a9903e7a0fc28c2">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, double t, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1Pressure.html">hydro::Tags::Pressure</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1Pressure.html">hydro::Tags::Pressure</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:a4661ddd5a31294850a9903e7a0fc28c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:a4661ddd5a31294850a9903e7a0fc28c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51e3783f1f9c2e64ec07dde1147351c3"><td class="memTemplParams" colspan="2"><a id="a51e3783f1f9c2e64ec07dde1147351c3"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a51e3783f1f9c2e64ec07dde1147351c3"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html#a51e3783f1f9c2e64ec07dde1147351c3">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, double t, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; DataType, 3 &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; DataType, 3 &gt;&gt;</td></tr>
+<tr class="memdesc:a51e3783f1f9c2e64ec07dde1147351c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:a51e3783f1f9c2e64ec07dde1147351c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d9c0f1ebe0aa7d29a5d592e93760f3f"><td class="memTemplParams" colspan="2"><a id="a3d9c0f1ebe0aa7d29a5d592e93760f3f"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a3d9c0f1ebe0aa7d29a5d592e93760f3f"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html#a3d9c0f1ebe0aa7d29a5d592e93760f3f">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, double t, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1MagneticField.html">hydro::Tags::MagneticField</a>&lt; DataType, 3 &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1MagneticField.html">hydro::Tags::MagneticField</a>&lt; DataType, 3 &gt;&gt;</td></tr>
+<tr class="memdesc:a3d9c0f1ebe0aa7d29a5d592e93760f3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:a3d9c0f1ebe0aa7d29a5d592e93760f3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8dcbce0ab288816f01e846507d7dcf40"><td class="memTemplParams" colspan="2"><a id="a8dcbce0ab288816f01e846507d7dcf40"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a8dcbce0ab288816f01e846507d7dcf40"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html#a8dcbce0ab288816f01e846507d7dcf40">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, double t, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1DivergenceCleaningField.html">hydro::Tags::DivergenceCleaningField</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1DivergenceCleaningField.html">hydro::Tags::DivergenceCleaningField</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:a8dcbce0ab288816f01e846507d7dcf40"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:a8dcbce0ab288816f01e846507d7dcf40"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adbdda4c00cf16e0262a754c3220aea8d"><td class="memTemplParams" colspan="2"><a id="adbdda4c00cf16e0262a754c3220aea8d"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:adbdda4c00cf16e0262a754c3220aea8d"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html#adbdda4c00cf16e0262a754c3220aea8d">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, double t, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:adbdda4c00cf16e0262a754c3220aea8d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:adbdda4c00cf16e0262a754c3220aea8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adcdba7f162306dad140528bed52b2e37"><td class="memTemplParams" colspan="2"><a id="adcdba7f162306dad140528bed52b2e37"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:adcdba7f162306dad140528bed52b2e37"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html#adcdba7f162306dad140528bed52b2e37">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, double t, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificEnthalpy.html">hydro::Tags::SpecificEnthalpy</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificEnthalpy.html">hydro::Tags::SpecificEnthalpy</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:adcdba7f162306dad140528bed52b2e37"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:adcdba7f162306dad140528bed52b2e37"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aeb8cb58fb820c5c82ddcf6c7c805c5d0"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:aeb8cb58fb820c5c82ddcf6c7c805c5d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_static_attribs_structgrmhd_1_1AnalyticSolution"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_structgrmhd_1_1AnalyticSolution')"><img src="closed.png" alt="-"/>&#160;Static Public Attributes inherited from <a class="el" href="structgrmhd_1_1AnalyticSolution.html">grmhd::AnalyticSolution</a></td></tr>
+<tr class="memitem:aee0a613156c9b6276d4b073629f7260d inherit pub_static_attribs_structgrmhd_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="aee0a613156c9b6276d4b073629f7260d"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = 3_st</td></tr>
+<tr class="separator:aee0a613156c9b6276d4b073629f7260d inherit pub_static_attribs_structgrmhd_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
+Protected Attributes</h2></td></tr>
+<tr class="memitem:a9c3520f249e42cdf2425dc72692fbcb9"><td class="memItemLeft" align="right" valign="top"><a id="a9c3520f249e42cdf2425dc72692fbcb9"></a>
+<a class="el" href="classEquationsOfState_1_1IdealFluid.html">EquationsOfState::IdealFluid</a>&lt; true &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state_</b> {}</td></tr>
+<tr class="separator:a9c3520f249e42cdf2425dc72692fbcb9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade7ea884f89ae6411e655fe2df0bce22"><td class="memItemLeft" align="right" valign="top"><a id="ade7ea884f89ae6411e655fe2df0bce22"></a>
+<a class="el" href="classgr_1_1Solutions_1_1Minkowski.html">gr::Solutions::Minkowski</a>&lt; 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>background_spacetime_</b> {}</td></tr>
+<tr class="separator:ade7ea884f89ae6411e655fe2df0bce22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa79c5772aee995520acfe7f155820cf"><td class="memItemLeft" align="right" valign="top"><a id="aaa79c5772aee995520acfe7f155820cf"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>adiabatic_index_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:aaa79c5772aee995520acfe7f155820cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adab423c02f03aef7e802f9a21b44492b"><td class="memItemLeft" align="right" valign="top"><a id="adab423c02f03aef7e802f9a21b44492b"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>left_rest_mass_density_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:adab423c02f03aef7e802f9a21b44492b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9aebd603c5c2c85aa81eeaedb3a7bce1"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><b>right_rest_mass_density_</b></td></tr>
+<tr class="separator:a9aebd603c5c2c85aa81eeaedb3a7bce1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae8fec83e28859a01f3ec5785c17e7232"><td class="memItemLeft" align="right" valign="top"><a id="ae8fec83e28859a01f3ec5785c17e7232"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>left_pressure_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:ae8fec83e28859a01f3ec5785c17e7232"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a389898d9d0baeb62bf2d5e25c6c53c91"><td class="memItemLeft" align="right" valign="top"><a id="a389898d9d0baeb62bf2d5e25c6c53c91"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>right_pressure_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:a389898d9d0baeb62bf2d5e25c6c53c91"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45a91eb2c61731c2fed93e915b77ec3a"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>left_spatial_velocity_</b></td></tr>
+<tr class="separator:a45a91eb2c61731c2fed93e915b77ec3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d17d12569c7bc5590aef8d2046dc7a0"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>right_spatial_velocity_</b></td></tr>
+<tr class="separator:a2d17d12569c7bc5590aef8d2046dc7a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b0e5d3058a2665e746104c44adeaa85"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>left_magnetic_field_</b></td></tr>
+<tr class="separator:a2b0e5d3058a2665e746104c44adeaa85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69d0427c0662594b21e503ac24627b23"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>right_magnetic_field_</b></td></tr>
+<tr class="separator:a69d0427c0662594b21e503ac24627b23"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac065b5ffb5f82b66e6da579a60872e8"><td class="memItemLeft" align="right" valign="top"><a id="aac065b5ffb5f82b66e6da579a60872e8"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>shock_speed_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:aac065b5ffb5f82b66e6da579a60872e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:aef95bce06d8c8337bcdc96b70e2bbea8"><td class="memItemLeft" align="right" valign="top"><a id="aef95bce06d8c8337bcdc96b70e2bbea8"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html">KomissarovShock</a> &amp;lhs, const <a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html">KomissarovShock</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:aef95bce06d8c8337bcdc96b70e2bbea8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae62ec4800127c33b6785740d76a3b192"><td class="memItemLeft" align="right" valign="top"><a id="ae62ec4800127c33b6785740d76a3b192"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html">KomissarovShock</a> &amp;lhs, const <a class="el" href="classgrmhd_1_1Solutions_1_1KomissarovShock.html">KomissarovShock</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:ae62ec4800127c33b6785740d76a3b192"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A one-dimensional shock solution for an ideal fluid in Minkowski spacetime. </p>
+<p>This solution consists of a left state for \(x&lt;0\) and a right state for \(x\ge 0\), each with constant fluid variables. The interface between these states moves with the shock speed \(\mu\) as described in <a class="el" href="citelist.html#CITEREF_Komissarov1999">[63]</a>.</p>
+<dl class="section note"><dt>Note</dt><dd>We do not currently support 1D RMHD, so this class provides a 3D solution with \(x\)-dependence only. Therefore the computational domain can be represented by a single element with periodic boundary conditions in the \(y\) and \(z\) directions. </dd></dl>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="aeb8cb58fb820c5c82ddcf6c7c805c5d0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeb8cb58fb820c5c82ddcf6c7c805c5d0">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> grmhd::Solutions::KomissarovShock::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Analytic initial data for a Komissarov shock test. The fluid variables &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;are set homogeneously on either half of the domain left and right of &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;x=0.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a2b0e5d3058a2665e746104c44adeaa85"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2b0e5d3058a2665e746104c44adeaa85">&#9670;&nbsp;</a></span>left_magnetic_field_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;double, 3&gt; grmhd::Solutions::KomissarovShock::left_magnetic_field_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      {<a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>(),</div>
+<div class="line">       <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>(),</div>
+<div class="line">       <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>()}}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a45a91eb2c61731c2fed93e915b77ec3a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a45a91eb2c61731c2fed93e915b77ec3a">&#9670;&nbsp;</a></span>left_spatial_velocity_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;double, 3&gt; grmhd::Solutions::KomissarovShock::left_spatial_velocity_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      {<a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>(),</div>
+<div class="line">       <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>(),</div>
+<div class="line">       <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>()}}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a69d0427c0662594b21e503ac24627b23"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a69d0427c0662594b21e503ac24627b23">&#9670;&nbsp;</a></span>right_magnetic_field_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;double, 3&gt; grmhd::Solutions::KomissarovShock::right_magnetic_field_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      {<a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>(),</div>
+<div class="line">       <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>(),</div>
+<div class="line">       <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>()}}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a9aebd603c5c2c85aa81eeaedb3a7bce1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9aebd603c5c2c85aa81eeaedb3a7bce1">&#9670;&nbsp;</a></span>right_rest_mass_density_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double grmhd::Solutions::KomissarovShock::right_rest_mass_density_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>()</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a2d17d12569c7bc5590aef8d2046dc7a0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2d17d12569c7bc5590aef8d2046dc7a0">&#9670;&nbsp;</a></span>right_spatial_velocity_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;double, 3&gt; grmhd::Solutions::KomissarovShock::right_spatial_velocity_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      {<a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>(),</div>
+<div class="line">       <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>(),</div>
+<div class="line">       <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>()}}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticSolutions/GrMhd/<a class="el" href="KomissarovShock_8hpp_source.html">KomissarovShock.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="asignaling_NaN_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits::signaling_NaN</a></div><div class="ttdeci">T signaling_NaN(T... args)</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

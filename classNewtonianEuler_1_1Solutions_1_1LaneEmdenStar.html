@@ -1,0 +1,356 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: NewtonianEuler::Solutions::LaneEmdenStar Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceNewtonianEuler.html">NewtonianEuler</a></li><li class="navelem"><a class="el" href="namespaceNewtonianEuler_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="classNewtonianEuler_1_1Solutions_1_1LaneEmdenStar.html">LaneEmdenStar</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classNewtonianEuler_1_1Solutions_1_1LaneEmdenStar-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">NewtonianEuler::Solutions::LaneEmdenStar Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A static spherically symmetric star in Newtonian gravity.  
+ <a href="classNewtonianEuler_1_1Solutions_1_1LaneEmdenStar.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="LaneEmdenStar_8hpp_source.html">LaneEmdenStar.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1Solutions_1_1LaneEmdenStar_1_1CentralMassDensity.html">CentralMassDensity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The central mass density of the star.  <a href="structNewtonianEuler_1_1Solutions_1_1LaneEmdenStar_1_1CentralMassDensity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1Solutions_1_1LaneEmdenStar_1_1PolytropicConstant.html">PolytropicConstant</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The polytropic constant of the polytropic fluid.  <a href="structNewtonianEuler_1_1Solutions_1_1LaneEmdenStar_1_1PolytropicConstant.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a3445714644072df81bb791f23d2b49d4"><td class="memItemLeft" align="right" valign="top"><a id="a3445714644072df81bb791f23d2b49d4"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state_type</b> = <a class="el" href="classEquationsOfState_1_1PolytropicFluid.html">EquationsOfState::PolytropicFluid</a>&lt; false &gt;</td></tr>
+<tr class="separator:a3445714644072df81bb791f23d2b49d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adeafed305ca01c1aa2b8984d9ae3b9d7"><td class="memItemLeft" align="right" valign="top"><a id="adeafed305ca01c1aa2b8984d9ae3b9d7"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>source_term_type</b> = <a class="el" href="structNewtonianEuler_1_1Sources_1_1LaneEmdenGravitationalField.html">Sources::LaneEmdenGravitationalField</a></td></tr>
+<tr class="separator:adeafed305ca01c1aa2b8984d9ae3b9d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f0b12a847ab635304da2a1d6dc2ff05"><td class="memItemLeft" align="right" valign="top"><a id="a8f0b12a847ab635304da2a1d6dc2ff05"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structNewtonianEuler_1_1Solutions_1_1LaneEmdenStar_1_1CentralMassDensity.html">CentralMassDensity</a>, <a class="el" href="structNewtonianEuler_1_1Solutions_1_1LaneEmdenStar_1_1PolytropicConstant.html">PolytropicConstant</a> &gt;</td></tr>
+<tr class="separator:a8f0b12a847ab635304da2a1d6dc2ff05"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:abe89cf8fb98e4cd2f3b6e519462b8f67"><td class="memItemLeft" align="right" valign="top"><a id="abe89cf8fb98e4cd2f3b6e519462b8f67"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>LaneEmdenStar</b> (const <a class="el" href="classNewtonianEuler_1_1Solutions_1_1LaneEmdenStar.html">LaneEmdenStar</a> &amp;)=delete</td></tr>
+<tr class="separator:abe89cf8fb98e4cd2f3b6e519462b8f67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29a17385bbb34d4890b56e87924acb35"><td class="memItemLeft" align="right" valign="top"><a id="a29a17385bbb34d4890b56e87924acb35"></a>
+<a class="el" href="classNewtonianEuler_1_1Solutions_1_1LaneEmdenStar.html">LaneEmdenStar</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classNewtonianEuler_1_1Solutions_1_1LaneEmdenStar.html">LaneEmdenStar</a> &amp;)=delete</td></tr>
+<tr class="separator:a29a17385bbb34d4890b56e87924acb35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a41433a70afd8ca5f7cba061ea7279e"><td class="memItemLeft" align="right" valign="top"><a id="a0a41433a70afd8ca5f7cba061ea7279e"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>LaneEmdenStar</b> (<a class="el" href="classNewtonianEuler_1_1Solutions_1_1LaneEmdenStar.html">LaneEmdenStar</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a0a41433a70afd8ca5f7cba061ea7279e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a924c5b06728ca6b2d2ff04658b49dfc2"><td class="memItemLeft" align="right" valign="top"><a id="a924c5b06728ca6b2d2ff04658b49dfc2"></a>
+<a class="el" href="classNewtonianEuler_1_1Solutions_1_1LaneEmdenStar.html">LaneEmdenStar</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classNewtonianEuler_1_1Solutions_1_1LaneEmdenStar.html">LaneEmdenStar</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a924c5b06728ca6b2d2ff04658b49dfc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74d62c80c90f17a22d1f6d263e613b17"><td class="memItemLeft" align="right" valign="top"><a id="a74d62c80c90f17a22d1f6d263e613b17"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>LaneEmdenStar</b> (double central_mass_density, double polytropic_constant) noexcept</td></tr>
+<tr class="separator:a74d62c80c90f17a22d1f6d263e613b17"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a980e5879c497fcac0b24bf4d159087af"><td class="memTemplParams" colspan="2"><a id="a980e5879c497fcac0b24bf4d159087af"></a>
+template&lt;typename DataType , typename... Tags&gt; </td></tr>
+<tr class="memitem:a980e5879c497fcac0b24bf4d159087af"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classNewtonianEuler_1_1Solutions_1_1LaneEmdenStar.html#a980e5879c497fcac0b24bf4d159087af">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, const double, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:a980e5879c497fcac0b24bf4d159087af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a collection of variables at <code>(x, t)</code> <br /></td></tr>
+<tr class="separator:a980e5879c497fcac0b24bf4d159087af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa2399351772e1cd2f5c4dd9516f65b17"><td class="memTemplParams" colspan="2">template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:aa2399351772e1cd2f5c4dd9516f65b17"><td class="memTemplItemLeft" align="right" valign="top">tnsr::I&lt; DataType, 3 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classNewtonianEuler_1_1Solutions_1_1LaneEmdenStar.html#aa2399351772e1cd2f5c4dd9516f65b17">gravitational_field</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x) const noexcept</td></tr>
+<tr class="memdesc:aa2399351772e1cd2f5c4dd9516f65b17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the gravitational field for the corresponding source term, LaneEmdenGravitationalField.  <a href="classNewtonianEuler_1_1Solutions_1_1LaneEmdenStar.html#aa2399351772e1cd2f5c4dd9516f65b17">More...</a><br /></td></tr>
+<tr class="separator:aa2399351772e1cd2f5c4dd9516f65b17"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a79b6bd98ac257bc4afb7e1e3c8ffb3ad"><td class="memItemLeft" align="right" valign="top"><a id="a79b6bd98ac257bc4afb7e1e3c8ffb3ad"></a>
+const <a class="el" href="classEquationsOfState_1_1PolytropicFluid.html">EquationsOfState::PolytropicFluid</a>&lt; false &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state</b> () const noexcept</td></tr>
+<tr class="separator:a79b6bd98ac257bc4afb7e1e3c8ffb3ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af7e48ec01b1a058bfb087938674f17b6"><td class="memItemLeft" align="right" valign="top"><a id="af7e48ec01b1a058bfb087938674f17b6"></a>
+const <a class="el" href="structNewtonianEuler_1_1Sources_1_1LaneEmdenGravitationalField.html">Sources::LaneEmdenGravitationalField</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>source_term</b> () const noexcept</td></tr>
+<tr class="separator:af7e48ec01b1a058bfb087938674f17b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63e7af3d0ad926030788ac8f206a87fa"><td class="memItemLeft" align="right" valign="top"><a id="a63e7af3d0ad926030788ac8f206a87fa"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;) noexcept</td></tr>
+<tr class="separator:a63e7af3d0ad926030788ac8f206a87fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a1f92a0258069cfa5f908319b130b25b9"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a1f92a0258069cfa5f908319b130b25b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a4f29e504cdf50cbb0920afaebe40e205"><td class="memItemLeft" align="right" valign="top"><a id="a4f29e504cdf50cbb0920afaebe40e205"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classNewtonianEuler_1_1Solutions_1_1LaneEmdenStar.html">LaneEmdenStar</a> &amp;lhs, const <a class="el" href="classNewtonianEuler_1_1Solutions_1_1LaneEmdenStar.html">LaneEmdenStar</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a4f29e504cdf50cbb0920afaebe40e205"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A static spherically symmetric star in Newtonian gravity. </p>
+<p>The solution for a static, spherically-symmetric star in 3 dimensions, found by solving the Lane-Emden equation <a class="el" href="citelist.html#CITEREF_Chandrasekhar1939">[24]</a> <a class="el" href="citelist.html#CITEREF_Shapiro1983">[93]</a> . The Lane-Emden equation has closed-form solutions for certain equations of state; this class implements the solution for a polytropic fluid with polytropic exponent \(\Gamma=2\) (i.e., with polytropic index \(n=1\)). The solution is returned in units where \(G=1\), with \(G\) the gravitational constant.</p>
+<p>The radius and mass of the star are determined by the polytropic constant \(\kappa\) and central density \(\rho_c\). The radius is \(R = \pi \alpha\), and the mass is \(M = 4 \pi^2 \alpha^3 \rho_c\), where \(\alpha = \sqrt{\kappa / (2 \pi)}\) and \(G=1\). </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="aa2399351772e1cd2f5c4dd9516f65b17"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa2399351772e1cd2f5c4dd9516f65b17">&#9670;&nbsp;</a></span>gravitational_field()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">tnsr::I&lt;DataType, 3&gt; NewtonianEuler::Solutions::LaneEmdenStar::gravitational_field </td>
+          <td>(</td>
+          <td class="paramtype">const tnsr::I&lt; DataType, 3 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>x</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the gravitational field for the corresponding source term, LaneEmdenGravitationalField. </p>
+<p>The result is the vector-field giving the acceleration due to gravity that is felt by a test particle. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="a1f92a0258069cfa5f908319b130b25b9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1f92a0258069cfa5f908319b130b25b9">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> NewtonianEuler::Solutions::LaneEmdenStar::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;A static, spherically-symmetric star in Newtonian gravity, found by\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;solving the Lane-Emden equations, with a given central density and\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;polytropic fluid. The fluid has polytropic index 1, but the polytropic\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;constant is specifiable&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticSolutions/NewtonianEuler/<a class="el" href="LaneEmdenStar_8hpp_source.html">LaneEmdenStar.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

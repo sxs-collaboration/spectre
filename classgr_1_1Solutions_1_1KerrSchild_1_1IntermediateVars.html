@@ -1,0 +1,265 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: gr::Solutions::KerrSchild::IntermediateVars&lt; DataType, Frame &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacegr.html">gr</a></li><li class="navelem"><a class="el" href="namespacegr_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">KerrSchild</a></li><li class="navelem"><a class="el" href="classgr_1_1Solutions_1_1KerrSchild_1_1IntermediateVars.html">IntermediateVars</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classgr_1_1Solutions_1_1KerrSchild_1_1IntermediateVars-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">gr::Solutions::KerrSchild::IntermediateVars&lt; DataType, Frame &gt; Class Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a45640f93860621a7750455f563da2929"><td class="memItemLeft" align="right" valign="top"><a id="a45640f93860621a7750455f563da2929"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>CachedBuffer</b> = <a class="el" href="classCachedTempBuffer.html">KerrSchild::CachedBuffer</a>&lt; DataType, Frame &gt;</td></tr>
+<tr class="separator:a45640f93860621a7750455f563da2929"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classCachedTempBuffer"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classCachedTempBuffer')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classCachedTempBuffer.html">CachedTempBuffer&lt; Computer, Tags &gt;</a></td></tr>
+<tr class="memitem:a7c283f492f523292251b4a96a08d56e7 inherit pub_types_classCachedTempBuffer"><td class="memItemLeft" align="right" valign="top"><a id="a7c283f492f523292251b4a96a08d56e7"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>tags_list</b> = tmpl::list&lt; Tags... &gt;</td></tr>
+<tr class="separator:a7c283f492f523292251b4a96a08d56e7 inherit pub_types_classCachedTempBuffer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:aa0e4b2022186f017ec04bdedd12cf0b9"><td class="memItemLeft" align="right" valign="top"><a id="aa0e4b2022186f017ec04bdedd12cf0b9"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>IntermediateVars</b> (const <a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">KerrSchild</a> &amp;solution, const tnsr::I&lt; DataType, 3, Frame &gt; &amp;x) noexcept</td></tr>
+<tr class="separator:aa0e4b2022186f017ec04bdedd12cf0b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b14daf161f54565bba8a20c85e1b981"><td class="memItemLeft" align="right" valign="top"><a id="a4b14daf161f54565bba8a20c85e1b981"></a>
+tnsr::i&lt; DataType, 3, Frame &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_var</b> (<a class="el" href="structTags_1_1deriv.html">DerivLapse</a>&lt; DataType, Frame &gt;) noexcept</td></tr>
+<tr class="separator:a4b14daf161f54565bba8a20c85e1b981"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab1ae90c38c388ad05d0fbf376067bf92"><td class="memItemLeft" align="right" valign="top"><a id="ab1ae90c38c388ad05d0fbf376067bf92"></a>
+<a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_var</b> (::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; DataType &gt;&gt;) noexcept</td></tr>
+<tr class="separator:ab1ae90c38c388ad05d0fbf376067bf92"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a506e60b79b57527178718b50edc4980d"><td class="memItemLeft" align="right" valign="top"><a id="a506e60b79b57527178718b50edc4980d"></a>
+tnsr::I&lt; DataType, 3, Frame &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_var</b> (::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, Frame, DataType &gt;&gt;) noexcept</td></tr>
+<tr class="separator:a506e60b79b57527178718b50edc4980d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af86a1913bd521f01bfbfb8fbcee85792"><td class="memItemLeft" align="right" valign="top"><a id="af86a1913bd521f01bfbfb8fbcee85792"></a>
+<a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_var</b> (<a class="el" href="structgr_1_1Tags_1_1SqrtDetSpatialMetric.html">gr::Tags::SqrtDetSpatialMetric</a>&lt; DataType &gt;) noexcept</td></tr>
+<tr class="separator:af86a1913bd521f01bfbfb8fbcee85792"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade6373677a328e4e2465f5e33c5a182a"><td class="memItemLeft" align="right" valign="top"><a id="ade6373677a328e4e2465f5e33c5a182a"></a>
+tnsr::II&lt; DataType, 3, Frame &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_var</b> (<a class="el" href="structgr_1_1Tags_1_1InverseSpatialMetric.html">gr::Tags::InverseSpatialMetric</a>&lt; 3, Frame, DataType &gt;) noexcept</td></tr>
+<tr class="separator:ade6373677a328e4e2465f5e33c5a182a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3fed121b3336bca9b0bd240a6449df50"><td class="memItemLeft" align="right" valign="top"><a id="a3fed121b3336bca9b0bd240a6449df50"></a>
+tnsr::ii&lt; DataType, 3, Frame &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_var</b> (<a class="el" href="structgr_1_1Tags_1_1ExtrinsicCurvature.html">gr::Tags::ExtrinsicCurvature</a>&lt; 3, Frame, DataType &gt;) noexcept</td></tr>
+<tr class="separator:a3fed121b3336bca9b0bd240a6449df50"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aedaffbaa39e94f179c9a2ae09ae178fe"><td class="memTemplParams" colspan="2"><a id="aedaffbaa39e94f179c9a2ae09ae178fe"></a>
+template&lt;typename Tag &gt; </td></tr>
+<tr class="memitem:aedaffbaa39e94f179c9a2ae09ae178fe"><td class="memTemplItemLeft" align="right" valign="top">const Tag::type &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgr_1_1Solutions_1_1KerrSchild_1_1IntermediateVars.html#aedaffbaa39e94f179c9a2ae09ae178fe">get_var</a> (Tag) noexcept</td></tr>
+<tr class="memdesc:aedaffbaa39e94f179c9a2ae09ae178fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain a value from the buffer, computing it if necessary. <br /></td></tr>
+<tr class="separator:aedaffbaa39e94f179c9a2ae09ae178fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classCachedTempBuffer"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classCachedTempBuffer')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classCachedTempBuffer.html">CachedTempBuffer&lt; Computer, Tags &gt;</a></td></tr>
+<tr class="memitem:a4a45d4c3b94044666860295e70c4a8c4 inherit pub_methods_classCachedTempBuffer"><td class="memItemLeft" align="right" valign="top"><a id="a4a45d4c3b94044666860295e70c4a8c4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCachedTempBuffer.html#a4a45d4c3b94044666860295e70c4a8c4">CachedTempBuffer</a> (const size_t size, Computer computer) noexcept</td></tr>
+<tr class="memdesc:a4a45d4c3b94044666860295e70c4a8c4 inherit pub_methods_classCachedTempBuffer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct the buffer with the given computer. <code>size</code> is passed to the underlying <code><a class="el" href="structTempBuffer.html" title="A TempBuffer holds a set of Tensor&lt;DataType&gt;s, where DataType is either a DataVector (or similar type...">TempBuffer</a></code> constructor. <br /></td></tr>
+<tr class="separator:a4a45d4c3b94044666860295e70c4a8c4 inherit pub_methods_classCachedTempBuffer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aedaffbaa39e94f179c9a2ae09ae178fe inherit pub_methods_classCachedTempBuffer"><td class="memTemplParams" colspan="2"><a id="aedaffbaa39e94f179c9a2ae09ae178fe"></a>
+template&lt;typename Tag &gt; </td></tr>
+<tr class="memitem:aedaffbaa39e94f179c9a2ae09ae178fe inherit pub_methods_classCachedTempBuffer"><td class="memTemplItemLeft" align="right" valign="top">const Tag::type &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classCachedTempBuffer.html#aedaffbaa39e94f179c9a2ae09ae178fe">get_var</a> (Tag) noexcept</td></tr>
+<tr class="memdesc:aedaffbaa39e94f179c9a2ae09ae178fe inherit pub_methods_classCachedTempBuffer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain a value from the buffer, computing it if necessary. <br /></td></tr>
+<tr class="separator:aedaffbaa39e94f179c9a2ae09ae178fe inherit pub_methods_classCachedTempBuffer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticSolutions/GeneralRelativity/<a class="el" href="KerrSchild_8hpp_source.html">KerrSchild.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - 39f3c2b725318dcf91749887b1e61f477736e132 - /__w/spectre/spectre/docs/DevGuide/RedistributingGridpoints.md</title>
+  <link rel="stylesheet" type="text/css" href="../../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title"> SpECTRE Documentation Coverage Report</td></tr>
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../../index.html">top level</a> - <a href="index.html">__w/spectre/spectre/docs/DevGuide</a> - RedistributingGridpoints.md</td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+             <td class="headerItem">Commit:</td>
+             <td class="headerValue"><a target="_blank" href="https://github.com/sxs-collaboration/spectre/commit/39f3c2b725318dcf91749887b1e61f477736e132">39f3c2b725318dcf91749887b1e61f477736e132</a></td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2021-07-13 03:19:40</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineNoCov">          0 : \cond NEVER</span></a>
+<a name="2"><span class="lineNum">       2 </span>            : Distributed under the MIT License.</a>
+<a name="3"><span class="lineNum">       3 </span>            : See LICENSE.txt for details.</a>
+<a name="4"><span class="lineNum">       4 </span>            : \endcond</a>
+<a name="5"><span class="lineNum">       5 </span>            : # Redistributing Gridpoints {#redistributing_gridpoints}</a>
+<a name="6"><span class="lineNum">       6 </span>            : </a>
+<a name="7"><span class="lineNum">       7 </span>            : ## Introduction</a>
+<a name="8"><span class="lineNum">       8 </span>            : The simplest way to construct a volume map from two parameterized surfaces is</a>
+<a name="9"><span class="lineNum">       9 </span>            : by linearly interpolating between them:</a>
+<a name="10"><span class="lineNum">      10 </span>            : </a>
+<a name="11"><span class="lineNum">      11 </span>            : \f[\vec{x}(\xi,\eta,\zeta) =</a>
+<a name="12"><span class="lineNum">      12 </span>            : \frac{1-\zeta}{2}\vec{\sigma}_-(\xi,\eta)+</a>
+<a name="13"><span class="lineNum">      13 </span>            : \frac{1+\zeta}{2}\vec{\sigma}_+(\xi,\eta)\f]</a>
+<a name="14"><span class="lineNum">      14 </span>            : </a>
+<a name="15"><span class="lineNum">      15 </span>            : In the above example, each surface \f$\vec{\sigma}_+\f$ and</a>
+<a name="16"><span class="lineNum">      16 </span>            : \f$\vec{\sigma}_-\f$ is parameterized using the logical coordinates \f$\xi\f$</a>
+<a name="17"><span class="lineNum">      17 </span>            : and \f$\eta\f$, and a third coordinate \f$\zeta\in[-1,1]\f$ is used to</a>
+<a name="18"><span class="lineNum">      18 </span>            : interpolate between them.</a>
+<a name="19"><span class="lineNum">      19 </span>            : </a>
+<a name="20"><span class="lineNum">      20 </span>            : We then distribute gridpoints on this volume by specifying values of the</a>
+<a name="21"><span class="lineNum">      21 </span>            : coordinates \f$\xi,\eta,\f$ and \f$\zeta\f$ at which the gridpoints are located.</a>
+<a name="22"><span class="lineNum">      22 </span>            : In SpECTRE these values are the locations of the quadrature nodes. The</a>
+<a name="23"><span class="lineNum">      23 </span>            : distribution of the gridpoints throughout the volume depends on the</a>
+<a name="24"><span class="lineNum">      24 </span>            : parameterization used, and the simplest choice of parameterization does not</a>
+<a name="25"><span class="lineNum">      25 </span>            : necessarily lead to the best gridpoint distribution. In this section we discuss</a>
+<a name="26"><span class="lineNum">      26 </span>            : situations in which there exist better parameterizations than those obtained by</a>
+<a name="27"><span class="lineNum">      27 </span>            : linear interpolation.</a>
+<a name="28"><span class="lineNum">      28 </span>            : </a>
+<a name="29"><span class="lineNum">      29 </span>            : ## Generalized Logical Coordinates</a>
+<a name="30"><span class="lineNum">      30 </span>            : In each of the following examples, we will obtain functions \f$\Xi(\xi),</a>
+<a name="31"><span class="lineNum">      31 </span>            : \mathrm{H}(\eta),\f$ and \f$\mathrm{Z}(\zeta)\f$ that give better gridpoint</a>
+<a name="32"><span class="lineNum">      32 </span>            : distributions than using the logical coordinates alone. Where possible, we will</a>
+<a name="33"><span class="lineNum">      33 </span>            : write the reparameterized map such that the functional form of the map is</a>
+<a name="34"><span class="lineNum">      34 </span>            : unchanged when replacing \f$\Xi\f$ with \f$\xi\f$, etc. We therefore refer to</a>
+<a name="35"><span class="lineNum">      35 </span>            : \f$\Xi, \mathrm{H},\f$ and \f$\mathrm{Z}\f$ as the</a>
+<a name="36"><span class="lineNum">      36 </span>            : *generalized logical coordinates*, as they can also refer to the logical</a>
+<a name="37"><span class="lineNum">      37 </span>            : coordinates \f$\xi, \eta,\f$ and \f$\zeta\f$ themselves, when the transformation</a>
+<a name="38"><span class="lineNum">      38 </span>            : is the identity.</a>
+<a name="39"><span class="lineNum">      39 </span>            : </a>
+<a name="40"><span class="lineNum">      40 </span>            : ## Equiangular Maps</a>
+<a name="41"><span class="lineNum">      41 </span>            : </a>
+<a name="42"><span class="lineNum">      42 </span>            : The mapping for a cubed sphere surface can be easily obtained by taking points</a>
+<a name="43"><span class="lineNum">      43 </span>            : that lie on each face of a cube and normalizing them such that they lie on the</a>
+<a name="44"><span class="lineNum">      44 </span>            : sphere:</a>
+<a name="45"><span class="lineNum">      45 </span>            : </a>
+<a name="46"><span class="lineNum">      46 </span>            : \f[\vec{\sigma}_{+z}(\xi,\eta) =</a>
+<a name="47"><span class="lineNum">      47 </span>            : \frac{1}{\sqrt{1 + \xi^2  + \eta^2}}</a>
+<a name="48"><span class="lineNum">      48 </span>            : \begin{bmatrix}</a>
+<a name="49"><span class="lineNum">      49 </span>            : \xi\\</a>
+<a name="50"><span class="lineNum">      50 </span>            : \eta\\</a>
+<a name="51"><span class="lineNum">      51 </span>            : 1\\</a>
+<a name="52"><span class="lineNum">      52 </span>            : \end{bmatrix}\f]</a>
+<a name="53"><span class="lineNum">      53 </span>            : </a>
+<a name="54"><span class="lineNum">      54 </span>            : In the above example the parameterization used for the upper \f$+z\f$ surface</a>
+<a name="55"><span class="lineNum">      55 </span>            : of the cube is linear in \f$\xi\f$ and \f$\eta\f$. However, distances measured</a>
+<a name="56"><span class="lineNum">      56 </span>            : on the surface of the sphere are not linear in \f$\xi\f$ and \f$\eta\f$. To see</a>
+<a name="57"><span class="lineNum">      57 </span>            : this, one may compute \f$g_{\xi\xi} = |\frac{\partial\vec{x}}{\partial\xi}|^2\f$</a>
+<a name="58"><span class="lineNum">      58 </span>            : to see how distances are measured in terms of \f$\xi\f$:</a>
+<a name="59"><span class="lineNum">      59 </span>            : </a>
+<a name="60"><span class="lineNum">      60 </span>            : \f[g_{\xi,\xi}|_{\eta=0} = \frac{1}{(1+\xi^2)^2}\f]</a>
+<a name="61"><span class="lineNum">      61 </span>            : </a>
+<a name="62"><span class="lineNum">      62 </span>            : This metric term demonstrates that a gridpoint distribution uniform in</a>
+<a name="63"><span class="lineNum">      63 </span>            : \f$\xi\f$ will end up being compressed near \f$\xi=\pm1\f$. Suppose we</a>
+<a name="64"><span class="lineNum">      64 </span>            : reparameterized the surface using the generalized logical coordinate</a>
+<a name="65"><span class="lineNum">      65 </span>            : \f$\Xi\in[-1,1]\f$. We would find:</a>
+<a name="66"><span class="lineNum">      66 </span>            : </a>
+<a name="67"><span class="lineNum">      67 </span>            : \f[g_{\xi,\xi}|_{\eta=0} = \frac{\Xi'^2}{(1+\Xi^2)^2}\f]</a>
+<a name="68"><span class="lineNum">      68 </span>            : </a>
+<a name="69"><span class="lineNum">      69 </span>            : Ideally, we would like distances measured along a curvilinear surface to be</a>
+<a name="70"><span class="lineNum">      70 </span>            : linear in the logical coordinates. We solve the differential equation and</a>
+<a name="71"><span class="lineNum">      71 </span>            : obtain:</a>
+<a name="72"><span class="lineNum">      72 </span>            : </a>
+<a name="73"><span class="lineNum">      73 </span>            : \f[\Xi = \tan(\xi\pi/4)\f]</a>
+<a name="74"><span class="lineNum">      74 </span>            : </a>
+<a name="75"><span class="lineNum">      75 </span>            : These two parameterizations of the cubed sphere are known as the *equidistant*</a>
+<a name="76"><span class="lineNum">      76 </span>            : and *equiangular* central projections of the cube onto the sphere. We now</a>
+<a name="77"><span class="lineNum">      77 </span>            : summarize their usage in SpECTRE CoordinateMaps that have</a>
+<a name="78"><span class="lineNum">      78 </span>            : `with_equiangular_map` as a specifiable parameter:</a>
+<a name="79"><span class="lineNum">      79 </span>            : </a>
+<a name="80"><span class="lineNum">      80 </span>            : In the case where `with_equiangular_map` is `true`, we have the</a>
+<a name="81"><span class="lineNum">      81 </span>            : equiangular coordinates</a>
+<a name="82"><span class="lineNum">      82 </span>            : </a>
+<a name="83"><span class="lineNum">      83 </span>            : \f[\textrm{equiangular xi} : \Xi(\xi) = \textrm{tan}(\xi\pi/4)\f]</a>
+<a name="84"><span class="lineNum">      84 </span>            : </a>
+<a name="85"><span class="lineNum">      85 </span>            : \f[\textrm{equiangular eta}  : \mathrm{H}(\eta) = \textrm{tan}(\eta\pi/4)\f]</a>
+<a name="86"><span class="lineNum">      86 </span>            : </a>
+<a name="87"><span class="lineNum">      87 </span>            : with derivatives</a>
+<a name="88"><span class="lineNum">      88 </span>            : </a>
+<a name="89"><span class="lineNum">      89 </span>            : \f[\Xi'(\xi) = \frac{\pi}{4}(1+\Xi^2)\f],</a>
+<a name="90"><span class="lineNum">      90 </span>            : </a>
+<a name="91"><span class="lineNum">      91 </span>            : \f[\mathrm{H}'(\eta) = \frac{\pi}{4}(1+\mathrm{H}^2)\f]</a>
+<a name="92"><span class="lineNum">      92 </span>            : </a>
+<a name="93"><span class="lineNum">      93 </span>            : In the case where `with_equiangular_map` is `false`, we have the equidistant</a>
+<a name="94"><span class="lineNum">      94 </span>            : coordinates</a>
+<a name="95"><span class="lineNum">      95 </span>            : </a>
+<a name="96"><span class="lineNum">      96 </span>            : \f[ \textrm{equidistant xi}  : \Xi = \xi\f]</a>
+<a name="97"><span class="lineNum">      97 </span>            : </a>
+<a name="98"><span class="lineNum">      98 </span>            : \f[ \textrm{equidistant eta}  : \mathrm{H} = \eta\f]</a>
+<a name="99"><span class="lineNum">      99 </span>            : </a>
+<a name="100"><span class="lineNum">     100 </span>            : with derivatives:</a>
+<a name="101"><span class="lineNum">     101 </span>            : </a>
+<a name="102"><span class="lineNum">     102 </span>            : \f[\Xi'(\xi) = 1\f] \f[\mathrm{H}'(\eta) = 1\f]</a>
+<a name="103"><span class="lineNum">     103 </span>            : </a>
+<a name="104"><span class="lineNum">     104 </span>            : ##  Projective Maps</a>
+<a name="105"><span class="lineNum">     105 </span>            : </a>
+<a name="106"><span class="lineNum">     106 </span>            : The mapping for any convex quadrilateral can be obtained by bilinearly</a>
+<a name="107"><span class="lineNum">     107 </span>            : interpolating between each vertex \f$\vec{x}_1, \vec{x}_2, \vec{x}_3\f$</a>
+<a name="108"><span class="lineNum">     108 </span>            : and \f$\vec{x}_4\f$:</a>
+<a name="109"><span class="lineNum">     109 </span>            : </a>
+<a name="110"><span class="lineNum">     110 </span>            : \f[\vec{x}(\xi,\eta) =</a>
+<a name="111"><span class="lineNum">     111 </span>            : \frac{(1-\xi)(1-\eta)}{4}\vec{x}_1+</a>
+<a name="112"><span class="lineNum">     112 </span>            : \frac{(1+\xi)(1-\eta)}{4}\vec{x}_2+</a>
+<a name="113"><span class="lineNum">     113 </span>            : \frac{(1-\xi)(1+\eta)}{4}\vec{x}_3+</a>
+<a name="114"><span class="lineNum">     114 </span>            : \frac{(1+\xi)(1+\eta)}{4}\vec{x}_4</a>
+<a name="115"><span class="lineNum">     115 </span>            : \f]</a>
+<a name="116"><span class="lineNum">     116 </span>            : </a>
+<a name="117"><span class="lineNum">     117 </span>            : In the case of a trapezoid where two of the sides are parallel, it is</a>
+<a name="118"><span class="lineNum">     118 </span>            : appropriate to linearly interpolate along the parallel sides. However,</a>
+<a name="119"><span class="lineNum">     119 </span>            : linearly interpolating between the two bases results in a less than</a>
+<a name="120"><span class="lineNum">     120 </span>            : ideal gridpoint distribution. This happens in the case of SpECTRE's Frustum,</a>
+<a name="121"><span class="lineNum">     121 </span>            : where the logical coordinate \f$\zeta\f$ interpolates between the bases.</a>
+<a name="122"><span class="lineNum">     122 </span>            : </a>
+<a name="123"><span class="lineNum">     123 </span>            : \image html BilinearVProjective.png &quot;Comparison of mappings. (Noah Veltman)&quot;</a>
+<a name="124"><span class="lineNum">     124 </span>            : </a>
+<a name="125"><span class="lineNum">     125 </span>            : As seen in Veltman's [Warp-Off]</a>
+<a name="126"><span class="lineNum">     126 </span>            : (https://bl.ocks.org/veltman/8f5a157276b1dc18ce2fba1bc06dfb48), linear</a>
+<a name="127"><span class="lineNum">     127 </span>            : interpolation between the two bases results in a uniformly spaced grid</a>
+<a name="128"><span class="lineNum">     128 </span>            : between the bases of the frustum. This causes elements near the smaller base</a>
+<a name="129"><span class="lineNum">     129 </span>            : to be longer in the direction normal to the base, and elements near the larger</a>
+<a name="130"><span class="lineNum">     130 </span>            : base to be shorter in the direction normal to the base. We desire elements that</a>
+<a name="131"><span class="lineNum">     131 </span>            : have roughly equal sizes along each of their dimensions.</a>
+<a name="132"><span class="lineNum">     132 </span>            : </a>
+<a name="133"><span class="lineNum">     133 </span>            : We can redistribute the gridpoints in the \f$\zeta\f$ direction using a</a>
+<a name="134"><span class="lineNum">     134 </span>            : projective map, moving more gridpoints toward the smaller base. We can also see</a>
+<a name="135"><span class="lineNum">     135 </span>            : in the figure above that a projective map can be applied incorrectly, leaving</a>
+<a name="136"><span class="lineNum">     136 </span>            : elements distorted at the opposite end. From this we can see that it is</a>
+<a name="137"><span class="lineNum">     137 </span>            : important to control the degree of projection.</a>
+<a name="138"><span class="lineNum">     138 </span>            : </a>
+<a name="139"><span class="lineNum">     139 </span>            : We adapt a technique from projective geometry to obtain the desired grid</a>
+<a name="140"><span class="lineNum">     140 </span>            : spacing. The heart of the method lies in the fact that objects arranged in a</a>
+<a name="141"><span class="lineNum">     141 </span>            : line at equal distances from one another will appear to converge as they</a>
+<a name="142"><span class="lineNum">     142 </span>            : approach the horizon.</a>
+<a name="143"><span class="lineNum">     143 </span>            : </a>
+<a name="144"><span class="lineNum">     144 </span>            : \image html ProjectionOntoPlane.png &quot;Controlling the degree of projection.&quot;</a>
+<a name="145"><span class="lineNum">     145 </span>            : </a>
+<a name="146"><span class="lineNum">     146 </span>            : The above diagram demonstrates how to obtain a nonlinearly parameterized</a>
+<a name="147"><span class="lineNum">     147 </span>            : object (seen in red) from a linearly parameterized one (seen in purple).</a>
+<a name="148"><span class="lineNum">     148 </span>            : This is done by lifting the linearly parameterized object into a higher</a>
+<a name="149"><span class="lineNum">     149 </span>            : spatial dimension \f$w\f$, such that its projection onto the plane remains</a>
+<a name="150"><span class="lineNum">     150 </span>            : unchanged. As seen above, \f$w_{\delta}\f$ controls the degree of projection</a>
+<a name="151"><span class="lineNum">     151 </span>            : of one end of the object (purple) into a higher spatial dimension \f$w\f$.</a>
+<a name="152"><span class="lineNum">     152 </span>            : In projective geometry, these points that exist in the higher dimension are</a>
+<a name="153"><span class="lineNum">     153 </span>            : labeled with *homogeneous coordinates* \f$\tilde{x}, \tilde{y}, \tilde{z}, w\f$,</a>
+<a name="154"><span class="lineNum">     154 </span>            : to distinguish them from the Cartesian coordinates that label points that exist</a>
+<a name="155"><span class="lineNum">     155 </span>            : on the \f$w=1\f$ hyperplane, \f$x,y,z\f$. The resulting grid (seen in red) is</a>
+<a name="156"><span class="lineNum">     156 </span>            : obtained by projecting back into the \f$w=1\f$ hyperplane. The Cartesian</a>
+<a name="157"><span class="lineNum">     157 </span>            : coordinates are obtained by dividing each homogeneous coordinate of the</a>
+<a name="158"><span class="lineNum">     158 </span>            : linearly parameterized object by its respective \f$w\f$ coordinate value.</a>
+<a name="159"><span class="lineNum">     159 </span>            : </a>
+<a name="160"><span class="lineNum">     160 </span>            : The parametric equation for the purple object seen above in homogeneous</a>
+<a name="161"><span class="lineNum">     161 </span>            : coordinates is:</a>
+<a name="162"><span class="lineNum">     162 </span>            : \f[\begin{bmatrix}\tilde{x}\\\tilde{y}\\\tilde{z}\\w\\\end{bmatrix}=</a>
+<a name="163"><span class="lineNum">     163 </span>            : \frac{1-\zeta}{2}\begin{bmatrix}x_1\\y_1\\z_1\\1\\\end{bmatrix}+</a>
+<a name="164"><span class="lineNum">     164 </span>            : \frac{1+\zeta}{2}\begin{bmatrix}x_2w_{\delta}\\y_2w_{\delta}\\</a>
+<a name="165"><span class="lineNum">     165 </span>            : z_2w_{\delta}\\w_{\delta}\\\end{bmatrix}\f]</a>
+<a name="166"><span class="lineNum">     166 </span>            : </a>
+<a name="167"><span class="lineNum">     167 </span>            : The equation for the projected red object in Cartesian coordinates is</a>
+<a name="168"><span class="lineNum">     168 </span>            : obtained by dividing by w:</a>
+<a name="169"><span class="lineNum">     169 </span>            : \f[\vec{x}(\zeta) = \frac{1}{w(\zeta)}</a>
+<a name="170"><span class="lineNum">     170 </span>            : \begin{bmatrix}</a>
+<a name="171"><span class="lineNum">     171 </span>            : \tilde{x}(\zeta)\\</a>
+<a name="172"><span class="lineNum">     172 </span>            : \tilde{y}(\zeta)\\</a>
+<a name="173"><span class="lineNum">     173 </span>            : \tilde{z}(\zeta)\\</a>
+<a name="174"><span class="lineNum">     174 </span>            : \end{bmatrix}\f]</a>
+<a name="175"><span class="lineNum">     175 </span>            : </a>
+<a name="176"><span class="lineNum">     176 </span>            : We wish to cast our parametric equation for the surface into the form:</a>
+<a name="177"><span class="lineNum">     177 </span>            : \f[\vec{x}(\zeta) =</a>
+<a name="178"><span class="lineNum">     178 </span>            : \frac{1-\mathrm{Z}}{2}\vec{x}_1 + \frac{1+\mathrm{Z}}{2}\vec{x}_2\f]</a>
+<a name="179"><span class="lineNum">     179 </span>            : for some appropriate choice of auxiliary variable `projective_zeta`</a>
+<a name="180"><span class="lineNum">     180 </span>            : \f$ = \mathrm{Z}(\zeta)\f$. We would also like for \f$\mathrm{Z}\f$ to reduce to</a>
+<a name="181"><span class="lineNum">     181 </span>            : \f$\zeta\f$ when \f$w_{\delta}\ = 1\f$.</a>
+<a name="182"><span class="lineNum">     182 </span>            : </a>
+<a name="183"><span class="lineNum">     183 </span>            : Defining the auxiliary variables \f$w_{\pm} := w_{\delta}\pm 1\f$, the desired</a>
+<a name="184"><span class="lineNum">     184 </span>            : \f$\mathrm{Z}(\zeta)\f$ is given by:</a>
+<a name="185"><span class="lineNum">     185 </span>            : \f[\mathrm{Z} = \frac{w_- + \zeta w_+}</a>
+<a name="186"><span class="lineNum">     186 </span>            : {w_+ + \zeta w_-}\f]</a>
+<a name="187"><span class="lineNum">     187 </span>            : </a>
+<a name="188"><span class="lineNum">     188 </span>            : with derivative:</a>
+<a name="189"><span class="lineNum">     189 </span>            : \f[\mathrm{Z}' = \frac{\partial\mathrm{Z}}{\partial \zeta} =</a>
+<a name="190"><span class="lineNum">     190 </span>            : \frac{w_+^2 - w_-^2}{(w_+ + \zeta w_-)^2}\f]</a>
+<a name="191"><span class="lineNum">     191 </span>            : </a>
+<a name="192"><span class="lineNum">     192 </span>            : For SpECTRE CoordinateMaps that have `projective_scale_factor` as a specifiable</a>
+<a name="193"><span class="lineNum">     193 </span>            : parameter, the value \f$w_{\delta} = 1\f$ should be supplied in case the user</a>
+<a name="194"><span class="lineNum">     194 </span>            : does not want to use projective scaling. If `auto_projective_scale_factor` is</a>
+<a name="195"><span class="lineNum">     195 </span>            : set to `true`, the map will compute a value of \f$w_{\delta}\f$ that is</a>
+<a name="196"><span class="lineNum">     196 </span>            : appropriate.</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

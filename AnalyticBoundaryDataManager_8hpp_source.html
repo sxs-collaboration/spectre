@@ -1,0 +1,361 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Evolution/Systems/Cce/AnalyticBoundaryDataManager.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_d7cddb31ba741ba3a4d5be000d880a30.html">Evolution</a></li><li class="navelem"><a class="el" href="dir_ae9813db12dd9fd3f3106ad3644a1b2a.html">Systems</a></li><li class="navelem"><a class="el" href="dir_b9586a27d0e1f299c51d3004d7f0b675.html">Cce</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">AnalyticBoundaryDataManager.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/limits.html">limits</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a>&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/BoundaryData.hpp&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/SpecBoundaryData.hpp&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/WorldtubeDataManager.hpp&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/GeneralizedHarmonic/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;IO/Observer/ObserverComponent.hpp&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;IO/Observer/WriteSimpleData.hpp&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Spectral/SwshCoefficients.hpp&quot;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Spectral/SwshTransform.hpp&quot;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="CharmPupable_8hpp.html">Parallel/CharmPupable.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="GlobalCache_8hpp.html">Parallel/GlobalCache.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;Parallel/Invoke.hpp&quot;</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/GeneralRelativity/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;Utilities/MakeString.hpp&quot;</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Utilities_2System_2ParallelInfo_8hpp.html">Utilities/System/ParallelInfo.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceCce.html">Cce</a> {</div>
+<div class="line"><a name="l00030"></a><span class="lineno"><a class="line" href="namespaceCce_1_1Tags.html">   30</a></span>&#160;<span class="keyword">namespace </span>Tags {<span class="comment"></span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1Tags_1_1ObservationLMax.html">ObservationLMax</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment"></span>}  <span class="comment">// namespace Tags</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment">/// A boundary data manager that constructs the desired boundary data into</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment">/// the `Variables` from the data provided by the analytic solution.</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno"><a class="line" href="classCce_1_1AnalyticBoundaryDataManager.html">   38</a></span>&#160;<span class="comment"></span><span class="keyword">class </span><a class="code" href="classCce_1_1AnalyticBoundaryDataManager.html">AnalyticBoundaryDataManager</a> {</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  <span class="comment">// charm needs an empty constructor.</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;  <a class="code" href="classCce_1_1AnalyticBoundaryDataManager.html">AnalyticBoundaryDataManager</a>() noexcept = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160; </div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;  <a class="code" href="classCce_1_1AnalyticBoundaryDataManager.html">AnalyticBoundaryDataManager</a>(</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;      <span class="keywordtype">size_t</span> l_max, <span class="keywordtype">double</span> extraction_radius,</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;      <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;Solutions::WorldtubeData&gt;</a> generator) noexcept;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment">  /*!</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment">   * \brief Update the `boundary_data_variables` entries for all tags in</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment">   * `Tags::characteristic_worldtube_boundary_tags` to the boundary data from</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment">   * the analytic solution at  `time`.</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment">   * \details This class retrieves metric boundary data from the</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment">   * `Cce::Solutions::WorldtubeData` derived class that represents an analytic</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment">   * solution, then dispatches to `Cce::create_bondi_boundary_data()` to</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment">   * construct the Bondi values into the provided `Variables`</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment">   */</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;  <span class="keywordtype">bool</span> <a class="code" href="classCce_1_1AnalyticBoundaryDataManager.html#a176ca842a31c40f9c18e209c88d7a58c">populate_hypersurface_boundary_data</a>(</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;Variables&lt;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;          <a class="code" href="namespaceCce_1_1Tags.html#a7527c94f3bb08dd4124926b9ff41ebac">Tags::characteristic_worldtube_boundary_tags&lt;Tags::BoundaryValue&gt;</a>&gt;*&gt;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;          boundary_data_variables,</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;      <span class="keywordtype">double</span> time) <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">  /// Use `observers::ThreadedActions::WriteSimpleData` to output the expected</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment">  /// news at `time` from the analytic data to dataset `/expected_news.dat`.</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment"></span>  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ParallelComponent, <span class="keyword">typename</span> Metavariables&gt;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;  <span class="keywordtype">void</span> <a class="code" href="classCce_1_1AnalyticBoundaryDataManager.html#a06b027cf154e510f1ceec4d6c864e07d">write_news</a>(<a class="code" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache&lt;Metavariables&gt;</a>&amp; <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>,</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;                  <span class="keywordtype">double</span> time) <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;  <span class="keywordtype">size_t</span> get_l_max() <span class="keyword">const</span> noexcept { <span class="keywordflow">return</span> l_max_; }</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; </div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;  <span class="keyword">const</span> <a class="code" href="structCce_1_1Solutions_1_1WorldtubeData.html">Solutions::WorldtubeData</a>&amp; get_generator() <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keywordflow">return</span> *generator_;</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;  }</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment">  /// Serialization for Charm++.</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment"></span>  <span class="comment">// NOLINTNEXTLINE(google-runtime-references)</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;  <span class="keywordtype">void</span> <a class="code" href="classCce_1_1AnalyticBoundaryDataManager.html#aa7a87a440359207e61a912cc3be4c62f">pup</a>(PUP::er&amp; p) noexcept;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160; </div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;  <span class="keywordtype">size_t</span> l_max_ = 0;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;Solutions::WorldtubeData&gt;</a> generator_;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;  <span class="keywordtype">double</span> extraction_radius_ = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>();</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;};</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160; </div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> ParallelComponent, <span class="keyword">typename</span> Metavariables&gt;</div>
+<div class="line"><a name="l00086"></a><span class="lineno"><a class="line" href="classCce_1_1AnalyticBoundaryDataManager.html#a06b027cf154e510f1ceec4d6c864e07d">   86</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classCce_1_1AnalyticBoundaryDataManager.html#a06b027cf154e510f1ceec4d6c864e07d">AnalyticBoundaryDataManager::write_news</a>(</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    <a class="code" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache&lt;Metavariables&gt;</a>&amp; <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>,</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">double</span> time) <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> news = get&lt;Tags::News&gt;(</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;      generator_-&gt;variables(l_max_, time, tmpl::list&lt;Tags::News&gt;{}));</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;  <span class="keyword">const</span> <span class="keywordtype">size_t</span> observation_l_max = Parallel::get&lt;Tags::ObservationLMax&gt;(<a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>);</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a> data_to_write(2 * <a class="code" href="group__ConstantExpressionsGroup.html#gaef1fe82faee8c46e9706f252a5a00937">square</a>(observation_l_max + 1) + 1);</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;std::string&gt;</a> file_legend;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;  file_legend.reserve(2 * <a class="code" href="group__ConstantExpressionsGroup.html#gaef1fe82faee8c46e9706f252a5a00937">square</a>(observation_l_max + 1) + 1);</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;  file_legend.emplace_back(<span class="stringliteral">&quot;time&quot;</span>);</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt;= static_cast&lt;int&gt;(observation_l_max); ++i) {</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> j = -i; j &lt;= i; ++j) {</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;      file_legend.push_back(<a class="code" href="classMakeString.html">MakeString</a>{} &lt;&lt; <span class="stringliteral">&quot;Real Y_&quot;</span> &lt;&lt; i &lt;&lt; <span class="stringliteral">&quot;,&quot;</span> &lt;&lt; j);</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;      file_legend.push_back(<a class="code" href="classMakeString.html">MakeString</a>{} &lt;&lt; <span class="stringliteral">&quot;Imag Y_&quot;</span> &lt;&lt; i &lt;&lt; <span class="stringliteral">&quot;,&quot;</span> &lt;&lt; j);</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    }</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;  }</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;  <span class="keyword">const</span> <a class="code" href="classComplexModalVector.html">ComplexModalVector</a> goldberg_modes =</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;      <a class="code" href="group__SwshGroup.html#ga98021522583c1ddddf77ca868dd54b9b">Spectral::Swsh::libsharp_to_goldberg_modes</a>(</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;          <a class="code" href="group__SwshGroup.html#ga701ff2b1c56fe2928d5eb79d17e1ae9b">Spectral::Swsh::swsh_transform</a>(l_max_, 1, <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(news)), l_max_)</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;          .data();</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;  data_to_write[0] = time;</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; <a class="code" href="group__ConstantExpressionsGroup.html#gaef1fe82faee8c46e9706f252a5a00937">square</a>(observation_l_max + 1); ++i) {</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    data_to_write[2 * i + 1] = real(goldberg_modes[i]);</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    data_to_write[2 * i + 2] = imag(goldberg_modes[i]);</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;  }</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;  <span class="keyword">auto</span>&amp; my_proxy = Parallel::get_parallel_component&lt;ParallelComponent&gt;(<a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>);</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;  <span class="keyword">auto</span> observer_proxy = <a class="code" href="group__ParallelGroup.html#gab0de6c4b4047a7eb4cbe45a33faa3f41">Parallel::get_parallel_component</a>&lt;</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;      <a class="code" href="structobservers_1_1ObserverWriter.html">observers::ObserverWriter&lt;Metavariables&gt;</a>&gt;(</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;      <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>)[<span class="keyword">static_cast&lt;</span><span class="keywordtype">size_t</span><span class="keyword">&gt;</span>(<a class="code" href="group__ParallelGroup.html#ga94abef85fb91d5d39148ffcc7b7a4e2a">Parallel::my_node</a>(*my_proxy.ckLocal()))];</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;  <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> <a class="code" href="group__TensorGroup.html#ga8997337995d9183da158e7cc2da99101">prefix</a> =</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;      generator_-&gt;use_noninertial_news() ? <span class="stringliteral">&quot;Noninertial_&quot;</span> : <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;  Parallel::threaded_action&lt;observers::ThreadedActions::WriteSimpleData&gt;(</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;      observer_proxy, file_legend, data_to_write,</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;      <span class="stringliteral">&quot;/News_&quot;</span> + <a class="code" href="group__TensorGroup.html#ga8997337995d9183da158e7cc2da99101">prefix</a> + <span class="stringliteral">&quot;expected&quot;</span>s);</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;}</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;}  <span class="comment">// namespace Cce</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
+<div class="ttc" id="aCharmPupable_8hpp_html"><div class="ttname"><a href="CharmPupable_8hpp.html">CharmPupable.hpp</a></div></div>
+<div class="ttc" id="aclassParallel_1_1GlobalCache_html"><div class="ttname"><a href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a></div><div class="ttdef"><b>Definition:</b> ElementReceiveInterpPoints.hpp:15</div></div>
+<div class="ttc" id="aGlobalCache_8hpp_html"><div class="ttname"><a href="GlobalCache_8hpp.html">GlobalCache.hpp</a></div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_gab0de6c4b4047a7eb4cbe45a33faa3f41"><div class="ttname"><a href="group__ParallelGroup.html#gab0de6c4b4047a7eb4cbe45a33faa3f41">Parallel::get_parallel_component</a></div><div class="ttdeci">auto get_parallel_component(GlobalCache&lt; Metavariables &gt; &amp;cache) noexcept -&gt; Parallel::proxy_from_parallel_component&lt; GlobalCache_detail::get_component_if_mocked&lt; typename Metavariables::component_list, ParallelComponentTag &gt;&gt; &amp;</div><div class="ttdoc">Access the Charm++ proxy associated with a ParallelComponent.</div><div class="ttdef"><b>Definition:</b> GlobalCache.hpp:535</div></div>
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a></div></div>
+<div class="ttc" id="agroup__ConstantExpressionsGroup_html_gaef1fe82faee8c46e9706f252a5a00937"><div class="ttname"><a href="group__ConstantExpressionsGroup.html#gaef1fe82faee8c46e9706f252a5a00937">square</a></div><div class="ttdeci">constexpr decltype(auto) square(const T &amp;x)</div><div class="ttdoc">Compute the square of x</div><div class="ttdef"><b>Definition:</b> ConstantExpressions.hpp:55</div></div>
+<div class="ttc" id="aUtilities_2System_2ParallelInfo_8hpp_html"><div class="ttname"><a href="Utilities_2System_2ParallelInfo_8hpp.html">ParallelInfo.hpp</a></div></div>
+<div class="ttc" id="aclassCce_1_1AnalyticBoundaryDataManager_html_a06b027cf154e510f1ceec4d6c864e07d"><div class="ttname"><a href="classCce_1_1AnalyticBoundaryDataManager.html#a06b027cf154e510f1ceec4d6c864e07d">Cce::AnalyticBoundaryDataManager::write_news</a></div><div class="ttdeci">void write_news(Parallel::GlobalCache&lt; Metavariables &gt; &amp;cache, double time) const noexcept</div><div class="ttdoc">Use observers::ThreadedActions::WriteSimpleData to output the expected news at time from the analytic...</div><div class="ttdef"><b>Definition:</b> AnalyticBoundaryDataManager.hpp:86</div></div>
+<div class="ttc" id="agroup__DataBoxGroup_html_gae08744824ea7df89224f128b2080c5b1"><div class="ttname"><a href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">db::get</a></div><div class="ttdeci">const auto &amp; get(const DataBox&lt; TagList &gt; &amp;box) noexcept</div><div class="ttdoc">Retrieve the item with tag Tag from the DataBox.</div><div class="ttdef"><b>Definition:</b> DataBox.hpp:791</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1ObservationLMax_html"><div class="ttname"><a href="structCce_1_1Tags_1_1ObservationLMax.html">Cce::Tags::ObservationLMax</a></div><div class="ttdef"><b>Definition:</b> OptionTags.hpp:330</div></div>
+<div class="ttc" id="astructobservers_1_1ObserverWriter_html"><div class="ttname"><a href="structobservers_1_1ObserverWriter.html">observers::ObserverWriter</a></div><div class="ttdoc">The nodegroup parallel component that is responsible for writing data to disk.</div><div class="ttdef"><b>Definition:</b> ObserverComponent.hpp:51</div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_ga94abef85fb91d5d39148ffcc7b7a4e2a"><div class="ttname"><a href="group__ParallelGroup.html#ga94abef85fb91d5d39148ffcc7b7a4e2a">Parallel::my_node</a></div><div class="ttdeci">int my_node(const DistribObject &amp;distributed_object) noexcept</div><div class="ttdoc">Index of my node.</div><div class="ttdef"><b>Definition:</b> Info.hpp:51</div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="agroup__SwshGroup_html_ga98021522583c1ddddf77ca868dd54b9b"><div class="ttname"><a href="group__SwshGroup.html#ga98021522583c1ddddf77ca868dd54b9b">Spectral::Swsh::libsharp_to_goldberg_modes</a></div><div class="ttdeci">void libsharp_to_goldberg_modes(gsl::not_null&lt; SpinWeighted&lt; ComplexModalVector, Spin &gt; * &gt; goldberg_modes, const SpinWeighted&lt; ComplexModalVector, Spin &gt; &amp;libsharp_modes, size_t l_max) noexcept</div><div class="ttdoc">Compute the set of Goldberg Spin-weighted spherical harmonic modes (in the convention of ) from a lib...</div></div>
+<div class="ttc" id="asignaling_NaN_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits::signaling_NaN</a></div><div class="ttdeci">T signaling_NaN(T... args)</div></div>
+<div class="ttc" id="amemory_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a></div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga8997337995d9183da158e7cc2da99101"><div class="ttname"><a href="group__TensorGroup.html#ga8997337995d9183da158e7cc2da99101">Frame::prefix</a></div><div class="ttdeci">std::string prefix() noexcept</div></div>
+<div class="ttc" id="astructCce_1_1Solutions_1_1WorldtubeData_html"><div class="ttname"><a href="structCce_1_1Solutions_1_1WorldtubeData.html">Cce::Solutions::WorldtubeData</a></div><div class="ttdoc">Abstract base class for analytic worldtube data for verifying the CCE system.</div><div class="ttdef"><b>Definition:</b> WorldtubeData.hpp:73</div></div>
+<div class="ttc" id="aclassComplexModalVector_html"><div class="ttname"><a href="classComplexModalVector.html">ComplexModalVector</a></div><div class="ttdoc">A class for storing complex spectral coefficients on a spectral grid.</div><div class="ttdef"><b>Definition:</b> ComplexModalVector.hpp:40</div></div>
+<div class="ttc" id="aclassCce_1_1AnalyticBoundaryDataManager_html"><div class="ttname"><a href="classCce_1_1AnalyticBoundaryDataManager.html">Cce::AnalyticBoundaryDataManager</a></div><div class="ttdoc">A boundary data manager that constructs the desired boundary data into the Variables from the data pr...</div><div class="ttdef"><b>Definition:</b> AnalyticBoundaryDataManager.hpp:38</div></div>
+<div class="ttc" id="agroup__SwshGroup_html_ga701ff2b1c56fe2928d5eb79d17e1ae9b"><div class="ttname"><a href="group__SwshGroup.html#ga701ff2b1c56fe2928d5eb79d17e1ae9b">Spectral::Swsh::swsh_transform</a></div><div class="ttdeci">void swsh_transform(const size_t l_max, const size_t number_of_radial_points, const gsl::not_null&lt; SpinWeighted&lt; ComplexModalVector, Spin &gt; * &gt; first_coefficient, const ModalThenNodalTypes &amp;... coefficients_then_collocations) noexcept</div><div class="ttdoc">Perform a forward libsharp spin-weighted spherical harmonic transform on any number of supplied SpinW...</div><div class="ttdef"><b>Definition:</b> SwshTransform.hpp:171</div></div>
+<div class="ttc" id="anamespaceActionTesting_html_af2cb56d7012b27cab5d118a9fa0783d2"><div class="ttname"><a href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">ActionTesting::cache</a></div><div class="ttdeci">Parallel::GlobalCache&lt; Metavariables &gt; &amp; cache(MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const ArrayIndex &amp;array_index) noexcept</div><div class="ttdoc">Returns the GlobalCache of Component with index array_index.</div><div class="ttdef"><b>Definition:</b> MockRuntimeSystemFreeFunctions.hpp:382</div></div>
+<div class="ttc" id="anamespaceCce_html"><div class="ttname"><a href="namespaceCce.html">Cce</a></div><div class="ttdoc">The set of utilities for performing Cauchy characteristic evolution and Cauchy characteristic matchin...</div><div class="ttdef"><b>Definition:</b> CharacteristicExtractFwd.hpp:6</div></div>
+<div class="ttc" id="alimits_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/limits.html">limits</a></div></div>
+<div class="ttc" id="anamespaceCce_1_1Tags_html_a7527c94f3bb08dd4124926b9ff41ebac"><div class="ttname"><a href="namespaceCce_1_1Tags.html#a7527c94f3bb08dd4124926b9ff41ebac">Cce::Tags::characteristic_worldtube_boundary_tags</a></div><div class="ttdeci">db::wrap_tags_in&lt; BoundaryPrefix, tmpl::list&lt; Tags::BondiBeta, Tags::BondiU, Tags::Dr&lt; Tags::BondiU &gt;, Tags::BondiQ, Tags::BondiW, Tags::BondiJ, Tags::Dr&lt; Tags::BondiJ &gt;, Tags::BondiH, Tags::Du&lt; Tags::BondiJ &gt;, Tags::BondiR, Tags::Du&lt; Tags::BondiR &gt;, Tags::DuRDividedByR &gt; &gt; characteristic_worldtube_boundary_tags</div><div class="ttdoc">The collection of tags mutated by create_bondi_boundary_data</div><div class="ttdef"><b>Definition:</b> BoundaryData.hpp:553</div></div>
+<div class="ttc" id="aclassCce_1_1AnalyticBoundaryDataManager_html_a176ca842a31c40f9c18e209c88d7a58c"><div class="ttname"><a href="classCce_1_1AnalyticBoundaryDataManager.html#a176ca842a31c40f9c18e209c88d7a58c">Cce::AnalyticBoundaryDataManager::populate_hypersurface_boundary_data</a></div><div class="ttdeci">bool populate_hypersurface_boundary_data(gsl::not_null&lt; Variables&lt; Tags::characteristic_worldtube_boundary_tags&lt; Tags::BoundaryValue &gt;&gt; * &gt; boundary_data_variables, double time) const noexcept</div><div class="ttdoc">Update the boundary_data_variables entries for all tags in Tags::characteristic_worldtube_boundary_ta...</div></div>
+<div class="ttc" id="aunique_ptr_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></div></div>
+<div class="ttc" id="aclassCce_1_1AnalyticBoundaryDataManager_html_aa7a87a440359207e61a912cc3be4c62f"><div class="ttname"><a href="classCce_1_1AnalyticBoundaryDataManager.html#aa7a87a440359207e61a912cc3be4c62f">Cce::AnalyticBoundaryDataManager::pup</a></div><div class="ttdeci">void pup(PUP::er &amp;p) noexcept</div><div class="ttdoc">Serialization for Charm++.</div></div>
+<div class="ttc" id="aclassMakeString_html"><div class="ttname"><a href="classMakeString.html">MakeString</a></div><div class="ttdoc">Make a string by streaming into object.</div><div class="ttdef"><b>Definition:</b> MakeString.hpp:18</div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<div class="ttc" id="astring_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/string.html">string</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

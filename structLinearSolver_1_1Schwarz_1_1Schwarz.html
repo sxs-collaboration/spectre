@@ -1,0 +1,277 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: LinearSolver::Schwarz::Schwarz&lt; FieldsTag, OptionsGroup, SubdomainOperator, SourceTag &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceLinearSolver.html">LinearSolver</a></li><li class="navelem"><a class="el" href="namespaceLinearSolver_1_1Schwarz.html">Schwarz</a></li><li class="navelem"><a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html">Schwarz</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="structLinearSolver_1_1Schwarz_1_1Schwarz-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">LinearSolver::Schwarz::Schwarz&lt; FieldsTag, OptionsGroup, SubdomainOperator, SourceTag &gt; Struct Template Reference<div class="ingroups"><a class="el" href="group__LinearSolverGroup.html">Linear Solver</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>An additive <a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">Schwarz</a> subdomain solver for linear systems of equations \(Ax=b\).  
+ <a href="structLinearSolver_1_1Schwarz_1_1Schwarz.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Schwarz_8hpp_source.html">Schwarz.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a9b83e7fdcf87a620395efa14afea2edd"><td class="memItemLeft" align="right" valign="top"><a id="a9b83e7fdcf87a620395efa14afea2edd"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>operand_tag</b> = FieldsTag</td></tr>
+<tr class="separator:a9b83e7fdcf87a620395efa14afea2edd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e844d1bae31646d84d93a4e66fd109d"><td class="memItemLeft" align="right" valign="top"><a id="a6e844d1bae31646d84d93a4e66fd109d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>fields_tag</b> = FieldsTag</td></tr>
+<tr class="separator:a6e844d1bae31646d84d93a4e66fd109d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad19ec51a222b1aa9918259036e8d101d"><td class="memItemLeft" align="right" valign="top"><a id="ad19ec51a222b1aa9918259036e8d101d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>source_tag</b> = SourceTag</td></tr>
+<tr class="separator:ad19ec51a222b1aa9918259036e8d101d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab38b520b1047797dc95a235477143588"><td class="memItemLeft" align="right" valign="top"><a id="ab38b520b1047797dc95a235477143588"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options_group</b> = OptionsGroup</td></tr>
+<tr class="separator:ab38b520b1047797dc95a235477143588"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e15ce52aa07e651888dd984547e91fa"><td class="memItemLeft" align="right" valign="top"><a id="a3e15ce52aa07e651888dd984547e91fa"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>component_list</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a3e15ce52aa07e651888dd984547e91fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa72b3ddf4bd093bad1fc98f6a78f46ae"><td class="memItemLeft" align="right" valign="top"><a id="aa72b3ddf4bd093bad1fc98f6a78f46ae"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>observed_reduction_data_tags</b> = observers::make_reduction_data_tags&lt; tmpl::list&lt; async_solvers::reduction_data, detail::reduction_data &gt; &gt;</td></tr>
+<tr class="separator:aa72b3ddf4bd093bad1fc98f6a78f46ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21020ecda043029c8684267ae8f32057"><td class="memItemLeft" align="right" valign="top"><a id="a21020ecda043029c8684267ae8f32057"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>subdomain_solver</b> = <a class="el" href="classLinearSolver_1_1Serial_1_1LinearSolver.html">detail::subdomain_solver</a>&lt; FieldsTag, <a class="el" href="classLinearSolver_1_1Schwarz_1_1SubdomainOperator.html">SubdomainOperator</a> &gt;</td></tr>
+<tr class="separator:a21020ecda043029c8684267ae8f32057"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab56c9335462299196ea63c348fce074b"><td class="memItemLeft" align="right" valign="top"><a id="ab56c9335462299196ea63c348fce074b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>initialize_element</b> = tmpl::list&lt; <a class="el" href="structLinearSolver_1_1async__solvers_1_1InitializeElement.html">async_solvers::InitializeElement</a>&lt; FieldsTag, OptionsGroup, SourceTag &gt;, detail::InitializeElement&lt; FieldsTag, OptionsGroup, <a class="el" href="classLinearSolver_1_1Schwarz_1_1SubdomainOperator.html">SubdomainOperator</a> &gt; &gt;</td></tr>
+<tr class="separator:ab56c9335462299196ea63c348fce074b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38b65c132b7ba420cc2dbab0dd44284c"><td class="memItemLeft" align="right" valign="top"><a id="a38b65c132b7ba420cc2dbab0dd44284c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>register_element</b> = tmpl::list&lt; <a class="el" href="structobservers_1_1Actions_1_1RegisterWithObservers.html">async_solvers::RegisterElement</a>&lt; FieldsTag, OptionsGroup, SourceTag &gt;, <a class="el" href="structobservers_1_1Actions_1_1RegisterWithObservers.html">detail::RegisterElement</a>&lt; FieldsTag, OptionsGroup, SourceTag &gt; &gt;</td></tr>
+<tr class="separator:a38b65c132b7ba420cc2dbab0dd44284c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab411196d12b14c634d35f3cf58612441"><td class="memTemplParams" colspan="2"><a id="ab411196d12b14c634d35f3cf58612441"></a>
+template&lt;typename ApplyOperatorActions , typename Label  = OptionsGroup&gt; </td></tr>
+<tr class="memitem:ab411196d12b14c634d35f3cf58612441"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>solve</b> = tmpl::list&lt; <a class="el" href="structLinearSolver_1_1async__solvers_1_1PrepareSolve.html">async_solvers::PrepareSolve</a>&lt; FieldsTag, OptionsGroup, SourceTag, Label &gt;, <a class="el" href="structLinearSolver_1_1Schwarz_1_1Actions_1_1SendOverlapFields.html">detail::SendOverlapData</a>&lt; FieldsTag, OptionsGroup, <a class="el" href="classLinearSolver_1_1Schwarz_1_1SubdomainOperator.html">SubdomainOperator</a> &gt;, detail::SolveSubdomain&lt; FieldsTag, OptionsGroup, <a class="el" href="classLinearSolver_1_1Schwarz_1_1SubdomainOperator.html">SubdomainOperator</a> &gt;, detail::ReceiveOverlapSolution&lt; FieldsTag, OptionsGroup, <a class="el" href="classLinearSolver_1_1Schwarz_1_1SubdomainOperator.html">SubdomainOperator</a> &gt;, ApplyOperatorActions, <a class="el" href="structLinearSolver_1_1async__solvers_1_1CompleteStep.html">async_solvers::CompleteStep</a>&lt; FieldsTag, OptionsGroup, SourceTag, Label &gt; &gt;</td></tr>
+<tr class="separator:ab411196d12b14c634d35f3cf58612441"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename FieldsTag, typename OptionsGroup, typename SubdomainOperator, typename SourceTag = db::add_tag_prefix&lt;::Tags::FixedSource, FieldsTag&gt;&gt;<br />
+struct LinearSolver::Schwarz::Schwarz&lt; FieldsTag, OptionsGroup, SubdomainOperator, SourceTag &gt;</h3>
+
+<p>An additive <a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">Schwarz</a> subdomain solver for linear systems of equations \(Ax=b\). </p>
+<p>This Schwarz-type linear solver works by solving many sub-problems in parallel and combining their solutions as a weighted sum to converge towards the global solution. Each sub-problem is the restriction of the global problem to an element-centered subdomain, which consists of a central element and an overlap region with its neighbors. The decomposition into independent sub-problems makes this linear solver very parallelizable, avoiding global synchronization points altogether. It is commonly used as a preconditioner to Krylov-type solvers such as <code><a class="el" href="structLinearSolver_1_1gmres_1_1Gmres.html" title="A GMRES solver for nonsymmetric linear systems of equations .">LinearSolver::gmres::Gmres</a></code> or <code><a class="el" href="structLinearSolver_1_1cg_1_1ConjugateGradient.html" title="A conjugate gradient solver for linear systems of equations  where the operator  is symmetric.">LinearSolver::cg::ConjugateGradient</a></code>, or as the "smoother" for a Multigrid solver (which may in turn precondition a Krylov-type solver).</p>
+<p>This linear solver relies on an implementation of the global linear operator \(A(x)\) and its restriction to a subdomain \(A_{ss}(x)\). Each step of the algorithm expects that \(A(x)\) is computed and stored in the DataBox as <code><a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt;<a class="el" href="structLinearSolver_1_1Tags_1_1OperatorAppliedTo.html" title="The linear operator  applied to the data in Tag">LinearSolver::Tags::OperatorAppliedTo</a>, operand_tag&gt;</code>. To perform a solve, add the <code>solve</code> action list to an array parallel component. Pass the actions that compute \(A(x)\), as well as any further actions you wish to run in each step of the algorithm, as the first template parameter to <code>solve</code>. If you add the <code>solve</code> action list multiple times, use the second template parameter to label each solve with a different type. Pass the subdomain operator as the <code><a class="el" href="classLinearSolver_1_1Schwarz_1_1SubdomainOperator.html" title="Abstract base class for the subdomain operator, i.e. the linear operator restricted to an element-cen...">SubdomainOperator</a></code> template parameter to this class (not to the <code>solve</code> action list template). See the paragraph below for information on implementing a subdomain operator.</p>
+<dl class="section user"><dt>Subdomain geometry:</dt><dd>The image below gives an overview of the structure of an element-centered subdomain:</dd></dl>
+<div class="image">
+<object type="image/svg+xml" data="subdomain_structure.svg" width="600px" style="pointer-events: none;"></object>
+<div class="caption">
+Fig. 1: An element-centered subdomain</div></div>
+<p>Fig. 1 shows part of a 2-dimensional computational domain. The domain is composed of elements (light gray) that each carry a Legendre-Gauss-Lobatto mesh of grid points (black dots). The diagonally shaded region to the left illustrates an external domain boundary. The lines between neighboring element faces illustrate mortar meshes, which are relevant when implementing a subdomain operator in a DG context but play no role in the <a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">Schwarz</a> algorithm. The dashed line gives an example of an element-centered subdomain with a maximum of 2 grid points of overlap into neighboring elements. For details on how the number of overlap points is chosen see <code><a class="el" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd" title="The number of points that an overlap extends into the volume_extent">LinearSolver::Schwarz::overlap_extent</a></code>. Note that the subdomain does not extend into corner- or edge-neighbors, which is different to both <a class="el" href="citelist.html#CITEREF_Stiller2016a">[100]</a> and <a class="el" href="citelist.html#CITEREF_Vincent2019qpd">[107]</a>. The reason we don't include such diagonal couplings is that in a DG context information only propagates across faces, as noted in <a class="el" href="citelist.html#CITEREF_Stiller2016a">[100]</a>. By eliminating the corner- and edge-neighbors we significantly reduce the complexity of the subdomain geometry and potentially also the communication costs. However, the advantages and disadvantages of this choice have yet to be carefully evaluated.</p>
+<dl class="section user"><dt>Subdomain operator:</dt><dd>The <a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">Schwarz</a> subdomain solver relies on a restriction of the global linear problem \(Ax=b\) to the subdomains. The subdomain operator \(A_{ss}=R_s A R_s^T\), where \(R_s\) is the restriction operator, essentially assumes that its operand is zero everywhere but within the subdomain (see Section 3.1 in <a class="el" href="citelist.html#CITEREF_Stiller2016a">[100]</a>). Therefore it can be evaluated entirely on an element-centered subdomain with no need to communicate with neighbors within each subdomain-operator application, as opposed to the global linear operator that typically requires nearest-neighbor communications. See <code><a class="el" href="classLinearSolver_1_1Schwarz_1_1SubdomainOperator.html" title="Abstract base class for the subdomain operator, i.e. the linear operator restricted to an element-cen...">LinearSolver::Schwarz::SubdomainOperator</a></code> for details on how to implement a subdomain operator for your problem.</dd></dl>
+<dl class="section user"><dt>Algorithm overview:</dt><dd>In each iteration, the <a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">Schwarz</a> algorithm computes the residual \(r=b-Ax\), restricts it to all subdomains as \(r_s=R_s r\) and communicates data on overlap regions with neighboring elements. Once an element has received all data on its subdomain it solves the sub-problem \(A_{ss}\delta x_s=r_s\) for the correction \(\delta x_s\), where \(\delta x_s\) and \(r_s\) have data only on the points of the subdomain and \(A_{ss}\) is the subdomain operator. Since all elements perform such a subdomain-solve, we end up with a subdomain solution \(\delta x_s\) on every subdomain, and the solutions overlap. Therefore, the algorithm communicates subdomain solutions on overlap regions with neighboring elements and adds them to the solution field \(x\) as a weighted sum.</dd></dl>
+<dl class="section user"><dt>Applying the global linear operator:</dt><dd>In order to compute the residual \(r=b-Ax\) that will be restricted to the subdomains to serve as source for the subdomain solves, we must apply the global linear operator \(A\) to the solution field \(x\) once per <a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">Schwarz</a> iteration. The global linear operator typically introduces nearest-neighbor couplings between elements but no global synchronization point (as opposed to Krylov-type solvers such as <code><a class="el" href="structLinearSolver_1_1gmres_1_1Gmres.html" title="A GMRES solver for nonsymmetric linear systems of equations .">LinearSolver::gmres::Gmres</a></code> that require global inner products in each iteration). The algorithm assumes that the action list passed to <code>solve</code> applies the global linear operator, as described above.</dd></dl>
+<dl class="section user"><dt>Subdomain solves:</dt><dd>Each subdomain solve is local to an element, since the data on the subdomain has been made available through communication with the neighboring elements. We can now use any means to solve the subdomain problem that's appropriate for the subdomain operator \(A_{ss}\). For example, if the subdomain operator was available as an explicit matrix we could invert it directly. Since it is typically a matrix-free operator a common approach to solve the subdomain problem is by means of an iterative Krylov-type method, such as GMRES or Conjugate Gradient, ideally with an appropriate preconditioner (yes, this would be preconditioned Krylov-methods solving the subdomains of the <a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">Schwarz</a> solver, which might in turn precondition a global Krylov-solver - it's preconditioners all the way down). Currently, we use <code><a class="el" href="classLinearSolver_1_1Serial_1_1Gmres.html" title="A serial GMRES iterative solver for nonsymmetric linear systems of equations.">LinearSolver::Serial::Gmres</a></code> to solve subdomains. It supports preconditioning, and adding useful subdomain preconditioners will be the subject of future work. Note that the choice of subdomain solver (and, by extension, the choice of subdomain preconditioner) affects only the <em>performance</em> of the <a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">Schwarz</a> solver, not its convergence or parallelization properties (assuming the subdomain solutions it produces are sufficiently precise).</dd></dl>
+<dl class="section user"><dt>Weighting:</dt><dd>Once the subdomain solutions \(\delta x_s\) have been found they must be combined where they have multiple values, i.e. on overlap regions of the subdomains. We use an additive approach where we combine the subdomain solutions as a weighted sum, which has the advantage over "multiplicative" <a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">Schwarz</a> methods that the subdomains decouple and can be solved in parallel. See <code><a class="el" href="namespaceLinearSolver_1_1Schwarz.html#a8ff9561dede68f2d52687b9d6d6ee826" title="Weights for data on the central element of an element-centered subdomain.">LinearSolver::Schwarz::element_weight</a></code> and Section 3.1 of <a class="el" href="citelist.html#CITEREF_Stiller2016a">[100]</a> for details. Note that we must account for the missing corner- and edge-neighbors when constructing the weights. See <code><a class="el" href="namespaceLinearSolver_1_1Schwarz.html#a6a464e0577222e9f23fc152c2d520dac" title="Weights for the intruding solution of a neighboring element-centered subdomain, increasing from 0 to ...">LinearSolver::Schwarz::intruding_weight</a></code> for a discussion.</dd></dl>
+<dl class="section user"><dt>Possible improvements:</dt><dd><ul>
+<li>Specify the number of overlap points as a fraction of the element width instead of a fixed number. This was shown in <a class="el" href="citelist.html#CITEREF_Stiller2016b">[99]</a> to achieve scale-independent convergence at the cost of increasing subdomain sizes.</li>
+<li>Subdomain preconditioning (see paragraph on subdomain solves above) </li>
+</ul>
+</dd></dl>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/ParallelAlgorithms/LinearSolver/Schwarz/<a class="el" href="Schwarz_8hpp_source.html">Schwarz.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Cce::ApplySwshJacobianInplace&lt; Spectral::Swsh::Tags::Derivative&lt; ArgumentTag, Spectral::Swsh::Tags::Ethbar &gt; &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceCce.html">Cce</a></li><li class="navelem"><a class="el" href="structCce_1_1ApplySwshJacobianInplace_3_01Spectral_1_1Swsh_1_1Tags_1_1Derivative_3_01ArgumentTag902c2fcc05e24b3dacb792bbd112b8d3.html">ApplySwshJacobianInplace&lt; Spectral::Swsh::Tags::Derivative&lt; ArgumentTag, Spectral::Swsh::Tags::Ethbar &gt; &gt;</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structCce_1_1ApplySwshJacobianInplace_3_01Spectral_1_1Swsh_1_1Tags_1_1Derivative_3_01ArgumentTagcdf3f8c68ac1b2d12b9d010d1ab782e7.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Cce::ApplySwshJacobianInplace&lt; Spectral::Swsh::Tags::Derivative&lt; ArgumentTag, Spectral::Swsh::Tags::Ethbar &gt; &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Specialization for the spin-weighted derivative \(\bar{\eth}\).  
+ <a href="structCce_1_1ApplySwshJacobianInplace_3_01Spectral_1_1Swsh_1_1Tags_1_1Derivative_3_01ArgumentTag902c2fcc05e24b3dacb792bbd112b8d3.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Evolution_2Systems_2Cce_2SwshDerivatives_8hpp_source.html">SwshDerivatives.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:afe6ff47a25b0d0e2843a9099f201df80"><td class="memItemLeft" align="right" valign="top"><a id="afe6ff47a25b0d0e2843a9099f201df80"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>pre_swsh_derivative_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:afe6ff47a25b0d0e2843a9099f201df80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7368cafb271362edc30896b9bfe2a120"><td class="memItemLeft" align="right" valign="top"><a id="a7368cafb271362edc30896b9bfe2a120"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>swsh_derivative_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a7368cafb271362edc30896b9bfe2a120"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5af84ca950b3a5d382be4fae6e8cc666"><td class="memItemLeft" align="right" valign="top"><a id="a5af84ca950b3a5d382be4fae6e8cc666"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>integration_independent_tags</b> = tmpl::list&lt; <a class="el" href="structCce_1_1Tags_1_1OneMinusY.html">Tags::OneMinusY</a>, <a class="el" href="structCce_1_1Tags_1_1EthRDividedByR.html">Tags::EthRDividedByR</a> &gt;</td></tr>
+<tr class="separator:a5af84ca950b3a5d382be4fae6e8cc666"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2064fac188ed67ac6dd1889b13a705c0"><td class="memItemLeft" align="right" valign="top"><a id="a2064fac188ed67ac6dd1889b13a705c0"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_tags</b> = tmpl::list&lt; <a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt; ArgumentTag, <a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a> &gt; &gt;</td></tr>
+<tr class="separator:a2064fac188ed67ac6dd1889b13a705c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3bce922dbcc9906dab9eebd69f75272"><td class="memItemLeft" align="right" valign="top"><a id="aa3bce922dbcc9906dab9eebd69f75272"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::append&lt; integration_independent_tags &gt;</td></tr>
+<tr class="separator:aa3bce922dbcc9906dab9eebd69f75272"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f49aeb315f9b9f0f8ceaf4a9fdb7a76"><td class="memItemLeft" align="right" valign="top"><a id="a8f49aeb315f9b9f0f8ceaf4a9fdb7a76"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>on_demand_argument_tags</b> = tmpl::list&lt; <a class="el" href="structCce_1_1Tags_1_1Dy.html">Tags::Dy</a>&lt; ArgumentTag &gt; &gt;</td></tr>
+<tr class="separator:a8f49aeb315f9b9f0f8ceaf4a9fdb7a76"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a39ce2d13ac4c12adf74aeb16103ca7e4"><td class="memTemplParams" colspan="2"><a id="a39ce2d13ac4c12adf74aeb16103ca7e4"></a>
+template&lt;typename DyArgumentType &gt; </td></tr>
+<tr class="memitem:a39ce2d13ac4c12adf74aeb16103ca7e4"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>apply</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, spin &gt;&gt; * &gt; ethbar_argument, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, 0 &gt;&gt; &amp;one_minus_y, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, 1 &gt;&gt; &amp;eth_r_divided_by_r, const DyArgumentType &amp;dy_argument)</td></tr>
+<tr class="separator:a39ce2d13ac4c12adf74aeb16103ca7e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a453d3d7d4d977e6a4f3f6e9ef49c4760"><td class="memItemLeft" align="right" valign="top">static constexpr int&#160;</td><td class="memItemRight" valign="bottom"><b>spin</b></td></tr>
+<tr class="separator:a453d3d7d4d977e6a4f3f6e9ef49c4760"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename ArgumentTag&gt;<br />
+struct Cce::ApplySwshJacobianInplace&lt; Spectral::Swsh::Tags::Derivative&lt; ArgumentTag, Spectral::Swsh::Tags::Ethbar &gt; &gt;</h3>
+
+<p>Specialization for the spin-weighted derivative \(\bar{\eth}\). </p>
+<h3>Details</h3>
+<p>The implemented equation is:</p>
+<p class="formulaDsp">
+\[ \bar{\eth} F = \bar{\eth}^\prime F - (1 - y) \frac{\bar{\eth} R}{R} \partial_y F, *\]
+</p>
+<p>where \(\bar{\eth}\) is the derivative at constant Bondi radius \(r\) and \(\bar{\eth}^\prime\) is the derivative at constant numerical radius \(y\). </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a453d3d7d4d977e6a4f3f6e9ef49c4760"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a453d3d7d4d977e6a4f3f6e9ef49c4760">&#9670;&nbsp;</a></span>spin</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename ArgumentTag &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr int <a class="el" href="structCce_1_1ApplySwshJacobianInplace.html">Cce::ApplySwshJacobianInplace</a>&lt; <a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt; ArgumentTag, <a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a> &gt; &gt;::spin</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;ArgumentTag,</div>
+<div class="line">                                       <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a>&gt;::spin</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/Systems/Cce/<a class="el" href="Evolution_2Systems_2Cce_2SwshDerivatives_8hpp_source.html">SwshDerivatives.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="astructSpectral_1_1Swsh_1_1Tags_1_1Derivative_html"><div class="ttname"><a href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a></div><div class="ttdoc">Prefix tag representing the spin-weighted derivative of a spin-weighted scalar.</div><div class="ttdef"><b>Definition:</b> SwshTags.hpp:152</div></div>
+<div class="ttc" id="astructSpectral_1_1Swsh_1_1Tags_1_1Ethbar_html"><div class="ttname"><a href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a></div><div class="ttdoc">Struct for labeling the  spin-weighted derivative in tags.</div><div class="ttdef"><b>Definition:</b> SwshTags.hpp:34</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

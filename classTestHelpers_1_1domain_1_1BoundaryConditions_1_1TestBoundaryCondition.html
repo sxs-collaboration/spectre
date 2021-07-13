@@ -1,0 +1,332 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: TestHelpers::domain::BoundaryConditions::TestBoundaryCondition&lt; Dim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>TestHelpers</b></li><li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespaceTestHelpers_1_1domain_1_1BoundaryConditions.html">BoundaryConditions</a></li><li class="navelem"><a class="el" href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1TestBoundaryCondition.html">TestBoundaryCondition</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1TestBoundaryCondition-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">TestHelpers::domain::BoundaryConditions::TestBoundaryCondition&lt; Dim &gt; Class Template Reference<span class="mlabels"><span class="mlabel">final</span></span></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Concrete boundary condition.  
+ <a href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1TestBoundaryCondition.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="tests_2Unit_2Helpers_2Domain_2BoundaryConditions_2BoundaryCondition_8hpp_source.html">BoundaryCondition.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTestHelpers_1_1domain_1_1BoundaryConditions_1_1TestBoundaryCondition_1_1BlockIdOptionTag.html">BlockIdOptionTag</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTestHelpers_1_1domain_1_1BoundaryConditions_1_1TestBoundaryCondition_1_1DirectionOptionTag.html">DirectionOptionTag</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a37f4db2b40ddd5805b2b0028e5549549"><td class="memItemLeft" align="right" valign="top"><a id="a37f4db2b40ddd5805b2b0028e5549549"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structTestHelpers_1_1domain_1_1BoundaryConditions_1_1TestBoundaryCondition_1_1DirectionOptionTag.html">DirectionOptionTag</a>, <a class="el" href="structTestHelpers_1_1domain_1_1BoundaryConditions_1_1TestBoundaryCondition_1_1BlockIdOptionTag.html">BlockIdOptionTag</a> &gt;</td></tr>
+<tr class="separator:a37f4db2b40ddd5805b2b0028e5549549"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase.html">TestHelpers::domain::BoundaryConditions::BoundaryConditionBase&lt; Dim &gt;</a></td></tr>
+<tr class="memitem:a132a822d3e871b914a26bd297001a5d3 inherit pub_types_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase"><td class="memItemLeft" align="right" valign="top"><a id="a132a822d3e871b914a26bd297001a5d3"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::list&lt; <a class="el" href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1TestBoundaryCondition.html">TestBoundaryCondition</a>&lt; Dim &gt;, ::<a class="el" href="structdomain_1_1BoundaryConditions_1_1None.html">domain::BoundaryConditions::None</a>&lt; <a class="el" href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase.html">BoundaryConditionBase</a>&lt; Dim &gt; &gt;, ::<a class="el" href="structdomain_1_1BoundaryConditions_1_1Periodic.html">domain::BoundaryConditions::Periodic</a>&lt; <a class="el" href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase.html">BoundaryConditionBase</a>&lt; Dim &gt; &gt;&gt;</td></tr>
+<tr class="separator:a132a822d3e871b914a26bd297001a5d3 inherit pub_types_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a441e4ee69ea7d5ba96d675d85256f989"><td class="memItemLeft" align="right" valign="top"><a id="a441e4ee69ea7d5ba96d675d85256f989"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TestBoundaryCondition</b> (<a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; direction, size_t block_id=0)</td></tr>
+<tr class="separator:a441e4ee69ea7d5ba96d675d85256f989"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af64b6e1f33cfe045163144091b704cda"><td class="memItemLeft" align="right" valign="top"><a id="af64b6e1f33cfe045163144091b704cda"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TestBoundaryCondition</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;direction, size_t block_id)</td></tr>
+<tr class="separator:af64b6e1f33cfe045163144091b704cda"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a127058b6e8f05de8d64820018af0ecbf"><td class="memItemLeft" align="right" valign="top"><a id="a127058b6e8f05de8d64820018af0ecbf"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TestBoundaryCondition</b> (<a class="el" href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1TestBoundaryCondition.html">TestBoundaryCondition</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a127058b6e8f05de8d64820018af0ecbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab627211ab258cc3ae7f7cf74ddee7894"><td class="memItemLeft" align="right" valign="top"><a id="ab627211ab258cc3ae7f7cf74ddee7894"></a>
+<a class="el" href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1TestBoundaryCondition.html">TestBoundaryCondition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1TestBoundaryCondition.html">TestBoundaryCondition</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:ab627211ab258cc3ae7f7cf74ddee7894"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb80822fd2a88f6c1d56d38582438689"><td class="memItemLeft" align="right" valign="top"><a id="aeb80822fd2a88f6c1d56d38582438689"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TestBoundaryCondition</b> (const <a class="el" href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1TestBoundaryCondition.html">TestBoundaryCondition</a> &amp;)=default</td></tr>
+<tr class="separator:aeb80822fd2a88f6c1d56d38582438689"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4da3851d50aba8732aaaf35a89f87fa2"><td class="memItemLeft" align="right" valign="top"><a id="a4da3851d50aba8732aaaf35a89f87fa2"></a>
+<a class="el" href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1TestBoundaryCondition.html">TestBoundaryCondition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1TestBoundaryCondition.html">TestBoundaryCondition</a> &amp;)=default</td></tr>
+<tr class="separator:a4da3851d50aba8732aaaf35a89f87fa2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7be85ff3ef26800651214588ea4186d"><td class="memItemLeft" align="right" valign="top"><a id="ab7be85ff3ef26800651214588ea4186d"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TestBoundaryCondition</b> (CkMigrateMessage *const msg) noexcept</td></tr>
+<tr class="separator:ab7be85ff3ef26800651214588ea4186d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa534c4868f207966e554f9cc157a1243"><td class="memItemLeft" align="right" valign="top"><a id="aa534c4868f207966e554f9cc157a1243"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_base_template</b> (::<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a>, <a class="el" href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1TestBoundaryCondition.html">TestBoundaryCondition</a>&lt; Dim &gt;)</td></tr>
+<tr class="separator:aa534c4868f207966e554f9cc157a1243"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a9c0324900772f246611f2dcc9cfbdd"><td class="memItemLeft" align="right" valign="top"><a id="a8a9c0324900772f246611f2dcc9cfbdd"></a>
+const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>direction</b> () const noexcept</td></tr>
+<tr class="separator:a8a9c0324900772f246611f2dcc9cfbdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a8333d009f25be19915a46b19194152"><td class="memItemLeft" align="right" valign="top"><a id="a2a8333d009f25be19915a46b19194152"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>block_id</b> () const noexcept</td></tr>
+<tr class="separator:a2a8333d009f25be19915a46b19194152"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7e3c6a135b10fc779e7ae503b1b5bb6"><td class="memItemLeft" align="right" valign="top"><a id="aa7e3c6a135b10fc779e7ae503b1b5bb6"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; ::<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a> &gt; override</td></tr>
+<tr class="separator:aa7e3c6a135b10fc779e7ae503b1b5bb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8306537da81dd690435adc94e7bec953"><td class="memItemLeft" align="right" valign="top"><a id="a8306537da81dd690435adc94e7bec953"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) override</td></tr>
+<tr class="separator:a8306537da81dd690435adc94e7bec953"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase.html">TestHelpers::domain::BoundaryConditions::BoundaryConditionBase&lt; Dim &gt;</a></td></tr>
+<tr class="memitem:a844506149086ec5c3a5e07c604ffb353 inherit pub_methods_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase"><td class="memItemLeft" align="right" valign="top"><a id="a844506149086ec5c3a5e07c604ffb353"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryConditionBase</b> (<a class="el" href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase.html">BoundaryConditionBase</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a844506149086ec5c3a5e07c604ffb353 inherit pub_methods_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8853ea68d719d236b7ac50feb46f3aed inherit pub_methods_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase"><td class="memItemLeft" align="right" valign="top"><a id="a8853ea68d719d236b7ac50feb46f3aed"></a>
+<a class="el" href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase.html">BoundaryConditionBase</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase.html">BoundaryConditionBase</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a8853ea68d719d236b7ac50feb46f3aed inherit pub_methods_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a83b74c2cbd23d73054d0ca11da734c91 inherit pub_methods_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase"><td class="memItemLeft" align="right" valign="top"><a id="a83b74c2cbd23d73054d0ca11da734c91"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryConditionBase</b> (const <a class="el" href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase.html">BoundaryConditionBase</a> &amp;)=default</td></tr>
+<tr class="separator:a83b74c2cbd23d73054d0ca11da734c91 inherit pub_methods_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc088f08c3878eafac86c39533af634f inherit pub_methods_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase"><td class="memItemLeft" align="right" valign="top"><a id="adc088f08c3878eafac86c39533af634f"></a>
+<a class="el" href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase.html">BoundaryConditionBase</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase.html">BoundaryConditionBase</a> &amp;)=default</td></tr>
+<tr class="separator:adc088f08c3878eafac86c39533af634f inherit pub_methods_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a43c63f7ee752ad52c22ce24b346c9011 inherit pub_methods_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase"><td class="memItemLeft" align="right" valign="top"><a id="a43c63f7ee752ad52c22ce24b346c9011"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryConditionBase</b> (CkMigrateMessage *msg) noexcept</td></tr>
+<tr class="separator:a43c63f7ee752ad52c22ce24b346c9011 inherit pub_methods_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1904ee171485677738a345b1cc8b2f77 inherit pub_methods_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase"><td class="memItemLeft" align="right" valign="top"><a id="a1904ee171485677738a345b1cc8b2f77"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) override</td></tr>
+<tr class="separator:a1904ee171485677738a345b1cc8b2f77 inherit pub_methods_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a></td></tr>
+<tr class="memitem:a3ce9f36399b12ce36bf1502ee0e85e8f inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a3ce9f36399b12ce36bf1502ee0e85e8f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a3ce9f36399b12ce36bf1502ee0e85e8f inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ed654e75ef4544a679a893f2bae7634 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a9ed654e75ef4544a679a893f2bae7634"></a>
+<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a9ed654e75ef4544a679a893f2bae7634 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abce6f2c0829a37f447cc253097f44c07 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="abce6f2c0829a37f447cc253097f44c07"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (const <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;)=default</td></tr>
+<tr class="separator:abce6f2c0829a37f447cc253097f44c07 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abaaefff13f64678066bbbeeb566c8989 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="abaaefff13f64678066bbbeeb566c8989"></a>
+<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;)=default</td></tr>
+<tr class="separator:abaaefff13f64678066bbbeeb566c8989 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75292db0a162bb159e5bebbc4e10a118 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a75292db0a162bb159e5bebbc4e10a118"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (CkMigrateMessage *const msg) noexcept</td></tr>
+<tr class="separator:a75292db0a162bb159e5bebbc4e10a118 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1ba92c0d19a6e2de8fc1c86e406a539 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="ad1ba92c0d19a6e2de8fc1c86e406a539"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_abstract</b> (<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a>)</td></tr>
+<tr class="separator:ad1ba92c0d19a6e2de8fc1c86e406a539 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:ab2a93b5f93d863dc05267c285258c1d8"><td class="memItemLeft" align="right" valign="top"><a id="ab2a93b5f93d863dc05267c285258c1d8"></a>
+static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b> = {&quot;Boundary condition for testing.&quot;}</td></tr>
+<tr class="separator:ab2a93b5f93d863dc05267c285258c1d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_static_attribs_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase')"><img src="closed.png" alt="-"/>&#160;Static Public Attributes inherited from <a class="el" href="classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase.html">TestHelpers::domain::BoundaryConditions::BoundaryConditionBase&lt; Dim &gt;</a></td></tr>
+<tr class="memitem:a537f0a87edd0b0aba9e47a6291af5d3e inherit pub_static_attribs_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase"><td class="memItemLeft" align="right" valign="top"><a id="a537f0a87edd0b0aba9e47a6291af5d3e"></a>
+static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b> = {&quot;Boundary conditions for tests.&quot;}</td></tr>
+<tr class="separator:a537f0a87edd0b0aba9e47a6291af5d3e inherit pub_static_attribs_classTestHelpers_1_1domain_1_1BoundaryConditions_1_1BoundaryConditionBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+class TestHelpers::domain::BoundaryConditions::TestBoundaryCondition&lt; Dim &gt;</h3>
+
+<p>Concrete boundary condition. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>tests/Unit/Helpers/Domain/BoundaryConditions/<a class="el" href="tests_2Unit_2Helpers_2Domain_2BoundaryConditions_2BoundaryCondition_8hpp_source.html">BoundaryCondition.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

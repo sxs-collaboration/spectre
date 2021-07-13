@@ -1,0 +1,272 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Parallelization in SpECTRE</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">Parallelization in SpECTRE </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><p>This overview describes the concepts and terminology that SpECTRE uses to enable parallelism. This overview is a general discussion with no code examples. Subsequent tutorials will provide a more in-depth exploration of the parallelization infrastructure, including code examples.</p>
+<p>Unlike many parallel scientific codes which use data-based parallelism, SpECTRE uses task-based parallelism. The classical strategy for parallelism (data-based parallelism) is to assign a portion of the data to processes (or threads) that synchronously execute compute kernels. This is implemented in many codes but it is difficult to design codes with this strategy that will efficiently scale for complex multi-scale, multi-physics workloads. Task-based parallelism provides a solution: Instead of dividing work between parallel processes based on data ownership, there is a set of tasks and their inter-dependencies. Tasks are scheduled and assigned to processes dynamically, providing opportunities for load balancing and minimization of idle threads. By dividing the program into small enough tasks such that you have several tasks per thread, communication time is hidden by interleaving tasks that are ready to be executed with tasks that are waiting for data.</p>
+<p>In order to implement task-based parallelism, SpECTRE is built on top of the parallel programming framework of the Charm++ library, which is developed by the <a href="http://charm.cs.illinois.edu/">Parallel Programming Laboratory</a> at the University of Illinois. Charm++ is a mature parallel programming framework that provides intra-node threading and can use a variety of communication interfaces (including MPI) to communicate between nodes. Charm++ has a large user base, which includes users of the cosmological \(N\)-body code <a href="https://github.com/N-BodyShop/changa/wiki/ChaNGa">ChaNGa</a> and of the molecular dynamics code <a href="https://www.ks.uiuc.edu/Research/namd/">NAMD</a>.</p>
+<h1><a class="anchor" id="autotoc_md170"></a>
+Charm++ basic concepts</h1>
+<p>In order to understand how parallelization works in SpECTRE, it is useful to understand the basic concepts in the design of Charm++. Much of the following is quoted verbatim from the <a href="https://charm.readthedocs.io">Charm++ documentation</a>, interspersed with comments on how SpECTRE interacts with Charm++.</p>
+<blockquote class="doxtable">
+<p>Charm++ is a C++-based parallel programming system, founded on the migratable-objects programming model, and supported by a novel and powerful adaptive runtime system. It supports both irregular as well as regular applications, and can be used to specify task-parallelism as well as data parallelism in a single application. It automates dynamic load balancing for task-parallel as well as data-parallel applications, via separate suites of load-balancing strategies. Via its message-driven execution model, it supports automatic latency tolerance, modularity and parallel composition. Charm++ also supports automatic checkpoint/restart, as well as fault tolerance based on distributed checkpoints. </p>
+</blockquote>
+<p>SpECTRE currently wraps only some of the features of Charm++, primarily the ones that support task-parallelism. We are just beginning our exploration of dynamic load balancing. Coming soon we will utilize automatic checkpoint/restart. At present we do not use Charm++ support for fault tolerance.</p>
+<blockquote class="doxtable">
+<p>The key feature of the migratable-objects programming model is over-decomposition: The programmer decomposes the program into a large number of work units and data units, and specifies the computation in terms of creation of and interactions between these units, without any direct reference to the processor on which any unit resides. This empowers the runtime system to assign units to processors, and to change the assignment at runtime as necessary. </p>
+</blockquote>
+<p>SpECTRE's parallelization module is designed to make it easy for users to exploit the migratable-object model by providing a framework to define the units into which a program can be decomposed.</p>
+<blockquote class="doxtable">
+<p>A basic unit of parallel computation in Charm++ programs is a chare. At its most basic level, it is just a C++ object. A Charm++ computation consists of a large number of chares distributed on available processors of the system, and interacting with each other via asynchronous method invocations. Asynchronously invoking a method on a remote object can also be thought of as sending a “message” to it. So, these method invocations are sometimes referred to as messages. (besides, in the implementation, the method invocations are packaged as messages anyway). Chares can be created dynamically. </p>
+</blockquote>
+<p>In SpECTRE, we wrap Charm++ chares in struct templates that we call <b>parallel components</b> that represent a collection of distributed objects. We wrap the asynchronous method invocations between the elements of parallel components in struct templates that we call <b>actions</b>. Thus, each element of a parallel component can be thought of as a C++ object that exists on one core on the supercomputer, and an action as calling a member function of that object, even if the caller is on another core.</p>
+<blockquote class="doxtable">
+<p>Conceptually, the system maintains a “work-pool” consisting of seeds for new chares, and messages for existing chares. The Charm++ runtime system (Charm RTS) may pick multiple items, non-deterministically, from this pool and execute them, with the proviso that two different methods cannot be simultaneously executing on the same chare object (say, on different processors). Although one can define a reasonable theoretical operational semantics of Charm++ in this fashion, a more practical description of execution is useful to understand Charm++. A Charm++ application’s execution is distributed among Processing Elements (PEs), which are OS threads or processes depending on the selected Charm++ build options. On each PE, there is a scheduler operating with its own private pool of messages. Each instantiated chare has one PE which is where it currently resides. The pool on each PE includes messages meant for chares residing on that PE, and seeds for new chares that are tentatively meant to be instantiated on that PE. The scheduler picks a message, creates a new chare if the message is a seed (i.e. a constructor invocation) for a new chare, and invokes the method specified by the message. When the method returns control back to the scheduler, it repeats the cycle (i.e. there is no pre-emptive scheduling of other invocations). </p>
+</blockquote>
+<p>It is very important to keep in mind that the actions that are executed on elements of parallel components are done so non-deterministically by the run-time system. Therefore it is the responsibility of the programmer to ensure that actions are not called out of order. This means that if action B must be executed after action A on a given element of a parallel component, the programmer must ensure that either action B is called after the completion of action A (i.e. it is not sufficient that action B is invoked after action A is invoked), or that action B checks that action A has completed before running.</p>
+<blockquote class="doxtable">
+<p>When a chare method executes, it may create method invocations for other chares. The Charm Runtime System (RTS) locates the PE where the targeted chare resides, and delivers the invocation to the scheduler on that PE. </p>
+</blockquote>
+<p>In SpECTRE, this is done by one element of a parallel component calling an action on an element of a another parallel component.</p>
+<blockquote class="doxtable">
+<p>Methods of a chare that can be remotely invoked are called entry methods. Entry methods may take serializable parameters, or a pointer to a message object. Since chares can be created on remote processors, obviously some constructor of a chare needs to be an entry method. Ordinary entry methods are completely non-preemptive- Charm++ will not interrupt an executing method to start any other work, and all calls made are asynchronous. </p>
+</blockquote>
+<p>In SpECTRE, the struct template that defines a parallel component has taken care of creating the entry methods for the underlying chare, which are then called by invoking actions.</p>
+<blockquote class="doxtable">
+<p>Charm++ provides dynamic seed-based load balancing. Thus location (processor number) need not be specified while creating a remote chare. The Charm RTS will then place the remote chare on a suitable processor. Thus one can imagine chare creation as generating only a seed for the new chare, which may take root on some specific processor at a later time. </p>
+</blockquote>
+<p>We are just in the process of beginning to explore the load-balancing features of Charm++, but plan to have new elements of parallel components (the wrapped chares) be creatable using actions, without specifying the location on which the new element is created.</p>
+<blockquote class="doxtable">
+<p>Chares can be grouped into collections. The types of collections of chares supported in Charm++ are: chare-arrays, chare-groups, and chare-nodegroups, referred to as arrays, groups, and nodegroups throughout this manual for brevity. A Chare-array is a collection of an arbitrary number of migratable chares, indexed by some index type, and mapped to processors according to a user-defined map group. A group (nodegroup) is a collection of chares, with exactly one member element on each PE (“node”). </p>
+</blockquote>
+<p>Each of SpECTRE's parallel components has a type alias <code>chare_type</code> corresponding to whether it is a chare-array, chare-group, or chare-nodegroup. In addition we support a singleton which is essentially a one-element array.</p>
+<blockquote class="doxtable">
+<p>Charm++ does not allow global variables, except readonly variables. A chare can normally only access its own data directly. However, each chare is accessible by a globally valid name. So, one can think of Charm++ as supporting a global object space. </p>
+</blockquote>
+<p>SpECTRE does not use the readonly global variables provided by Charm++. Instead SpECTRE provides a nodegroup called the <code>GlobalCache</code> which provides global access to both read-only and writable objects, as well as a way to access every parallel component.</p>
+<blockquote class="doxtable">
+<p>Every Charm++ program must have at least one mainchare. Each mainchare is created by the system on processor 0 when the Charm++ program starts up. Execution of a Charm++ program begins with the Charm RTS constructing all the designated mainchares. For a mainchare named X, execution starts at constructor X() or X(CkArgMsg *) which are equivalent. Typically, the mainchare constructor starts the computation by creating arrays, other chares, and groups. It can also be used to initialize shared readonly objects. </p>
+</blockquote>
+<p>SpECTRE provides a pre-defined mainchare called <code>Main</code> that is run when a SpECTRE executable is started. <code>Main</code> will create the other parallel components, and initialize items in the <code>GlobalCache</code> whose items can be used by any parallel component.</p>
+<blockquote class="doxtable">
+<p>Charm++ program execution is terminated by the CkExit call. Like the exit system call, CkExit never returns, and it optionally accepts an integer value to specify the exit code that is returned to the calling shell. If no exit code is specified, a value of zero (indicating successful execution) is returned. The Charm RTS ensures that no more messages are processed and no entry methods are called after a CkExit. CkExit need not be called on all processors; it is enough to call it from just one processor at the end of the computation. </p>
+</blockquote>
+<p>SpECTRE wraps <code>CkExit</code> with the function <code>sys::exit</code>. As no more messages are processed by Charm++ after this call, SpECTRE also defines a special <code>Exit</code> phase that is guaranteed to be executed after all messages and entry methods have been processed.</p>
+<blockquote class="doxtable">
+<p>As described so far, the execution of individual Chares is “reactive”: When method A is invoked the chare executes this code, and so on. But very often, chares have specific life-cycles, and the sequence of entry methods they execute can be specified in a structured manner, while allowing for some localized non-determinism (e.g. a pair of methods may execute in any order, but when they both finish, the execution continues in a pre-determined manner, say executing a 3rd entry method). </p>
+</blockquote>
+<p>Charm++ provides a special notation to simplify expression of such control structures, but this requires writing specialized interface files that are parsed by Charm++. SpECTRE does not support this; rather we split the executable into a set of user-defined phases. In each phase, each parallel component will execute a user-defined list of actions.</p>
+<blockquote class="doxtable">
+<p>The normal entry methods, being asynchronous, are not allowed to return any value, and are declared with a void return type. </p>
+</blockquote>
+<p>SpECTRE's actions do not return any value to the calling component. Instead when the action is finished it can call another action to send data to an element of any parallel component.</p>
+<blockquote class="doxtable">
+<p>To support asynchronous method invocation and global object space, the RTS needs to be able to serialize (“marshall”) the parameters, and be able to generate global “names” for chares. For this purpose, programmers have to declare the chare classes and the signature of their entry methods in a special “.ci” file, called an interface file. Other than the interface file, the rest of a Charm++ program consists of just normal C++ code. The system generates several classes based on the declarations in the interface file, including “Proxy” classes for each chare class. Those familiar with various component models (such as CORBA) in the distributed computing world will recognize “proxy” to be a dummy, standin entity that refers to an actual entity. For each chare type, a “proxy” class exists. The methods of this “proxy” class correspond to the remote methods of the actual class, and act as “forwarders”. That is, when one invokes a method on a proxy to a remote object, the proxy marshalls the parameters into a message, puts adequate information about the target chare on the envelope of the message, and forwards it to the remote object. Individual chares, chare array, groups, node-groups, as well as the individual elements of these collections have a such a proxy. Multiple methods for obtaining such proxies are described in the manual. Proxies for each type of entity in Charm++ have some differences among the features they support, but the basic syntax and semantics remain the same - that of invoking methods on the remote object by invoking methods on proxies. </p>
+</blockquote>
+<p>SpECTRE has wrapped all of this functionality in order to make it easier to use. SpECTRE automatically creates the interface files for each parallel component using template metaprogramming. SpECTRE provides proxies for each parallel component that are all held in the <code>GlobalCache</code> which is available to every parallel component. In order for actions to be called as entry methods on remote parallel components, the arguments to the function call must be serializable. Charm++ provides the <code>PUP</code> framework to serialize objects where <code>PUP</code> stands for pack-unpack. Since the PUP framework is used by Charm++ for checkpointing, load-balancing, and passing arguments when calling actions, all user-defined classes with member data must define a <code>pup</code> function.</p>
+<blockquote class="doxtable">
+<p>In terms of physical resources, we assume the parallel machine consists of one or more nodes, where a node is a largest unit over which cache coherent shared memory is feasible (and therefore, the maximal set of cores per which a single process can run. Each node may include one or more processor chips, with shared or private caches between them. Each chip may contain multiple cores, and each core may support multiple hardware threads (SMT for example). Charm++ recognizes two logical entities: a PE (processing element) and a logical node, or simply “node”. In a Charm++ program, a PE is a unit of mapping and scheduling: each PE has a scheduler with an associated pool of messages. Each chare is assumed to reside on one PE at a time. A logical node is implemented as an OS process. In non-SMP mode there is no distinction between a PE and a logical node. Otherwise, a PE takes the form of an OS thread, and a logical node may contain one or more PEs. Physical nodes may be partitioned into one or more logical nodes. Since PEs within a logical node share the same memory address space, the Charm++ runtime system optimizes communication between them by using shared memory. Depending on the runtime command-line parameters, a PE may optionally be associated with a subset of cores or hardware threads. </p>
+</blockquote>
+<p>In other words, how Charm++ defines a node and a PE depends upon how Charm++ was installed on a system. The executable <code>Executables/ParallelInfo</code> can be used to determine how many nodes and PEs exist for a given Charm++ build and the runtime command-line parameters passed when calling the executable.</p>
+<p>For more details see the <a href="https://charm.readthedocs.io">Charm++ documentation</a> and <a class="el" href="dev_guide_parallelization_foundations.html">Parallelization, Charm++, and Core Concepts</a>. </p>
+</div></div><!-- contents -->
+</div><!-- PageDoc -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

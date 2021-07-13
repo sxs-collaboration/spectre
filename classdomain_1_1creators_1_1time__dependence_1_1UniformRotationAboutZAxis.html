@@ -1,0 +1,358 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::creators::time_dependence::UniformRotationAboutZAxis&lt; MeshDim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1creators.html">creators</a></li><li class="navelem"><a class="el" href="namespacedomain_1_1creators_1_1time__dependence.html">time_dependence</a></li><li class="navelem"><a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis.html">UniformRotationAboutZAxis</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::creators::time_dependence::UniformRotationAboutZAxis&lt; MeshDim &gt; Class Template Reference<span class="mlabels"><span class="mlabel">final</span></span></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A uniform rotation about the \(z\) axis:  
+ <a href="classdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="UniformRotationAboutZAxis_8hpp_source.html">UniformRotationAboutZAxis.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis_1_1AngularVelocity.html">AngularVelocity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The \(x\)-, \(y\)-, and \(z\)-velocity.  <a href="structdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis_1_1AngularVelocity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis_1_1FunctionOfTimeName.html">FunctionOfTimeName</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The name of the function of time to be added to the DataBox.  <a href="structdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis_1_1FunctionOfTimeName.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis_1_1InitialExpirationDeltaT.html">InitialExpirationDeltaT</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The time interval for updates of the functions of time.  <a href="structdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis_1_1InitialExpirationDeltaT.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis_1_1InitialTime.html">InitialTime</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The initial time of the function of time.  <a href="structdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis_1_1InitialTime.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a2337e8e2c083788c75781662600e519e"><td class="memItemLeft" align="right" valign="top"><a id="a2337e8e2c083788c75781662600e519e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>maps_list</b> = tmpl::list&lt; <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1Rotation_3_012_01_4.html">Rotation</a> &gt;, <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1ProductOf2Maps.html">CoordinateMaps::TimeDependent::ProductOf2Maps</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1Rotation_3_012_01_4.html">Rotation</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Identity.html">Identity</a> &gt; &gt;&gt;</td></tr>
+<tr class="separator:a2337e8e2c083788c75781662600e519e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1ffce157a42636cae9c357824b196e15"><td class="memItemLeft" align="right" valign="top"><a id="a1ffce157a42636cae9c357824b196e15"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>MapForComposition</b> = detail::generate_coordinate_map_t&lt; tmpl::list&lt; tmpl::conditional_t&lt; MeshDim==2, <a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1Rotation_3_012_01_4.html">Rotation</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1ProductOf2Maps.html">domain::CoordinateMaps::TimeDependent::ProductOf2Maps</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1Rotation_3_012_01_4.html">Rotation</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Identity.html">Identity</a> &gt; &gt;&gt; &gt;</td></tr>
+<tr class="separator:a1ffce157a42636cae9c357824b196e15"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae8c44313b39262c97908d34f6790d406"><td class="memItemLeft" align="right" valign="top"><a id="ae8c44313b39262c97908d34f6790d406"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis_1_1InitialTime.html">InitialTime</a>, <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis_1_1InitialExpirationDeltaT.html">InitialExpirationDeltaT</a>, <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis_1_1AngularVelocity.html">AngularVelocity</a>, <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis_1_1FunctionOfTimeName.html">FunctionOfTimeName</a> &gt;</td></tr>
+<tr class="separator:ae8c44313b39262c97908d34f6790d406"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">domain::creators::time_dependence::TimeDependence&lt; MeshDim &gt;</a></td></tr>
+<tr class="memitem:a518a231b9f2b2beef1e2482ab07b5f31 inherit pub_types_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="a518a231b9f2b2beef1e2482ab07b5f31"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::append&lt; creatable_classes_any_dim, tmpl::conditional_t&lt; MeshDim==1, creatable_classes_1d, tmpl::conditional_t&lt; MeshDim==2, creatable_classes_2d, creatable_classes_3d &gt; &gt;&gt;</td></tr>
+<tr class="separator:a518a231b9f2b2beef1e2482ab07b5f31 inherit pub_types_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a768feae908ea0feaa8d6750872fd481b"><td class="memItemLeft" align="right" valign="top"><a id="a768feae908ea0feaa8d6750872fd481b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>UniformRotationAboutZAxis</b> (const <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis.html">UniformRotationAboutZAxis</a> &amp;)=delete</td></tr>
+<tr class="separator:a768feae908ea0feaa8d6750872fd481b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a677edbdb2b618877440bf9231ef7d004"><td class="memItemLeft" align="right" valign="top"><a id="a677edbdb2b618877440bf9231ef7d004"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>UniformRotationAboutZAxis</b> (<a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis.html">UniformRotationAboutZAxis</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a677edbdb2b618877440bf9231ef7d004"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c1b800a1eb73697a64b6f84c60f99b6"><td class="memItemLeft" align="right" valign="top"><a id="a4c1b800a1eb73697a64b6f84c60f99b6"></a>
+<a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis.html">UniformRotationAboutZAxis</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis.html">UniformRotationAboutZAxis</a> &amp;)=delete</td></tr>
+<tr class="separator:a4c1b800a1eb73697a64b6f84c60f99b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e8559f2ce786025aa6ac23db5a97a34"><td class="memItemLeft" align="right" valign="top"><a id="a4e8559f2ce786025aa6ac23db5a97a34"></a>
+<a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis.html">UniformRotationAboutZAxis</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis.html">UniformRotationAboutZAxis</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a4e8559f2ce786025aa6ac23db5a97a34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac48bf5bee01d6c37fb06765575773aa1"><td class="memItemLeft" align="right" valign="top"><a id="ac48bf5bee01d6c37fb06765575773aa1"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>UniformRotationAboutZAxis</b> (double initial_time, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; double &gt; initial_expiration_delta_t, double angular_velocity, <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> function_of_time_name=&quot;RotationAngle&quot;) noexcept</td></tr>
+<tr class="separator:ac48bf5bee01d6c37fb06765575773aa1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4787ba52f72be04eb529b975259c4182"><td class="memItemLeft" align="right" valign="top"><a id="a4787ba52f72be04eb529b975259c4182"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis.html#a4787ba52f72be04eb529b975259c4182">get_clone</a> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a>&lt; MeshDim &gt;&gt; override</td></tr>
+<tr class="memdesc:a4787ba52f72be04eb529b975259c4182"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></code> pointing to a copy of the <code><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html" title="The abstract base class off of which specific classes for adding time dependence into a domain creato...">TimeDependence</a></code>. <br /></td></tr>
+<tr class="separator:a4787ba52f72be04eb529b975259c4182"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c368dacceebedb6d2f0f80159099a06"><td class="memItemLeft" align="right" valign="top"><a id="a2c368dacceebedb6d2f0f80159099a06"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis.html#a2c368dacceebedb6d2f0f80159099a06">block_maps</a> (size_t number_of_blocks) const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, MeshDim &gt;&gt;&gt; override</td></tr>
+<tr class="memdesc:a2c368dacceebedb6d2f0f80159099a06"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the coordinate maps from the <code><a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a></code> to the <code><a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a></code> frame for each block. <br /></td></tr>
+<tr class="separator:a2c368dacceebedb6d2f0f80159099a06"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51045f485e997b71916f46981651d4c3"><td class="memItemLeft" align="right" valign="top"><a id="a51045f485e997b71916f46981651d4c3"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis.html#a51045f485e997b71916f46981651d4c3">functions_of_time</a> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; override</td></tr>
+<tr class="memdesc:a51045f485e997b71916f46981651d4c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the functions of time for the domain. <br /></td></tr>
+<tr class="separator:a51045f485e997b71916f46981651d4c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2576aef00935d7ce030362e2561e453"><td class="memItemLeft" align="right" valign="top"><a id="ac2576aef00935d7ce030362e2561e453"></a>
+MapForComposition&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis.html#ac2576aef00935d7ce030362e2561e453">map_for_composition</a> () const noexcept</td></tr>
+<tr class="memdesc:ac2576aef00935d7ce030362e2561e453"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the map for each block to be used in a composition of <code><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html" title="The abstract base class off of which specific classes for adding time dependence into a domain creato...">TimeDependence</a></code>s. <br /></td></tr>
+<tr class="separator:ac2576aef00935d7ce030362e2561e453"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">domain::creators::time_dependence::TimeDependence&lt; MeshDim &gt;</a></td></tr>
+<tr class="memitem:af36b7b242535cf7f8413624f132f70ca inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="af36b7b242535cf7f8413624f132f70ca"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TimeDependence</b> (const <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;)=default</td></tr>
+<tr class="separator:af36b7b242535cf7f8413624f132f70ca inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbbd44090636dee26dfc280098973128 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="afbbd44090636dee26dfc280098973128"></a>
+<a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;)=default</td></tr>
+<tr class="separator:afbbd44090636dee26dfc280098973128 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ee073dd3ceeea6e9e27f1281dcdc5d6 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="a3ee073dd3ceeea6e9e27f1281dcdc5d6"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TimeDependence</b> (<a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a3ee073dd3ceeea6e9e27f1281dcdc5d6 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a513178e25e84a53826de7fec2edb78 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="a0a513178e25e84a53826de7fec2edb78"></a>
+<a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a0a513178e25e84a53826de7fec2edb78 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a6b1a7c7a9d3e2c386720b314ff7d85 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="a2a6b1a7c7a9d3e2c386720b314ff7d85"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html#a2a6b1a7c7a9d3e2c386720b314ff7d85">is_none</a> () const noexcept</td></tr>
+<tr class="memdesc:a2a6b1a7c7a9d3e2c386720b314ff7d85 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>true</code> if the instance is <code><a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1None.html" title="Make the mesh time independent so that it isn&#39;t moving.">None</a></code>, meaning no time dependence. <br /></td></tr>
+<tr class="separator:a2a6b1a7c7a9d3e2c386720b314ff7d85 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a082b57c1cfcb6970db34982d0a5fa8c5"><td class="memItemLeft" align="right" valign="top"><a id="a082b57c1cfcb6970db34982d0a5fa8c5"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>mesh_dim</b> = MeshDim</td></tr>
+<tr class="separator:a082b57c1cfcb6970db34982d0a5fa8c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80d19d61f681a791c2e0354b7bb5aad6"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a80d19d61f681a791c2e0354b7bb5aad6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a21eec52b4a8c77aa77e3ad5fad7cec4e"><td class="memTemplParams" colspan="2"><a id="a21eec52b4a8c77aa77e3ad5fad7cec4e"></a>
+template&lt;size_t LocalDim&gt; </td></tr>
+<tr class="memitem:a21eec52b4a8c77aa77e3ad5fad7cec4e"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis.html">UniformRotationAboutZAxis</a>&lt; LocalDim &gt; &amp;lhs, const <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis.html">UniformRotationAboutZAxis</a>&lt; LocalDim &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a21eec52b4a8c77aa77e3ad5fad7cec4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t MeshDim&gt;<br />
+class domain::creators::time_dependence::UniformRotationAboutZAxis&lt; MeshDim &gt;</h3>
+
+<p>A uniform rotation about the \(z\) axis: </p>
+<p class="formulaDsp">
+\begin{eqnarray*} x &amp;\to&amp; x \cos \alpha(t) - y \sin \alpha(t)\text{,} \\ y &amp;\to&amp; x \sin \alpha(t) + y \cos \alpha(t)\text{,} \end{eqnarray*}
+</p>
+<p> where \(\alpha(t)\) is a <code><a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html" title="Base class for FunctionsOfTime.">domain::FunctionsOfTime::FunctionOfTime</a></code>. For 3 spatial dimensions, \(z \to z\), and the rotation is implemented as a product of the 2D rotation and an identity map. The rotation is undefined (and therefore unimplemented here) for 1 spatial dimension. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a80d19d61f681a791c2e0354b7bb5aad6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a80d19d61f681a791c2e0354b7bb5aad6">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t MeshDim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1UniformRotationAboutZAxis.html">domain::creators::time_dependence::UniformRotationAboutZAxis</a>&lt; MeshDim &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;A spatially uniform rotation about the z axis initialized with a &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;constant angular velocity.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/Creators/TimeDependence/<a class="el" href="UniformRotationAboutZAxis_8hpp_source.html">UniformRotationAboutZAxis.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

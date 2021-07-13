@@ -1,0 +1,303 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: tests/Unit/Helpers/DataStructures/DataBox/TestTags.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_33df814919e476f9d56dccef9b24e276.html">tests</a></li><li class="navelem"><a class="el" href="dir_38113a4c235494bd05bb19f85d006940.html">Unit</a></li><li class="navelem"><a class="el" href="dir_b87ca7a475176b712f1482b79974072f.html">Helpers</a></li><li class="navelem"><a class="el" href="dir_860ea4fd035d69af0eadd63916cc8de7.html">DataStructures</a></li><li class="navelem"><a class="el" href="dir_e18af00068c3b1dee0842b3167ca5026.html">DataBox</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">TestTags.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160; </div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataBox/Tag.hpp&quot;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataBox/TagName.hpp&quot;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160; </div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="keyword">namespace </span>TestHelpers {</div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160; </div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="keyword">struct </span>SomeType;</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160; </div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="keywordtype">void</span> do_something(<a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;SomeType*&gt;</a> <span class="comment">/* return_value */</span>);</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160; </div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacedb.html">db</a> {</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="keyword">namespace </span>Tags {</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160; </div>
+<div class="line"><a name="l00022"></a><span class="lineno"><a class="line" href="structTestHelpers_1_1db_1_1Tags_1_1Bad.html">   22</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1Bad.html">Bad</a> {};</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
+<div class="line"><a name="l00024"></a><span class="lineno"><a class="line" href="structTestHelpers_1_1db_1_1Tags_1_1Simple.html">   24</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1Simple.html">Simple</a> : <a class="code" href="structdb_1_1SimpleTag.html">::db::SimpleTag</a> {</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;  <span class="keyword">using</span> type = SomeType;</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;};</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160; </div>
+<div class="line"><a name="l00028"></a><span class="lineno"><a class="line" href="structTestHelpers_1_1db_1_1Tags_1_1Base.html">   28</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1Base.html">Base</a> : <a class="code" href="structdb_1_1BaseTag.html">::db::BaseTag</a> {};</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
+<div class="line"><a name="l00030"></a><span class="lineno"><a class="line" href="structTestHelpers_1_1db_1_1Tags_1_1SimpleWithBase.html">   30</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1SimpleWithBase.html">SimpleWithBase</a> : <a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1Base.html">Base</a>, <a class="code" href="structdb_1_1SimpleTag.html">::db::SimpleTag</a> {</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  <span class="keyword">using</span> type = SomeType;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;};</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
+<div class="line"><a name="l00034"></a><span class="lineno"><a class="line" href="structTestHelpers_1_1db_1_1Tags_1_1SimpleCompute.html">   34</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1SimpleCompute.html">SimpleCompute</a> : <a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1Simple.html">Simple</a>, <a class="code" href="structdb_1_1ComputeTag.html">::db::ComputeTag</a> {</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  <span class="keyword">using</span> <a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1Simple.html">base</a> = <a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1Simple.html">Simple</a>;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  <span class="keyword">using</span> return_type = SomeType;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keyword">using</span> argument_tags = tmpl::list&lt;&gt;;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  <span class="keyword">static</span> constexpr <span class="keyword">auto</span> <span class="keyword">function</span> = do_something;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;};</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160; </div>
+<div class="line"><a name="l00041"></a><span class="lineno"><a class="line" href="structTestHelpers_1_1db_1_1Tags_1_1SimpleWithBaseCompute.html">   41</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1SimpleWithBaseCompute.html">SimpleWithBaseCompute</a> : <a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1SimpleWithBase.html">SimpleWithBase</a>, <a class="code" href="structdb_1_1ComputeTag.html">::db::ComputeTag</a> {</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  <span class="keyword">using</span> <a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1SimpleWithBase.html">base</a> = <a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1SimpleWithBase.html">SimpleWithBase</a>;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;  <span class="keyword">using</span> return_type = SomeType;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  <span class="keyword">using</span> argument_tags = tmpl::list&lt;&gt;;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  <span class="keyword">static</span> constexpr <span class="keyword">auto</span> <span class="keyword">function</span> = do_something;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;};</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160; </div>
+<div class="line"><a name="l00048"></a><span class="lineno"><a class="line" href="structTestHelpers_1_1db_1_1Tags_1_1ParentTag.html">   48</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1ParentTag.html">ParentTag</a> : <a class="code" href="structdb_1_1SimpleTag.html">::db::SimpleTag</a> {</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  <span class="keyword">using</span> type = SomeType;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;};</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160; </div>
+<div class="line"><a name="l00052"></a><span class="lineno"><a class="line" href="structTestHelpers_1_1db_1_1Tags_1_1SimpleReference.html">   52</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1SimpleReference.html">SimpleReference</a> : <a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1Simple.html">Simple</a>, <a class="code" href="structdb_1_1ReferenceTag.html">::db::ReferenceTag</a> {</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;  <span class="keyword">using</span> <a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1Simple.html">base</a> = <a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1Simple.html">Simple</a>;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  <span class="keyword">using</span> <a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1ParentTag.html">parent_tag</a> = <a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1ParentTag.html">ParentTag</a>;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;  <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">auto</span>&amp; get(<span class="keyword">const</span> <span class="keyword">typename</span> parent_tag::type&amp; <span class="comment">/* parent_value */</span>);</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;  <span class="keyword">using</span> argument_tags = tmpl::list&lt;parent_tag&gt;;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;};</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160; </div>
+<div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="structTestHelpers_1_1db_1_1Tags_1_1SimpleWithBaseReference.html">   59</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1SimpleWithBaseReference.html">SimpleWithBaseReference</a> : <a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1SimpleWithBase.html">SimpleWithBase</a>, <a class="code" href="structdb_1_1ReferenceTag.html">::db::ReferenceTag</a> {</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;  <span class="keyword">using</span> <a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1SimpleWithBase.html">base</a> = <a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1SimpleWithBase.html">SimpleWithBase</a>;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;  <span class="keyword">using</span> <a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1ParentTag.html">parent_tag</a> = <a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1ParentTag.html">ParentTag</a>;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;  <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">auto</span>&amp; get(<span class="keyword">const</span> <span class="keyword">typename</span> parent_tag::type&amp; <span class="comment">/* parent_value */</span>);</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;  <span class="keyword">using</span> argument_tags = tmpl::list&lt;parent_tag&gt;;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;};</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160; </div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00067"></a><span class="lineno"><a class="line" href="structTestHelpers_1_1db_1_1Tags_1_1Label.html">   67</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structTestHelpers_1_1db_1_1Tags_1_1Label.html">Label</a> : <a class="code" href="structdb_1_1PrefixTag.html">::db::PrefixTag</a>, <a class="code" href="structdb_1_1SimpleTag.html">::db::SimpleTag</a> {</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;  <span class="keyword">using</span> tag = Tag;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;  <span class="keyword">using</span> type = SomeType;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;};</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160; </div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;}  <span class="comment">// namespace Tags</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;}  <span class="comment">// namespace db</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;}  <span class="comment">// namespace TestHelpers</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="astructdb_1_1ComputeTag_html"><div class="ttname"><a href="structdb_1_1ComputeTag.html">db::ComputeTag</a></div><div class="ttdoc">Mark a struct as a compute tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:157</div></div>
+<div class="ttc" id="astructdb_1_1PrefixTag_html"><div class="ttname"><a href="structdb_1_1PrefixTag.html">db::PrefixTag</a></div><div class="ttdoc">Mark a struct as a prefix tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:103</div></div>
+<div class="ttc" id="astructTestHelpers_1_1db_1_1Tags_1_1SimpleWithBaseCompute_html"><div class="ttname"><a href="structTestHelpers_1_1db_1_1Tags_1_1SimpleWithBaseCompute.html">TestHelpers::db::Tags::SimpleWithBaseCompute</a></div><div class="ttdef"><b>Definition:</b> TestTags.hpp:41</div></div>
+<div class="ttc" id="astructdb_1_1SimpleTag_html"><div class="ttname"><a href="structdb_1_1SimpleTag.html">db::SimpleTag</a></div><div class="ttdoc">Mark a struct as a simple tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:36</div></div>
+<div class="ttc" id="astructTestHelpers_1_1db_1_1Tags_1_1SimpleReference_html"><div class="ttname"><a href="structTestHelpers_1_1db_1_1Tags_1_1SimpleReference.html">TestHelpers::db::Tags::SimpleReference</a></div><div class="ttdef"><b>Definition:</b> TestTags.hpp:52</div></div>
+<div class="ttc" id="astructdb_1_1ReferenceTag_html"><div class="ttname"><a href="structdb_1_1ReferenceTag.html">db::ReferenceTag</a></div><div class="ttdoc">Mark a struct as a reference tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:188</div></div>
+<div class="ttc" id="astructTestHelpers_1_1db_1_1Tags_1_1Bad_html"><div class="ttname"><a href="structTestHelpers_1_1db_1_1Tags_1_1Bad.html">TestHelpers::db::Tags::Bad</a></div><div class="ttdef"><b>Definition:</b> TestTags.hpp:22</div></div>
+<div class="ttc" id="astructTestHelpers_1_1db_1_1Tags_1_1SimpleWithBaseReference_html"><div class="ttname"><a href="structTestHelpers_1_1db_1_1Tags_1_1SimpleWithBaseReference.html">TestHelpers::db::Tags::SimpleWithBaseReference</a></div><div class="ttdef"><b>Definition:</b> TestTags.hpp:59</div></div>
+<div class="ttc" id="astructTestHelpers_1_1db_1_1Tags_1_1SimpleWithBase_html"><div class="ttname"><a href="structTestHelpers_1_1db_1_1Tags_1_1SimpleWithBase.html">TestHelpers::db::Tags::SimpleWithBase</a></div><div class="ttdef"><b>Definition:</b> TestTags.hpp:30</div></div>
+<div class="ttc" id="astructTestHelpers_1_1db_1_1Tags_1_1ParentTag_html"><div class="ttname"><a href="structTestHelpers_1_1db_1_1Tags_1_1ParentTag.html">TestHelpers::db::Tags::ParentTag</a></div><div class="ttdef"><b>Definition:</b> TestTags.hpp:48</div></div>
+<div class="ttc" id="astructTestHelpers_1_1db_1_1Tags_1_1SimpleCompute_html"><div class="ttname"><a href="structTestHelpers_1_1db_1_1Tags_1_1SimpleCompute.html">TestHelpers::db::Tags::SimpleCompute</a></div><div class="ttdef"><b>Definition:</b> TestTags.hpp:34</div></div>
+<div class="ttc" id="astructdb_1_1BaseTag_html"><div class="ttname"><a href="structdb_1_1BaseTag.html">db::BaseTag</a></div><div class="ttdoc">Mark a (usually) empty struct as a base tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:69</div></div>
+<div class="ttc" id="astructTestHelpers_1_1db_1_1Tags_1_1Simple_html"><div class="ttname"><a href="structTestHelpers_1_1db_1_1Tags_1_1Simple.html">TestHelpers::db::Tags::Simple</a></div><div class="ttdef"><b>Definition:</b> TestTags.hpp:24</div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="astructTestHelpers_1_1db_1_1Tags_1_1Label_html"><div class="ttname"><a href="structTestHelpers_1_1db_1_1Tags_1_1Label.html">TestHelpers::db::Tags::Label</a></div><div class="ttdef"><b>Definition:</b> TestTags.hpp:67</div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="astructTestHelpers_1_1db_1_1Tags_1_1Base_html"><div class="ttname"><a href="structTestHelpers_1_1db_1_1Tags_1_1Base.html">TestHelpers::db::Tags::Base</a></div><div class="ttdef"><b>Definition:</b> TestTags.hpp:28</div></div>
+<div class="ttc" id="anamespacedb_html"><div class="ttname"><a href="namespacedb.html">db</a></div><div class="ttdoc">Namespace for DataBox related things.</div><div class="ttdef"><b>Definition:</b> DataBox.hpp:44</div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<div class="ttc" id="astring_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/string.html">string</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

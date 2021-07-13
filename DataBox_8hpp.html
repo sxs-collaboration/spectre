@@ -1,0 +1,360 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/DataStructures/DataBox/DataBox.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_f794354f56b7b0ecf5e40827268a3615.html">DataStructures</a></li><li class="navelem"><a class="el" href="dir_7efa6f1bc3f922e1d3394a0083e52ab3.html">DataBox</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">DataBox.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/functional.html">functional</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/initializer_list.html">initializer_list</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/ostream.html">ostream</a>&gt;</code><br />
+<code>#include &lt;pup.h&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/tuple.html">tuple</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</code><br />
+<code>#include &quot;<a class="el" href="DataBoxTag_8hpp_source.html">DataStructures/DataBox/DataBoxTag.hpp</a>&quot;</code><br />
+<code>#include &quot;DataStructures/DataBox/Item.hpp&quot;</code><br />
+<code>#include &quot;DataStructures/DataBox/SubitemTag.hpp&quot;</code><br />
+<code>#include &quot;DataStructures/DataBox/Subitems.hpp&quot;</code><br />
+<code>#include &quot;DataStructures/DataBox/TagName.hpp&quot;</code><br />
+<code>#include &quot;DataStructures/DataBox/TagTraits.hpp&quot;</code><br />
+<code>#include &quot;<a class="el" href="Error_8hpp_source.html">Utilities/ErrorHandling/Error.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="StaticAssert_8hpp_source.html">Utilities/ErrorHandling/StaticAssert.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="ForceInline_8hpp_source.html">Utilities/ForceInline.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="Gsl_8hpp_source.html">Utilities/Gsl.hpp</a>&quot;</code><br />
+<code>#include &quot;Utilities/NoSuchType.hpp&quot;</code><br />
+<code>#include &quot;Utilities/Overloader.hpp&quot;</code><br />
+<code>#include &quot;<a class="el" href="Requires_8hpp_source.html">Utilities/Requires.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="TMPL_8hpp_source.html">Utilities/TMPL.hpp</a>&quot;</code><br />
+<code>#include &quot;Utilities/TypeTraits.hpp&quot;</code><br />
+<code>#include &quot;Utilities/TypeTraits/CreateIsCallable.hpp&quot;</code><br />
+<code>#include &quot;Utilities/TypeTraits/IsA.hpp&quot;</code><br />
+<code>#include &quot;Utilities/TypeTraits/IsCallable.hpp&quot;</code><br />
+</div>
+<p><a href="DataBox_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdb_1_1DataBox_3_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html">db::DataBox&lt; tmpl::list&lt; Tags... &gt; &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A DataBox stores objects that can be retrieved by using Tags.  <a href="classdb_1_1DataBox_3_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespacedb"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedb.html">db</a></td></tr>
+<tr class="memdesc:namespacedb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Namespace for DataBox related things. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:gabd63e443e3b9a35ef6307d0ded3890ca"><td class="memTemplParams" colspan="2">
+template&lt;typename... Tags&gt; </td></tr>
+<tr class="memitem:gabd63e443e3b9a35ef6307d0ded3890ca"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#gabd63e443e3b9a35ef6307d0ded3890ca">db::RemoveTags</a> = tmpl::flatten&lt; tmpl::list&lt; Tags... &gt; &gt;</td></tr>
+<tr class="memdesc:gabd63e443e3b9a35ef6307d0ded3890ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">List of Tags to remove from the DataBox. <br /></td></tr>
+<tr class="separator:gabd63e443e3b9a35ef6307d0ded3890ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3dc674ba575ece4a8be1c23fa6c2cdcb"><td class="memTemplParams" colspan="2">
+template&lt;typename... Tags&gt; </td></tr>
+<tr class="memitem:ga3dc674ba575ece4a8be1c23fa6c2cdcb"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#ga3dc674ba575ece4a8be1c23fa6c2cdcb">db::AddSimpleTags</a> = tmpl::flatten&lt; tmpl::list&lt; Tags... &gt; &gt;</td></tr>
+<tr class="memdesc:ga3dc674ba575ece4a8be1c23fa6c2cdcb"><td class="mdescLeft">&#160;</td><td class="mdescRight">List of Tags to add to the DataBox. <br /></td></tr>
+<tr class="separator:ga3dc674ba575ece4a8be1c23fa6c2cdcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga64597eb7f5df0dc4d99698289265b1a7"><td class="memTemplParams" colspan="2">
+template&lt;typename... Tags&gt; </td></tr>
+<tr class="memitem:ga64597eb7f5df0dc4d99698289265b1a7"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#ga64597eb7f5df0dc4d99698289265b1a7">db::AddComputeTags</a> = tmpl::flatten&lt; tmpl::list&lt; Tags... &gt; &gt;</td></tr>
+<tr class="memdesc:ga64597eb7f5df0dc4d99698289265b1a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">List of Compute Item Tags to add to the DataBox. <br /></td></tr>
+<tr class="separator:ga64597eb7f5df0dc4d99698289265b1a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0a38653ad5caa43a93883269e5048ddc"><td class="memTemplParams" colspan="2">
+template&lt;typename TagList &gt; </td></tr>
+<tr class="memitem:ga0a38653ad5caa43a93883269e5048ddc"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#ga0a38653ad5caa43a93883269e5048ddc">db::compute_databox_type</a> = typename detail::compute_dbox_type&lt; TagList &gt;::type</td></tr>
+<tr class="memdesc:ga0a38653ad5caa43a93883269e5048ddc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the type of the DataBox that would be constructed from the <code>TagList</code> of tags. <br /></td></tr>
+<tr class="separator:ga0a38653ad5caa43a93883269e5048ddc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:gabd82fb36bfa1a8f987e595141cc4d44f"><td class="memTemplParams" colspan="2">template&lt;typename... MutateTags, typename TagList , typename Invokable , typename... Args&gt; </td></tr>
+<tr class="memitem:gabd82fb36bfa1a8f987e595141cc4d44f"><td class="memTemplItemLeft" align="right" valign="top">decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#gabd82fb36bfa1a8f987e595141cc4d44f">db::mutate</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; DataBox&lt; TagList &gt; * &gt; box, Invokable &amp;&amp;invokable, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:gabd82fb36bfa1a8f987e595141cc4d44f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allows changing the state of one or more non-computed elements in the DataBox.  <a href="group__DataBoxGroup.html#gabd82fb36bfa1a8f987e595141cc4d44f">More...</a><br /></td></tr>
+<tr class="separator:gabd82fb36bfa1a8f987e595141cc4d44f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae08744824ea7df89224f128b2080c5b1"><td class="memTemplParams" colspan="2">template&lt;typename Tag , typename TagList &gt; </td></tr>
+<tr class="memitem:gae08744824ea7df89224f128b2080c5b1"><td class="memTemplItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">db::get</a> (const DataBox&lt; TagList &gt; &amp;box) noexcept</td></tr>
+<tr class="memdesc:gae08744824ea7df89224f128b2080c5b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the item with tag <code>Tag</code> from the DataBox.  <a href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">More...</a><br /></td></tr>
+<tr class="separator:gae08744824ea7df89224f128b2080c5b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga508836f59dda7ddb4ccbcac8325aa39d"><td class="memTemplParams" colspan="2">template&lt;typename Tag , typename TagList &gt; </td></tr>
+<tr class="memitem:ga508836f59dda7ddb4ccbcac8325aa39d"><td class="memTemplItemLeft" align="right" valign="top">auto &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#ga508836f59dda7ddb4ccbcac8325aa39d">db::get_mutable_reference</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; DataBox&lt; TagList &gt; * &gt; box) noexcept</td></tr>
+<tr class="memdesc:ga508836f59dda7ddb4ccbcac8325aa39d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a mutable reference to the item with tag <code>Tag</code> from the DataBox.  <a href="group__DataBoxGroup.html#ga508836f59dda7ddb4ccbcac8325aa39d">More...</a><br /></td></tr>
+<tr class="separator:ga508836f59dda7ddb4ccbcac8325aa39d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga190fd7a31cd2424701e03faea2d03247"><td class="memTemplParams" colspan="2">template&lt;typename AddMutableItemTags , typename AddImmutableItemTags  = tmpl::list&lt;&gt;, typename... Args&gt; </td></tr>
+<tr class="memitem:ga190fd7a31cd2424701e03faea2d03247"><td class="memTemplItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#ga190fd7a31cd2424701e03faea2d03247">db::create</a> (Args &amp;&amp;... args)</td></tr>
+<tr class="memdesc:ga190fd7a31cd2424701e03faea2d03247"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new DataBox.  <a href="group__DataBoxGroup.html#ga190fd7a31cd2424701e03faea2d03247">More...</a><br /></td></tr>
+<tr class="separator:ga190fd7a31cd2424701e03faea2d03247"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa58e24d7ed3a46c5d6a1dadd96b939a2"><td class="memTemplParams" colspan="2">template&lt;typename RemoveTags , typename AddMutableItemTags  = tmpl::list&lt;&gt;, typename AddImmutableItemTags  = tmpl::list&lt;&gt;, typename TagsList , typename... Args&gt; </td></tr>
+<tr class="memitem:gaa58e24d7ed3a46c5d6a1dadd96b939a2"><td class="memTemplItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#gaa58e24d7ed3a46c5d6a1dadd96b939a2">db::create_from</a> (db::DataBox&lt; TagsList &gt; &amp;&amp;box, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:gaa58e24d7ed3a46c5d6a1dadd96b939a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new DataBox from an existing one adding or removing items.  <a href="group__DataBoxGroup.html#gaa58e24d7ed3a46c5d6a1dadd96b939a2">More...</a><br /></td></tr>
+<tr class="separator:gaa58e24d7ed3a46c5d6a1dadd96b939a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ga1f0c81cb84017884c1099f2523f3d697"><td class="memTemplParams" colspan="2">template&lt;typename ArgumentTags , typename F , typename BoxTags , typename... Args&gt; </td></tr>
+<tr class="memitem:ga1f0c81cb84017884c1099f2523f3d697"><td class="memTemplItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#ga1f0c81cb84017884c1099f2523f3d697">db::apply</a> (F &amp;&amp;f, const DataBox&lt; BoxTags &gt; &amp;box, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:ga1f0c81cb84017884c1099f2523f3d697"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the invokable <code>f</code> with argument Tags <code>TagsList</code> from DataBox <code>box</code>  <a href="group__DataBoxGroup.html#ga1f0c81cb84017884c1099f2523f3d697">More...</a><br /></td></tr>
+<tr class="separator:ga1f0c81cb84017884c1099f2523f3d697"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2dc3bfe46f89ac9e3f7344534cafc9ba"><td class="memTemplParams" colspan="2">template&lt;typename F , typename BoxTags , typename... Args&gt; </td></tr>
+<tr class="memitem:ga2dc3bfe46f89ac9e3f7344534cafc9ba"><td class="memTemplItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#ga2dc3bfe46f89ac9e3f7344534cafc9ba">db::apply</a> (F &amp;&amp;f, const DataBox&lt; BoxTags &gt; &amp;box, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:ga2dc3bfe46f89ac9e3f7344534cafc9ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the invokable <code>f</code> with argument Tags <code>TagsList</code> from DataBox <code>box</code>  <a href="group__DataBoxGroup.html#ga2dc3bfe46f89ac9e3f7344534cafc9ba">More...</a><br /></td></tr>
+<tr class="separator:ga2dc3bfe46f89ac9e3f7344534cafc9ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa9866ec73416a769767ad80073de4749"><td class="memTemplParams" colspan="2">template&lt;typename F , typename BoxTags , typename... Args&gt; </td></tr>
+<tr class="memitem:gaa9866ec73416a769767ad80073de4749"><td class="memTemplItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#gaa9866ec73416a769767ad80073de4749">db::apply</a> (const DataBox&lt; BoxTags &gt; &amp;box, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:gaa9866ec73416a769767ad80073de4749"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the invokable <code>f</code> with argument Tags <code>TagsList</code> from DataBox <code>box</code>  <a href="group__DataBoxGroup.html#gaa9866ec73416a769767ad80073de4749">More...</a><br /></td></tr>
+<tr class="separator:gaa9866ec73416a769767ad80073de4749"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ga257e835a1b216b347b3e3eb429f97984"><td class="memTemplParams" colspan="2">template&lt;typename MutateTags , typename ArgumentTags , typename F , typename BoxTags , typename... Args&gt; </td></tr>
+<tr class="memitem:ga257e835a1b216b347b3e3eb429f97984"><td class="memTemplItemLeft" align="right" valign="top">constexpr decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#ga257e835a1b216b347b3e3eb429f97984">db::mutate_apply</a> (F &amp;&amp;f, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; DataBox&lt; BoxTags &gt; * &gt; box, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:ga257e835a1b216b347b3e3eb429f97984"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the invokable <code>f</code> mutating items <code>MutateTags</code> and taking as additional arguments <code>ArgumentTags</code> and <code>args</code>.  <a href="group__DataBoxGroup.html#ga257e835a1b216b347b3e3eb429f97984">More...</a><br /></td></tr>
+<tr class="separator:ga257e835a1b216b347b3e3eb429f97984"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaccf06a82f5069ad3d60a889811b9aa11"><td class="memTemplParams" colspan="2">template&lt;typename F , typename BoxTags , typename... Args&gt; </td></tr>
+<tr class="memitem:gaccf06a82f5069ad3d60a889811b9aa11"><td class="memTemplItemLeft" align="right" valign="top">constexpr decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#gaccf06a82f5069ad3d60a889811b9aa11">db::mutate_apply</a> (F &amp;&amp;f, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; DataBox&lt; BoxTags &gt; * &gt; box, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:gaccf06a82f5069ad3d60a889811b9aa11"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the invokable <code>f</code> mutating items <code>MutateTags</code> and taking as additional arguments <code>ArgumentTags</code> and <code>args</code>.  <a href="group__DataBoxGroup.html#gaccf06a82f5069ad3d60a889811b9aa11">More...</a><br /></td></tr>
+<tr class="separator:gaccf06a82f5069ad3d60a889811b9aa11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9d9f9ba53ba8f4bfd7542f545a02d006"><td class="memTemplParams" colspan="2">template&lt;typename F , typename BoxTags , typename... Args&gt; </td></tr>
+<tr class="memitem:ga9d9f9ba53ba8f4bfd7542f545a02d006"><td class="memTemplItemLeft" align="right" valign="top">constexpr decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#ga9d9f9ba53ba8f4bfd7542f545a02d006">db::mutate_apply</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; DataBox&lt; BoxTags &gt; * &gt; box, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:ga9d9f9ba53ba8f4bfd7542f545a02d006"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the invokable <code>f</code> mutating items <code>MutateTags</code> and taking as additional arguments <code>ArgumentTags</code> and <code>args</code>.  <a href="group__DataBoxGroup.html#ga9d9f9ba53ba8f4bfd7542f545a02d006">More...</a><br /></td></tr>
+<tr class="separator:ga9d9f9ba53ba8f4bfd7542f545a02d006"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ga1f0c81cb84017884c1099f2523f3d697"><td class="memTemplParams" colspan="2">template&lt;typename ArgumentTags , typename F , typename BoxTags , typename... Args&gt; </td></tr>
+<tr class="memitem:ga1f0c81cb84017884c1099f2523f3d697"><td class="memTemplItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#ga1f0c81cb84017884c1099f2523f3d697">db::apply</a> (F &amp;&amp;f, const DataBox&lt; BoxTags &gt; &amp;box, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:ga1f0c81cb84017884c1099f2523f3d697"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the invokable <code>f</code> with argument Tags <code>TagsList</code> from DataBox <code>box</code>  <a href="group__DataBoxGroup.html#ga1f0c81cb84017884c1099f2523f3d697">More...</a><br /></td></tr>
+<tr class="separator:ga1f0c81cb84017884c1099f2523f3d697"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2dc3bfe46f89ac9e3f7344534cafc9ba"><td class="memTemplParams" colspan="2">template&lt;typename F , typename BoxTags , typename... Args&gt; </td></tr>
+<tr class="memitem:ga2dc3bfe46f89ac9e3f7344534cafc9ba"><td class="memTemplItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#ga2dc3bfe46f89ac9e3f7344534cafc9ba">db::apply</a> (F &amp;&amp;f, const DataBox&lt; BoxTags &gt; &amp;box, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:ga2dc3bfe46f89ac9e3f7344534cafc9ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the invokable <code>f</code> with argument Tags <code>TagsList</code> from DataBox <code>box</code>  <a href="group__DataBoxGroup.html#ga2dc3bfe46f89ac9e3f7344534cafc9ba">More...</a><br /></td></tr>
+<tr class="separator:ga2dc3bfe46f89ac9e3f7344534cafc9ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa9866ec73416a769767ad80073de4749"><td class="memTemplParams" colspan="2">template&lt;typename F , typename BoxTags , typename... Args&gt; </td></tr>
+<tr class="memitem:gaa9866ec73416a769767ad80073de4749"><td class="memTemplItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#gaa9866ec73416a769767ad80073de4749">db::apply</a> (const DataBox&lt; BoxTags &gt; &amp;box, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:gaa9866ec73416a769767ad80073de4749"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the invokable <code>f</code> with argument Tags <code>TagsList</code> from DataBox <code>box</code>  <a href="group__DataBoxGroup.html#gaa9866ec73416a769767ad80073de4749">More...</a><br /></td></tr>
+<tr class="separator:gaa9866ec73416a769767ad80073de4749"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ga257e835a1b216b347b3e3eb429f97984"><td class="memTemplParams" colspan="2">template&lt;typename MutateTags , typename ArgumentTags , typename F , typename BoxTags , typename... Args&gt; </td></tr>
+<tr class="memitem:ga257e835a1b216b347b3e3eb429f97984"><td class="memTemplItemLeft" align="right" valign="top">constexpr decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#ga257e835a1b216b347b3e3eb429f97984">db::mutate_apply</a> (F &amp;&amp;f, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; DataBox&lt; BoxTags &gt; * &gt; box, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:ga257e835a1b216b347b3e3eb429f97984"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the invokable <code>f</code> mutating items <code>MutateTags</code> and taking as additional arguments <code>ArgumentTags</code> and <code>args</code>.  <a href="group__DataBoxGroup.html#ga257e835a1b216b347b3e3eb429f97984">More...</a><br /></td></tr>
+<tr class="separator:ga257e835a1b216b347b3e3eb429f97984"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaccf06a82f5069ad3d60a889811b9aa11"><td class="memTemplParams" colspan="2">template&lt;typename F , typename BoxTags , typename... Args&gt; </td></tr>
+<tr class="memitem:gaccf06a82f5069ad3d60a889811b9aa11"><td class="memTemplItemLeft" align="right" valign="top">constexpr decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#gaccf06a82f5069ad3d60a889811b9aa11">db::mutate_apply</a> (F &amp;&amp;f, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; DataBox&lt; BoxTags &gt; * &gt; box, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:gaccf06a82f5069ad3d60a889811b9aa11"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the invokable <code>f</code> mutating items <code>MutateTags</code> and taking as additional arguments <code>ArgumentTags</code> and <code>args</code>.  <a href="group__DataBoxGroup.html#gaccf06a82f5069ad3d60a889811b9aa11">More...</a><br /></td></tr>
+<tr class="separator:gaccf06a82f5069ad3d60a889811b9aa11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9d9f9ba53ba8f4bfd7542f545a02d006"><td class="memTemplParams" colspan="2">template&lt;typename F , typename BoxTags , typename... Args&gt; </td></tr>
+<tr class="memitem:ga9d9f9ba53ba8f4bfd7542f545a02d006"><td class="memTemplItemLeft" align="right" valign="top">constexpr decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#ga9d9f9ba53ba8f4bfd7542f545a02d006">db::mutate_apply</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; DataBox&lt; BoxTags &gt; * &gt; box, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:ga9d9f9ba53ba8f4bfd7542f545a02d006"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the invokable <code>f</code> mutating items <code>MutateTags</code> and taking as additional arguments <code>ArgumentTags</code> and <code>args</code>.  <a href="group__DataBoxGroup.html#ga9d9f9ba53ba8f4bfd7542f545a02d006">More...</a><br /></td></tr>
+<tr class="separator:ga9d9f9ba53ba8f4bfd7542f545a02d006"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae49658baea2a211ae5959c7f555f3125"><td class="memTemplParams" colspan="2">template&lt;typename Tag , typename DataBoxType &gt; </td></tr>
+<tr class="memitem:gae49658baea2a211ae5959c7f555f3125"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#gae49658baea2a211ae5959c7f555f3125">db::tag_is_retrievable</a> = tmpl::any&lt; typename DataBoxType::tags_list, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_base_of.html">std::is_base_of</a>&lt; tmpl::pin&lt; Tag &gt;, tmpl::_1 &gt; &gt;</td></tr>
+<tr class="separator:gae49658baea2a211ae5959c7f555f3125"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0e5d678f658a67bdbaa8b10d1ec50505"><td class="memTemplParams" colspan="2">template&lt;typename Tag , typename DataBoxType &gt; </td></tr>
+<tr class="memitem:ga0e5d678f658a67bdbaa8b10d1ec50505"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataBoxGroup.html#ga0e5d678f658a67bdbaa8b10d1ec50505">db::tag_is_retrievable_v</a></td></tr>
+<tr class="separator:ga0e5d678f658a67bdbaa8b10d1ec50505"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Defines classes and functions used for manipulating DataBox's </p>
+</div></div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

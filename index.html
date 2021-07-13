@@ -1,0 +1,292 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Introduction</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">Introduction </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><div class="toc"> Table of Contents <ul>
+<li class="level1">
+<a href="#intro_sec">Introduction</a> </li>
+<li class="level1">
+<a href="versioning_and_releases.html">Versioning and Releases</a> </li>
+<li class="level1">
+<a href="installation.html">Installation</a> </li>
+<li class="level1">
+<a href="installation_on_clusters.html">Installation on clusters</a> </li>
+<li class="level1">
+<a href="tutorials.html">User tutorials</a> </li>
+<li class="level1">
+<a href="dev_guide.html">Dev guide</a> </li>
+<li class="level1">
+<a href="code_of_conduct.html">Code of Conduct</a> </li>
+<li class="level1">
+<a href="contributing_to_spectre.html">Contributing to SpECTRE</a> </li>
+</ul>
+Further links <ul>
+<li class="level1">
+<a href="doc_coverage/index.html">Documentation coverage</a> </li>
+<li class="level1">
+<a href="unit-test-coverage/index.html">Unit test coverage</a> </li>
+</ul>
+</div><p> 
+<p>
+<a
+href="https://github.com/sxs-collaboration/spectre/blob/develop/LICENSE.txt"><img
+src="https://img.shields.io/badge/license-MIT-blue.svg"
+alt="license"
+data-canonical-src="https://img.shields.io/badge/license-MIT-blue.svg"
+style="max-width:100%;"></a>
+
+<a href="https://en.wikipedia.org/wiki/C%2B%2B#Standardization"
+rel="nofollow"><img
+src="https://img.shields.io/badge/c%2B%2B-17-blue.svg"
+alt="Standard"
+data-canonical-src="https://img.shields.io/badge/c%2B%2B-17-blue.svg"
+style="max-width:100%;"></a>
+
+<a href="https://github.com/sxs-collaboration/spectre/actions" rel="nofollow"><img
+src="https://github.com/sxs-collaboration/spectre/workflows/Tests/badge.svg?branch=develop"
+alt="Build Status"
+data-canonical-src="https://github.com/sxs-collaboration/spectre/workflows/Tests/badge.svg?branch=develop"
+style="max-width:100%;"></a>
+
+<a href="https://coveralls.io/github/sxs-collaboration/spectre?branch=develop"
+rel="nofollow"><img
+src="https://camo.githubusercontent.com/9ac925f8d36b285f98b8dbc9b977606a5148d9b5/68747470733a2f2f636f766572616c6c732e696f2f7265706f732f6769746875622f7378732d636f6c6c61626f726174696f6e2f737065637472652f62616467652e7376673f6272616e63683d646576656c6f70"
+alt="Coverage Status"
+data-canonical-src="https://coveralls.io/repos/github/sxs-collaboration/spectre/badge.svg?branch=develop"
+style="max-width:100%;"></a>
+
+<a href="https://codecov.io/gh/sxs-collaboration/spectre" rel="nofollow"><img
+src="https://camo.githubusercontent.com/ac504b33d403e271c9fb3831d1133118f1886317/68747470733a2f2f636f6465636f762e696f2f67682f7378732d636f6c6c61626f726174696f6e2f737065637472652f6272616e63682f646576656c6f702f67726170682f62616467652e737667"
+alt="codecov"
+data-canonical-src="https://codecov.io/gh/sxs-collaboration/spectre/branch/develop/graph/badge.svg"
+style="max-width:100%;"></a>
+
+</p>
+</p>
+<h1><a class="anchor" id="intro_sec"></a>
+What is SpECTRE?</h1>
+<p>SpECTRE is an open-source code for multi-scale, multi-physics problems in astrophysics and gravitational physics. In the future, we hope that it can be applied to problems across discipline boundaries in fluid dynamics, geoscience, plasma physics, nuclear physics, and engineering. It runs at petascale and is designed for future exascale computers.</p>
+<p>SpECTRE is being developed in support of our collaborative Simulating eXtreme Spacetimes (SXS) research program into the multi-messenger astrophysics of neutron star mergers, core-collapse supernovae, and gamma-ray bursts.</p>
+<h2><a class="anchor" id="autotoc_md11"></a>
+Citing SpECTRE</h2>
+<p>Please cite SpECTRE in any publications that make use of its code or data. Cite the latest version that you use in your publication. The DOI for this version is:</p>
+<ul>
+<li>DOI: <a href="https://doi.org/10.5281/zenodo.5083825">10.5281/zenodo.5083825</a></li>
+</ul>
+<p>You can cite this BibTeX entry in your publication:</p>
+<ul>
+<li><a href="https://zenodo.org/record/5083825/export/hx">Find BibTeX entry for this version on Zenodo</a></li>
+</ul>
+<p>To aid reproducibility of your scientific results with SpECTRE, we recommend you keep track of the version(s) you used and report this information in your publication. We also recommend you supply the YAML input files and, if appropriate, any additional C++ code you wrote to compile SpECTRE executables as supplemental material to the publication.</p>
+<h2><a class="anchor" id="navigate_documentation_sec"></a>
+Navigating the Documentation</h2>
+<p>The SpECTRE documentation is organized into tutorials, developer guides, groups of related code, namespaces, and files for easier navigation. These can all be accessed by links in the menu bar at the top.</p>
+<ul>
+<li>For instructions on <b>installing SpECTRE</b> on personal computers and clusters consult the <a class="el" href="installation.html">Installation</a> and <a class="el" href="installation_on_clusters.html">Installation on clusters</a> pages, respectively.</li>
+<li>If you are looking to <b>run simulations with SpECTRE</b> we recommend starting with the <a class="el" href="tutorials.html">User Tutorials</a>. The tutorials are designed to get users up and running with a simulation, as well as analyzing and visualizing the output.</li>
+<li>For people looking to <b>contribute to SpECTRE</b> there are tutorials on the <a class="el" href="dev_guide.html">Dev Guide</a> page. For instance, the dev guide details the <a class="el" href="code_review_guide.html">code review guidelines</a>, how to <a class="el" href="writing_unit_tests.html">write unit tests</a>, how to <a class="el" href="writing_good_dox.html">write documentation</a>, and also provides information about C++ and the philosophy behind SpECTRE development.</li>
+<li>The <a href="modules.html">Topics</a> section under the <em>Reference</em> menu item contains groups of related code (managed through doxygen groups). For example, there is a group for all the data structures we use, a group for utility functions and classes, as well as groups for coordinate maps, domain creation, and many others. The <a href="modules.html">Topics</a> are designed to help developers discover existing functionality so that things are not re-implemented several times.</li>
+<li>You can also get an overview of the code base by namespace by visiting the <a href="namespaces.html">Namespaces</a> section under the <em>Reference</em> menu item.</li>
+<li>Finally, it is also possible to browse the repository by files under the <a href="files.html">Files</a> menu item, though it is recommended that in that case you browse the <a href="https://github.com/sxs-collaboration/spectre">GitHub repository</a> directly. </li>
+</ul>
+</div></div><!-- PageDoc -->
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

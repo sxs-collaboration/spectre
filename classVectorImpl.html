@@ -1,0 +1,523 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: VectorImpl&lt; T, VectorType &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
+<a href="#pro-attribs">Protected Attributes</a> &#124;
+<a href="classVectorImpl-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">VectorImpl&lt; T, VectorType &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__DataStructuresGroup.html">Data Structures</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Base class template for various <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> and related types.  
+ <a href="classVectorImpl.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="VectorImpl_8hpp_source.html">VectorImpl.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a134845b08869c13febe252b6f39802d6"><td class="memItemLeft" align="right" valign="top"><a id="a134845b08869c13febe252b6f39802d6"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>value_type</b> = T</td></tr>
+<tr class="separator:a134845b08869c13febe252b6f39802d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a05f4cbaa4f05b8cf18a01c2b6995b053"><td class="memItemLeft" align="right" valign="top"><a id="a05f4cbaa4f05b8cf18a01c2b6995b053"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>size_type</b> = size_t</td></tr>
+<tr class="separator:a05f4cbaa4f05b8cf18a01c2b6995b053"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab604a2c50f15bfd820a89cd37deb7433"><td class="memItemLeft" align="right" valign="top"><a id="ab604a2c50f15bfd820a89cd37deb7433"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>difference_type</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/ptrdiff_t.html">std::ptrdiff_t</a></td></tr>
+<tr class="separator:ab604a2c50f15bfd820a89cd37deb7433"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9d134daafa8b572b15484d4529d021a"><td class="memItemLeft" align="right" valign="top"><a id="ab9d134daafa8b572b15484d4529d021a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>BaseType</b> = blaze::CustomVector&lt; T, blaze::AlignmentFlag::unaligned, blaze::PaddingFlag::unpadded, blaze::defaultTransposeFlag, blaze_default_group, VectorType &gt;</td></tr>
+<tr class="separator:ab9d134daafa8b572b15484d4529d021a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9493d5541b19f7567483d6946a1e7b32"><td class="memItemLeft" align="right" valign="top"><a id="a9493d5541b19f7567483d6946a1e7b32"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>ElementType</b> = T</td></tr>
+<tr class="separator:a9493d5541b19f7567483d6946a1e7b32"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af47d92f71c104067195583e9337448cf"><td class="memItemLeft" align="right" valign="top"><a id="af47d92f71c104067195583e9337448cf"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>TransposeType</b> = <a class="el" href="classVectorImpl.html">VectorImpl</a>&lt; T, VectorType &gt;</td></tr>
+<tr class="separator:af47d92f71c104067195583e9337448cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aecd4e375f01cca2dcb55e0ac7fbe9031"><td class="memItemLeft" align="right" valign="top"><a id="aecd4e375f01cca2dcb55e0ac7fbe9031"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>CompositeType</b> = const <a class="el" href="classVectorImpl.html">VectorImpl</a>&lt; T, VectorType &gt; &amp;</td></tr>
+<tr class="separator:aecd4e375f01cca2dcb55e0ac7fbe9031"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1cb624d40c8dd2ee867b238b933506e6"><td class="memItemLeft" align="right" valign="top"><a id="a1cb624d40c8dd2ee867b238b933506e6"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>iterator</b> = typename BaseType::Iterator</td></tr>
+<tr class="separator:a1cb624d40c8dd2ee867b238b933506e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9a6dd590a530ef0c2fbd248f565554a"><td class="memItemLeft" align="right" valign="top"><a id="ab9a6dd590a530ef0c2fbd248f565554a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>const_iterator</b> = typename BaseType::ConstIterator</td></tr>
+<tr class="separator:ab9a6dd590a530ef0c2fbd248f565554a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:aa2b04b77ad5883f15b6ac7f9aace72b2"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classVectorImpl.html#aa2b04b77ad5883f15b6ac7f9aace72b2">VectorImpl</a> (size_t set_size) noexcept</td></tr>
+<tr class="memdesc:aa2b04b77ad5883f15b6ac7f9aace72b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create with the given size. In debug mode, the vector is initialized to 'NaN' by default. If not initialized to 'NaN', the memory is allocated but not initialized.  <a href="classVectorImpl.html#aa2b04b77ad5883f15b6ac7f9aace72b2">More...</a><br /></td></tr>
+<tr class="separator:aa2b04b77ad5883f15b6ac7f9aace72b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad81c45755c2109ef8cdf7cd4865868f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classVectorImpl.html#aad81c45755c2109ef8cdf7cd4865868f">VectorImpl</a> (size_t set_size, T value) noexcept</td></tr>
+<tr class="memdesc:aad81c45755c2109ef8cdf7cd4865868f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create with the given size and value.  <a href="classVectorImpl.html#aad81c45755c2109ef8cdf7cd4865868f">More...</a><br /></td></tr>
+<tr class="separator:aad81c45755c2109ef8cdf7cd4865868f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abb7ca18224eebad26885520a4b247dbc"><td class="memItemLeft" align="right" valign="top"><a id="abb7ca18224eebad26885520a4b247dbc"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classVectorImpl.html#abb7ca18224eebad26885520a4b247dbc">VectorImpl</a> (T *start, size_t set_size) noexcept</td></tr>
+<tr class="memdesc:abb7ca18224eebad26885520a4b247dbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a non-owning <a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a> that points to <code>start</code> <br /></td></tr>
+<tr class="separator:abb7ca18224eebad26885520a4b247dbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3355fd0a1fae82f458ae7a09fde96530"><td class="memTemplParams" colspan="2"><a id="a3355fd0a1fae82f458ae7a09fde96530"></a>
+template&lt;class U , Requires&lt; std::is_same_v&lt; U, T &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a3355fd0a1fae82f458ae7a09fde96530"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classVectorImpl.html#a3355fd0a1fae82f458ae7a09fde96530">VectorImpl</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/initializer_list.html">std::initializer_list</a>&lt; U &gt; list) noexcept</td></tr>
+<tr class="memdesc:a3355fd0a1fae82f458ae7a09fde96530"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create from an initializer list of <code>T</code>. <br /></td></tr>
+<tr class="separator:a3355fd0a1fae82f458ae7a09fde96530"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4301191a7366c6899799ae34466d4fa5"><td class="memItemLeft" align="right" valign="top"><a id="a4301191a7366c6899799ae34466d4fa5"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classVectorImpl.html#a4301191a7366c6899799ae34466d4fa5">VectorImpl</a> ()=default</td></tr>
+<tr class="memdesc:a4301191a7366c6899799ae34466d4fa5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Empty <a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a>. <br /></td></tr>
+<tr class="separator:a4301191a7366c6899799ae34466d4fa5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2bb6deb2c71afb61abbdbc424cfa3a92"><td class="memItemLeft" align="right" valign="top"><a id="a2bb6deb2c71afb61abbdbc424cfa3a92"></a>
+<a class="el" href="classVectorImpl.html">VectorImpl</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const T &amp;rhs) noexcept</td></tr>
+<tr class="separator:a2bb6deb2c71afb61abbdbc424cfa3a92"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81d5cdc8b3211ba18932e4068eae7ba6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classVectorImpl.html#a81d5cdc8b3211ba18932e4068eae7ba6">destructive_resize</a> (const size_t new_size) noexcept</td></tr>
+<tr class="memdesc:a81d5cdc8b3211ba18932e4068eae7ba6"><td class="mdescLeft">&#160;</td><td class="mdescRight">A common operation for checking the size and resizing a memory buffer if needed to ensure that it has the desired size. This operation is not permitted on a non-owning vector.  <a href="classVectorImpl.html#a81d5cdc8b3211ba18932e4068eae7ba6">More...</a><br /></td></tr>
+<tr class="separator:a81d5cdc8b3211ba18932e4068eae7ba6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30b7030320d51763ffe4594c7b194e4d"><td class="memItemLeft" align="right" valign="top"><a id="a30b7030320d51763ffe4594c7b194e4d"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classVectorImpl.html#a30b7030320d51763ffe4594c7b194e4d">is_owning</a> () const noexcept</td></tr>
+<tr class="memdesc:a30b7030320d51763ffe4594c7b194e4d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if the class owns the data. <br /></td></tr>
+<tr class="separator:a30b7030320d51763ffe4594c7b194e4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e6888ec1ad9c2febea9ae4f7a3969fb"><td class="memItemLeft" align="right" valign="top"><a id="a9e6888ec1ad9c2febea9ae4f7a3969fb"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classVectorImpl.html#a9e6888ec1ad9c2febea9ae4f7a3969fb">pup</a> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="memdesc:a9e6888ec1ad9c2febea9ae4f7a3969fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialization for Charm++. <br /></td></tr>
+<tr class="separator:a9e6888ec1ad9c2febea9ae4f7a3969fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab763e19992f7ff7153e031312aabb663"><td class="memTemplParams" colspan="2"><a id="ab763e19992f7ff7153e031312aabb663"></a>
+template&lt;typename T , typename VectorType &gt; </td></tr>
+<tr class="memitem:ab763e19992f7ff7153e031312aabb663"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><b>VectorImpl</b> (const <a class="el" href="classVectorImpl.html">VectorImpl</a>&lt; T, VectorType &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:ab763e19992f7ff7153e031312aabb663"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae268efbff71450dca89080579cc5c5de"><td class="memTemplParams" colspan="2"><a id="ae268efbff71450dca89080579cc5c5de"></a>
+template&lt;typename T , typename VectorType &gt; </td></tr>
+<tr class="memitem:ae268efbff71450dca89080579cc5c5de"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><b>VectorImpl</b> (<a class="el" href="classVectorImpl.html">VectorImpl</a>&lt; T, VectorType &gt; &amp;&amp;rhs) noexcept</td></tr>
+<tr class="separator:ae268efbff71450dca89080579cc5c5de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ab30152c51a03958cb04d471f39dd25bc"><td class="memItemLeft" align="right" valign="top">const BaseType &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classVectorImpl.html#ab30152c51a03958cb04d471f39dd25bc">operator*</a> () const noexcept</td></tr>
+<tr class="memdesc:ab30152c51a03958cb04d471f39dd25bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Upcast to <code>BaseType</code>  <a href="classVectorImpl.html#ab30152c51a03958cb04d471f39dd25bc">More...</a><br /></td></tr>
+<tr class="separator:ab30152c51a03958cb04d471f39dd25bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64d064ffa69f3d935552f2f09facd577"><td class="memItemLeft" align="right" valign="top">BaseType &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classVectorImpl.html#a64d064ffa69f3d935552f2f09facd577">operator*</a> () noexcept</td></tr>
+<tr class="memdesc:a64d064ffa69f3d935552f2f09facd577"><td class="mdescLeft">&#160;</td><td class="mdescRight">Upcast to <code>BaseType</code>  <a href="classVectorImpl.html#a64d064ffa69f3d935552f2f09facd577">More...</a><br /></td></tr>
+<tr class="separator:a64d064ffa69f3d935552f2f09facd577"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a2f8988ec2030edce09725eb82d5f409b"><td class="memItemLeft" align="right" valign="top"><a id="a2f8988ec2030edce09725eb82d5f409b"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classVectorImpl.html#a2f8988ec2030edce09725eb82d5f409b">set_data_ref</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; VectorType * &gt; rhs) noexcept</td></tr>
+<tr class="memdesc:a2f8988ec2030edce09725eb82d5f409b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the <a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a> to be a reference to another <a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a> object. <br /></td></tr>
+<tr class="separator:a2f8988ec2030edce09725eb82d5f409b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a83e63169d096b1f4b3e402ec8b51b21a"><td class="memItemLeft" align="right" valign="top"><a id="a83e63169d096b1f4b3e402ec8b51b21a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classVectorImpl.html#a83e63169d096b1f4b3e402ec8b51b21a">set_data_ref</a> (T *const start, const size_t set_size) noexcept</td></tr>
+<tr class="memdesc:a83e63169d096b1f4b3e402ec8b51b21a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the <a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a> to be a reference to another <a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a> object. <br /></td></tr>
+<tr class="separator:a83e63169d096b1f4b3e402ec8b51b21a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:abea5926d7f8ffefbd0b1c8e90b716dee"><td class="memItemLeft" align="right" valign="top"><a id="abea5926d7f8ffefbd0b1c8e90b716dee"></a>
+static constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><b>transpose_flag</b> = blaze::defaultTransposeFlag</td></tr>
+<tr class="separator:abea5926d7f8ffefbd0b1c8e90b716dee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:ad1089f43f79317816df4cee46d787a36"><td class="memItemLeft" align="right" valign="top"><a id="ad1089f43f79317816df4cee46d787a36"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>reset_pointer_vector</b> (const size_t set_size) noexcept</td></tr>
+<tr class="separator:ad1089f43f79317816df4cee46d787a36"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
+Protected Attributes</h2></td></tr>
+<tr class="memitem:a8bbe83a9effd635067b1b5d25b943500"><td class="memItemLeft" align="right" valign="top"><a id="a8bbe83a9effd635067b1b5d25b943500"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; value_type[]&gt;&#160;</td><td class="memItemRight" valign="bottom"><b>owned_data_</b> {}</td></tr>
+<tr class="separator:a8bbe83a9effd635067b1b5d25b943500"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2de1a9687230404233e1ecb67ec157b4"><td class="memItemLeft" align="right" valign="top"><a id="a2de1a9687230404233e1ecb67ec157b4"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>owning_</b> {true}</td></tr>
+<tr class="separator:a2de1a9687230404233e1ecb67ec157b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename T, typename VectorType&gt;<br />
+class VectorImpl&lt; T, VectorType &gt;</h3>
+
+<p>Base class template for various <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> and related types. </p>
+<h3>Details</h3>
+<p>The <code><a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a></code> class is the generic parent class for vectors representing collections of related function values, such as <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>s for contiguous data over a computational domain.</p>
+<p>The <code><a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a></code> does not itself define any particular mathematical operations on the contained values. The <code><a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a></code> template class and the macros defined in <code><a class="el" href="VectorImpl_8hpp_source.html">VectorImpl.hpp</a></code> assist in the construction of various derived classes supporting a chosen set of mathematical operations.</p>
+<p>In addition, the equivalence operator <code>==</code> is inherited from the underlying <code>blaze::CustomVector</code> type, and returns true if and only if the size and contents of the two compared vectors are equivalent.</p>
+<p>Template parameters:</p><ul>
+<li><code>T</code> is the underlying stored type, e.g. <code>double</code>, <code><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt;double&gt;</code>, <code>float</code>, etc.</li>
+<li><p class="startli"><code>VectorType</code> is the type that should be associated with the <a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a> during mathematical computations. In most cases, inherited types should have themselves as the second template argument, e.g. </p><div class="fragment"><div class="line"><span class="keyword">class </span><a class="code" href="classDataVector.html">DataVector</a> : <a class="code" href="classVectorImpl.html">VectorImpl</a>&lt;double, DataVector&gt; {</div>
+</div><!-- fragment --><p class="startli">The second template parameter communicates arithmetic type restrictions to the underlying Blaze framework. For example, if <code>VectorType</code> is <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>, then the underlying architecture will prevent addition with a vector type whose <code>ResultType</code> (which is aliased to its <code>VectorType</code>) is <code><a class="el" href="classModalVector.html" title="A class for storing spectral coefficients on a spectral grid.">ModalVector</a></code>. Since <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>s and <code><a class="el" href="classModalVector.html" title="A class for storing spectral coefficients on a spectral grid.">ModalVector</a></code>s represent data in different spaces, we wish to forbid several operations between them. This vector-type-tracking through an expression prevents accidental mixing of vector types in math expressions.</p>
+</li>
+</ul>
+<dl class="section note"><dt>Note</dt><dd><ul>
+<li>If created with size 0, then <code>data()</code> will return <code>nullptr</code></li>
+<li>If either <code>SPECTRE_DEBUG</code> or <code>SPECTRE_NAN_INIT</code> are defined, then the <code><a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a></code> is default initialized to <code>signaling_NaN()</code>. Otherwise, the vector is filled with uninitialized memory for performance. </li>
+</ul>
+</dd></dl>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="aa2b04b77ad5883f15b6ac7f9aace72b2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa2b04b77ad5883f15b6ac7f9aace72b2">&#9670;&nbsp;</a></span>VectorImpl() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename VectorType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classVectorImpl.html">VectorImpl</a>&lt; T, VectorType &gt;::<a class="el" href="classVectorImpl.html">VectorImpl</a> </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>set_size</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">explicit</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create with the given size. In debug mode, the vector is initialized to 'NaN' by default. If not initialized to 'NaN', the memory is allocated but not initialized. </p>
+<ul>
+<li><code>set_size</code> number of values </li>
+</ul>
+
+</div>
+</div>
+<a id="aad81c45755c2109ef8cdf7cd4865868f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aad81c45755c2109ef8cdf7cd4865868f">&#9670;&nbsp;</a></span>VectorImpl() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename VectorType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classVectorImpl.html">VectorImpl</a>&lt; T, VectorType &gt;::<a class="el" href="classVectorImpl.html">VectorImpl</a> </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>set_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">T&#160;</td>
+          <td class="paramname"><em>value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create with the given size and value. </p>
+<ul>
+<li><code>set_size</code> number of values</li>
+<li><code>value</code> the value to initialize each element </li>
+</ul>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a81d5cdc8b3211ba18932e4068eae7ba6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a81d5cdc8b3211ba18932e4068eae7ba6">&#9670;&nbsp;</a></span>destructive_resize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename VectorType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classVectorImpl.html">VectorImpl</a>&lt; T, VectorType &gt;::destructive_resize </td>
+          <td>(</td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>new_size</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>A common operation for checking the size and resizing a memory buffer if needed to ensure that it has the desired size. This operation is not permitted on a non-owning vector. </p>
+<dl class="section note"><dt>Note</dt><dd>This utility should NOT be used when it is anticipated that the supplied buffer will typically be the wrong size (in that case, suggest either manual checking or restructuring so that resizing is less common). This uses <code>UNLIKELY</code> to perform the check most quickly when the buffer needs no resizing, but will be slower when resizing is common. </dd></dl>
+
+</div>
+</div>
+<a id="ab30152c51a03958cb04d471f39dd25bc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab30152c51a03958cb04d471f39dd25bc">&#9670;&nbsp;</a></span>operator*() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename VectorType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const BaseType&amp; <a class="el" href="classVectorImpl.html">VectorImpl</a>&lt; T, VectorType &gt;::operator* </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Upcast to <code>BaseType</code> </p>
+<dl class="section attention"><dt>Attention</dt><dd>upcast should only be used when implementing a derived vector type, not in calling code </dd></dl>
+
+</div>
+</div>
+<a id="a64d064ffa69f3d935552f2f09facd577"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a64d064ffa69f3d935552f2f09facd577">&#9670;&nbsp;</a></span>operator*() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename VectorType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">BaseType&amp; <a class="el" href="classVectorImpl.html">VectorImpl</a>&lt; T, VectorType &gt;::operator* </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Upcast to <code>BaseType</code> </p>
+<dl class="section attention"><dt>Attention</dt><dd>upcast should only be used when implementing a derived vector type, not in calling code </dd></dl>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/DataStructures/<a class="el" href="VectorImpl_8hpp_source.html">VectorImpl.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="aclassDataVector_html"><div class="ttname"><a href="classDataVector.html">DataVector</a></div><div class="ttdoc">Stores a collection of function values.</div><div class="ttdef"><b>Definition:</b> DataVector.hpp:46</div></div>
+<div class="ttc" id="aclassVectorImpl_html"><div class="ttname"><a href="classVectorImpl.html">VectorImpl</a></div><div class="ttdoc">Base class template for various DataVector and related types.</div><div class="ttdef"><b>Definition:</b> VectorImpl.hpp:77</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

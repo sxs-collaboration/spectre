@@ -1,0 +1,343 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: StepChoosers::ErrorControl&lt; EvolvedVariableTag, ErrorControlSelector &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceStepChoosers.html">StepChoosers</a></li><li class="navelem"><a class="el" href="classStepChoosers_1_1ErrorControl.html">ErrorControl</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classStepChoosers_1_1ErrorControl-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">StepChoosers::ErrorControl&lt; EvolvedVariableTag, ErrorControlSelector &gt; Class Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Suggests a step size based on a target absolute and/or relative error measure.  
+ <a href="classStepChoosers_1_1ErrorControl.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ErrorControl_8hpp_source.html">ErrorControl.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structStepChoosers_1_1ErrorControl_1_1AbsoluteTolerance.html">AbsoluteTolerance</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structStepChoosers_1_1ErrorControl_1_1MaxFactor.html">MaxFactor</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structStepChoosers_1_1ErrorControl_1_1MinFactor.html">MinFactor</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structStepChoosers_1_1ErrorControl_1_1RelativeTolerance.html">RelativeTolerance</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structStepChoosers_1_1ErrorControl_1_1SafetyFactor.html">SafetyFactor</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ac0a55c678d1d94289653bb4d636f2647"><td class="memItemLeft" align="right" valign="top"><a id="ac0a55c678d1d94289653bb4d636f2647"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>evolved_variable_type</b> = typename EvolvedVariableTag::type</td></tr>
+<tr class="separator:ac0a55c678d1d94289653bb4d636f2647"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac6d1844b80e3033d92adeaa05737238"><td class="memItemLeft" align="right" valign="top"><a id="aac6d1844b80e3033d92adeaa05737238"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>error_variable_type</b> = typename <a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt;::<a class="el" href="structTags_1_1StepperError.html">Tags::StepperError</a>, EvolvedVariableTag &gt;::type</td></tr>
+<tr class="separator:aac6d1844b80e3033d92adeaa05737238"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13cb7b6bbd6669bd8c4bf9957f5c2a09"><td class="memItemLeft" align="right" valign="top"><a id="a13cb7b6bbd6669bd8c4bf9957f5c2a09"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structStepChoosers_1_1ErrorControl_1_1AbsoluteTolerance.html">AbsoluteTolerance</a>, <a class="el" href="structStepChoosers_1_1ErrorControl_1_1RelativeTolerance.html">RelativeTolerance</a>, <a class="el" href="structStepChoosers_1_1ErrorControl_1_1MaxFactor.html">MaxFactor</a>, <a class="el" href="structStepChoosers_1_1ErrorControl_1_1MinFactor.html">MinFactor</a>, <a class="el" href="structStepChoosers_1_1ErrorControl_1_1SafetyFactor.html">SafetyFactor</a> &gt;</td></tr>
+<tr class="separator:a13cb7b6bbd6669bd8c4bf9957f5c2a09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a843968e457dd2a5fb4c5987de0c7efd1"><td class="memItemLeft" align="right" valign="top"><a id="a843968e457dd2a5fb4c5987de0c7efd1"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt;::<a class="el" href="structTags_1_1HistoryEvolvedVariables.html">Tags::HistoryEvolvedVariables</a>&lt; EvolvedVariableTag &gt;, <a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt;::<a class="el" href="structTags_1_1StepperError.html">Tags::StepperError</a>, EvolvedVariableTag &gt;, ::<a class="el" href="structTags_1_1StepperErrorUpdated.html">Tags::StepperErrorUpdated</a>, ::<a class="el" href="structTags_1_1TimeStepper.html">Tags::TimeStepper</a>&lt;&gt; &gt;</td></tr>
+<tr class="separator:a843968e457dd2a5fb4c5987de0c7efd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72ea30254a1628800c8133b5922b81fb"><td class="memItemLeft" align="right" valign="top"><a id="a72ea30254a1628800c8133b5922b81fb"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_tags</b> = tmpl::list&lt; <a class="el" href="structStepChoosers_1_1Tags_1_1PreviousStepError.html">Tags::PreviousStepError</a> &gt;</td></tr>
+<tr class="separator:a72ea30254a1628800c8133b5922b81fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2502a63f02cdb95e47d8b66c3a6542b"><td class="memItemLeft" align="right" valign="top"><a id="ac2502a63f02cdb95e47d8b66c3a6542b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>simple_tags</b> = tmpl::list&lt; <a class="el" href="structStepChoosers_1_1Tags_1_1PreviousStepError.html">Tags::PreviousStepError</a> &gt;</td></tr>
+<tr class="separator:ac2502a63f02cdb95e47d8b66c3a6542b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a2cd40540a5778631e5ac6f4ee1ba4750"><td class="memItemLeft" align="right" valign="top"><a id="a2cd40540a5778631e5ac6f4ee1ba4750"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ErrorControl</b> (const double absolute_tolerance, const double relative_tolerance, const double max_factor, const double min_factor, const double safety_factor) noexcept</td></tr>
+<tr class="separator:a2cd40540a5778631e5ac6f4ee1ba4750"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3578cac12424dba9003693d64e0c4cb"><td class="memTemplParams" colspan="2"><a id="aa3578cac12424dba9003693d64e0c4cb"></a>
+template&lt;typename Metavariables , typename History , typename TimeStepper &gt; </td></tr>
+<tr class="memitem:aa3578cac12424dba9003693d64e0c4cb"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; double, bool &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator()</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; double &gt; * &gt; previous_step_error, const History &amp;history, const error_variable_type &amp;error, const bool &amp;stepper_error_updated, const <a class="el" href="classTimeStepper.html">TimeStepper</a> &amp;stepper, const double previous_step, const <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt; &amp;) const noexcept</td></tr>
+<tr class="separator:aa3578cac12424dba9003693d64e0c4cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a46d9a237678cf06d76fbaa430a6a230e"><td class="memItemLeft" align="right" valign="top"><a id="a46d9a237678cf06d76fbaa430a6a230e"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:a46d9a237678cf06d76fbaa430a6a230e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classStepChooser_3_01StepChooserUse_1_1LtsStep_01_4"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classStepChooser_3_01StepChooserUse_1_1LtsStep_01_4')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classStepChooser_3_01StepChooserUse_1_1LtsStep_01_4.html">StepChooser&lt; StepChooserUse::LtsStep &gt;</a></td></tr>
+<tr class="memitem:afc26f5d29caa86770fe30ae9054d8513 inherit pub_methods_classStepChooser_3_01StepChooserUse_1_1LtsStep_01_4"><td class="memItemLeft" align="right" valign="top"><a id="afc26f5d29caa86770fe30ae9054d8513"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_abstract</b> (<a class="el" href="classStepChooser.html">StepChooser</a>)</td></tr>
+<tr class="separator:afc26f5d29caa86770fe30ae9054d8513 inherit pub_methods_classStepChooser_3_01StepChooserUse_1_1LtsStep_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2136065028c0bff65d72cd58e245d77e inherit pub_methods_classStepChooser_3_01StepChooserUse_1_1LtsStep_01_4"><td class="memTemplParams" colspan="2">template&lt;typename Metavariables , typename DbTags &gt; </td></tr>
+<tr class="memitem:a2136065028c0bff65d72cd58e245d77e inherit pub_methods_classStepChooser_3_01StepChooserUse_1_1LtsStep_01_4"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; double, bool &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classStepChooser_3_01StepChooserUse_1_1LtsStep_01_4.html#a2136065028c0bff65d72cd58e245d77e">desired_step</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; db::DataBox&lt; DbTags &gt; * &gt; box, const double last_step_magnitude, const <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt; &amp;cache) const noexcept</td></tr>
+<tr class="memdesc:a2136065028c0bff65d72cd58e245d77e inherit pub_methods_classStepChooser_3_01StepChooserUse_1_1LtsStep_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">The <code>last_step_magnitude</code> parameter describes the step size to be adjusted. It may be the step size or the slab size, or may be infinite if the appropriate size cannot be determined.  <a href="classStepChooser_3_01StepChooserUse_1_1LtsStep_01_4.html#a2136065028c0bff65d72cd58e245d77e">More...</a><br /></td></tr>
+<tr class="separator:a2136065028c0bff65d72cd58e245d77e inherit pub_methods_classStepChooser_3_01StepChooserUse_1_1LtsStep_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:abc3039fcbf83419740160a562fafd385"><td class="memItemLeft" align="right" valign="top"><a id="abc3039fcbf83419740160a562fafd385"></a>
+static <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memItemRight" valign="bottom"><b>name</b> () noexcept</td></tr>
+<tr class="separator:abc3039fcbf83419740160a562fafd385"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a20c0afbb31066bb418cb7208ccc93bd2"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a20c0afbb31066bb418cb7208ccc93bd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename EvolvedVariableTag, typename ErrorControlSelector = NoSuchType&gt;<br />
+class StepChoosers::ErrorControl&lt; EvolvedVariableTag, ErrorControlSelector &gt;</h3>
+
+<p>Suggests a step size based on a target absolute and/or relative error measure. </p>
+<h3>Details</h3>
+<p>The suggested step is calculated via a simple specialization of the scheme suggested in <a class="el" href="citelist.html#CITEREF_Hairer1993">[50]</a>. We first compute the aggregated error measure from the stepper error:</p>
+<p class="formulaDsp">
+\[ E = \max_i(|E_i| / sc_i), \]
+</p>
+<p>where \(E_i\) is the ODE error reported for each individual grid point, reported by the time stepper, and \(sc_i\) is the step control measure determined by the tolerances:</p>
+<p class="formulaDsp">
+\[ sc_i = Atol_i + \max(|y_i|,|y_i + E_i|) Rtol_i, \]
+</p>
+<p>and \(y_i\) is the value of the function at the current step at grid point \(i\).</p>
+<p>When no previous record of previous error is available, the step has size:</p>
+<p class="formulaDsp">
+\[ h_{\text{new}} = h \cdot \min\left(F_{\text{max}}, \max\left(F_{\text{min}}, \frac{F_{\text{safety}}}{E^{1/(q + 1)}}\right)\right), \]
+</p>
+<p>where \(h_{\text{new}}\) is the new suggested step size \(h\) is the previous step size, \(F_{\text{max}}\) is the maximum factor by which we allow the step to increase, \(F_{\text{min}}\) is the minimum factor by which we allow the step to decrease. \(F_{\text{safety}}\) is the safety factor on the computed error &ndash; this forces the step size slightly lower than we would naively compute so that the result of the step will likely be within the target error. \(q\) is the order of the stepper error calculation. Intuitively, we should change the step less drastically for a higher order stepper.</p>
+<p>After the first error calculation, the error \(E\) is recorded, and subsequent error calculations use a simple PI scheme suggested in <a class="el" href="citelist.html#CITEREF_NumericalRecipes">[87]</a> section 17.2.1:</p>
+<p class="formulaDsp">
+\[ h_{\text{new}} = h \cdot \min\left(F_{\text{max}}, \max\left(F_{\text{min}}, \frac{F_{\text{safety}}}{E^{0.7 / (q + 1)} E_{\text{prev}}^{0.4 / (q + 1)}}\right)\right), \]
+</p>
+<p>where \(E_{\text{prev}}\) is the error computed in the previous step.</p>
+<dl class="section note"><dt>Note</dt><dd>The template parameter <code>ErrorControlSelector</code> is used to disambiguate in the input-file options between <code><a class="el" href="classStepChoosers_1_1ErrorControl.html" title="Suggests a step size based on a target absolute and/or relative error measure.">ErrorControl</a></code> step choosers that are based on different variables. This is needed if multiple systems are evolved in the same executable. The name used for the input file includes <code>ErrorControlSelector::name()</code> if it is provided. </dd></dl>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a20c0afbb31066bb418cb7208ccc93bd2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a20c0afbb31066bb418cb7208ccc93bd2">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename EvolvedVariableTag , typename ErrorControlSelector  = NoSuchType&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classStepChoosers_1_1ErrorControl.html">StepChoosers::ErrorControl</a>&lt; EvolvedVariableTag, ErrorControlSelector &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      <span class="stringliteral">&quot;Chooses a step based on a target relative and absolute error tolerance&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Time/StepChoosers/<a class="el" href="ErrorControl_8hpp_source.html">ErrorControl.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

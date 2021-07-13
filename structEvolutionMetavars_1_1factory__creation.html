@@ -1,0 +1,253 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: EvolutionMetavars&lt; InitialData &gt;::factory_creation Struct Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="structEvolutionMetavars.html">EvolutionMetavars</a></li><li class="navelem"><a class="el" href="structEvolutionMetavars_1_1factory__creation.html">factory_creation</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="structEvolutionMetavars_1_1factory__creation-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">EvolutionMetavars&lt; InitialData &gt;::factory_creation Struct Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a057148adf2a8a3f7eff21edbd559de6e"><td class="memItemLeft" align="right" valign="top"><a id="a057148adf2a8a3f7eff21edbd559de6e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>factory_classes</b> = tmpl::map&lt; tmpl::pair&lt; <a class="el" href="classDenseTrigger.html">DenseTrigger</a>, DenseTriggers::standard_dense_triggers &gt;, tmpl::pair&lt; <a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; volume_dim &gt;, domain_creators&lt; volume_dim &gt; &gt;, tmpl::pair&lt; <a class="el" href="classEvent.html">Event</a>, tmpl::flatten&lt; tmpl::list&lt; <a class="el" href="classEvents_1_1Completion.html">Events::Completion</a>, dg::Events::field_observations&lt; volume_dim, <a class="el" href="structTags_1_1Time.html">Tags::Time</a>, observe_fields, analytic_solution_fields &gt;, Events::time_events&lt; <a class="el" href="structBurgers_1_1System.html">system</a> &gt; &gt;&gt; &gt;, tmpl::pair&lt; <a class="el" href="classStepChooser.html">StepChooser</a>&lt; StepChooserUse::LtsStep &gt;, StepChoosers::standard_step_choosers&lt; <a class="el" href="structBurgers_1_1System.html">system</a> &gt; &gt;, tmpl::pair&lt; <a class="el" href="classStepChooser.html">StepChooser</a>&lt; StepChooserUse::Slab &gt;, StepChoosers::standard_slab_choosers&lt; <a class="el" href="structBurgers_1_1System.html">system</a>, local_time_stepping &gt; &gt;, tmpl::pair&lt; <a class="el" href="classStepController.html">StepController</a>, <a class="el" href="namespaceStepControllers.html#a35ac1d8d3a01a394f81be4cfa3546e41">StepControllers::standard_step_controllers</a> &gt;, tmpl::pair&lt; <a class="el" href="classTimeSequence.html">TimeSequence</a>&lt; double &gt;, TimeSequences::all_time_sequences&lt; double &gt; &gt;, tmpl::pair&lt; <a class="el" href="classTimeSequence.html">TimeSequence</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint64_t</a> &gt;, TimeSequences::all_time_sequences&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint64_t</a> &gt; &gt;, tmpl::pair&lt; <a class="el" href="classTrigger.html">Trigger</a>, tmpl::append&lt; Triggers::logical_triggers, <a class="el" href="group__EventsAndTriggersGroup.html#ga7014bf5198aad6476fc287f800a1eb9b">Triggers::time_triggers</a> &gt; &gt;&gt;</td></tr>
+<tr class="separator:a057148adf2a8a3f7eff21edbd559de6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b6174f07f8fe7f2d93081d44dcf51ad"><td class="memItemLeft" align="right" valign="top"><a id="a2b6174f07f8fe7f2d93081d44dcf51ad"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>factory_classes</b> = tmpl::map&lt; tmpl::pair&lt; <a class="el" href="classStepChooser.html">StepChooser</a>&lt; StepChooserUse::LtsStep &gt;, tmpl::list&lt; <a class="el" href="classStepChoosers_1_1Constant.html">StepChoosers::Constant</a>&lt; StepChooserUse::LtsStep &gt;, <a class="el" href="classStepChoosers_1_1Increase.html">StepChoosers::Increase</a>&lt; StepChooserUse::LtsStep &gt; &gt;&gt;, tmpl::pair&lt; <a class="el" href="classStepController.html">StepController</a>, <a class="el" href="namespaceStepControllers.html#a35ac1d8d3a01a394f81be4cfa3546e41">StepControllers::standard_step_controllers</a> &gt;, tmpl::pair&lt; <a class="el" href="classTimeSequence.html">TimeSequence</a>&lt; double &gt;, TimeSequences::all_time_sequences&lt; double &gt; &gt;, tmpl::pair&lt; <a class="el" href="classTimeSequence.html">TimeSequence</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint64_t</a> &gt;, TimeSequences::all_time_sequences&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint64_t</a> &gt; &gt;&gt;</td></tr>
+<tr class="separator:a2b6174f07f8fe7f2d93081d44dcf51ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d9bb471875a6ba1208dbfe29c31ad55"><td class="memItemLeft" align="right" valign="top"><a id="a8d9bb471875a6ba1208dbfe29c31ad55"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>factory_classes</b> = <a class="el" href="namespaceOptions.html#ac5c3b66a4eba312fdb7c9fc24cb20ce3">Options::add_factory_classes</a>&lt; typename <a class="el" href="structGeneralizedHarmonicTemplateBase.html">GeneralizedHarmonicTemplateBase</a>&lt; <a class="el" href="structEvolutionMetavars.html">EvolutionMetavars</a> &gt;::factory_creation::factory_classes, tmpl::pair&lt; <a class="el" href="classEvent.html">Event</a>, tmpl::list&lt; <a class="el" href="classintrp_1_1Events_1_1Interpolate.html">intrp::Events::Interpolate</a>&lt; 3, <a class="el" href="structEvolutionMetavars_1_1AhA.html">AhA</a>, interpolator_source_vars &gt; &gt;&gt; &gt;</td></tr>
+<tr class="separator:a8d9bb471875a6ba1208dbfe29c31ad55"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8205fabb9b819d94d518dad411ef0405"><td class="memItemLeft" align="right" valign="top"><a id="a8205fabb9b819d94d518dad411ef0405"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>factory_classes</b> = <a class="el" href="namespaceOptions.html#ac5c3b66a4eba312fdb7c9fc24cb20ce3">Options::add_factory_classes</a>&lt; typename <a class="el" href="structGhValenciaDivCleanTemplateBase.html">GhValenciaDivCleanTemplateBase</a>&lt; <a class="el" href="structEvolutionMetavars.html">EvolutionMetavars</a> &gt;::factory_creation::factory_classes, tmpl::pair&lt; <a class="el" href="classEvent.html">Event</a>, tmpl::list&lt; <a class="el" href="classintrp_1_1Events_1_1Interpolate.html">intrp::Events::Interpolate</a>&lt; 3, <a class="el" href="structEvolutionMetavars_1_1AhA.html">AhA</a>, interpolator_source_vars &gt; &gt;&gt; &gt;</td></tr>
+<tr class="separator:a8205fabb9b819d94d518dad411ef0405"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab5c1c82df8314d1128df2e25aff5ccfa"><td class="memItemLeft" align="right" valign="top"><a id="ab5c1c82df8314d1128df2e25aff5ccfa"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>factory_classes</b> = tmpl::map&lt; tmpl::pair&lt; <a class="el" href="classDenseTrigger.html">DenseTrigger</a>, DenseTriggers::standard_dense_triggers &gt;, tmpl::pair&lt; <a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; volume_dim &gt;, domain_creators&lt; volume_dim &gt; &gt;, tmpl::pair&lt; <a class="el" href="classEvent.html">Event</a>, tmpl::flatten&lt; tmpl::list&lt; <a class="el" href="classEvents_1_1Completion.html">Events::Completion</a>, dg::Events::field_observations&lt; volume_dim, <a class="el" href="structTags_1_1Time.html">Tags::Time</a>, tmpl::append&lt; typename system::variables_tag::tags_list, typename system::primitive_variables_tag::tags_list &gt;, tmpl::conditional_t&lt; evolution::is_analytic_solution_v&lt; initial_data &gt;, analytic_variables_tags, tmpl::list&lt;&gt; &gt;&gt;, Events::time_events&lt; <a class="el" href="structBurgers_1_1System.html">system</a> &gt;, <a class="el" href="classintrp_1_1Events_1_1Interpolate.html">intrp::Events::Interpolate</a>&lt; 3, InterpolationTargetTags, interpolator_source_vars &gt;... &gt; &gt;&gt;, tmpl::pair&lt; <a class="el" href="classStepChooser.html">StepChooser</a>&lt; StepChooserUse::LtsStep &gt;, StepChoosers::standard_step_choosers&lt; <a class="el" href="structBurgers_1_1System.html">system</a> &gt; &gt;, tmpl::pair&lt; <a class="el" href="classStepChooser.html">StepChooser</a>&lt; StepChooserUse::Slab &gt;, StepChoosers::standard_slab_choosers&lt; <a class="el" href="structBurgers_1_1System.html">system</a>, local_time_stepping &gt; &gt;, tmpl::pair&lt; <a class="el" href="classStepController.html">StepController</a>, <a class="el" href="namespaceStepControllers.html#a35ac1d8d3a01a394f81be4cfa3546e41">StepControllers::standard_step_controllers</a> &gt;, tmpl::pair&lt; <a class="el" href="classTimeSequence.html">TimeSequence</a>&lt; double &gt;, TimeSequences::all_time_sequences&lt; double &gt; &gt;, tmpl::pair&lt; <a class="el" href="classTimeSequence.html">TimeSequence</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint64_t</a> &gt;, TimeSequences::all_time_sequences&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint64_t</a> &gt; &gt;, tmpl::pair&lt; <a class="el" href="classTrigger.html">Trigger</a>, tmpl::append&lt; Triggers::logical_triggers, <a class="el" href="group__EventsAndTriggersGroup.html#ga7014bf5198aad6476fc287f800a1eb9b">Triggers::time_triggers</a> &gt; &gt;&gt;</td></tr>
+<tr class="separator:ab5c1c82df8314d1128df2e25aff5ccfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85b55fe0ad63f7fa308d62448534b076"><td class="memItemLeft" align="right" valign="top"><a id="a85b55fe0ad63f7fa308d62448534b076"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>factory_classes</b> = tmpl::map&lt; tmpl::pair&lt; <a class="el" href="classDenseTrigger.html">DenseTrigger</a>, DenseTriggers::standard_dense_triggers &gt;, tmpl::pair&lt; <a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; volume_dim &gt;, domain_creators&lt; volume_dim &gt; &gt;, tmpl::pair&lt; <a class="el" href="classEvent.html">Event</a>, tmpl::flatten&lt; tmpl::list&lt; <a class="el" href="classEvents_1_1Completion.html">Events::Completion</a>, dg::Events::field_observations&lt; volume_dim, <a class="el" href="structTags_1_1Time.html">Tags::Time</a>, tmpl::append&lt; typename system::variables_tag::tags_list, typename system::primitive_variables_tag::tags_list &gt;, tmpl::conditional_t&lt; evolution::is_analytic_solution_v&lt; initial_data &gt;, typename system::primitive_variables_tag::tags_list, tmpl::list&lt;&gt; &gt;&gt;, Events::time_events&lt; <a class="el" href="structBurgers_1_1System.html">system</a> &gt; &gt;&gt; &gt;, tmpl::pair&lt; <a class="el" href="classStepChooser.html">StepChooser</a>&lt; StepChooserUse::LtsStep &gt;, StepChoosers::standard_step_choosers&lt; <a class="el" href="structBurgers_1_1System.html">system</a> &gt; &gt;, tmpl::pair&lt; <a class="el" href="classStepChooser.html">StepChooser</a>&lt; StepChooserUse::Slab &gt;, StepChoosers::standard_slab_choosers&lt; <a class="el" href="structBurgers_1_1System.html">system</a>, local_time_stepping &gt; &gt;, tmpl::pair&lt; <a class="el" href="classStepController.html">StepController</a>, <a class="el" href="namespaceStepControllers.html#a35ac1d8d3a01a394f81be4cfa3546e41">StepControllers::standard_step_controllers</a> &gt;, tmpl::pair&lt; <a class="el" href="classTimeSequence.html">TimeSequence</a>&lt; double &gt;, TimeSequences::all_time_sequences&lt; double &gt; &gt;, tmpl::pair&lt; <a class="el" href="classTimeSequence.html">TimeSequence</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint64_t</a> &gt;, TimeSequences::all_time_sequences&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint64_t</a> &gt; &gt;, tmpl::pair&lt; <a class="el" href="classTrigger.html">Trigger</a>, tmpl::append&lt; Triggers::logical_triggers, <a class="el" href="group__EventsAndTriggersGroup.html#ga7014bf5198aad6476fc287f800a1eb9b">Triggers::time_triggers</a> &gt; &gt;&gt;</td></tr>
+<tr class="separator:a85b55fe0ad63f7fa308d62448534b076"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8cb8af3ba5f2e481c62784128434466e"><td class="memItemLeft" align="right" valign="top"><a id="a8cb8af3ba5f2e481c62784128434466e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>factory_classes</b> = tmpl::map&lt; tmpl::pair&lt; <a class="el" href="classDenseTrigger.html">DenseTrigger</a>, DenseTriggers::standard_dense_triggers &gt;, tmpl::pair&lt; <a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; volume_dim &gt;, domain_creators&lt; volume_dim &gt; &gt;, tmpl::pair&lt; <a class="el" href="classEvent.html">Event</a>, tmpl::flatten&lt; tmpl::list&lt; <a class="el" href="classEvents_1_1Completion.html">Events::Completion</a>, dg::Events::field_observations&lt; volume_dim, <a class="el" href="structTags_1_1Time.html">Tags::Time</a>, tmpl::append&lt; typename system::variables_tag::tags_list, typename system::primitive_variables_tag::tags_list &gt;, tmpl::conditional_t&lt; evolution::is_analytic_solution_v&lt; initial_data &gt;, analytic_variables_tags, tmpl::list&lt;&gt; &gt;&gt;, Events::time_events&lt; <a class="el" href="structBurgers_1_1System.html">system</a> &gt; &gt;&gt; &gt;, tmpl::pair&lt; <a class="el" href="classStepChooser.html">StepChooser</a>&lt; StepChooserUse::LtsStep &gt;, StepChoosers::standard_step_choosers&lt; <a class="el" href="structBurgers_1_1System.html">system</a>, false &gt; &gt;, tmpl::pair&lt; <a class="el" href="classStepChooser.html">StepChooser</a>&lt; StepChooserUse::Slab &gt;, StepChoosers::standard_slab_choosers&lt; <a class="el" href="structBurgers_1_1System.html">system</a>, local_time_stepping, false &gt; &gt;, tmpl::pair&lt; <a class="el" href="classStepController.html">StepController</a>, <a class="el" href="namespaceStepControllers.html#a35ac1d8d3a01a394f81be4cfa3546e41">StepControllers::standard_step_controllers</a> &gt;, tmpl::pair&lt; <a class="el" href="classTimeSequence.html">TimeSequence</a>&lt; double &gt;, TimeSequences::all_time_sequences&lt; double &gt; &gt;, tmpl::pair&lt; <a class="el" href="classTimeSequence.html">TimeSequence</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint64_t</a> &gt;, TimeSequences::all_time_sequences&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint64_t</a> &gt; &gt;, tmpl::pair&lt; <a class="el" href="classTrigger.html">Trigger</a>, tmpl::append&lt; Triggers::logical_triggers, <a class="el" href="group__EventsAndTriggersGroup.html#ga7014bf5198aad6476fc287f800a1eb9b">Triggers::time_triggers</a> &gt; &gt;&gt;</td></tr>
+<tr class="separator:a8cb8af3ba5f2e481c62784128434466e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8cb8af3ba5f2e481c62784128434466e"><td class="memItemLeft" align="right" valign="top"><a id="a8cb8af3ba5f2e481c62784128434466e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>factory_classes</b> = tmpl::map&lt; tmpl::pair&lt; <a class="el" href="classDenseTrigger.html">DenseTrigger</a>, DenseTriggers::standard_dense_triggers &gt;, tmpl::pair&lt; <a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; volume_dim &gt;, domain_creators&lt; volume_dim &gt; &gt;, tmpl::pair&lt; <a class="el" href="classEvent.html">Event</a>, tmpl::flatten&lt; tmpl::list&lt; <a class="el" href="classEvents_1_1Completion.html">Events::Completion</a>, dg::Events::field_observations&lt; volume_dim, <a class="el" href="structTags_1_1Time.html">Tags::Time</a>, tmpl::append&lt; typename system::variables_tag::tags_list, typename system::primitive_variables_tag::tags_list &gt;, tmpl::conditional_t&lt; evolution::is_analytic_solution_v&lt; initial_data &gt;, analytic_variables_tags, tmpl::list&lt;&gt; &gt;&gt;, Events::time_events&lt; <a class="el" href="structBurgers_1_1System.html">system</a> &gt; &gt;&gt; &gt;, tmpl::pair&lt; <a class="el" href="classStepChooser.html">StepChooser</a>&lt; StepChooserUse::LtsStep &gt;, StepChoosers::standard_step_choosers&lt; <a class="el" href="structBurgers_1_1System.html">system</a>, false &gt; &gt;, tmpl::pair&lt; <a class="el" href="classStepChooser.html">StepChooser</a>&lt; StepChooserUse::Slab &gt;, StepChoosers::standard_slab_choosers&lt; <a class="el" href="structBurgers_1_1System.html">system</a>, local_time_stepping, false &gt; &gt;, tmpl::pair&lt; <a class="el" href="classStepController.html">StepController</a>, <a class="el" href="namespaceStepControllers.html#a35ac1d8d3a01a394f81be4cfa3546e41">StepControllers::standard_step_controllers</a> &gt;, tmpl::pair&lt; <a class="el" href="classTimeSequence.html">TimeSequence</a>&lt; double &gt;, TimeSequences::all_time_sequences&lt; double &gt; &gt;, tmpl::pair&lt; <a class="el" href="classTimeSequence.html">TimeSequence</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint64_t</a> &gt;, TimeSequences::all_time_sequences&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint64_t</a> &gt; &gt;, tmpl::pair&lt; <a class="el" href="classTrigger.html">Trigger</a>, tmpl::append&lt; Triggers::logical_triggers, <a class="el" href="group__EventsAndTriggersGroup.html#ga7014bf5198aad6476fc287f800a1eb9b">Triggers::time_triggers</a> &gt; &gt;&gt;</td></tr>
+<tr class="separator:a8cb8af3ba5f2e481c62784128434466e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84ee907aa3c507fb92bba0e505ae33e3"><td class="memItemLeft" align="right" valign="top"><a id="a84ee907aa3c507fb92bba0e505ae33e3"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>factory_classes</b> = tmpl::map&lt; tmpl::pair&lt; <a class="el" href="classDenseTrigger.html">DenseTrigger</a>, DenseTriggers::standard_dense_triggers &gt;, tmpl::pair&lt; <a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; volume_dim &gt;, domain_creators&lt; volume_dim &gt; &gt;, tmpl::pair&lt; <a class="el" href="classEvent.html">Event</a>, tmpl::flatten&lt; tmpl::list&lt; <a class="el" href="classEvents_1_1Completion.html">Events::Completion</a>, dg::Events::field_observations&lt; volume_dim, <a class="el" href="structTags_1_1Time.html">Tags::Time</a>, observe_fields, analytic_solution_fields &gt;, Events::time_events&lt; <a class="el" href="structBurgers_1_1System.html">system</a> &gt; &gt;&gt; &gt;, tmpl::pair&lt; <a class="el" href="classStepChooser.html">StepChooser</a>&lt; StepChooserUse::LtsStep &gt;, tmpl::push_back&lt; StepChoosers::standard_step_choosers&lt; <a class="el" href="structBurgers_1_1System.html">system</a> &gt;, <a class="el" href="classStepChoosers_1_1ByBlock.html">StepChoosers::ByBlock</a>&lt; StepChooserUse::LtsStep, volume_dim &gt; &gt;&gt;, tmpl::pair&lt; <a class="el" href="classStepChooser.html">StepChooser</a>&lt; StepChooserUse::Slab &gt;, tmpl::push_back&lt; StepChoosers::standard_slab_choosers&lt; <a class="el" href="structBurgers_1_1System.html">system</a>, local_time_stepping &gt;, <a class="el" href="classStepChoosers_1_1ByBlock.html">StepChoosers::ByBlock</a>&lt; StepChooserUse::Slab, volume_dim &gt; &gt;&gt;, tmpl::pair&lt; <a class="el" href="classStepController.html">StepController</a>, <a class="el" href="namespaceStepControllers.html#a35ac1d8d3a01a394f81be4cfa3546e41">StepControllers::standard_step_controllers</a> &gt;, tmpl::pair&lt; <a class="el" href="classTimeSequence.html">TimeSequence</a>&lt; double &gt;, TimeSequences::all_time_sequences&lt; double &gt; &gt;, tmpl::pair&lt; <a class="el" href="classTimeSequence.html">TimeSequence</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint64_t</a> &gt;, TimeSequences::all_time_sequences&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint64_t</a> &gt; &gt;, tmpl::pair&lt; <a class="el" href="classTrigger.html">Trigger</a>, tmpl::append&lt; Triggers::logical_triggers, <a class="el" href="group__EventsAndTriggersGroup.html#ga7014bf5198aad6476fc287f800a1eb9b">Triggers::time_triggers</a> &gt; &gt;&gt;</td></tr>
+<tr class="separator:a84ee907aa3c507fb92bba0e505ae33e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<hr/>The documentation for this struct was generated from the following files:<ul>
+<li>src/Evolution/Executables/Burgers/<a class="el" href="EvolveBurgers_8hpp_source.html">EvolveBurgers.hpp</a></li>
+<li>src/Evolution/Executables/Cce/<a class="el" href="CharacteristicExtract_8hpp_source.html">CharacteristicExtract.hpp</a></li>
+<li>src/Evolution/Executables/GeneralizedHarmonic/<a class="el" href="EvolveGeneralizedHarmonicWithHorizon_8hpp_source.html">EvolveGeneralizedHarmonicWithHorizon.hpp</a></li>
+<li>src/Evolution/Executables/GrMhd/GhValenciaDivClean/<a class="el" href="EvolveGhValenciaDivCleanWithHorizon_8hpp_source.html">EvolveGhValenciaDivCleanWithHorizon.hpp</a></li>
+<li>src/Evolution/Executables/GrMhd/ValenciaDivClean/<a class="el" href="EvolveValenciaDivClean_8hpp_source.html">EvolveValenciaDivClean.hpp</a></li>
+<li>src/Evolution/Executables/NewtonianEuler/<a class="el" href="EvolveNewtonianEuler_8hpp_source.html">EvolveNewtonianEuler.hpp</a></li>
+<li>src/Evolution/Executables/RadiationTransport/M1Grey/<a class="el" href="EvolveM1Grey_8hpp_source.html">EvolveM1Grey.hpp</a></li>
+<li>src/Evolution/Executables/RelativisticEuler/Valencia/<a class="el" href="EvolveValencia_8hpp_source.html">EvolveValencia.hpp</a></li>
+<li>src/Evolution/Executables/ScalarWave/<a class="el" href="EvolveScalarWave_8hpp_source.html">EvolveScalarWave.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

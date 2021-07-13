@@ -1,0 +1,294 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: LinearSolver::Schwarz::SubdomainOperator&lt; Dim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceLinearSolver.html">LinearSolver</a></li><li class="navelem"><a class="el" href="namespaceLinearSolver_1_1Schwarz.html">Schwarz</a></li><li class="navelem"><a class="el" href="classLinearSolver_1_1Schwarz_1_1SubdomainOperator.html">SubdomainOperator</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classLinearSolver_1_1Schwarz_1_1SubdomainOperator-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">LinearSolver::Schwarz::SubdomainOperator&lt; Dim &gt; Class Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Abstract base class for the subdomain operator, i.e. the linear operator restricted to an element-centered <a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">Schwarz</a> subdomain.  
+ <a href="classLinearSolver_1_1Schwarz_1_1SubdomainOperator.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ParallelAlgorithms_2LinearSolver_2Schwarz_2SubdomainOperator_8hpp_source.html">SubdomainOperator.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a1d117f916edc9b79bcc2b2b92bb2207e"><td class="memItemLeft" align="right" valign="top"><a id="a1d117f916edc9b79bcc2b2b92bb2207e"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = Dim</td></tr>
+<tr class="separator:a1d117f916edc9b79bcc2b2b92bb2207e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+class LinearSolver::Schwarz::SubdomainOperator&lt; Dim &gt;</h3>
+
+<p>Abstract base class for the subdomain operator, i.e. the linear operator restricted to an element-centered <a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">Schwarz</a> subdomain. </p>
+<p>A subdomain operator must implement these member function templates</p><ul>
+<li><code>operator()</code>: Applies the operator to the element-centered subdomain data. It must take these arguments, in this order:<ul>
+<li><code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a>&lt;<a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html" title="Data on an element-centered subdomain.">LinearSolver::Schwarz::ElementCenteredSubdomainData</a>*&gt;</code>: The data where the result of the operator applied to the operand should be written to</li>
+<li><code><a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html" title="Data on an element-centered subdomain.">LinearSolver::Schwarz::ElementCenteredSubdomainData</a></code>: The operand data to which the operator should be applied</li>
+<li><code>db::DataBox</code>: The element's DataBox. Can be used to retrieve any data on the subdomain geometry and to access and mutate persistent memory buffers.</li>
+</ul>
+</li>
+</ul>
+<p>Since the subdomain operator has access to the element's DataBox, it can retrieve any background data, i.e. data that does not depend on the variables it operates on. Background data on overlap regions with other elements can be either initialized in advance if possible or communicated with the <code><a class="el" href="structLinearSolver_1_1Schwarz_1_1Actions_1_1SendOverlapFields.html" title="Send data on regions that overlap with other subdomains to their corresponding elements.">LinearSolver::Schwarz::Actions::SendOverlapFields</a></code> and <code><a class="el" href="structLinearSolver_1_1Schwarz_1_1Actions_1_1ReceiveOverlapFields.html" title="Receive data from regions of this element&#39;s subdomain that overlap with other elements.">LinearSolver::Schwarz::Actions::ReceiveOverlapFields</a></code> actions. Note that such communication should not be necessary between iterations of the <a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">Schwarz</a> solve, but only between successive solves, because background data should not change during the solve. The <a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">Schwarz</a> algorithm takes care of communicating all variable data that the subdomain operator operates on, whenever necessary. This variable data is passed to the operator as the <code>operand</code> argument (see above). It includes the data on the central element of the subdomain, as well as the data on overlap regions with neighbors. Since data on the entire subdomain is available, applying the subdomain operator requires <em>no</em> communication between elements. This is the strength of the <a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">Schwarz</a> algorithm: all subdomain solves are independent of each other (see <code><a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">LinearSolver::Schwarz::Schwarz</a></code> for details).</p>
+<p>Here's an example of a subdomain operator that is the restriction of an explicit global matrix:</p>
+<div class="fragment"><div class="line"><span class="comment">// Applies the linear operator given explicitly in the input file to data on an</span></div>
+<div class="line"><span class="comment">// element-centered subdomain, using standard matrix multiplication.</span></div>
+<div class="line"><span class="comment">//</span></div>
+<div class="line"><span class="comment">// We assume all elements have the same extents so we can use the element&#39;s</span></div>
+<div class="line"><span class="comment">// intruding overlap extents instead of initializing extruding overlap extents.</span></div>
+<div class="line"><span class="keyword">struct </span>SubdomainOperator : <a class="code" href="classLinearSolver_1_1Schwarz_1_1SubdomainOperator.html">LinearSolver::Schwarz::SubdomainOperator</a>&lt;1&gt; {</div>
+<div class="line">  <span class="comment">// The operator can be non-const and can also mutate the DataBox to modify</span></div>
+<div class="line">  <span class="comment">// temporary and persistent memory buffers</span></div>
+<div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ResultTags, <span class="keyword">typename</span> OperandTags, <span class="keyword">typename</span> DbTagsList&gt;</div>
+<div class="line">  <span class="keywordtype">void</span> operator()(</div>
+<div class="line">      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;</div>
+<div class="line">          <a class="code" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">LinearSolver::Schwarz::ElementCenteredSubdomainData&lt;1, ResultTags&gt;</a>*&gt;</div>
+<div class="line">          result,</div>
+<div class="line">      <span class="keyword">const</span> <a class="code" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">LinearSolver::Schwarz::ElementCenteredSubdomainData&lt;1, OperandTags&gt;</a>&amp;</div>
+<div class="line">          operand,</div>
+<div class="line">      db::DataBox&lt;DbTagsList&gt;&amp; box) noexcept {</div>
+<div class="line">    <span class="comment">// Retrieve arguments from the DataBox</span></div>
+<div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; matrix_slices =</div>
+<div class="line">        db::get&lt;helpers_distributed::LinearOperator&gt;(box);</div>
+<div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; element = db::get&lt;domain::Tags::Element&lt;1&gt;&gt;(box);</div>
+<div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; overlap_extents = <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">db::get</a>&lt;</div>
+<div class="line">        <a class="code" href="structLinearSolver_1_1Schwarz_1_1Tags_1_1IntrudingExtents.html">LinearSolver::Schwarz::Tags::IntrudingExtents&lt;1, SchwarzSmoother&gt;</a>&gt;(box);</div>
+<div class="line"> </div>
+<div class="line">    <span class="keyword">const</span> <span class="keywordtype">size_t</span> element_index = helpers_distributed::get_index(element.id());</div>
+<div class="line">    <span class="keyword">const</span> <span class="keywordtype">size_t</span> num_elements = matrix_slices.size();</div>
+<div class="line">    <span class="keyword">const</span> <span class="keywordtype">size_t</span> num_points_per_element = matrix_slices.begin()-&gt;columns();</div>
+<div class="line"> </div>
+<div class="line">    <span class="comment">// Re-size the result buffer if necessary</span></div>
+<div class="line">    result-&gt;destructive_resize(operand);</div>
+<div class="line"> </div>
+<div class="line">    <span class="comment">// Assemble full operator matrix</span></div>
+<div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span> operator_matrix = combine_matrix_slices(matrix_slices);</div>
+<div class="line"> </div>
+<div class="line">    <span class="comment">// Extend subdomain data with zeros outside the subdomain</span></div>
+<div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span> extended_operand =</div>
+<div class="line">        extend_subdomain_data(operand, element_index, num_elements,</div>
+<div class="line">                              num_points_per_element, overlap_extents[0]);</div>
+<div class="line"> </div>
+<div class="line">    <span class="comment">// Apply matrix to extended subdomain data</span></div>
+<div class="line">    <span class="keyword">const</span> <a class="code" href="classDenseVector.html">DenseVector&lt;double&gt;</a> extended_result =</div>
+<div class="line">        operator_matrix * extended_operand;</div>
+<div class="line"> </div>
+<div class="line">    <span class="comment">// Restrict the result back to the subdomain</span></div>
+<div class="line">    restrict_to_subdomain(result, extended_result, element_index,</div>
+<div class="line">                          num_points_per_element, overlap_extents[0]);</div>
+<div class="line">  }</div>
+<div class="line">};</div>
+</div><!-- fragment --></div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/ParallelAlgorithms/LinearSolver/Schwarz/<a class="el" href="ParallelAlgorithms_2LinearSolver_2Schwarz_2SubdomainOperator_8hpp_source.html">SubdomainOperator.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="aclassLinearSolver_1_1Schwarz_1_1SubdomainOperator_html"><div class="ttname"><a href="classLinearSolver_1_1Schwarz_1_1SubdomainOperator.html">LinearSolver::Schwarz::SubdomainOperator</a></div><div class="ttdoc">Abstract base class for the subdomain operator, i.e. the linear operator restricted to an element-cen...</div><div class="ttdef"><b>Definition:</b> SubdomainOperator.hpp:50</div></div>
+<div class="ttc" id="astructLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData_html"><div class="ttname"><a href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">LinearSolver::Schwarz::ElementCenteredSubdomainData</a></div><div class="ttdoc">Data on an element-centered subdomain.</div><div class="ttdef"><b>Definition:</b> ElementCenteredSubdomainData.hpp:35</div></div>
+<div class="ttc" id="astructLinearSolver_1_1Schwarz_1_1Tags_1_1IntrudingExtents_html"><div class="ttname"><a href="structLinearSolver_1_1Schwarz_1_1Tags_1_1IntrudingExtents.html">LinearSolver::Schwarz::Tags::IntrudingExtents</a></div><div class="ttdoc">The number of points a neighbor's subdomain extends into the element.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:126</div></div>
+<div class="ttc" id="agroup__DataBoxGroup_html_gae08744824ea7df89224f128b2080c5b1"><div class="ttname"><a href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">db::get</a></div><div class="ttdeci">const auto &amp; get(const DataBox&lt; TagList &gt; &amp;box) noexcept</div><div class="ttdoc">Retrieve the item with tag Tag from the DataBox.</div><div class="ttdef"><b>Definition:</b> DataBox.hpp:791</div></div>
+<div class="ttc" id="aclassDenseVector_html"><div class="ttname"><a href="classDenseVector.html">DenseVector&lt; double &gt;</a></div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

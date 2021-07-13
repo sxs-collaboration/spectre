@@ -1,0 +1,400 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: grmhd::AnalyticData::BlastWave Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacegrmhd.html">grmhd</a></li><li class="navelem"><a class="el" href="namespacegrmhd_1_1AnalyticData.html">AnalyticData</a></li><li class="navelem"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html">BlastWave</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classgrmhd_1_1AnalyticData_1_1BlastWave-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">grmhd::AnalyticData::BlastWave Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Analytic initial data for a cylindrical or spherical blast wave.  
+ <a href="classgrmhd_1_1AnalyticData_1_1BlastWave.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="BlastWave_8hpp_source.html">BlastWave.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1AdiabaticIndex.html">AdiabaticIndex</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The adiabatic index of the ideal fluid.  <a href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1AdiabaticIndex.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1GeometryOption.html">GeometryOption</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The geometry of the blast wave, i.e. Cylindrical or Spherical.  <a href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1GeometryOption.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1InnerDensity.html">InnerDensity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Density at radii less than <a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1InnerRadius.html" title="Inside InnerRadius, density is InnerDensity.">InnerRadius</a>.  <a href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1InnerDensity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1InnerPressure.html">InnerPressure</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pressure at radii less than <a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1InnerRadius.html" title="Inside InnerRadius, density is InnerDensity.">InnerRadius</a>.  <a href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1InnerPressure.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1InnerRadius.html">InnerRadius</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inside <a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1InnerRadius.html" title="Inside InnerRadius, density is InnerDensity.">InnerRadius</a>, density is <a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1InnerDensity.html" title="Density at radii less than InnerRadius.">InnerDensity</a>.  <a href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1InnerRadius.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1MagneticField.html">MagneticField</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The x,y,z components of the uniform magnetic field threading the matter.  <a href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1MagneticField.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1OuterDensity.html">OuterDensity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Density at radii greater than <a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1OuterRadius.html" title="Outside OuterRadius, density is OuterDensity.">OuterRadius</a>.  <a href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1OuterDensity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1OuterPressure.html">OuterPressure</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pressure at radii greater than <a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1OuterRadius.html" title="Outside OuterRadius, density is OuterDensity.">OuterRadius</a>.  <a href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1OuterPressure.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1OuterRadius.html">OuterRadius</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Outside <a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1OuterRadius.html" title="Outside OuterRadius, density is OuterDensity.">OuterRadius</a>, density is <a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1OuterDensity.html" title="Density at radii greater than OuterRadius.">OuterDensity</a>.  <a href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1OuterRadius.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ab1658a722cc914ea716d4110cfa2440f"><td class="memItemLeft" align="right" valign="top"><a id="ab1658a722cc914ea716d4110cfa2440f"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>Geometry</b> { <b>Cylindrical</b>, 
+<b>Spherical</b>
+ }</td></tr>
+<tr class="separator:ab1658a722cc914ea716d4110cfa2440f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e8d8266b2ee1227bb193f42f9bfac7a"><td class="memItemLeft" align="right" valign="top"><a id="a3e8d8266b2ee1227bb193f42f9bfac7a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state_type</b> = <a class="el" href="classEquationsOfState_1_1IdealFluid.html">EquationsOfState::IdealFluid</a>&lt; true &gt;</td></tr>
+<tr class="separator:a3e8d8266b2ee1227bb193f42f9bfac7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad38b7d7ad6b9d8b63b10339377b3223d"><td class="memItemLeft" align="right" valign="top"><a id="ad38b7d7ad6b9d8b63b10339377b3223d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1InnerRadius.html">InnerRadius</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1OuterRadius.html">OuterRadius</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1InnerDensity.html">InnerDensity</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1OuterDensity.html">OuterDensity</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1InnerPressure.html">InnerPressure</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1OuterPressure.html">OuterPressure</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1MagneticField.html">MagneticField</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1AdiabaticIndex.html">AdiabaticIndex</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1GeometryOption.html">GeometryOption</a> &gt;</td></tr>
+<tr class="separator:ad38b7d7ad6b9d8b63b10339377b3223d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_structgrmhd_1_1AnalyticDataBase"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structgrmhd_1_1AnalyticDataBase')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structgrmhd_1_1AnalyticDataBase.html">grmhd::AnalyticDataBase</a></td></tr>
+<tr class="memitem:aa92f95f25847f29278962e0f4b29f484 inherit pub_types_structgrmhd_1_1AnalyticDataBase"><td class="memTemplParams" colspan="2"><a id="aa92f95f25847f29278962e0f4b29f484"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:aa92f95f25847f29278962e0f4b29f484 inherit pub_types_structgrmhd_1_1AnalyticDataBase"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>tags</b> = tmpl::push_back&lt; typename <a class="el" href="structgr_1_1AnalyticSolution.html">gr::AnalyticSolution</a>&lt; 3 &gt;::template tags&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1RestMassDensity.html">hydro::Tags::RestMassDensity</a>&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1SpecificInternalEnergy.html">hydro::Tags::SpecificInternalEnergy</a>&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1Pressure.html">hydro::Tags::Pressure</a>&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; DataType, 3 &gt;, <a class="el" href="structhydro_1_1Tags_1_1MagneticField.html">hydro::Tags::MagneticField</a>&lt; DataType, 3 &gt;, <a class="el" href="structhydro_1_1Tags_1_1DivergenceCleaningField.html">hydro::Tags::DivergenceCleaningField</a>&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1SpecificEnthalpy.html">hydro::Tags::SpecificEnthalpy</a>&lt; DataType &gt; &gt;</td></tr>
+<tr class="separator:aa92f95f25847f29278962e0f4b29f484 inherit pub_types_structgrmhd_1_1AnalyticDataBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:abbeb15104435b695abc4a9e4bb90db34"><td class="memItemLeft" align="right" valign="top"><a id="abbeb15104435b695abc4a9e4bb90db34"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BlastWave</b> (const <a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html">BlastWave</a> &amp;)=delete</td></tr>
+<tr class="separator:abbeb15104435b695abc4a9e4bb90db34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3476b19776260617454adea74831d080"><td class="memItemLeft" align="right" valign="top"><a id="a3476b19776260617454adea74831d080"></a>
+<a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html">BlastWave</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html">BlastWave</a> &amp;)=delete</td></tr>
+<tr class="separator:a3476b19776260617454adea74831d080"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd411aac90bee68118d3783e54f2a601"><td class="memItemLeft" align="right" valign="top"><a id="abd411aac90bee68118d3783e54f2a601"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BlastWave</b> (<a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html">BlastWave</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:abd411aac90bee68118d3783e54f2a601"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3e823fff377e2d305cd2d994a9a7d7a"><td class="memItemLeft" align="right" valign="top"><a id="af3e823fff377e2d305cd2d994a9a7d7a"></a>
+<a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html">BlastWave</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html">BlastWave</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:af3e823fff377e2d305cd2d994a9a7d7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af8881ff165a7cf3c3b51d05f06916bde"><td class="memItemLeft" align="right" valign="top"><a id="af8881ff165a7cf3c3b51d05f06916bde"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BlastWave</b> (double inner_radius, double outer_radius, double inner_density, double outer_density, double inner_pressure, double outer_pressure, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;magnetic_field, double adiabatic_index, Geometry geometry, const <a class="el" href="structOptions_1_1Context.html">Options::Context</a> &amp;context={})</td></tr>
+<tr class="separator:af8881ff165a7cf3c3b51d05f06916bde"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5256dd646d8ac427e1ee61c4ff609239"><td class="memItemLeft" align="right" valign="top"><a id="a5256dd646d8ac427e1ee61c4ff609239"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BlastWave</b> (CkMigrateMessage *) noexcept</td></tr>
+<tr class="separator:a5256dd646d8ac427e1ee61c4ff609239"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c18f024e9634997a4e390ea15f7832f"><td class="memTemplParams" colspan="2"><a id="a4c18f024e9634997a4e390ea15f7832f"></a>
+template&lt;typename DataType , typename... Tags&gt; </td></tr>
+<tr class="memitem:a4c18f024e9634997a4e390ea15f7832f"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html#a4c18f024e9634997a4e390ea15f7832f">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:a4c18f024e9634997a4e390ea15f7832f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a collection of hydrodynamic variables at position x. <br /></td></tr>
+<tr class="separator:a4c18f024e9634997a4e390ea15f7832f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7845d4db1d65c0ed07ed7225a22f21c"><td class="memTemplParams" colspan="2"><a id="aa7845d4db1d65c0ed07ed7225a22f21c"></a>
+template&lt;typename DataType , typename Tag &gt; </td></tr>
+<tr class="memitem:aa7845d4db1d65c0ed07ed7225a22f21c"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tag &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html#aa7845d4db1d65c0ed07ed7225a22f21c">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; Tag &gt;) const noexcept</td></tr>
+<tr class="memdesc:aa7845d4db1d65c0ed07ed7225a22f21c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the metric variables. <br /></td></tr>
+<tr class="separator:aa7845d4db1d65c0ed07ed7225a22f21c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0cecd79931df6d853d35541934498d82"><td class="memItemLeft" align="right" valign="top"><a id="a0cecd79931df6d853d35541934498d82"></a>
+const <a class="el" href="classEquationsOfState_1_1IdealFluid.html">EquationsOfState::IdealFluid</a>&lt; true &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state</b> () const noexcept</td></tr>
+<tr class="separator:a0cecd79931df6d853d35541934498d82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab61d614c43f8240e5c733e6b9d0c9fbf"><td class="memItemLeft" align="right" valign="top"><a id="ab61d614c43f8240e5c733e6b9d0c9fbf"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;) noexcept</td></tr>
+<tr class="separator:ab61d614c43f8240e5c733e6b9d0c9fbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a7d2b5e2aad29cf208695f2937ed822a2"><td class="memTemplParams" colspan="2"><a id="a7d2b5e2aad29cf208695f2937ed822a2"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a7d2b5e2aad29cf208695f2937ed822a2"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html#a7d2b5e2aad29cf208695f2937ed822a2">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1RestMassDensity.html">hydro::Tags::RestMassDensity</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1RestMassDensity.html">hydro::Tags::RestMassDensity</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:a7d2b5e2aad29cf208695f2937ed822a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:a7d2b5e2aad29cf208695f2937ed822a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2764f56ce4911e24699fb917d0354caa"><td class="memTemplParams" colspan="2"><a id="a2764f56ce4911e24699fb917d0354caa"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a2764f56ce4911e24699fb917d0354caa"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html#a2764f56ce4911e24699fb917d0354caa">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificInternalEnergy.html">hydro::Tags::SpecificInternalEnergy</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificInternalEnergy.html">hydro::Tags::SpecificInternalEnergy</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:a2764f56ce4911e24699fb917d0354caa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:a2764f56ce4911e24699fb917d0354caa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab746b99959704beeae796a0ed8c8e9a6"><td class="memTemplParams" colspan="2"><a id="ab746b99959704beeae796a0ed8c8e9a6"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:ab746b99959704beeae796a0ed8c8e9a6"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html#ab746b99959704beeae796a0ed8c8e9a6">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1Pressure.html">hydro::Tags::Pressure</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1Pressure.html">hydro::Tags::Pressure</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:ab746b99959704beeae796a0ed8c8e9a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:ab746b99959704beeae796a0ed8c8e9a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae96f082dcd859334478d711baf267753"><td class="memTemplParams" colspan="2"><a id="ae96f082dcd859334478d711baf267753"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:ae96f082dcd859334478d711baf267753"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html#ae96f082dcd859334478d711baf267753">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; DataType, 3 &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; DataType, 3 &gt;&gt;</td></tr>
+<tr class="memdesc:ae96f082dcd859334478d711baf267753"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:ae96f082dcd859334478d711baf267753"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a39fa5bec9d8564414a9c6c95a825c98d"><td class="memTemplParams" colspan="2"><a id="a39fa5bec9d8564414a9c6c95a825c98d"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a39fa5bec9d8564414a9c6c95a825c98d"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html#a39fa5bec9d8564414a9c6c95a825c98d">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1MagneticField.html">hydro::Tags::MagneticField</a>&lt; DataType, 3 &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1MagneticField.html">hydro::Tags::MagneticField</a>&lt; DataType, 3 &gt;&gt;</td></tr>
+<tr class="memdesc:a39fa5bec9d8564414a9c6c95a825c98d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:a39fa5bec9d8564414a9c6c95a825c98d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af701fe5d656c3a5752549ac9b8a84fc7"><td class="memTemplParams" colspan="2"><a id="af701fe5d656c3a5752549ac9b8a84fc7"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:af701fe5d656c3a5752549ac9b8a84fc7"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html#af701fe5d656c3a5752549ac9b8a84fc7">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1DivergenceCleaningField.html">hydro::Tags::DivergenceCleaningField</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1DivergenceCleaningField.html">hydro::Tags::DivergenceCleaningField</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:af701fe5d656c3a5752549ac9b8a84fc7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:af701fe5d656c3a5752549ac9b8a84fc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab736249085d32e98820eb255a893fbca"><td class="memTemplParams" colspan="2"><a id="ab736249085d32e98820eb255a893fbca"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:ab736249085d32e98820eb255a893fbca"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html#ab736249085d32e98820eb255a893fbca">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:ab736249085d32e98820eb255a893fbca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:ab736249085d32e98820eb255a893fbca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a203be7842ebcad931e965f540df3cc6f"><td class="memTemplParams" colspan="2"><a id="a203be7842ebcad931e965f540df3cc6f"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a203be7842ebcad931e965f540df3cc6f"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html#a203be7842ebcad931e965f540df3cc6f">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificEnthalpy.html">hydro::Tags::SpecificEnthalpy</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificEnthalpy.html">hydro::Tags::SpecificEnthalpy</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:a203be7842ebcad931e965f540df3cc6f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the GRMHD variables at a given position. <br /></td></tr>
+<tr class="separator:a203be7842ebcad931e965f540df3cc6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a5ddf961eb3cafb6278978fbf44c421e4"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a5ddf961eb3cafb6278978fbf44c421e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_static_attribs_structgrmhd_1_1AnalyticDataBase"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_structgrmhd_1_1AnalyticDataBase')"><img src="closed.png" alt="-"/>&#160;Static Public Attributes inherited from <a class="el" href="structgrmhd_1_1AnalyticDataBase.html">grmhd::AnalyticDataBase</a></td></tr>
+<tr class="memitem:a9e0369b4cf539fead1ffa3618ff3f86f inherit pub_static_attribs_structgrmhd_1_1AnalyticDataBase"><td class="memItemLeft" align="right" valign="top"><a id="a9e0369b4cf539fead1ffa3618ff3f86f"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = 3_st</td></tr>
+<tr class="separator:a9e0369b4cf539fead1ffa3618ff3f86f inherit pub_static_attribs_structgrmhd_1_1AnalyticDataBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a701f5907a7b897632fd1db701d1600e6"><td class="memItemLeft" align="right" valign="top"><a id="a701f5907a7b897632fd1db701d1600e6"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html">BlastWave</a> &amp;lhs, const <a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html">BlastWave</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a701f5907a7b897632fd1db701d1600e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab34f0121b563f1f8dd398d7561bd0b44"><td class="memItemLeft" align="right" valign="top"><a id="ab34f0121b563f1f8dd398d7561bd0b44"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html">BlastWave</a> &amp;lhs, const <a class="el" href="classgrmhd_1_1AnalyticData_1_1BlastWave.html">BlastWave</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:ab34f0121b563f1f8dd398d7561bd0b44"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Analytic initial data for a cylindrical or spherical blast wave. </p>
+<p>This class implements analytic initial data for a cylindrical blast wave, as described, e.g., in <a class="el" href="citelist.html#CITEREF_Kidder2016hev">[62]</a> Sec. 6.2.3. A uniform magnetic field threads an ideal fluid. The solution begins with material at fixed (typically high) density and pressure at rest inside a cylinder of radius \(r &lt; r_{\rm in}\) and material at fixed (typically low) density and pressure at rest in a cylindrical shell with radius \(r &gt; r_{\rm out}\). In the region \( r_{\rm in} &lt; r &lt; r_{\rm out}\), the solution transitions such that the logarithms of the density and pressure vary linearly. E.g., if \(\rho(r &lt; r_{\rm in}) = \rho_{\rm in}\) and \(\rho(r &gt; r_{\rm out}) = \rho_{\rm out}\), then </p><p class="formulaDsp">
+\[ \log \rho = [(r_{\rm in} - r) \log(\rho_{\rm out}) + (r - r_{\rm out}) \log(\rho_{\rm in})] / (r_{\rm in} - r_{\rm out}). \]
+</p>
+<p> Note that the cylinder's axis is the \(z\) axis. To evolve this analytic initial data, use a cubic or cylindrical domain with periodic boundary conditions applied to the outer boundaries whose normals are parallel or antiparallel to the z axis. In the transverse (e.g., x and y) dimensions, the domain should be large enough that the blast wave doesn't reach the boundary at the final time. E.g., if <code><a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1InnerRadius.html" title="Inside InnerRadius, density is InnerDensity.">InnerRadius</a> = 0.8</code>, <code><a class="el" href="structgrmhd_1_1AnalyticData_1_1BlastWave_1_1OuterRadius.html" title="Outside OuterRadius, density is OuterDensity.">OuterRadius</a> = 1.0</code>, and the final time is 4.0, a good domain extends from <code>(x,y)=(-6.0, -6.0)</code> to <code>(x,y)=(6.0, 6.0)</code>.</p>
+<p>An analogous problem with spherical geometry has also been used <a class="el" href="citelist.html#CITEREF_CerdaDuran2007">[22]</a> <a class="el" href="citelist.html#CITEREF_CerdaDuran2008">[23]</a> <a class="el" href="citelist.html#CITEREF_Cipolletta2019">[26]</a>. The magnetic field is chosen to be in the z-direction instead of the x-direction. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a5ddf961eb3cafb6278978fbf44c421e4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5ddf961eb3cafb6278978fbf44c421e4">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> grmhd::AnalyticData::BlastWave::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Cylindrical or spherical blast wave analytic initial data.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticData/GrMhd/<a class="el" href="BlastWave_8hpp_source.html">BlastWave.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,758 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: pypp Namespace Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">pypp Namespace Reference<div class="ingroups"><a class="el" href="group__TestingFrameworkGroup.html">Testing Framework</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Contains all functions for calling python from C++.  
+<a href="namespacepypp.html#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpypp_1_1SetupLocalPythonEnvironment.html">SetupLocalPythonEnvironment</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable calling of python in the local scope, and add directory(ies) to the front of the search path for modules. The directory which is appended to the path is relative to the <code>tests/Unit</code> directory.  <a href="structpypp_1_1SetupLocalPythonEnvironment.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a796819ebc4f228d875772c6d40cc021a"><td class="memTemplParams" colspan="2">template&lt;size_t NumberOfBounds, class F , class T , Requires&lt; not std::is_same_v&lt; typename tt::function_info&lt; cpp20::remove_cvref_t&lt; F &gt;&gt;::return_type, void &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a796819ebc4f228d875772c6d40cc021a"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepypp.html#a796819ebc4f228d875772c6d40cc021a">check_with_random_values</a> (F &amp;&amp;f, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;module_name, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;function_name, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; double, double &gt;, NumberOfBounds &gt; &amp;lower_and_upper_bounds, const T &amp;used_for_size, const double epsilon=1.0e-12, const typename std::random_device::result_type seed=<a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/random/random_device.html">std::random_device</a>{}())</td></tr>
+<tr class="memdesc:a796819ebc4f228d875772c6d40cc021a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tests a C++ function returning by value by comparing the result to a python function.  <a href="namespacepypp.html#a796819ebc4f228d875772c6d40cc021a">More...</a><br /></td></tr>
+<tr class="separator:a796819ebc4f228d875772c6d40cc021a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba1070d7852ff195f81a101605de88d3"><td class="memTemplParams" colspan="2">template&lt;size_t NumberOfBounds, class F , class T &gt; </td></tr>
+<tr class="memitem:aba1070d7852ff195f81a101605de88d3"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepypp.html#aba1070d7852ff195f81a101605de88d3">check_with_random_values</a> (F &amp;&amp;f, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;module_name, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt; &amp;function_names, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; double, double &gt;, NumberOfBounds &gt; &amp;lower_and_upper_bounds, const T &amp;used_for_size, const double epsilon=1.0e-12, const typename std::random_device::result_type seed=<a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/random/random_device.html">std::random_device</a>{}(), const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; double &gt; &amp;initial_result_values=std::nullopt)</td></tr>
+<tr class="memdesc:aba1070d7852ff195f81a101605de88d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tests a C++ function returning by <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> by comparing the result to a python function.  <a href="namespacepypp.html#aba1070d7852ff195f81a101605de88d3">More...</a><br /></td></tr>
+<tr class="separator:aba1070d7852ff195f81a101605de88d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa2cd440327e077f716248e03587aa592"><td class="memTemplParams" colspan="2">template&lt;size_t NumberOfBounds, class F , class T , class... MemberArgs, Requires&lt; not std::is_same_v&lt; typename tt::function_info&lt; cpp20::remove_cvref_t&lt; F &gt;&gt;::return_type, void &gt; and not tt::is_a_v&lt; tuples::TaggedTuple, typename tt::function_info&lt; cpp20::remove_cvref_t&lt; F &gt;&gt;::return_type &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:aa2cd440327e077f716248e03587aa592"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepypp.html#aa2cd440327e077f716248e03587aa592">check_with_random_values</a> (F &amp;&amp;f, const typename <a class="el" href="group__TypeTraitsGroup.html#gad0d02ffbe3df2975350abdac14764a39">tt::function_info</a>&lt; cpp20::remove_cvref_t&lt; F &gt;&gt;::class_type &amp;klass, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;module_name, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;function_name, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; double, double &gt;, NumberOfBounds &gt; &amp;lower_and_upper_bounds, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; MemberArgs... &gt; &amp;member_args, const T &amp;used_for_size, const double epsilon=1.0e-12, const typename std::random_device::result_type seed=<a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/random/random_device.html">std::random_device</a>{}())</td></tr>
+<tr class="memdesc:aa2cd440327e077f716248e03587aa592"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tests a member function of a class returning by value by comparing the result to a python function.  <a href="namespacepypp.html#aa2cd440327e077f716248e03587aa592">More...</a><br /></td></tr>
+<tr class="separator:aa2cd440327e077f716248e03587aa592"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a87361dcbfc28e85af5c72f52539d75a0"><td class="memTemplParams" colspan="2">template&lt;size_t NumberOfBounds, class F , class T , class... MemberArgs, Requires&lt; std::is_same_v&lt; typename tt::function_info&lt; cpp20::remove_cvref_t&lt; F &gt;&gt;::return_type, void &gt; or tt::is_a_v&lt; tuples::TaggedTuple, typename tt::function_info&lt; cpp20::remove_cvref_t&lt; F &gt;&gt;::return_type &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a87361dcbfc28e85af5c72f52539d75a0"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepypp.html#a87361dcbfc28e85af5c72f52539d75a0">check_with_random_values</a> (F &amp;&amp;f, const typename <a class="el" href="group__TypeTraitsGroup.html#gad0d02ffbe3df2975350abdac14764a39">tt::function_info</a>&lt; cpp20::remove_cvref_t&lt; F &gt;&gt;::class_type &amp;klass, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;module_name, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt; &amp;function_names, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; double, double &gt;, NumberOfBounds &gt; &amp;lower_and_upper_bounds, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; MemberArgs... &gt; &amp;member_args, const T &amp;used_for_size, const double epsilon=1.0e-12, const typename std::random_device::result_type seed=<a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/random/random_device.html">std::random_device</a>{}())</td></tr>
+<tr class="memdesc:a87361dcbfc28e85af5c72f52539d75a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tests a member function of a class returning by either <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> or <code>TaggedTuple</code> by comparing the result to a python function.  <a href="namespacepypp.html#a87361dcbfc28e85af5c72f52539d75a0">More...</a><br /></td></tr>
+<tr class="separator:a87361dcbfc28e85af5c72f52539d75a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b8520e3e6d5c1abb3110b134c10683f"><td class="memTemplParams" colspan="2">template&lt;typename ReturnType , typename ConversionClassList  = tmpl::list&lt;&gt;, typename... Args&gt; </td></tr>
+<tr class="memitem:a0b8520e3e6d5c1abb3110b134c10683f"><td class="memTemplItemLeft" align="right" valign="top">ReturnType&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepypp.html#a0b8520e3e6d5c1abb3110b134c10683f">call</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;module_name, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;function_name, const Args &amp;... t)</td></tr>
+<tr class="memdesc:a0b8520e3e6d5c1abb3110b134c10683f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calls a Python function from a module/file with given parameters.  <a href="namespacepypp.html#a0b8520e3e6d5c1abb3110b134c10683f">More...</a><br /></td></tr>
+<tr class="separator:a0b8520e3e6d5c1abb3110b134c10683f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff33dcd9b46966498ce918dfde0b4a86"><td class="memTemplParams" colspan="2">template&lt;typename... Args&gt; </td></tr>
+<tr class="memitem:aff33dcd9b46966498ce918dfde0b4a86"><td class="memTemplItemLeft" align="right" valign="top">PyObject *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepypp.html#aff33dcd9b46966498ce918dfde0b4a86">make_py_tuple</a> (const Args &amp;... t)</td></tr>
+<tr class="memdesc:aff33dcd9b46966498ce918dfde0b4a86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a python tuple from Args.  <a href="namespacepypp.html#aff33dcd9b46966498ce918dfde0b4a86">More...</a><br /></td></tr>
+<tr class="separator:aff33dcd9b46966498ce918dfde0b4a86"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Contains all functions for calling python from C++. </p>
+<p>Contains all functions for pypp. </p>
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="a0b8520e3e6d5c1abb3110b134c10683f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b8520e3e6d5c1abb3110b134c10683f">&#9670;&nbsp;</a></span>call()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename ReturnType , typename ConversionClassList  = tmpl::list&lt;&gt;, typename... Args&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">ReturnType pypp::call </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td>
+          <td class="paramname"><em>module_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td>
+          <td class="paramname"><em>function_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Args &amp;...&#160;</td>
+          <td class="paramname"><em>t</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Calls a Python function from a module/file with given parameters. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">module_name</td><td>name of module the function is in </td></tr>
+    <tr><td class="paramname">function_name</td><td>name of Python function in module </td></tr>
+    <tr><td class="paramname">t</td><td>the arguments to be passed to the Python function </td></tr>
+  </table>
+  </dd>
+</dl>
+<p><em>Returns:</em> the object returned by the Python function converted to a C++ type</p>
+<p>Custom conversion from containers to basic types that can be converted to python objects via the <code>pypp::ToPyObject</code> class can be added by passing a typelist of conversion class as the second template parameter to <code><a class="el" href="namespacepypp.html#a0b8520e3e6d5c1abb3110b134c10683f" title="Calls a Python function from a module/file with given parameters.">pypp::call</a></code>. This is generally used for converting classes like <code>Tensor&lt;<a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a>, ...&gt;</code> to a <code>Tensor&lt;double, ...&gt;</code> to support using <code>numpy.einsum</code> in the python code. However, this can also be used to convert a complicated class such as an equation of state to a bunch of numbers that the python code for the particular test can use to compute the required data without having to fully implement python bindings. The conversion classes must have the following:</p><ul>
+<li>a type alias <code>unpacked_container</code> that is the type at a single grid point.</li>
+<li>a type alias <code>packed_container</code> the type used when converting the result from the python call back into the C++ code.</li>
+<li>a type alias <code>packed_type</code> which corresponds to the packed type that the high-level container holds. For example, a <code>Scalar&lt;<a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a>&gt;</code> would have <code>packed_type</code> being <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>, a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;Scalar&lt;<a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a>&gt;&gt;</code> would have <code>packed_type</code> being <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>, and a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;Scalar&lt;double&gt;&gt;</code> would have <code>packed_type</code> being <code>double</code>.</li>
+<li>an <code>unpack</code> function that takes as its arguments the <code>packed_container</code> and the <code>grid_point_index</code>, and returns an <code>unpacked_container</code> object</li>
+<li>a <code>pack</code> function that takes as its arguments a <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a>&lt;packed_container*&gt;</code>, an <code>const unpacked_container&amp;</code>, and a <code>size_t</code> corresponding to which grid point to pack</li>
+<li>a <code>get_size</code> function that takes as its only argument an object of <code>packed_container</code> and returns the number of elements in the <code>packed_type</code></li>
+</ul>
+<p>Examples of conversion classes can be found in the specializations of <code>ContainerPackAndUnpack</code> in the <code><a class="el" href="Pypp_8hpp.html">Pypp.hpp</a></code> file. Below is an example of a conversion class that takes a class (<code>ClassForConversionTest</code>) and returns the <code>a_</code> member variable.</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>ClassForConversionTest {</div>
+<div class="line">  <span class="keywordtype">double</span> a_;</div>
+<div class="line">  <span class="keywordtype">double</span> b_;</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">struct </span>ConvertClassForConservionTestA {</div>
+<div class="line">  <span class="keyword">using</span> unpacked_container = double;</div>
+<div class="line">  <span class="keyword">using</span> packed_container = ClassForConversionTest;</div>
+<div class="line">  <span class="keyword">using</span> packed_type = double;</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">static</span> <span class="keyword">inline</span> unpacked_container unpack(</div>
+<div class="line">      <span class="keyword">const</span> packed_container t, <span class="keyword">const</span> <span class="keywordtype">size_t</span> <span class="comment">/*grid_point_index*/</span>) noexcept {</div>
+<div class="line">    <span class="keywordflow">return</span> t.a_;</div>
+<div class="line">  }</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">void</span> pack(<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;packed_container*&gt;</a> packed_t,</div>
+<div class="line">                          <span class="keyword">const</span> unpacked_container t,</div>
+<div class="line">                          <span class="keyword">const</span> <span class="keywordtype">size_t</span> <span class="comment">/*grid_point_index*/</span>) {</div>
+<div class="line">    packed_t-&gt;a_ = t;</div>
+<div class="line">  }</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">size_t</span> <a class="code" href="group__UtilitiesGroup.html#ga48f1ae622586a451d95b26daaac2378e">get_size</a>(<span class="keyword">const</span> packed_container&amp; <span class="comment">/*t*/</span>) noexcept {</div>
+<div class="line">    <span class="keywordflow">return</span> 1;</div>
+<div class="line">  }</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> Here is the call to <code><a class="el" href="namespacepypp.html#a0b8520e3e6d5c1abb3110b134c10683f" title="Calls a Python function from a module/file with given parameters.">pypp::call</a></code>:</p>
+<div class="fragment"><div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span> result = pypp::call&lt;Scalar&lt;DataVector&gt;,</div>
+<div class="line">                                   tmpl::list&lt;ConvertClassForConservionTestA&gt;&gt;(</div>
+<div class="line">        <span class="stringliteral">&quot;PyppPyTests&quot;</span>, <span class="stringliteral">&quot;custom_conversion&quot;</span>, t,</div>
+<div class="line">        ClassForConversionTest{2.0, 3.0});</div>
+</div><!-- fragment --><p> A conversion class for retrieving the member variables <code>b_</code> can also be written as follows:</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>ConvertClassForConservionTestB {</div>
+<div class="line">  <span class="keyword">using</span> unpacked_container = double;</div>
+<div class="line">  <span class="keyword">using</span> packed_container = ClassForConversionTest;</div>
+<div class="line">  <span class="keyword">using</span> packed_type = double;</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">static</span> <span class="keyword">inline</span> unpacked_container unpack(</div>
+<div class="line">      <span class="keyword">const</span> packed_container t, <span class="keyword">const</span> <span class="keywordtype">size_t</span> <span class="comment">/*grid_point_index*/</span>) noexcept {</div>
+<div class="line">    <span class="keywordflow">return</span> t.b_;</div>
+<div class="line">  }</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">void</span> pack(<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;packed_container*&gt;</a> packed_t,</div>
+<div class="line">                          <span class="keyword">const</span> unpacked_container t,</div>
+<div class="line">                          <span class="keyword">const</span> <span class="keywordtype">size_t</span> <span class="comment">/*grid_point_index*/</span>) {</div>
+<div class="line">    packed_t-&gt;b_ = t;</div>
+<div class="line">  }</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">size_t</span> <a class="code" href="group__UtilitiesGroup.html#ga48f1ae622586a451d95b26daaac2378e">get_size</a>(<span class="keyword">const</span> packed_container&amp; <span class="comment">/*t*/</span>) noexcept {</div>
+<div class="line">    <span class="keywordflow">return</span> 1;</div>
+<div class="line">  }</div>
+<div class="line">};</div>
+</div><!-- fragment --> <dl class="section note"><dt>Note</dt><dd>In order to setup the python interpreter and add the local directories to the path, a <a class="el" href="structpypp_1_1SetupLocalPythonEnvironment.html" title="Enable calling of python in the local scope, and add directory(ies) to the front of the search path f...">SetupLocalPythonEnvironment</a> object needs to be constructed in the local scope.</dd></dl>
+<h3>Example</h3>
+<p>The following example calls the function <code>test_numeric</code> from the module <code>pypp_py_tests</code> which multiplies two integers. </p><div class="fragment"><div class="line">  <span class="keyword">const</span> <span class="keyword">auto</span> ret = pypp::call&lt;long&gt;(<span class="stringliteral">&quot;PyppPyTests&quot;</span>, <span class="stringliteral">&quot;test_numeric&quot;</span>, 3, 4);</div>
+<div class="line">  CHECK(ret == 3 * 4);</div>
+</div><!-- fragment --><p>Alternatively, this examples calls <code>test_vector</code> from <code>pypp_py_tests</code> which converts two vectors to python lists and multiplies them pointwise. </p><div class="fragment"><div class="line">  <span class="keyword">const</span> <span class="keyword">auto</span> ret = pypp::call&lt;std::vector&lt;double&gt;&gt;(</div>
+<div class="line">      <span class="stringliteral">&quot;PyppPyTests&quot;</span>, <span class="stringliteral">&quot;test_vector&quot;</span>, <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a>{1.3, 4.9},</div>
+<div class="line">      <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a>{4.2, 6.8});</div>
+<div class="line">  CHECK(approx(ret[0]) == 1.3 * 4.2);</div>
+<div class="line">  CHECK(approx(ret[1]) == 4.9 * 6.8);</div>
+</div><!-- fragment --><p> Pypp can also be used to take a function that performs manipulations of NumPy arrays and apply it to either a Tensor of doubles or a Tensor of DataVectors. This is useful for testing functions which act on Tensors pointwise. For example, let's say we wanted to call the NumPy function which performs \( v_i = A B^a C_{ia} + D^{ab} E_{iab} \), which is implemented in python as</p>
+<div class="fragment"><div class="line"><span class="keyword">def </span>test_einsum(scalar, t_A, t_ia, t_AA, t_iaa):</div>
+<div class="line">  <span class="keywordflow">return</span> scalar * np.einsum(<span class="stringliteral">&quot;a,ia-&gt;i&quot;</span>, t_A, t_ia) +</div>
+<div class="line">         np.einsum(<span class="stringliteral">&quot;ab, iab-&gt;i&quot;</span>, t_AA, t_iaa)</div>
+</div><!-- fragment --><p>where \( v_i \) is the return tensor and \( A, B^a, C_{ia},D^{ab}, E_{iab} \) are the input tensors respectively. We call this function through C++ as: </p><div class="fragment"><div class="line">  <span class="keyword">const</span> <span class="keyword">auto</span> tensor_from_python = pypp::call&lt;tnsr::i&lt;T, 3&gt;&gt;(</div>
+<div class="line">      <span class="stringliteral">&quot;PyppPyTests&quot;</span>, <span class="stringliteral">&quot;test_einsum&quot;</span>, scalar, vector, tnsr_ia, tnsr_AA, tnsr_iaa);</div>
+</div><!-- fragment --><p>for type <code>T</code> either a <code>double</code> or <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>.</p>
+<p>Pypp will also support testing of functions which return and operate on <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a></code>s of <code>DataVectors</code>s. To return a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a></code> of DataVectors, the python function should return a python list of doubles.</p>
+<dl class="section note"><dt>Note</dt><dd>In order to return a <code>Tensor&lt;<a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a>...&gt;</code> from <code><a class="el" href="namespacepypp.html#a0b8520e3e6d5c1abb3110b134c10683f" title="Calls a Python function from a module/file with given parameters.">pypp::call</a></code>, at least one <code>Tensor&lt;<a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a>...&gt;</code> must be taken as an argument, as the size of the returned tensor needs to be deduced. </dd></dl>
+
+</div>
+</div>
+<a id="a796819ebc4f228d875772c6d40cc021a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a796819ebc4f228d875772c6d40cc021a">&#9670;&nbsp;</a></span>check_with_random_values() <span class="overload">[1/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t NumberOfBounds, class F , class T , Requires&lt; not std::is_same_v&lt; typename tt::function_info&lt; cpp20::remove_cvref_t&lt; F &gt;&gt;::return_type, void &gt;&gt;  = nullptr&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void pypp::check_with_random_values </td>
+          <td>(</td>
+          <td class="paramtype">F &amp;&amp;&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td>
+          <td class="paramname"><em>module_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td>
+          <td class="paramname"><em>function_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; double, double &gt;, NumberOfBounds &gt; &amp;&#160;</td>
+          <td class="paramname"><em>lower_and_upper_bounds</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const T &amp;&#160;</td>
+          <td class="paramname"><em>used_for_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>epsilon</em> = <code>1.0e-12</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const typename std::random_device::result_type&#160;</td>
+          <td class="paramname"><em>seed</em> = <code><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/random/random_device.html">std::random_device</a>{}()</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Tests a C++ function returning by value by comparing the result to a python function. </p>
+<p>Tests the function <code>f</code> by comparing the result to that of the python function <code>function_name</code> in the file <code>module_name</code>. The function is tested by generated random values in the half-open range [<code>lower_bound</code>, <code>upper_bound</code>). The argument <code>used_for_size</code> is used for constructing the arguments of <code>f</code> by calling <code>make_with_value&lt;ArgumentType&gt;(used_for_size, 0.0)</code>.</p>
+<dl class="section note"><dt>Note</dt><dd>You must explicitly pass the number of bounds you will be passing as the first template parameter, the rest will be inferred.</dd>
+<dd>
+If you have a test fail you can replay the scenario by feeding in the seed that was printed out in the failed test as the last argument.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">f</td><td>The C++ function to test </td></tr>
+    <tr><td class="paramname">module_name</td><td>The python file relative to the directory used in <code><a class="el" href="structpypp_1_1SetupLocalPythonEnvironment.html" title="Enable calling of python in the local scope, and add directory(ies) to the front of the search path f...">SetupLocalPythonEnvironment</a></code> </td></tr>
+    <tr><td class="paramname">function_name</td><td>The name of the python function inside <code>module_name</code> </td></tr>
+    <tr><td class="paramname">lower_and_upper_bounds</td><td>The lower and upper bounds for the randomly generated numbers. Must be either an array of a single pair, or of as many pairs as there are arguments to <code>f</code> that are not a <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> </td></tr>
+    <tr><td class="paramname">used_for_size</td><td>The type <code>X</code> for the arguments of <code>f</code> of type <code>Tensor&lt;X&gt;</code> </td></tr>
+    <tr><td class="paramname">epsilon</td><td>A double specifying the comparison tolerance (default 1.0e-12) </td></tr>
+    <tr><td class="paramname">seed</td><td>The seed for the random number generator. This should only be specified when debugging a failure with a particular set of random numbers, in general it should be left to the default value. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aba1070d7852ff195f81a101605de88d3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba1070d7852ff195f81a101605de88d3">&#9670;&nbsp;</a></span>check_with_random_values() <span class="overload">[2/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t NumberOfBounds, class F , class T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void pypp::check_with_random_values </td>
+          <td>(</td>
+          <td class="paramtype">F &amp;&amp;&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td>
+          <td class="paramname"><em>module_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>function_names</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; double, double &gt;, NumberOfBounds &gt; &amp;&#160;</td>
+          <td class="paramname"><em>lower_and_upper_bounds</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const T &amp;&#160;</td>
+          <td class="paramname"><em>used_for_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>epsilon</em> = <code>1.0e-12</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const typename std::random_device::result_type&#160;</td>
+          <td class="paramname"><em>seed</em> = <code><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/random/random_device.html">std::random_device</a>{}()</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; double &gt; &amp;&#160;</td>
+          <td class="paramname"><em>initial_result_values</em> = <code>std::nullopt</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Tests a C++ function returning by <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> by comparing the result to a python function. </p>
+<p>Tests the function <code>f</code> by comparing the result to that of the python function <code>function_name</code> in the file <code>module_name</code>. The function is tested by generated random values in the half-open range [<code>lower_bound</code>, <code>upper_bound</code>) for each argument. The argument <code>used_for_size</code> is used for constructing the arguments of <code>f</code> by calling <code>make_with_value&lt;ArgumentType&gt;(used_for_size, 0.0)</code>. For functions that return by <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code>, the result will be initialized with random values rather than to signaling <code>NaN</code>s. This means functions do not need to support receiving a signaling <code>NaN</code> in their return argument to be tested using this function. The optional argument <code>initial_result_values</code> allows initializing the result buffers with a given value instead of random data to test functions that mutate the result buffers instead of assigning to it.</p>
+<dl class="section note"><dt>Note</dt><dd>You must explicitly pass the number of bounds you will be passing as the first template parameter, the rest will be inferred.</dd>
+<dd>
+If you have a test fail you can replay the scenario by feeding in the seed that was printed out in the failed test as the last argument.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">f</td><td>The C++ function to test </td></tr>
+    <tr><td class="paramname">module_name</td><td>The python file relative to the directory used in <code><a class="el" href="structpypp_1_1SetupLocalPythonEnvironment.html" title="Enable calling of python in the local scope, and add directory(ies) to the front of the search path f...">SetupLocalPythonEnvironment</a></code> </td></tr>
+    <tr><td class="paramname">function_names</td><td>The names of the python functions inside <code>module_name</code> in the order that they return the <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> results </td></tr>
+    <tr><td class="paramname">lower_and_upper_bounds</td><td>The lower and upper bounds for the randomly generated numbers. Must be either an array of a single pair, or of as many pairs as there are arguments to <code>f</code> that are not a <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> </td></tr>
+    <tr><td class="paramname">used_for_size</td><td>The type <code>X</code> for the arguments of <code>f</code> of type <code>Tensor&lt;X&gt;</code> </td></tr>
+    <tr><td class="paramname">epsilon</td><td>A double specifying the comparison tolerance (default 1.0e-12) </td></tr>
+    <tr><td class="paramname">seed</td><td>The seed for the random number generator. This should only be specified when debugging a failure with a particular set of random numbers, in general it should be left to the default value. </td></tr>
+    <tr><td class="paramname">initial_result_values</td><td>Fill the result buffers with this value instead of random data before calling the function <code>f</code>. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aa2cd440327e077f716248e03587aa592"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa2cd440327e077f716248e03587aa592">&#9670;&nbsp;</a></span>check_with_random_values() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t NumberOfBounds, class F , class T , class... MemberArgs, Requires&lt; not std::is_same_v&lt; typename tt::function_info&lt; cpp20::remove_cvref_t&lt; F &gt;&gt;::return_type, void &gt; and not tt::is_a_v&lt; tuples::TaggedTuple, typename tt::function_info&lt; cpp20::remove_cvref_t&lt; F &gt;&gt;::return_type &gt;&gt;  = nullptr&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void pypp::check_with_random_values </td>
+          <td>(</td>
+          <td class="paramtype">F &amp;&amp;&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const typename <a class="el" href="group__TypeTraitsGroup.html#gad0d02ffbe3df2975350abdac14764a39">tt::function_info</a>&lt; cpp20::remove_cvref_t&lt; F &gt;&gt;::class_type &amp;&#160;</td>
+          <td class="paramname"><em>klass</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td>
+          <td class="paramname"><em>module_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td>
+          <td class="paramname"><em>function_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; double, double &gt;, NumberOfBounds &gt; &amp;&#160;</td>
+          <td class="paramname"><em>lower_and_upper_bounds</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; MemberArgs... &gt; &amp;&#160;</td>
+          <td class="paramname"><em>member_args</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const T &amp;&#160;</td>
+          <td class="paramname"><em>used_for_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>epsilon</em> = <code>1.0e-12</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const typename std::random_device::result_type&#160;</td>
+          <td class="paramname"><em>seed</em> = <code><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/random/random_device.html">std::random_device</a>{}()</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Tests a member function of a class returning by value by comparing the result to a python function. </p>
+<p>Tests the function <code>f</code> by comparing the result to that of the python function <code>function_name</code> in the file <code>module_name</code>. An instance of the class is passed in as the second argument and is the object on which the member function <code>f</code> will be invoked. The member function is invoked as <code>klass.function</code>, so passing in pointers is not supported. The function is tested by generated random values in the half-open range [<code>lower_bound</code>, <code>upper_bound</code>). The argument <code>used_for_size</code> is used for constructing the arguments of <code>f</code> by calling <code>make_with_value&lt;ArgumentType&gt;(used_for_size, 0.0)</code>.</p>
+<dl class="section note"><dt>Note</dt><dd>You must explicitly pass the number of bounds you will be passing as the first template parameter, the rest will be inferred.</dd>
+<dd>
+If you have a test fail you can replay the scenario by feeding in the seed that was printed out in the failed test as the last argument.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">f</td><td>The member function to test </td></tr>
+    <tr><td class="paramname">klass</td><td>the object on which to invoke <code>f</code> </td></tr>
+    <tr><td class="paramname">module_name</td><td>The python file relative to the directory used in <code><a class="el" href="structpypp_1_1SetupLocalPythonEnvironment.html" title="Enable calling of python in the local scope, and add directory(ies) to the front of the search path f...">SetupLocalPythonEnvironment</a></code> </td></tr>
+    <tr><td class="paramname">function_name</td><td>The name of the python function inside <code>module_name</code> </td></tr>
+    <tr><td class="paramname">lower_and_upper_bounds</td><td>The lower and upper bounds for the randomly generated numbers. Must be either an array of a single pair, or of as many pairs as there are arguments to <code>f</code> that are not a <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> </td></tr>
+    <tr><td class="paramname">member_args</td><td>a tuple of the member variables of the object <code>klass</code> that the python function will need in order to perform the computation. These should have the same types as the normal arguments passed to the member function, e.g. <code>Tensor&lt;X&gt;</code>. </td></tr>
+    <tr><td class="paramname">used_for_size</td><td>The type <code>X</code> for the arguments of <code>f</code> of type <code>Tensor&lt;X&gt;</code> </td></tr>
+    <tr><td class="paramname">epsilon</td><td>A double specifying the comparison tolerance (default 1.0e-12) </td></tr>
+    <tr><td class="paramname">seed</td><td>The seed for the random number generator. This should only be specified when debugging a failure with a particular set of random numbers, in general it should be left to the default value. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a87361dcbfc28e85af5c72f52539d75a0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a87361dcbfc28e85af5c72f52539d75a0">&#9670;&nbsp;</a></span>check_with_random_values() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t NumberOfBounds, class F , class T , class... MemberArgs, Requires&lt; std::is_same_v&lt; typename tt::function_info&lt; cpp20::remove_cvref_t&lt; F &gt;&gt;::return_type, void &gt; or tt::is_a_v&lt; tuples::TaggedTuple, typename tt::function_info&lt; cpp20::remove_cvref_t&lt; F &gt;&gt;::return_type &gt;&gt;  = nullptr&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void pypp::check_with_random_values </td>
+          <td>(</td>
+          <td class="paramtype">F &amp;&amp;&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const typename <a class="el" href="group__TypeTraitsGroup.html#gad0d02ffbe3df2975350abdac14764a39">tt::function_info</a>&lt; cpp20::remove_cvref_t&lt; F &gt;&gt;::class_type &amp;&#160;</td>
+          <td class="paramname"><em>klass</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td>
+          <td class="paramname"><em>module_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>function_names</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; double, double &gt;, NumberOfBounds &gt; &amp;&#160;</td>
+          <td class="paramname"><em>lower_and_upper_bounds</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; MemberArgs... &gt; &amp;&#160;</td>
+          <td class="paramname"><em>member_args</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const T &amp;&#160;</td>
+          <td class="paramname"><em>used_for_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>epsilon</em> = <code>1.0e-12</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const typename std::random_device::result_type&#160;</td>
+          <td class="paramname"><em>seed</em> = <code><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/random/random_device.html">std::random_device</a>{}()</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Tests a member function of a class returning by either <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> or <code>TaggedTuple</code> by comparing the result to a python function. </p>
+<p>Tests the function <code>f</code> by comparing the result to that of the python functions <code>function_names</code> in the file <code>module_name</code>. An instance of the class is passed in as the second argument and is the object on which the member function <code>f</code> will be invoked. The member function is invoked as <code>klass.function</code>, so passing in pointers is not supported. The function is tested by generated random values in the half-open range [<code>lower_bound</code>, <code>upper_bound</code>). The argument <code>used_for_size</code> is used for constructing the arguments of <code>f</code> by calling <code>make_with_value&lt;ArgumentType&gt;(used_for_size, 0.0)</code>. For functions that return by <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code>, the result will be initialized with random values rather than to signaling <code>NaN</code>s. This means functions do not need to support receiving a signaling <code>NaN</code> in their return argument to be tested using this function.</p>
+<dl class="section note"><dt>Note</dt><dd>You must explicitly pass the number of bounds you will be passing as the first template parameter, the rest will be inferred.</dd>
+<dd>
+If you have a test fail you can replay the scenario by feeding in the seed that was printed out in the failed test as the last argument.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">f</td><td>The member function to test </td></tr>
+    <tr><td class="paramname">klass</td><td>the object on which to invoke <code>f</code> </td></tr>
+    <tr><td class="paramname">module_name</td><td>The python file relative to the directory used in <code><a class="el" href="structpypp_1_1SetupLocalPythonEnvironment.html" title="Enable calling of python in the local scope, and add directory(ies) to the front of the search path f...">SetupLocalPythonEnvironment</a></code> </td></tr>
+    <tr><td class="paramname">function_names</td><td>The names of the python functions inside <code>module_name</code> in the order that they return the <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> results </td></tr>
+    <tr><td class="paramname">lower_and_upper_bounds</td><td>The lower and upper bounds for the randomly generated numbers. Must be either an array of a single pair, or of as many pairs as there are arguments to <code>f</code> that are not a <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> </td></tr>
+    <tr><td class="paramname">member_args</td><td>a tuple of the member variables of the object <code>klass</code> that the python function will need in order to perform the computation. These should have the same types as the normal arguments passed to the member function, e.g. <code>Tensor&lt;X&gt;</code>. </td></tr>
+    <tr><td class="paramname">used_for_size</td><td>The type <code>X</code> for the arguments of <code>f</code> of type <code>Tensor&lt;X&gt;</code> </td></tr>
+    <tr><td class="paramname">epsilon</td><td>A double specifying the comparison tolerance (default 1.0e-12) </td></tr>
+    <tr><td class="paramname">seed</td><td>The seed for the random number generator. This should only be specified when debugging a failure with a particular set of random numbers, in general it should be left to the default value. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aff33dcd9b46966498ce918dfde0b4a86"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aff33dcd9b46966498ce918dfde0b4a86">&#9670;&nbsp;</a></span>make_py_tuple()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Args&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">PyObject* pypp::make_py_tuple </td>
+          <td>(</td>
+          <td class="paramtype">const Args &amp;...&#160;</td>
+          <td class="paramname"><em>t</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Create a python tuple from Args. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Args</td><td>the types of the arguments to be put in the tuple (deducible) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">t</td><td>the arguments to put into the tuple </td></tr>
+  </table>
+  </dd>
+</dl>
+<p><em>Returns:</em> PyObject* containing a Python tuple </p>
+
+</div>
+</div>
+</div><!-- contents -->
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt; double &gt;</a></div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga48f1ae622586a451d95b26daaac2378e"><div class="ttname"><a href="group__UtilitiesGroup.html#ga48f1ae622586a451d95b26daaac2378e">get_size</a></div><div class="ttdeci">decltype(auto) get_size(const T &amp;t, SizeFunction size=GetContainerSize{}) noexcept</div><div class="ttdoc">Retrieve the size of t if t.size() is a valid expression, otherwise if T is fundamental or a std::com...</div><div class="ttdef"><b>Definition:</b> ContainerHelpers.hpp:145</div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,284 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Initialization::subcell::GrTagsForHydro&lt; System, Dim &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>Initialization</b></li><li class="navelem"><a class="el" href="namespaceInitialization_1_1subcell.html">subcell</a></li><li class="navelem"><a class="el" href="structInitialization_1_1subcell_1_1GrTagsForHydro.html">GrTagsForHydro</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="structInitialization_1_1subcell_1_1GrTagsForHydro-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Initialization::subcell::GrTagsForHydro&lt; System, Dim &gt; Struct Template Reference<div class="ingroups"><a class="el" href="group__InitializationGroup.html">Initialization</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Allocate and set general relativity quantities needed for evolution of hydro systems when using a DG-subcell hybrid scheme.  
+ <a href="structInitialization_1_1subcell_1_1GrTagsForHydro.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Systems_2GrMhd_2ValenciaDivClean_2Subcell_2GrTagsForHydro_8hpp_source.html">GrTagsForHydro.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a32db7a1e079edf66772d37f506942f01"><td class="memItemLeft" align="right" valign="top"><a id="a32db7a1e079edf66772d37f506942f01"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>initialization_tags</b> = tmpl::list&lt; <a class="el" href="structInitialization_1_1Tags_1_1InitialTime.html">Initialization::Tags::InitialTime</a> &gt;</td></tr>
+<tr class="separator:a32db7a1e079edf66772d37f506942f01"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa9b3ac5d0c2ce87011ad6d67942a10c"><td class="memItemLeft" align="right" valign="top"><a id="afa9b3ac5d0c2ce87011ad6d67942a10c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>gr_tag</b> = typename System::spacetime_variables_tag</td></tr>
+<tr class="separator:afa9b3ac5d0c2ce87011ad6d67942a10c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae146ecfb9d82e5369f89dc2adc9e5461"><td class="memItemLeft" align="right" valign="top"><a id="ae146ecfb9d82e5369f89dc2adc9e5461"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>subcell_gr_tag</b> = <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Inactive.html">evolution::dg::subcell::Tags::Inactive</a>&lt; gr_tag &gt;</td></tr>
+<tr class="separator:ae146ecfb9d82e5369f89dc2adc9e5461"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa12847900ff23f970335d45cfbe2a3bb"><td class="memItemLeft" align="right" valign="top"><a id="aa12847900ff23f970335d45cfbe2a3bb"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>subcell_faces_gr_tag</b> = <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1OnSubcellFaces.html">evolution::dg::subcell::Tags::OnSubcellFaces</a>&lt; typename System::flux_spacetime_variables_tag, Dim &gt;</td></tr>
+<tr class="separator:aa12847900ff23f970335d45cfbe2a3bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb8792a0f3fb57337a2128f9368c0ab6"><td class="memItemLeft" align="right" valign="top"><a id="afb8792a0f3fb57337a2128f9368c0ab6"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>GrVars</b> = typename gr_tag::type</td></tr>
+<tr class="separator:afb8792a0f3fb57337a2128f9368c0ab6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3fbf1d9f56aae66ff966b8c2ce976196"><td class="memItemLeft" align="right" valign="top"><a id="a3fbf1d9f56aae66ff966b8c2ce976196"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>SubcellGrVars</b> = typename subcell_gr_tag::type</td></tr>
+<tr class="separator:a3fbf1d9f56aae66ff966b8c2ce976196"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4708c45bdd0e78e00983761e4f4b08b9"><td class="memItemLeft" align="right" valign="top"><a id="a4708c45bdd0e78e00983761e4f4b08b9"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>FaceGrVars</b> = typename subcell_faces_gr_tag::type::value_type</td></tr>
+<tr class="separator:a4708c45bdd0e78e00983761e4f4b08b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a756647b44f3b1b7772bf14469dd338f2"><td class="memItemLeft" align="right" valign="top"><a id="a756647b44f3b1b7772bf14469dd338f2"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_tags</b> = tmpl::list&lt; <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Inactive.html">subcell_gr_tag</a>, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1OnSubcellFaces.html">subcell_faces_gr_tag</a> &gt;</td></tr>
+<tr class="separator:a756647b44f3b1b7772bf14469dd338f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2db31d6d5f8b99729679f3826ed51df9"><td class="memItemLeft" align="right" valign="top"><a id="a2db31d6d5f8b99729679f3826ed51df9"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt; <a class="el" href="structInitialization_1_1Tags_1_1InitialTime.html">Initialization::Tags::InitialTime</a>, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Mesh.html">evolution::dg::subcell::Tags::Mesh</a>&lt; Dim &gt;, <a class="el" href="structdomain_1_1Tags_1_1ElementMap.html">domain::Tags::ElementMap</a>&lt; Dim, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a> &gt;, <a class="el" href="structdomain_1_1CoordinateMaps_1_1Tags_1_1CoordinateMap.html">domain::CoordinateMaps::Tags::CoordinateMap</a>&lt; Dim, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structdomain_1_1Tags_1_1FunctionsOfTime.html">domain::Tags::FunctionsOfTime</a>, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Coordinates.html">evolution::dg::subcell::Tags::Coordinates</a>&lt; Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt;, ::<a class="el" href="structTags_1_1AnalyticSolutionOrData.html">Tags::AnalyticSolutionOrData</a> &gt;</td></tr>
+<tr class="separator:a2db31d6d5f8b99729679f3826ed51df9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:aa51526ad73a9431d0c45de37557c21f0"><td class="memTemplParams" colspan="2"><a id="aa51526ad73a9431d0c45de37557c21f0"></a>
+template&lt;typename AnalyticDataOrSolution &gt; </td></tr>
+<tr class="memitem:aa51526ad73a9431d0c45de37557c21f0"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>apply</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; SubcellGrVars * &gt; cell_centered_gr_vars, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; FaceGrVars, Dim &gt; * &gt; face_centered_gr_vars, const double initial_time, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;subcell_mesh, const <a class="el" href="classElementMap.html">ElementMap</a>&lt; Dim, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a> &gt; &amp;logical_to_grid_map, const <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, Dim &gt; &amp;grid_to_inertial_map, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt; &amp;subcell_logical_coordinates, const AnalyticDataOrSolution &amp;analytic_data_or_solution) noexcept</td></tr>
+<tr class="separator:aa51526ad73a9431d0c45de37557c21f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename System, size_t Dim&gt;<br />
+struct Initialization::subcell::GrTagsForHydro&lt; System, Dim &gt;</h3>
+
+<p>Allocate and set general relativity quantities needed for evolution of hydro systems when using a DG-subcell hybrid scheme. </p>
+<p>Uses:</p><ul>
+<li>DataBox:<ul>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Mesh.html" title="The mesh on the subcells.">evolution::dg::subcell::Tags::Mesh</a>&lt;Dim&gt;</code></li>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1ElementMap.html">domain::Tags::ElementMap</a>&lt;Dim, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>&gt;</code></li>
+<li><code>Tags::CoordinateMap&lt;Dim, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt;</code></li>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1FunctionsOfTime.html" title="The FunctionsOfTime initialized from a DomainCreator or (if override_functions_of_time is true in the...">domain::Tags::FunctionsOfTime</a></code></li>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Coordinates.html" title="The coordinates in a given frame.">evolution::dg::subcell::Tags::Coordinates</a>&lt;Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>&gt;</code></li>
+<li><code><a class="el" href="structTags_1_1AnalyticSolutionOrData.html">Tags::AnalyticSolutionOrData</a></code></li>
+</ul>
+</li>
+</ul>
+<p>DataBox changes:</p><ul>
+<li>Adds:<ul>
+<li><code>dg::subcell::Tags::Inactive&lt;System::spacetime_variables_tag&gt;</code></li>
+<li><code>Tags::OnSubcellFaces&lt;System::flux_spacetime_variables_tag, Dim&gt;</code></li>
+</ul>
+</li>
+<li>Removes: nothing</li>
+<li>Modifies: nothing</li>
+</ul>
+<dl class="section note"><dt>Note</dt><dd>This action relies on the <code>SetupDataBox</code> aggregated initialization mechanism, so <code><a class="el" href="structActions_1_1SetupDataBox.html" title="Add into the DataBox default constructed items for the collection of tags requested by any of the act...">Actions::SetupDataBox</a></code> must be present in the <code>Initialization</code> phase action list prior to this action. </dd></dl>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/<a class="el" href="Systems_2GrMhd_2ValenciaDivClean_2Subcell_2GrTagsForHydro_8hpp_source.html">GrTagsForHydro.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

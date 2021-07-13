@@ -1,0 +1,311 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: OrientationMap</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title"><a class="el" href="classOrientationMap.html" title="A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of th...">OrientationMap</a> </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><h2><a class="anchor" id="autotoc_md266"></a>
+Introduction</h2>
+<p>Each element in a domain has a set of internal directions which it uses for computations in its own local coordinate system. These are referred to as the logical directions \(\xi\), \(\eta\), and \(\zeta\), where \(\xi\) is the first dimension, \(\eta\) is the second dimension, and \(\zeta\) is the third dimension. In a domain with multiple elements, the logical directions are not necessarily aligned on the interfaces between two elements, as shown in the figure below. As certain operations (e.g. fluxes, limiting) communicate information across the boundaries of adjacent elements, there needs to be a class that takes into account the relative orientations of elements which neighbor each other. This class is <a class="el" href="classOrientationMap.html" title="A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of th...">OrientationMap</a>.</p>
+<h2><a class="anchor" id="autotoc_md267"></a>
+%OrientationMaps between %Blocks</h2>
+<p>Each <a class="el" href="classBlock.html">Block</a> in a <a class="el" href="classDomain.html" title="A wrapper around a vector of Blocks that represent the computational domain.">Domain</a> has a set of BlockNeighbors, which each hold an <a class="el" href="classOrientationMap.html" title="A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of th...">OrientationMap</a>. In this scenario, the <a class="el" href="classBlock.html">Block</a> is referred to as the host, and the <a class="el" href="classOrientationMap.html" title="A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of th...">OrientationMap</a> held by each <a class="el" href="classBlockNeighbor.html">BlockNeighbor</a> is referred to as "the
+orientation the BlockNeighbor has with respect to the host Block." This is a convention, so we give an example of constructing and assigning the correct OrientationMaps:</p>
+<div class="image">
+<img src="twocubes.png" alt=""/>
+<div class="caption">
+Two neighboring blocks.</div></div>
+<p>In the image above, we see a domain decomposition into two Blocks, which have their logical axes rotated relative to one another. With the left block as the host <a class="el" href="classBlock.html">Block</a>, we see that it has a neighbor in the \(+\xi\) direction. The host <a class="el" href="classBlock.html">Block</a> holds a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a></code> from Directions to BlockNeighbors; the <a class="el" href="classBlockNeighbor.html">BlockNeighbor</a> itself holds an <a class="el" href="classOrientationMap.html" title="A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of th...">OrientationMap</a> that determines the mapping from each logical direction in the host <a class="el" href="classBlock.html">Block</a> to that in the neighboring <a class="el" href="classBlock.html">Block</a>. That is, the <a class="el" href="classOrientationMap.html" title="A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of th...">OrientationMap</a> takes as input local information (i.e. logical directions in the host's coordinate system) and returns neighbor information (i.e. logical directions in the neighbor's coordinate system). An <a class="el" href="classOrientationMap.html" title="A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of th...">OrientationMap</a> is constructed by passing in the block neighbor directions that correspond to the \(+\xi\), \(+\eta\), \(+\zeta\) directions in the host. In this case, these directions in the host map to the \(+\zeta\), \(+\xi\), \(+\eta\) directions in the neighbor, respectively. This <a class="el" href="classBlockNeighbor.html">BlockNeighbor</a> thus holds the <a class="el" href="classOrientationMap.html" title="A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of th...">OrientationMap</a> constructed with the list ( \(+\zeta\), \(+\xi\), \(+\eta\)). With the right block as the host block, we see that it has a <a class="el" href="classBlockNeighbor.html">BlockNeighbor</a> in the \(-\zeta\) direction, and the <a class="el" href="classOrientationMap.html" title="A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of th...">OrientationMap</a> held by this <a class="el" href="classBlockNeighbor.html">BlockNeighbor</a> is the one constructed with the array ( \(+\eta\), \(+\zeta\), \(+\xi\)). For convenience, <a class="el" href="classOrientationMap.html" title="A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of th...">OrientationMap</a> has a method <code>inverse_map</code> which returns the <a class="el" href="classOrientationMap.html" title="A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of th...">OrientationMap</a> that takes as input neighbor information and returns local information.</p>
+<p>OrientationMaps need to be provided for each <a class="el" href="classBlockNeighbor.html">BlockNeighbor</a> in each direction for each <a class="el" href="classBlock.html">Block</a>. This quickly becomes too large of a number to determine by hand as the number of Blocks and the number of dimensions increases. A remedy to this problem is the corner numbering scheme.</p>
+<h2><a class="anchor" id="autotoc_md268"></a>
+Encoding BlockNeighbor information using Corner Orderings and Numberings</h2>
+<p>The orientation of the \({dim}\) logical directions within each element determines an ordering of the \(2^{dim}\) vertices of that element. This is called the local corner numbering scheme (Local CNS) with respect to that element. We give the ordering of the local corners below for the case of a three-dimensional element:</p>
+<div class="image">
+<img src="onecube_numbered.png" alt=""/>
+<div class="caption">
+The local corner numbering.</div></div>
+<div class="fragment"><div class="line">Corner 0 is the location of the lower xi, lower eta, lower zeta corner.</div>
+<div class="line">Corner 1 is the location of the upper xi, lower eta, lower zeta corner.</div>
+<div class="line">Corner 2 is the location of the lower xi, upper eta, lower zeta corner.</div>
+<div class="line">Corner 3 is the location of the upper xi, upper eta, lower zeta corner.</div>
+<div class="line">Corner 4 is the location of the lower xi, lower eta, upper zeta corner.</div>
+<div class="line">Corner 5 is the location of the upper xi, lower eta, upper zeta corner.</div>
+<div class="line">Corner 6 is the location of the lower xi, upper eta, upper zeta corner.</div>
+<div class="line">Corner 7 is the location of the upper xi, upper eta, upper zeta corner.</div>
+</div><!-- fragment --><p>What remains is to endow the domain decomposition with a global corner numbering (Global CNS). We give an example below:</p>
+<div class="image">
+<img src="twocubes_numbered.png" alt=""/>
+<div class="caption">
+A global corner numbering.</div></div>
+<p>In the image above, we see that each vertex of the two-block domain has been assigned a number. Although each block has eight corners, four are shared among them, so there are only twelve unique corners in this domain. Any numbering may be used in the global corner numbering, so long as the each distinct corner is given a single distinct corner number.</p>
+<dl class="section note"><dt>Note</dt><dd>This Global CNS assumes that there is no additional identifying of faces with one another for periodic boundary conditions. That is, each element must have \(2^{dim}\) distinct corner numbers. If you wish to additionally identify faces of the same block with each other, that must be done in an additional step. This step is explained in the "Setting Periodic Boundary
+Conditions" section.</dd></dl>
+<h2><a class="anchor" id="autotoc_md269"></a>
+The Ordered Subset of the Global CNS (Subset CNS):</h2>
+<p>With the Global CNS in hand, each <a class="el" href="classBlock.html">Block</a> inherits an ordered subset of Global CNS. The ordering in this set is determined by the ordering of the Local CNS, and the elements of the set determined by how one assigned the Global CNS to the <a class="el" href="classDomain.html" title="A wrapper around a vector of Blocks that represent the computational domain.">Domain</a>. For the image above, the Subset CNS corresponding to the left block is {0, 1, 3, 4, 6, 7, 9, 10}, while the Subset CNS corresponding to the right block is {1, 4, 7, 10, 2, 5, 8, 11}. This ordering of the Subset CNS encodes the relative orientations between each <a class="el" href="classBlock.html">Block</a>. Subset CNSs need to be provided for each <a class="el" href="classBlock.html">Block</a> in a <a class="el" href="classDomain.html" title="A wrapper around a vector of Blocks that represent the computational domain.">Domain</a>. It turns out that for very regular domains, (i.e. spherical or rectilinear) we can generate the appropriate Subset CNSs. As this is a conceptual tutorial, how to construct these domains in SpECTRE is described in the <a class="el" href="tutorial_domain_creation.html">Domain Creation</a> tutorial.</p>
+<h2><a class="anchor" id="autotoc_md270"></a>
+Explanation of the Algorithms in DomainHelpers:</h2>
+<p>For illustrative purposes, we will use the following <a class="el" href="classDomain.html" title="A wrapper around a vector of Blocks that represent the computational domain.">Domain</a> composed of two Blocks as described above as an example. Because there are 12 corners in this <a class="el" href="classDomain.html" title="A wrapper around a vector of Blocks that represent the computational domain.">Domain</a>, we will arbitrarily assign a unique id to each corner. Knowing the orientation of the logical axes within a block, we construct a Subset CNS for each <a class="el" href="classBlock.html">Block</a>.<br  />
+ Here is one possible result, given some relative orientation between the blocks:</p>
+<div class="fragment"><div class="line">Block1: {0, 1, 3, 4, 6, 7, 9, 10}</div>
+<div class="line">Block2: {1, 4, 7, 10, 2, 5, 8, 11}</div>
+</div><!-- fragment --><p>The values of the ids only serve to identify which corners are unique and which are shared. This is determined by the Global CNS. The order of the ids in the list is determined by the Local CNS. We take advantage of the fact that the array index of the global corner id is the number of the corner in the local CNS.</p>
+<p>The algorithm begins by determining the shared corners between the Blocks:</p>
+<div class="fragment"><div class="line">result: {1, 4, 7, 10}</div>
+</div><!-- fragment --><p>The next step is to determine the local ids of these shared global ids:</p>
+<div class="fragment"><div class="line">Block1 result: {1,3,5,7}</div>
+<div class="line">Block2 result: {0,1,2,3}</div>
+</div><!-- fragment --><p>The next step is to convert these ids into their binary representation. For reference, we give the binary representation for each number 0-7:</p>
+<div class="fragment"><div class="line">Corner 0: 000</div>
+<div class="line">Corner 1: 001</div>
+<div class="line">Corner 2: 010</div>
+<div class="line">Corner 3: 011</div>
+<div class="line">Corner 4: 100</div>
+<div class="line">Corner 5: 101</div>
+<div class="line">Corner 6: 110</div>
+<div class="line">Corner 7: 111</div>
+</div><!-- fragment --><p>Here 0 and 1 indicate lower and upper in the corresponding axis (zeta, eta, xi), respectively, and the ordering has been reversed so that the rightmost column corresponds to the xi position and the leftmost column to the zeta position. Returning to the example at hand, we have:</p>
+<div class="fragment"><div class="line">Block1 result: {001,011,101,111}</div>
+<div class="line">Block2 result: {000,001,010,011}</div>
+</div><!-- fragment --><p>Note that we can now read off the shared face relative to each <a class="el" href="classBlock.html">Block</a> easily:</p>
+<div class="fragment"><div class="line">Block1 result: Upper xi (All binary Block1 ids have a 1 in the third position)</div>
+<div class="line">Block2 result: Lower zeta (All binary Block2 ids have a 0 in the first position)</div>
+</div><!-- fragment --><p>Now we know that <code><a class="el" href="classDirection.html">Direction</a>&lt;3&gt;::upper_xi()</code> in Block1 corresponds to <code><a class="el" href="classDirection.html">Direction</a>&lt;3&gt;::lower_zeta().opposite()</code> in Block2.</p>
+<p>The use of <code>.opposite()</code> is a result of the Directions to a <a class="el" href="classBlock.html">Block</a> face being anti-parallel because each <a class="el" href="classBlock.html">Block</a> lies on the opposite side of the shared face. <br  />
+</p>
+<p>The remaining two correspondences are given by the alignment of the shared face. It is useful to know the following information:<br  />
+ In the Local CNS, if an edge lies along the xi direction, if one takes the two corners making up that edge and takes the difference of their ids, one always gets the result \( \pm 1\). Similarly, if the edge lies in the eta direction, the result will be \( \pm 2\). Finally, if the edge lies in the zeta direction, the result will be \( \pm 4\). We use this information to determine the alignment of the shared face:</p>
+<div class="fragment"><div class="line">Block1: 3-1=2  =&gt; This edge is in the +eta direction.</div>
+<div class="line">Block2: 1-0=1 =&gt; This edge is in the +xi direction.</div>
+<div class="line">Then, +eta in Block1 corresponds to +xi in Block2.</div>
+<div class="line"> </div>
+<div class="line">Block1: 5-1=4 =&gt; This edge is in the +zeta direction.</div>
+<div class="line">Block2: 2-0=2 =&gt; This edge is in the +eta direction.</div>
+<div class="line">Then, +zeta in Block1 corresponds to +eta in Block2.</div>
+</div><!-- fragment --><p>The corresponding directions in each <a class="el" href="classBlock.html">Block</a> have now been deduced.</p>
+<p>To confirm, we can use the other ids as well and arrive at the same result:<br  />
+</p>
+<div class="fragment"><div class="line">Block1: 7-5=2  =&gt; +eta</div>
+<div class="line">Block2: 3-2=1 =&gt; +xi</div>
+<div class="line"> </div>
+<div class="line">Block1: 7-3=4  =&gt; +zeta</div>
+<div class="line">Block2: 3-1=2  =&gt; +eta</div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md271"></a>
+Setting Periodic Boundary Conditions</h2>
+<p>It is also possible to identify faces of a <a class="el" href="classBlock.html">Block</a> using the subset CNS. For example, to identify the lower zeta face with the upper zeta face of a <a class="el" href="classBlock.html">Block</a> where the corners are labeled <code>{3,0,4,1,9,6,10,7}</code>, one may supply the lists <code>{3,0,4,1}</code> and <code>{9,6,10,7}</code> to the <code>set_identified_boundaries</code> function. </p><dl class="section note"><dt>Note</dt><dd>The <code>set_identified_boundaries</code> function is sensitive to the order of the corners in the lists supplied as arguments. This is because the function identifies corners and edges with each other as opposed to simply faces. This allows the user to specify more peculiar boundary conditions. For example, using <code>{3,0,4,1}</code> and <code>{6,7,9,10}</code> to set the periodic boundaries will identify the lower zeta face with the upper zeta face, but after a rotation of a quarter-turn.</dd></dl>
+<p>For reference, here are the corners to use for each face for a <a class="el" href="classBlock.html">Block</a> with corners labelled as <code>{0,1,2,3,4,5,6,7}</code> to set up periodic boundary conditions in each dimension, i.e. a \(\mathrm{T}^3\) topology:</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Face </th><th class="markdownTableHeadNone">Corners  </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">upper xi </td><td class="markdownTableBodyNone"><code>{1,3,5,7}</code>  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">lower xi </td><td class="markdownTableBodyNone"><code>{0,2,4,6}</code>  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">upper eta </td><td class="markdownTableBodyNone"><code>{2,3,6,7}</code>  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">lower eta </td><td class="markdownTableBodyNone"><code>{0,1,4,5}</code>  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">upper zeta </td><td class="markdownTableBodyNone"><code>{4,5,6,7}</code>  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">lower zeta </td><td class="markdownTableBodyNone"><code>{0,1,2,3}</code>  </td></tr>
+</table>
+</div></div><!-- contents -->
+</div><!-- PageDoc -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

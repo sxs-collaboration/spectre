@@ -1,0 +1,295 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Time/StepControllers/SimpleTimes.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_ceb9d6494afcb83ad8bc9661b75bd633.html">Time</a></li><li class="navelem"><a class="el" href="dir_3ceef2618c60bac2684b18716077929d.html">StepControllers</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">SimpleTimes.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<a href="SimpleTimes_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment">/// \file</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment">/// Defines class StepControllers::SimpleTimes</span></div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160; </div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cmath.html">cmath</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;pup.h&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160; </div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Options_8hpp.html">Options/Options.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="CharmPupable_8hpp.html">Parallel/CharmPupable.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Slab_8hpp.html">Time/Slab.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="StepController_8hpp.html">Time/StepControllers/StepController.hpp</a>&quot;</span>  <span class="comment">// IWYU pragma: keep</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Time_8hpp.html">Time/Time.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ConstantExpressions_8hpp.html">Utilities/ConstantExpressions.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;Utilities/FractionUtilities.hpp&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160; </div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceStepControllers.html">StepControllers</a> {</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment">/// \ingroup TimeSteppersGroup</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment">/// A StepController that roughly splits the remaining time, but</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment">/// prefers simpler (smaller denominator) fractions of slabs.</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno"><a class="line" href="classStepControllers_1_1SimpleTimes.html">   28</a></span>&#160;<span class="comment"></span><span class="keyword">class </span><a class="code" href="classStepControllers_1_1SimpleTimes.html">SimpleTimes</a> : <span class="keyword">public</span> <a class="code" href="classStepController.html">StepController</a> {</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; <span class="keyword">public</span>:<span class="comment"></span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment">  /// \cond</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment"></span>  <a class="code" href="classStepControllers_1_1SimpleTimes.html">SimpleTimes</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  <span class="keyword">explicit</span> <a class="code" href="classStepControllers_1_1SimpleTimes.html">SimpleTimes</a>(CkMigrateMessage* <span class="comment">/*unused*/</span>) noexcept {}</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  <a class="code" href="CharmPupable_8hpp.html#a9bea344c203a07f5821dd721697dcecc">WRAPPED_PUPable_decl</a>(<a class="code" href="classStepControllers_1_1SimpleTimes.html">SimpleTimes</a>);  <span class="comment">// NOLINT</span><span class="comment"></span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment">  /// \endcond</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  <span class="keyword">using</span> options = tmpl::list&lt;&gt;;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;      <span class="stringliteral">&quot;Chooses steps by dividing the remainder of the slab approximately\n&quot;</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;      <span class="stringliteral">&quot;evenly, but preferring evaluation times that are simple (i.e., small\n&quot;</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;      <span class="stringliteral">&quot;denominator) fractions of the slab.&quot;</span>};</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160; </div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  <a class="code" href="classTimeDelta.html">TimeDelta</a> choose_step(<span class="keyword">const</span> <a class="code" href="classTime.html">Time</a>&amp; time,</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;                        <span class="keyword">const</span> <span class="keywordtype">double</span> desired_step) <span class="keyword">const</span> noexcept <span class="keyword">override</span> {</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keyword">const</span> <a class="code" href="classTime.html">Time</a> goal =</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        desired_step &gt; 0 ? time.slab().end() : time.slab().start();</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keyword">const</span> <a class="code" href="classTimeDelta.html">TimeDelta</a> remaining = goal - time;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordflow">if</span> (std::abs(desired_step) &gt;= std::abs(remaining.<a class="code" href="classTimeDelta.html#ac4ee79784ce7a81ea454a0d1254d3821">value</a>())) {</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;      <span class="keywordflow">return</span> remaining;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    }</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="comment">// First arg: don&#39;t take a step so small that it will force an extra step</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="comment">// Second arg: don&#39;t choose a value too far from the request</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">double</span> min_step =</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        <a class="code" href="group__ConstantExpressionsGroup.html#ga821c3b16761006411643b7be7a58ed67">max_by_magnitude</a>(std::fmod(remaining.<a class="code" href="classTimeDelta.html#ac4ee79784ce7a81ea454a0d1254d3821">value</a>(), desired_step),</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;                         0.5 * desired_step);</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">double</span> full_slab = time.slab().duration().value();</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> current_position = time.fraction().value();</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="keyword">using</span> Fraction = <a class="code" href="classRational.html">Time::rational_t</a>;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <span class="keyword">auto</span> step_end = simplest_fraction_in_interval&lt;Fraction&gt;(</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        current_position + min_step / full_slab,</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        current_position + desired_step / full_slab);</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160; </div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="comment">// clang-tidy: move trivially copyable type</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="classTime.html">Time</a>(time.slab(), std::move(step_end)) - time; <span class="comment">// NOLINT</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;  }</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;};</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;}  <span class="comment">// namespace StepControllers</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="anamespaceStepControllers_html"><div class="ttname"><a href="namespaceStepControllers.html">StepControllers</a></div><div class="ttdef"><b>Definition:</b> BinaryFraction.hpp:25</div></div>
+<div class="ttc" id="aCharmPupable_8hpp_html"><div class="ttname"><a href="CharmPupable_8hpp.html">CharmPupable.hpp</a></div></div>
+<div class="ttc" id="autility_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a></div></div>
+<div class="ttc" id="aOptions_8hpp_html"><div class="ttname"><a href="Options_8hpp.html">Options.hpp</a></div></div>
+<div class="ttc" id="aclassStepControllers_1_1SimpleTimes_html"><div class="ttname"><a href="classStepControllers_1_1SimpleTimes.html">StepControllers::SimpleTimes</a></div><div class="ttdef"><b>Definition:</b> SimpleTimes.hpp:28</div></div>
+<div class="ttc" id="acmath_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cmath.html">cmath</a></div></div>
+<div class="ttc" id="aclassTimeDelta_html"><div class="ttname"><a href="classTimeDelta.html">TimeDelta</a></div><div class="ttdef"><b>Definition:</b> Time.hpp:88</div></div>
+<div class="ttc" id="aConstantExpressions_8hpp_html"><div class="ttname"><a href="ConstantExpressions_8hpp.html">ConstantExpressions.hpp</a></div></div>
+<div class="ttc" id="aclassTimeDelta_html_ac4ee79784ce7a81ea454a0d1254d3821"><div class="ttname"><a href="classTimeDelta.html#ac4ee79784ce7a81ea454a0d1254d3821">TimeDelta::value</a></div><div class="ttdeci">double value() const noexcept</div><div class="ttdoc">Approximate numerical length of the interval.</div></div>
+<div class="ttc" id="aStepController_8hpp_html"><div class="ttname"><a href="StepController_8hpp.html">StepController.hpp</a></div></div>
+<div class="ttc" id="aTime_8hpp_html"><div class="ttname"><a href="Time_8hpp.html">Time.hpp</a></div></div>
+<div class="ttc" id="aCharmPupable_8hpp_html_a9bea344c203a07f5821dd721697dcecc"><div class="ttname"><a href="CharmPupable_8hpp.html#a9bea344c203a07f5821dd721697dcecc">WRAPPED_PUPable_decl</a></div><div class="ttdeci">#define WRAPPED_PUPable_decl(className)</div><div class="ttdoc">Wraps the Charm++ macro, see the Charm++ documentation.</div><div class="ttdef"><b>Definition:</b> CharmPupable.hpp:37</div></div>
+<div class="ttc" id="aclassTime_html"><div class="ttname"><a href="classTime.html">Time</a></div><div class="ttdef"><b>Definition:</b> Time.hpp:29</div></div>
+<div class="ttc" id="anamespaceOptions_html_aa61c7f41f21afa7646811456f673be89"><div class="ttname"><a href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a></div><div class="ttdeci">const char *const String</div><div class="ttdoc">The string used in option structs.</div><div class="ttdef"><b>Definition:</b> Options.hpp:32</div></div>
+<div class="ttc" id="aSlab_8hpp_html"><div class="ttname"><a href="Slab_8hpp.html">Slab.hpp</a></div></div>
+<div class="ttc" id="aclassStepController_html"><div class="ttname"><a href="classStepController.html">StepController</a></div><div class="ttdef"><b>Definition:</b> StepController.hpp:25</div></div>
+<div class="ttc" id="agroup__ConstantExpressionsGroup_html_ga821c3b16761006411643b7be7a58ed67"><div class="ttname"><a href="group__ConstantExpressionsGroup.html#ga821c3b16761006411643b7be7a58ed67">max_by_magnitude</a></div><div class="ttdeci">constexpr const T &amp; max_by_magnitude(const T &amp;a, const T &amp;b)</div><div class="ttdoc">Return the argument with the largest magnitude.</div><div class="ttdef"><b>Definition:</b> ConstantExpressions.hpp:214</div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="aclassRational_html"><div class="ttname"><a href="classRational.html">Rational</a></div><div class="ttdef"><b>Definition:</b> Rational.hpp:27</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

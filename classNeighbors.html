@@ -1,0 +1,334 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Neighbors&lt; VolumeDim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classNeighbors-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Neighbors&lt; VolumeDim &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__ComputationalDomainGroup.html">Computational Domain</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><code>#include &lt;<a class="el" href="Neighbors_8hpp_source.html">Neighbors.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ae6a87502b3ea61ef28a077a87d254bfb"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNeighbors.html#ae6a87502b3ea61ef28a077a87d254bfb">Neighbors</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set</a>&lt; <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt;&gt; ids, <a class="el" href="classOrientationMap.html">OrientationMap</a>&lt; VolumeDim &gt; orientation) noexcept</td></tr>
+<tr class="memdesc:ae6a87502b3ea61ef28a077a87d254bfb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct with the ids and orientation of the neighbors relative to the host.  <a href="classNeighbors.html#ae6a87502b3ea61ef28a077a87d254bfb">More...</a><br /></td></tr>
+<tr class="separator:ae6a87502b3ea61ef28a077a87d254bfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80992b0c8c26446ad7ee4e899af5542b"><td class="memItemLeft" align="right" valign="top"><a id="a80992b0c8c26446ad7ee4e899af5542b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNeighbors.html#a80992b0c8c26446ad7ee4e899af5542b">Neighbors</a> ()=default</td></tr>
+<tr class="memdesc:a80992b0c8c26446ad7ee4e899af5542b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor for Charm++ serialization. <br /></td></tr>
+<tr class="separator:a80992b0c8c26446ad7ee4e899af5542b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a4ab0b4d80fede333573c1cf6ea700c"><td class="memItemLeft" align="right" valign="top"><a id="a0a4ab0b4d80fede333573c1cf6ea700c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Neighbors</b> (const <a class="el" href="classNeighbors.html">Neighbors</a>&lt; VolumeDim &gt; &amp;neighbor)=default</td></tr>
+<tr class="separator:a0a4ab0b4d80fede333573c1cf6ea700c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ace1a7654a2fdb2e58ed0481e6dd2eeef"><td class="memItemLeft" align="right" valign="top"><a id="ace1a7654a2fdb2e58ed0481e6dd2eeef"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Neighbors</b> (<a class="el" href="classNeighbors.html">Neighbors</a>&lt; VolumeDim &gt; &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:ace1a7654a2fdb2e58ed0481e6dd2eeef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad2e56894484e30409d4548ebb66c2cc3"><td class="memItemLeft" align="right" valign="top"><a id="ad2e56894484e30409d4548ebb66c2cc3"></a>
+<a class="el" href="classNeighbors.html">Neighbors</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classNeighbors.html">Neighbors</a> &amp;rhs)=default</td></tr>
+<tr class="separator:ad2e56894484e30409d4548ebb66c2cc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aabf7fcd2f6079050cee317bf5e4e922a"><td class="memItemLeft" align="right" valign="top"><a id="aabf7fcd2f6079050cee317bf5e4e922a"></a>
+<a class="el" href="classNeighbors.html">Neighbors</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classNeighbors.html">Neighbors</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:aabf7fcd2f6079050cee317bf5e4e922a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a152f63b628337978c06111a4acbb189b"><td class="memItemLeft" align="right" valign="top"><a id="a152f63b628337978c06111a4acbb189b"></a>
+const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set</a>&lt; <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt; &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>ids</b> () const noexcept</td></tr>
+<tr class="separator:a152f63b628337978c06111a4acbb189b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae5533150201bc3dc3e9b12fde71b1eec"><td class="memItemLeft" align="right" valign="top"><a id="ae5533150201bc3dc3e9b12fde71b1eec"></a>
+const <a class="el" href="classOrientationMap.html">OrientationMap</a>&lt; VolumeDim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>orientation</b> () const noexcept</td></tr>
+<tr class="separator:ae5533150201bc3dc3e9b12fde71b1eec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad71faeb20376e85ca0511812a74f3a83"><td class="memItemLeft" align="right" valign="top"><a id="ad71faeb20376e85ca0511812a74f3a83"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNeighbors.html#ad71faeb20376e85ca0511812a74f3a83">set_ids_to</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set</a>&lt; <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt;&gt; new_ids) noexcept</td></tr>
+<tr class="memdesc:ad71faeb20376e85ca0511812a74f3a83"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset the ids of the neighbors. <br /></td></tr>
+<tr class="separator:ad71faeb20376e85ca0511812a74f3a83"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a321086f79469b478d6ca52316556979f"><td class="memItemLeft" align="right" valign="top"><a id="a321086f79469b478d6ca52316556979f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNeighbors.html#a321086f79469b478d6ca52316556979f">add_ids</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set</a>&lt; <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt;&gt; &amp;additional_ids) noexcept</td></tr>
+<tr class="memdesc:a321086f79469b478d6ca52316556979f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add ids of neighbors. Adding an existing neighbor is allowed. <br /></td></tr>
+<tr class="separator:a321086f79469b478d6ca52316556979f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7416c3ed9b186f0c70081ba63b58b122"><td class="memItemLeft" align="right" valign="top"><a id="a7416c3ed9b186f0c70081ba63b58b122"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNeighbors.html#a7416c3ed9b186f0c70081ba63b58b122">pup</a> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="memdesc:a7416c3ed9b186f0c70081ba63b58b122"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialization for Charm++. <br /></td></tr>
+<tr class="separator:a7416c3ed9b186f0c70081ba63b58b122"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d6b4bbd566590b93b9f209797e20af3"><td class="memItemLeft" align="right" valign="top"><a id="a1d6b4bbd566590b93b9f209797e20af3"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNeighbors.html#a1d6b4bbd566590b93b9f209797e20af3">size</a> () const noexcept</td></tr>
+<tr class="memdesc:a1d6b4bbd566590b93b9f209797e20af3"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of neighbors. <br /></td></tr>
+<tr class="separator:a1d6b4bbd566590b93b9f209797e20af3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad0f8447a6489d90414b3da734f781c41"><td class="memItemLeft" align="right" valign="top"><a id="ad0f8447a6489d90414b3da734f781c41"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set</a>&lt; <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt; &gt;::iterator&#160;</td><td class="memItemRight" valign="bottom"><b>begin</b> () noexcept</td></tr>
+<tr class="separator:ad0f8447a6489d90414b3da734f781c41"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae79376ab3705e673647111369f242015"><td class="memItemLeft" align="right" valign="top"><a id="ae79376ab3705e673647111369f242015"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set</a>&lt; <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt; &gt;::iterator&#160;</td><td class="memItemRight" valign="bottom"><b>end</b> () noexcept</td></tr>
+<tr class="separator:ae79376ab3705e673647111369f242015"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a680ec55a7f7891bc22c0019732645d"><td class="memItemLeft" align="right" valign="top"><a id="a6a680ec55a7f7891bc22c0019732645d"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set</a>&lt; <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt; &gt;::const_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>begin</b> () const noexcept</td></tr>
+<tr class="separator:a6a680ec55a7f7891bc22c0019732645d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6430e3b83da76039ebc7c8adb193ee51"><td class="memItemLeft" align="right" valign="top"><a id="a6430e3b83da76039ebc7c8adb193ee51"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set</a>&lt; <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt; &gt;::const_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>end</b> () const noexcept</td></tr>
+<tr class="separator:a6430e3b83da76039ebc7c8adb193ee51"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad78a307ca50f9bd8c37bfd56dc851ba7"><td class="memItemLeft" align="right" valign="top"><a id="ad78a307ca50f9bd8c37bfd56dc851ba7"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set</a>&lt; <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt; &gt;::const_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>cbegin</b> () const noexcept</td></tr>
+<tr class="separator:ad78a307ca50f9bd8c37bfd56dc851ba7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af63c9ba6a8f3168b379e9b09dd96a70c"><td class="memItemLeft" align="right" valign="top"><a id="af63c9ba6a8f3168b379e9b09dd96a70c"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set</a>&lt; <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt; &gt;::const_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>cend</b> () const noexcept</td></tr>
+<tr class="separator:af63c9ba6a8f3168b379e9b09dd96a70c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t VolumeDim&gt;<br />
+class Neighbors&lt; VolumeDim &gt;</h3>
+
+<p>Information about the neighbors of a host <a class="el" href="classElement.html">Element</a> in a particular direction.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">VolumeDim</td><td>the volume dimension. </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="ae6a87502b3ea61ef28a077a87d254bfb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae6a87502b3ea61ef28a077a87d254bfb">&#9670;&nbsp;</a></span>Neighbors()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t VolumeDim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classNeighbors.html">Neighbors</a>&lt; VolumeDim &gt;::<a class="el" href="classNeighbors.html">Neighbors</a> </td>
+          <td>(</td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set</a>&lt; <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt;&gt;&#160;</td>
+          <td class="paramname"><em>ids</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classOrientationMap.html">OrientationMap</a>&lt; VolumeDim &gt;&#160;</td>
+          <td class="paramname"><em>orientation</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Construct with the ids and orientation of the neighbors relative to the host. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ids</td><td>the ids of the neighbors. </td></tr>
+    <tr><td class="paramname">orientation</td><td>This <a class="el" href="classOrientationMap.html" title="A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of th...">OrientationMap</a> takes objects in the logical coordinate frame of the host <a class="el" href="classElement.html">Element</a> and maps them to the logical coordinate frame of the neighbor <a class="el" href="classElement.html">Element</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/Structure/<a class="el" href="Neighbors_8hpp_source.html">Neighbors.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,303 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: LinearSolver::Serial::PreconditionedLinearSolver&lt; Preconditioner, LinearSolverRegistrars &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceLinearSolver.html">LinearSolver</a></li><li class="navelem"><b>Serial</b></li><li class="navelem"><a class="el" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">PreconditionedLinearSolver</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
+<a href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">LinearSolver::Serial::PreconditionedLinearSolver&lt; Preconditioner, LinearSolverRegistrars &gt; Class Template Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Base class for serial linear solvers that supports factory-creation and nested preconditioning.  
+ <a href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="LinearSolver_8hpp_source.html">LinearSolver.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLinearSolver_1_1Serial_1_1PreconditionedLinearSolver_1_1PreconditionerOption.html">PreconditionerOption</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a0ebd1367709bae5fd1a6f84b8ef0ca5d"><td class="memItemLeft" align="right" valign="top"><a id="a0ebd1367709bae5fd1a6f84b8ef0ca5d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>PreconditionerType</b> = tmpl::conditional_t&lt; std::is_abstract_v&lt; Preconditioner &gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; Preconditioner &gt;, Preconditioner &gt;</td></tr>
+<tr class="separator:a0ebd1367709bae5fd1a6f84b8ef0ca5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classLinearSolver_1_1Serial_1_1LinearSolver"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classLinearSolver_1_1Serial_1_1LinearSolver')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classLinearSolver_1_1Serial_1_1LinearSolver.html">LinearSolver::Serial::LinearSolver&lt; LinearSolverRegistrars &gt;</a></td></tr>
+<tr class="memitem:a4d6b0c848b6cbdec48dddeb9cc367e82 inherit pub_types_classLinearSolver_1_1Serial_1_1LinearSolver"><td class="memItemLeft" align="right" valign="top"><a id="a4d6b0c848b6cbdec48dddeb9cc367e82"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = <a class="el" href="namespaceRegistration.html#abfd9ae1266be994041d2cfaa4199eed2">Registration::registrants</a>&lt; LinearSolverRegistrars &gt;</td></tr>
+<tr class="separator:a4d6b0c848b6cbdec48dddeb9cc367e82 inherit pub_types_classLinearSolver_1_1Serial_1_1LinearSolver"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:aee3d9ca0a776b50497a6db4e5e74d43c"><td class="memItemLeft" align="right" valign="top"><a id="aee3d9ca0a776b50497a6db4e5e74d43c"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:aee3d9ca0a776b50497a6db4e5e74d43c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2ee67e50341af306da71e5be772c4a9"><td class="memItemLeft" align="right" valign="top"><a id="ac2ee67e50341af306da71e5be772c4a9"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#ac2ee67e50341af306da71e5be772c4a9">has_preconditioner</a> () const noexcept</td></tr>
+<tr class="memdesc:ac2ee67e50341af306da71e5be772c4a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether or not a preconditioner is set. <br /></td></tr>
+<tr class="separator:ac2ee67e50341af306da71e5be772c4a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classLinearSolver_1_1Serial_1_1LinearSolver"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classLinearSolver_1_1Serial_1_1LinearSolver')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classLinearSolver_1_1Serial_1_1LinearSolver.html">LinearSolver::Serial::LinearSolver&lt; LinearSolverRegistrars &gt;</a></td></tr>
+<tr class="memitem:a5397f04fb504b6ab9d2242cf704e7326 inherit pub_methods_classLinearSolver_1_1Serial_1_1LinearSolver"><td class="memItemLeft" align="right" valign="top"><a id="a5397f04fb504b6ab9d2242cf704e7326"></a>
+virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classLinearSolver_1_1Serial_1_1LinearSolver.html">LinearSolver</a>&lt; LinearSolverRegistrars &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const =0</td></tr>
+<tr class="separator:a5397f04fb504b6ab9d2242cf704e7326 inherit pub_methods_classLinearSolver_1_1Serial_1_1LinearSolver"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e01eb2c42c43d757913758f9574410c inherit pub_methods_classLinearSolver_1_1Serial_1_1LinearSolver"><td class="memTemplParams" colspan="2">template&lt;typename LinearOperator , typename VarsType , typename SourceType , typename... Args&gt; </td></tr>
+<tr class="memitem:a3e01eb2c42c43d757913758f9574410c inherit pub_methods_classLinearSolver_1_1Serial_1_1LinearSolver"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structConvergence_1_1HasConverged.html">Convergence::HasConverged</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classLinearSolver_1_1Serial_1_1LinearSolver.html#a3e01eb2c42c43d757913758f9574410c">solve</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; VarsType * &gt; initial_guess_in_solution_out, const LinearOperator &amp;linear_operator, const SourceType &amp;source, Args &amp;&amp;... args) const noexcept</td></tr>
+<tr class="memdesc:a3e01eb2c42c43d757913758f9574410c inherit pub_methods_classLinearSolver_1_1Serial_1_1LinearSolver"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solve the linear equation \(Ax=b\) where \(A\) is the <code>linear_operator</code> and \(b\) is the <code>source</code>.  <a href="classLinearSolver_1_1Serial_1_1LinearSolver.html#a3e01eb2c42c43d757913758f9574410c">More...</a><br /></td></tr>
+<tr class="separator:a3e01eb2c42c43d757913758f9574410c inherit pub_methods_classLinearSolver_1_1Serial_1_1LinearSolver"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb8e744ad9481a78f1928bd7556c2674 inherit pub_methods_classLinearSolver_1_1Serial_1_1LinearSolver"><td class="memTemplParams" colspan="2"><a id="aeb8e744ad9481a78f1928bd7556c2674"></a>
+template&lt;typename LinearOperator , typename VarsType , typename SourceType , typename... Args&gt; </td></tr>
+<tr class="memitem:aeb8e744ad9481a78f1928bd7556c2674 inherit pub_methods_classLinearSolver_1_1Serial_1_1LinearSolver"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structConvergence_1_1HasConverged.html">Convergence::HasConverged</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><b>solve</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; VarsType * &gt; initial_guess_in_solution_out, const LinearOperator &amp;linear_operator, const SourceType &amp;source, Args &amp;&amp;... args) const noexcept</td></tr>
+<tr class="separator:aeb8e744ad9481a78f1928bd7556c2674 inherit pub_methods_classLinearSolver_1_1Serial_1_1LinearSolver"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:a702a3839ac8dd13f9c3ee44055c90c3f"><td class="memItemLeft" align="right" valign="top"><a id="a702a3839ac8dd13f9c3ee44055c90c3f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>PreconditionedLinearSolver</b> (<a class="el" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">PreconditionedLinearSolver</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a702a3839ac8dd13f9c3ee44055c90c3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d431eb5e1f1e83939d7a03a4b68a9a1"><td class="memItemLeft" align="right" valign="top"><a id="a9d431eb5e1f1e83939d7a03a4b68a9a1"></a>
+<a class="el" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">PreconditionedLinearSolver</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">PreconditionedLinearSolver</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a9d431eb5e1f1e83939d7a03a4b68a9a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afda6f5c5c9cecacfcc1a39b44645763a"><td class="memItemLeft" align="right" valign="top"><a id="afda6f5c5c9cecacfcc1a39b44645763a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>PreconditionedLinearSolver</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; PreconditionerType &gt; local_preconditioner) noexcept</td></tr>
+<tr class="separator:afda6f5c5c9cecacfcc1a39b44645763a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26888dcd53767e64282ac12631fc2f92"><td class="memItemLeft" align="right" valign="top"><a id="a26888dcd53767e64282ac12631fc2f92"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>PreconditionedLinearSolver</b> (const <a class="el" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">PreconditionedLinearSolver</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a26888dcd53767e64282ac12631fc2f92"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c3d90c297d83bec8a64142056c0ab4c"><td class="memItemLeft" align="right" valign="top"><a id="a3c3d90c297d83bec8a64142056c0ab4c"></a>
+<a class="el" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">PreconditionedLinearSolver</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">PreconditionedLinearSolver</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a3c3d90c297d83bec8a64142056c0ab4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad336ab1445f8a5d6e4befe289becc63c"><td class="memTemplParams" colspan="2"><a id="ad336ab1445f8a5d6e4befe289becc63c"></a>
+template&lt;bool Enabled = not std::is_same_v&lt;Preconditioner, NoPreconditioner&gt;, Requires&lt; Enabled and not std::is_same_v&lt; Preconditioner, NoPreconditioner &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:ad336ab1445f8a5d6e4befe289becc63c"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; PreconditionerType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#ad336ab1445f8a5d6e4befe289becc63c">clone_preconditioner</a> () const noexcept</td></tr>
+<tr class="memdesc:ad336ab1445f8a5d6e4befe289becc63c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy the preconditioner. Useful to implement <code>get_clone</code> when the preconditioner has an abstract type. <br /></td></tr>
+<tr class="separator:ad336ab1445f8a5d6e4befe289becc63c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adf461b65c6342338ec57d9ff27fe6f1f"><td class="memTemplParams" colspan="2"><a id="adf461b65c6342338ec57d9ff27fe6f1f"></a>
+template&lt;bool Enabled = not std::is_same_v&lt;Preconditioner, NoPreconditioner&gt;, Requires&lt; Enabled and not std::is_same_v&lt; Preconditioner, NoPreconditioner &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:adf461b65c6342338ec57d9ff27fe6f1f"><td class="memTemplItemLeft" align="right" valign="top">const Preconditioner &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#adf461b65c6342338ec57d9ff27fe6f1f">preconditioner</a> () const noexcept</td></tr>
+<tr class="memdesc:adf461b65c6342338ec57d9ff27fe6f1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access to the preconditioner. Check <code><a class="el" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#ac2ee67e50341af306da71e5be772c4a9" title="Whether or not a preconditioner is set.">has_preconditioner()</a></code> before calling this function. Calling this function when <code><a class="el" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#ac2ee67e50341af306da71e5be772c4a9" title="Whether or not a preconditioner is set.">has_preconditioner()</a></code> returns <code>false</code> is an error. <br /></td></tr>
+<tr class="separator:adf461b65c6342338ec57d9ff27fe6f1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d497c9853c6447baba4817d98be0ada"><td class="memTemplParams" colspan="2"><a id="a7d497c9853c6447baba4817d98be0ada"></a>
+template&lt;bool Enabled = not std::is_same_v&lt;Preconditioner, NoPreconditioner&gt;, Requires&lt; Enabled and not std::is_same_v&lt; Preconditioner, NoPreconditioner &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a7d497c9853c6447baba4817d98be0ada"><td class="memTemplItemLeft" align="right" valign="top">Preconditioner &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#a7d497c9853c6447baba4817d98be0ada">preconditioner</a> () noexcept</td></tr>
+<tr class="memdesc:a7d497c9853c6447baba4817d98be0ada"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy the preconditioner. Useful to implement <code>get_clone</code> when the preconditioner has an abstract type. <br /></td></tr>
+<tr class="separator:a7d497c9853c6447baba4817d98be0ada"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab1179789c6c7ed314a2c10ce0c762202"><td class="memItemLeft" align="right" valign="top"><a id="ab1179789c6c7ed314a2c10ce0c762202"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#ab1179789c6c7ed314a2c10ce0c762202">reset</a> () noexcept override=0</td></tr>
+<tr class="memdesc:ab1179789c6c7ed314a2c10ce0c762202"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy the preconditioner. Useful to implement <code>get_clone</code> when the preconditioner has an abstract type. <br /></td></tr>
+<tr class="separator:ab1179789c6c7ed314a2c10ce0c762202"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename Preconditioner, typename LinearSolverRegistrars&gt;<br />
+class LinearSolver::Serial::PreconditionedLinearSolver&lt; Preconditioner, LinearSolverRegistrars &gt;</h3>
+
+<p>Base class for serial linear solvers that supports factory-creation and nested preconditioning. </p>
+<p>To enable support for preconditioning in your derived linear solver class, pass any type that has a <code>solve</code> and a <code>reset</code> function as the <code>Preconditioner</code> template parameter. It can also be an abstract <code><a class="el" href="classLinearSolver_1_1Serial_1_1LinearSolver.html" title="Base class for serial linear solvers that supports factory-creation.">LinearSolver</a></code> type, which means that any other linear solver can be used as preconditioner. Pass <code><a class="el" href="structLinearSolver_1_1Serial_1_1NoPreconditioner.html" title="Indicates the linear solver uses no preconditioner. It may perform compile-time optimization for this...">NoPreconditioner</a></code> to disable support for preconditioning. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/NumericalAlgorithms/LinearSolver/<a class="el" href="LinearSolver_8hpp_source.html">LinearSolver.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

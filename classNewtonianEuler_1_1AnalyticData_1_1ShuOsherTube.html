@@ -1,0 +1,332 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: NewtonianEuler::AnalyticData::ShuOsherTube Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceNewtonianEuler.html">NewtonianEuler</a></li><li class="navelem"><a class="el" href="namespaceNewtonianEuler_1_1AnalyticData.html">AnalyticData</a></li><li class="navelem"><a class="el" href="classNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube.html">ShuOsherTube</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">NewtonianEuler::AnalyticData::ShuOsherTube Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Initial data for the Shu-Osher oscillatory shock tube <a class="el" href="citelist.html#CITEREF_Shu1988439">[94]</a>.  
+ <a href="classNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ShuOsherTube_8hpp_source.html">ShuOsherTube.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube_1_1Epsilon.html">Epsilon</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube_1_1JumpPosition.html">JumpPosition</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initial postition of the discontinuity.  <a href="structNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube_1_1JumpPosition.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube_1_1Lambda.html">Lambda</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube_1_1LeftMassDensity.html">LeftMassDensity</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube_1_1LeftPressure.html">LeftPressure</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube_1_1LeftVelocity.html">LeftVelocity</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube_1_1RightPressure.html">RightPressure</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube_1_1RightVelocity.html">RightVelocity</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:aa192cf0f9ce509b885800fbe063d20e2"><td class="memItemLeft" align="right" valign="top"><a id="aa192cf0f9ce509b885800fbe063d20e2"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state_type</b> = <a class="el" href="classEquationsOfState_1_1IdealFluid.html">EquationsOfState::IdealFluid</a>&lt; false &gt;</td></tr>
+<tr class="separator:aa192cf0f9ce509b885800fbe063d20e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3dafbaa6e076a42d229323fd362c38cd"><td class="memItemLeft" align="right" valign="top"><a id="a3dafbaa6e076a42d229323fd362c38cd"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>source_term_type</b> = <a class="el" href="structNewtonianEuler_1_1Sources_1_1NoSource.html">Sources::NoSource</a></td></tr>
+<tr class="separator:a3dafbaa6e076a42d229323fd362c38cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa2e1ac4d7137eaff7a5436b5f08c56f1"><td class="memItemLeft" align="right" valign="top"><a id="aa2e1ac4d7137eaff7a5436b5f08c56f1"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube_1_1JumpPosition.html">JumpPosition</a>, <a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube_1_1LeftMassDensity.html">LeftMassDensity</a>, <a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube_1_1LeftVelocity.html">LeftVelocity</a>, <a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube_1_1LeftPressure.html">LeftPressure</a>, <a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube_1_1RightVelocity.html">RightVelocity</a>, <a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube_1_1RightPressure.html">RightPressure</a>, <a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube_1_1Epsilon.html">Epsilon</a>, <a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube_1_1Lambda.html">Lambda</a> &gt;</td></tr>
+<tr class="separator:aa2e1ac4d7137eaff7a5436b5f08c56f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ad5d76a4c7d26172f88366a2230a79d3e"><td class="memItemLeft" align="right" valign="top"><a id="ad5d76a4c7d26172f88366a2230a79d3e"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ShuOsherTube</b> (double jump_position, double mass_density_l, double velocity_l, double pressure_l, double velocity_r, double pressure_r, double epsilon, double lambda) noexcept</td></tr>
+<tr class="separator:ad5d76a4c7d26172f88366a2230a79d3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8e83a2c9c742578404c90e7a4a594388"><td class="memItemLeft" align="right" valign="top"><a id="a8e83a2c9c742578404c90e7a4a594388"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ShuOsherTube</b> (const <a class="el" href="classNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube.html">ShuOsherTube</a> &amp;)=delete</td></tr>
+<tr class="separator:a8e83a2c9c742578404c90e7a4a594388"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac586462bb06fd178c37772ed09acc4ca"><td class="memItemLeft" align="right" valign="top"><a id="ac586462bb06fd178c37772ed09acc4ca"></a>
+<a class="el" href="classNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube.html">ShuOsherTube</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube.html">ShuOsherTube</a> &amp;)=delete</td></tr>
+<tr class="separator:ac586462bb06fd178c37772ed09acc4ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a054dffd169b4cc870c77f777c34f2952"><td class="memItemLeft" align="right" valign="top"><a id="a054dffd169b4cc870c77f777c34f2952"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ShuOsherTube</b> (<a class="el" href="classNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube.html">ShuOsherTube</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a054dffd169b4cc870c77f777c34f2952"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a09aa1b0f978911aa5829942e5f55b0f6"><td class="memItemLeft" align="right" valign="top"><a id="a09aa1b0f978911aa5829942e5f55b0f6"></a>
+<a class="el" href="classNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube.html">ShuOsherTube</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube.html">ShuOsherTube</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a09aa1b0f978911aa5829942e5f55b0f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9518dbc5a790b631bf8d90102f8df7b0"><td class="memTemplParams" colspan="2"><a id="a9518dbc5a790b631bf8d90102f8df7b0"></a>
+template&lt;typename DataType , typename... Tags&gt; </td></tr>
+<tr class="memitem:a9518dbc5a790b631bf8d90102f8df7b0"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, 1, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;x, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="separator:a9518dbc5a790b631bf8d90102f8df7b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae65a43ff2f38da34b013763884d91aef"><td class="memItemLeft" align="right" valign="top"><a id="ae65a43ff2f38da34b013763884d91aef"></a>
+const <a class="el" href="classEquationsOfState_1_1IdealFluid.html">EquationsOfState::IdealFluid</a>&lt; false &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state</b> () const noexcept</td></tr>
+<tr class="separator:ae65a43ff2f38da34b013763884d91aef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2881470c70f3b8b38c6534b566331842"><td class="memItemLeft" align="right" valign="top"><a id="a2881470c70f3b8b38c6534b566331842"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a2881470c70f3b8b38c6534b566331842"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a21a7d73319ac9d90eac35bfac8703eae"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a21a7d73319ac9d90eac35bfac8703eae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:aef9f8cfe6fcfb69b1d0089457ec9aff4"><td class="memItemLeft" align="right" valign="top"><a id="aef9f8cfe6fcfb69b1d0089457ec9aff4"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube.html">ShuOsherTube</a> &amp;lhs, const <a class="el" href="classNewtonianEuler_1_1AnalyticData_1_1ShuOsherTube.html">ShuOsherTube</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:aef9f8cfe6fcfb69b1d0089457ec9aff4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Initial data for the Shu-Osher oscillatory shock tube <a class="el" href="citelist.html#CITEREF_Shu1988439">[94]</a>. </p>
+<p>The general initial data is given by:</p>
+<p class="formulaDsp">
+\begin{align*} \{\rho,v^x,p\}= \left\{ \begin{array}{ll} \left\{\rho_L, v^x_L, p_L\right\} &amp;\mathrm{if} \;\;\; x&lt;\Delta \\ \left\{1+\epsilon\sin(\lambda x), v^x_R, p_R\right\} &amp;\mathrm{if} \;\;\; x\ge \Delta \end{array}\right. \end{align*}
+</p>
+<p>with the adiabatic index being 1.4.</p>
+<p>With the standard parameters given below, this is a Mach-3 shock moving into a sinusoidal density profile.</p>
+<p class="formulaDsp">
+\begin{align*} \{\rho,v^x,p\}= \left\{ \begin{array}{ll} \left\{3.857143, 2.629369, 10.33333\right\} &amp;\mathrm{if} \;\;\; x&lt;-4 \\ \left\{1+0.2\sin(5x), 0, 1\right\} &amp;\mathrm{if} \;\;\; x\ge -4 \end{array}\right. \end{align*}
+</p>
+<p>With these values the usual final time is 1.8. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a21a7d73319ac9d90eac35bfac8703eae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a21a7d73319ac9d90eac35bfac8703eae">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> NewtonianEuler::AnalyticData::ShuOsherTube::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;1D Shu-Osher oscillatory shock tube.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticData/NewtonianEuler/<a class="el" href="ShuOsherTube_8hpp_source.html">ShuOsherTube.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

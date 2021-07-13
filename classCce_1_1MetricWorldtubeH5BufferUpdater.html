@@ -1,0 +1,318 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Cce::MetricWorldtubeH5BufferUpdater Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceCce.html">Cce</a></li><li class="navelem"><a class="el" href="classCce_1_1MetricWorldtubeH5BufferUpdater.html">MetricWorldtubeH5BufferUpdater</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classCce_1_1MetricWorldtubeH5BufferUpdater-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Cce::MetricWorldtubeH5BufferUpdater Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A <code><a class="el" href="classCce_1_1WorldtubeBufferUpdater.html" title="Abstract base class for utilities that are able to perform the buffer updating procedure needed by th...">WorldtubeBufferUpdater</a></code> specialized to the CCE input worldtube H5 file produced by SpEC.  
+ <a href="classCce_1_1MetricWorldtubeH5BufferUpdater.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="WorldtubeBufferUpdater_8hpp_source.html">WorldtubeBufferUpdater.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:aa112452cc6350568592d475b8ed4a513"><td class="memItemLeft" align="right" valign="top"><a id="aa112452cc6350568592d475b8ed4a513"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCce_1_1MetricWorldtubeH5BufferUpdater.html#aa112452cc6350568592d475b8ed4a513">MetricWorldtubeH5BufferUpdater</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;cce_data_filename, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; double &gt; extraction_radius=std::nullopt) noexcept</td></tr>
+<tr class="memdesc:aa112452cc6350568592d475b8ed4a513"><td class="mdescLeft">&#160;</td><td class="mdescRight">The constructor takes the filename of the SpEC <a class="el" href="namespaceh5.html" title="Contains functions and classes for manipulating HDF5 files.">h5</a> file that will be used for boundary data. The extraction radius can either be passed in directly, or if it takes the value <code>std::nullopt</code>, then the extraction radius is retrieved as an integer in the filename. <br /></td></tr>
+<tr class="separator:aa112452cc6350568592d475b8ed4a513"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51ddef33d66151c0270a18f3b444645a"><td class="memItemLeft" align="right" valign="top"><a id="a51ddef33d66151c0270a18f3b444645a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_template</b> (<a class="el" href="classCce_1_1MetricWorldtubeH5BufferUpdater.html">MetricWorldtubeH5BufferUpdater</a>)</td></tr>
+<tr class="separator:a51ddef33d66151c0270a18f3b444645a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94293993f1a7291ac013f4da36862152"><td class="memItemLeft" align="right" valign="top"><a id="a94293993f1a7291ac013f4da36862152"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MetricWorldtubeH5BufferUpdater</b> (CkMigrateMessage *) noexcept</td></tr>
+<tr class="separator:a94293993f1a7291ac013f4da36862152"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a410ce2dfa684b8430d216e55c9224107"><td class="memItemLeft" align="right" valign="top"><a id="a410ce2dfa684b8430d216e55c9224107"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCce_1_1MetricWorldtubeH5BufferUpdater.html#a410ce2dfa684b8430d216e55c9224107">update_buffers_for_time</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; <a class="el" href="namespaceCce.html#a52426e67ced266a64ad90e0b287b739c">cce_metric_input_tags</a> &gt; * &gt; buffers, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; size_t * &gt; time_span_start, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; size_t * &gt; time_span_end, double time, size_t computation_l_max, size_t interpolator_length, size_t buffer_depth) const noexcept override</td></tr>
+<tr class="memdesc:a410ce2dfa684b8430d216e55c9224107"><td class="mdescLeft">&#160;</td><td class="mdescRight">update the <code>buffers</code>, <code>time_span_start</code>, and <code>time_span_end</code> with time-varies-fastest, Goldberg modal data and the start and end index in the member <code>time_buffer_</code> covered by the newly updated <code>buffers</code>. The function returns the next time at which a full update will occur. If called again at times earlier than the next full update time, it will leave the <code>buffers</code> unchanged and again return the next needed time. <br /></td></tr>
+<tr class="separator:a410ce2dfa684b8430d216e55c9224107"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a539be1013932d94483fe19f1c1b90e2d"><td class="memItemLeft" align="right" valign="top"><a id="a539be1013932d94483fe19f1c1b90e2d"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classCce_1_1WorldtubeBufferUpdater.html">WorldtubeBufferUpdater</a>&lt; <a class="el" href="namespaceCce.html#a52426e67ced266a64ad90e0b287b739c">cce_metric_input_tags</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const noexcept override</td></tr>
+<tr class="separator:a539be1013932d94483fe19f1c1b90e2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e11f2d966df0d2221911172c01e41a3"><td class="memItemLeft" align="right" valign="top"><a id="a2e11f2d966df0d2221911172c01e41a3"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCce_1_1MetricWorldtubeH5BufferUpdater.html#a2e11f2d966df0d2221911172c01e41a3">time_is_outside_range</a> (double time) const noexcept override</td></tr>
+<tr class="memdesc:a2e11f2d966df0d2221911172c01e41a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">The time can only be supported in the buffer update if it is between the first and last time of the input file. <br /></td></tr>
+<tr class="separator:a2e11f2d966df0d2221911172c01e41a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a141f7b8739ce3f2c3faa0ef7639659fd"><td class="memItemLeft" align="right" valign="top"><a id="a141f7b8739ce3f2c3faa0ef7639659fd"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCce_1_1MetricWorldtubeH5BufferUpdater.html#a141f7b8739ce3f2c3faa0ef7639659fd">get_l_max</a> () const noexcept override</td></tr>
+<tr class="memdesc:a141f7b8739ce3f2c3faa0ef7639659fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">retrieves the l_max of the input file <br /></td></tr>
+<tr class="separator:a141f7b8739ce3f2c3faa0ef7639659fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a96cfdc0ebf3e7a4522660ff4d6c7312d"><td class="memItemLeft" align="right" valign="top"><a id="a96cfdc0ebf3e7a4522660ff4d6c7312d"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCce_1_1MetricWorldtubeH5BufferUpdater.html#a96cfdc0ebf3e7a4522660ff4d6c7312d">get_extraction_radius</a> () const noexcept override</td></tr>
+<tr class="memdesc:a96cfdc0ebf3e7a4522660ff4d6c7312d"><td class="mdescLeft">&#160;</td><td class="mdescRight">retrieves the extraction radius <br /></td></tr>
+<tr class="separator:a96cfdc0ebf3e7a4522660ff4d6c7312d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51571f0c01bf59b07b24b54e44231e50"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCce_1_1MetricWorldtubeH5BufferUpdater.html#a51571f0c01bf59b07b24b54e44231e50">get_time_buffer</a> () noexcept override</td></tr>
+<tr class="memdesc:a51571f0c01bf59b07b24b54e44231e50"><td class="mdescLeft">&#160;</td><td class="mdescRight">The time buffer is supplied by non-const reference to allow views to easily point into the buffer.  <a href="classCce_1_1MetricWorldtubeH5BufferUpdater.html#a51571f0c01bf59b07b24b54e44231e50">More...</a><br /></td></tr>
+<tr class="separator:a51571f0c01bf59b07b24b54e44231e50"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e76ee058bd3f7e77dc84622b598d852"><td class="memItemLeft" align="right" valign="top"><a id="a6e76ee058bd3f7e77dc84622b598d852"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>has_version_history</b> () const noexcept override</td></tr>
+<tr class="separator:a6e76ee058bd3f7e77dc84622b598d852"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84fa0c6821d6959c6e8c74b0ccf5946e"><td class="memItemLeft" align="right" valign="top"><a id="a84fa0c6821d6959c6e8c74b0ccf5946e"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCce_1_1MetricWorldtubeH5BufferUpdater.html#a84fa0c6821d6959c6e8c74b0ccf5946e">pup</a> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="memdesc:a84fa0c6821d6959c6e8c74b0ccf5946e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialization for Charm++. <br /></td></tr>
+<tr class="separator:a84fa0c6821d6959c6e8c74b0ccf5946e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classCce_1_1WorldtubeBufferUpdater"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classCce_1_1WorldtubeBufferUpdater')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classCce_1_1WorldtubeBufferUpdater.html">Cce::WorldtubeBufferUpdater&lt; cce_metric_input_tags &gt;</a></td></tr>
+<tr class="memitem:aded268533e6f20f83c7ea5b581d41f2c inherit pub_methods_classCce_1_1WorldtubeBufferUpdater"><td class="memItemLeft" align="right" valign="top"><a id="aded268533e6f20f83c7ea5b581d41f2c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_abstract</b> (<a class="el" href="classCce_1_1WorldtubeBufferUpdater.html">WorldtubeBufferUpdater</a>)</td></tr>
+<tr class="separator:aded268533e6f20f83c7ea5b581d41f2c inherit pub_methods_classCce_1_1WorldtubeBufferUpdater"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa8caead2720f9c24a5ab7b8bc6744ad1 inherit pub_methods_classCce_1_1WorldtubeBufferUpdater"><td class="memItemLeft" align="right" valign="top"><a id="aa8caead2720f9c24a5ab7b8bc6744ad1"></a>
+virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classCce_1_1WorldtubeBufferUpdater.html">WorldtubeBufferUpdater</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const noexcept=0</td></tr>
+<tr class="separator:aa8caead2720f9c24a5ab7b8bc6744ad1 inherit pub_methods_classCce_1_1WorldtubeBufferUpdater"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab768f8c53e102a8d02dbab1ef802ae04 inherit pub_methods_classCce_1_1WorldtubeBufferUpdater"><td class="memItemLeft" align="right" valign="top"><a id="ab768f8c53e102a8d02dbab1ef802ae04"></a>
+virtual size_t&#160;</td><td class="memItemRight" valign="bottom"><b>get_l_max</b> () const noexcept=0</td></tr>
+<tr class="separator:ab768f8c53e102a8d02dbab1ef802ae04 inherit pub_methods_classCce_1_1WorldtubeBufferUpdater"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0108b191d65dd73e99336de0f779c0dc inherit pub_methods_classCce_1_1WorldtubeBufferUpdater"><td class="memItemLeft" align="right" valign="top"><a id="a0108b191d65dd73e99336de0f779c0dc"></a>
+virtual double&#160;</td><td class="memItemRight" valign="bottom"><b>get_extraction_radius</b> () const noexcept=0</td></tr>
+<tr class="separator:a0108b191d65dd73e99336de0f779c0dc inherit pub_methods_classCce_1_1WorldtubeBufferUpdater"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af0f3933238b369b96dd2f5e7ff4d52d3 inherit pub_methods_classCce_1_1WorldtubeBufferUpdater"><td class="memItemLeft" align="right" valign="top"><a id="af0f3933238b369b96dd2f5e7ff4d52d3"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>has_version_history</b> () const noexcept=0</td></tr>
+<tr class="separator:af0f3933238b369b96dd2f5e7ff4d52d3 inherit pub_methods_classCce_1_1WorldtubeBufferUpdater"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header pub_types_classCce_1_1WorldtubeBufferUpdater"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classCce_1_1WorldtubeBufferUpdater')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classCce_1_1WorldtubeBufferUpdater.html">Cce::WorldtubeBufferUpdater&lt; cce_metric_input_tags &gt;</a></td></tr>
+<tr class="memitem:aab7ef447f81f1223428c0ee1d29b5e83 inherit pub_types_classCce_1_1WorldtubeBufferUpdater"><td class="memItemLeft" align="right" valign="top"><a id="aab7ef447f81f1223428c0ee1d29b5e83"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::list&lt; <a class="el" href="classCce_1_1MetricWorldtubeH5BufferUpdater.html">MetricWorldtubeH5BufferUpdater</a>, <a class="el" href="classCce_1_1BondiWorldtubeH5BufferUpdater.html">BondiWorldtubeH5BufferUpdater</a> &gt;</td></tr>
+<tr class="separator:aab7ef447f81f1223428c0ee1d29b5e83 inherit pub_types_classCce_1_1WorldtubeBufferUpdater"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A <code><a class="el" href="classCce_1_1WorldtubeBufferUpdater.html" title="Abstract base class for utilities that are able to perform the buffer updating procedure needed by th...">WorldtubeBufferUpdater</a></code> specialized to the CCE input worldtube H5 file produced by SpEC. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a51571f0c01bf59b07b24b54e44231e50"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a51571f0c01bf59b07b24b54e44231e50">&#9670;&nbsp;</a></span>get_time_buffer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classDataVector.html">DataVector</a>&amp; Cce::MetricWorldtubeH5BufferUpdater::get_time_buffer </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">override</span><span class="mlabel">virtual</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The time buffer is supplied by non-const reference to allow views to easily point into the buffer. </p>
+<dl class="section warning"><dt>Warning</dt><dd>Altering this buffer outside of the constructor of this class results in undefined behavior! This should be supplied by const reference once there is a convenient method of producing a const view of a vector type. </dd></dl>
+
+<p>Implements <a class="el" href="classCce_1_1WorldtubeBufferUpdater.html">Cce::WorldtubeBufferUpdater&lt; cce_metric_input_tags &gt;</a>.</p>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/Systems/Cce/<a class="el" href="WorldtubeBufferUpdater_8hpp_source.html">WorldtubeBufferUpdater.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

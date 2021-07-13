@@ -1,0 +1,561 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Options::Parser&lt; OptionList, Group &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceOptions.html">Options</a></li><li class="navelem"><a class="el" href="classOptions_1_1Parser.html">Parser</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classOptions_1_1Parser-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Options::Parser&lt; OptionList, Group &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__OptionParsingGroup.html">Option Parsing</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Class that handles parsing an input file.  
+ <a href="classOptions_1_1Parser.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ParseOptions_8hpp_source.html">ParseOptions.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a61f1063e4809de43c0aada44361ed51e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOptions_1_1Parser.html#a61f1063e4809de43c0aada44361ed51e">Parser</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> help_text) noexcept</td></tr>
+<tr class="separator:a61f1063e4809de43c0aada44361ed51e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c3ecf56ad524143b82d939859ad4099"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOptions_1_1Parser.html#a4c3ecf56ad524143b82d939859ad4099">parse</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> options) noexcept</td></tr>
+<tr class="memdesc:a4c3ecf56ad524143b82d939859ad4099"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a string to obtain options and their values.  <a href="classOptions_1_1Parser.html#a4c3ecf56ad524143b82d939859ad4099">More...</a><br /></td></tr>
+<tr class="separator:a4c3ecf56ad524143b82d939859ad4099"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae49cf6bcb5c5992c2acaaefc22ce9416"><td class="memItemLeft" align="right" valign="top"><a id="ae49cf6bcb5c5992c2acaaefc22ce9416"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOptions_1_1Parser.html#ae49cf6bcb5c5992c2acaaefc22ce9416">parse</a> (const <a class="el" href="classOptions_1_1Option.html">Option</a> &amp;options)</td></tr>
+<tr class="memdesc:ae49cf6bcb5c5992c2acaaefc22ce9416"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse an <a class="el" href="classOptions_1_1Option.html">Option</a> to obtain options and their values. <br /></td></tr>
+<tr class="separator:ae49cf6bcb5c5992c2acaaefc22ce9416"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe29ce667887cc6357b6d3da35239759"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOptions_1_1Parser.html#afe29ce667887cc6357b6d3da35239759">parse_file</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;file_name) noexcept</td></tr>
+<tr class="memdesc:afe29ce667887cc6357b6d3da35239759"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a file containing options.  <a href="classOptions_1_1Parser.html#afe29ce667887cc6357b6d3da35239759">More...</a><br /></td></tr>
+<tr class="separator:afe29ce667887cc6357b6d3da35239759"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e3e83932be7f3335912131e2507fdfa"><td class="memTemplParams" colspan="2">template&lt;typename T , typename Metavariables  = NoSuchType&gt; </td></tr>
+<tr class="memitem:a3e3e83932be7f3335912131e2507fdfa"><td class="memTemplItemLeft" align="right" valign="top">T::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classOptions_1_1Parser.html#a3e3e83932be7f3335912131e2507fdfa">get</a> () const</td></tr>
+<tr class="memdesc:a3e3e83932be7f3335912131e2507fdfa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the value of the specified option.  <a href="classOptions_1_1Parser.html#a3e3e83932be7f3335912131e2507fdfa">More...</a><br /></td></tr>
+<tr class="separator:a3e3e83932be7f3335912131e2507fdfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a546f7a36b3acadd8d15514a2d5af7467"><td class="memTemplParams" colspan="2">template&lt;typename TagList , typename Metavariables  = NoSuchType, typename F &gt; </td></tr>
+<tr class="memitem:a546f7a36b3acadd8d15514a2d5af7467"><td class="memTemplItemLeft" align="right" valign="top">decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classOptions_1_1Parser.html#a546f7a36b3acadd8d15514a2d5af7467">apply</a> (F &amp;&amp;func) const</td></tr>
+<tr class="memdesc:a546f7a36b3acadd8d15514a2d5af7467"><td class="mdescLeft">&#160;</td><td class="mdescRight">Call a function with the specified options as arguments.  <a href="classOptions_1_1Parser.html#a546f7a36b3acadd8d15514a2d5af7467">More...</a><br /></td></tr>
+<tr class="separator:a546f7a36b3acadd8d15514a2d5af7467"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeaf0613acdddb9e2f0767bdff54be244"><td class="memTemplParams" colspan="2">template&lt;typename Metavariables  = NoSuchType, typename F &gt; </td></tr>
+<tr class="memitem:aeaf0613acdddb9e2f0767bdff54be244"><td class="memTemplItemLeft" align="right" valign="top">decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classOptions_1_1Parser.html#aeaf0613acdddb9e2f0767bdff54be244">apply_all</a> (F &amp;&amp;func) const</td></tr>
+<tr class="memdesc:aeaf0613acdddb9e2f0767bdff54be244"><td class="mdescLeft">&#160;</td><td class="mdescRight">Call a function with the typelist of parsed options (i.e., the supplied option list with the chosen branches of any <a class="el" href="structOptions_1_1Alternatives.html" title="Provide multiple ways to construct a class.">Alternatives</a> inlined) and the option values as arguments.  <a href="classOptions_1_1Parser.html#aeaf0613acdddb9e2f0767bdff54be244">More...</a><br /></td></tr>
+<tr class="separator:aeaf0613acdddb9e2f0767bdff54be244"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3735d108023441e3b0156c902a5473a"><td class="memTemplParams" colspan="2"><a id="af3735d108023441e3b0156c902a5473a"></a>
+template&lt;typename TagsAndSubgroups  = tags_and_subgroups_list&gt; </td></tr>
+<tr class="memitem:af3735d108023441e3b0156c902a5473a"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classOptions_1_1Parser.html#af3735d108023441e3b0156c902a5473a">help</a> () const noexcept</td></tr>
+<tr class="memdesc:af3735d108023441e3b0156c902a5473a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the help string. <br /></td></tr>
+<tr class="separator:af3735d108023441e3b0156c902a5473a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af6d938531b185923e4234728cfd1604f"><td class="memItemLeft" align="right" valign="top"><a id="af6d938531b185923e4234728cfd1604f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:af6d938531b185923e4234728cfd1604f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a676d661668be3036b4db655616f06e33"><td class="memTemplParams" colspan="2"><a id="a676d661668be3036b4db655616f06e33"></a>
+template&lt;typename Tag , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a676d661668be3036b4db655616f06e33"><td class="memTemplItemLeft" align="right" valign="top">Tag::type&#160;</td><td class="memTemplItemRight" valign="bottom"><b>get</b> () const</td></tr>
+<tr class="separator:a676d661668be3036b4db655616f06e33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a6a9b662c28b14ff5e3e9291c77901bcf"><td class="memTemplParams" colspan="2">template&lt;typename OverlayOptions &gt; </td></tr>
+<tr class="memitem:a6a9b662c28b14ff5e3e9291c77901bcf"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classOptions_1_1Parser.html#a6a9b662c28b14ff5e3e9291c77901bcf">overlay</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> options) noexcept</td></tr>
+<tr class="memdesc:a6a9b662c28b14ff5e3e9291c77901bcf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Overlay the options from a string or file on top of the currently parsed options.  <a href="classOptions_1_1Parser.html#a6a9b662c28b14ff5e3e9291c77901bcf">More...</a><br /></td></tr>
+<tr class="separator:a6a9b662c28b14ff5e3e9291c77901bcf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a331abda5e975c2c744968a31c47ce819"><td class="memTemplParams" colspan="2">template&lt;typename OverlayOptions &gt; </td></tr>
+<tr class="memitem:a331abda5e975c2c744968a31c47ce819"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classOptions_1_1Parser.html#a331abda5e975c2c744968a31c47ce819">overlay_file</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;file_name) noexcept</td></tr>
+<tr class="memdesc:a331abda5e975c2c744968a31c47ce819"><td class="mdescLeft">&#160;</td><td class="mdescRight">Overlay the options from a string or file on top of the currently parsed options.  <a href="classOptions_1_1Parser.html#a331abda5e975c2c744968a31c47ce819">More...</a><br /></td></tr>
+<tr class="separator:a331abda5e975c2c744968a31c47ce819"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename OptionList, typename Group = NoSuchType&gt;<br />
+class Options::Parser&lt; OptionList, Group &gt;</h3>
+
+<p>Class that handles parsing an input file. </p>
+<p><a class="el" href="namespaceOptions.html" title="Utilities for parsing input files.">Options</a> must be given YAML data to parse before output can be extracted. This can be done either from a file (parse_file method), from a string (parse method), or, in the case of recursive parsing, from an <a class="el" href="classOptions_1_1Option.html">Option</a> (parse method). The options can then be extracted using the get method.</p>
+<h3>Example</h3>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>Bounded {</div>
+<div class="line">  <span class="keyword">using</span> type = int;</div>
+<div class="line">  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="code" href="classOptions_1_1Parser.html#af3735d108023441e3b0156c902a5473a">help</a> = {</div>
+<div class="line">      <span class="stringliteral">&quot;Option with bounds and a suggested value&quot;</span>};</div>
+<div class="line">  <span class="comment">// These are optional</span></div>
+<div class="line">  <span class="keyword">static</span> type suggested_value() noexcept { <span class="keywordflow">return</span> 3; }</div>
+<div class="line">  <span class="keyword">static</span> type <a class="codeRef" href="http://en.cppreference.com/w/cpp/algorithm/lower_bound.html">lower_bound</a>() noexcept { <span class="keywordflow">return</span> 2; }</div>
+<div class="line">  <span class="keyword">static</span> type <a class="codeRef" href="http://en.cppreference.com/w/cpp/algorithm/upper_bound.html">upper_bound</a>() noexcept { <span class="keywordflow">return</span> 10; }</div>
+<div class="line">};</div>
+</div><!-- fragment --><div class="fragment"><div class="line">  <a class="code" href="classOptions_1_1Parser.html">Options::Parser&lt;tmpl::list&lt;Bounded&gt;</a>&gt; opts(<span class="stringliteral">&quot;Overall help text&quot;</span>);</div>
+<div class="line">  opts.parse(<span class="stringliteral">&quot;Bounded: 3&quot;</span>);</div>
+<div class="line">  CHECK(opts.get&lt;Bounded&gt;() == 3);</div>
+</div><!-- fragment --> <dl class="section see"><dt>See also</dt><dd>the <a class="el" href="dev_guide_option_parsing.html">Option Parsing</a> tutorial</dd></dl>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">OptionList</td><td>the list of option structs to parse </td></tr>
+    <tr><td class="paramname">Group</td><td>the option group with a group hierarchy </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a61f1063e4809de43c0aada44361ed51e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a61f1063e4809de43c0aada44361ed51e">&#9670;&nbsp;</a></span>Parser()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename OptionList , typename Group &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classOptions_1_1Parser.html">Options::Parser</a>&lt; OptionList, Group &gt;::<a class="el" href="classOptions_1_1Parser.html">Parser</a> </td>
+          <td>(</td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td>
+          <td class="paramname"><em>help_text</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">explicit</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">help_text</td><td>an overall description of the options </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a546f7a36b3acadd8d15514a2d5af7467"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a546f7a36b3acadd8d15514a2d5af7467">&#9670;&nbsp;</a></span>apply()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename OptionList , typename Group  = NoSuchType&gt; </div>
+<div class="memtemplate">
+template&lt;typename TagList , typename Metavariables  = NoSuchType, typename F &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">decltype(auto) <a class="el" href="classOptions_1_1Parser.html">Options::Parser</a>&lt; OptionList, Group &gt;::apply </td>
+          <td>(</td>
+          <td class="paramtype">F &amp;&amp;&#160;</td>
+          <td class="paramname"><em>func</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Call a function with the specified options as arguments. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">TagList</td><td>a typelist of options to pass </td></tr>
+  </table>
+  </dd>
+</dl>
+<p><em>Returns:</em> the result of the function call </p>
+
+</div>
+</div>
+<a id="aeaf0613acdddb9e2f0767bdff54be244"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeaf0613acdddb9e2f0767bdff54be244">&#9670;&nbsp;</a></span>apply_all()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename OptionList , typename Group  = NoSuchType&gt; </div>
+<div class="memtemplate">
+template&lt;typename Metavariables  = NoSuchType, typename F &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">decltype(auto) <a class="el" href="classOptions_1_1Parser.html">Options::Parser</a>&lt; OptionList, Group &gt;::apply_all </td>
+          <td>(</td>
+          <td class="paramtype">F &amp;&amp;&#160;</td>
+          <td class="paramname"><em>func</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Call a function with the typelist of parsed options (i.e., the supplied option list with the chosen branches of any <a class="el" href="structOptions_1_1Alternatives.html" title="Provide multiple ways to construct a class.">Alternatives</a> inlined) and the option values as arguments. </p>
+<p><em>Returns:</em> the result of the function call. This must have the same type for all valid sets of parsed arguments. </p>
+
+</div>
+</div>
+<a id="a3e3e83932be7f3335912131e2507fdfa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3e3e83932be7f3335912131e2507fdfa">&#9670;&nbsp;</a></span>get()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename OptionList , typename Group  = NoSuchType&gt; </div>
+<div class="memtemplate">
+template&lt;typename T , typename Metavariables  = NoSuchType&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">T::type <a class="el" href="classOptions_1_1Parser.html">Options::Parser</a>&lt; OptionList, Group &gt;::get </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the value of the specified option. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>the option to retrieve </td></tr>
+  </table>
+  </dd>
+</dl>
+<p><em>Returns:</em> the value of the option </p>
+
+</div>
+</div>
+<a id="a6a9b662c28b14ff5e3e9291c77901bcf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6a9b662c28b14ff5e3e9291c77901bcf">&#9670;&nbsp;</a></span>overlay()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename OptionList , typename Group &gt; </div>
+<div class="memtemplate">
+template&lt;typename OverlayOptions &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classOptions_1_1Parser.html">Options::Parser</a>&lt; OptionList, Group &gt;::overlay </td>
+          <td>(</td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td>
+          <td class="paramname"><em>options</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Overlay the options from a string or file on top of the currently parsed options. </p>
+<p>Any tag included in the list passed as the template parameter can be overridden by a new parsed value. Newly parsed options replace the previous values. Any tags not appearing in the new input are left unchanged. </p>
+
+</div>
+</div>
+<a id="a331abda5e975c2c744968a31c47ce819"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a331abda5e975c2c744968a31c47ce819">&#9670;&nbsp;</a></span>overlay_file()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename OptionList , typename Group &gt; </div>
+<div class="memtemplate">
+template&lt;typename OverlayOptions &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classOptions_1_1Parser.html">Options::Parser</a>&lt; OptionList, Group &gt;::overlay_file </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td>
+          <td class="paramname"><em>file_name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Overlay the options from a string or file on top of the currently parsed options. </p>
+<p>Any tag included in the list passed as the template parameter can be overridden by a new parsed value. Newly parsed options replace the previous values. Any tags not appearing in the new input are left unchanged. </p>
+
+</div>
+</div>
+<a id="a4c3ecf56ad524143b82d939859ad4099"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4c3ecf56ad524143b82d939859ad4099">&#9670;&nbsp;</a></span>parse()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename OptionList , typename Group &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classOptions_1_1Parser.html">Options::Parser</a>&lt; OptionList, Group &gt;::parse </td>
+          <td>(</td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td>
+          <td class="paramname"><em>options</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Parse a string to obtain options and their values. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">options</td><td>the string holding the YAML formatted options </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="afe29ce667887cc6357b6d3da35239759"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe29ce667887cc6357b6d3da35239759">&#9670;&nbsp;</a></span>parse_file()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename OptionList , typename Group &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classOptions_1_1Parser.html">Options::Parser</a>&lt; OptionList, Group &gt;::parse_file </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td>
+          <td class="paramname"><em>file_name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Parse a file containing options. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">file_name</td><td>the path to the file to parse </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Options/<a class="el" href="ParseOptions_8hpp_source.html">ParseOptions.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="aclassOptions_1_1Parser_html_af3735d108023441e3b0156c902a5473a"><div class="ttname"><a href="classOptions_1_1Parser.html#af3735d108023441e3b0156c902a5473a">Options::Parser::help</a></div><div class="ttdeci">std::string help() const noexcept</div><div class="ttdoc">Get the help string.</div><div class="ttdef"><b>Definition:</b> ParseOptions.hpp:643</div></div>
+<div class="ttc" id="aclassOptions_1_1Parser_html"><div class="ttname"><a href="classOptions_1_1Parser.html">Options::Parser</a></div><div class="ttdoc">Class that handles parsing an input file.</div><div class="ttdef"><b>Definition:</b> ParseOptions.hpp:177</div></div>
+<div class="ttc" id="aupper_bound_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/algorithm/upper_bound.html">std::upper_bound</a></div><div class="ttdeci">T upper_bound(T... args)</div></div>
+<div class="ttc" id="alower_bound_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/algorithm/lower_bound.html">std::lower_bound</a></div><div class="ttdeci">T lower_bound(T... args)</div></div>
+<div class="ttc" id="anamespaceOptions_html_aa61c7f41f21afa7646811456f673be89"><div class="ttname"><a href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a></div><div class="ttdeci">const char *const String</div><div class="ttdoc">The string used in option structs.</div><div class="ttdef"><b>Definition:</b> Options.hpp:32</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

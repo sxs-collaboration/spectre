@@ -1,0 +1,336 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: GeneralizedHarmonicTemplateBase&lt; EvolutionMetavarsDerived&lt; InitialData, BoundaryConditions &gt; &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="structGeneralizedHarmonicTemplateBase_3_01EvolutionMetavarsDerived_3_01InitialData_00_01BoundaryConditions_01_4_01_4-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">GeneralizedHarmonicTemplateBase&lt; EvolutionMetavarsDerived&lt; InitialData, BoundaryConditions &gt; &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structGeneralizedHarmonicTemplateBase_3_01EvolutionMetavarsDerived_3_01InitialData_00_01Boundary99e641fd80df018dfb67b4bc4b36a42d.html">factory_creation</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structGeneralizedHarmonicTemplateBase_3_01EvolutionMetavarsDerived_3_01InitialData_00_01Boundary4528b43999dd6eecff1e71b0b2d09346.html">registration_list</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a0013c27816d6fdf1c424b7a6b673352e"><td class="memItemLeft" align="right" valign="top"><a id="a0013c27816d6fdf1c424b7a6b673352e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>derived_metavars</b> = EvolutionMetavarsDerived&lt; InitialData, BoundaryConditions &gt;</td></tr>
+<tr class="separator:a0013c27816d6fdf1c424b7a6b673352e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a750ad4478cdc946f83fe8c214e6fec3a"><td class="memItemLeft" align="right" valign="top"><a id="a750ad4478cdc946f83fe8c214e6fec3a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>initial_data</b> = InitialData</td></tr>
+<tr class="separator:a750ad4478cdc946f83fe8c214e6fec3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90d4c7ef10f3d06d23dc818a93c0d26f"><td class="memItemLeft" align="right" valign="top"><a id="a90d4c7ef10f3d06d23dc818a93c0d26f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>analytic_solution_tag</b> = <a class="el" href="structTags_1_1AnalyticSolution.html">Tags::AnalyticSolution</a>&lt; BoundaryConditions &gt;</td></tr>
+<tr class="separator:a90d4c7ef10f3d06d23dc818a93c0d26f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a7ac907a08bd17dcdd006089ba4b931"><td class="memItemLeft" align="right" valign="top"><a id="a1a7ac907a08bd17dcdd006089ba4b931"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>observe_fields</b> = tmpl::append&lt; tmpl::push_back&lt; analytic_solution_fields, ::<a class="el" href="structTags_1_1PointwiseL2Norm.html">Tags::PointwiseL2Norm</a>&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1GaugeConstraint.html">GeneralizedHarmonic::Tags::GaugeConstraint</a>&lt; volume_dim, <a class="el" href="structFrame_1_1Inertial.html">frame</a> &gt; &gt;, ::<a class="el" href="structTags_1_1PointwiseL2Norm.html">Tags::PointwiseL2Norm</a>&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1ThreeIndexConstraint.html">GeneralizedHarmonic::Tags::ThreeIndexConstraint</a>&lt; volume_dim, <a class="el" href="structFrame_1_1Inertial.html">frame</a> &gt; &gt;&gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/conditional.html">std::conditional_t</a>&lt; volume_dim==3, tmpl::list&lt;::<a class="el" href="structTags_1_1PointwiseL2Norm.html">Tags::PointwiseL2Norm</a>&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1FourIndexConstraint.html">GeneralizedHarmonic::Tags::FourIndexConstraint</a>&lt; volume_dim, <a class="el" href="structFrame_1_1Inertial.html">frame</a> &gt; &gt;&gt;, tmpl::list&lt;&gt; &gt;&gt;</td></tr>
+<tr class="separator:a1a7ac907a08bd17dcdd006089ba4b931"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a533634c49995a4ef2acc7cc00f576ba4"><td class="memItemLeft" align="right" valign="top"><a id="a533634c49995a4ef2acc7cc00f576ba4"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>observed_reduction_data_tags</b> = observers::collect_reduction_data_tags&lt; tmpl::push_back&lt; tmpl::at&lt; typename factory_creation::factory_classes, <a class="el" href="classEvent.html">Event</a> &gt; &gt;&gt;</td></tr>
+<tr class="separator:a533634c49995a4ef2acc7cc00f576ba4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8de5a06e7c99536626e54dc20b619717"><td class="memItemLeft" align="right" valign="top"><a id="a8de5a06e7c99536626e54dc20b619717"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>phase_changes</b> = tmpl::list&lt; PhaseControl::Registrars::VisitAndReturn&lt; <a class="el" href="structGeneralizedHarmonicTemplateBase.html">GeneralizedHarmonicTemplateBase</a>, Phase::LoadBalancing &gt;, PhaseControl::Registrars::CheckpointAndExitAfterWallclock&lt; <a class="el" href="structGeneralizedHarmonicTemplateBase.html">GeneralizedHarmonicTemplateBase</a> &gt; &gt;</td></tr>
+<tr class="separator:a8de5a06e7c99536626e54dc20b619717"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a939c420c72b8b9a04852bf65aed7a3"><td class="memItemLeft" align="right" valign="top"><a id="a0a939c420c72b8b9a04852bf65aed7a3"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>initialize_phase_change_decision_data</b> = <a class="el" href="structPhaseControl_1_1InitializePhaseChangeDecisionData.html">PhaseControl::InitializePhaseChangeDecisionData</a>&lt; phase_changes &gt;</td></tr>
+<tr class="separator:a0a939c420c72b8b9a04852bf65aed7a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1452f8a6650de43fe4b4eb5e3ac9b864"><td class="memItemLeft" align="right" valign="top"><a id="a1452f8a6650de43fe4b4eb5e3ac9b864"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>phase_change_tags_and_combines_list</b> = <a class="el" href="namespacePhaseControl.html#a8bf6c0785069eabcc98797d22148a072">PhaseControl::get_phase_change_tags</a>&lt; phase_changes &gt;</td></tr>
+<tr class="separator:a1452f8a6650de43fe4b4eb5e3ac9b864"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a744a86e341cce791d84428837ebff53f"><td class="memItemLeft" align="right" valign="top"><a id="a744a86e341cce791d84428837ebff53f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>const_global_cache_tags</b> = tmpl::list&lt; <a class="el" href="structTags_1_1AnalyticSolution.html">analytic_solution_tag</a>, <a class="el" href="structTags_1_1EventsAndTriggers.html">Tags::EventsAndTriggers</a>, <a class="el" href="structGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1DampingFunctionGamma0.html">GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0</a>&lt; volume_dim, <a class="el" href="structFrame_1_1Inertial.html">frame</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1DampingFunctionGamma1.html">GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1</a>&lt; volume_dim, <a class="el" href="structFrame_1_1Inertial.html">frame</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1DampingFunctionGamma2.html">GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2</a>&lt; volume_dim, <a class="el" href="structFrame_1_1Inertial.html">frame</a> &gt;, <a class="el" href="structPhaseControl_1_1Tags_1_1PhaseChangeAndTriggers.html">PhaseControl::Tags::PhaseChangeAndTriggers</a>&lt; phase_changes &gt; &gt;</td></tr>
+<tr class="separator:a744a86e341cce791d84428837ebff53f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a686c2136ca62ad605919ca704125894f"><td class="memItemLeft" align="right" valign="top"><a id="a686c2136ca62ad605919ca704125894f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_registration_list</b> = tmpl::list&lt; <a class="el" href="structobservers_1_1Actions_1_1RegisterEventsWithObservers.html">observers::Actions::RegisterEventsWithObservers</a> &gt;</td></tr>
+<tr class="separator:a686c2136ca62ad605919ca704125894f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a189527b51e2464a52f19a38736bfbdcd"><td class="memItemLeft" align="right" valign="top"><a id="a189527b51e2464a52f19a38736bfbdcd"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>step_actions</b> = tmpl::list&lt; <a class="el" href="structevolution_1_1dg_1_1Actions_1_1ComputeTimeDerivative.html">evolution::dg::Actions::ComputeTimeDerivative</a>&lt; derived_metavars &gt;, <a class="el" href="structevolution_1_1dg_1_1Actions_1_1ApplyBoundaryCorrections.html">evolution::dg::Actions::ApplyBoundaryCorrections</a>&lt; derived_metavars &gt;, tmpl::conditional_t&lt; local_time_stepping, tmpl::list&lt;&gt;, tmpl::list&lt; <a class="el" href="structActions_1_1RecordTimeStepperData.html">Actions::RecordTimeStepperData</a>&lt;&gt;, <a class="el" href="structevolution_1_1Actions_1_1RunEventsAndDenseTriggers.html">evolution::Actions::RunEventsAndDenseTriggers</a>&lt;&gt;, <a class="el" href="structActions_1_1UpdateU.html">Actions::UpdateU</a>&lt;&gt; &gt;&gt; &gt;</td></tr>
+<tr class="separator:a189527b51e2464a52f19a38736bfbdcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6efaa62499289e93ca7c545982f849f2"><td class="memItemLeft" align="right" valign="top"><a id="a6efaa62499289e93ca7c545982f849f2"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>initialization_actions</b> = tmpl::list&lt; <a class="el" href="structActions_1_1SetupDataBox.html">Actions::SetupDataBox</a>, <a class="el" href="structInitialization_1_1Actions_1_1TimeAndTimeStep.html">Initialization::Actions::TimeAndTimeStep</a>&lt; derived_metavars &gt;, <a class="el" href="structevolution_1_1dg_1_1Initialization_1_1Domain.html">evolution::dg::Initialization::Domain</a>&lt; volume_dim, override_functions_of_time &gt;, <a class="el" href="structInitialization_1_1Actions_1_1NonconservativeSystem.html">Initialization::Actions::NonconservativeSystem</a>&lt; <a class="el" href="structGeneralizedHarmonic_1_1System.html">system</a> &gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/conditional.html">std::conditional_t</a>&lt; <a class="el" href="namespaceevolution.html#a1a38d8dc200bc320363fbad13eae2c50">evolution::is_numeric_initial_data_v</a>&lt; initial_data &gt;, tmpl::list&lt;&gt;, <a class="el" href="structevolution_1_1Initialization_1_1Actions_1_1SetVariables.html">evolution::Initialization::Actions::SetVariables</a>&lt; <a class="el" href="structdomain_1_1Tags_1_1Coordinates.html">domain::Tags::Coordinates</a>&lt; volume_dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt; &gt;&gt;, <a class="el" href="structInitialization_1_1Actions_1_1TimeStepperHistory.html">Initialization::Actions::TimeStepperHistory</a>&lt; derived_metavars &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Actions_1_1InitializeGhAnd3Plus1Variables.html">GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables</a>&lt; volume_dim &gt;, <a class="el" href="structInitialization_1_1Actions_1_1AddComputeTags.html">Initialization::Actions::AddComputeTags</a>&lt; tmpl::push_back&lt; StepChoosers::step_chooser_compute_tags&lt; <a class="el" href="structGeneralizedHarmonicTemplateBase.html">GeneralizedHarmonicTemplateBase</a> &gt;, <a class="el" href="structevolution_1_1Tags_1_1AnalyticCompute.html">evolution::Tags::AnalyticCompute</a>&lt; volume_dim, <a class="el" href="structTags_1_1AnalyticSolution.html">analytic_solution_tag</a>, analytic_solution_fields &gt; &gt;&gt;, ::<a class="el" href="structevolution_1_1dg_1_1Initialization_1_1Mortars.html">evolution::dg::Initialization::Mortars</a>&lt; volume_dim, <a class="el" href="structGeneralizedHarmonic_1_1System.html">system</a> &gt;, <a class="el" href="structevolution_1_1Actions_1_1InitializeRunEventsAndDenseTriggers.html">evolution::Actions::InitializeRunEventsAndDenseTriggers</a>, <a class="el" href="structInitialization_1_1Actions_1_1RemoveOptionsAndTerminatePhase.html">Initialization::Actions::RemoveOptionsAndTerminatePhase</a> &gt;</td></tr>
+<tr class="separator:a6efaa62499289e93ca7c545982f849f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee0ebc08307375bbadf694c03ca056b8"><td class="memItemLeft" align="right" valign="top"><a id="aee0ebc08307375bbadf694c03ca056b8"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>gh_dg_element_array</b> = <a class="el" href="structDgElementArray.html">DgElementArray</a>&lt; derived_metavars, tmpl::flatten&lt; tmpl::list&lt; <a class="el" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt; Phase, Phase::Initialization, initialization_actions &gt;, tmpl::conditional_t&lt; <a class="el" href="namespaceevolution.html#a1a38d8dc200bc320363fbad13eae2c50">evolution::is_numeric_initial_data_v</a>&lt; initial_data &gt;, tmpl::list&lt; <a class="el" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt; Phase, Phase::RegisterWithElementDataReader, tmpl::list&lt; <a class="el" href="structimporters_1_1Actions_1_1RegisterWithElementDataReader.html">importers::Actions::RegisterWithElementDataReader</a>, <a class="el" href="structParallel_1_1Actions_1_1TerminatePhase.html">Parallel::Actions::TerminatePhase</a> &gt; &gt;, <a class="el" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt; Phase, Phase::ImportInitialData, tmpl::list&lt; <a class="el" href="structimporters_1_1Actions_1_1ReadVolumeData.html">importers::Actions::ReadVolumeData</a>&lt; <a class="el" href="structevolution_1_1OptionTags_1_1NumericInitialData.html">evolution::OptionTags::NumericInitialData</a>, typename system::variables_tag::tags_list &gt;, <a class="el" href="structimporters_1_1Actions_1_1ReceiveVolumeData.html">importers::Actions::ReceiveVolumeData</a>&lt; <a class="el" href="structevolution_1_1OptionTags_1_1NumericInitialData.html">evolution::OptionTags::NumericInitialData</a>, typename system::variables_tag::tags_list &gt;, <a class="el" href="structParallel_1_1Actions_1_1TerminatePhase.html">Parallel::Actions::TerminatePhase</a> &gt; &gt;&gt;, tmpl::list&lt;&gt; &gt;, <a class="el" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt; Phase, Phase::InitializeInitialDataDependentQuantities, initialize_initial_data_dependent_quantities_actions &gt;, <a class="el" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt; Phase, Phase::InitializeTimeStepperHistory, <a class="el" href="group__TimeGroup.html#ga0bbd34a55715a5635e82a5a22b81fff0">SelfStart::self_start_procedure</a>&lt; step_actions, <a class="el" href="structGeneralizedHarmonic_1_1System.html">system</a> &gt; &gt;, <a class="el" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt; Phase, Phase::Register, tmpl::list&lt; dg_registration_list, <a class="el" href="structParallel_1_1Actions_1_1TerminatePhase.html">Parallel::Actions::TerminatePhase</a> &gt; &gt;, <a class="el" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt; Phase, Phase::Evolve, tmpl::list&lt; <a class="el" href="structActions_1_1RunEventsAndTriggers.html">Actions::RunEventsAndTriggers</a>, <a class="el" href="structActions_1_1ChangeSlabSize.html">Actions::ChangeSlabSize</a>, step_actions, <a class="el" href="structActions_1_1AdvanceTime.html">Actions::AdvanceTime</a>, <a class="el" href="structPhaseControl_1_1Actions_1_1ExecutePhaseChange.html">PhaseControl::Actions::ExecutePhaseChange</a>&lt; phase_changes &gt; &gt;&gt; &gt;&gt; &gt;</td></tr>
+<tr class="separator:aee0ebc08307375bbadf694c03ca056b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25a2425c3a5837d24b21a8f3c40ce28a"><td class="memItemLeft" align="right" valign="top"><a id="a25a2425c3a5837d24b21a8f3c40ce28a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>component_list</b> = tmpl::flatten&lt; tmpl::list&lt; <a class="el" href="structobservers_1_1Observer.html">observers::Observer</a>&lt; derived_metavars &gt;, <a class="el" href="structobservers_1_1ObserverWriter.html">observers::ObserverWriter</a>&lt; derived_metavars &gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/conditional.html">std::conditional_t</a>&lt; <a class="el" href="namespaceevolution.html#a1a38d8dc200bc320363fbad13eae2c50">evolution::is_numeric_initial_data_v</a>&lt; initial_data &gt;, <a class="el" href="structimporters_1_1ElementDataReader.html">importers::ElementDataReader</a>&lt; derived_metavars &gt;, tmpl::list&lt;&gt; &gt;, <a class="el" href="structDgElementArray.html">gh_dg_element_array</a> &gt; &gt;</td></tr>
+<tr class="separator:a25a2425c3a5837d24b21a8f3c40ce28a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_structGeneralizedHarmonicDefaults"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structGeneralizedHarmonicDefaults')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structGeneralizedHarmonicDefaults.html">GeneralizedHarmonicDefaults</a></td></tr>
+<tr class="memitem:ac351c9ce867a92efa1692dab70e2ac31 inherit pub_types_structGeneralizedHarmonicDefaults"><td class="memItemLeft" align="right" valign="top"><a id="ac351c9ce867a92efa1692dab70e2ac31"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>Phase</b> { <br />
+&#160;&#160;<b>Initialization</b>, 
+<b>RegisterWithElementDataReader</b>, 
+<b>ImportInitialData</b>, 
+<b>InitializeInitialDataDependentQuantities</b>, 
+<br />
+&#160;&#160;<b>InitializeTimeStepperHistory</b>, 
+<b>Register</b>, 
+<b>LoadBalancing</b>, 
+<b>WriteCheckpoint</b>, 
+<br />
+&#160;&#160;<b>Evolve</b>, 
+<b>Exit</b>
+<br />
+ }</td></tr>
+<tr class="separator:ac351c9ce867a92efa1692dab70e2ac31 inherit pub_types_structGeneralizedHarmonicDefaults"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a010bd960ce31139ff51d45227edd9c inherit pub_types_structGeneralizedHarmonicDefaults"><td class="memItemLeft" align="right" valign="top"><a id="a6a010bd960ce31139ff51d45227edd9c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>frame</b> = <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a></td></tr>
+<tr class="separator:a6a010bd960ce31139ff51d45227edd9c inherit pub_types_structGeneralizedHarmonicDefaults"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a596d8c32c70fb9235f038a625293220e inherit pub_types_structGeneralizedHarmonicDefaults"><td class="memItemLeft" align="right" valign="top"><a id="a596d8c32c70fb9235f038a625293220e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>system</b> = <a class="el" href="structGeneralizedHarmonic_1_1System.html">GeneralizedHarmonic::System</a>&lt; volume_dim &gt;</td></tr>
+<tr class="separator:a596d8c32c70fb9235f038a625293220e inherit pub_types_structGeneralizedHarmonicDefaults"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a86dc81f27cbe406c92e11a053f87e43e inherit pub_types_structGeneralizedHarmonicDefaults"><td class="memItemLeft" align="right" valign="top"><a id="a86dc81f27cbe406c92e11a053f87e43e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>temporal_id</b> = <a class="el" href="structTags_1_1TimeStepId.html">Tags::TimeStepId</a></td></tr>
+<tr class="separator:a86dc81f27cbe406c92e11a053f87e43e inherit pub_types_structGeneralizedHarmonicDefaults"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f7988940060d0bfdc70bf79b2deea0d inherit pub_types_structGeneralizedHarmonicDefaults"><td class="memItemLeft" align="right" valign="top"><a id="a8f7988940060d0bfdc70bf79b2deea0d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>normal_dot_numerical_flux</b> = <a class="el" href="structTags_1_1NumericalFlux.html">Tags::NumericalFlux</a>&lt; <a class="el" href="structGeneralizedHarmonic_1_1UpwindPenaltyCorrection.html">GeneralizedHarmonic::UpwindPenaltyCorrection</a>&lt; volume_dim &gt; &gt;</td></tr>
+<tr class="separator:a8f7988940060d0bfdc70bf79b2deea0d inherit pub_types_structGeneralizedHarmonicDefaults"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad0c5a72c3f6d3642f2199e8843aa2919 inherit pub_types_structGeneralizedHarmonicDefaults"><td class="memItemLeft" align="right" valign="top"><a id="ad0c5a72c3f6d3642f2199e8843aa2919"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>time_stepper_tag</b> = <a class="el" href="structTags_1_1TimeStepper.html">Tags::TimeStepper</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/conditional.html">std::conditional_t</a>&lt; local_time_stepping, <a class="el" href="classLtsTimeStepper.html">LtsTimeStepper</a>, <a class="el" href="classTimeStepper.html">TimeStepper</a> &gt; &gt;</td></tr>
+<tr class="separator:ad0c5a72c3f6d3642f2199e8843aa2919 inherit pub_types_structGeneralizedHarmonicDefaults"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1440b0cf87e0166879f66b7c32976c14 inherit pub_types_structGeneralizedHarmonicDefaults"><td class="memItemLeft" align="right" valign="top"><a id="a1440b0cf87e0166879f66b7c32976c14"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>analytic_solution_fields</b> = typename system::variables_tag::tags_list</td></tr>
+<tr class="separator:a1440b0cf87e0166879f66b7c32976c14 inherit pub_types_structGeneralizedHarmonicDefaults"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d7428eb1d87f0ab07eda572c67a39e7 inherit pub_types_structGeneralizedHarmonicDefaults"><td class="memItemLeft" align="right" valign="top"><a id="a7d7428eb1d87f0ab07eda572c67a39e7"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>initialize_initial_data_dependent_quantities_actions</b> = tmpl::list&lt; <a class="el" href="structGeneralizedHarmonic_1_1gauges_1_1Actions_1_1InitializeDampedHarmonic.html">GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic</a>&lt; volume_dim, use_damped_harmonic_rollon &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Actions_1_1InitializeConstraints.html">GeneralizedHarmonic::Actions::InitializeConstraints</a>&lt; volume_dim &gt;, <a class="el" href="structParallel_1_1Actions_1_1TerminatePhase.html">Parallel::Actions::TerminatePhase</a> &gt;</td></tr>
+<tr class="separator:a7d7428eb1d87f0ab07eda572c67a39e7 inherit pub_types_structGeneralizedHarmonicDefaults"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:accbafa666784896005c0a9bba8139d62"><td class="memTemplParams" colspan="2"><a id="accbafa666784896005c0a9bba8139d62"></a>
+template&lt;typename... Tags&gt; </td></tr>
+<tr class="memitem:accbafa666784896005c0a9bba8139d62"><td class="memTemplItemLeft" align="right" valign="top">static Phase&#160;</td><td class="memTemplItemRight" valign="bottom"><b>determine_next_phase</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt; * &gt; phase_change_decision_data, const Phase &amp;current_phase, const Parallel::CProxy_GlobalCache&lt; derived_metavars &gt; &amp;cache_proxy) noexcept</td></tr>
+<tr class="separator:accbafa666784896005c0a9bba8139d62"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_static_methods_structGeneralizedHarmonicDefaults"><td colspan="2" onclick="javascript:toggleInherit('pub_static_methods_structGeneralizedHarmonicDefaults')"><img src="closed.png" alt="-"/>&#160;Static Public Member Functions inherited from <a class="el" href="structGeneralizedHarmonicDefaults.html">GeneralizedHarmonicDefaults</a></td></tr>
+<tr class="memitem:a02bf1fe328e851f16f1ecede5bfd3014 inherit pub_static_methods_structGeneralizedHarmonicDefaults"><td class="memItemLeft" align="right" valign="top"><a id="a02bf1fe328e851f16f1ecede5bfd3014"></a>
+static <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memItemRight" valign="bottom"><b>phase_name</b> (Phase phase) noexcept</td></tr>
+<tr class="separator:a02bf1fe328e851f16f1ecede5bfd3014 inherit pub_static_methods_structGeneralizedHarmonicDefaults"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header pub_methods_structGeneralizedHarmonicDefaults"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_structGeneralizedHarmonicDefaults')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="structGeneralizedHarmonicDefaults.html">GeneralizedHarmonicDefaults</a></td></tr>
+<tr class="memitem:a6fad1153413c4402e12a43aa9ac3af61 inherit pub_methods_structGeneralizedHarmonicDefaults"><td class="memItemLeft" align="right" valign="top"><a id="a6fad1153413c4402e12a43aa9ac3af61"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;) noexcept</td></tr>
+<tr class="separator:a6fad1153413c4402e12a43aa9ac3af61 inherit pub_methods_structGeneralizedHarmonicDefaults"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_static_attribs_structGeneralizedHarmonicDefaults"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_structGeneralizedHarmonicDefaults')"><img src="closed.png" alt="-"/>&#160;Static Public Attributes inherited from <a class="el" href="structGeneralizedHarmonicDefaults.html">GeneralizedHarmonicDefaults</a></td></tr>
+<tr class="memitem:a1e7898466100d818cf0ff8c64fd42cd0 inherit pub_static_attribs_structGeneralizedHarmonicDefaults"><td class="memItemLeft" align="right" valign="top"><a id="a1e7898466100d818cf0ff8c64fd42cd0"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = 3</td></tr>
+<tr class="separator:a1e7898466100d818cf0ff8c64fd42cd0 inherit pub_static_attribs_structGeneralizedHarmonicDefaults"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa61469a7eed5a61ed87ad71f881f3002 inherit pub_static_attribs_structGeneralizedHarmonicDefaults"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="group__DiscontinuousGalerkinGroup.html#ga102ad013b7e4298b4c14c52a39bcd8da">dg::Formulation</a>&#160;</td><td class="memItemRight" valign="bottom"><b>dg_formulation</b></td></tr>
+<tr class="separator:aa61469a7eed5a61ed87ad71f881f3002 inherit pub_static_attribs_structGeneralizedHarmonicDefaults"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42107ff49c683d9c98446fddd0c56331 inherit pub_static_attribs_structGeneralizedHarmonicDefaults"><td class="memItemLeft" align="right" valign="top"><a id="a42107ff49c683d9c98446fddd0c56331"></a>
+static constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><b>use_damped_harmonic_rollon</b> = true</td></tr>
+<tr class="separator:a42107ff49c683d9c98446fddd0c56331 inherit pub_static_attribs_structGeneralizedHarmonicDefaults"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6953f60c5c45794219dfc0d3473535f inherit pub_static_attribs_structGeneralizedHarmonicDefaults"><td class="memItemLeft" align="right" valign="top"><a id="ab6953f60c5c45794219dfc0d3473535f"></a>
+static constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><b>local_time_stepping</b> = false</td></tr>
+<tr class="separator:ab6953f60c5c45794219dfc0d3473535f inherit pub_static_attribs_structGeneralizedHarmonicDefaults"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1872dff2ec3e4862f807c52b179ddeea inherit pub_static_attribs_structGeneralizedHarmonicDefaults"><td class="memItemLeft" align="right" valign="top"><a id="a1872dff2ec3e4862f807c52b179ddeea"></a>
+static constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><b>override_functions_of_time</b> = false</td></tr>
+<tr class="separator:a1872dff2ec3e4862f807c52b179ddeea inherit pub_static_attribs_structGeneralizedHarmonicDefaults"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/Executables/GeneralizedHarmonic/<a class="el" href="GeneralizedHarmonicBase_8hpp_source.html">GeneralizedHarmonicBase.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

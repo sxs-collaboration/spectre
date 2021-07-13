@@ -1,0 +1,726 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Parallelization, Charm++, and Core Concepts</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">Parallelization, Charm++, and Core Concepts </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="toc"><h3>Table of Contents</h3>
+<ul><li class="level1"><a href="#dev_guide_parallelization_introduction">Introduction</a></li>
+<li class="level1"><a href="#dev_guide_parallelization_metavariables_class">The Metavariables Class</a></li>
+<li class="level1"><a href="#dev_guide_parallelization_phases_of_execution">Phases of an Execution</a></li>
+<li class="level1"><a href="#dev_guide_parallelization_core_algorithm">The Algorithm</a></li>
+<li class="level1"><a href="#dev_guide_parallelization_parallel_components">Parallel Components</a></li>
+<li class="level1"><a href="#dev_guide_parallelization_actions">Actions</a><ul><li class="level2"><a href="#dev_guide_parallelization_simple_actions">1. Simple Actions</a></li>
+<li class="level2"><a href="#dev_guide_parallelization_iterable_actions">2. Iterable Actions</a></li>
+<li class="level2"><a href="#dev_guide_parallelization_reduction_actions">3. Reduction Actions</a></li>
+<li class="level2"><a href="#dev_guide_parallelization_threaded_actions">4. Threaded Actions</a></li>
+<li class="level2"><a href="#dev_guide_parallelization_local_synchronous_actions">5. Local Synchronous Actions</a></li>
+</ul>
+</li>
+<li class="level1"><a href="#autotoc_md181">Mutable items in the GlobalCache</a><ul><li class="level2"><a href="#autotoc_md182">1. Specification of mutable GlobalCache items</a></li>
+<li class="level2"><a href="#autotoc_md183">2. Use of mutable GlobalCache items</a><ul><li class="level3"><a href="#autotoc_md184">1. Checking if the item is up-to-date</a></li>
+<li class="level3"><a href="#autotoc_md185">2. Retrieving the item</a></li>
+</ul>
+</li>
+<li class="level2"><a href="#autotoc_md186">3. Modifying a mutable GlobalCache item</a></li>
+</ul>
+</li>
+<li class="level1"><a href="#dev_guide_parallelization_charm_node_processor_level_initialization">Charm++ Node and Processor Level Initialization Functions</a></li>
+</ul>
+</div>
+<div class="textblock"><h1><a class="anchor" id="dev_guide_parallelization_introduction"></a>
+Introduction</h1>
+<p>SpECTRE builds a layer on top of Charm++ that performs various safety checks and initialization for the user that can otherwise lead to difficult-to-debug undefined behavior. The central concept is what is called a Parallel Component. A Parallel Component is a struct with several type aliases that is used by SpECTRE to set up the Charm++ chares and allowed communication patterns. Parallel Components are input arguments to the compiler, which then writes the parallelization infrastructure that you requested for the executable. There is no restriction on the number of Parallel Components, though practically it is best to have around 10 at most.</p>
+<p>Here is an overview of what is described in detail in the sections below:</p>
+<ul>
+<li><a class="el" href="dev_guide_parallelization_foundations.html#dev_guide_parallelization_metavariables_class">Metavariables</a>: Provides high-level configuration to the compiler, e.g. the physical system to be simulated.</li>
+<li><a class="el" href="dev_guide_parallelization_foundations.html#dev_guide_parallelization_phases_of_execution">Phases</a>: Defines distinct simulation phases separated by a global synchronization point, e.g. <code>Initialization</code>, <code>Evolve</code> and <code>Exit</code>.</li>
+<li><a class="el" href="dev_guide_parallelization_foundations.html#dev_guide_parallelization_core_algorithm">Algorithm</a>: In each phase, repeatedly iterates over a list of actions until the current phase ends.</li>
+<li><a class="el" href="dev_guide_parallelization_foundations.html#dev_guide_parallelization_parallel_components">Parallel component</a>: Maintains and executes its algorithm.</li>
+<li><a class="el" href="dev_guide_parallelization_foundations.html#dev_guide_parallelization_actions">Action</a>: Performs a computational task, e.g. evaluating the right hand side of the time evolution equations. May require data to be received from another action potentially being executed on a different core or node.</li>
+</ul>
+<h1><a class="anchor" id="dev_guide_parallelization_metavariables_class"></a>
+The Metavariables Class</h1>
+<p>SpECTRE takes a different approach to input options passed to an executable than is common. SpECTRE not only reads an input file at runtime but also has many choices made at compile time. The compile time options are specified by what is referred to as the metavariables. What exactly the metavariables struct specifies depends on the executable, but all metavariables structs must specify the following:</p>
+<ul>
+<li><code>help</code>: a <code>static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89" title="The string used in option structs.">Options::String</a></code> that will be printed as part of the help message. It should describe the executable and basic usage of it, as well as any non-standard options that must be specified in the metavariables and their current values. An example of a help string for one of the testing executables is: <div class="fragment"><div class="line">  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help =</div>
+<div class="line">      <span class="stringliteral">&quot;An executable for testing the core functionality of the Algorithm. &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;Actions that do not perform any operations (no-ops), invoking simple &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;actions, mutating data in the DataBox, adding and removing items from &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;the DataBox, receiving data from other parallel components, and &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;out-of-order execution of Actions are all tested. All tests are run &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;just by running the executable, no input file or command line arguments &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;are required&quot;</span>;</div>
+</div><!-- fragment --></li>
+<li><code>component_list</code>: a <code>tmpl::list</code> of the parallel components (described below) that are to be created. Most evolution executables will have the <code><a class="el" href="structDgElementArray.html" title="The parallel component responsible for managing the DG elements that compose the computational domain...">DgElementArray</a></code> parallel component listed. An example of a <code>component_list</code> for one of the test executables is: <div class="fragment"><div class="line">  <span class="keyword">using</span> component_list = tmpl::list&lt;NoOpsComponent&lt;TestMetavariables&gt;,</div>
+<div class="line">                                    MutateComponent&lt;TestMetavariables&gt;,</div>
+<div class="line">                                    ReceiveComponent&lt;TestMetavariables&gt;,</div>
+<div class="line">                                    AnyOrderComponent&lt;TestMetavariables&gt;&gt;;</div>
+</div><!-- fragment --></li>
+<li><code>using const_global_cache_tags</code>: a <code>tmpl::list</code> of tags that are used to place const items in the GlobalCache. The alias may be omitted if the list is empty.</li>
+<li><code>using mutable_global_cache_tags</code>: a <code>tmpl::list</code> of tags that are used to place mutable items in the GlobalCache. The alias may be omitted if the list is empty.</li>
+<li><code>Phase</code>: an <code>enum class</code> that must contain at least <code>Initialization</code> and <code>Exit</code>. Phases are described in the next section.</li>
+<li><code>determine_next_phase</code>: a static function with the signature <div class="fragment"><div class="line">static Phase determine_next_phase(</div>
+<div class="line">  const Phase&amp; current_phase,</div>
+<div class="line">  const Parallel::CProxy_GlobalCache&lt;EvolutionMetavars&gt;&amp; cache_proxy)</div>
+<div class="line">  noexcept;</div>
+</div><!-- fragment --> What this function does is described below in the discussion of <a class="el" href="dev_guide_parallelization_foundations.html#dev_guide_parallelization_phases_of_execution">phases</a>.</li>
+</ul>
+<p>There are also several optional members:</p>
+<ul>
+<li><code>input_file</code>: a <code>static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89" title="The string used in option structs.">Options::String</a></code> that is the default name of the input file that is to be read. This can be overridden at runtime by passing the <code>--input-file</code> argument to the executable.</li>
+<li><code>ignore_unrecognized_command_line_options</code>: a <code>static constexpr bool</code> that defaults to <code>false</code>. If set to <code>true</code> then unrecognized command line options are ignored. Ignoring unrecognized options is generally only necessary for tests where arguments for the testing framework, <a href="https://github.com/catchorg/Catch2/">Catch</a>, are passed to the executable.</li>
+</ul>
+<h1><a class="anchor" id="dev_guide_parallelization_phases_of_execution"></a>
+Phases of an Execution</h1>
+<p>Global synchronization points, where all cores wait for each other, are undesirable for scalability reasons. However, they are sometimes inevitable for algorithmic reasons. That is, in order to actually get a correct solution you need to have a global synchronization. SpECTRE executables can have multiple phases, where after each phase a global synchronization occurs. By global synchronization we mean that no parallel components are executing or have more tasks to execute: everything is waiting to be told what tasks to perform next.</p>
+<p>Every executable must have at least two phases, <code>Initialization</code> and <code>Exit</code>. The next phase is decided by the static member function <code>determine_next_phase</code> in the metavariables. Currently this function has access to the phase that is ending, and also the global cache. In the future we will add support for receiving data from various components to allow for more complex decision making. Here is an example of a <code>determine_next_phase</code> function and the <code>Phase</code> enum class: </p><div class="fragment"><div class="line">  <span class="keyword">enum class</span> Phase {</div>
+<div class="line">    Initialization,</div>
+<div class="line">    NoOpsStart,</div>
+<div class="line">    NoOpsFinish,</div>
+<div class="line">    MutateStart,</div>
+<div class="line">    MutateFinish,</div>
+<div class="line">    ReceiveStart,</div>
+<div class="line">    ReceiveFinish,</div>
+<div class="line">    AnyOrderStart,</div>
+<div class="line">    AnyOrderFinish,</div>
+<div class="line">    Exit</div>
+<div class="line">  };</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Tags&gt;</div>
+<div class="line">  <span class="keyword">static</span> Phase determine_next_phase(</div>
+<div class="line">      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;</div>
+<div class="line">          <a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;Tags...&gt;</a>*&gt; <span class="comment">/*phase_change_decision_data*/</span>,</div>
+<div class="line">      <span class="keyword">const</span> Phase&amp; current_phase,</div>
+<div class="line">      <span class="keyword">const</span> Parallel::CProxy_GlobalCache&lt;</div>
+<div class="line">          TestMetavariables&gt;&amp; <span class="comment">/*cache_proxy*/</span>) noexcept {</div>
+<div class="line">    <span class="keywordflow">switch</span> (current_phase) {</div>
+<div class="line">      <span class="keywordflow">case</span> Phase::Initialization:</div>
+<div class="line">        <span class="keywordflow">return</span> Phase::NoOpsStart;</div>
+<div class="line">      <span class="keywordflow">case</span> Phase::NoOpsStart:</div>
+<div class="line">        <span class="keywordflow">return</span> Phase::NoOpsFinish;</div>
+<div class="line">      <span class="keywordflow">case</span> Phase::NoOpsFinish:</div>
+<div class="line">        <span class="keywordflow">return</span> Phase::MutateStart;</div>
+<div class="line">      <span class="keywordflow">case</span> Phase::MutateStart:</div>
+<div class="line">        <span class="keywordflow">return</span> Phase::MutateFinish;</div>
+<div class="line">      <span class="keywordflow">case</span> Phase::MutateFinish:</div>
+<div class="line">        <span class="keywordflow">return</span> Phase::ReceiveStart;</div>
+<div class="line">      <span class="keywordflow">case</span> Phase::ReceiveStart:</div>
+<div class="line">        <span class="keywordflow">return</span> Phase::ReceiveFinish;</div>
+<div class="line">      <span class="keywordflow">case</span> Phase::ReceiveFinish:</div>
+<div class="line">        <span class="keywordflow">return</span> Phase::AnyOrderStart;</div>
+<div class="line">      <span class="keywordflow">case</span> Phase::AnyOrderStart:</div>
+<div class="line">        <span class="keywordflow">return</span> Phase::AnyOrderFinish;</div>
+<div class="line">      <span class="keywordflow">case</span> Phase::AnyOrderFinish:</div>
+<div class="line">        [[fallthrough]];</div>
+<div class="line">      <span class="keywordflow">case</span> Phase::Exit:</div>
+<div class="line">        <span class="keywordflow">return</span> Phase::Exit;</div>
+<div class="line">      <span class="keywordflow">default</span>:</div>
+<div class="line">        <a class="code" href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a>(<span class="stringliteral">&quot;Unknown Phase...&quot;</span>);</div>
+<div class="line">    }</div>
+<div class="line"> </div>
+<div class="line">    <span class="keywordflow">return</span> Phase::Exit;</div>
+<div class="line">  }</div>
+</div><!-- fragment --><p> In contrast, an evolution executable might have phases <code>Initialization</code>, <code>SetInitialData</code>, <code>Evolve</code>, and <code>Exit</code>, but have a similar <code>switch</code> or <code>if-else</code> logic in the <code>determine_next_phase</code> function. The first phase that is entered is always <code>Initialization</code>. During the <code>Initialization</code> phase the <code><a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a></code> is created, all non-array components are created, and empty array components are created. Next, the function <code>allocate_array_components_and_execute_initialization_phase</code> is called which allocates the elements of each array component, and then starts the <code>Initialization</code> phase on all parallel components. Once all parallel components' <code>Initialization</code> phase is complete, the next phase is determined and the <code>execute_next_phase</code> function is called on all the parallel components.</p>
+<p>At the end of an execution the <code>Exit</code> phase has the executable wait to make sure no parallel components are performing or need to perform any more tasks, and then exits. An example where this approach is important is if we are done evolving a system but still need to write data to disk. We do not want to exit the simulation until all data has been written to disk, even though we've reached the final time of the evolution.</p>
+<dl class="section warning"><dt>Warning</dt><dd>Currently dead-locks are treated as successful termination. In the future checks against deadlocks will be performed before terminating.</dd></dl>
+<h1><a class="anchor" id="dev_guide_parallelization_core_algorithm"></a>
+The Algorithm</h1>
+<p>Since most numerical algorithms repeat steps until some criterion such as the final time or convergence is met, SpECTRE's parallel components are designed to do such iterations for the user. An Algorithm executes an ordered list of actions until one of the actions cannot be evaluated, typically because it is waiting on data from elsewhere. When an algorithm can no longer evaluate actions it passively waits by handing control back to Charm++. Once an algorithm receives data, typically done by having another parallel component call the <code>receive_data</code> function, the algorithm will try again to execute the next action. If the algorithm is still waiting on more data then the algorithm will again return control to Charm++ and passively wait for more data. This is repeated until all required data is available. The actions that are iterated over by the algorithm are called iterable actions and are described below. Since the action list is phase dependent we refer to them generally as phase-dependent action lists (PDALs, pronounced "pedals").</p>
+<h1><a class="anchor" id="dev_guide_parallelization_parallel_components"></a>
+Parallel Components</h1>
+<p>Each Parallel Component struct must have the following type aliases:</p><ol type="1">
+<li><code>using chare_type</code> is set to one of:<ol type="a">
+<li><code><a class="el" href="structParallel_1_1Algorithms_1_1Singleton.html" title="A struct that stores the charm++ types relevant for a particular singleton component.">Parallel::Algorithms::Singleton</a></code>s have one object in the entire execution of the program.</li>
+<li><code><a class="el" href="structParallel_1_1Algorithms_1_1Array.html" title="A struct that stores the charm++ types relevant for a particular array component.">Parallel::Algorithms::Array</a></code>s hold zero or more elements, each of which is an object distributed to some core. An array can grow and shrink in size dynamically if need be and can also be bound to another array. A bound array has the same number of elements as the array it is bound to, and elements with the same ID are on the same core. See Charm++'s chare arrays for details.</li>
+<li><code><a class="el" href="structParallel_1_1Algorithms_1_1Group.html" title="A struct that stores the charm++ types relevant for a particular group component.">Parallel::Algorithms::Group</a></code>s are arrays with one element per core which are not able to be moved around between cores. These are typically useful for gathering data from array elements on their core, and then processing or reducing the data further. See <a href="http://charm.cs.illinois.edu/help">Charm++'s</a> group chares for details.</li>
+<li><code><a class="el" href="structParallel_1_1Algorithms_1_1Nodegroup.html" title="A struct that stores the charm++ types relevant for a particular nodegroup component.">Parallel::Algorithms::Nodegroup</a></code>s are similar to groups except that there is one element per node. For Charm++ SMP (shared memory parallelism) builds, a node corresponds to the usual definition of a node on a supercomputer. However, for non-SMP builds nodes and cores are equivalent. We ensure that all entry method calls done through the Algorithm's <code>simple_action</code> and <code>receive_data</code> functions are threadsafe. User-controlled threading is possible by calling the entry method member function <code>threaded_action</code>, which is like <code>simple_action</code> except it passes a node lock to the <code>Action</code>'s apply function. Note that unlike <code>simple_action</code>s, multiple <code>threaded_action</code>s can be executing simultaneously on the same chare.</li>
+</ol>
+</li>
+<li><code>using metavariables</code> is set to the Metavariables struct that stores the global metavariables. It is often easiest to have the Parallel Component struct have a template parameter <code>Metavariables</code> that is the global metavariables struct. Examples of this technique are given below.</li>
+<li><code>using phase_dependent_action_list</code> is set to a <code>tmpl::list</code> of <code><a class="el" href="structParallel_1_1PhaseActions.html" title="List of all the actions to be executed in the specified phase.">Parallel::PhaseActions</a>&lt;PhaseType, Phase, tmpl::list&lt;Actions...&gt;&gt;</code> where each <code>PhaseAction</code> represents a PDAL that will be executed on the parallel component during the specified phase. The Actions are executed in the order that they are given in the <code>tmpl::list</code>s of the PDALs, but the phases need not be run in linear order. However, <code>db::DataBox</code> types are constructed assuming the phases are performed from first in the <code>phase_dependent_action_list</code> to the last. Simple actions (described below) can be executed in any phase. If there are no iterable actions in a phase then a <code>PhaseAction</code> need not be specified for that phase. However, at least one <code>PhaseAction</code>, even if it is empty, must be specified.</li>
+<li><code>using initialization_tags</code> which is a <code>tmpl::list</code> of all the tags that will be inserted into the initial <code>db::DataBox</code> of each component. These tags are <a class="el" href="structdb_1_1SimpleTag.html" title="Mark a struct as a simple tag by inheriting from this.">db::SimpleTag</a>s that have have a <code>using option_tags</code> type alias and a static function <code>create_from_options</code> (see the example below). This list can usually be constructed from the initialization actions of the component (i.e. the list of actions in the <code>PhaseAction</code> list for the <code>Initialization</code> phase) using the helper function <code><a class="el" href="group__ParallelGroup.html#ga1e2e4c961e55eb461d66770393e4f45d" title="Given a list of initialization actions, and possibly a list of tags needed for allocation of an array...">Parallel::get_initialization_tags</a></code> (see the examples of components below). Each initialization action may specify a type alias <code>using initialization_tags</code> which are a <code>tmpl::list</code> of tags that will be fetched from the db::DataBox by the action. All <code>initialization_tags</code> are removed from the db::DataBox of the component at the end of the <code>Initialization</code> phase, except for tags listed in a type alias <code>using initialization_tags_to_keep</code> that may appear in each initialization action.</li>
+<li><code>using const_global_cache_tags</code> is set to a <code>tmpl::list</code> of tags that are required by the <code>allocate_array</code> function of an array component, or simple actions called on the parallel component. These tags correspond to const items that are stored in the <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a> (of which there is one copy per Charm++ node). The alias can be omitted if the list is empty. (See <code>array_allocation_tags</code> below for specifying tags needed for the <code>allocate_array</code> function, but will not be added to the <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>.)</li>
+<li><code>using mutable_global_cache_tags</code> is set to a <code>tmpl::list</code> of tags that correspond to mutable items that are stored in the <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a> (of which there is one copy per Charm++ core). The alias can be omitted if the list is empty.</li>
+</ol>
+<dl class="section note"><dt>Note</dt><dd>Array parallel components must also specify the type alias <code>using array_index</code>, which is set to the type that indexes the Parallel Component Array. Charm++ allows arrays to be 1 through 6 dimensional or be indexed by a custom type. The Charm++ provided indexes are wrapped as <code>Parallel::ArrayIndex1D</code> through <code>Parallel::ArrayIndex6D</code>. When writing custom array indices, the <a href="http://charm.cs.illinois.edu/help">Charm++ manual</a> tells you to write your own <code>CkArrayIndex</code>, but we have written a general implementation that provides this functionality (see <code><a class="el" href="structParallel_1_1ArrayIndex.html" title="The array index used for indexing Chare Arrays, mostly an implementation detail.">Parallel::ArrayIndex</a></code>); all that you need to provide is a plain-old-data (<a href="http://en.cppreference.com/w/cpp/concept/PODType">POD</a>) struct of the size of at most 3 integers.</dd></dl>
+<p>Parallel array components have a static <code>allocate_array</code> function that is used to construct the elements of the array. The signature of the <code>allocate_array</code> functions must be: </p><div class="fragment"><div class="line">static void allocate_array(</div>
+<div class="line">    Parallel::CProxy_GlobalCache&lt;metavariables&gt;&amp; global_cache,</div>
+<div class="line">    const tuples::tagged_tuple_from_typelist&lt;initialization_tags&gt;&amp;</div>
+<div class="line">    initialization_items) noexcept;</div>
+</div><!-- fragment --><p> The <code>allocate_array</code> function is called by the Main parallel component when the execution starts and will typically insert elements into array parallel components. If the <code>allocate_array</code> function depends upon input options, the array component must specify a <code>using array_allocation_tags</code> type alias that is a <code>tmpl::list</code> of tags which are <a class="el" href="structdb_1_1SimpleTag.html" title="Mark a struct as a simple tag by inheriting from this.">db::SimpleTag</a>s that have have a <code>using option_tags</code> type alias and a static function <code>create_from_options</code>. An example is: </p><div class="fragment"><div class="line"><span class="keyword">struct </span>LinearOperator : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;DenseMatrix&lt;double, blaze::columnMajor&gt;</a>&gt;;</div>
+<div class="line">  <span class="keyword">using</span> option_tags = tmpl::list&lt;OptionTags::LinearOperator&gt;;</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">static</span> constexpr <span class="keywordtype">bool</span> pass_metavariables = <span class="keyword">false</span>;</div>
+<div class="line">  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;DenseMatrix&lt;double, blaze::columnMajor&gt;</a>&gt;</div>
+<div class="line">  <a class="code" href="group__ParallelGroup.html#ga30995e33b089e0daea78bcc497cc69af">create_from_options</a>(</div>
+<div class="line">      <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="code" href="classDenseMatrix.html">DenseMatrix&lt;double, blaze::columnMajor&gt;</a>&gt;&amp;</div>
+<div class="line">          linear_operator) noexcept {</div>
+<div class="line">    <span class="keywordflow">return</span> linear_operator;</div>
+<div class="line">  }</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> The <code>allocate_array</code> functions of different array components are called in random order and so it is not safe to have them depend on each other.</p>
+<p>Each parallel component must also decide what to do in the different phases of the execution. This is controlled by an <code>execute_next_phase</code> function with signature: </p><div class="fragment"><div class="line">static void execute_next_phase(</div>
+<div class="line">    const typename metavariables::Phase next_phase,</div>
+<div class="line">    const Parallel::CProxy_GlobalCache&lt;metavariables&gt;&amp; global_cache);</div>
+</div><!-- fragment --><p> The <code>determine_next_phase</code> function in the Metavariables determines the next phase, after which the <code>execute_next_phase</code> function gets called. The <code>execute_next_phase</code> function determines what the parallel component should do during the next phase. Typically the <code>execute_next_phase</code> function should just call <code>start_phase(phase)</code> on the parallel component. In the future <code>execute_next_phase</code> may be removed.</p>
+<p>An example of a singleton parallel component is: </p><div class="fragment"><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> Metavariables&gt;</div>
+<div class="line"><span class="keyword">struct </span>SingletonParallelComponent {</div>
+<div class="line">  <span class="keyword">using</span> chare_type = <a class="code" href="structParallel_1_1Algorithms_1_1Singleton.html">Parallel::Algorithms::Singleton</a>;</div>
+<div class="line">  <span class="keyword">using</span> metavariables = Metavariables;</div>
+<div class="line">  <span class="keyword">using</span> phase_dependent_action_list = tmpl::list&lt;</div>
+<div class="line">      <a class="code" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt;<span class="keyword">typename</span> Metavariables::Phase,</div>
+<div class="line">                             Metavariables::Phase::PerformSingletonAlgorithm,</div>
+<div class="line">                             tmpl::list&lt;SingletonActions::CountReceives&gt;&gt;&gt;;</div>
+<div class="line">  <span class="keyword">using</span> initialization_tags = <a class="code" href="group__ParallelGroup.html#ga1e2e4c961e55eb461d66770393e4f45d">Parallel::get_initialization_tags</a>&lt;</div>
+<div class="line">      <a class="code" href="group__ParallelGroup.html#gac5fb42f8eaf4da2707e32ed37ecf4e66">Parallel::get_initialization_actions_list&lt;phase_dependent_action_list&gt;</a>&gt;;</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">static</span> <span class="keywordtype">void</span> execute_next_phase(</div>
+<div class="line">      <span class="keyword">const</span> <span class="keyword">typename</span> Metavariables::Phase next_phase,</div>
+<div class="line">      <span class="keyword">const</span> Parallel::CProxy_GlobalCache&lt;Metavariables&gt;&amp;</div>
+<div class="line">          global_cache) noexcept {</div>
+<div class="line">    <span class="keywordflow">if</span> (next_phase == Metavariables::Phase::PerformSingletonAlgorithm) {</div>
+<div class="line">      <span class="keyword">auto</span>&amp; local_cache = *(global_cache.ckLocalBranch());</div>
+<div class="line">      Parallel::get_parallel_component&lt;SingletonParallelComponent&gt;(local_cache)</div>
+<div class="line">          .start_phase(next_phase);</div>
+<div class="line">      <span class="keywordflow">return</span>;</div>
+<div class="line">    }</div>
+<div class="line">  }</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> An example of an array parallel component is: </p><div class="fragment"><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> Metavariables&gt;</div>
+<div class="line"><span class="keyword">struct </span>ArrayParallelComponent {</div>
+<div class="line">  <span class="keyword">using</span> chare_type = <a class="code" href="structParallel_1_1Algorithms_1_1Array.html">Parallel::Algorithms::Array</a>;</div>
+<div class="line">  <span class="keyword">using</span> metavariables = Metavariables;</div>
+<div class="line">  <span class="keyword">using</span> phase_dependent_action_list = tmpl::list&lt;</div>
+<div class="line">      <a class="code" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt;<span class="keyword">typename</span> Metavariables::Phase,</div>
+<div class="line">                             Metavariables::Phase::Initialization,</div>
+<div class="line">                             tmpl::list&lt;ArrayActions::Initialize&gt;&gt;,</div>
+<div class="line">      <a class="code" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt;</div>
+<div class="line">          <span class="keyword">typename</span> Metavariables::Phase,</div>
+<div class="line">          Metavariables::Phase::PerformArrayAlgorithm,</div>
+<div class="line">          tmpl::list&lt;ArrayActions::AddIntValue10, ArrayActions::IncrementInt0,</div>
+<div class="line">                     ArrayActions::RemoveInt0, ArrayActions::SendToSingleton&gt;&gt;,</div>
+<div class="line">      <a class="code" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt;<span class="keyword">typename</span> Metavariables::Phase,</div>
+<div class="line">                             Metavariables::Phase::FinalizeArray,</div>
+<div class="line">                             tmpl::list&lt;ArrayActions::CheckWasUnpacked&gt;&gt;&gt;;</div>
+<div class="line">  <span class="keyword">using</span> initialization_tags = <a class="code" href="group__ParallelGroup.html#ga1e2e4c961e55eb461d66770393e4f45d">Parallel::get_initialization_tags</a>&lt;</div>
+<div class="line">      <a class="code" href="group__ParallelGroup.html#gac5fb42f8eaf4da2707e32ed37ecf4e66">Parallel::get_initialization_actions_list&lt;phase_dependent_action_list&gt;</a>&gt;;</div>
+<div class="line">  <span class="keyword">using</span> array_index = int;</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">static</span> <span class="keywordtype">void</span> allocate_array(</div>
+<div class="line">      Parallel::CProxy_GlobalCache&lt;Metavariables&gt;&amp; global_cache,</div>
+<div class="line">      <span class="keyword">const</span> tuples::tagged_tuple_from_typelist&lt;initialization_tags&gt;&amp;</div>
+<div class="line">      <span class="comment">/*initialization_items*/</span>) noexcept {</div>
+<div class="line">    <span class="keyword">auto</span>&amp; local_cache = *(global_cache.ckLocalBranch());</div>
+<div class="line">    <span class="keyword">auto</span>&amp; array_proxy =</div>
+<div class="line">        Parallel::get_parallel_component&lt;ArrayParallelComponent&gt;(local_cache);</div>
+<div class="line"> </div>
+<div class="line">    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0, which_proc = 0, <a class="code" href="group__ParallelGroup.html#ga7784b669df07fce82ccaea3a4d8a4ea5">number_of_procs</a> = <a class="code" href="group__ParallelGroup.html#ga7784b669df07fce82ccaea3a4d8a4ea5">sys::number_of_procs</a>();</div>
+<div class="line">         i &lt; number_of_1d_array_elements; ++i) {</div>
+<div class="line">      array_proxy[i].insert(global_cache, {}, which_proc);</div>
+<div class="line">      which_proc = which_proc + 1 == <a class="code" href="group__ParallelGroup.html#ga7784b669df07fce82ccaea3a4d8a4ea5">number_of_procs</a> ? 0 : which_proc + 1;</div>
+<div class="line">    }</div>
+<div class="line">    array_proxy.doneInserting();</div>
+<div class="line">  }</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">static</span> <span class="keywordtype">void</span> execute_next_phase(</div>
+<div class="line">      <span class="keyword">const</span> <span class="keyword">typename</span> Metavariables::Phase next_phase,</div>
+<div class="line">      Parallel::CProxy_GlobalCache&lt;Metavariables&gt;&amp; global_cache) noexcept {</div>
+<div class="line">    <span class="keyword">auto</span>&amp; local_cache = *(global_cache.ckLocalBranch());</div>
+<div class="line">    <span class="keywordflow">if</span> (next_phase == Metavariables::Phase::PerformArrayAlgorithm or</div>
+<div class="line">        next_phase == Metavariables::Phase::FinalizeArray) {</div>
+<div class="line">      Parallel::get_parallel_component&lt;ArrayParallelComponent&gt;(local_cache)</div>
+<div class="line">          .start_phase(next_phase);</div>
+<div class="line">    }</div>
+<div class="line">  }</div>
+<div class="line">};</div>
+</div><!-- fragment --><p>Elements are inserted into the array by using the Charm++ <code>insert</code> member function of the CProxy for the array. The <code>insert</code> function is documented in the Charm++ manual. In the above Array example <code>array_proxy</code> is a <code>CProxy</code> and so all the documentation for Charm++ array proxies applies. SpECTRE always creates empty arrays with the constructor and requires users to insert however many elements they want and on which cores they want them to be placed. Note that load balancing calls may result in array elements being moved.</p>
+<h1><a class="anchor" id="dev_guide_parallelization_actions"></a>
+Actions</h1>
+<p>Actions are structs with a static <code>apply</code> method and come in five variants: simple actions, iterable actions, reduction actions, threaded actions, and local synchronous actions.</p>
+<p>The signature of <code>apply</code> methods differs for the different types of actions, but all types have the same general form. Actions receive a <code>db::DataBox</code>, the <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>, and their element's index and parallel component, as well as arguments specific to the action type.</p>
+<p>The <code>db::DataBox</code> should be thought of as the member data of the parallel component while the actions are the member functions. The combination of a <code>db::DataBox</code> and actions allows building up classes with arbitrary member data and methods using template parameters and invocation of actions. This approach allows us to eliminate the need for users to work with Charm++'s interface files, which can be error prone and difficult to use.</p>
+<p>The <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a> is passed to each action so that the action has access to global data and is able to invoke actions on other parallel components. The <code>ParallelComponent</code> template parameter is the tag of the parallel component that invoked the action. A proxy to the calling parallel component can then be retrieved from the <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>. The remote entry method invocations are slightly different for different types of actions, so they will be discussed below. However, one thing that is disallowed for all actions is calling an action locally from within an action on the same parallel component. Specifically,</p>
+<div class="fragment"><div class="line">    <span class="keyword">auto</span>&amp; local_parallel_component =</div>
+<div class="line">        *Parallel::get_parallel_component&lt;ParallelComponent&gt;(<a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>).ckLocal();</div>
+<div class="line">    Parallel::simple_action&lt;error_call_single_action_from_action&gt;(</div>
+<div class="line">        local_parallel_component);</div>
+</div><!-- fragment --><p> Here <code>ckLocal()</code> is a Charm++ provided method that returns a pointer to the local (currently executing) parallel component. See the <a href="http://charm.cs.illinois.edu/help">Charm++ manual</a> for more information. However, you are able to queue a new action to be executed later on the same parallel component by getting your own parallel component from the <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a> (<code><a class="el" href="group__ParallelGroup.html#gab0de6c4b4047a7eb4cbe45a33faa3f41" title="Access the Charm++ proxy associated with a ParallelComponent.">Parallel::get_parallel_component</a>&lt;ParallelComponent&gt;(cache)</code>). The difference between the two calls is that by calling an action through the parallel component you will first finish the series of actions you are in, then when they are complete Charm++ will call the next queued action.</p>
+<p>Array, group, and nodegroup parallel components can have actions invoked in two ways. First is a broadcast where the action is called on all elements of the array:</p>
+<div class="fragment"><div class="line">      <span class="keyword">auto</span>&amp; group_parallel_component = <a class="code" href="group__ParallelGroup.html#gab0de6c4b4047a7eb4cbe45a33faa3f41">Parallel::get_parallel_component</a>&lt;</div>
+<div class="line">          GroupParallelComponent&lt;Metavariables&gt;&gt;(<a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>);</div>
+<div class="line">      Parallel::receive_data&lt;Tags::IntReceiveTag&gt;(</div>
+<div class="line">          group_parallel_component,</div>
+<div class="line">          db::get&lt;Tags::CountActionsCalled&gt;(box) + 100 * array_index,</div>
+<div class="line">          db::get&lt;Tags::CountActionsCalled&gt;(box));</div>
+</div><!-- fragment --><p> The second case is invoking an action on a specific array element by using the array element's index. The below example shows how a broadcast would be done manually by looping over all elements in the array:</p>
+<div class="fragment"><div class="line">    <span class="keyword">auto</span>&amp; array_parallel_component =</div>
+<div class="line">        Parallel::get_parallel_component&lt;ArrayParallelComponent&lt;Metavariables&gt;&gt;(</div>
+<div class="line">            <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>);</div>
+<div class="line">    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; number_of_1d_array_elements; ++i) {</div>
+<div class="line">      Parallel::receive_data&lt;Tags::IntReceiveTag&gt;(array_parallel_component[i],</div>
+<div class="line">                                                  0, 101, <span class="keyword">true</span>);</div>
+<div class="line">    }</div>
+</div><!-- fragment --><p> Note that in general you will not know what all the elements in the array are and so a broadcast is the correct method of sending data to or invoking an action on all elements of an array parallel component.</p>
+<p>The <code>array_index</code> argument passed to all <code>apply</code> methods is the index into the parallel component array. If the parallel component is not an array the value and type of <code>array_index</code> is implementation defined and cannot be relied on.</p>
+<h2><a class="anchor" id="dev_guide_parallelization_simple_actions"></a>
+1. Simple Actions</h2>
+<p>Simple actions can be thought of as member functions of remote objects (chares/parallel components). They are the direct analog of entry methods in Charm++ except that the member data is stored in the <code>db::DataBox</code> that is passed in as the first argument. A simple action must return void but can use <code><a class="el" href="group__DataBoxGroup.html#gabd82fb36bfa1a8f987e595141cc4d44f" title="Allows changing the state of one or more non-computed elements in the DataBox.">db::mutate</a></code> to change values of items in the <code>db::DataBox</code> if the <code>db::DataBox</code> is taken as a non-const reference. In some cases you will need specific items to be in the <code>db::DataBox</code> otherwise the action won't compile. To restrict which <code>db::DataBox</code>es can be passed you should use <code>Requires</code> in the action's <code>apply</code> function template parameter list. For example, </p><div class="fragment"><div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ParallelComponent, <span class="keyword">typename</span> DbTags, <span class="keyword">typename</span> Metavariables,</div>
+<div class="line">            <span class="keyword">typename</span> ArrayIndex,</div>
+<div class="line">            <a class="code" href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a>&lt;<a class="code" href="group__DataBoxGroup.html#ga0e5d678f658a67bdbaa8b10d1ec50505">db::tag_is_retrievable_v</a>&lt;CountActionsCalled,</div>
+<div class="line">                                              db::DataBox&lt;DbTags&gt;&gt;&gt; = <span class="keyword">nullptr</span>&gt;</div>
+<div class="line">  <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(db::DataBox&lt;DbTags&gt;&amp; box,</div>
+<div class="line">                    <span class="keyword">const</span> <a class="code" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache&lt;Metavariables&gt;</a>&amp; <span class="comment">/*cache*/</span>,</div>
+<div class="line">                    <span class="keyword">const</span> ArrayIndex&amp; <span class="comment">/*array_index*/</span>, <span class="keyword">const</span> <span class="keywordtype">double</span> v0,</div>
+<div class="line">                    <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a>&amp;&amp; v1) noexcept {</div>
+</div><!-- fragment --><p>checks that <code>CountActionsCalled</code> is available in the box.</p>
+<p>Simple actions can be called using a <code>CProxy</code> (see the <a href="http://charm.cs.illinois.edu/help">Charm++ manual</a>), which is retrieved from the <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a> using the parallel component struct and the <code><a class="el" href="group__ParallelGroup.html#gab0de6c4b4047a7eb4cbe45a33faa3f41" title="Access the Charm++ proxy associated with a ParallelComponent.">Parallel::get_parallel_component()</a></code> function. For example, the action above could be called as </p><div class="fragment"><div class="line">      Parallel::simple_action&lt;add_remove_test::test_args&gt;(</div>
+<div class="line">          Parallel::get_parallel_component&lt;MutateComponent&gt;(local_cache),</div>
+<div class="line">          4.82937, <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a>{3.2, -8.4, 7.5});</div>
+</div><!-- fragment --><p>Any arguments after the proxy are passed as additional arguments to the action's <code>apply</code> function.</p>
+<h2><a class="anchor" id="dev_guide_parallelization_iterable_actions"></a>
+2. Iterable Actions</h2>
+<p>Iterable actions make up the algorithms described by the PDALs. These actions are executed one after the other until one of them cannot be evaluated. Their <code>apply</code> methods signature is </p><div class="fragment"><div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> DbTags, <span class="keyword">typename</span>... InboxTags, <span class="keyword">typename</span> Metavariables,</div>
+<div class="line">            <span class="keyword">typename</span> ArrayIndex, <span class="keyword">typename</span> ActionList,</div>
+<div class="line">            <span class="keyword">typename</span> ParallelComponent&gt;</div>
+<div class="line">  <span class="keyword">static</span> <span class="keyword">auto</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(db::DataBox&lt;DbTags&gt;&amp; box,</div>
+<div class="line">                    <span class="keyword">const</span> <a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;InboxTags...&gt;</a>&amp; <span class="comment">/*inboxes*/</span>,</div>
+<div class="line">                    <span class="keyword">const</span> <a class="code" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache&lt;Metavariables&gt;</a>&amp; <span class="comment">/*cache*/</span>,</div>
+<div class="line">                    <span class="keyword">const</span> ArrayIndex&amp; <span class="comment">/*array_index*/</span>,</div>
+<div class="line">                    <span class="keyword">const</span> ActionList <span class="comment">/*meta*/</span>,</div>
+<div class="line">                    <span class="keyword">const</span> ParallelComponent* <span class="keyword">const</span> <span class="comment">/*meta*/</span>) noexcept</div>
+</div><!-- fragment --><p>The <code>ActionList</code> type is the <code>tmpl::list</code> of iterable actions in the current phase. That is, it is equal to the <code>action_list</code> type alias in the current PDAL. The <code>inboxes</code> is a collection of the tags specified as <code>tmpl::list</code>s in the iterable actions' member type aliases <code>inbox_tags</code>. This collection represents data received from other chares using the <code>receive_data</code> function. The return type will be discussed below.</p>
+<p>Iterable actions can change the type of the db::DataBox by adding or removing elements/tags from the db::DataBox. The only requirement is that the last action in each PDAL returns a db::DataBox that is the same type for each iteration. Iterable actions can also request that the algorithm no longer be executed, and control which action in the current PDAL will be executed next. This is all done via the return value from the <code>apply</code> function. The <code>apply</code> function for iterable actions must return a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a></code> of one, two, or three elements. The first element of the tuple is the new db::DataBox, which can be a db::DataBox with a new set of tags or an rvalue reference to the <code>box</code> argument to the function. Most iterable actions will simply return:</p>
+<div class="fragment"><div class="line">    <span class="keywordflow">return</span> std::forward_as_tuple(std::move(box));</div>
+</div><!-- fragment --><p> By returning the db::DataBox as a reference in a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a></code> we avoid any unnecessary copying of the db::DataBox. The second argument controls how algorithm execution continues. If present, it must be either a <code>bool</code> or a <code><a class="el" href="namespaceParallel.html#af31fff079d116e958890e079a35955cf" title="The possible options for altering the current execution of the algorithm, used in the return type of ...">Parallel::AlgorithmExecution</a></code>. If a <code>bool</code> is passed, the termination flag for the chare will be set to that value (stopping the algorithm if that value is true). See the documentation of <code><a class="el" href="namespaceParallel.html#af31fff079d116e958890e079a35955cf" title="The possible options for altering the current execution of the algorithm, used in the return type of ...">Parallel::AlgorithmExecution</a></code> for the meanings of different values of that enum. If the returned tuple only has one element, it acts as if <code><a class="el" href="namespaceParallel.html#af31fff079d116e958890e079a35955cfaa0bfb8e59e6c13fc8d990781f77694fe" title="Leave the algorithm termination flag in its current state.">Parallel::AlgorithmExecution::Continue</a></code> was returned (that is, the flow control flags are not modified). For example, an action that stops the algorithm could return</p>
+<div class="fragment"><div class="line">    <span class="keywordflow">return</span> {std::move(box), <a class="code" href="namespaceParallel.html#af31fff079d116e958890e079a35955cfa105b296a83f9c105355403f3332af50f">Parallel::AlgorithmExecution::Pause</a>};</div>
+</div><!-- fragment --><p> Notice that we again return a reference to the db::DataBox, which is done to avoid any copying. After an algorithm has been terminated it can be restarted by passing <code>false</code> to the <code>set_terminate</code> method or by calling <code>receive_data(..., true)</code>. Since the order in which messages are received is undefined in most cases the <code>receive_data(..., true)</code> call should be used to restart the algorithm.</p>
+<p>The return value <code><a class="el" href="namespaceParallel.html#af31fff079d116e958890e079a35955cfa6327b4e59f58137083214a1fec358855" title="Temporarily stop executing iterable actions, but try the same action again after receiving data from ...">Parallel::AlgorithmExecution::Retry</a></code> deserves special mention. It is intended for use by actions that use data supplied by other parallel objects to indicate that they have not received all of the data they require. The algorithm will stop until an operation that could supply data has occurred and then the action will be retried. An example of an waiting because of missing data is</p>
+<div class="fragment"><div class="line">    <span class="keywordflow">if</span> (inbox.count(db::get&lt;TemporalId&gt;(box)) == 0) {</div>
+<div class="line">      <span class="keywordflow">return</span> {std::move(box), <a class="code" href="namespaceParallel.html#af31fff079d116e958890e079a35955cfa6327b4e59f58137083214a1fec358855">Parallel::AlgorithmExecution::Retry</a>};</div>
+<div class="line">    }</div>
+</div><!-- fragment --><p> The third optional element in the returned <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a></code> is a <code>size_t</code> whose value corresponds to the index of the action to be called next in the PDAL. The metafunction <code>tmpl::index_of&lt;list, element&gt;</code> can be used to get an <code>tmpl::integral_constant</code> with the value of the index of the element <code>element</code> in the typelist <code>list</code>. For example,</p>
+<div class="fragment"><div class="line">    <span class="keywordflow">return</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;decltype(std::move(box)), bool, size_t&gt;</a>(</div>
+<div class="line">        std::move(box), <span class="keyword">true</span>,</div>
+<div class="line">        tmpl::index_of&lt;ActionList, iterate_increment_int0&gt;::value + 1);</div>
+</div><!-- fragment --><p> Again a reference to the db::DataBox is returned, while the termination <code>bool</code> and next action <code>size_t</code> are returned by value. The metafunction call <code>tmpl::index_of&lt;ActionList, iterate_increment_int0&gt;::value</code> returns a <code>size_t</code> whose value is that of the action <code>iterate_increment_int0</code> in the PDAL. The indexing of actions in the PDAL starts at <code>0</code>.</p>
+<p>Iterable actions are invoked as part of the algorithm and so the only way to request they be invoked is by having the algorithm run on the parallel component. The algorithm can be explicitly evaluated in a new phase by calling <code>start_phase(Phase::TheCurrentPhase)</code>:</p>
+<div class="fragment"><div class="line">    Parallel::get_parallel_component&lt;NoOpsComponent&gt;(local_cache)</div>
+<div class="line">        .start_phase(next_phase);</div>
+</div><!-- fragment --><p> Alternatively, to evaluate the algorithm without changing phases the <code>perform_algorithm()</code> method can be used.</p>
+<p>By passing <code>true</code> to <code>perform_algorithm</code> the algorithm will be restarted if it was terminated.</p>
+<p>The algorithm is also evaluated by calling the <code>receive_data</code> function, either on an entire array or singleton (this does a broadcast), or an on individual element of the array. Here is an example of a broadcast call:</p>
+<div class="fragment"><div class="line">      <span class="keyword">auto</span>&amp; group_parallel_component = <a class="code" href="group__ParallelGroup.html#gab0de6c4b4047a7eb4cbe45a33faa3f41">Parallel::get_parallel_component</a>&lt;</div>
+<div class="line">          GroupParallelComponent&lt;Metavariables&gt;&gt;(<a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>);</div>
+<div class="line">      Parallel::receive_data&lt;Tags::IntReceiveTag&gt;(</div>
+<div class="line">          group_parallel_component,</div>
+<div class="line">          db::get&lt;Tags::CountActionsCalled&gt;(box) + 100 * array_index,</div>
+<div class="line">          db::get&lt;Tags::CountActionsCalled&gt;(box));</div>
+</div><!-- fragment --><p> and of calling individual elements:</p>
+<div class="fragment"><div class="line">    <span class="keyword">auto</span>&amp; array_parallel_component =</div>
+<div class="line">        Parallel::get_parallel_component&lt;ArrayParallelComponent&lt;Metavariables&gt;&gt;(</div>
+<div class="line">            <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>);</div>
+<div class="line">    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; number_of_1d_array_elements; ++i) {</div>
+<div class="line">      Parallel::receive_data&lt;Tags::IntReceiveTag&gt;(array_parallel_component[i],</div>
+<div class="line">                                                  0, 101, <span class="keyword">true</span>);</div>
+<div class="line">    }</div>
+</div><!-- fragment --><p> The <code>receive_data</code> function always takes a <code>ReceiveTag</code>, which is set in the actions' <code>inbox_tags</code> type aliases. The <code>inbox_tags</code> must have two member type aliases, a <code>temporal_id</code> which is used to identify when the data was sent, and a <code>type</code> which is the type of the data to be stored in the <code>inboxes</code>. The types are typically a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt;temporal_id, DATA&gt;</code>. In the discussed scenario of waiting for neighboring elements to send their data the <code>DATA</code> type would be a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt;TheElementId, DataSent&gt;</code>. Inbox tags must also specify a <code>static void insert_into_inbox()</code> function. For example,</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>IntReceiveTag {</div>
+<div class="line">  <span class="keyword">using</span> temporal_id = int;</div>
+<div class="line">  <span class="keyword">using</span> type = <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map&lt;temporal_id, std::unordered_multiset&lt;int&gt;</a>&gt;;</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Inbox, <span class="keyword">typename</span> ReceiveDataType&gt;</div>
+<div class="line">  <span class="keyword">static</span> <span class="keywordtype">void</span> insert_into_inbox(<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;Inbox*&gt;</a> inbox,</div>
+<div class="line">                                <span class="keyword">const</span> temporal_id&amp; temporal_id_v,</div>
+<div class="line">                                ReceiveDataType&amp;&amp; data) noexcept {</div>
+<div class="line">    (*inbox)[temporal_id_v].insert(std::forward&lt;ReceiveDataType&gt;(data));</div>
+<div class="line">  }</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> For common types of <code>DATA</code>, such as a <code>map</code>, a data structure with an <code>insert</code> function, a data structure with a <code>push_back</code> function, or copy/move assignment that is used to insert the received data, inserters are available in <code><a class="el" href="namespaceParallel_1_1InboxInserters.html" title="Structs that have insert_into_inbox methods for commonly used cases.">Parallel::InboxInserters</a></code>. For example, there is <code><a class="el" href="structParallel_1_1InboxInserters_1_1Map.html" title="Inserter for inserting data that is received as the value_type (with non-const key_type) of a map dat...">Parallel::InboxInserters::Map</a></code> for <code>map</code> data structures. The inbox tag can inherit publicly off the inserters to gain the required insertion capabilities:</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>IntReceiveTag</div>
+<div class="line">    : <span class="keyword">public</span> <a class="code" href="structParallel_1_1InboxInserters_1_1MemberInsert.html">Parallel::InboxInserters::MemberInsert</a>&lt;IntReceiveTag&gt; {</div>
+<div class="line">  <span class="keyword">using</span> temporal_id = TestAlgorithmArrayInstance;</div>
+<div class="line">  <span class="keyword">using</span> type = <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map&lt;temporal_id, std::unordered_multiset&lt;int&gt;</a>&gt;;</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> The <code>inbox_tags</code> type alias for the action is:</p>
+<div class="fragment"><div class="line">  <span class="keyword">using</span> inbox_tags = tmpl::list&lt;Tags::IntReceiveTag&gt;;</div>
+</div><!-- fragment --> <dl class="section warning"><dt>Warning</dt><dd>It is the responsibility of the iterable action to remove data from the inboxes that will no longer be needed.</dd></dl>
+<p>Normally when remote functions are invoked they go through the Charm++ runtime system, which adds some overhead. The <code>receive_data</code> function tries to elide the call to the Charm++ RTS for calls into array components. Charm++ refers to these types of remote calls as "inline entry methods". With the Charm++ method of eliding the RTS, the code becomes susceptible to stack overflows because of infinite recursion. The <code>receive_data</code> function is limited to at most 64 RTS elided calls, though in practice reaching this limit is rare. When the limit is reached the remote method invocation is done through the RTS instead of being elided.</p>
+<h2><a class="anchor" id="dev_guide_parallelization_reduction_actions"></a>
+3. Reduction Actions</h2>
+<p>Reduction actions are the targets of reducing data over an array. For example, you may want to know the sum of a <code>int</code> from every element in the array. You can do this as follows:</p>
+<div class="fragment"><div class="line">    Parallel::ReductionData&lt;Parallel::ReductionDatum&lt;int, funcl::Plus&lt;&gt;&gt;&gt;</div>
+<div class="line">        my_send_int{array_index};</div>
+<div class="line">    Parallel::contribute_to_reduction&lt;ProcessReducedSumOfInts&gt;(</div>
+<div class="line">        my_send_int, my_proxy, singleton_proxy);</div>
+</div><!-- fragment --><p> This reduces over the parallel component <code>ArrayParallelComponent&lt;Metavariables&gt;</code>, reduces to the parallel component <code>SingletonParallelComponent&lt;Metavariables&gt;</code>, and calls the action <code>ProcessReducedSumOfInts</code> after the reduction has been performed. The reduction action is:</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>ProcessReducedSumOfInts {</div>
+<div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ParallelComponent, <span class="keyword">typename</span> DbTags, <span class="keyword">typename</span> Metavariables,</div>
+<div class="line">            <span class="keyword">typename</span> ArrayIndex&gt;</div>
+<div class="line">  <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(db::DataBox&lt;DbTags&gt;&amp; <span class="comment">/*box*/</span>,</div>
+<div class="line">                    <span class="keyword">const</span> <a class="code" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache&lt;Metavariables&gt;</a>&amp; <span class="comment">/*cache*/</span>,</div>
+<div class="line">                    <span class="keyword">const</span> ArrayIndex&amp; <span class="comment">/*array_index*/</span>,</div>
+<div class="line">                    <span class="keyword">const</span> <span class="keywordtype">int</span>&amp; value) noexcept {</div>
+<div class="line">    <a class="code" href="group__TestingFrameworkGroup.html#ga37fce1ae5980139598815eda5a5de8ab">SPECTRE_PARALLEL_REQUIRE</a>(number_of_1d_array_elements *</div>
+<div class="line">                                 (number_of_1d_array_elements - 1) / 2 ==</div>
+<div class="line">                             value);</div>
+<div class="line">  }</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> As you can see, the last argument to the <code>apply</code> function is of type <code>int</code>, and is the reduced value.</p>
+<p>You can also broadcast the result back to an array, even yourself. For example,</p>
+<div class="fragment"><div class="line">    Parallel::contribute_to_reduction&lt;ProcessReducedSumOfInts&gt;(</div>
+<div class="line">        my_send_int, my_proxy, array_proxy);</div>
+</div><!-- fragment --><p> It is often necessary to reduce custom data types, such as <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a></code> or <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a></code>. Charm++ supports such custom reductions, and so does our layer on top of Charm++. Custom reductions require one additional step to calling <code>contribute_to_reduction</code>, which is writing a reduction function to reduce the custom data. We provide a generic type that can be used in custom reductions, <code>Parallel::ReductionData</code>, which takes a series of <code><a class="el" href="structParallel_1_1ReductionDatum.html" title="The data to be reduced, and invokables to be called whenever two reduction messages are combined and ...">Parallel::ReductionDatum</a></code> as template parameters and <code>ReductionDatum::value_type</code>s as the arguments to the constructor. Each <code>ReductionDatum</code> takes up to four template parameters (two are required). The first is the type of data to reduce, and the second is a binary invokable that is called at each step of the reduction to combine two messages. The last two template parameters are used after the reduction has completed. The third parameter is an n-ary invokable that is called once the reduction is complete, whose first argument is the result of the reduction. The additional arguments can be any <code>ReductionDatum::value_type</code> in the <code>ReductionData</code> that are before the current one. The fourth template parameter of <code>ReductionDatum</code> is used to specify which data should be passed. It is a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::index_sequence</a></code> indexing into the <code>ReductionData</code>.</p>
+<dl class="section warning"><dt>Warning</dt><dd>All elements of the array must call the same reductions in the same order. It is <em>defined</em> behavior to do multiple reductions at once as long as all contribute calls on all array elements occurred in the same order. It is <b>undefined</b> behavior if the contribute calls are made in different orders on different array elements.</dd></dl>
+<h2><a class="anchor" id="dev_guide_parallelization_threaded_actions"></a>
+4. Threaded Actions</h2>
+<p>Threaded actions are similar to simple actions, with the difference being that multiple threaded actions may be running on the same chare at the same time (potentially in parallel with one simple or reduction action). The <code>apply</code> function for a threaded actions has the same signature as that for a simple action, except that it also receives a <code>NodeLock</code> intended to control access to the chare's <code>db::DataBox</code>. All access to the <code>db::DataBox</code>, including read-only access, must occur while the action owns this lock. (Simple and reduction actions implicitly hold the lock for their entire execution.)</p>
+<div class="fragment"><div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ParallelComponent, <span class="keyword">typename</span> DbTags, <span class="keyword">typename</span> Metavariables,</div>
+<div class="line">            <span class="keyword">typename</span> ArrayIndex,</div>
+<div class="line">            <a class="code" href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a>&lt;<a class="code" href="group__DataBoxGroup.html#ga0e5d678f658a67bdbaa8b10d1ec50505">db::tag_is_retrievable_v</a>&lt;Tags::vector_of_array_indexs,</div>
+<div class="line">                                              db::DataBox&lt;DbTags&gt;&gt;&gt; = <span class="keyword">nullptr</span>&gt;</div>
+<div class="line">  <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(db::DataBox&lt;DbTags&gt;&amp; box,</div>
+<div class="line">                    <a class="code" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache&lt;Metavariables&gt;</a>&amp; <span class="comment">/*cache*/</span>,</div>
+<div class="line">                    <span class="keyword">const</span> ArrayIndex&amp; <span class="comment">/*array_index*/</span>,</div>
+<div class="line">                    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;Parallel::NodeLock*&gt;</a> node_lock,</div>
+<div class="line">                    <span class="keyword">const</span> <span class="keywordtype">int</span>&amp; id_of_array) {</div>
+</div><!-- fragment --><p> Threaded actions can only be run on nodegroup chares.</p>
+<h2><a class="anchor" id="dev_guide_parallelization_local_synchronous_actions"></a>
+5. Local Synchronous Actions</h2>
+<p>There is limited ability to retrieve data held by another parallel component via a direct synchronous call. Unlike the above actions, the invocation of a synchronous action is precisely a call to a member function of another parallel component; therefore, these invocations will run to completion, and return their result before the calling code proceeds in execution.</p>
+<p>Aside from being synchronous and being able to return data, local synchronous actions behave the same as threaded actions, except that they will only run on the chare of a nodegroup that is on the local node.</p>
+<p>Local synchronous actions' <code>apply</code> functions follow a signature motivated by threaded actions, but take fewer arguments. This may be a bug.</p>
+<p>Local synchronous actions must specify their return type in a <code>return_type</code> type alias. This is to help simplify the logic with the variant <code>db::DataBox</code> held by the parallel component.</p>
+<p>An example of a definition of a local synchronous action:</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>SyncGetPointerFromNodegroup {</div>
+<div class="line">  <span class="keyword">using</span> return_type = <span class="keywordtype">size_t</span>*;</div>
+<div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ParallelComponent, <span class="keyword">typename</span> DbTagsList&gt;</div>
+<div class="line">  <span class="keyword">static</span> <span class="keywordtype">size_t</span>* <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(db::DataBox&lt;DbTagsList&gt;&amp; box,</div>
+<div class="line">                       <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;Parallel::NodeLock*&gt;</a> node_lock) {</div>
+<div class="line">    <span class="keywordflow">if</span> constexpr (tmpl::list_contains_v&lt;DbTagsList, StepNumber&gt;) {</div>
+<div class="line">      <span class="keywordtype">size_t</span>* result = <span class="keyword">nullptr</span>;</div>
+<div class="line">      <span class="comment">// We must lock access to the box, because box access is non-atomic and</span></div>
+<div class="line">      <span class="comment">// nodegroups can have multiple actions running in separate threads. Once</span></div>
+<div class="line">      <span class="comment">// we retrieve the pointer to data from the box, we can safely pass it</span></div>
+<div class="line">      <span class="comment">// along because we know that there are no compute tags that depend on</span></div>
+<div class="line">      <span class="comment">// `StepNumber`. Without that guarantee, this would not be a supported use</span></div>
+<div class="line">      <span class="comment">// of the box.</span></div>
+<div class="line">      node_lock-&gt;lock();</div>
+<div class="line">      db::mutate&lt;StepNumber&gt;(</div>
+<div class="line">          <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;box),</div>
+<div class="line">          [&amp;result](<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;size_t*&gt;</a> step_number) noexcept {</div>
+<div class="line">            result = step_number;</div>
+<div class="line">          });</div>
+<div class="line">      node_lock-&gt;unlock();</div>
+<div class="line">      <span class="keywordflow">return</span> result;</div>
+<div class="line">    } <span class="keywordflow">else</span> {</div>
+<div class="line">      <span class="comment">// avoid &#39;unused&#39; warnings</span></div>
+<div class="line">      (void)node_lock;</div>
+<div class="line">      <a class="code" href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a>(<span class="stringliteral">&quot;Could not find required tag `StepNumber` in the databox&quot;</span>);</div>
+<div class="line">    }</div>
+<div class="line">  }</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> And the corresponding invocation:</p>
+<div class="fragment"><div class="line">    <span class="keywordtype">size_t</span>* step_number =</div>
+<div class="line">        Parallel::local_synchronous_action&lt;SyncGetPointerFromNodegroup&gt;(</div>
+<div class="line">            <a class="code" href="group__ParallelGroup.html#gab0de6c4b4047a7eb4cbe45a33faa3f41">Parallel::get_parallel_component</a>&lt;NodegroupComponent&lt;Metavariables&gt;&gt;(</div>
+<div class="line">                <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>));</div>
+</div><!-- fragment --> <h1><a class="anchor" id="autotoc_md181"></a>
+Mutable items in the GlobalCache</h1>
+<p>Most items in the GlobalCache are constant, and are specified by type aliases called <code>const_global_cache_tags</code> as described above. However, the GlobalCache can also store mutable items. Because of asynchronous execution, care must be taken when mutating items in the GlobalCache, as described below.</p>
+<p>A mutable item can be of any type, as long as that type is something that can be checked for whether it is "up-to-date". Here "up-to-date" means that the item can be safely used (even read-only) without needing to be mutated first. For example, a mutable item might be a function of time that knows the range of times for which it is valid; the mutable item is then deemed up-to-date if it will be called for a time within its range of validity, and it is deemed not up-to-date if it will be called for a time outside its range of validity. Thus the up-to-date status of a mutable item is determined by both the state of the item itself and by the code that wishes to use that item.</p>
+<h2><a class="anchor" id="autotoc_md182"></a>
+1. Specification of mutable GlobalCache items</h2>
+<p>Mutable GlobalCache items are specified by a type alias <code>mutable_global_cache_tags</code>, which is treated the same way as <code>const_global_cache_tags</code> for const items.</p>
+<h2><a class="anchor" id="autotoc_md183"></a>
+2. Use of mutable GlobalCache items</h2>
+<h3><a class="anchor" id="autotoc_md184"></a>
+1. Checking if the item is up-to-date</h3>
+<p>Because execution is asynchronous, any code that uses a mutable item in the GlobalCache must first check whether that item is up-to-date. The information about whether an item is up-to-date is assumed to be stored in the item itself. For example, a mutable object stored in the GlobalCache might have type <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map</a>&lt;temporal_id,T&gt;</code> (for some type <code>T</code>), and then any code that uses the stored object can check whether an entry exists for a particular <code>temporal_id</code>. To avoid race conditions, it is important that up-to-date checks are based on something that is independent of the order of mutation (like a <code>temporal_id</code>, and not like checking the size of a vector).</p>
+<p>To check an item, use the function <code><a class="el" href="group__ParallelGroup.html#gac288b4e437376917e186f704aaeadcf8" title="Returns whether the object identified by GlobalCacheTag is ready to be accessed by get.">Parallel::mutable_cache_item_is_ready</a></code>, which returns a bool indicating whether the item is up-to-date. If the item is up-to-date, then it can be used. <code><a class="el" href="group__ParallelGroup.html#gac288b4e437376917e186f704aaeadcf8" title="Returns whether the object identified by GlobalCacheTag is ready to be accessed by get.">Parallel::mutable_cache_item_is_ready</a></code> takes a lambda as an argument. This lambda is passed a single argument: a const reference to the item being retrieved. The lambda should determine whether the item is up-to-date. If so, it should return a default_constructed <code><a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt;<a class="el" href="classParallel_1_1Callback.html" title="An abstract base class, whose derived class holds a function that can be invoked at a later time....">Parallel::Callback</a>&gt;</code>; if not, it should return a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt;<a class="el" href="classParallel_1_1Callback.html" title="An abstract base class, whose derived class holds a function that can be invoked at a later time....">Parallel::Callback</a>&gt;</code> to a callback function that will be called on the next <code><a class="el" href="group__ParallelGroup.html#ga964eab86069dc2de2f7dd55929e63ec7" title="Mutates non-const data in the cache, by calling Function::apply()">Parallel::mutate</a></code> of that item. The callback will typically check again if the item is up-to-date and if so will execute some code that gets the item via <code><a class="el" href="group__ParallelGroup.html#ga58e38397e3ac428c80fd30ba2f3d8096" title="Access data in the cache.">Parallel::get</a></code>.</p>
+<p>For the case of iterable actions, <code><a class="el" href="group__ParallelGroup.html#gac288b4e437376917e186f704aaeadcf8" title="Returns whether the object identified by GlobalCacheTag is ready to be accessed by get.">Parallel::mutable_cache_item_is_ready</a></code> typically uses the callback <code><a class="el" href="classParallel_1_1PerformAlgorithmCallback.html" title="Wraps a call to perform_algorithm.">Parallel::PerformAlgorithmCallback</a></code>. In the example below, the vector is considered up-to-date if it is non-empty. If the vector is not up-to-date, then when it becomes up-to-date the callback function will be invoked; in this case the callback function re-runs <code>perform_algorithm()</code>, which will call the same action again.</p>
+<div class="fragment"><div class="line">    <span class="keyword">auto</span>&amp; this_proxy = <a class="code" href="group__ParallelGroup.html#gab0de6c4b4047a7eb4cbe45a33faa3f41">Parallel::get_parallel_component</a>&lt;</div>
+<div class="line">        UseMutatedCacheComponent&lt;Metavariables&gt;&gt;(<a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>);</div>
+<div class="line">    <span class="keywordflow">if</span> (not ::Parallel::mutable_cache_item_is_ready&lt;Tags::VectorOfDoubles&gt;(</div>
+<div class="line">            <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>,</div>
+<div class="line">            [&amp;this_proxy](<span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a>&amp; VectorOfDoubles)</div>
+<div class="line">                -&gt; <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;Parallel::Callback&gt;</a> {</div>
+<div class="line">              <span class="keywordflow">return</span> VectorOfDoubles.empty()</div>
+<div class="line">                         ? <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;Parallel::Callback&gt;</a>(</div>
+<div class="line">                               <span class="keyword">new</span> <a class="code" href="classParallel_1_1PerformAlgorithmCallback.html">Parallel::PerformAlgorithmCallback</a>(</div>
+<div class="line">                                   this_proxy))</div>
+<div class="line">                         : <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;Parallel::Callback&gt;</a>{};</div>
+<div class="line">            })) {</div>
+<div class="line">      <span class="keywordflow">return</span> {std::move(box), <a class="code" href="namespaceParallel.html#af31fff079d116e958890e079a35955cfa6327b4e59f58137083214a1fec358855">Parallel::AlgorithmExecution::Retry</a>};</div>
+<div class="line">    }</div>
+</div><!-- fragment --><p> Note that <code><a class="el" href="group__ParallelGroup.html#gac288b4e437376917e186f704aaeadcf8" title="Returns whether the object identified by GlobalCacheTag is ready to be accessed by get.">Parallel::mutable_cache_item_is_ready</a></code> is called on a local core and does no parallel communication.</p>
+<h3><a class="anchor" id="autotoc_md185"></a>
+2. Retrieving the item</h3>
+<p>The item is retrieved using <code><a class="el" href="group__ParallelGroup.html#ga58e38397e3ac428c80fd30ba2f3d8096" title="Access data in the cache.">Parallel::get</a></code> just like for constant items. For example, to retrieve the item <code>Tags::VectorOfDoubles</code>: </p><div class="fragment"><div class="line">    <a class="code" href="group__TestingFrameworkGroup.html#ga37fce1ae5980139598815eda5a5de8ab">SPECTRE_PARALLEL_REQUIRE</a>(Parallel::get&lt;Tags::VectorOfDoubles&gt;(<a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>) ==</div>
+<div class="line">                             expected_result);</div>
+</div><!-- fragment --><p> Note that <code><a class="el" href="group__ParallelGroup.html#ga58e38397e3ac428c80fd30ba2f3d8096" title="Access data in the cache.">Parallel::get</a></code> is called on a local core and does no parallel communication.</p>
+<p>Whereas we support getting <em>non-mutable</em> items in the GlobalCache from a DataBox via <code><a class="el" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1" title="Retrieve the item with tag Tag from the DataBox.">db::get</a></code>, we intentionally do not support <code><a class="el" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1" title="Retrieve the item with tag Tag from the DataBox.">db::get</a></code> of <em>mutable</em> items in the GlobalCache from a DataBox. The reason is that mutable items should be retrieved only after a <code><a class="el" href="group__ParallelGroup.html#gac288b4e437376917e186f704aaeadcf8" title="Returns whether the object identified by GlobalCacheTag is ready to be accessed by get.">Parallel::mutable_cache_item_is_ready</a></code> check, and being able to retrieve a mutable item from a DataBox makes it difficult to enforce that check, especially when automatically-executing compute items are considered.</p>
+<h2><a class="anchor" id="autotoc_md186"></a>
+3. Modifying a mutable GlobalCache item</h2>
+<p>To modify a mutable item, pass <code><a class="el" href="group__ParallelGroup.html#ga964eab86069dc2de2f7dd55929e63ec7" title="Mutates non-const data in the cache, by calling Function::apply()">Parallel::mutate</a></code> two template parameters: the tag to mutate, and a struct with an <code>apply</code> function that does the mutating. <code><a class="el" href="group__ParallelGroup.html#ga964eab86069dc2de2f7dd55929e63ec7" title="Mutates non-const data in the cache, by calling Function::apply()">Parallel::mutate</a></code> takes two arguments: a proxy to the GlobalCache, and a tuple that is passed into the mutator function. For the following example,</p>
+<div class="fragment"><div class="line">    <a class="code" href="group__ParallelGroup.html#ga964eab86069dc2de2f7dd55929e63ec7">Parallel::mutate</a>&lt;Tags::VectorOfDoubles,</div>
+<div class="line">                     MutationFunctions::add_stored_double&gt;(<a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>.thisProxy,</div>
+<div class="line">                                                           42.0);</div>
+</div><!-- fragment --><p> the mutator function is defined as below: </p><div class="fragment"><div class="line"><span class="keyword">namespace </span>MutationFunctions {</div>
+<div class="line"><span class="keyword">struct </span>add_stored_double {</div>
+<div class="line">  <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a>*&gt; data,</div>
+<div class="line">                    <span class="keyword">const</span> <span class="keywordtype">double</span> new_value) noexcept {</div>
+<div class="line">    <a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/data.html">data</a>-&gt;emplace_back(new_value);</div>
+<div class="line">  }</div>
+<div class="line">};</div>
+<div class="line">}  <span class="comment">// namespace MutationFunctions</span></div>
+</div><!-- fragment --><p> <code><a class="el" href="group__ParallelGroup.html#ga964eab86069dc2de2f7dd55929e63ec7" title="Mutates non-const data in the cache, by calling Function::apply()">Parallel::mutate</a></code> broadcasts to every core, where it calls the mutator function and then calls all the callbacks that have been set on that core by <code><a class="el" href="group__ParallelGroup.html#gac288b4e437376917e186f704aaeadcf8" title="Returns whether the object identified by GlobalCacheTag is ready to be accessed by get.">Parallel::mutable_cache_item_is_ready</a></code>. The <code><a class="el" href="group__ParallelGroup.html#ga964eab86069dc2de2f7dd55929e63ec7" title="Mutates non-const data in the cache, by calling Function::apply()">Parallel::mutate</a></code> operation is guaranteed to be thread-safe without any further action by the developer.</p>
+<h1><a class="anchor" id="dev_guide_parallelization_charm_node_processor_level_initialization"></a>
+Charm++ Node and Processor Level Initialization Functions</h1>
+<p>Charm++ allows running functions once per core and once per node before the construction of any parallel components. This is commonly used for setting up error handling and enabling floating point exceptions. Other functions could also be run. Which functions are run on each node and core is set by specifying a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;void (*)()&gt;</code> called <code>charm_init_node_funcs</code> and <code>charm_init_proc_funcs</code> with function pointers to the functions to be called. For example, </p><div class="fragment"><div class="line"><span class="keyword">static</span> <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;void (*)()&gt; charm_init_node_funcs{</div>
+<div class="line">    &amp;setup_error_handling, &amp;setup_memory_allocation_failure_reporting};</div>
+<div class="line"><span class="keyword">static</span> <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;void (*)()&gt; charm_init_proc_funcs{</div>
+<div class="line">    &amp;<a class="code" href="group__ErrorHandlingGroup.html#gac5fde843ca62e1d4288f4a4e6d480aa0">enable_floating_point_exceptions</a>};</div>
+</div><!-- fragment --><p> Finally, the user must include the <code>Parallel/CharmMain.tpp</code> file at the end of the main executable cpp file. So, the end of an executables main cpp file will then typically look as follows: </p><div class="fragment"><div class="line"><span class="keyword">static</span> <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;void (*)()&gt; charm_init_node_funcs{</div>
+<div class="line">    &amp;setup_error_handling, &amp;setup_memory_allocation_failure_reporting,</div>
+<div class="line">    &amp;<a class="code" href="Blas_8hpp.html#a5b54f526fe76418288fdf2dd79b0828e">disable_openblas_multithreading</a>};</div>
+<div class="line"><span class="keyword">static</span> <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;void (*)()&gt; charm_init_proc_funcs{</div>
+<div class="line">    &amp;<a class="code" href="group__ErrorHandlingGroup.html#gac5fde843ca62e1d4288f4a4e6d480aa0">enable_floating_point_exceptions</a>};</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">using</span> charmxx_main_component = <a class="code" href="classParallel_1_1Main.html">Parallel::Main&lt;TestMetavariables&gt;</a>;</div>
+<div class="line"> </div>
+<div class="line"><span class="preprocessor">#include &quot;Parallel/CharmMain.tpp&quot;</span>  <span class="comment">// IWYU pragma: keep</span></div>
+</div><!-- fragment --></div></div><!-- contents -->
+</div><!-- PageDoc -->
+<div class="ttc" id="aapply_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/apply.html">std::apply</a></div><div class="ttdeci">T apply(T... args)</div></div>
+<div class="ttc" id="anamespaceParallel_html_af31fff079d116e958890e079a35955cfa6327b4e59f58137083214a1fec358855"><div class="ttname"><a href="namespaceParallel.html#af31fff079d116e958890e079a35955cfa6327b4e59f58137083214a1fec358855">Parallel::AlgorithmExecution::Retry</a></div><div class="ttdeci">@ Retry</div><div class="ttdoc">Temporarily stop executing iterable actions, but try the same action again after receiving data from ...</div></div>
+<div class="ttc" id="aclassParallel_1_1GlobalCache_html"><div class="ttname"><a href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a></div><div class="ttdef"><b>Definition:</b> ElementReceiveInterpPoints.hpp:15</div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_gab0de6c4b4047a7eb4cbe45a33faa3f41"><div class="ttname"><a href="group__ParallelGroup.html#gab0de6c4b4047a7eb4cbe45a33faa3f41">Parallel::get_parallel_component</a></div><div class="ttdeci">auto get_parallel_component(GlobalCache&lt; Metavariables &gt; &amp;cache) noexcept -&gt; Parallel::proxy_from_parallel_component&lt; GlobalCache_detail::get_component_if_mocked&lt; typename Metavariables::component_list, ParallelComponentTag &gt;&gt; &amp;</div><div class="ttdoc">Access the Charm++ proxy associated with a ParallelComponent.</div><div class="ttdef"><b>Definition:</b> GlobalCache.hpp:535</div></div>
+<div class="ttc" id="agroup__DataBoxGroup_html_ga0e5d678f658a67bdbaa8b10d1ec50505"><div class="ttname"><a href="group__DataBoxGroup.html#ga0e5d678f658a67bdbaa8b10d1ec50505">db::tag_is_retrievable_v</a></div><div class="ttdeci">constexpr bool tag_is_retrievable_v</div><div class="ttdef"><b>Definition:</b> DataBox.hpp:61</div></div>
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a></div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_ga7784b669df07fce82ccaea3a4d8a4ea5"><div class="ttname"><a href="group__ParallelGroup.html#ga7784b669df07fce82ccaea3a4d8a4ea5">Parallel::number_of_procs</a></div><div class="ttdeci">int number_of_procs(const DistribObject &amp;distributed_object) noexcept</div><div class="ttdoc">Number of processing elements.</div><div class="ttdef"><b>Definition:</b> Info.hpp:24</div></div>
+<div class="ttc" id="atuple_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a></div></div>
+<div class="ttc" id="astructdb_1_1SimpleTag_html"><div class="ttname"><a href="structdb_1_1SimpleTag.html">db::SimpleTag</a></div><div class="ttdoc">Mark a struct as a simple tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:36</div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_ga37fce1ae5980139598815eda5a5de8ab"><div class="ttname"><a href="group__TestingFrameworkGroup.html#ga37fce1ae5980139598815eda5a5de8ab">SPECTRE_PARALLEL_REQUIRE</a></div><div class="ttdeci">#define SPECTRE_PARALLEL_REQUIRE(expr)</div><div class="ttdoc">A similar to Catch's REQUIRE statement, but can be used in tests that spawn several chares with possi...</div><div class="ttdef"><b>Definition:</b> TestingFramework.hpp:48</div></div>
+<div class="ttc" id="aBlas_8hpp_html_a5b54f526fe76418288fdf2dd79b0828e"><div class="ttname"><a href="Blas_8hpp.html#a5b54f526fe76418288fdf2dd79b0828e">disable_openblas_multithreading</a></div><div class="ttdeci">void disable_openblas_multithreading() noexcept</div><div class="ttdoc">Disable OpenBLAS multithreading since it conflicts with Charm++ parallelism.</div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_ga1e2e4c961e55eb461d66770393e4f45d"><div class="ttname"><a href="group__ParallelGroup.html#ga1e2e4c961e55eb461d66770393e4f45d">Parallel::get_initialization_tags</a></div><div class="ttdeci">tmpl::remove_duplicates&lt; tmpl::flatten&lt; tmpl::list&lt; AllocationTagsList, tmpl::transform&lt; InitializationActionsList, detail::get_initialization_tags_from_action&lt; tmpl::_1 &gt; &gt;&gt; &gt;&gt; get_initialization_tags</div><div class="ttdoc">Given a list of initialization actions, and possibly a list of tags needed for allocation of an array...</div><div class="ttdef"><b>Definition:</b> ParallelComponentHelpers.hpp:254</div></div>
+<div class="ttc" id="aclassDenseMatrix_html"><div class="ttname"><a href="classDenseMatrix.html">DenseMatrix&lt; double, blaze::columnMajor &gt;</a></div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_gac5fb42f8eaf4da2707e32ed37ecf4e66"><div class="ttname"><a href="group__ParallelGroup.html#gac5fb42f8eaf4da2707e32ed37ecf4e66">Parallel::get_initialization_actions_list</a></div><div class="ttdeci">tmpl::flatten&lt; tmpl::transform&lt; PhaseDepActionList, detail::get_initialization_actions_list&lt; tmpl::_1 &gt; &gt;&gt; get_initialization_actions_list</div><div class="ttdoc">Given the phase dependent action list, return the list of actions in the Initialization phase (or an ...</div><div class="ttdef"><b>Definition:</b> ParallelComponentHelpers.hpp:218</div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_gac5fde843ca62e1d4288f4a4e6d480aa0"><div class="ttname"><a href="group__ErrorHandlingGroup.html#gac5fde843ca62e1d4288f4a4e6d480aa0">enable_floating_point_exceptions</a></div><div class="ttdeci">void enable_floating_point_exceptions()</div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_ga1d27028c1827976007fe9d29ad3a2f66"><div class="ttname"><a href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a></div><div class="ttdeci">#define ERROR(m)</div><div class="ttdoc">prints an error message to the standard error stream and aborts the program.</div><div class="ttdef"><b>Definition:</b> Error.hpp:37</div></div>
+<div class="ttc" id="astructParallel_1_1PhaseActions_html"><div class="ttname"><a href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a></div><div class="ttdoc">List of all the actions to be executed in the specified phase.</div><div class="ttdef"><b>Definition:</b> PhaseDependentActionList.hpp:16</div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_ga30995e33b089e0daea78bcc497cc69af"><div class="ttname"><a href="group__ParallelGroup.html#ga30995e33b089e0daea78bcc497cc69af">Parallel::create_from_options</a></div><div class="ttdeci">tuples::TaggedTuple&lt; Tags... &gt; create_from_options(const tuples::TaggedTuple&lt; OptionTags... &gt; &amp;options, tmpl::list&lt; Tags... &gt;) noexcept</div><div class="ttdoc">Given a list of tags and a tagged tuple containing items created from input options,...</div><div class="ttdef"><b>Definition:</b> CreateFromOptions.hpp:40</div></div>
+<div class="ttc" id="anamespaceParallel_html_af31fff079d116e958890e079a35955cfa105b296a83f9c105355403f3332af50f"><div class="ttname"><a href="namespaceParallel.html#af31fff079d116e958890e079a35955cfa105b296a83f9c105355403f3332af50f">Parallel::AlgorithmExecution::Pause</a></div><div class="ttdeci">@ Pause</div><div class="ttdoc">Stop the execution of iterable actions, but allow entry methods (communication) to explicitly request...</div></div>
+<div class="ttc" id="aclassParallel_1_1PerformAlgorithmCallback_html"><div class="ttname"><a href="classParallel_1_1PerformAlgorithmCallback.html">Parallel::PerformAlgorithmCallback</a></div><div class="ttdoc">Wraps a call to perform_algorithm.</div><div class="ttdef"><b>Definition:</b> Callback.hpp:75</div></div>
+<div class="ttc" id="astructParallel_1_1InboxInserters_1_1MemberInsert_html"><div class="ttname"><a href="structParallel_1_1InboxInserters_1_1MemberInsert.html">Parallel::InboxInserters::MemberInsert</a></div><div class="ttdoc">Inserter for inserting data that is received as the value_type of a data structure that has an insert...</div><div class="ttdef"><b>Definition:</b> InboxInserters.hpp:67</div></div>
+<div class="ttc" id="aclassParallel_1_1Main_html"><div class="ttname"><a href="classParallel_1_1Main.html">Parallel::Main</a></div><div class="ttdef"><b>Definition:</b> Main.hpp:54</div></div>
+<div class="ttc" id="aclasstuples_1_1TaggedTuple_html"><div class="ttname"><a href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt; Tags... &gt;</a></div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_ga964eab86069dc2de2f7dd55929e63ec7"><div class="ttname"><a href="group__ParallelGroup.html#ga964eab86069dc2de2f7dd55929e63ec7">Parallel::mutate</a></div><div class="ttdeci">void mutate(GlobalCache&lt; Metavariables &gt; &amp;cache, Args &amp;&amp;... args) noexcept</div><div class="ttdoc">Mutates non-const data in the cache, by calling Function::apply()</div><div class="ttdef"><b>Definition:</b> GlobalCache.hpp:634</div></div>
+<div class="ttc" id="anamespaceActionTesting_html_af2cb56d7012b27cab5d118a9fa0783d2"><div class="ttname"><a href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">ActionTesting::cache</a></div><div class="ttdeci">Parallel::GlobalCache&lt; Metavariables &gt; &amp; cache(MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const ArrayIndex &amp;array_index) noexcept</div><div class="ttdoc">Returns the GlobalCache of Component with index array_index.</div><div class="ttdef"><b>Definition:</b> MockRuntimeSystemFreeFunctions.hpp:382</div></div>
+<div class="ttc" id="astructParallel_1_1Algorithms_1_1Singleton_html"><div class="ttname"><a href="structParallel_1_1Algorithms_1_1Singleton.html">Parallel::Algorithms::Singleton</a></div><div class="ttdoc">A struct that stores the charm++ types relevant for a particular singleton component.</div><div class="ttdef"><b>Definition:</b> AlgorithmSingletonDeclarations.hpp:29</div></div>
+<div class="ttc" id="astructParallel_1_1Algorithms_1_1Array_html"><div class="ttname"><a href="structParallel_1_1Algorithms_1_1Array.html">Parallel::Algorithms::Array</a></div><div class="ttdoc">A struct that stores the charm++ types relevant for a particular array component.</div><div class="ttdef"><b>Definition:</b> AlgorithmArrayDeclarations.hpp:31</div></div>
+<div class="ttc" id="anamespaceOptions_html_aa61c7f41f21afa7646811456f673be89"><div class="ttname"><a href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a></div><div class="ttdeci">const char *const String</div><div class="ttdoc">The string used in option structs.</div><div class="ttdef"><b>Definition:</b> Options.hpp:32</div></div>
+<div class="ttc" id="aGsl_8hpp_html_a649c6961f9146205c203e45d58fd0c4c"><div class="ttname"><a href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a></div><div class="ttdeci">gsl::not_null&lt; T * &gt; make_not_null(T *ptr) noexcept</div><div class="ttdoc">Construct a not_null from a pointer. Often this will be done as an implicit conversion,...</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:880</div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga084d535585c18d4e80f8ec6052d341a3"><div class="ttname"><a href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a></div><div class="ttdeci">typename Requires_detail::requires_impl&lt; B &gt;::template_error_type_failed_to_meet_requirements_on_template_parameters Requires</div><div class="ttdoc">Express requirements on the template parameters of a function or class, replaces std::enable_if_t</div><div class="ttdef"><b>Definition:</b> Requires.hpp:67</div></div>
+<div class="ttc" id="aunique_ptr_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></div></div>
+<div class="ttc" id="aunordered_map_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a></div></div>
+<div class="ttc" id="adata_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/iterator/data.html">std::data</a></div><div class="ttdeci">T data(T... args)</div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

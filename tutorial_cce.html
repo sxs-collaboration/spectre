@@ -1,0 +1,339 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Running CCE</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">Running CCE </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><p>The basic instructions for getting up and running with a stand-alone CCE using external data are:</p><ul>
+<li>Clone spectre and build the CharacteristicExtract target</li>
+<li><p class="startli">At this point (provided the build succeeds) you should have the executable <code>bin/CharacteristicExtract</code> in the build directory; You can now run it using an input file to provide options. The input file <code>tests/InputFiles/Cce/CharacteristicExtract.yaml</code> from the spectre source tree can help you get started with writing your input file. There are a few important notes there:</p><ul>
+<li>For resolution, the example input file has lmax (<code>Cce.LMax</code>) of 12, and filter lmax (<code>Filtering.FilterLMax</code>) of 10; that'll run pretty fast but might be a little low for full precision. lmax 16, filter 14 should be pretty good, and typically precision doesn't improve above lmax 24, filter 22 (be sure to update the filter as you update lmax &ndash; it should generally be around 2 lower than the maximum l to reduce possible aliasing).</li>
+<li>If you want to just run through the end of the provided worldtube data, you can just omit the <code>EndTime</code> option and the executable will figure it out from the worldtube file.</li>
+<li>The <code>ScriOutputDensity</code> adds extra interpolation points to the output, which is useful for finite-difference derivatives on the output data, but otherwise it'll just unnecessarily inflate the output files, so if you don't need the extra points, best just set it to 1.</li>
+<li>If you're extracting at 100M or less, best to reduce the <code>TargetStepSize</code>, to around .5 at 100M and lower yet for nearer extraction.</li>
+<li>The <code>InitializeJ</code> in the example file uses <code>InverseCubic</code> which is a pretty primitive scheme, but early tests indicate that it gives the best results for most systems. If initial data is a concern, you can also try replacing the <code>InverseCubic</code> entry with: <div class="fragment"><div class="line">NoIncomingRadiation:</div>
+<div class="line">  AngularCoordTolerance: 1.0e-13</div>
+<div class="line">  MaxIterations: 500</div>
+<div class="line">  RequireConvergence: true</div>
+</div><!-- fragment --></li>
+</ul>
+<p class="startli">which are probably pretty good choices for those parameters, and the <code>RequireConvergence: true</code> will cause the iterative solve in this version to error out if it doesn't find a good frame.</p>
+</li>
+<li><p class="startli">An example of an appropriate submission command for slurm systems is: </p><div class="fragment"><div class="line"> srun -n 1 -c 1 path/to/build/bin/CharacteristicExtract ++ppn 3 \</div>
+<div class="line">--input-file path/to/input.yaml</div>
+</div><!-- fragment --><p class="startli">CCE doesn't currently scale to more than 4 cores, so those slurm options are best.</p>
+</li>
+<li>CCE will work faster if the input worldtube hdf5 file is chunked in small numbers of complete rows. This is relevant because by default, SpEC writes its worldtube files chunked along full time-series columns, which is efficient for compression, but not for reading in to SpECTRE &ndash; in that case, it is recommended to rechunk the input file before running CCE for maximum performance. This can be done, for instance, using h5py (you will need to fill in filenames appropriate to your case in place of "BondiCceR0050.h5" and "RechunkBondiCceR0050.h5"): <div class="fragment"><div class="line"><span class="keyword">import</span> h5py</div>
+<div class="line">input_file = <span class="stringliteral">&quot;BondiCceR0050.h5&quot;</span></div>
+<div class="line">output_file = <span class="stringliteral">&quot;RechunkBondiCceR0050.h5&quot;</span></div>
+<div class="line"><span class="keyword">with</span> h5py.File(input_file,<span class="stringliteral">&#39;r&#39;</span>) <span class="keyword">as</span> input_h5,\</div>
+<div class="line">  h5py.File(output_file, <span class="stringliteral">&#39;w&#39;</span>) <span class="keyword">as</span> output_h5:</div>
+<div class="line">  <span class="keywordflow">for</span> dset <span class="keywordflow">in</span> input_h5:</div>
+<div class="line">      if(<span class="stringliteral">&quot;Version&quot;</span> <span class="keywordflow">in</span> dset):</div>
+<div class="line">          output_h5[dset] = input_h5[dset][()]</div>
+<div class="line">          <span class="keywordflow">continue</span></div>
+<div class="line">      number_of_columns = input_h5[dset][()].shape[1]</div>
+<div class="line">      output_h5.create_dataset(dset, data=input_h5[dset],</div>
+<div class="line">                               maxshape=(<span class="keywordtype">None</span>, number_of_columns),</div>
+<div class="line">                               chunks=(4, number_of_columns), dtype=<span class="stringliteral">&#39;d&#39;</span>)</div>
+<div class="line">      <span class="keywordflow">for</span> attribute <span class="keywordflow">in</span> input_h5[dset].attrs.keys():</div>
+<div class="line">          output_h5[dset].attrs[attribute] = input_h5[dset].attrs[attribute]</div>
+</div><!-- fragment --></li>
+<li>The output data will be written as spin-weighted spherical harmonic modes, one physical quantity per dataset, and each row will have the time value followed by the real and imaginary parts of the complex modes in m-varies-fastest order.</li>
+</ul>
+<p>Once you have the volume data output file from a successful CCE run, you can confirm the integrity of the <a class="el" href="namespaceh5.html" title="Contains functions and classes for manipulating HDF5 files.">h5</a> file and its contents by running </p><div class="fragment"><div class="line">h5ls CharacteristicExtractVolumeData0.h5</div>
+</div><!-- fragment --><p>For the volume file produced by a successful run, the output of the <code>h5ls</code> should resemble </p><div class="fragment"><div class="line">EthInertialRetardedTime.dat Dataset {3995/Inf, 163}</div>
+<div class="line">News.dat                 Dataset {3995/Inf, 163}</div>
+<div class="line">Psi0.dat                 Dataset {3995/Inf, 163}</div>
+<div class="line">Psi1.dat                 Dataset {3995/Inf, 163}</div>
+<div class="line">Psi2.dat                 Dataset {3995/Inf, 163}</div>
+<div class="line">Psi3.dat                 Dataset {3995/Inf, 163}</div>
+<div class="line">Psi4.dat                 Dataset {3995/Inf, 163}</div>
+<div class="line">Strain.dat               Dataset {3995/Inf, 163}</div>
+<div class="line">src.tar.gz               Dataset {3750199}</div>
+</div><!-- fragment --><p>The <code>Strain.dat</code> represents the asymptotic transverse-traceless contribution to the metric scaled by the Bondi radius (to give the asymptotically leading part), the <code>News.dat</code> represents the first derivative of the strain, and each of the <code>Psi...</code> datasets represent the Weyl scalars, each scaled by the appropriate factor of the Bondi-Sachs radius to retrieve the asymptotically leading contribution.</p>
+<p>The <code>EthInertialRetardedTime.dat</code> is a diagnostic dataset that represents the angular derivative of the inertial retarded time, which determines the coordinate transformation that is performed at scri+.</p>
+<p>The following python script will load data from a successful CCE run and construct a plot of all of the physical waveform data. </p><div class="fragment"><div class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</div>
+<div class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</div>
+<div class="line"><span class="keyword">import</span> h5py <span class="keyword">as</span> h5</div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">def </span>spectre_real_mode_index(l, m):</div>
+<div class="line">    <span class="keywordflow">return</span> 2 * (l**2 + l + m)</div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">def </span>spectre_imag_mode_index(l, m):</div>
+<div class="line">    <span class="keywordflow">return</span> 2 * (l**2 + l + m) + 1</div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">def </span>get_modes_from_block_output(filename, dataset, modes=[[2, 2], [3, 3]]):</div>
+<div class="line">    <span class="keyword">with</span> h5.File(filename, <span class="stringliteral">&quot;r&quot;</span>) <span class="keyword">as</span> h5_file:</div>
+<div class="line">        timeseries_data = (h5_file[dataset + <span class="stringliteral">&quot;.dat&quot;</span>][()][:, [0] + list(</div>
+<div class="line">            np.array([[</div>
+<div class="line">                spectre_real_mode_index(x[0], x[1]),</div>
+<div class="line">                spectre_imag_mode_index(x[0], x[1])</div>
+<div class="line">            ] <span class="keywordflow">for</span> x <span class="keywordflow">in</span> modes]).flatten())])</div>
+<div class="line">    <span class="keywordflow">return</span> timeseries_data</div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line">plot_quantities = [<span class="stringliteral">&quot;Strain&quot;</span>, <span class="stringliteral">&quot;News&quot;</span>, <span class="stringliteral">&quot;Psi0&quot;</span>, <span class="stringliteral">&quot;Psi1&quot;</span>, <span class="stringliteral">&quot;Psi2&quot;</span>, <span class="stringliteral">&quot;Psi3&quot;</span>, <span class="stringliteral">&quot;Psi4&quot;</span>]</div>
+<div class="line">mode_set = [[2, 2], [3, 3]]</div>
+<div class="line">filename = <span class="stringliteral">&quot;CharacteristicExtractVolume0.h5&quot;</span></div>
+<div class="line">output_plot_filename = <span class="stringliteral">&quot;CCE_plot.pdf&quot;</span></div>
+<div class="line"> </div>
+<div class="line">legend = []</div>
+<div class="line"><span class="keywordflow">for</span> (mode_l, mode_m) <span class="keywordflow">in</span> mode_set:</div>
+<div class="line">    legend = np.append(legend, [</div>
+<div class="line">        <span class="stringliteral">r&quot;Re $Y_{&quot;</span> + str(mode_l) + <span class="stringliteral">r&quot;\,&quot;</span> + str(mode_m) + <span class="stringliteral">r&quot;}$&quot;</span>,</div>
+<div class="line">        <span class="stringliteral">r&quot;Im $Y_{&quot;</span> + str(mode_l) + <span class="stringliteral">r&quot;\,&quot;</span> + str(mode_m) + <span class="stringliteral">r&quot;}$&quot;</span></div>
+<div class="line">    ])</div>
+<div class="line"> </div>
+<div class="line">plt.figure(figsize=(8, 1.9 * len(plot_quantities)))</div>
+<div class="line"><span class="keywordflow">for</span> i <span class="keywordflow">in</span> range(len(plot_quantities)):</div>
+<div class="line">    ax = plt.subplot(len(plot_quantities), 1, i + 1)</div>
+<div class="line">    timeseries = np.transpose(</div>
+<div class="line">        get_modes_from_block_output(filename, plot_quantities[i], mode_set))</div>
+<div class="line">    <span class="keywordflow">for</span> j <span class="keywordflow">in</span> range(len(mode_set)):</div>
+<div class="line">        plt.plot(timeseries[0], timeseries[j + 1], linestyle=<span class="stringliteral">&#39;--&#39;</span>, marker=<span class="stringliteral">&#39;&#39;</span>)</div>
+<div class="line">    ax.set_xlabel(<span class="stringliteral">&quot;Simulation time (M)&quot;</span>)</div>
+<div class="line">    ax.set_ylabel(<span class="stringliteral">&quot;Mode coefficient&quot;</span>)</div>
+<div class="line">    ax.set_title(plot_quantities[i])</div>
+<div class="line">plt.tight_layout()</div>
+<div class="line">plt.savefig(output_plot_filename, dpi=400)</div>
+<div class="line">plt.clf()</div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md258"></a>
+Input data formats</h2>
+<p>The worldtube data must be constructed as spheres of constant coordinate radius, and (for the time being) written to a filename of the format <code>...CceRXXXX.h5</code>, where the <code>XXXX</code> is to be replaced by the integer for which the extraction radius is equal to <code>XXXX</code>M. For instance, a 100M extraction should have filename <code>...CceR0100.h5</code>. This scheme of labeling files with the extraction radius is constructed for compatibility with SpEC worldtube data.</p>
+<p>There are two possible formats of the input data, one based on the Cauchy metric at finite radius, and one based on Bondi data. The metric data format must be provided as spherical harmonic modes with the following datasets:</p><ul>
+<li><code>gxx.dat</code>, <code>gxy.dat</code>, <code>gxz.dat</code>, <code>gyy.dat</code>, <code>gyz.dat</code>, <code>gzz.dat</code></li>
+<li><code>Drgxx.dat</code>, <code>Drgxy.dat</code>, <code>Drgxz.dat</code>, <code>Drgyy.dat</code>, <code>Drgyz.dat</code>, <code>Drgzz.dat</code></li>
+<li><code>Dtgxx.dat</code>, <code>Dtgxy.dat</code>, <code>Dtgxz.dat</code>, <code>Dtgyy.dat</code>, <code>Dtgyz.dat</code>, <code>Dtgzz.dat</code></li>
+<li><code>Shiftx.dat</code>, <code>Shifty.dat</code>, <code>Shiftz.dat</code></li>
+<li><code>DrShiftx.dat</code>, <code>DrShifty.dat</code>, <code>DrShiftz.dat</code></li>
+<li><code>DtShiftx.dat</code>, <code>DtShifty.dat</code>, <code>DtShiftz.dat</code></li>
+<li><code>Lapse.dat</code></li>
+<li><code>DrLapse.dat</code></li>
+<li><code>DtLapse.dat</code></li>
+</ul>
+<p>In this format, each row must start with the time stamp, and the remaining values are the complex modes in m-varies-fastest format.</p>
+<p>The second format is Bondi-Sachs metric component data. This format is far more space-efficient (by around a factor of 4), and SpECTRE provides a separate executable for converting to the Bondi-Sachs worldtube format, <code>ReduceCceWorldtube</code>. The <code>ReduceCceWorldtube</code> executable should be run on a Cauchy metric worldtube file, and will produce a corresponding 'reduced' Bondi-Sachs worldtube file. The basic command-line arguments for the executable are: </p><div class="fragment"><div class="line">ReduceCceWorldtube --input-file CceR0050.h5 --output-file BondiCceR0050.h5\</div>
+<div class="line"> --lmax_factor 3</div>
+</div><!-- fragment --><p>The argument <code>--lmax_factor</code> determines the factor by which the resolution at which the boundary computation that is run will exceed the resolution of the input and output files. Empirically, we have found that <code>lmax_factor</code> of 3 is sufficient to achieve roundoff precision in all boundary data we have attempted, and an <code>lmax_factor</code> of 2 is usually sufficient to vastly exceed the precision of the simulation that provided the boundary dataset.</p>
+<p>The format is similar to the metric components, except in spin-weighted spherical harmonic modes, and the real (spin-weight-0) quantities omit the redundant negative-m modes and imaginary parts of m=0 modes. The quantities that must be provided by the Bondi-Sachs metric data format are:</p><ul>
+<li><code>Beta.dat</code></li>
+<li><code>DrJ.dat</code></li>
+<li><code>DuR.dat</code></li>
+<li><code>H.dat</code></li>
+<li><code>J.dat</code></li>
+<li><code>Q.dat</code></li>
+<li><code>R.dat</code></li>
+<li><code>U.dat</code></li>
+<li><code>W.dat</code></li>
+</ul>
+<p>The Bondi-Sachs data may also be used directly for CCE input data. To specify that the input type is in 'reduced' Bondi-Sachs form, use: </p><div class="fragment"><div class="line">...</div>
+<div class="line">Cce:</div>
+<div class="line">  H5IsBondiData: True</div>
+<div class="line">...</div>
+</div><!-- fragment --><p>Otherwise, for the Cauchy metric data format, use: </p><div class="fragment"><div class="line">...</div>
+<div class="line">Cce:</div>
+<div class="line">  H5IsBondiData: False</div>
+<div class="line">...</div>
+</div><!-- fragment --> </div></div><!-- contents -->
+</div><!-- PageDoc -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

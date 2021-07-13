@@ -1,0 +1,264 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: intrp::Vars::Info&lt; VolumeDim, TagList &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceintrp.html">intrp</a></li><li class="navelem"><a class="el" href="namespaceintrp_1_1Vars.html">Vars</a></li><li class="navelem"><a class="el" href="structintrp_1_1Vars_1_1Info.html">Info</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="structintrp_1_1Vars_1_1Info-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">intrp::Vars::Info&lt; VolumeDim, TagList &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Holds a <code>Variables</code> interpolated onto a list of points, and information about those points, for a local <code><a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a></code>.  
+ <a href="structintrp_1_1Vars_1_1Info.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="InterpolatedVars_8hpp_source.html">InterpolatedVars.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:a95f619dcc5a7686b86d120563963c15a"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="el" href="structIdPair.html">IdPair</a>&lt; <a class="el" href="classdomain_1_1BlockId.html">domain::BlockId</a>, tnsr::I&lt; double, VolumeDim, typename ::<a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt; &gt; &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Vars_1_1Info.html#a95f619dcc5a7686b86d120563963c15a">block_coord_holders</a></td></tr>
+<tr class="memdesc:a95f619dcc5a7686b86d120563963c15a"><td class="mdescLeft">&#160;</td><td class="mdescRight"><code>block_coord_holders</code> holds the list of all points (in block logical coordinates) that need to be interpolated onto for a given <code><a class="el" href="structintrp_1_1InterpolationTarget.html" title="ParallelComponent representing a set of points to be interpolated to and a function to call upon inte...">InterpolationTarget</a></code>.  <a href="structintrp_1_1Vars_1_1Info.html#a95f619dcc5a7686b86d120563963c15a">More...</a><br /></td></tr>
+<tr class="separator:a95f619dcc5a7686b86d120563963c15a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac71f233c1f00056ac6df0dcac783fb6a"><td class="memItemLeft" align="right" valign="top"><a id="ac71f233c1f00056ac6df0dcac783fb6a"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; Variables&lt; TagList &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Vars_1_1Info.html#ac71f233c1f00056ac6df0dcac783fb6a">vars</a> {}</td></tr>
+<tr class="memdesc:ac71f233c1f00056ac6df0dcac783fb6a"><td class="mdescLeft">&#160;</td><td class="mdescRight"><code>vars</code> holds the interpolated <code>Variables</code> on some subset of the points in <code>block_coord_holders</code>. The grid points inside vars are indexed according to <code>global_offsets</code> below. The size of <code>vars</code> changes as more <code><a class="el" href="classElement.html">Element</a></code>s send data to this <code><a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a></code>. <br /></td></tr>
+<tr class="separator:ac71f233c1f00056ac6df0dcac783fb6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac3f98f2cf71b24b8f7536a62434b0de"><td class="memItemLeft" align="right" valign="top"><a id="aac3f98f2cf71b24b8f7536a62434b0de"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; size_t &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Vars_1_1Info.html#aac3f98f2cf71b24b8f7536a62434b0de">global_offsets</a> {}</td></tr>
+<tr class="memdesc:aac3f98f2cf71b24b8f7536a62434b0de"><td class="mdescLeft">&#160;</td><td class="mdescRight"><code>global_offsets[j][i]</code> is the index into <code>block_coord_holders</code> that corresponds to the index <code>i</code> of the <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> held in <code>vars[j]</code>. The size of <code>global_offsets</code> changes as more <code><a class="el" href="classElement.html">Element</a></code>s send data to this <code><a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a></code>. <br /></td></tr>
+<tr class="separator:aac3f98f2cf71b24b8f7536a62434b0de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a440964071e0a6d3669c277fbc13b3fc9"><td class="memItemLeft" align="right" valign="top"><a id="a440964071e0a6d3669c277fbc13b3fc9"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set</a>&lt; <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1Vars_1_1Info.html#a440964071e0a6d3669c277fbc13b3fc9">interpolation_is_done_for_these_elements</a> {}</td></tr>
+<tr class="memdesc:a440964071e0a6d3669c277fbc13b3fc9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds the <code><a class="el" href="classElementId.html" title="An ElementId uniquely labels an Element.">ElementId</a></code>s of <code><a class="el" href="classElement.html">Element</a></code>s for which interpolation has already been done for this <code><a class="el" href="structintrp_1_1Vars_1_1Info.html" title="Holds a Variables interpolated onto a list of points, and information about those points,...">Info</a></code>. <br /></td></tr>
+<tr class="separator:a440964071e0a6d3669c277fbc13b3fc9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t VolumeDim, typename TagList&gt;<br />
+struct intrp::Vars::Info&lt; VolumeDim, TagList &gt;</h3>
+
+<p>Holds a <code>Variables</code> interpolated onto a list of points, and information about those points, for a local <code><a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a></code>. </p>
+<p><code>TagList</code> is a <code>tmpl::list</code> of tags that go into the <code>Variables</code>. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a95f619dcc5a7686b86d120563963c15a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a95f619dcc5a7686b86d120563963c15a">&#9670;&nbsp;</a></span>block_coord_holders</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t VolumeDim, typename TagList &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt;<a class="el" href="structIdPair.html">IdPair</a>&lt; <a class="el" href="classdomain_1_1BlockId.html">domain::BlockId</a>, tnsr::I&lt;double, VolumeDim, typename ::<a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>&gt; &gt; &gt; &gt; <a class="el" href="structintrp_1_1Vars_1_1Info.html">intrp::Vars::Info</a>&lt; VolumeDim, TagList &gt;::block_coord_holders</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>block_coord_holders</code> holds the list of all points (in block logical coordinates) that need to be interpolated onto for a given <code><a class="el" href="structintrp_1_1InterpolationTarget.html" title="ParallelComponent representing a set of points to be interpolated to and a function to call upon inte...">InterpolationTarget</a></code>. </p>
+<p>The number of interpolated points for which results are stored in this <code><a class="el" href="structintrp_1_1Vars_1_1Info.html" title="Holds a Variables interpolated onto a list of points, and information about those points,...">Info</a></code> (in <code>vars</code> and <code>global_offsets</code> below) corresponds to only the subset of the points in <code>block_coord_holders</code> that are contained in local <code><a class="el" href="classElement.html">Element</a></code>s. Moreover, the number of interpolated points stored in this <code><a class="el" href="structintrp_1_1Vars_1_1Info.html" title="Holds a Variables interpolated onto a list of points, and information about those points,...">Info</a></code> will change as more <code>Elements</code> send data to this <code><a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a></code>, and will be less than or equal to the size of <code>block_coord_holders</code> even after all <code><a class="el" href="classElement.html">Element</a></code>s have sent their data (this is because this <code><a class="el" href="structintrp_1_1Vars_1_1Info.html" title="Holds a Variables interpolated onto a list of points, and information about those points,...">Info</a></code> lives only on a single core, and this core will have access only to the local <code><a class="el" href="classElement.html">Element</a></code>s). </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/NumericalAlgorithms/Interpolation/<a class="el" href="InterpolatedVars_8hpp_source.html">InterpolatedVars.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

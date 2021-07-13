@@ -1,0 +1,653 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Error Handling</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#define-members">Macros</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">Error Handling</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Macros and functions used for handling errors.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classconvergence__error.html">convergence_error</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:gaf170f3984e3d0f809b2558dbd981ca35"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(a,  m)</td></tr>
+<tr class="memdesc:gaf170f3984e3d0f809b2558dbd981ca35"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assert that an expression should be true.  <a href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">More...</a><br /></td></tr>
+<tr class="separator:gaf170f3984e3d0f809b2558dbd981ca35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1d27028c1827976007fe9d29ad3a2f66"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a>(m)</td></tr>
+<tr class="memdesc:ga1d27028c1827976007fe9d29ad3a2f66"><td class="mdescLeft">&#160;</td><td class="mdescRight">prints an error message to the standard error stream and aborts the program.  <a href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">More...</a><br /></td></tr>
+<tr class="separator:ga1d27028c1827976007fe9d29ad3a2f66"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac6b7fabac0ecf1b822a9cd865e36418a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ErrorHandlingGroup.html#gac6b7fabac0ecf1b822a9cd865e36418a">CERROR</a>(m)</td></tr>
+<tr class="memdesc:gac6b7fabac0ecf1b822a9cd865e36418a"><td class="mdescLeft">&#160;</td><td class="mdescRight">prints an error message to the standard error and aborts the program.  <a href="group__ErrorHandlingGroup.html#gac6b7fabac0ecf1b822a9cd865e36418a">More...</a><br /></td></tr>
+<tr class="separator:gac6b7fabac0ecf1b822a9cd865e36418a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaceb6e0ed93004381e8ea594b7d657601"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ErrorHandlingGroup.html#gaceb6e0ed93004381e8ea594b7d657601">ERROR_NO_TRACE</a>(m)</td></tr>
+<tr class="memdesc:gaceb6e0ed93004381e8ea594b7d657601"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as ERROR but does not print a backtrace. Intended to be used for user errors, such as incorrect values in an input file.  <a href="group__ErrorHandlingGroup.html#gaceb6e0ed93004381e8ea594b7d657601">More...</a><br /></td></tr>
+<tr class="separator:gaceb6e0ed93004381e8ea594b7d657601"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga128eed9cc242b5e850cf1391744bf099"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ErrorHandlingGroup.html#ga128eed9cc242b5e850cf1391744bf099">Expects</a>(cond)</td></tr>
+<tr class="memdesc:ga128eed9cc242b5e850cf1391744bf099"><td class="mdescLeft">&#160;</td><td class="mdescRight">check expectation of pre-conditions of a function  <a href="group__ErrorHandlingGroup.html#ga128eed9cc242b5e850cf1391744bf099">More...</a><br /></td></tr>
+<tr class="separator:ga128eed9cc242b5e850cf1391744bf099"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaba71c3abbe11a93858cb1694a6a1ad68"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ErrorHandlingGroup.html#gaba71c3abbe11a93858cb1694a6a1ad68">Ensures</a>(cond)</td></tr>
+<tr class="memdesc:gaba71c3abbe11a93858cb1694a6a1ad68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check that a post-condition of a function is true.  <a href="group__ErrorHandlingGroup.html#gaba71c3abbe11a93858cb1694a6a1ad68">More...</a><br /></td></tr>
+<tr class="separator:gaba71c3abbe11a93858cb1694a6a1ad68"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa5c417ab3dbaf049be7bda549503c936"><td class="memItemLeft" align="right" valign="top"><a id="gaa5c417ab3dbaf049be7bda549503c936"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ErrorHandlingGroup.html#gaa5c417ab3dbaf049be7bda549503c936">DEBUG_STATIC_ASSERT</a>(...)</td></tr>
+<tr class="memdesc:gaa5c417ab3dbaf049be7bda549503c936"><td class="mdescLeft">&#160;</td><td class="mdescRight">A <code>static_assert</code> that is only checked in Debug builds. <br /></td></tr>
+<tr class="separator:gaa5c417ab3dbaf049be7bda549503c936"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga151b9fa962e87ed72da64306cbdc8ba7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ErrorHandlingGroup.html#ga151b9fa962e87ed72da64306cbdc8ba7">abort_with_error_message</a> (const char *expression, const char *file, int line, const char *pretty_function, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;message)</td></tr>
+<tr class="separator:ga151b9fa962e87ed72da64306cbdc8ba7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0274776a3378a2676e207003a75cf916"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ErrorHandlingGroup.html#ga0274776a3378a2676e207003a75cf916">abort_with_error_message</a> (const char *file, int line, const char *pretty_function, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;message)</td></tr>
+<tr class="separator:ga0274776a3378a2676e207003a75cf916"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab659348597041e7c0a0487f3f2a03d2a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ErrorHandlingGroup.html#gab659348597041e7c0a0487f3f2a03d2a">abort_with_error_message_no_trace</a> (const char *file, int line, const char *pretty_function, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;message)</td></tr>
+<tr class="separator:gab659348597041e7c0a0487f3f2a03d2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac5fde843ca62e1d4288f4a4e6d480aa0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ErrorHandlingGroup.html#gac5fde843ca62e1d4288f4a4e6d480aa0">enable_floating_point_exceptions</a> ()</td></tr>
+<tr class="separator:gac5fde843ca62e1d4288f4a4e6d480aa0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga15999710b74a2bb739b0273bf1bc7b7b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ErrorHandlingGroup.html#ga15999710b74a2bb739b0273bf1bc7b7b">disable_floating_point_exceptions</a> ()</td></tr>
+<tr class="separator:ga15999710b74a2bb739b0273bf1bc7b7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad6d2339bbc734dda9d64a6767a74b796"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ErrorHandlingGroup.html#gad6d2339bbc734dda9d64a6767a74b796">sys::abort</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;message)</td></tr>
+<tr class="separator:gad6d2339bbc734dda9d64a6767a74b796"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>Macros and functions used for handling errors. </p>
+<h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="gaf170f3984e3d0f809b2558dbd981ca35"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf170f3984e3d0f809b2558dbd981ca35">&#9670;&nbsp;</a></span>ASSERT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ASSERT</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">a, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">m&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keywordflow">do</span> {                                                 \</div>
+<div class="line">    if (<span class="keyword">false</span>) {                                       \</div>
+<div class="line">      static_cast&lt;void&gt;(a);                            \</div>
+<div class="line">      disable_floating_point_exceptions();             \</div>
+<div class="line">      std::ostringstream avoid_name_collisions_ASSERT; \</div>
+<div class="line">      <span class="comment">/* clang-tidy: macro arg in parentheses */</span>       \</div>
+<div class="line">      avoid_name_collisions_ASSERT &lt;&lt; m; <span class="comment">/* NOLINT */</span>  \</div>
+<div class="line">      static_cast&lt;void&gt;(avoid_name_collisions_ASSERT); \</div>
+<div class="line">      enable_floating_point_exceptions();              \</div>
+<div class="line">    }                                                  \</div>
+<div class="line">  } <span class="keywordflow">while</span> (<span class="keyword">false</span>)</div>
+</div><!-- fragment -->
+<p>Assert that an expression should be true. </p>
+<p>If the preprocessor macro SPECTRE_DEBUG is defined and the expression is false, an error message is printed to the standard error stream, and the program aborts. ASSERT should be used to catch coding errors as it does nothing in production code. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">a</td><td>the expression that must be true </td></tr>
+    <tr><td class="paramname">m</td><td>the error message as an ostream </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gac6b7fabac0ecf1b822a9cd865e36418a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac6b7fabac0ecf1b822a9cd865e36418a">&#9670;&nbsp;</a></span>CERROR</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CERROR</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">m</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keywordflow">do</span> {                                                                        \</div>
+<div class="line">    breakpoint();                                                             <a class="code" href="group__ErrorHandlingGroup.html#gad6d2339bbc734dda9d64a6767a74b796">\</a></div>
+<div class="line"><a class="code" href="group__ErrorHandlingGroup.html#gad6d2339bbc734dda9d64a6767a74b796">    sys::abort</a>(<span class="stringliteral">&quot;\n################ ERROR ################\nLine: &quot;</span>s +         \</div>
+<div class="line">               std::to_string(__LINE__) + <span class="stringliteral">&quot; of file &#39;&quot;</span>s + __FILE__ + <span class="stringliteral">&quot;&#39;\n&quot;</span>s + \</div>
+<div class="line">               m + <span class="comment">/* NOLINT */</span>                                               \</div>
+<div class="line">               <span class="stringliteral">&quot;\n#######################################\n&quot;</span>s);               \</div>
+<div class="line">  } <span class="keywordflow">while</span> (<span class="keyword">false</span>)</div>
+</div><!-- fragment -->
+<p>prints an error message to the standard error and aborts the program. </p>
+<p>CERROR is just like ERROR and so the same guidelines apply. However, because it does not use <a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_stringstream.html">std::stringstream</a> it can be used in some constexpr functions where ERROR cannot be. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">m</td><td>error message as a string, may need to use string literals </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gaba71c3abbe11a93858cb1694a6a1ad68"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaba71c3abbe11a93858cb1694a6a1ad68">&#9670;&nbsp;</a></span>Ensures</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define Ensures</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">cond</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keywordflow">if</span> (<span class="keyword">false</span>) {               \</div>
+<div class="line">    static_cast&lt;void&gt;(cond); \</div>
+<div class="line">  } else                     \</div>
+<div class="line">    static_cast&lt;void&gt;(0)</div>
+</div><!-- fragment -->
+<p>Check that a post-condition of a function is true. </p>
+<p>The Ensures macro sets the postconditions of function, it is a contract (C++20) that must be satisfied. See the CppCoreGuidelines for details. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cond</td><td>the expression that is expected to be true </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga1d27028c1827976007fe9d29ad3a2f66"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga1d27028c1827976007fe9d29ad3a2f66">&#9670;&nbsp;</a></span>ERROR</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ERROR</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">m</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keywordflow">do</span> {                                                                      \</div>
+<div class="line">    disable_floating_point_exceptions();                                    \</div>
+<div class="line">    std::ostringstream avoid_name_collisions_ERROR;                         \</div>
+<div class="line">    <span class="comment">/* clang-tidy: macro arg in parentheses */</span>                              \</div>
+<div class="line">    avoid_name_collisions_ERROR &lt;&lt; m; <span class="comment">/* NOLINT */</span>                          \</div>
+<div class="line">    abort_with_error_message(__FILE__, __LINE__,                            \</div>
+<div class="line">                             <span class="keyword">static_cast&lt;</span><span class="keyword">const </span><span class="keywordtype">char</span>*<span class="keyword">&gt;</span>(__PRETTY_FUNCTION__), \</div>
+<div class="line">                             avoid_name_collisions_ERROR.str());            \</div>
+<div class="line">  } <span class="keywordflow">while</span> (<span class="keyword">false</span>)</div>
+</div><!-- fragment -->
+<p>prints an error message to the standard error stream and aborts the program. </p>
+<p>ERROR should not be used for coding errors, but instead for user errors or failure modes of numerical algorithms. An acceptable use for error is also in the default case of a switch statement. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">m</td><td>an arbitrary output stream. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gaceb6e0ed93004381e8ea594b7d657601"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaceb6e0ed93004381e8ea594b7d657601">&#9670;&nbsp;</a></span>ERROR_NO_TRACE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ERROR_NO_TRACE</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">m</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keywordflow">do</span> {                                                                     \</div>
+<div class="line">    disable_floating_point_exceptions();                                   \</div>
+<div class="line">    std::ostringstream avoid_name_collisions_ERROR;                        \</div>
+<div class="line">    <span class="comment">/* clang-tidy: macro arg in parentheses */</span>                             \</div>
+<div class="line">    avoid_name_collisions_ERROR &lt;&lt; m; <span class="comment">/* NOLINT */</span>                         \</div>
+<div class="line">    abort_with_error_message_no_trace(                                     \</div>
+<div class="line">        __FILE__, __LINE__, <span class="keyword">static_cast&lt;</span><span class="keyword">const </span><span class="keywordtype">char</span>*<span class="keyword">&gt;</span>(__PRETTY_FUNCTION__), \</div>
+<div class="line">        avoid_name_collisions_ERROR.str());                                \</div>
+<div class="line">  } <span class="keywordflow">while</span> (<span class="keyword">false</span>)</div>
+</div><!-- fragment -->
+<p>Same as ERROR but does not print a backtrace. Intended to be used for user errors, such as incorrect values in an input file. </p>
+
+</div>
+</div>
+<a id="ga128eed9cc242b5e850cf1391744bf099"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga128eed9cc242b5e850cf1391744bf099">&#9670;&nbsp;</a></span>Expects</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define Expects</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">cond</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keywordflow">if</span> (<span class="keyword">false</span>) {               \</div>
+<div class="line">    static_cast&lt;void&gt;(cond); \</div>
+<div class="line">  } else                     \</div>
+<div class="line">    static_cast&lt;void&gt;(0)</div>
+</div><!-- fragment -->
+<p>check expectation of pre-conditions of a function </p>
+<p>The Expects macro sets the preconditions to a function's arguments, it is a contract (C++20) that must be satisfied. See the CppCoreGuidelines for details. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cond</td><td>the expression that is expected to be true </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="gad6d2339bbc734dda9d64a6767a74b796"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad6d2339bbc734dda9d64a6767a74b796">&#9670;&nbsp;</a></span>abort()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void sys::abort </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td>
+          <td class="paramname"><em>message</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Abort the program with an error message.</p>
+<h3>Details</h3>
+<p>This function calls CkExit with a non-zero argument to indicate a failure, unless the SPECTRE_TRAP_ON_ERROR environmental variable is set, in which case it raises SIGTRAP. </p>
+
+</div>
+</div>
+<a id="ga151b9fa962e87ed72da64306cbdc8ba7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga151b9fa962e87ed72da64306cbdc8ba7">&#9670;&nbsp;</a></span>abort_with_error_message() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void abort_with_error_message </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>expression</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>file</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>line</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>pretty_function</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td>
+          <td class="paramname"><em>message</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Compose an error message with an expression and a backtrace, then abort the program. </p>
+
+</div>
+</div>
+<a id="ga0274776a3378a2676e207003a75cf916"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0274776a3378a2676e207003a75cf916">&#9670;&nbsp;</a></span>abort_with_error_message() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void abort_with_error_message </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>file</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>line</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>pretty_function</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td>
+          <td class="paramname"><em>message</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Compose an error message including a backtrace and abort the program. </p>
+
+</div>
+</div>
+<a id="gab659348597041e7c0a0487f3f2a03d2a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab659348597041e7c0a0487f3f2a03d2a">&#9670;&nbsp;</a></span>abort_with_error_message_no_trace()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void abort_with_error_message_no_trace </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>file</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>line</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>pretty_function</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td>
+          <td class="paramname"><em>message</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Compose an error message without a backtrace and abort the program. </p>
+
+</div>
+</div>
+<a id="ga15999710b74a2bb739b0273bf1bc7b7b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga15999710b74a2bb739b0273bf1bc7b7b">&#9670;&nbsp;</a></span>disable_floating_point_exceptions()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void disable_floating_point_exceptions </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>After a call to this function, the code will NOT terminate with a floating point exception on overflow, divide-by-zero, and invalid operations. </p>
+
+</div>
+</div>
+<a id="gac5fde843ca62e1d4288f4a4e6d480aa0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac5fde843ca62e1d4288f4a4e6d480aa0">&#9670;&nbsp;</a></span>enable_floating_point_exceptions()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void enable_floating_point_exceptions </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>After a call to this function, the code will terminate with a floating point exception on overflow, divide-by-zero, and invalid operations. </p>
+
+</div>
+</div>
+</div><!-- contents -->
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_gad6d2339bbc734dda9d64a6767a74b796"><div class="ttname"><a href="group__ErrorHandlingGroup.html#gad6d2339bbc734dda9d64a6767a74b796">sys::abort</a></div><div class="ttdeci">void abort(const std::string &amp;message)</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

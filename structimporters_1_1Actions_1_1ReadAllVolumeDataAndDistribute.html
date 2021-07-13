@@ -1,0 +1,245 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: importers::Actions::ReadAllVolumeDataAndDistribute&lt; ImporterOptionsGroup, FieldTagsList, ReceiveComponent &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceimporters.html">importers</a></li><li class="navelem"><b>Actions</b></li><li class="navelem"><a class="el" href="structimporters_1_1Actions_1_1ReadAllVolumeDataAndDistribute.html">ReadAllVolumeDataAndDistribute</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="structimporters_1_1Actions_1_1ReadAllVolumeDataAndDistribute-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">importers::Actions::ReadAllVolumeDataAndDistribute&lt; ImporterOptionsGroup, FieldTagsList, ReceiveComponent &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Read a volume data file and distribute the data to all registered elements.  
+ <a href="structimporters_1_1Actions_1_1ReadAllVolumeDataAndDistribute.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ReadVolumeData_8hpp_source.html">ReadVolumeData.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a51f39ddc1a0674f8b6bc564419537191"><td class="memTemplParams" colspan="2"><a id="a51f39ddc1a0674f8b6bc564419537191"></a>
+template&lt;typename ParallelComponent , typename DataBox , typename Metavariables , typename ArrayIndex , Requires&lt; db::tag_is_retrievable_v&lt; Tags::RegisteredElements, DataBox &gt; and db::tag_is_retrievable_v&lt; Tags::ElementDataAlreadyRead, DataBox &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a51f39ddc1a0674f8b6bc564419537191"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>apply</b> (DataBox &amp;box, <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt; &amp;cache, const ArrayIndex &amp;) noexcept</td></tr>
+<tr class="separator:a51f39ddc1a0674f8b6bc564419537191"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename ImporterOptionsGroup, typename FieldTagsList, typename ReceiveComponent&gt;<br />
+struct importers::Actions::ReadAllVolumeDataAndDistribute&lt; ImporterOptionsGroup, FieldTagsList, ReceiveComponent &gt;</h3>
+
+<p>Read a volume data file and distribute the data to all registered elements. </p>
+<p>This action can be invoked on the <code><a class="el" href="structimporters_1_1ElementDataReader.html" title="A nodegroup parallel component that reads in a volume data file and distributes its data to elements ...">importers::ElementDataReader</a></code> component once all elements have been registered with it. It opens the data file, reads the data for each registered element and uses <code><a class="el" href="group__ParallelGroup.html#ga082a5e034d254ce6c633f9aaabe4a2d6" title="Send the data args... to the algorithm running on proxy, and tag the message with the identifier temp...">Parallel::receive_data</a></code> to distribute the data to the elements. The elements can monitor <code><a class="el" href="structimporters_1_1Tags_1_1VolumeData.html" title="Inbox tag that carries the data read from a volume data file.">importers::Tags::VolumeData</a></code> in their inbox to wait for the data and process it once it's available. You can use <code><a class="el" href="structimporters_1_1Actions_1_1ReceiveVolumeData.html" title="Wait for data from a volume data file to arrive and directly move it into the DataBox.">importers::Actions::ReceiveVolumeData</a></code> to wait for the data and move it directly into the DataBox, or implement a specialized action that might verify and post-process the data.</p>
+<p>Note that instead of invoking this action directly on the <code><a class="el" href="structimporters_1_1ElementDataReader.html" title="A nodegroup parallel component that reads in a volume data file and distributes its data to elements ...">importers::ElementDataReader</a></code> component you can invoke the iterable action <code><a class="el" href="structimporters_1_1Actions_1_1ReadVolumeData.html" title="Read a volume data file and distribute the data to all registered elements.">importers::Actions::ReadVolumeData</a></code> on the elements of an array parallel component.</p>
+<ul>
+<li>The <code>ImporterOptionsGroup</code> parameter specifies the <a class="el" href="group__OptionGroupsGroup.html">options group</a> in the input file that provides the following run-time options:<ul>
+<li><code><a class="el" href="structimporters_1_1OptionTags_1_1FileName.html" title="The file to read data from.">importers::OptionTags::FileName</a></code></li>
+<li><code><a class="el" href="structimporters_1_1OptionTags_1_1Subgroup.html" title="The subgroup within the file to read data from.">importers::OptionTags::Subgroup</a></code></li>
+<li><code><a class="el" href="structimporters_1_1OptionTags_1_1ObservationValue.html" title="The observation value at which to read data from the file.">importers::OptionTags::ObservationValue</a></code></li>
+</ul>
+</li>
+<li>The <code>FieldTagsList</code> parameter specifies a typelist of tensor tags that are read from the file and provided to each element. It is assumed that the tensor data is stored in datasets named <code><a class="el" href="group__DataBoxGroup.html#ga2f660914f4e986327a7ec1a61dddb2f4" title="Get the name of a DataBox tag, including prefixes.">db::tag_name</a>&lt;Tag&gt;() + suffix</code>, where the <code>suffix</code> is empty for scalars or <code>"_"</code> followed by the <code>Tensor::component_name</code> for each independent tensor component.</li>
+<li><code><a class="el" href="group__ParallelGroup.html#ga082a5e034d254ce6c633f9aaabe4a2d6" title="Send the data args... to the algorithm running on proxy, and tag the message with the identifier temp...">Parallel::receive_data</a></code> is invoked on each registered element of the <code>ReceiveComponent</code> to populate <code><a class="el" href="structimporters_1_1Tags_1_1VolumeData.html" title="Inbox tag that carries the data read from a volume data file.">importers::Tags::VolumeData</a></code> in the element's inbox with a <code>tuples::tagged_tuple_from_typelist&lt;FieldTagsList&gt;</code> containing the tensor data for that element. The <code>ReceiveComponent</code> must the the same that was encoded into the <code><a class="el" href="classobservers_1_1ArrayComponentId.html" title="An ID type that identifies both the parallel component and the index in the parallel component.">observers::ArrayComponentId</a></code> used to register the elements.</li>
+</ul>
+<dl class="section see"><dt>See also</dt><dd>Dev guide on <a class="el" href="dev_guide_importing.html">Importing data</a> </dd></dl>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/IO/Importers/Actions/<a class="el" href="ReadVolumeData_8hpp_source.html">ReadVolumeData.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

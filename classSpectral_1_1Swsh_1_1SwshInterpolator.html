@@ -1,0 +1,603 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Spectral::Swsh::SwshInterpolator Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceSpectral.html">Spectral</a></li><li class="navelem"><a class="el" href="namespaceSpectral_1_1Swsh.html">Swsh</a></li><li class="navelem"><a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html">SwshInterpolator</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classSpectral_1_1Swsh_1_1SwshInterpolator-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Spectral::Swsh::SwshInterpolator Class Reference<div class="ingroups"><a class="el" href="group__SwshGroup.html">Spin-weighted spherical harmonics</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Performs interpolation for spin-weighted spherical harmonics by taking advantage of the Clenshaw method of expanding recurrence relations.  
+ <a href="classSpectral_1_1Swsh_1_1SwshInterpolator.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="SwshInterpolation_8hpp_source.html">SwshInterpolation.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:aa508745f2878fb53463ee76473901fe8"><td class="memItemLeft" align="right" valign="top"><a id="aa508745f2878fb53463ee76473901fe8"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SwshInterpolator</b> (const <a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html">SwshInterpolator</a> &amp;)=default</td></tr>
+<tr class="separator:aa508745f2878fb53463ee76473901fe8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aabb983b7b7863e4f5eebe90eaff0e315"><td class="memItemLeft" align="right" valign="top"><a id="aabb983b7b7863e4f5eebe90eaff0e315"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SwshInterpolator</b> (<a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html">SwshInterpolator</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:aabb983b7b7863e4f5eebe90eaff0e315"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7729117fff5aba42e02df1a06d4ff508"><td class="memItemLeft" align="right" valign="top"><a id="a7729117fff5aba42e02df1a06d4ff508"></a>
+<a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html">SwshInterpolator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html">SwshInterpolator</a> &amp;)=default</td></tr>
+<tr class="separator:a7729117fff5aba42e02df1a06d4ff508"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0dc5959a07b6b6cb7b6a520ca0c975fd"><td class="memItemLeft" align="right" valign="top"><a id="a0dc5959a07b6b6cb7b6a520ca0c975fd"></a>
+<a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html">SwshInterpolator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html">SwshInterpolator</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a0dc5959a07b6b6cb7b6a520ca0c975fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adf94c362220bb7701b3968a6e9e02c5b"><td class="memItemLeft" align="right" valign="top"><a id="adf94c362220bb7701b3968a6e9e02c5b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SwshInterpolator</b> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;theta, const <a class="el" href="classDataVector.html">DataVector</a> &amp;phi, size_t l_max) noexcept</td></tr>
+<tr class="separator:adf94c362220bb7701b3968a6e9e02c5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ada7a7203ea8bd145bc172f6129bf195b"><td class="memTemplParams" colspan="2">template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:ada7a7203ea8bd145bc172f6129bf195b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html#ada7a7203ea8bd145bc172f6129bf195b">interpolate</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt; interpolated, const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; &amp;goldberg_modes) const noexcept</td></tr>
+<tr class="memdesc:ada7a7203ea8bd145bc172f6129bf195b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the Clenshaw recurrence sum, returning by pointer <code>interpolated</code> of interpolating the <code>goldberg_modes</code> at the collocation points passed to the constructor.  <a href="classSpectral_1_1Swsh_1_1SwshInterpolator.html#ada7a7203ea8bd145bc172f6129bf195b">More...</a><br /></td></tr>
+<tr class="separator:ada7a7203ea8bd145bc172f6129bf195b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4dd71cf55aa10fc64d3aa07993133a81"><td class="memTemplParams" colspan="2">template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:a4dd71cf55aa10fc64d3aa07993133a81"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html#a4dd71cf55aa10fc64d3aa07993133a81">interpolate</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt; interpolated, const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; &amp;libsharp_collocation) const noexcept</td></tr>
+<tr class="memdesc:a4dd71cf55aa10fc64d3aa07993133a81"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the Clenshaw recurrence sum, returning by pointer <code>interpolated</code> of interpolating function represented by <code>libsharp_collocation</code> at the target points passed to the constructor.  <a href="classSpectral_1_1Swsh_1_1SwshInterpolator.html#a4dd71cf55aa10fc64d3aa07993133a81">More...</a><br /></td></tr>
+<tr class="separator:a4dd71cf55aa10fc64d3aa07993133a81"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0462bdeff05c2c9f1b9b0878ae755f5d"><td class="memTemplParams" colspan="2">template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:a0462bdeff05c2c9f1b9b0878ae755f5d"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html#a0462bdeff05c2c9f1b9b0878ae755f5d">direct_evaluation_swsh_at_l_min</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt; harmonic, int m) const noexcept</td></tr>
+<tr class="memdesc:a0462bdeff05c2c9f1b9b0878ae755f5d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate the SWSH function at the lowest \(l\) value for a given \(m\) at the target interpolation points.  <a href="classSpectral_1_1Swsh_1_1SwshInterpolator.html#a0462bdeff05c2c9f1b9b0878ae755f5d">More...</a><br /></td></tr>
+<tr class="separator:a0462bdeff05c2c9f1b9b0878ae755f5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a935a9ac257602d1e74657949e402e763"><td class="memTemplParams" colspan="2">template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:a935a9ac257602d1e74657949e402e763"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html#a935a9ac257602d1e74657949e402e763">evaluate_swsh_at_l_min_plus_one</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt; harmonic, const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; &amp;harmonic_at_l_min, int m) const noexcept</td></tr>
+<tr class="memdesc:a935a9ac257602d1e74657949e402e763"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate the SWSH function at the next-to-lowest \(l\) value for a given \(m\) at the target interpolation points, given input harmonic values for the lowest \(l\) value.  <a href="classSpectral_1_1Swsh_1_1SwshInterpolator.html#a935a9ac257602d1e74657949e402e763">More...</a><br /></td></tr>
+<tr class="separator:a935a9ac257602d1e74657949e402e763"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e2cde18f4120f9570fc8da82e28c9a1"><td class="memTemplParams" colspan="2">template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:a0e2cde18f4120f9570fc8da82e28c9a1"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html#a0e2cde18f4120f9570fc8da82e28c9a1">evaluate_swsh_m_recurrence_at_l_min</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt; harmonic, int m) const noexcept</td></tr>
+<tr class="memdesc:a0e2cde18f4120f9570fc8da82e28c9a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate the SWSH function at the lowest \(l\) value for a given \(m\) at the target interpolation points, given harmonic data at the next lower \(m\) (by magnitude), passed in by the same pointer used for the return.  <a href="classSpectral_1_1Swsh_1_1SwshInterpolator.html#a0e2cde18f4120f9570fc8da82e28c9a1">More...</a><br /></td></tr>
+<tr class="separator:a0e2cde18f4120f9570fc8da82e28c9a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26f4cd6e86120e4623205e8f2228609b"><td class="memTemplParams" colspan="2">template&lt;int Spin&gt; </td></tr>
+<tr class="memitem:a26f4cd6e86120e4623205e8f2228609b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html#a26f4cd6e86120e4623205e8f2228609b">clenshaw_sum</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt; interpolation, const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; &amp;l_min_harmonic, const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; &amp;l_min_plus_one_harmonic, const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; &amp;goldberg_modes, int m) const noexcept</td></tr>
+<tr class="memdesc:a26f4cd6e86120e4623205e8f2228609b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the core Clenshaw interpolation at fixed \(m\), accumulating the result in <code>interpolation</code>.  <a href="classSpectral_1_1Swsh_1_1SwshInterpolator.html#a26f4cd6e86120e4623205e8f2228609b">More...</a><br /></td></tr>
+<tr class="separator:a26f4cd6e86120e4623205e8f2228609b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a815e7bc8d10bc5a107db0de2adbb6731"><td class="memItemLeft" align="right" valign="top"><a id="a815e7bc8d10bc5a107db0de2adbb6731"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html#a815e7bc8d10bc5a107db0de2adbb6731">pup</a> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="memdesc:a815e7bc8d10bc5a107db0de2adbb6731"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialization for Charm++. <br /></td></tr>
+<tr class="separator:a815e7bc8d10bc5a107db0de2adbb6731"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Performs interpolation for spin-weighted spherical harmonics by taking advantage of the Clenshaw method of expanding recurrence relations. </p>
+<h3>Details</h3>
+<p>During construction, we cache several functions of the target interpolation points that will be used during the Clenshaw evaluation. A new <code><a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html" title="Performs interpolation for spin-weighted spherical harmonics by taking advantage of the Clenshaw meth...">SwshInterpolator</a></code> object must be created for each new set of target points, but the member function <code><a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html#ada7a7203ea8bd145bc172f6129bf195b" title="Perform the Clenshaw recurrence sum, returning by pointer interpolated of interpolating the goldberg_...">SwshInterpolator::interpolate()</a></code> may be called on several different coefficients or collocation sets, and of different spin-weights.</p>
+<h2><a class="anchor" id="autotoc_md110"></a>
+Recurrence constants</h2>
+<p>This utility obtains the Clenshaw interpolation constants from a <code><a class="el" href="classStaticCache.html">StaticCache</a></code>, so that 'universal' quantities can be calculated only once per execution and re-used on each interpolation.</p>
+<p>We evaluate the recurrence coefficients \(\alpha_l^{(a,b)}\) and \(\beta_l^{(a,b)}\), where \(a = |s + m|\), \(b = |s - m|\), and</p>
+<p class="formulaDsp">
+\[ {}_sY_{l, m}(\theta, \phi) = \alpha_l^{(a,b)}(\theta) {}_s Y_{l-1, m} + \beta_l^{(a, b)} {}_s Y_{l - 2, m}(\theta, \phi) \]
+</p>
+<p>The core Clenshaw recurrence is in the \(l\) modes of the spin-weighted spherical harmonic. For a set of modes \(a_l^{(a,b)}\) at fixed \(m\), the function value is evaluated by the recurrence:</p>
+<p class="formulaDsp">
+\begin{align*} y^{(a, b)}_{l_\text{max} + 2} &amp;= y^{(a, b)}_{l_\text{max} + 1} = 0 \\ y^{(a, b)}_{l}(\theta) &amp;= \alpha_{l + 1}^{(a, b)} y^{(a, b)}_{l + 1}(\theta) + \beta_{l + 2}^{(a,b)} y^{(a, b)}_{l + 2}(\theta) + a_l^{(a, b)} \\ f_m(\theta, \phi) &amp;= \beta_{l_{\text{min}} + 2} {}_s Y_{l_{\text{min}}, m}(\theta, \phi) y^{(a, b)}_2(\theta) + {}_s Y_{l_{\text{min}} + 1, m}(\theta, \phi) y^{(a, b)}_1(\theta) + a_0^{(a, b)} {}_s Y_{l_{\text{min}}, m}(\theta, \phi), \end{align*}
+</p>
+<p>where \(l_{\text{min}} = \max(|m|, |s|)\) is the lowest nonvanishing \(l\) mode for a given \(m\) and \(s\).</p>
+<p>The coefficients to cache are inferred from a mechanical but lengthy calculation involving the recurrence relation for the Jacobi polynomials. The result is:</p>
+<p class="formulaDsp">
+\begin{align*} \alpha_l^{(a, b)} &amp;= \frac{\sqrt{(2l + 1)(2l - 1)}} {2\sqrt{(l + k)(l + k + a + b)(l + k + a)(l + k + b)}} \left[2 l \cos(\theta) + \frac{a^2 - b^2}{2 l - 2}\right] \\ \beta_l^{(a, b)} &amp; = - \sqrt{\frac{(2 l + 1)(l + k + a - 1)(l + k + b - 1) (l + k - 1)(l + k + a + b - 1)} {(2l - 3)(l + k)(l + k + a + b)(l + k + a)(l + k + b)}} \frac{2 l}{2 l - 2}, \end{align*}
+</p>
+<p> where \(k = - (a + b)/2\) (which is always integral due to the properties of \(a\) and \(b\)). Note that because the values of \(\alpha\) and \(\beta\) in the recurrence relation are not needed for any value below \(l_{\text{min}} + 2\), so none of the values in the square-roots or denominators take pathological values for any of the coefficients we require.</p>
+<p>The \(\beta\) constants are filled in member variable <code>beta_constant</code>. The \(\alpha\) values are separately stored as the prefactor for the \(\cos(\theta)\) term and the constant term in <code>alpha_prefactor</code> and <code>alpha_constant</code> member variables.</p>
+<p>In addition, it is efficient to cache recurrence coefficients necessary for generating the first couple of spin-weighted spherical harmonic functions for each \(m\) used in the Clenshaw sum.</p>
+<p>The member variable <code>harmonic_at_l_min_prefactors</code> holds the prefactors for directly evaluating the harmonics at \(s &gt;= m\),</p>
+<p class="formulaDsp">
+\begin{align*} {}_s Y_{|s| m} = {}_s C_{m} e^{i m \phi} \sin^a(\theta/2) \cos^b(\theta/2), \end{align*}
+</p>
+<p>where \({}_s C_m\) are the cached prefactors that take the values</p>
+<p class="formulaDsp">
+\begin{align*} {}_s C_m = (-1)^{m + \lambda(m)} \sqrt{\frac{(2 |s| + 1) (|s| + k)!} {4 \pi (|s| + k + a)! (|s| + k + b)!}} \end{align*}
+</p>
+<p>and</p>
+<p class="formulaDsp">
+\begin{align*} \lambda(m) = \left\{ \begin{array}{ll} 0 &amp;\text{ for } s \ge -m\\ s + m &amp;\text{ for } s &lt; -m \end{array} \right.. \end{align*}
+</p>
+<p>The member variable <code>harmonic_m_recurrence_prefactors</code> holds the prefactors necessary to evaluate the lowest harmonics for each \(m\) from the next lowest-in-magnitude \(m\), allowing most leading harmonics to recursively derived.</p>
+<p class="formulaDsp">
+\begin{align*} {}_s Y_{|m|, m} = {}_s D_m \sin(\theta / 2) \cos(\theta / 2) \left\{ \begin{array}{ll} e^{i \phi} {}_s Y_{|m| - 1, m - 1} &amp;\text{ for } m &gt; 0\\ e^{-i \phi} {}_s Y_{|m| - 1, m + 1} &amp;\text{ for } m &lt; 0 \end{array}\right., \end{align*}
+</p>
+<p>where \({}_s D_m\) are the cached prefactors that take the values</p>
+<p class="formulaDsp">
+\begin{align*} {}_s D_m = -(-1)^{\Delta \lambda(m)} \sqrt{ \frac{(2 |m| + 1)(k + |m| + a + b - 1)(k + |m| + a + b)} {(2 |m| - 1)(k + |m| + a)(k + |m| + b)}}, \end{align*}
+</p>
+<p> and \(\Delta \lambda(m)\) is the difference in \(\lambda(m)\) between the harmonic on the left-hand side and right-hand side of the above recurrence relation, that is \(\lambda(m) - \lambda(m - 1)\) for positive \(m\) and \(\lambda(m) - \lambda(m + 1)\) for negative \(m\).</p>
+<p>Finally, the member variable <code>harmonic_at_l_min_plus_one_recurrence_prefactors</code> holds the prefactors necessary to evaluate parts of the recurrence relations from the lowest \(l\) for a given \(m\) to the next-to-lowest \(l\).</p>
+<p class="formulaDsp">
+\begin{align*} {}_s Y_{l_{\min} + 1, m} = {}_s E_m \left[(a + 1) + (a + b + 2) \frac{(\cos(\theta) - 1)}{2}\right] {}_s Y_{l_{\min}, m}. \end{align*}
+</p>
+<p>where \({}_s E_m\) are the cached prefactors that take the values</p>
+<p class="formulaDsp">
+\begin{align*} {}_s E_{m} = \sqrt{\frac{2 l_{\min} + 3}{ 2 l_{\min} + 1}} \sqrt{\frac{(l_{\min} + k + 1)(l_{\min} + k + a + b + 1)} {(l_{\min} + k + a + 1)(l_{\min} + k + b + 1)}} \end{align*}
+</p>
+ </div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a26f4cd6e86120e4623205e8f2228609b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26f4cd6e86120e4623205e8f2228609b">&#9670;&nbsp;</a></span>clenshaw_sum()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Spectral::Swsh::SwshInterpolator::clenshaw_sum </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>interpolation</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; &amp;&#160;</td>
+          <td class="paramname"><em>l_min_harmonic</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; &amp;&#160;</td>
+          <td class="paramname"><em>l_min_plus_one_harmonic</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; &amp;&#160;</td>
+          <td class="paramname"><em>goldberg_modes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>m</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Perform the core Clenshaw interpolation at fixed \(m\), accumulating the result in <code>interpolation</code>. </p>
+<h3>Details</h3>
+<p>Included in the public interface for thorough testing, most use cases should just use the <code>interpolate</code> member function. </p>
+
+</div>
+</div>
+<a id="a0462bdeff05c2c9f1b9b0878ae755f5d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0462bdeff05c2c9f1b9b0878ae755f5d">&#9670;&nbsp;</a></span>direct_evaluation_swsh_at_l_min()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Spectral::Swsh::SwshInterpolator::direct_evaluation_swsh_at_l_min </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>harmonic</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>m</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Evaluate the SWSH function at the lowest \(l\) value for a given \(m\) at the target interpolation points. </p>
+<h3>Details</h3>
+<p>Included in the public interface for thorough testing, most use cases should just use the <code><a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html#ada7a7203ea8bd145bc172f6129bf195b" title="Perform the Clenshaw recurrence sum, returning by pointer interpolated of interpolating the goldberg_...">SwshInterpolator::interpolate()</a></code> member function. </p>
+
+</div>
+</div>
+<a id="a935a9ac257602d1e74657949e402e763"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a935a9ac257602d1e74657949e402e763">&#9670;&nbsp;</a></span>evaluate_swsh_at_l_min_plus_one()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Spectral::Swsh::SwshInterpolator::evaluate_swsh_at_l_min_plus_one </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>harmonic</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; &amp;&#160;</td>
+          <td class="paramname"><em>harmonic_at_l_min</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>m</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Evaluate the SWSH function at the next-to-lowest \(l\) value for a given \(m\) at the target interpolation points, given input harmonic values for the lowest \(l\) value. </p>
+<h3>Details</h3>
+<p>Included in the public interface for thorough testing, most use cases should just use the <code><a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html#ada7a7203ea8bd145bc172f6129bf195b" title="Perform the Clenshaw recurrence sum, returning by pointer interpolated of interpolating the goldberg_...">SwshInterpolator::interpolate()</a></code> member function. </p>
+
+</div>
+</div>
+<a id="a0e2cde18f4120f9570fc8da82e28c9a1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0e2cde18f4120f9570fc8da82e28c9a1">&#9670;&nbsp;</a></span>evaluate_swsh_m_recurrence_at_l_min()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Spectral::Swsh::SwshInterpolator::evaluate_swsh_m_recurrence_at_l_min </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>harmonic</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>m</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Evaluate the SWSH function at the lowest \(l\) value for a given \(m\) at the target interpolation points, given harmonic data at the next lower \(m\) (by magnitude), passed in by the same pointer used for the return. </p>
+<h3>Details</h3>
+<p>Included in the public interface for thorough testing, most use cases should just use the <code><a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html#ada7a7203ea8bd145bc172f6129bf195b" title="Perform the Clenshaw recurrence sum, returning by pointer interpolated of interpolating the goldberg_...">SwshInterpolator::interpolate()</a></code> member function. </p>
+
+</div>
+</div>
+<a id="a4dd71cf55aa10fc64d3aa07993133a81"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4dd71cf55aa10fc64d3aa07993133a81">&#9670;&nbsp;</a></span>interpolate() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Spectral::Swsh::SwshInterpolator::interpolate </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>interpolated</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; &amp;&#160;</td>
+          <td class="paramname"><em>libsharp_collocation</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Perform the Clenshaw recurrence sum, returning by pointer <code>interpolated</code> of interpolating function represented by <code>libsharp_collocation</code> at the target points passed to the constructor. </p>
+<h3>Details</h3>
+<p>The core Clenshaw recurrence is in the \(l\) modes of the spin-weighted spherical harmonic. For a set of modes \(a_l^{(a,b)}\) at fixed \(m\), the function value is evaluated by the recurrence:</p>
+<p class="formulaDsp">
+\begin{align*} y^{(a, b)}_{l_\text{max} + 2} &amp;= y^{(a, b)}_{l_\text{max} + 1} = 0 \\ y^{(a, b)}_{l}(\theta) &amp;= \alpha_{l + 1}^{(a, b)} y^{(a, b)}_{l + 1}(\theta) + \beta_{l + 2}^{(a,b)} y^{(a, b)}_{l + 2}(\theta) + a_l^{(a, b)} \\ f_m(\theta, \phi) &amp;= \beta_{l_{\text{min}} + 2} {}_s Y_{l_{\text{min}}, m}(\theta, \phi) y^{(a, b)}_2(\theta) + {}_s Y_{l_{\text{min}} + 1, m}(\theta, \phi) y^{(a, b)}_1(\theta) + a_0^{(a, b)} {}_s Y_{l_{\text{min}}, m}(\theta, \phi) \end{align*}
+</p>
+<p>The recurrence in \(l\) accomplishes much of the work, but for full efficiency, we also recursively evaluate the lowest handful of \(l\)s for each \(m\). The details of those additional recurrence tricks can be found in the documentation for <code>ClenshawRecurrenceConstants</code>. </p>
+
+</div>
+</div>
+<a id="ada7a7203ea8bd145bc172f6129bf195b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ada7a7203ea8bd145bc172f6129bf195b">&#9670;&nbsp;</a></span>interpolate() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int Spin&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Spectral::Swsh::SwshInterpolator::interpolate </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, Spin &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>interpolated</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexModalVector.html">ComplexModalVector</a>, Spin &gt; &amp;&#160;</td>
+          <td class="paramname"><em>goldberg_modes</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Perform the Clenshaw recurrence sum, returning by pointer <code>interpolated</code> of interpolating the <code>goldberg_modes</code> at the collocation points passed to the constructor. </p>
+<h3>Details</h3>
+<p>The core Clenshaw recurrence is in the \(l\) modes of the spin-weighted spherical harmonic. For a set of modes \(a_l^{(a,b)}\) at fixed \(m\), the function value is evaluated by the recurrence:</p>
+<p class="formulaDsp">
+\begin{align*} y^{(a, b)}_{l_\text{max} + 2} &amp;= y^{(a, b)}_{l_\text{max} + 1} = 0 \\ y^{(a, b)}_{l}(\theta) &amp;= \alpha_{l + 1}^{(a, b)} y^{(a, b)}_{l + 1}(\theta) + \beta_{l + 2}^{(a,b)} y^{(a, b)}_{l + 2}(\theta) + a_l^{(a, b)} \\ f_m(\theta, \phi) &amp;= \beta_{l_{\text{min}} + 2} {}_s Y_{l_{\text{min}}, m}(\theta, \phi) y^{(a, b)}_2(\theta) + {}_s Y_{l_{\text{min}} + 1, m}(\theta, \phi) y^{(a, b)}_1(\theta) + a_0^{(a, b)} {}_s Y_{l_{\text{min}}, m}(\theta, \phi) \end{align*}
+</p>
+<p>The recurrence in \(l\) accomplishes much of the work, but for full efficiency, we also recursively evaluate the lowest handful of \(l\)s for each \(m\). The details of those additional recurrence tricks can be found in the documentation for <code>ClenshawRecurrenceConstants</code>. </p>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/NumericalAlgorithms/Spectral/<a class="el" href="SwshInterpolation_8hpp_source.html">SwshInterpolation.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

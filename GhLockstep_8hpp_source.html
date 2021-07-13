@@ -1,0 +1,337 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_d7cddb31ba741ba3a4d5be000d880a30.html">Evolution</a></li><li class="navelem"><a class="el" href="dir_ae9813db12dd9fd3f3106ad3644a1b2a.html">Systems</a></li><li class="navelem"><a class="el" href="dir_b9586a27d0e1f299c51d3004d7f0b675.html">Cce</a></li><li class="navelem"><a class="el" href="dir_ba0b5081e031843dcf0ad57e86bf8d70.html">InterfaceManagers</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">GhLockstep.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/deque.html">deque</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/optional.html">optional</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/tuple.html">tuple</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160; </div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Tensor_8hpp.html">DataStructures/Tensor/Tensor.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TypeAliases_8hpp.html">DataStructures/Tensor/TypeAliases.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/InterfaceManagers/GhInterpolationStrategies.hpp&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Options_8hpp.html">Options/Options.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="CharmPupable_8hpp.html">Parallel/CharmPupable.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TimeStepId_8hpp.html">Time/TimeStepId.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160; </div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceCce_1_1InterfaceManagers.html">Cce::InterfaceManagers</a> {</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment"> * \brief Simple implementation of a `GhInterfaceManager` that only</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment"> * provides boundary data on matching `TimeStepId`s</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment"> * \details This version of the interface manager assumes that the CCE system</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment"> * and the generalized harmonic system that it communicates with evolve with an</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment"> * identical time stepper and on identical time step intervals (they evolve in</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment"> * &#39;lock step&#39;). As a result, and to streamline communications, new data is</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment"> * always immediately &#39;ready&#39; and requests are ignored to produce the behavior</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment"> * of just immediately gauge-transforming and sending the data to the CCE</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment"> * component as soon as it becomes available from the GH system.</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment"> * \warning Using this interface manager when the GH components and the CCE</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment"> * evolution are not identically stepped is considered undefined behavior. The</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment"> * outcome will likely be that CCE will fail to evolve and the boundary data</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment"> * will be continually inserted into a rapidly expanding inbox.</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno"><a class="line" href="classCce_1_1InterfaceManagers_1_1GhLockstep.html">   38</a></span>&#160;<span class="keyword">class </span><a class="code" href="classCce_1_1InterfaceManagers_1_1GhLockstep.html">GhLockstep</a> : <span class="keyword">public</span> <a class="code" href="classCce_1_1InterfaceManagers_1_1GhInterfaceManager.html">GhInterfaceManager</a> {</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  <span class="keyword">using</span> GhInterfaceManager::gh_variables;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160; </div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help{</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;      <span class="stringliteral">&quot;Pass data between GH and CCE systems on matching timesteps only.&quot;</span>};</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160; </div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  <span class="keyword">using</span> options = tmpl::list&lt;&gt;;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160; </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  <a class="code" href="classCce_1_1InterfaceManagers_1_1GhLockstep.html">GhLockstep</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  <span class="keyword">explicit</span> <a class="code" href="classCce_1_1InterfaceManagers_1_1GhLockstep.html">GhLockstep</a>(CkMigrateMessage* <span class="comment">/*unused*/</span>) noexcept {}</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;  WRAPPED_PUPable_decl_template(<a class="code" href="classCce_1_1InterfaceManagers_1_1GhLockstep.html">GhLockstep</a>);  <span class="comment">// NOLINT</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160; </div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;GhInterfaceManager&gt;</a> get_clone() <span class="keyword">const</span> noexcept <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment">  /// \brief Store a provided data set in a `std::deque`.</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment">  ///</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment">  /// \details The lock-step constraint ensures that only the generalized</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment">  /// harmonic variables `spacetime_metric`, `phi`, and `pi` are used. The</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment">  /// remaining variables are accepted to comply with the more general abstract</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment">  /// interface.</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment"></span>  <span class="keywordtype">void</span> <a class="code" href="classCce_1_1InterfaceManagers_1_1GhLockstep.html#a5a9415e5116a347e23f50365c2cfeccc">insert_gh_data</a>(</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;      <a class="code" href="classTimeStepId.html">TimeStepId</a> time_id, <span class="keyword">const</span> tnsr::aa&lt;DataVector, 3&gt;&amp; <a class="code" href="group__GeneralRelativityGroup.html#gaf691cdef10c2fdc735947e5e7190b529">spacetime_metric</a>,</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;      <span class="keyword">const</span> tnsr::iaa&lt;DataVector, 3&gt;&amp; <a class="code" href="group__GeneralRelativityGroup.html#gaecccadb6658f3735cfb7344c780abd97">phi</a>, <span class="keyword">const</span> tnsr::aa&lt;DataVector, 3&gt;&amp; <a class="code" href="group__GeneralRelativityGroup.html#ga0f8ea77b898950a2a3ab6a5feea01935">pi</a>,</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;      <span class="keyword">const</span> tnsr::aa&lt;DataVector, 3&gt;&amp; dt_spacetime_metric = {},</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;      <span class="keyword">const</span> tnsr::iaa&lt;DataVector, 3&gt;&amp; dt_phi = {},</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;      <span class="keyword">const</span> tnsr::aa&lt;DataVector, 3&gt;&amp; dt_pi = {}) noexcept <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment">  /// \brief next time information is ignored by this implementation, so this is</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment">  /// a no-op.</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno"><a class="line" href="classCce_1_1InterfaceManagers_1_1GhLockstep.html#a49d0bada832ed3ef2674211d60fea4be">   70</a></span>&#160;<span class="comment"></span>  <span class="keywordtype">void</span> <a class="code" href="classCce_1_1InterfaceManagers_1_1GhLockstep.html#a49d0bada832ed3ef2674211d60fea4be">insert_next_gh_time</a>(<a class="code" href="classTimeStepId.html">TimeStepId</a> <span class="comment">/*time_id*/</span>,</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;                           <a class="code" href="classTimeStepId.html">TimeStepId</a> <span class="comment">/*next_time_id*/</span>) noexcept <span class="keyword">override</span> {}</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment">  /// \brief Requests are ignored by this implementation, so this is a no-op.</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno"><a class="line" href="classCce_1_1InterfaceManagers_1_1GhLockstep.html#ae74e8623b455a194e5c3942dd04f749d">   74</a></span>&#160;<span class="comment"></span>  <span class="keywordtype">void</span> <a class="code" href="classCce_1_1InterfaceManagers_1_1GhLockstep.html#ae74e8623b455a194e5c3942dd04f749d">request_gh_data</a>(<span class="keyword">const</span> <a class="code" href="classTimeStepId.html">TimeStepId</a>&amp; <span class="comment">/*time_id*/</span>) noexcept <span class="keyword">override</span> {}</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment">  /// \brief Return a `std::optional&lt;std::tuple&gt;` of the least recently</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment">  /// submitted generalized harmonic boundary data if any exists and removes it</span></div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment">  /// from the internal `std::deque`, otherwise returns `std::nullopt`.</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment"></span>  <span class="keyword">auto</span> <a class="code" href="classCce_1_1InterfaceManagers_1_1GhLockstep.html#a13f4a1efd0ff73a2896b84c63e2e01c9">retrieve_and_remove_first_ready_gh_data</a>() noexcept</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;      -&gt; std::optional&lt;std::tuple&lt;<a class="code" href="classTimeStepId.html">TimeStepId</a>, gh_variables&gt;&gt; override;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment">  /// \brief This class ignores requests to ensure a one-way communication</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment">  /// pattern, so the number of requests is always 0.</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno"><a class="line" href="classCce_1_1InterfaceManagers_1_1GhLockstep.html#a2355721ae65a4f5447ec3d4a834e4192">   84</a></span>&#160;<span class="comment"></span>  <span class="keywordtype">size_t</span> <a class="code" href="classCce_1_1InterfaceManagers_1_1GhLockstep.html#a2355721ae65a4f5447ec3d4a834e4192">number_of_pending_requests</a>() const noexcept<span class="keyword"> override </span>{ <span class="keywordflow">return</span> 0; }</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment">  /// \brief The number of times at which data from a GH evolution have been</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment">  /// stored and not yet retrieved</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno"><a class="line" href="classCce_1_1InterfaceManagers_1_1GhLockstep.html#a9dd37f21e7e805ef9a04059e06224225">   88</a></span>&#160;<span class="comment"></span>  <span class="keywordtype">size_t</span> <a class="code" href="classCce_1_1InterfaceManagers_1_1GhLockstep.html#a9dd37f21e7e805ef9a04059e06224225">number_of_gh_times</a>() const noexcept<span class="keyword"> override </span>{</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    <span class="keywordflow">return</span> provided_data_.size();</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;  }</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment">  /// Serialization for Charm++.</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment"></span>  <span class="keywordtype">void</span> <a class="code" href="classCce_1_1InterfaceManagers_1_1GhLockstep.html#a5d7d695883145b4c47fbf0d83eefeffd">pup</a>(PUP::er&amp; p) noexcept <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160; </div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;  <a class="code" href="namespaceCce_1_1InterfaceManagers.html#ae9ec3751ad7e3dae08d7229796c9e466">InterpolationStrategy</a> get_interpolation_strategy() const noexcept<span class="keyword"> override </span>{</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    <span class="keywordflow">return</span> InterpolationStrategy::EverySubstep;</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;  };</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160; </div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/deque.html">std::deque&lt;std::tuple&lt;TimeStepId, gh_variables&gt;</a>&gt; provided_data_;</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;};</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160; </div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;}  <span class="comment">// namespace Cce::InterfaceManagers</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="aclassCce_1_1InterfaceManagers_1_1GhLockstep_html_a5d7d695883145b4c47fbf0d83eefeffd"><div class="ttname"><a href="classCce_1_1InterfaceManagers_1_1GhLockstep.html#a5d7d695883145b4c47fbf0d83eefeffd">Cce::InterfaceManagers::GhLockstep::pup</a></div><div class="ttdeci">void pup(PUP::er &amp;p) noexcept override</div><div class="ttdoc">Serialization for Charm++.</div></div>
+<div class="ttc" id="aclassCce_1_1InterfaceManagers_1_1GhLockstep_html"><div class="ttname"><a href="classCce_1_1InterfaceManagers_1_1GhLockstep.html">Cce::InterfaceManagers::GhLockstep</a></div><div class="ttdoc">Simple implementation of a GhInterfaceManager that only provides boundary data on matching TimeStepId...</div><div class="ttdef"><b>Definition:</b> GhLockstep.hpp:38</div></div>
+<div class="ttc" id="agroup__GeneralRelativityGroup_html_ga0f8ea77b898950a2a3ab6a5feea01935"><div class="ttname"><a href="group__GeneralRelativityGroup.html#ga0f8ea77b898950a2a3ab6a5feea01935">GeneralizedHarmonic::pi</a></div><div class="ttdeci">void pi(gsl::not_null&lt; tnsr::aa&lt; DataType, SpatialDim, Frame &gt; * &gt; pi, const Scalar&lt; DataType &gt; &amp;lapse, const Scalar&lt; DataType &gt; &amp;dt_lapse, const tnsr::I&lt; DataType, SpatialDim, Frame &gt; &amp;shift, const tnsr::I&lt; DataType, SpatialDim, Frame &gt; &amp;dt_shift, const tnsr::ii&lt; DataType, SpatialDim, Frame &gt; &amp;spatial_metric, const tnsr::ii&lt; DataType, SpatialDim, Frame &gt; &amp;dt_spatial_metric, const tnsr::iaa&lt; DataType, SpatialDim, Frame &gt; &amp;phi) noexcept</div><div class="ttdoc">Computes the conjugate momentum  of the spacetime metric .</div></div>
+<div class="ttc" id="aclassCce_1_1InterfaceManagers_1_1GhLockstep_html_a49d0bada832ed3ef2674211d60fea4be"><div class="ttname"><a href="classCce_1_1InterfaceManagers_1_1GhLockstep.html#a49d0bada832ed3ef2674211d60fea4be">Cce::InterfaceManagers::GhLockstep::insert_next_gh_time</a></div><div class="ttdeci">void insert_next_gh_time(TimeStepId, TimeStepId) noexcept override</div><div class="ttdoc">next time information is ignored by this implementation, so this is a no-op.</div><div class="ttdef"><b>Definition:</b> GhLockstep.hpp:70</div></div>
+<div class="ttc" id="aCharmPupable_8hpp_html"><div class="ttname"><a href="CharmPupable_8hpp.html">CharmPupable.hpp</a></div></div>
+<div class="ttc" id="aOptions_8hpp_html"><div class="ttname"><a href="Options_8hpp.html">Options.hpp</a></div></div>
+<div class="ttc" id="aclassCce_1_1InterfaceManagers_1_1GhLockstep_html_a9dd37f21e7e805ef9a04059e06224225"><div class="ttname"><a href="classCce_1_1InterfaceManagers_1_1GhLockstep.html#a9dd37f21e7e805ef9a04059e06224225">Cce::InterfaceManagers::GhLockstep::number_of_gh_times</a></div><div class="ttdeci">size_t number_of_gh_times() const noexcept override</div><div class="ttdoc">The number of times at which data from a GH evolution have been stored and not yet retrieved.</div><div class="ttdef"><b>Definition:</b> GhLockstep.hpp:88</div></div>
+<div class="ttc" id="atuple_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/tuple.html">tuple</a></div></div>
+<div class="ttc" id="aclassCce_1_1InterfaceManagers_1_1GhInterfaceManager_html"><div class="ttname"><a href="classCce_1_1InterfaceManagers_1_1GhInterfaceManager.html">Cce::InterfaceManagers::GhInterfaceManager</a></div><div class="ttdoc">Abstract base class for storage and retrieval of generalized harmonic quantities communicated from a ...</div><div class="ttdef"><b>Definition:</b> GhInterfaceManager.hpp:54</div></div>
+<div class="ttc" id="aclassCce_1_1InterfaceManagers_1_1GhLockstep_html_ae74e8623b455a194e5c3942dd04f749d"><div class="ttname"><a href="classCce_1_1InterfaceManagers_1_1GhLockstep.html#ae74e8623b455a194e5c3942dd04f749d">Cce::InterfaceManagers::GhLockstep::request_gh_data</a></div><div class="ttdeci">void request_gh_data(const TimeStepId &amp;) noexcept override</div><div class="ttdoc">Requests are ignored by this implementation, so this is a no-op.</div><div class="ttdef"><b>Definition:</b> GhLockstep.hpp:74</div></div>
+<div class="ttc" id="adeque_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/deque.html">deque</a></div></div>
+<div class="ttc" id="agroup__GeneralRelativityGroup_html_gaecccadb6658f3735cfb7344c780abd97"><div class="ttname"><a href="group__GeneralRelativityGroup.html#gaecccadb6658f3735cfb7344c780abd97">GeneralizedHarmonic::phi</a></div><div class="ttdeci">void phi(gsl::not_null&lt; tnsr::iaa&lt; DataType, SpatialDim, Frame &gt; * &gt; phi, const Scalar&lt; DataType &gt; &amp;lapse, const tnsr::i&lt; DataType, SpatialDim, Frame &gt; &amp;deriv_lapse, const tnsr::I&lt; DataType, SpatialDim, Frame &gt; &amp;shift, const tnsr::iJ&lt; DataType, SpatialDim, Frame &gt; &amp;deriv_shift, const tnsr::ii&lt; DataType, SpatialDim, Frame &gt; &amp;spatial_metric, const tnsr::ijj&lt; DataType, SpatialDim, Frame &gt; &amp;deriv_spatial_metric) noexcept</div><div class="ttdoc">Computes the auxiliary variable  used by the generalized harmonic formulation of Einstein's equations...</div></div>
+<div class="ttc" id="aclassCce_1_1InterfaceManagers_1_1GhLockstep_html_a2355721ae65a4f5447ec3d4a834e4192"><div class="ttname"><a href="classCce_1_1InterfaceManagers_1_1GhLockstep.html#a2355721ae65a4f5447ec3d4a834e4192">Cce::InterfaceManagers::GhLockstep::number_of_pending_requests</a></div><div class="ttdeci">size_t number_of_pending_requests() const noexcept override</div><div class="ttdoc">This class ignores requests to ensure a one-way communication pattern, so the number of requests is a...</div><div class="ttdef"><b>Definition:</b> GhLockstep.hpp:84</div></div>
+<div class="ttc" id="amemory_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a></div></div>
+<div class="ttc" id="anamespaceCce_1_1InterfaceManagers_html"><div class="ttname"><a href="namespaceCce_1_1InterfaceManagers.html">Cce::InterfaceManagers</a></div><div class="ttdoc">Contains utilities for collecting, interpolating, and providing worldtube data for CCE that originate...</div><div class="ttdef"><b>Definition:</b> GhInterfaceManager.hpp:20</div></div>
+<div class="ttc" id="aclassTimeStepId_html"><div class="ttname"><a href="classTimeStepId.html">TimeStepId</a></div><div class="ttdef"><b>Definition:</b> TimeStepId.hpp:25</div></div>
+<div class="ttc" id="aclassCce_1_1InterfaceManagers_1_1GhLockstep_html_a13f4a1efd0ff73a2896b84c63e2e01c9"><div class="ttname"><a href="classCce_1_1InterfaceManagers_1_1GhLockstep.html#a13f4a1efd0ff73a2896b84c63e2e01c9">Cce::InterfaceManagers::GhLockstep::retrieve_and_remove_first_ready_gh_data</a></div><div class="ttdeci">auto retrieve_and_remove_first_ready_gh_data() noexcept -&gt; std::optional&lt; std::tuple&lt; TimeStepId, gh_variables &gt;&gt; override</div><div class="ttdoc">Return a std::optional&lt;std::tuple&gt; of the least recently submitted generalized harmonic boundary data...</div></div>
+<div class="ttc" id="aTimeStepId_8hpp_html"><div class="ttname"><a href="TimeStepId_8hpp.html">TimeStepId.hpp</a></div></div>
+<div class="ttc" id="aTypeAliases_8hpp_html"><div class="ttname"><a href="TypeAliases_8hpp.html">TypeAliases.hpp</a></div></div>
+<div class="ttc" id="anamespaceOptions_html_aa61c7f41f21afa7646811456f673be89"><div class="ttname"><a href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a></div><div class="ttdeci">const char *const String</div><div class="ttdoc">The string used in option structs.</div><div class="ttdef"><b>Definition:</b> Options.hpp:32</div></div>
+<div class="ttc" id="agroup__GeneralRelativityGroup_html_gaf691cdef10c2fdc735947e5e7190b529"><div class="ttname"><a href="group__GeneralRelativityGroup.html#gaf691cdef10c2fdc735947e5e7190b529">gr::spacetime_metric</a></div><div class="ttdeci">void spacetime_metric(gsl::not_null&lt; tnsr::aa&lt; DataType, Dim, Frame &gt; * &gt; spacetime_metric, const Scalar&lt; DataType &gt; &amp;lapse, const tnsr::I&lt; DataType, Dim, Frame &gt; &amp;shift, const tnsr::ii&lt; DataType, Dim, Frame &gt; &amp;spatial_metric) noexcept</div><div class="ttdoc">Computes the spacetime metric from the spatial metric, lapse, and shift.</div></div>
+<div class="ttc" id="aTensor_8hpp_html"><div class="ttname"><a href="Tensor_8hpp.html">Tensor.hpp</a></div></div>
+<div class="ttc" id="aoptional_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/optional.html">optional</a></div></div>
+<div class="ttc" id="aunique_ptr_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></div></div>
+<div class="ttc" id="aclassCce_1_1InterfaceManagers_1_1GhLockstep_html_a5a9415e5116a347e23f50365c2cfeccc"><div class="ttname"><a href="classCce_1_1InterfaceManagers_1_1GhLockstep.html#a5a9415e5116a347e23f50365c2cfeccc">Cce::InterfaceManagers::GhLockstep::insert_gh_data</a></div><div class="ttdeci">void insert_gh_data(TimeStepId time_id, const tnsr::aa&lt; DataVector, 3 &gt; &amp;spacetime_metric, const tnsr::iaa&lt; DataVector, 3 &gt; &amp;phi, const tnsr::aa&lt; DataVector, 3 &gt; &amp;pi, const tnsr::aa&lt; DataVector, 3 &gt; &amp;dt_spacetime_metric={}, const tnsr::iaa&lt; DataVector, 3 &gt; &amp;dt_phi={}, const tnsr::aa&lt; DataVector, 3 &gt; &amp;dt_pi={}) noexcept override</div><div class="ttdoc">Store a provided data set in a std::deque.</div></div>
+<div class="ttc" id="anamespaceCce_1_1InterfaceManagers_html_ae9ec3751ad7e3dae08d7229796c9e466"><div class="ttname"><a href="namespaceCce_1_1InterfaceManagers.html#ae9ec3751ad7e3dae08d7229796c9e466">Cce::InterfaceManagers::InterpolationStrategy</a></div><div class="ttdeci">InterpolationStrategy</div><div class="ttdoc">Enumeration of possibilities for the collection of worldtube data that will be collected by the inter...</div><div class="ttdef"><b>Definition:</b> GhInterpolationStrategies.hpp:31</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

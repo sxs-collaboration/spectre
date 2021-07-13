@@ -1,0 +1,271 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Options::Auto&lt; T, Label &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceOptions.html">Options</a></li><li class="navelem"><a class="el" href="classOptions_1_1Auto.html">Auto</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classOptions_1_1Auto-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Options::Auto&lt; T, Label &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__OptionParsingGroup.html">Option Parsing</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A class indicating that a parsed value can be automatically computed instead of specified.  
+ <a href="classOptions_1_1Auto.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Auto_8hpp_source.html">Auto.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a28026aa353cae1664ef99498933e8eb4"><td class="memItemLeft" align="right" valign="top"><a id="a28026aa353cae1664ef99498933e8eb4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Auto</b> (T value) noexcept</td></tr>
+<tr class="separator:a28026aa353cae1664ef99498933e8eb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename T, AutoLabel Label = AutoLabel::Auto&gt;<br />
+class Options::Auto&lt; T, Label &gt;</h3>
+
+<p>A class indicating that a parsed value can be automatically computed instead of specified. </p>
+<p>When an <code><a class="el" href="classOptions_1_1Auto.html" title="A class indicating that a parsed value can be automatically computed instead of specified.">Auto</a>&lt;T&gt;</code> is parsed from an input file, the value may be specified either as the <code>AutoLabel</code> (defaults to "Auto") or as a value of type <code>T</code>. When this class is passed to the constructor of the class taking it as an option, it can be implicitly converted to a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt;U&gt;</code>, for any type <code>U</code> implicitly creatable from a <code>T</code>.</p>
+<div class="fragment"><div class="line"><span class="keyword">class </span>ExampleClass {</div>
+<div class="line"> <span class="keyword">public</span>:</div>
+<div class="line">  ExampleClass() = <span class="keywordflow">default</span>;</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">struct </span>AutoArg {</div>
+<div class="line">    <span class="keyword">using</span> type = <a class="code" href="classOptions_1_1Auto.html">Options::Auto&lt;int&gt;</a>;</div>
+<div class="line">    <span class="keyword">static</span> type suggested_value() noexcept { <span class="keywordflow">return</span> {}; }</div>
+<div class="line">    <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help =</div>
+<div class="line">        <span class="stringliteral">&quot;Integer that can be automatically chosen&quot;</span>;</div>
+<div class="line">  };</div>
+<div class="line">  <span class="keyword">struct </span>OptionalArg {</div>
+<div class="line">    <span class="keyword">using</span> type = <a class="code" href="classOptions_1_1Auto.html">Options::Auto&lt;double, Options::AutoLabel::None&gt;</a>;</div>
+<div class="line">    <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = <span class="stringliteral">&quot;Optional parameter&quot;</span>;</div>
+<div class="line">  };</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help =</div>
+<div class="line">      <span class="stringliteral">&quot;A class that can automatically choose an argument&quot;</span>;</div>
+<div class="line">  <span class="keyword">using</span> options = tmpl::list&lt;AutoArg, OptionalArg&gt;;</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">explicit</span> ExampleClass(<a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional&lt;int&gt;</a> auto_arg,</div>
+<div class="line">                        <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional&lt;double&gt;</a> opt_arg) noexcept</div>
+<div class="line">      : value(auto_arg ? *auto_arg : -12), optional_value(opt_arg) {}</div>
+<div class="line"> </div>
+<div class="line">  <span class="keywordtype">int</span> value{};</div>
+<div class="line">  <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional&lt;double&gt;</a> optional_value{};</div>
+<div class="line">};</div>
+</div><!-- fragment --><div class="fragment"><div class="line">  <span class="keyword">const</span> <span class="keyword">auto</span> example1 = TestHelpers::test_creation&lt;ExampleClass&gt;(</div>
+<div class="line">      <span class="stringliteral">&quot;AutoArg: 7\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;OptionalArg: 10.&quot;</span>);</div>
+<div class="line">  CHECK(example1.value == 7);</div>
+<div class="line">  CHECK(example1.optional_value == 10.);</div>
+<div class="line">  <span class="keyword">const</span> <span class="keyword">auto</span> example2 = TestHelpers::test_creation&lt;ExampleClass&gt;(</div>
+<div class="line">      <span class="stringliteral">&quot;AutoArg: Auto\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;OptionalArg: None&quot;</span>);</div>
+<div class="line">  CHECK(example2.value == -12);</div>
+<div class="line">  CHECK(example2.optional_value == std::nullopt);</div>
+</div><!-- fragment --></div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Options/<a class="el" href="Auto_8hpp_source.html">Auto.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="aclassOptions_1_1Auto_html"><div class="ttname"><a href="classOptions_1_1Auto.html">Options::Auto</a></div><div class="ttdoc">A class indicating that a parsed value can be automatically computed instead of specified.</div><div class="ttdef"><b>Definition:</b> Auto.hpp:33</div></div>
+<div class="ttc" id="anamespaceOptions_html_aa61c7f41f21afa7646811456f673be89"><div class="ttname"><a href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a></div><div class="ttdeci">const char *const String</div><div class="ttdoc">The string used in option structs.</div><div class="ttdef"><b>Definition:</b> Options.hpp:32</div></div>
+<div class="ttc" id="aoptional_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

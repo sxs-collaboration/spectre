@@ -1,0 +1,325 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: grmhd::ValenciaDivClean::fd::MonotisedCentralPrim Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacegrmhd.html">grmhd</a></li><li class="navelem"><a class="el" href="namespacegrmhd_1_1ValenciaDivClean.html">ValenciaDivClean</a></li><li class="navelem"><a class="el" href="namespacegrmhd_1_1ValenciaDivClean_1_1fd.html">fd</a></li><li class="navelem"><a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1MonotisedCentralPrim.html">MonotisedCentralPrim</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1MonotisedCentralPrim-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">grmhd::ValenciaDivClean::fd::MonotisedCentralPrim Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Monotised central reconstruction. See <a class="el" href="group__FiniteDifferenceGroup.html#gaf4791bdc4f3d449879be39371630ebec" title="Performs monotised central-difference reconstruction on the vars in each direction.">fd::reconstruction::monotised_central()</a> for details.  
+ <a href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1MonotisedCentralPrim.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Evolution_2Systems_2GrMhd_2ValenciaDivClean_2FiniteDifference_2MonotisedCentral_8hpp_source.html">MonotisedCentral.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a69cf8f509d65f993ec1b525a81521169"><td class="memItemLeft" align="right" valign="top"><a id="a69cf8f509d65f993ec1b525a81521169"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a69cf8f509d65f993ec1b525a81521169"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3614fc281fcc0650b4b1e41a55c578d4"><td class="memItemLeft" align="right" valign="top"><a id="a3614fc281fcc0650b4b1e41a55c578d4"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>reconstruction_argument_tags</b> = tmpl::list&lt;::<a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt; hydro::grmhd_tags&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, <a class="el" href="structhydro_1_1Tags_1_1EquationOfStateBase.html">hydro::Tags::EquationOfStateBase</a>, <a class="el" href="structdomain_1_1Tags_1_1Element.html">domain::Tags::Element</a>&lt; dim &gt;, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1NeighborDataForReconstructionAndRdmpTci.html">evolution::dg::subcell::Tags::NeighborDataForReconstructionAndRdmpTci</a>&lt; dim &gt;, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Mesh.html">evolution::dg::subcell::Tags::Mesh</a>&lt; dim &gt; &gt;</td></tr>
+<tr class="separator:a3614fc281fcc0650b4b1e41a55c578d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor.html">grmhd::ValenciaDivClean::fd::Reconstructor</a></td></tr>
+<tr class="memitem:a62885145c70ca2b2057610500a4bda41 inherit pub_types_classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor"><td class="memItemLeft" align="right" valign="top"><a id="a62885145c70ca2b2057610500a4bda41"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::list&lt; <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1MonotisedCentralPrim.html">MonotisedCentralPrim</a> &gt;</td></tr>
+<tr class="separator:a62885145c70ca2b2057610500a4bda41 inherit pub_types_classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a6df2bcd98437dd79d17ee2a93c718647"><td class="memItemLeft" align="right" valign="top"><a id="a6df2bcd98437dd79d17ee2a93c718647"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MonotisedCentralPrim</b> (<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1MonotisedCentralPrim.html">MonotisedCentralPrim</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a6df2bcd98437dd79d17ee2a93c718647"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69cb9fcf795d5313cde3211325298a01"><td class="memItemLeft" align="right" valign="top"><a id="a69cb9fcf795d5313cde3211325298a01"></a>
+<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1MonotisedCentralPrim.html">MonotisedCentralPrim</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1MonotisedCentralPrim.html">MonotisedCentralPrim</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a69cb9fcf795d5313cde3211325298a01"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0259a31549bc08c890d445ae7a356124"><td class="memItemLeft" align="right" valign="top"><a id="a0259a31549bc08c890d445ae7a356124"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MonotisedCentralPrim</b> (const <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1MonotisedCentralPrim.html">MonotisedCentralPrim</a> &amp;)=default</td></tr>
+<tr class="separator:a0259a31549bc08c890d445ae7a356124"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac34222c31644cfa9201becfcb9bd9dc5"><td class="memItemLeft" align="right" valign="top"><a id="ac34222c31644cfa9201becfcb9bd9dc5"></a>
+<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1MonotisedCentralPrim.html">MonotisedCentralPrim</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1MonotisedCentralPrim.html">MonotisedCentralPrim</a> &amp;)=default</td></tr>
+<tr class="separator:ac34222c31644cfa9201becfcb9bd9dc5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48e8a2532d35784d811ab2e0f428d541"><td class="memItemLeft" align="right" valign="top"><a id="a48e8a2532d35784d811ab2e0f428d541"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MonotisedCentralPrim</b> (CkMigrateMessage *msg) noexcept</td></tr>
+<tr class="separator:a48e8a2532d35784d811ab2e0f428d541"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98d60e7606447021261b60847a0521f4"><td class="memItemLeft" align="right" valign="top"><a id="a98d60e7606447021261b60847a0521f4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_base_template</b> (<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor.html">Reconstructor</a>, <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1MonotisedCentralPrim.html">MonotisedCentralPrim</a>)</td></tr>
+<tr class="separator:a98d60e7606447021261b60847a0521f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a10939db12fd42fe38564e85009b30369"><td class="memItemLeft" align="right" valign="top"><a id="a10939db12fd42fe38564e85009b30369"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor.html">Reconstructor</a> &gt; override</td></tr>
+<tr class="separator:a10939db12fd42fe38564e85009b30369"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48fcb8344c4a6146d6fadb5a6da0ddd2"><td class="memItemLeft" align="right" valign="top"><a id="a48fcb8344c4a6146d6fadb5a6da0ddd2"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) override</td></tr>
+<tr class="separator:a48fcb8344c4a6146d6fadb5a6da0ddd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abbcd7b59241685f1d7eaac2eed20b9aa"><td class="memItemLeft" align="right" valign="top"><a id="abbcd7b59241685f1d7eaac2eed20b9aa"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>ghost_zone_size</b> () const noexcept override</td></tr>
+<tr class="separator:abbcd7b59241685f1d7eaac2eed20b9aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d30f1c9b93f168dc4f02e433f7723b4"><td class="memTemplParams" colspan="2"><a id="a3d30f1c9b93f168dc4f02e433f7723b4"></a>
+template&lt;size_t ThermodynamicDim, typename TagsList &gt; </td></tr>
+<tr class="memitem:a3d30f1c9b93f168dc4f02e433f7723b4"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>reconstruct</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; Variables&lt; TagsList &gt;, dim &gt; * &gt; vars_on_lower_face, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; Variables&lt; TagsList &gt;, dim &gt; * &gt; vars_on_upper_face, const Variables&lt; hydro::grmhd_tags&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt; &amp;volume_prims, const <a class="el" href="classEquationsOfState_1_1EquationOfState.html">EquationsOfState::EquationOfState</a>&lt; true, ThermodynamicDim &gt; &amp;eos, const <a class="el" href="classElement.html">Element</a>&lt; dim &gt; &amp;element, const <a class="el" href="classFixedHashMap.html">FixedHashMap</a>&lt; <a class="el" href="group__ComputationalDomainGroup.html#gafa8cb44daebc8f9e080718961530be89">maximum_number_of_neighbors</a>(dim)+1, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; dim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; dim &gt;&gt;, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1NeighborData.html">evolution::dg::subcell::NeighborData</a>, boost::hash&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; dim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; dim &gt;&gt;&gt;&gt; &amp;neighbor_data, const <a class="el" href="classMesh.html">Mesh</a>&lt; dim &gt; &amp;subcell_mesh) const noexcept</td></tr>
+<tr class="separator:a3d30f1c9b93f168dc4f02e433f7723b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0cae752906c0b26fafcfe1e77a8078f1"><td class="memTemplParams" colspan="2"><a id="a0cae752906c0b26fafcfe1e77a8078f1"></a>
+template&lt;size_t ThermodynamicDim, typename TagsList &gt; </td></tr>
+<tr class="memitem:a0cae752906c0b26fafcfe1e77a8078f1"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1MonotisedCentralPrim.html#a0cae752906c0b26fafcfe1e77a8078f1">reconstruct_fd_neighbor</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; TagsList &gt; * &gt; vars_on_face, const Variables&lt; hydro::grmhd_tags&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt; &amp;subcell_volume_prims, const <a class="el" href="classEquationsOfState_1_1EquationOfState.html">EquationsOfState::EquationOfState</a>&lt; true, ThermodynamicDim &gt; &amp;eos, const <a class="el" href="classElement.html">Element</a>&lt; dim &gt; &amp;element, const <a class="el" href="classFixedHashMap.html">FixedHashMap</a>&lt; <a class="el" href="group__ComputationalDomainGroup.html#gafa8cb44daebc8f9e080718961530be89">maximum_number_of_neighbors</a>(dim)+1, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; dim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; dim &gt;&gt;, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1NeighborData.html">evolution::dg::subcell::NeighborData</a>, boost::hash&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; dim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; dim &gt;&gt;&gt;&gt; &amp;neighbor_data, const <a class="el" href="classMesh.html">Mesh</a>&lt; dim &gt; &amp;subcell_mesh, const <a class="el" href="classDirection.html">Direction</a>&lt; dim &gt; direction_to_reconstruct) const noexcept</td></tr>
+<tr class="memdesc:a0cae752906c0b26fafcfe1e77a8078f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called by an element doing DG when the neighbor is doing subcell. <br /></td></tr>
+<tr class="separator:a0cae752906c0b26fafcfe1e77a8078f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor.html">grmhd::ValenciaDivClean::fd::Reconstructor</a></td></tr>
+<tr class="memitem:a7aeadb5c0775f6c25a8f779bfd60a881 inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor"><td class="memItemLeft" align="right" valign="top"><a id="a7aeadb5c0775f6c25a8f779bfd60a881"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Reconstructor</b> (const <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor.html">Reconstructor</a> &amp;)=default</td></tr>
+<tr class="separator:a7aeadb5c0775f6c25a8f779bfd60a881 inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2649d1ac734ab8c5621ad1253cac5c96 inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor"><td class="memItemLeft" align="right" valign="top"><a id="a2649d1ac734ab8c5621ad1253cac5c96"></a>
+<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor.html">Reconstructor</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor.html">Reconstructor</a> &amp;)=default</td></tr>
+<tr class="separator:a2649d1ac734ab8c5621ad1253cac5c96 inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69766dad118982aa5a17d7bb636572b1 inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor"><td class="memItemLeft" align="right" valign="top"><a id="a69766dad118982aa5a17d7bb636572b1"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Reconstructor</b> (<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor.html">Reconstructor</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a69766dad118982aa5a17d7bb636572b1 inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbc3fdf3d774598442a46e6a976cfbb9 inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor"><td class="memItemLeft" align="right" valign="top"><a id="afbc3fdf3d774598442a46e6a976cfbb9"></a>
+<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor.html">Reconstructor</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor.html">Reconstructor</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:afbc3fdf3d774598442a46e6a976cfbb9 inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1d5c63176c701bd121783885c7d8712 inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor"><td class="memItemLeft" align="right" valign="top"><a id="af1d5c63176c701bd121783885c7d8712"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) override</td></tr>
+<tr class="separator:af1d5c63176c701bd121783885c7d8712 inherit pub_methods_classgrmhd_1_1ValenciaDivClean_1_1fd_1_1Reconstructor"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aeb4015ea2d8629a621a4601ab9d04213"><td class="memItemLeft" align="right" valign="top"><a id="aeb4015ea2d8629a621a4601ab9d04213"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>dim</b> = 3</td></tr>
+<tr class="separator:aeb4015ea2d8629a621a4601ab9d04213"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a23fa8cab4a637785b90c6f93ea3dfc97"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a23fa8cab4a637785b90c6f93ea3dfc97"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Monotised central reconstruction. See <a class="el" href="group__FiniteDifferenceGroup.html#gaf4791bdc4f3d449879be39371630ebec" title="Performs monotised central-difference reconstruction on the vars in each direction.">fd::reconstruction::monotised_central()</a> for details. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a23fa8cab4a637785b90c6f93ea3dfc97"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a23fa8cab4a637785b90c6f93ea3dfc97">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> grmhd::ValenciaDivClean::fd::MonotisedCentralPrim::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      <span class="stringliteral">&quot;Monotised central reconstruction scheme using primitive variables.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/<a class="el" href="Evolution_2Systems_2GrMhd_2ValenciaDivClean_2FiniteDifference_2MonotisedCentral_8hpp_source.html">MonotisedCentral.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

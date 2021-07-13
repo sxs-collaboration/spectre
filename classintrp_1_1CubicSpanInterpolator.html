@@ -1,0 +1,289 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: intrp::CubicSpanInterpolator Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceintrp.html">intrp</a></li><li class="navelem"><a class="el" href="classintrp_1_1CubicSpanInterpolator.html">CubicSpanInterpolator</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classintrp_1_1CubicSpanInterpolator-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">intrp::CubicSpanInterpolator Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Performs a cubic interpolation; this class can be chosen via the options factory mechanism as a possible <code><a class="el" href="classintrp_1_1SpanInterpolator.html" title="Base class for interpolators so that the factory options mechanism can be used.">SpanInterpolator</a></code>.  
+ <a href="classintrp_1_1CubicSpanInterpolator.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="CubicSpanInterpolator_8hpp_source.html">CubicSpanInterpolator.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:aa4fed3d6a17f532ca6438ae19e0478cc"><td class="memItemLeft" align="right" valign="top"><a id="aa4fed3d6a17f532ca6438ae19e0478cc"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:aa4fed3d6a17f532ca6438ae19e0478cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classintrp_1_1SpanInterpolator"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classintrp_1_1SpanInterpolator')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classintrp_1_1SpanInterpolator.html">intrp::SpanInterpolator</a></td></tr>
+<tr class="memitem:a82520298d659d1f6a8940b8820b631d7 inherit pub_types_classintrp_1_1SpanInterpolator"><td class="memItemLeft" align="right" valign="top"><a id="a82520298d659d1f6a8940b8820b631d7"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::list&lt; <a class="el" href="classintrp_1_1LinearSpanInterpolator.html">LinearSpanInterpolator</a>, <a class="el" href="classintrp_1_1CubicSpanInterpolator.html">CubicSpanInterpolator</a>, <a class="el" href="classintrp_1_1BarycentricRationalSpanInterpolator.html">BarycentricRationalSpanInterpolator</a> &gt;</td></tr>
+<tr class="separator:a82520298d659d1f6a8940b8820b631d7 inherit pub_types_classintrp_1_1SpanInterpolator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a0d876d7446d0d4e0c47cafa096ed2d1b"><td class="memItemLeft" align="right" valign="top"><a id="a0d876d7446d0d4e0c47cafa096ed2d1b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CubicSpanInterpolator</b> (const <a class="el" href="classintrp_1_1CubicSpanInterpolator.html">CubicSpanInterpolator</a> &amp;) noexcept=default</td></tr>
+<tr class="separator:a0d876d7446d0d4e0c47cafa096ed2d1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a58c60ec48575019f0b650db0981c5220"><td class="memItemLeft" align="right" valign="top"><a id="a58c60ec48575019f0b650db0981c5220"></a>
+<a class="el" href="classintrp_1_1CubicSpanInterpolator.html">CubicSpanInterpolator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classintrp_1_1CubicSpanInterpolator.html">CubicSpanInterpolator</a> &amp;) noexcept=default</td></tr>
+<tr class="separator:a58c60ec48575019f0b650db0981c5220"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa23484f061dce54aae6593ae5d036330"><td class="memItemLeft" align="right" valign="top"><a id="aa23484f061dce54aae6593ae5d036330"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CubicSpanInterpolator</b> (<a class="el" href="classintrp_1_1CubicSpanInterpolator.html">CubicSpanInterpolator</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:aa23484f061dce54aae6593ae5d036330"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c2dfbfd2185818ed3c27b1bae9e8b28"><td class="memItemLeft" align="right" valign="top"><a id="a5c2dfbfd2185818ed3c27b1bae9e8b28"></a>
+<a class="el" href="classintrp_1_1CubicSpanInterpolator.html">CubicSpanInterpolator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classintrp_1_1CubicSpanInterpolator.html">CubicSpanInterpolator</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a5c2dfbfd2185818ed3c27b1bae9e8b28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25e8a848564fab5026c680f4b06116aa"><td class="memItemLeft" align="right" valign="top"><a id="a25e8a848564fab5026c680f4b06116aa"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CubicSpanInterpolator</b> (CkMigrateMessage *) noexcept</td></tr>
+<tr class="separator:a25e8a848564fab5026c680f4b06116aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b378d4f89cb882baee627362def06a7"><td class="memItemLeft" align="right" valign="top"><a id="a1b378d4f89cb882baee627362def06a7"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_template</b> (<a class="el" href="classintrp_1_1CubicSpanInterpolator.html">CubicSpanInterpolator</a>)</td></tr>
+<tr class="separator:a1b378d4f89cb882baee627362def06a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1afe361f51e58d2fe85429ffc9c0e2d"><td class="memItemLeft" align="right" valign="top"><a id="af1afe361f51e58d2fe85429ffc9c0e2d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;) noexcept override</td></tr>
+<tr class="separator:af1afe361f51e58d2fe85429ffc9c0e2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ef39d83f322125a3d27c2a74b6aa331"><td class="memItemLeft" align="right" valign="top"><a id="a8ef39d83f322125a3d27c2a74b6aa331"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classintrp_1_1SpanInterpolator.html">SpanInterpolator</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classintrp_1_1CubicSpanInterpolator.html#a8ef39d83f322125a3d27c2a74b6aa331">get_clone</a> () const noexcept override</td></tr>
+<tr class="memdesc:a8ef39d83f322125a3d27c2a74b6aa331"><td class="mdescLeft">&#160;</td><td class="mdescRight">Produce a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></code> that points to a copy of <code>*this</code>`. <br /></td></tr>
+<tr class="separator:a8ef39d83f322125a3d27c2a74b6aa331"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af956760a89958ab03b889546048ce987"><td class="memItemLeft" align="right" valign="top"><a id="af956760a89958ab03b889546048ce987"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classintrp_1_1CubicSpanInterpolator.html#af956760a89958ab03b889546048ce987">interpolate</a> (const <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt; &amp;source_points, const <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt; &amp;values, double target_point) const noexcept override</td></tr>
+<tr class="memdesc:af956760a89958ab03b889546048ce987"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the interpolation of function represented by <code>values</code> at <code>source_points</code> to the requested <code>target_point</code>, returning the interpolation result. <br /></td></tr>
+<tr class="separator:af956760a89958ab03b889546048ce987"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1fd81aa3dc20d75cf5493534b6d429a6"><td class="memItemLeft" align="right" valign="top"><a id="a1fd81aa3dc20d75cf5493534b6d429a6"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>interpolate</b> (const <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt; &amp;source_points, const <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const <a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt;&gt; &amp;values, double target_point) const noexcept</td></tr>
+<tr class="separator:a1fd81aa3dc20d75cf5493534b6d429a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6155d64b0c965db635281890edfe6ad4"><td class="memItemLeft" align="right" valign="top"><a id="a6155d64b0c965db635281890edfe6ad4"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classintrp_1_1CubicSpanInterpolator.html#a6155d64b0c965db635281890edfe6ad4">required_number_of_points_before_and_after</a> () const noexcept override</td></tr>
+<tr class="memdesc:a6155d64b0c965db635281890edfe6ad4"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of domain points that should be both before and after the requested target point for best interpolation. For instance, for a linear interpolator, this function would return <code>1</code> to request that the target is between the two domain points passed to <code>source_points</code>. <br /></td></tr>
+<tr class="separator:a6155d64b0c965db635281890edfe6ad4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classintrp_1_1SpanInterpolator"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classintrp_1_1SpanInterpolator')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classintrp_1_1SpanInterpolator.html">intrp::SpanInterpolator</a></td></tr>
+<tr class="memitem:ac52df9386306c92c76207a82cd9a1e5d inherit pub_methods_classintrp_1_1SpanInterpolator"><td class="memItemLeft" align="right" valign="top"><a id="ac52df9386306c92c76207a82cd9a1e5d"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_abstract</b> (<a class="el" href="classintrp_1_1SpanInterpolator.html">SpanInterpolator</a>)</td></tr>
+<tr class="separator:ac52df9386306c92c76207a82cd9a1e5d inherit pub_methods_classintrp_1_1SpanInterpolator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88a8e2802be55bf4e543efeb3074b702 inherit pub_methods_classintrp_1_1SpanInterpolator"><td class="memItemLeft" align="right" valign="top"><a id="a88a8e2802be55bf4e543efeb3074b702"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classintrp_1_1SpanInterpolator.html#a88a8e2802be55bf4e543efeb3074b702">interpolate</a> (const <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt; &amp;source_points, const <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const <a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt;&gt; &amp;values, double target_point) const noexcept</td></tr>
+<tr class="memdesc:a88a8e2802be55bf4e543efeb3074b702 inherit pub_methods_classintrp_1_1SpanInterpolator"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the interpolation of function represented by complex <code>values</code> at <code>source_points</code> to the requested <code>target_point</code>, returning the (complex) interpolation result. <br /></td></tr>
+<tr class="separator:a88a8e2802be55bf4e543efeb3074b702 inherit pub_methods_classintrp_1_1SpanInterpolator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a57a38ae9ce833622c254965d233d8529"><td class="memItemLeft" align="right" valign="top"><a id="a57a38ae9ce833622c254965d233d8529"></a>
+static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b> = {&quot;Cubic interpolator.&quot;}</td></tr>
+<tr class="separator:a57a38ae9ce833622c254965d233d8529"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Performs a cubic interpolation; this class can be chosen via the options factory mechanism as a possible <code><a class="el" href="classintrp_1_1SpanInterpolator.html" title="Base class for interpolators so that the factory options mechanism can be used.">SpanInterpolator</a></code>. </p>
+<h3>Details</h3>
+<p>This interpolator is hand-coded to be identical to the SpEC implementation used for SpEC CCE so that comparison results can be as close as possible for diagnostics. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/NumericalAlgorithms/Interpolation/<a class="el" href="CubicSpanInterpolator_8hpp_source.html">CubicSpanInterpolator.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: TimeStepId Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classTimeStepId-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">TimeStepId Class Reference<div class="ingroups"><a class="el" href="group__TimeGroup.html">Time</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><code>#include &lt;<a class="el" href="TimeStepId_8hpp_source.html">TimeStepId.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a7a59574cd815b0d5615e317287c33fca"><td class="memItemLeft" align="right" valign="top"><a id="a7a59574cd815b0d5615e317287c33fca"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeStepId.html#a7a59574cd815b0d5615e317287c33fca">TimeStepId</a> (const bool time_runs_forward, const int64_t slab_number, const <a class="el" href="classTime.html">Time</a> &amp;time) noexcept</td></tr>
+<tr class="memdesc:a7a59574cd815b0d5615e317287c33fca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a <a class="el" href="classTimeStepId.html">TimeStepId</a> at the start of a step. If that step is at the (evolution-defined) end of the slab the <a class="el" href="classTimeStepId.html">TimeStepId</a> will be advanced to the next slab. <br /></td></tr>
+<tr class="separator:a7a59574cd815b0d5615e317287c33fca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8eba8a12b38b47f21388bd9be6928376"><td class="memItemLeft" align="right" valign="top"><a id="a8eba8a12b38b47f21388bd9be6928376"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeStepId.html#a8eba8a12b38b47f21388bd9be6928376">TimeStepId</a> (const bool time_runs_forward, const int64_t slab_number, const <a class="el" href="classTime.html">Time</a> &amp;<a class="el" href="classTimeStepId.html#a832fb3233d1a59c87a7448f2292c1a54">step_time</a>, const uint64_t substep, const <a class="el" href="classTime.html">Time</a> &amp;<a class="el" href="classTimeStepId.html#a12a1b655a47040b0b49672a4c3b1b169">substep_time</a>) noexcept</td></tr>
+<tr class="memdesc:a8eba8a12b38b47f21388bd9be6928376"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a <a class="el" href="classTimeStepId.html">TimeStepId</a> at a substep at time <code>substep_time</code> in a step starting at time <code>step_time</code>. <br /></td></tr>
+<tr class="separator:a8eba8a12b38b47f21388bd9be6928376"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a507f37dc8b3b77fe71f271baf5f725d7"><td class="memItemLeft" align="right" valign="top"><a id="a507f37dc8b3b77fe71f271baf5f725d7"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>time_runs_forward</b> () const noexcept</td></tr>
+<tr class="separator:a507f37dc8b3b77fe71f271baf5f725d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d022b6cf975b8287dd15d0fcee430ff"><td class="memItemLeft" align="right" valign="top"><a id="a3d022b6cf975b8287dd15d0fcee430ff"></a>
+int64_t&#160;</td><td class="memItemRight" valign="bottom"><b>slab_number</b> () const noexcept</td></tr>
+<tr class="separator:a3d022b6cf975b8287dd15d0fcee430ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a832fb3233d1a59c87a7448f2292c1a54"><td class="memItemLeft" align="right" valign="top"><a id="a832fb3233d1a59c87a7448f2292c1a54"></a>
+const <a class="el" href="classTime.html">Time</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeStepId.html#a832fb3233d1a59c87a7448f2292c1a54">step_time</a> () const noexcept</td></tr>
+<tr class="memdesc:a832fb3233d1a59c87a7448f2292c1a54"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classTime.html">Time</a> at the start of the current step. <br /></td></tr>
+<tr class="separator:a832fb3233d1a59c87a7448f2292c1a54"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a49b534837a9bf9c24505c42e318dd473"><td class="memItemLeft" align="right" valign="top"><a id="a49b534837a9bf9c24505c42e318dd473"></a>
+uint64_t&#160;</td><td class="memItemRight" valign="bottom"><b>substep</b> () const noexcept</td></tr>
+<tr class="separator:a49b534837a9bf9c24505c42e318dd473"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12a1b655a47040b0b49672a4c3b1b169"><td class="memItemLeft" align="right" valign="top"><a id="a12a1b655a47040b0b49672a4c3b1b169"></a>
+const <a class="el" href="classTime.html">Time</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeStepId.html#a12a1b655a47040b0b49672a4c3b1b169">substep_time</a> () const noexcept</td></tr>
+<tr class="memdesc:a12a1b655a47040b0b49672a4c3b1b169"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classTime.html">Time</a> of the current substep. <br /></td></tr>
+<tr class="separator:a12a1b655a47040b0b49672a4c3b1b169"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6862a14c16f3d22985411f3acaa6fcca"><td class="memItemLeft" align="right" valign="top"><a id="a6862a14c16f3d22985411f3acaa6fcca"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_at_slab_boundary</b> () const noexcept</td></tr>
+<tr class="separator:a6862a14c16f3d22985411f3acaa6fcca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a87415b1604fe055fc2a6e2f8f40ddfbc"><td class="memItemLeft" align="right" valign="top"><a id="a87415b1604fe055fc2a6e2f8f40ddfbc"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a87415b1604fe055fc2a6e2f8f40ddfbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A unique identifier for the temporal state of an integrated system. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Time/<a class="el" href="TimeStepId_8hpp_source.html">TimeStepId.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

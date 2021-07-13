@@ -1,0 +1,311 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: LinearSolver::Serial::LinearSolver&lt; LinearSolverRegistrars &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceLinearSolver.html">LinearSolver</a></li><li class="navelem"><b>Serial</b></li><li class="navelem"><a class="el" href="classLinearSolver_1_1Serial_1_1LinearSolver.html">LinearSolver</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classLinearSolver_1_1Serial_1_1LinearSolver-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">LinearSolver::Serial::LinearSolver&lt; LinearSolverRegistrars &gt; Class Template Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Base class for serial linear solvers that supports factory-creation.  
+ <a href="classLinearSolver_1_1Serial_1_1LinearSolver.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="LinearSolver_8hpp_source.html">LinearSolver.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a4d6b0c848b6cbdec48dddeb9cc367e82"><td class="memItemLeft" align="right" valign="top"><a id="a4d6b0c848b6cbdec48dddeb9cc367e82"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = <a class="el" href="namespaceRegistration.html#abfd9ae1266be994041d2cfaa4199eed2">Registration::registrants</a>&lt; LinearSolverRegistrars &gt;</td></tr>
+<tr class="separator:a4d6b0c848b6cbdec48dddeb9cc367e82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a5397f04fb504b6ab9d2242cf704e7326"><td class="memItemLeft" align="right" valign="top"><a id="a5397f04fb504b6ab9d2242cf704e7326"></a>
+virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classLinearSolver_1_1Serial_1_1LinearSolver.html">LinearSolver</a>&lt; LinearSolverRegistrars &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const =0</td></tr>
+<tr class="separator:a5397f04fb504b6ab9d2242cf704e7326"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e01eb2c42c43d757913758f9574410c"><td class="memTemplParams" colspan="2">template&lt;typename LinearOperator , typename VarsType , typename SourceType , typename... Args&gt; </td></tr>
+<tr class="memitem:a3e01eb2c42c43d757913758f9574410c"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structConvergence_1_1HasConverged.html">Convergence::HasConverged</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classLinearSolver_1_1Serial_1_1LinearSolver.html#a3e01eb2c42c43d757913758f9574410c">solve</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; VarsType * &gt; initial_guess_in_solution_out, const LinearOperator &amp;linear_operator, const SourceType &amp;source, Args &amp;&amp;... args) const noexcept</td></tr>
+<tr class="memdesc:a3e01eb2c42c43d757913758f9574410c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solve the linear equation \(Ax=b\) where \(A\) is the <code>linear_operator</code> and \(b\) is the <code>source</code>.  <a href="classLinearSolver_1_1Serial_1_1LinearSolver.html#a3e01eb2c42c43d757913758f9574410c">More...</a><br /></td></tr>
+<tr class="separator:a3e01eb2c42c43d757913758f9574410c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18d65f6af7bba96bfacd09d3e5184a50"><td class="memItemLeft" align="right" valign="top"><a id="a18d65f6af7bba96bfacd09d3e5184a50"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLinearSolver_1_1Serial_1_1LinearSolver.html#a18d65f6af7bba96bfacd09d3e5184a50">reset</a> () noexcept=0</td></tr>
+<tr class="memdesc:a18d65f6af7bba96bfacd09d3e5184a50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Discard caches from previous solves. Use before solving a different linear operator. <br /></td></tr>
+<tr class="separator:a18d65f6af7bba96bfacd09d3e5184a50"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb8e744ad9481a78f1928bd7556c2674"><td class="memTemplParams" colspan="2"><a id="aeb8e744ad9481a78f1928bd7556c2674"></a>
+template&lt;typename LinearOperator , typename VarsType , typename SourceType , typename... Args&gt; </td></tr>
+<tr class="memitem:aeb8e744ad9481a78f1928bd7556c2674"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structConvergence_1_1HasConverged.html">Convergence::HasConverged</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><b>solve</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; VarsType * &gt; initial_guess_in_solution_out, const LinearOperator &amp;linear_operator, const SourceType &amp;source, Args &amp;&amp;... args) const noexcept</td></tr>
+<tr class="separator:aeb8e744ad9481a78f1928bd7556c2674"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename LinearSolverRegistrars&gt;<br />
+class LinearSolver::Serial::LinearSolver&lt; LinearSolverRegistrars &gt;</h3>
+
+<p>Base class for serial linear solvers that supports factory-creation. </p>
+<p>Derive linear solvers from this class so they can be factory-created. If your linear solver supports preconditioning, derive from <code><a class="el" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html" title="Base class for serial linear solvers that supports factory-creation and nested preconditioning.">PreconditionedLinearSolver</a></code> instead to inherit utility that allows using any other factor-creatable linear solver as preconditioner. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a3e01eb2c42c43d757913758f9574410c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3e01eb2c42c43d757913758f9574410c">&#9670;&nbsp;</a></span>solve()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename LinearSolverRegistrars &gt; </div>
+<div class="memtemplate">
+template&lt;typename LinearOperator , typename VarsType , typename SourceType , typename... Args&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structConvergence_1_1HasConverged.html">Convergence::HasConverged</a> <a class="el" href="classLinearSolver_1_1Serial_1_1LinearSolver.html">LinearSolver::Serial::LinearSolver</a>&lt; LinearSolverRegistrars &gt;::solve </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; VarsType * &gt;&#160;</td>
+          <td class="paramname"><em>initial_guess_in_solution_out</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const LinearOperator &amp;&#160;</td>
+          <td class="paramname"><em>linear_operator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const SourceType &amp;&#160;</td>
+          <td class="paramname"><em>source</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Args &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Solve the linear equation \(Ax=b\) where \(A\) is the <code>linear_operator</code> and \(b\) is the <code>source</code>. </p>
+<ul>
+<li>The (approximate) solution \(x\) is returned in the <code>initial_guess_in_solution_out</code> buffer, which also serves to provide an initial guess for \(x\). Not all solvers take the initial guess into account, but all expect the buffer is sized correctly.</li>
+<li>The <code>linear_operator</code> must be an invocable that takes a <code>VarsType</code> as const-ref argument and returns a <code>SourceType</code> by reference.</li>
+</ul>
+<p>Each solve may mutate the private state of the solver, for example to cache quantities to accelerate successive solves for the same operator. Invoke <code>reset</code> to discard these caches. </p>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/NumericalAlgorithms/LinearSolver/<a class="el" href="LinearSolver_8hpp_source.html">LinearSolver.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

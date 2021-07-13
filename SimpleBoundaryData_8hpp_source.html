@@ -1,0 +1,311 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_e67410f72df12b3cc042db20f578e557.html">NumericalAlgorithms</a></li><li class="navelem"><a class="el" href="dir_7b48095aa11816aac02c32387d4b9934.html">DiscontinuousGalerkin</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">SimpleBoundaryData.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/array.html">array</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;pup.h&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160; </div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Variables_8hpp.html">DataStructures/Variables.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;Domain/Structure/OrientationMapHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;Utilities/TaggedTuple.hpp&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="keyword">struct </span><a class="code" href="classIndex.html">Index</a>;</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="keyword">struct </span><a class="code" href="classMesh.html">Mesh</a>;</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="keyword">struct </span><a class="code" href="classOrientationMap.html">OrientationMap</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacedg.html">dg</a> {</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment"> * \brief Distinguishes between field data, which can be projected to a mortar,</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment"> * and extra data, which will not be projected.</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> FieldTags, <span class="keyword">typename</span> ExtraDataTags = tmpl::list&lt;&gt;&gt;</div>
+<div class="line"><a name="l00032"></a><span class="lineno"><a class="line" href="structdg_1_1SimpleBoundaryData.html">   32</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structdg_1_1SimpleBoundaryData.html">SimpleBoundaryData</a> {</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  <span class="keyword">using</span> field_tags = FieldTags;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="keyword">using</span> extra_data_tags = ExtraDataTags;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment">  /// Data projected to the mortar mesh</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno"><a class="line" href="structdg_1_1SimpleBoundaryData.html#a59e75832ba523c05ea6e84fd3428cbe7">   37</a></span>&#160;<span class="comment"></span>  Variables&lt;FieldTags&gt; <a class="code" href="structdg_1_1SimpleBoundaryData.html#a59e75832ba523c05ea6e84fd3428cbe7">field_data</a>;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment">  /// Data on the element face that needs no projection to the mortar mesh.</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment">  /// This is a `TaggedTuple` to support non-tensor quantities. It also helps</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment">  /// supporting an empty list of `ExtraDataTags`.</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno"><a class="line" href="structdg_1_1SimpleBoundaryData.html#ab7459e15a6fa7d3871f43e8a2ffa1090">   42</a></span>&#160;<span class="comment"></span>  tuples::tagged_tuple_from_typelist&lt;ExtraDataTags&gt; <a class="code" href="structdg_1_1SimpleBoundaryData.html#ab7459e15a6fa7d3871f43e8a2ffa1090">extra_data</a>;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160; </div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  <a class="code" href="structdg_1_1SimpleBoundaryData.html">SimpleBoundaryData</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  <a class="code" href="structdg_1_1SimpleBoundaryData.html">SimpleBoundaryData</a>(<span class="keyword">const</span> <a class="code" href="structdg_1_1SimpleBoundaryData.html">SimpleBoundaryData</a>&amp;) noexcept = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;  <a class="code" href="structdg_1_1SimpleBoundaryData.html">SimpleBoundaryData</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="structdg_1_1SimpleBoundaryData.html">SimpleBoundaryData</a>&amp;) noexcept = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  <a class="code" href="structdg_1_1SimpleBoundaryData.html">SimpleBoundaryData</a>(<a class="code" href="structdg_1_1SimpleBoundaryData.html">SimpleBoundaryData</a>&amp;&amp;) noexcept = default;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;  <a class="code" href="structdg_1_1SimpleBoundaryData.html">SimpleBoundaryData</a>&amp; operator=(<a class="code" href="structdg_1_1SimpleBoundaryData.html">SimpleBoundaryData</a>&amp;&amp;) noexcept = default;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  ~<a class="code" href="structdg_1_1SimpleBoundaryData.html">SimpleBoundaryData</a>() noexcept = default;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;  explicit <a class="code" href="structdg_1_1SimpleBoundaryData.html">SimpleBoundaryData</a>(const <span class="keywordtype">size_t</span> num_points) noexcept</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;      : <a class="code" href="structdg_1_1SimpleBoundaryData.html#a59e75832ba523c05ea6e84fd3428cbe7">field_data</a>{num_points}, <a class="code" href="structdg_1_1SimpleBoundaryData.html#ab7459e15a6fa7d3871f43e8a2ffa1090">extra_data</a>{} {}</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  <span class="comment">// NOLINTNEXTLINE(google-runtime-references)</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;  <span class="keywordtype">void</span> pup(PUP::er&amp; p) noexcept {</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    p | <a class="code" href="structdg_1_1SimpleBoundaryData.html#a59e75832ba523c05ea6e84fd3428cbe7">field_data</a>;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    p | <a class="code" href="structdg_1_1SimpleBoundaryData.html#ab7459e15a6fa7d3871f43e8a2ffa1090">extra_data</a>;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;  }</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment">  /// Project the `field_data` to the mortar</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment">  ///</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment">  /// \see `dg::project_to_mortar`</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment"></span>  <span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> MortarDim&gt;</div>
+<div class="line"><a name="l00064"></a><span class="lineno"><a class="line" href="structdg_1_1SimpleBoundaryData.html#a6d7c32291e1becf928863ce931717857">   64</a></span>&#160;  <a class="code" href="structdg_1_1SimpleBoundaryData.html">SimpleBoundaryData&lt;FieldTags, ExtraDataTags&gt;</a> <a class="code" href="structdg_1_1SimpleBoundaryData.html#a6d7c32291e1becf928863ce931717857">project_to_mortar</a>(</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;      <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;MortarDim&gt;</a>&amp; face_mesh, <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;MortarDim&gt;</a>&amp; <a class="code" href="group__DiscontinuousGalerkinGroup.html#ga738b600132f1a93efa03fde8c11e950c">mortar_mesh</a>,</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;      <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">MortarSize&lt;MortarDim&gt;</a>&amp; <a class="code" href="group__DiscontinuousGalerkinGroup.html#gad64bacb048e27950202430591f5ae631">mortar_size</a>) <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <a class="code" href="structdg_1_1SimpleBoundaryData.html">SimpleBoundaryData&lt;FieldTags, ExtraDataTags&gt;</a> projected_data{};</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    projected_data.<a class="code" href="structdg_1_1SimpleBoundaryData.html#a59e75832ba523c05ea6e84fd3428cbe7">field_data</a> = <a class="code" href="group__DiscontinuousGalerkinGroup.html#ga10331f076ed7bf2a80a9feb054f57594">dg::project_to_mortar</a>(</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        this-&gt;field_data, face_mesh, <a class="code" href="group__DiscontinuousGalerkinGroup.html#ga738b600132f1a93efa03fde8c11e950c">mortar_mesh</a>, <a class="code" href="group__DiscontinuousGalerkinGroup.html#gad64bacb048e27950202430591f5ae631">mortar_size</a>);</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    projected_data.extra_data = this-&gt;<a class="code" href="structdg_1_1SimpleBoundaryData.html#ab7459e15a6fa7d3871f43e8a2ffa1090">extra_data</a>;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keywordflow">return</span> projected_data;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;  }</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment">  /// Orient the `field_data`</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment">  ///</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment">  /// \see `orient_variables_on_slice`</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment"></span>  <span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> MortarDim&gt;</div>
+<div class="line"><a name="l00078"></a><span class="lineno"><a class="line" href="structdg_1_1SimpleBoundaryData.html#ab1738836bd67ba26e295e84b5688a66c">   78</a></span>&#160;  <span class="keywordtype">void</span> <a class="code" href="structdg_1_1SimpleBoundaryData.html#ab1738836bd67ba26e295e84b5688a66c">orient_on_slice</a>(</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;      <span class="keyword">const</span> <a class="code" href="classIndex.html">Index&lt;MortarDim&gt;</a>&amp; slice_extents, <span class="keyword">const</span> <span class="keywordtype">size_t</span> sliced_dim,</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;      <span class="keyword">const</span> <a class="code" href="classOrientationMap.html">OrientationMap&lt;MortarDim + 1&gt;</a>&amp; orientation_of_neighbor) noexcept {</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    this-&gt;field_data = <a class="code" href="group__ComputationalDomainGroup.html#ga1a76c153a789a2e992328e8662071515">orient_variables_on_slice</a>(</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        this-&gt;field_data, slice_extents, sliced_dim, orientation_of_neighbor);</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;  }</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;};</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;}  <span class="comment">// namespace dg</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="astructdg_1_1SimpleBoundaryData_html_a59e75832ba523c05ea6e84fd3428cbe7"><div class="ttname"><a href="structdg_1_1SimpleBoundaryData.html#a59e75832ba523c05ea6e84fd3428cbe7">dg::SimpleBoundaryData::field_data</a></div><div class="ttdeci">Variables&lt; FieldTags &gt; field_data</div><div class="ttdoc">Data projected to the mortar mesh.</div><div class="ttdef"><b>Definition:</b> SimpleBoundaryData.hpp:37</div></div>
+<div class="ttc" id="agroup__DiscontinuousGalerkinGroup_html_ga10331f076ed7bf2a80a9feb054f57594"><div class="ttname"><a href="group__DiscontinuousGalerkinGroup.html#ga10331f076ed7bf2a80a9feb054f57594">dg::project_to_mortar</a></div><div class="ttdeci">Variables&lt; Tags &gt; project_to_mortar(const Variables&lt; Tags &gt; &amp;vars, const Mesh&lt; Dim &gt; &amp;face_mesh, const Mesh&lt; Dim &gt; &amp;mortar_mesh, const MortarSize&lt; Dim &gt; &amp;mortar_size) noexcept</div><div class="ttdef"><b>Definition:</b> MortarHelpers.hpp:73</div></div>
+<div class="ttc" id="astructdg_1_1SimpleBoundaryData_html_a6d7c32291e1becf928863ce931717857"><div class="ttname"><a href="structdg_1_1SimpleBoundaryData.html#a6d7c32291e1becf928863ce931717857">dg::SimpleBoundaryData::project_to_mortar</a></div><div class="ttdeci">SimpleBoundaryData&lt; FieldTags, ExtraDataTags &gt; project_to_mortar(const Mesh&lt; MortarDim &gt; &amp;face_mesh, const Mesh&lt; MortarDim &gt; &amp;mortar_mesh, const MortarSize&lt; MortarDim &gt; &amp;mortar_size) const noexcept</div><div class="ttdoc">Project the field_data to the mortar.</div><div class="ttdef"><b>Definition:</b> SimpleBoundaryData.hpp:64</div></div>
+<div class="ttc" id="astructdg_1_1SimpleBoundaryData_html_ab1738836bd67ba26e295e84b5688a66c"><div class="ttname"><a href="structdg_1_1SimpleBoundaryData.html#ab1738836bd67ba26e295e84b5688a66c">dg::SimpleBoundaryData::orient_on_slice</a></div><div class="ttdeci">void orient_on_slice(const Index&lt; MortarDim &gt; &amp;slice_extents, const size_t sliced_dim, const OrientationMap&lt; MortarDim+1 &gt; &amp;orientation_of_neighbor) noexcept</div><div class="ttdoc">Orient the field_data</div><div class="ttdef"><b>Definition:</b> SimpleBoundaryData.hpp:78</div></div>
+<div class="ttc" id="aclassIndex_html"><div class="ttname"><a href="classIndex.html">Index</a></div><div class="ttdef"><b>Definition:</b> Index.hpp:31</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ga1a76c153a789a2e992328e8662071515"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ga1a76c153a789a2e992328e8662071515">orient_variables_on_slice</a></div><div class="ttdeci">Variables&lt; TagsList &gt; orient_variables_on_slice(const Variables&lt; TagsList &gt; &amp;variables_on_slice, const Index&lt; VolumeDim - 1 &gt; &amp;slice_extents, const size_t sliced_dim, const OrientationMap&lt; VolumeDim &gt; &amp;orientation_of_neighbor) noexcept</div><div class="ttdef"><b>Definition:</b> OrientationMapHelpers.hpp:83</div></div>
+<div class="ttc" id="aclassOrientationMap_html"><div class="ttname"><a href="classOrientationMap.html">OrientationMap</a></div><div class="ttdoc">A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of th...</div><div class="ttdef"><b>Definition:</b> OrientationMap.hpp:34</div></div>
+<div class="ttc" id="anamespacedg_html"><div class="ttname"><a href="namespacedg.html">dg</a></div><div class="ttdoc">Functionality related to discontinuous Galerkin schemes.</div><div class="ttdef"><b>Definition:</b> ApplyMassMatrix.hpp:13</div></div>
+<div class="ttc" id="astructdg_1_1SimpleBoundaryData_html"><div class="ttname"><a href="structdg_1_1SimpleBoundaryData.html">dg::SimpleBoundaryData</a></div><div class="ttdoc">Distinguishes between field data, which can be projected to a mortar, and extra data,...</div><div class="ttdef"><b>Definition:</b> SimpleBoundaryData.hpp:32</div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/array.html">array</a></div></div>
+<div class="ttc" id="astructdg_1_1SimpleBoundaryData_html_ab7459e15a6fa7d3871f43e8a2ffa1090"><div class="ttname"><a href="structdg_1_1SimpleBoundaryData.html#ab7459e15a6fa7d3871f43e8a2ffa1090">dg::SimpleBoundaryData::extra_data</a></div><div class="ttdeci">tuples::tagged_tuple_from_typelist&lt; ExtraDataTags &gt; extra_data</div><div class="ttdoc">Data on the element face that needs no projection to the mortar mesh. This is a TaggedTuple to suppor...</div><div class="ttdef"><b>Definition:</b> SimpleBoundaryData.hpp:42</div></div>
+<div class="ttc" id="aVariables_8hpp_html"><div class="ttname"><a href="Variables_8hpp.html">Variables.hpp</a></div></div>
+<div class="ttc" id="aclassMesh_html"><div class="ttname"><a href="classMesh.html">Mesh</a></div><div class="ttdoc">Holds the number of grid points, basis, and quadrature in each direction of the computational grid.</div><div class="ttdef"><b>Definition:</b> Mesh.hpp:49</div></div>
+<div class="ttc" id="agroup__DiscontinuousGalerkinGroup_html_ga738b600132f1a93efa03fde8c11e950c"><div class="ttname"><a href="group__DiscontinuousGalerkinGroup.html#ga738b600132f1a93efa03fde8c11e950c">dg::mortar_mesh</a></div><div class="ttdeci">Mesh&lt; Dim &gt; mortar_mesh(const Mesh&lt; Dim &gt; &amp;face_mesh1, const Mesh&lt; Dim &gt; &amp;face_mesh2) noexcept</div></div>
+<div class="ttc" id="agroup__DiscontinuousGalerkinGroup_html_gad64bacb048e27950202430591f5ae631"><div class="ttname"><a href="group__DiscontinuousGalerkinGroup.html#gad64bacb048e27950202430591f5ae631">dg::mortar_size</a></div><div class="ttdeci">MortarSize&lt; Dim - 1 &gt; mortar_size(const ElementId&lt; Dim &gt; &amp;self, const ElementId&lt; Dim &gt; &amp;neighbor, size_t dimension, const OrientationMap&lt; Dim &gt; &amp;orientation) noexcept</div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Code Review Guide</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">Code Review Guide </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><p>Code must follow the <a href="https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md">C++ Core Guidelines</a> and the <a href="https://google.github.io/styleguide/cppguide.html">Google style guide</a>. If the Google style guide disagrees with the Core Guidelines, follow the Core Guidelines. Python code must also follow the <a href="https://google.github.io/styleguide/pyguide.html">Google style guide</a>.</p>
+<p>Here we summarize what we view as the more important portions of the guides.</p>
+<p>Stylistic Items:</p>
+<ul>
+<li>Adhere to <a href="https://google.github.io/styleguide/cppguide.html">Google style</a>. <a href="http://clang.llvm.org/docs/ClangFormat.html">Can use <code>clang-format -style=google</code></a>.</li>
+<li>CamelCase: class names template parameters, file names, and directory names.</li>
+<li>snake_case: function, variable, metafunction and metavariable names.</li>
+<li>SCREAMING_SNAKE_CASE: macros.</li>
+<li>Functions or classes only used internally in a library should be in a namespace named <code>LibraryOrFile_detail</code>. For example, <code>databox_detail</code>, <code>Tensor_detail</code> or <code>ConstantExpressions_detail</code>.</li>
+<li>Name unused function parameters <code>/*parameter_name*/</code> or <code>/*meta*/</code> for TMP cases</li>
+<li>Type aliases that wrap type traits have a trailing <code>_t</code> following the STL</li>
+<li>Private member variables have a <a href="https://google.github.io/styleguide/cppguide.html#Variable_Names">trailing underscore</a>.</li>
+<li>Do not use <a href="https://en.wikipedia.org/wiki/Hungarian_notation">Hungarian notation</a>, e.g. <code>double* pd_blah</code> is bad</li>
+<li>Header order:<ol type="1">
+<li>(If a test:) <code><a class="el" href="TestingFramework_8hpp.html">Framework/TestingFramework.hpp</a></code>, followed by one blank line</li>
+<li>(If a cpp file with a corresponding hpp file:) hpp corresponding to cpp, followed by one blank line</li>
+<li>STL and externals (in alphabetical order)</li>
+<li>Blank line</li>
+<li>SpECTRE includes (in alphabetical order)</li>
+</ol>
+</li>
+<li>Template definitions in header files are separated from the declaration of the class by the following line, which contains exactly 64 equal signs <div class="fragment"><div class="line">// ================================================================</div>
+</div><!-- fragment --></li>
+<li>File lists in CMake are alphabetical.</li>
+<li>No blank lines surrounding Doxygen group comments (<code>// @{</code> and <code>// @}</code>).</li>
+<li>Use the <a href="http://en.cppreference.com/w/cpp/language/operator_alternative">alternative tokens</a> <code>or</code>, <code>and</code>, and <code>not</code> instead of <code>||</code>, <code>&amp;&amp;</code>, and <code>!</code>.</li>
+<li>Use C-style Doxygen comments (<code>/*! ... */</code>) when using multi-line math, otherwise C-style and C++ style comments are accepted.</li>
+<li>Use the <code>align</code> environment instead of <code>eqnarray</code>. See the <a href="https://texfaq.org/FAQ-eqnarray">texfaq</a> for an explanation as to why.</li>
+<li>Multi-line equations must have a blank Doxygen line before and after the equation.</li>
+<li>When addressing requests on a PR, the commit message must start with <code>fixup</code> followed by a descriptive message.</li>
+<li>All python code must comply with the yapf (v0.29.0 currently) formatting specified by the <code>.style.yapf</code> file in the directory.</li>
+</ul>
+<p>Code Quality Items:</p>
+<ul>
+<li>All code passes Clang and CppCheck static analyzers. For help with these tools see <a class="el" href="static_analysis_tools.html">here</a>.</li>
+<li>Almost always <code>auto</code>, except with expression templates, i.e. <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code></li>
+<li>All loops and if statements use braces.</li>
+<li>Order of declaration in classes is <code>public</code> before <code>private</code> and member functions before data. See <a href="https://google.github.io/styleguide/cppguide.html#Declaration_Order">Google</a>.</li>
+<li>Prefer return by value over pass-by-mutable-reference except when mutable reference provides superior performance (in practice if you need a mutable reference use <code>const <a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a>&lt;Type*&gt;</code> instead of <code>Type&amp;</code>). The mutable references must be the first arguments passed to the function.</li>
+<li>All commits for performance changes provide quantitative evidence and the tests used to obtain said evidence.</li>
+<li>Never include <code>&lt;iostream&gt;</code>, use <code><a class="el" href="group__ParallelGroup.html#gae21964b5d28608afd21ae090c1c4c073" title="Print an atomic message to stdout with C printf usage.">Parallel::printf</a></code> inside <code><a class="el" href="Printf_8hpp.html">Parallel/Printf.hpp</a></code> instead, which is safe to use in parallel.</li>
+<li>When using charm++ nodelocks include <code>&lt;converse.h&gt;</code> instead of <code>&lt;lrtslock.h&gt;</code>.</li>
+<li>Do not add anything to <a href="http://en.cppreference.com/w/cpp/language/extending_std">the <code>std</code> namespace</a>.</li>
+<li>Virtual functions are explicitly overridden using the <code>override</code> keyword.</li>
+<li><code>#pragma once</code> is to be used for header guards</li>
+<li>Prefer range-based for loops</li>
+<li>Use <code>size_t</code> for positive integers rather than <code>int</code>, specifically when looping over containers. This is in compliance with what the STL uses.</li>
+<li>Error messages should be helpful. An example of a bad error message is "Size
+  mismatch". Instead this message could read "The number of grid points in the
+  matrix 'F' is not the same as the number of grid points in the determinant.", along with the runtime values of the mentioned quantities if applicable.</li>
+<li>Mark immutable objects as <code>const</code></li>
+<li>Make classes serializable by writing a <code>pup</code> function</li>
+<li>If a class stores an object passed into a constructor the object should be taken by-value and <code>std::move</code>d into the member variable.</li>
+<li>Definitions of function and class templates should be in <code>.cpp</code> files with explicit instantiations whenever possible. The macro <code>GENERATE_EXPLICIT_INSTANTIATIONS</code> is useful for generating many explicit instantiations.</li>
+<li>Explicit instantiations of functions marked as noexcept should be marked as noexcept as well.</li>
+<li>Functions that do not throw should be marked <code>noexcept</code>. If you're unsure and the function does not use an <code><a class="el" href="structOptions_1_1Context.html">Options::Context</a></code> or is generating python bindings, mark it <code>noexcept</code>.</li>
+<li>Variable names in macros must avoid name collisions, e.g. inside the <code>PARSE_ERROR</code> macro you would write <code>double variable_name_avoid_name_collisions_PARSE_ERROR = 0.0;</code></li>
+<li>Avoid macros if possible. Prefer <code>constexpr</code> functions, constexpr variables, and/or template metaprogramming</li>
+<li>Explicitly specify <code>double</code>s, e.g. <code>sqrt(2.)</code> or <code>sqrt(2.0)</code> instead of <code>sqrt(2)</code>.</li>
+<li>When the index of a <code>Tensor</code> is known at compile time, use <code>get&lt;a, b&gt;(tensor)</code> instead of the member <code>get</code> function.</li>
+<li>All necessary header files must be included. In header files, prefer forward declarations if class definitions aren't necessary.</li>
+<li>Explicitly make numbers floating point, e.g. <code>2.</code> or <code>2.0</code> over <code>2</code>. </li>
+</ul>
+</div></div><!-- contents -->
+</div><!-- PageDoc -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

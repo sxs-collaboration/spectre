@@ -1,0 +1,281 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: LinearSolver::gmres::Gmres&lt; Metavariables, FieldsTag, OptionsGroup, Preconditioned, SourceTag &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceLinearSolver.html">LinearSolver</a></li><li class="navelem"><a class="el" href="namespaceLinearSolver_1_1gmres.html">gmres</a></li><li class="navelem"><a class="el" href="structLinearSolver_1_1gmres_1_1Gmres.html">Gmres</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structLinearSolver_1_1gmres_1_1Gmres-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">LinearSolver::gmres::Gmres&lt; Metavariables, FieldsTag, OptionsGroup, Preconditioned, SourceTag &gt; Struct Template Reference<div class="ingroups"><a class="el" href="group__LinearSolverGroup.html">Linear Solver</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A GMRES solver for nonsymmetric linear systems of equations \(Ax=b\).  
+ <a href="structLinearSolver_1_1gmres_1_1Gmres.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ParallelAlgorithms_2LinearSolver_2Gmres_2Gmres_8hpp_source.html">Gmres.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a58d0304b656e47e2cd1073bf137ed79d"><td class="memItemLeft" align="right" valign="top"><a id="a58d0304b656e47e2cd1073bf137ed79d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>fields_tag</b> = FieldsTag</td></tr>
+<tr class="separator:a58d0304b656e47e2cd1073bf137ed79d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77ab022a31c2a148173635b9cfe0c774"><td class="memItemLeft" align="right" valign="top"><a id="a77ab022a31c2a148173635b9cfe0c774"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options_group</b> = OptionsGroup</td></tr>
+<tr class="separator:a77ab022a31c2a148173635b9cfe0c774"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a47d67b4669693efac0338f255e91a575"><td class="memItemLeft" align="right" valign="top"><a id="a47d67b4669693efac0338f255e91a575"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>source_tag</b> = SourceTag</td></tr>
+<tr class="separator:a47d67b4669693efac0338f255e91a575"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a58410a625661ff48f295063d91c08c"><td class="memItemLeft" align="right" valign="top"><a id="a5a58410a625661ff48f295063d91c08c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLinearSolver_1_1gmres_1_1Gmres.html#a5a58410a625661ff48f295063d91c08c">operand_tag</a> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/conditional.html">std::conditional_t</a>&lt; Preconditioned, <a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt; <a class="el" href="structLinearSolver_1_1Tags_1_1Preconditioned.html">LinearSolver::Tags::Preconditioned</a>, <a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt; <a class="el" href="structLinearSolver_1_1Tags_1_1Operand.html">LinearSolver::Tags::Operand</a>, fields_tag &gt; &gt;, <a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt; <a class="el" href="structLinearSolver_1_1Tags_1_1Operand.html">LinearSolver::Tags::Operand</a>, fields_tag &gt; &gt;</td></tr>
+<tr class="memdesc:a5a58410a625661ff48f295063d91c08c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the linear operator to this tag in each iteration. <br /></td></tr>
+<tr class="separator:a5a58410a625661ff48f295063d91c08c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a08f52aa0502da31b432bd296d932310d"><td class="memItemLeft" align="right" valign="top"><a id="a08f52aa0502da31b432bd296d932310d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLinearSolver_1_1gmres_1_1Gmres.html#a08f52aa0502da31b432bd296d932310d">preconditioner_source_tag</a> = <a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt; <a class="el" href="structLinearSolver_1_1Tags_1_1Operand.html">LinearSolver::Tags::Operand</a>, fields_tag &gt;</td></tr>
+<tr class="memdesc:a08f52aa0502da31b432bd296d932310d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke a linear solver on the <code>operand_tag</code> sourced by the <code>preconditioner_source_tag</code> before applying the operator in each step. <br /></td></tr>
+<tr class="separator:a08f52aa0502da31b432bd296d932310d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a55b53832d3911dc358f5500e1aaabf76"><td class="memItemLeft" align="right" valign="top"><a id="a55b53832d3911dc358f5500e1aaabf76"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLinearSolver_1_1gmres_1_1Gmres.html#a55b53832d3911dc358f5500e1aaabf76">component_list</a> = tmpl::list&lt; detail::ResidualMonitor&lt; Metavariables, FieldsTag, OptionsGroup &gt; &gt;</td></tr>
+<tr class="memdesc:a55b53832d3911dc358f5500e1aaabf76"><td class="mdescLeft">&#160;</td><td class="mdescRight">The parallel components used by the GMRES linear solver. <br /></td></tr>
+<tr class="separator:a55b53832d3911dc358f5500e1aaabf76"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01d940daed2545ffc1f52bdde51eeb1c"><td class="memItemLeft" align="right" valign="top"><a id="a01d940daed2545ffc1f52bdde51eeb1c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>initialize_element</b> = detail::InitializeElement&lt; FieldsTag, OptionsGroup, Preconditioned &gt;</td></tr>
+<tr class="separator:a01d940daed2545ffc1f52bdde51eeb1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca0da5a90e02b2902ac01628cd6032ea"><td class="memItemLeft" align="right" valign="top"><a id="aca0da5a90e02b2902ac01628cd6032ea"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>register_element</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:aca0da5a90e02b2902ac01628cd6032ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42005427debf08aecd1dd8b9eeced967"><td class="memItemLeft" align="right" valign="top"><a id="a42005427debf08aecd1dd8b9eeced967"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>observed_reduction_data_tags</b> = observers::make_reduction_data_tags&lt; tmpl::list&lt; observe_detail::reduction_data &gt; &gt;</td></tr>
+<tr class="separator:a42005427debf08aecd1dd8b9eeced967"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3022129be34ecd4e77acd03a758e1ff4"><td class="memTemplParams" colspan="2"><a id="a3022129be34ecd4e77acd03a758e1ff4"></a>
+template&lt;typename ApplyOperatorActions , typename Label  = OptionsGroup&gt; </td></tr>
+<tr class="memitem:a3022129be34ecd4e77acd03a758e1ff4"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>solve</b> = tmpl::list&lt; detail::PrepareSolve&lt; FieldsTag, OptionsGroup, Preconditioned, Label, SourceTag &gt;, detail::NormalizeInitialOperand&lt; FieldsTag, OptionsGroup, Preconditioned, Label &gt;, detail::PrepareStep&lt; FieldsTag, OptionsGroup, Preconditioned, Label &gt;, ApplyOperatorActions, detail::PerformStep&lt; FieldsTag, OptionsGroup, Preconditioned, Label &gt;, detail::OrthogonalizeOperand&lt; FieldsTag, OptionsGroup, Preconditioned, Label &gt;, detail::NormalizeOperandAndUpdateField&lt; FieldsTag, OptionsGroup, Preconditioned, Label &gt; &gt;</td></tr>
+<tr class="separator:a3022129be34ecd4e77acd03a758e1ff4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a485966d18f10fa892ecac833dca5dae4"><td class="memItemLeft" align="right" valign="top"><a id="a485966d18f10fa892ecac833dca5dae4"></a>
+static constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><b>preconditioned</b> = Preconditioned</td></tr>
+<tr class="separator:a485966d18f10fa892ecac833dca5dae4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename Metavariables, typename FieldsTag, typename OptionsGroup, bool Preconditioned, typename SourceTag = db::add_tag_prefix&lt;::Tags::FixedSource, FieldsTag&gt;&gt;<br />
+struct LinearSolver::gmres::Gmres&lt; Metavariables, FieldsTag, OptionsGroup, Preconditioned, SourceTag &gt;</h3>
+
+<p>A GMRES solver for nonsymmetric linear systems of equations \(Ax=b\). </p>
+<h3>Details</h3>
+<p>The only operation we need to supply to the algorithm is the result of the operation \(A(p)\) (see <a class="el" href="group__LinearSolverGroup.html">Linear Solver</a>). Each step of the algorithm expects that \(A(q)\) is computed and stored in the DataBox as <code><a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt;<a class="el" href="structLinearSolver_1_1Tags_1_1OperatorAppliedTo.html" title="The linear operator  applied to the data in Tag">LinearSolver::Tags::OperatorAppliedTo</a>, operand_tag&gt;</code>. To perform a solve, add the <code>solve</code> action list to an array parallel component. Pass the actions that compute \(A(q)\), as well as any further actions you wish to run in each step of the algorithm, as the first template parameter to <code>solve</code>. If you add the <code>solve</code> action list multiple times, use the second template parameter to label each solve with a different type.</p>
+<p>This linear solver supports preconditioning. Enable preconditioning by setting the <code>Preconditioned</code> template parameter to <code>true</code>. If you do, run a preconditioner (e.g. another parallel linear solver) in each step. The preconditioner should approximately solve the linear problem \(A(q)=b\) where \(q\) is the <code>operand_tag</code> and \(b\) is the <code>preconditioner_source_tag</code>. Make sure the tag <code><a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt;<a class="el" href="structLinearSolver_1_1Tags_1_1OperatorAppliedTo.html" title="The linear operator  applied to the data in Tag">LinearSolver::Tags::OperatorAppliedTo</a>, operand_tag&gt;</code> is updated with the preconditioned result in each step of the algorithm, i.e. that it is \(A(q)\) where \(q\) is the preconditioner's approximate solution to \(A(q)=b\).</p>
+<p>Note that the operand \(q\) for which \(A(q)\) needs to be computed is not the field \(x\) we are solving for but <code><a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt;<a class="el" href="structLinearSolver_1_1Tags_1_1Operand.html" title="The operand that the local linear operator  is applied to.">LinearSolver::Tags::Operand</a>, FieldsTag&gt;</code>. This field is initially set to the residual \(q_0 = b - A(x_0)\) where \(x_0\) is the initial value of the <code>FieldsTag</code>.</p>
+<p>When the algorithm step is performed after the operator action \(A(q)\) has been computed and stored in the DataBox, the GMRES algorithm implemented here will converge the field \(x\) towards the solution and update the operand \(q\) in the process. This requires reductions over all elements that are received by a <code>ResidualMonitor</code> singleton parallel component, processed, and then broadcast back to all elements. Since the reductions are performed to find a vector that is orthogonal to those used in previous steps, the number of reductions increases linearly with iterations. No restarting mechanism is currently implemented. The actions are implemented in the <code>gmres::detail</code> namespace and constitute the full algorithm in the following order:</p><ol type="1">
+<li><code>PerformStep</code> (on elements): Start an Arnoldi orthogonalization by computing the inner product between \(A(q)\) and the first of the previously determined set of orthogonal vectors.</li>
+<li><code>StoreOrthogonalization</code> (on <code>ResidualMonitor</code>): Keep track of the computed inner product in a Hessenberg matrix, then broadcast.</li>
+<li><code>OrthogonalizeOperand</code> (on elements): Proceed with the Arnoldi orthogonalization by computing inner products and reducing to <code>StoreOrthogonalization</code> on the <code>ResidualMonitor</code> until the new orthogonal vector is constructed. Then compute its magnitude and reduce.</li>
+<li><code>StoreOrthogonalization</code> (on <code>ResidualMonitor</code>): Perform a QR decomposition of the Hessenberg matrix to produce a residual vector. Broadcast to <code>NormalizeOperandAndUpdateField</code> along with a termination flag if the <code><a class="el" href="structConvergence_1_1Tags_1_1Criteria.html" title="Convergence::Criteria that determine the iterative algorithm has converged">Convergence::Tags::Criteria</a></code> are met.</li>
+<li><code>NormalizeOperandAndUpdateField</code> (on elements): Set the operand \(q\) as the new orthogonal vector and normalize. Use the residual vector and the set of orthogonal vectors to determine the solution \(x\).</li>
+</ol>
+<dl class="section see"><dt>See also</dt><dd>ConjugateGradient for a linear solver that is more efficient when the linear operator \(A\) is symmetric. </dd></dl>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/ParallelAlgorithms/LinearSolver/Gmres/<a class="el" href="ParallelAlgorithms_2LinearSolver_2Gmres_2Gmres_8hpp_source.html">Gmres.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

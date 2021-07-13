@@ -1,0 +1,397 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: dg::FirstOrderScheme Namespace Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacedg.html">dg</a></li><li class="navelem"><a class="el" href="namespacedg_1_1FirstOrderScheme.html">FirstOrderScheme</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">dg::FirstOrderScheme Namespace Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Functionality related to the first-order DG scheme.  
+<a href="namespacedg_1_1FirstOrderScheme.html#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdg_1_1FirstOrderScheme_1_1FirstOrderScheme.html">FirstOrderScheme</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Boundary contributions for a first-order DG scheme.  <a href="structdg_1_1FirstOrderScheme_1_1FirstOrderScheme.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdg_1_1FirstOrderScheme_1_1FirstOrderSchemeLts.html">FirstOrderSchemeLts</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Boundary contributions for a first-order DG scheme with local time-stepping.  <a href="structdg_1_1FirstOrderScheme_1_1FirstOrderSchemeLts.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a1338a01b821a1e6be32e703c0dc305ae"><td class="memTemplParams" colspan="2">template&lt;typename NumericalFluxType &gt; </td></tr>
+<tr class="memitem:a1338a01b821a1e6be32e703c0dc305ae"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacedg_1_1FirstOrderScheme.html#a1338a01b821a1e6be32e703c0dc305ae">BoundaryData</a> = typename detail::BoundaryDataImpl&lt; NumericalFluxType &gt;::type</td></tr>
+<tr class="memdesc:a1338a01b821a1e6be32e703c0dc305ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">The data on element boundaries that's needed for the (strong) first-order boundary scheme.  <a href="namespacedg_1_1FirstOrderScheme.html#a1338a01b821a1e6be32e703c0dc305ae">More...</a><br /></td></tr>
+<tr class="separator:a1338a01b821a1e6be32e703c0dc305ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a0d7002ea3c47a0bee681e22b6032242a"><td class="memTemplParams" colspan="2">template&lt;size_t FaceDim, typename NumericalFluxType , typename... NumericalFluxArgs, Requires&lt; tt::conforms_to_v&lt; NumericalFluxType, protocols::NumericalFlux &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a0d7002ea3c47a0bee681e22b6032242a"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacedg_1_1FirstOrderScheme.html#a0d7002ea3c47a0bee681e22b6032242a">package_boundary_data</a> (const NumericalFluxType &amp;numerical_flux_computer, const <a class="el" href="classMesh.html">Mesh</a>&lt; FaceDim &gt; &amp;face_mesh, const Variables&lt; <a class="el" href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e">db::wrap_tags_in</a>&lt; ::<a class="el" href="structTags_1_1NormalDotFlux.html">Tags::NormalDotFlux</a>, typename NumericalFluxType::variables_tags &gt;&gt; &amp;normal_dot_fluxes, const NumericalFluxArgs &amp;... args) noexcept</td></tr>
+<tr class="memdesc:a0d7002ea3c47a0bee681e22b6032242a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Package the data on element boundaries that's needed for the (strong) first-order boundary scheme.  <a href="namespacedg_1_1FirstOrderScheme.html#a0d7002ea3c47a0bee681e22b6032242a">More...</a><br /></td></tr>
+<tr class="separator:a0d7002ea3c47a0bee681e22b6032242a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af63ce4634480989d93f9b39a1a13648b"><td class="memTemplParams" colspan="2">template&lt;size_t FaceDim, typename NumericalFluxType , typename AllFieldsTags , typename AllExtraDataTags , Requires&lt; tt::conforms_to_v&lt; NumericalFluxType, dg::protocols::NumericalFlux &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:af63ce4634480989d93f9b39a1a13648b"><td class="memTemplItemLeft" align="right" valign="top">Variables&lt; typename NumericalFluxType::variables_tags &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacedg_1_1FirstOrderScheme.html#af63ce4634480989d93f9b39a1a13648b">boundary_flux</a> (const <a class="el" href="structdg_1_1SimpleBoundaryData.html">dg::SimpleBoundaryData</a>&lt; AllFieldsTags, AllExtraDataTags &gt; &amp;local_boundary_data, const <a class="el" href="structdg_1_1SimpleBoundaryData.html">dg::SimpleBoundaryData</a>&lt; AllFieldsTags, AllExtraDataTags &gt; &amp;remote_boundary_data, const NumericalFluxType &amp;numerical_flux_computer, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;magnitude_of_face_normal, const size_t extent_perpendicular_to_boundary, const <a class="el" href="classMesh.html">Mesh</a>&lt; FaceDim &gt; &amp;face_mesh, const <a class="el" href="classMesh.html">Mesh</a>&lt; FaceDim &gt; &amp;<a class="el" href="group__DiscontinuousGalerkinGroup.html#ga738b600132f1a93efa03fde8c11e950c">mortar_mesh</a>, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">MortarSize</a>&lt; FaceDim &gt; &amp;<a class="el" href="group__DiscontinuousGalerkinGroup.html#gad64bacb048e27950202430591f5ae631">mortar_size</a>) noexcept</td></tr>
+<tr class="memdesc:af63ce4634480989d93f9b39a1a13648b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the boundary flux contribution and lift it to the volume.  <a href="namespacedg_1_1FirstOrderScheme.html#af63ce4634480989d93f9b39a1a13648b">More...</a><br /></td></tr>
+<tr class="separator:af63ce4634480989d93f9b39a1a13648b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Functionality related to the first-order DG scheme. </p>
+</div><h2 class="groupheader">Typedef Documentation</h2>
+<a id="a1338a01b821a1e6be32e703c0dc305ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1338a01b821a1e6be32e703c0dc305ae">&#9670;&nbsp;</a></span>BoundaryData</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename NumericalFluxType &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespacedg_1_1FirstOrderScheme.html#a1338a01b821a1e6be32e703c0dc305ae">dg::FirstOrderScheme::BoundaryData</a> = typedef typename detail::BoundaryDataImpl&lt;NumericalFluxType&gt;::type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The data on element boundaries that's needed for the (strong) first-order boundary scheme. </p>
+<p>The boundary data includes the <code>NumericalFluxType</code>'s packaged data plus all "normal-dot-fluxes" so the strong boundary scheme can compute the difference between the normal-dot-numerical-fluxes and the normal-dot-fluxes (see <code>dg::FirstOrder</code>). For the weak formulation the normal-dot-fluxes need not be included explicitly, but the <code>NumericalFluxType</code> may require a subset of them. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="af63ce4634480989d93f9b39a1a13648b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af63ce4634480989d93f9b39a1a13648b">&#9670;&nbsp;</a></span>boundary_flux()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t FaceDim, typename NumericalFluxType , typename AllFieldsTags , typename AllExtraDataTags , Requires&lt; tt::conforms_to_v&lt; NumericalFluxType, dg::protocols::NumericalFlux &gt;&gt;  = nullptr&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variables&lt;typename NumericalFluxType::variables_tags&gt; dg::FirstOrderScheme::boundary_flux </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structdg_1_1SimpleBoundaryData.html">dg::SimpleBoundaryData</a>&lt; AllFieldsTags, AllExtraDataTags &gt; &amp;&#160;</td>
+          <td class="paramname"><em>local_boundary_data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structdg_1_1SimpleBoundaryData.html">dg::SimpleBoundaryData</a>&lt; AllFieldsTags, AllExtraDataTags &gt; &amp;&#160;</td>
+          <td class="paramname"><em>remote_boundary_data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const NumericalFluxType &amp;&#160;</td>
+          <td class="paramname"><em>numerical_flux_computer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>magnitude_of_face_normal</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>extent_perpendicular_to_boundary</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; FaceDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>face_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; FaceDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mortar_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">MortarSize</a>&lt; FaceDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mortar_size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the boundary flux contribution and lift it to the volume. </p>
+<p>This computes the numerical flux minus the flux dotted into the interface normal, projects the result to the face mesh if necessary, and then lifts it to the volume (still presented only on the face mesh as all other points are zero).</p>
+<p>Projection must happen after the numerical flux calculation so that the elements on either side of the mortar calculate the same result. Projection must happen before flux lifting because we want the factor of the magnitude of the unit normal added during the lift to cancel the Jacobian factor in integrals to preserve conservation; this only happens if the two operations are done on the same grid. </p>
+
+</div>
+</div>
+<a id="a0d7002ea3c47a0bee681e22b6032242a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d7002ea3c47a0bee681e22b6032242a">&#9670;&nbsp;</a></span>package_boundary_data()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t FaceDim, typename NumericalFluxType , typename... NumericalFluxArgs, Requires&lt; tt::conforms_to_v&lt; NumericalFluxType, protocols::NumericalFlux &gt;&gt;  = nullptr&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto dg::FirstOrderScheme::package_boundary_data </td>
+          <td>(</td>
+          <td class="paramtype">const NumericalFluxType &amp;&#160;</td>
+          <td class="paramname"><em>numerical_flux_computer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; FaceDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>face_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variables&lt; <a class="el" href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e">db::wrap_tags_in</a>&lt; ::<a class="el" href="structTags_1_1NormalDotFlux.html">Tags::NormalDotFlux</a>, typename NumericalFluxType::variables_tags &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>normal_dot_fluxes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const NumericalFluxArgs &amp;...&#160;</td>
+          <td class="paramname"><em>args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Package the data on element boundaries that's needed for the (strong) first-order boundary scheme. </p>
+<p>This function currently packages the data required by the <code>NumericalFluxType</code> plus all "normal-dot-fluxes", which are needed for the strong first-order boundary scheme (see <code><a class="el" href="namespacedg_1_1FirstOrderScheme.html#a1338a01b821a1e6be32e703c0dc305ae" title="The data on element boundaries that&#39;s needed for the (strong) first-order boundary scheme.">dg::FirstOrderScheme::BoundaryData</a></code>). Note that for the weak formulation the normal-dot-fluxes need not be included explicitly, but the <code>NumericalFluxType</code> may require a subset of them. </p>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

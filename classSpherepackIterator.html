@@ -1,0 +1,316 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: SpherepackIterator Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classSpherepackIterator-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">SpherepackIterator Class Reference<div class="ingroups"><a class="el" href="group__SpectralGroup.html">Spectral</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Iterates over spectral coefficients stored in SPHEREPACK format.  
+ <a href="classSpherepackIterator.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="SpherepackIterator_8hpp_source.html">SpherepackIterator.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a9b252462a7127029f01892e051b21d98"><td class="memItemLeft" align="right" valign="top"><a id="a9b252462a7127029f01892e051b21d98"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpherepackIterator.html#a9b252462a7127029f01892e051b21d98">CoefficientArray</a> { <b>a</b>, 
+<b>b</b>
+ }</td></tr>
+<tr class="memdesc:a9b252462a7127029f01892e051b21d98"><td class="mdescLeft">&#160;</td><td class="mdescRight">SPHEREPACK has two coefficient variables, 'a' and 'b', that hold the cos(m*phi) and sin(m*phi) parts of the spectral coefficients. <br /></td></tr>
+<tr class="separator:a9b252462a7127029f01892e051b21d98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a5bdaac049249e9f5a15c9251f4f01d11"><td class="memItemLeft" align="right" valign="top"><a id="a5bdaac049249e9f5a15c9251f4f01d11"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SpherepackIterator</b> (size_t l_max_input, size_t m_max_input, size_t stride=1)</td></tr>
+<tr class="separator:a5bdaac049249e9f5a15c9251f4f01d11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8d2c85426fda9045b61266738888c27"><td class="memItemLeft" align="right" valign="top"><a id="ab8d2c85426fda9045b61266738888c27"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>l_max</b> () const noexcept</td></tr>
+<tr class="separator:ab8d2c85426fda9045b61266738888c27"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9abc5d20e64efdb13098c71d0cbf728"><td class="memItemLeft" align="right" valign="top"><a id="ac9abc5d20e64efdb13098c71d0cbf728"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>m_max</b> () const noexcept</td></tr>
+<tr class="separator:ac9abc5d20e64efdb13098c71d0cbf728"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8af4b9220d397bd9841cf5d4faeafb89"><td class="memItemLeft" align="right" valign="top"><a id="a8af4b9220d397bd9841cf5d4faeafb89"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>n_th</b> () const noexcept</td></tr>
+<tr class="separator:a8af4b9220d397bd9841cf5d4faeafb89"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab843f2d7bddcbc21c203592ec32990dc"><td class="memItemLeft" align="right" valign="top"><a id="ab843f2d7bddcbc21c203592ec32990dc"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>n_ph</b> () const noexcept</td></tr>
+<tr class="separator:ab843f2d7bddcbc21c203592ec32990dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2e8d855899bd4575d806ea22a13e90f"><td class="memItemLeft" align="right" valign="top"><a id="ae2e8d855899bd4575d806ea22a13e90f"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>stride</b> () const noexcept</td></tr>
+<tr class="separator:ae2e8d855899bd4575d806ea22a13e90f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a161ddd552a542d7f6377f2495e8d8a"><td class="memItemLeft" align="right" valign="top"><a id="a4a161ddd552a542d7f6377f2495e8d8a"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpherepackIterator.html#a4a161ddd552a542d7f6377f2495e8d8a">spherepack_array_size</a> () const noexcept</td></tr>
+<tr class="memdesc:a4a161ddd552a542d7f6377f2495e8d8a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Size of a SPHEREPACK coefficient array (a and b combined), not counting stride. For non-unit stride, the size of the array should be <a class="el" href="classSpherepackIterator.html#a4a161ddd552a542d7f6377f2495e8d8a" title="Size of a SPHEREPACK coefficient array (a and b combined), not counting stride. For non-unit stride,...">spherepack_array_size()</a>*stride. <br /></td></tr>
+<tr class="separator:a4a161ddd552a542d7f6377f2495e8d8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a012dedd94ec41e9fab2671e7cdd40ba2"><td class="memItemLeft" align="right" valign="top"><a id="a012dedd94ec41e9fab2671e7cdd40ba2"></a>
+<a class="el" href="classSpherepackIterator.html">SpherepackIterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator++</b> () noexcept</td></tr>
+<tr class="separator:a012dedd94ec41e9fab2671e7cdd40ba2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69f64e357f24fc73a71a23144bba4d06"><td class="memItemLeft" align="right" valign="top"><a id="a69f64e357f24fc73a71a23144bba4d06"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>operator bool</b> () const noexcept</td></tr>
+<tr class="separator:a69f64e357f24fc73a71a23144bba4d06"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ec7c6b1f7779502a341c7444d0cfb09"><td class="memItemLeft" align="right" valign="top"><a id="a4ec7c6b1f7779502a341c7444d0cfb09"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpherepackIterator.html#a4ec7c6b1f7779502a341c7444d0cfb09">operator()</a> () const noexcept</td></tr>
+<tr class="memdesc:a4ec7c6b1f7779502a341c7444d0cfb09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current index into a SPHEREPACK coefficient array. <br /></td></tr>
+<tr class="separator:a4ec7c6b1f7779502a341c7444d0cfb09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba4dd93add917002393cc109e104a3df"><td class="memItemLeft" align="right" valign="top"><a id="aba4dd93add917002393cc109e104a3df"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpherepackIterator.html#aba4dd93add917002393cc109e104a3df">l</a> () const noexcept</td></tr>
+<tr class="memdesc:aba4dd93add917002393cc109e104a3df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current values of l and m. <br /></td></tr>
+<tr class="separator:aba4dd93add917002393cc109e104a3df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98d3cb6cf3fcaa6b28293c133c9e65d7"><td class="memItemLeft" align="right" valign="top"><a id="a98d3cb6cf3fcaa6b28293c133c9e65d7"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>m</b> () const noexcept</td></tr>
+<tr class="separator:a98d3cb6cf3fcaa6b28293c133c9e65d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae8955437043e7f975172c8bb5792f75f"><td class="memItemLeft" align="right" valign="top"><a id="ae8955437043e7f975172c8bb5792f75f"></a>
+<a class="el" href="classSpherepackIterator.html#a9b252462a7127029f01892e051b21d98">CoefficientArray</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpherepackIterator.html#ae8955437043e7f975172c8bb5792f75f">coefficient_array</a> () const noexcept</td></tr>
+<tr class="memdesc:ae8955437043e7f975172c8bb5792f75f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the iterator points to an element of 'a' or 'b', i.e. points to the cos(m*phi) or sin(m*phi) part of a spectral coefficient. <br /></td></tr>
+<tr class="separator:ae8955437043e7f975172c8bb5792f75f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7eb1a2a22482e8c48b8b00370765a9cf"><td class="memItemLeft" align="right" valign="top"><a id="a7eb1a2a22482e8c48b8b00370765a9cf"></a>
+<a class="el" href="classSpherepackIterator.html">SpherepackIterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpherepackIterator.html#a7eb1a2a22482e8c48b8b00370765a9cf">reset</a> () noexcept</td></tr>
+<tr class="memdesc:a7eb1a2a22482e8c48b8b00370765a9cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset iterator back to beginning value. Returns *this. <br /></td></tr>
+<tr class="separator:a7eb1a2a22482e8c48b8b00370765a9cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e96cba335c01028fb744d832a04970e"><td class="memItemLeft" align="right" valign="top"><a id="a6e96cba335c01028fb744d832a04970e"></a>
+<a class="el" href="classSpherepackIterator.html">SpherepackIterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpherepackIterator.html#a6e96cba335c01028fb744d832a04970e">set</a> (size_t l_input, size_t m_input, <a class="el" href="classSpherepackIterator.html#a9b252462a7127029f01892e051b21d98">CoefficientArray</a> coefficient_array_input) noexcept</td></tr>
+<tr class="memdesc:a6e96cba335c01028fb744d832a04970e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set iterator to specific value of l, m, array. Returns *this. <br /></td></tr>
+<tr class="separator:a6e96cba335c01028fb744d832a04970e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ef65854073d9f2f51dc1f75ec71075e"><td class="memItemLeft" align="right" valign="top"><a id="a0ef65854073d9f2f51dc1f75ec71075e"></a>
+<a class="el" href="classSpherepackIterator.html">SpherepackIterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpherepackIterator.html#a0ef65854073d9f2f51dc1f75ec71075e">set</a> (size_t l_input, int m_input) noexcept</td></tr>
+<tr class="memdesc:a0ef65854073d9f2f51dc1f75ec71075e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as 'set' above, but assumes CoefficientArray is 'a' for m&gt;=0 and 'b' for m&lt;0. This is useful when converting between true spherical harmonics (which allow negative values of m) and SPHEREPACK coefficients (which have only positive values of m, but two arrays for sin(m*phi) and cos(m*phi) parts). <br /></td></tr>
+<tr class="separator:a0ef65854073d9f2f51dc1f75ec71075e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Iterates over spectral coefficients stored in SPHEREPACK format. </p>
+<h3>Details</h3>
+<p>The internal SPHEREPACK ordering is not intuitive, so <a class="el" href="classSpherepackIterator.html" title="Iterates over spectral coefficients stored in SPHEREPACK format.">SpherepackIterator</a> exists for the purpose of iterating over an array containing SPHEREPACK coefficients and determining the (l,m) of each entry in the array.</p>
+<p>SPHEREPACK expands \(f(\theta,\phi)\) as </p><p class="formulaDsp">
+\[ f(\theta,\phi) = \frac{1}{2} \sum_{l=0}^{l_{max}} \bar{P}_l^0 a(0,l) + \sum_{m=1}^{m_{max}} \sum_{l=m}^{l_{max}} \bar{P}_l^m \left( a(m,l) \cos(m \phi) - b(m,l) \sin(m \phi)\right) \]
+</p>
+<p> where \(a(m,l)\) and \(b(m,l)\) are the SPHEREPACK spectral coefficients, and \(\bar{P}_l^m\) are unit-orthonormal associated Legendre polynomials: </p><p class="formulaDsp">
+\[ \bar{P}_l^m = (-1)^m \sqrt{\frac{(2l+1)(l-m)!}{2(l+m)!}} P_l^m, \]
+</p>
+<p> where \(P_l^m\) are the associated Legendre polynomials as defined for example in Jackson "Classical Electrodynamics". </p>
+<h3>Example</h3>
+<div class="fragment"><div class="line">  <span class="keyword">const</span> <span class="keywordtype">size_t</span> l_max = 4;</div>
+<div class="line">  <span class="keyword">const</span> <span class="keywordtype">size_t</span> m_max = 2;</div>
+<div class="line">  <span class="keyword">const</span> <span class="keywordtype">size_t</span> stride = 5;</div>
+<div class="line">  <a class="code" href="classSpherepackIterator.html">SpherepackIterator</a> iter(l_max, m_max, stride);</div>
+<div class="line">  <span class="comment">// Allocate space for a SPHEREPACK array</span></div>
+<div class="line">  <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a> array(iter.spherepack_array_size() * stride);</div>
+<div class="line">  <span class="comment">// Set each array element equal to l+m for real part</span></div>
+<div class="line">  <span class="comment">// and l-m for imaginary part.</span></div>
+<div class="line">  <span class="keywordtype">size_t</span> i = 0;</div>
+<div class="line">  <span class="keywordflow">for</span> (iter.reset(); iter; ++iter, ++i) {</div>
+<div class="line">    <span class="keywordflow">if</span> (iter.coefficient_array() == SpherepackIterator::CoefficientArray::a) {</div>
+<div class="line">      array[iter()] = iter.l() + iter.m();</div>
+<div class="line">    } <span class="keywordflow">else</span> {</div>
+<div class="line">      array[iter()] = iter.l() - iter.m();</div>
+<div class="line">    }</div>
+<div class="line">    CHECK(iter.l() == test_l[i]);</div>
+<div class="line">    CHECK(iter.m() == test_m[i]);</div>
+<div class="line">    CHECK(iter() == test_index[i]);</div>
+<div class="line">  }</div>
+</div><!-- fragment --></div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/ApparentHorizons/<a class="el" href="SpherepackIterator_8hpp_source.html">SpherepackIterator.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt; double &gt;</a></div></div>
+<div class="ttc" id="aclassSpherepackIterator_html"><div class="ttname"><a href="classSpherepackIterator.html">SpherepackIterator</a></div><div class="ttdoc">Iterates over spectral coefficients stored in SPHEREPACK format.</div><div class="ttdef"><b>Definition:</b> SpherepackIterator.hpp:47</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

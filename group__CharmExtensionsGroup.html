@@ -1,0 +1,357 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Charm++ Extensions</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">Charm++ Extensions</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Classes and functions used to make Charm++ easier and safer to use.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParallel_1_1charmxx_1_1MainChareRegistrationConstructor.html">Parallel::charmxx::MainChareRegistrationConstructor</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Class to mark a constructor as a constructor for the main chare.  <a href="structParallel_1_1charmxx_1_1MainChareRegistrationConstructor.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParallel_1_1charmxx_1_1RegistrationHelper.html">Parallel::charmxx::RegistrationHelper</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The base class used for automatic registration of entry methods.  <a href="structParallel_1_1charmxx_1_1RegistrationHelper.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParallel_1_1charmxx_1_1RegisterParallelComponent.html">Parallel::charmxx::RegisterParallelComponent&lt; ParallelComponent &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Derived class for registering parallel components.  <a href="structParallel_1_1charmxx_1_1RegisterParallelComponent.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParallel_1_1charmxx_1_1RegisterChare.html">Parallel::charmxx::RegisterChare&lt; Chare, CkIndex &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Derived class for registering chares.  <a href="structParallel_1_1charmxx_1_1RegisterChare.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParallel_1_1charmxx_1_1RegisterSimpleAction.html">Parallel::charmxx::RegisterSimpleAction&lt; ParallelComponent, Action, Args &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Derived class for registering simple actions.  <a href="structParallel_1_1charmxx_1_1RegisterSimpleAction.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParallel_1_1charmxx_1_1RegisterThreadedAction.html">Parallel::charmxx::RegisterThreadedAction&lt; ParallelComponent, Action, Args &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Derived class for registering threaded actions.  <a href="structParallel_1_1charmxx_1_1RegisterThreadedAction.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParallel_1_1charmxx_1_1RegisterReceiveData.html">Parallel::charmxx::RegisterReceiveData&lt; ParallelComponent, ReceiveTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Derived class for registering receive_data functions.  <a href="structParallel_1_1charmxx_1_1RegisterReceiveData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParallel_1_1charmxx_1_1RegisterReductionAction.html">Parallel::charmxx::RegisterReductionAction&lt; ParallelComponent, Action, ReductionType &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Derived class for registering reduction actions.  <a href="structParallel_1_1charmxx_1_1RegisterReductionAction.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParallel_1_1charmxx_1_1RegisterMutableGlobalCacheMutate.html">Parallel::charmxx::RegisterMutableGlobalCacheMutate&lt; Metavariables, GlobalCacheTag, Function, Args &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Derived class for registering MutableGlobalCache::mutate.  <a href="structParallel_1_1charmxx_1_1RegisterMutableGlobalCacheMutate.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParallel_1_1charmxx_1_1RegisterGlobalCacheMutate.html">Parallel::charmxx::RegisterGlobalCacheMutate&lt; Metavariables, GlobalCacheTag, Function, Args &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Derived class for registering <a class="el" href="classParallel_1_1GlobalCache.html#af912d6b975a5f6545bab52eb117602b3" title="Mutates the non-const object identified by GlobalCacheTag.">GlobalCache::mutate</a>.  <a href="structParallel_1_1charmxx_1_1RegisterGlobalCacheMutate.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParallel_1_1charmxx_1_1RegisterReducerFunction.html">Parallel::charmxx::RegisterReducerFunction&lt; ReducerFunctions &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Class used for registering custom reduction function.  <a href="structParallel_1_1charmxx_1_1RegisterReducerFunction.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:gaf5d199682fd0cffad8c8555ef6b878ee"><td class="memItemLeft" align="right" valign="top"><a id="gaf5d199682fd0cffad8c8555ef6b878ee"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__CharmExtensionsGroup.html#gaf5d199682fd0cffad8c8555ef6b878ee">Parallel::charmxx::ReducerFunctions</a> = CkReductionMsg *(*)(int, CkReductionMsg **)</td></tr>
+<tr class="memdesc:gaf5d199682fd0cffad8c8555ef6b878ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">The type of a function pointer to a Charm++ custom reduction function. <br /></td></tr>
+<tr class="separator:gaf5d199682fd0cffad8c8555ef6b878ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:gaa51f3548efd67a155ed38be887e32e81"><td class="memTemplParams" colspan="2">template&lt;class... Args&gt; </td></tr>
+<tr class="memitem:gaa51f3548efd67a155ed38be887e32e81"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__CharmExtensionsGroup.html#gaa51f3548efd67a155ed38be887e32e81">Parallel::charmxx::get_template_parameters_as_string</a> ()</td></tr>
+<tr class="memdesc:gaa51f3548efd67a155ed38be887e32e81"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the template parameter as a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></code>  <a href="group__CharmExtensionsGroup.html#gaa51f3548efd67a155ed38be887e32e81">More...</a><br /></td></tr>
+<tr class="separator:gaa51f3548efd67a155ed38be887e32e81"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaac0202956ee958f4f1e1dfbba5b578e3"><td class="memTemplParams" colspan="2">template&lt;typename Derived &gt; </td></tr>
+<tr class="memitem:gaac0202956ee958f4f1e1dfbba5b578e3"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__CharmExtensionsGroup.html#gaac0202956ee958f4f1e1dfbba5b578e3">Parallel::charmxx::register_func_with_charm</a> () noexcept</td></tr>
+<tr class="memdesc:gaac0202956ee958f4f1e1dfbba5b578e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function that adds a pointer to a specific derived class to the <code>charm_register_list</code>  <a href="group__CharmExtensionsGroup.html#gaac0202956ee958f4f1e1dfbba5b578e3">More...</a><br /></td></tr>
+<tr class="separator:gaac0202956ee958f4f1e1dfbba5b578e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga129eb1555a3edb96c9bfae7c35ee5887"><td class="memTemplParams" colspan="2">template&lt;ReducerFunctions F&gt; </td></tr>
+<tr class="memitem:ga129eb1555a3edb96c9bfae7c35ee5887"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__CharmExtensionsGroup.html#ga129eb1555a3edb96c9bfae7c35ee5887">Parallel::charmxx::register_reducer_function</a> () noexcept</td></tr>
+<tr class="memdesc:ga129eb1555a3edb96c9bfae7c35ee5887"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function that stores a function pointer to the custom reduction function to be registered later.  <a href="group__CharmExtensionsGroup.html#ga129eb1555a3edb96c9bfae7c35ee5887">More...</a><br /></td></tr>
+<tr class="separator:ga129eb1555a3edb96c9bfae7c35ee5887"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>Classes and functions used to make Charm++ easier and safer to use. </p>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="gaa51f3548efd67a155ed38be887e32e81"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa51f3548efd67a155ed38be887e32e81">&#9670;&nbsp;</a></span>get_template_parameters_as_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class... Args&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> Parallel::charmxx::get_template_parameters_as_string </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns the template parameter as a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></code> </p>
+<p>Uses the <b>PRETTY_FUNCTION</b> compiler intrinsic to extract the template parameter names in the same form that Charm++ uses to register entry methods. This is used by the generated Singleton, Array, Group and Nodegroup headers, as well as in CharmMain.tpp. </p>
+
+</div>
+</div>
+<a id="gaac0202956ee958f4f1e1dfbba5b578e3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaac0202956ee958f4f1e1dfbba5b578e3">&#9670;&nbsp;</a></span>register_func_with_charm()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Derived &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Parallel::charmxx::register_func_with_charm </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Function that adds a pointer to a specific derived class to the <code>charm_register_list</code> </p>
+<p>Used to initialize the <code>registrar</code> bool of derived classes of <code><a class="el" href="structParallel_1_1charmxx_1_1RegistrationHelper.html" title="The base class used for automatic registration of entry methods.">RegistrationHelper</a></code>. When the function is invoked it appends the derived class to the <code>charm_register_list</code>.</p>
+<dl class="section note"><dt>Note</dt><dd>The reason for not using a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a></code> is that this did not behave correctly when calling <code>push_back</code>. Specifically, the final vector was always size 1, even though multiple elements were pushed back. The reason for that behavior was never tracked down and so in the future it could be possible to use a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a></code>. </dd></dl>
+
+</div>
+</div>
+<a id="ga129eb1555a3edb96c9bfae7c35ee5887"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga129eb1555a3edb96c9bfae7c35ee5887">&#9670;&nbsp;</a></span>register_reducer_function()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;ReducerFunctions F&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Parallel::charmxx::register_reducer_function </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Function that stores a function pointer to the custom reduction function to be registered later. </p>
+<p>Used to initialize the <code>registrar</code> bool of <code><a class="el" href="structParallel_1_1charmxx_1_1RegisterReducerFunction.html" title="Class used for registering custom reduction function.">RegisterReducerFunction</a></code>. When invoked it adds the function <code>F</code> of type <code>ReducerFunctions</code> to the list <code>charm_reducer_functions_list</code>.</p>
+<dl class="section note"><dt>Note</dt><dd>The reason for not using a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;ReducerFunctions&gt;</code> is that this did not behave correctly when calling <code>push_back</code>. Specifically, the final vector was always size 1, even though multiple elements were pushed back. The reason for that behavior was never tracked down and so in the future it could be possible to use a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a></code>. </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

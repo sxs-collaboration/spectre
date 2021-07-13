@@ -1,0 +1,530 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Limiters::Minmod&lt; VolumeDim, tmpl::list&lt; Tags... &gt; &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceLimiters.html">Limiters</a></li><li class="navelem"><a class="el" href="classLimiters_1_1Minmod_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html">Minmod&lt; VolumeDim, tmpl::list&lt; Tags... &gt; &gt;</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classLimiters_1_1Minmod_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Limiters::Minmod&lt; VolumeDim, tmpl::list&lt; Tags... &gt; &gt; Class Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLimiters_1_1Minmod_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1DisableForDebugging.html">DisableForDebugging</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn the limiter off.  <a href="structLimiters_1_1Minmod_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1DisableForDebugging.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLimiters_1_1Minmod_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1PackagedData.html">PackagedData</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Data to send to neighbor elements.  <a href="structLimiters_1_1Minmod_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1PackagedData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLimiters_1_1Minmod_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1TvbConstant.html">TvbConstant</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The TVB constant.  <a href="structLimiters_1_1Minmod_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1TvbConstant.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLimiters_1_1Minmod_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1Type.html">Type</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The MinmodType.  <a href="structLimiters_1_1Minmod_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1Type.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a8ff78c551bcc37d35aede8033f7941ab"><td class="memItemLeft" align="right" valign="top"><a id="a8ff78c551bcc37d35aede8033f7941ab"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; Type, TvbConstant, DisableForDebugging &gt;</td></tr>
+<tr class="separator:a8ff78c551bcc37d35aede8033f7941ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf281fe784b6aafd717c87b4042001d1"><td class="memItemLeft" align="right" valign="top"><a id="aaf281fe784b6aafd717c87b4042001d1"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>package_argument_tags</b> = tmpl::list&lt; Tags..., <a class="el" href="structdomain_1_1Tags_1_1Mesh.html">domain::Tags::Mesh</a>&lt; VolumeDim &gt;, <a class="el" href="structdomain_1_1Tags_1_1SizeOfElement.html">domain::Tags::SizeOfElement</a>&lt; VolumeDim &gt; &gt;</td></tr>
+<tr class="separator:aaf281fe784b6aafd717c87b4042001d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a611b2bf2b254632dacc8c2bb6dd05238"><td class="memItemLeft" align="right" valign="top"><a id="a611b2bf2b254632dacc8c2bb6dd05238"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>limit_tags</b> = tmpl::list&lt; Tags... &gt;</td></tr>
+<tr class="separator:a611b2bf2b254632dacc8c2bb6dd05238"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a49b3bf0a29c051bd9550ed9f13a7e78d"><td class="memItemLeft" align="right" valign="top"><a id="a49b3bf0a29c051bd9550ed9f13a7e78d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>limit_argument_tags</b> = tmpl::list&lt; <a class="el" href="structdomain_1_1Tags_1_1Mesh.html">domain::Tags::Mesh</a>&lt; VolumeDim &gt;, <a class="el" href="structdomain_1_1Tags_1_1Element.html">domain::Tags::Element</a>&lt; VolumeDim &gt;, <a class="el" href="structdomain_1_1Tags_1_1Coordinates.html">domain::Tags::Coordinates</a>&lt; VolumeDim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt;, <a class="el" href="structdomain_1_1Tags_1_1SizeOfElement.html">domain::Tags::SizeOfElement</a>&lt; VolumeDim &gt; &gt;</td></tr>
+<tr class="separator:a49b3bf0a29c051bd9550ed9f13a7e78d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a4bc8bf6e8d90e38b7d50dd61ecdee9ad"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLimiters_1_1Minmod_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html#a4bc8bf6e8d90e38b7d50dd61ecdee9ad">Minmod</a> (<a class="el" href="group__LimitersGroup.html#ga530a6d3e2a08bb4bd61090a8f9aadd35">MinmodType</a> minmod_type, double tvb_constant, bool disable_for_debugging=false) noexcept</td></tr>
+<tr class="memdesc:a4bc8bf6e8d90e38b7d50dd61ecdee9ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constuct a <a class="el" href="classLimiters_1_1Minmod.html" title="A minmod-based generalized slope limiter.">Minmod</a> slope limiter.  <a href="classLimiters_1_1Minmod_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html#a4bc8bf6e8d90e38b7d50dd61ecdee9ad">More...</a><br /></td></tr>
+<tr class="separator:a4bc8bf6e8d90e38b7d50dd61ecdee9ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2bec2cbded2d28fcb4e401d2a7cbf96"><td class="memItemLeft" align="right" valign="top"><a id="ac2bec2cbded2d28fcb4e401d2a7cbf96"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Minmod</b> (const <a class="el" href="classLimiters_1_1Minmod.html">Minmod</a> &amp;)=default</td></tr>
+<tr class="separator:ac2bec2cbded2d28fcb4e401d2a7cbf96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a320ae1ef7c9f19986a181490964f8c0c"><td class="memItemLeft" align="right" valign="top"><a id="a320ae1ef7c9f19986a181490964f8c0c"></a>
+<a class="el" href="classLimiters_1_1Minmod.html">Minmod</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classLimiters_1_1Minmod.html">Minmod</a> &amp;)=default</td></tr>
+<tr class="separator:a320ae1ef7c9f19986a181490964f8c0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21baf0d1e4e2b8a92d476d286bd8f735"><td class="memItemLeft" align="right" valign="top"><a id="a21baf0d1e4e2b8a92d476d286bd8f735"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Minmod</b> (<a class="el" href="classLimiters_1_1Minmod.html">Minmod</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a21baf0d1e4e2b8a92d476d286bd8f735"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a5c0b9f3cb73c152617672363e2e7d9"><td class="memItemLeft" align="right" valign="top"><a id="a3a5c0b9f3cb73c152617672363e2e7d9"></a>
+<a class="el" href="classLimiters_1_1Minmod.html">Minmod</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classLimiters_1_1Minmod.html">Minmod</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a3a5c0b9f3cb73c152617672363e2e7d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab937dd0da8fb90722c31aba0dda8c03f"><td class="memItemLeft" align="right" valign="top"><a id="ab937dd0da8fb90722c31aba0dda8c03f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:ab937dd0da8fb90722c31aba0dda8c03f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a184b72024a12dcd85393352323502bfa"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLimiters_1_1Minmod_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html#a184b72024a12dcd85393352323502bfa">package_data</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; PackagedData * &gt; packaged_data, const typename Tags::type &amp;... tensors, const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim &gt; &amp;mesh, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, VolumeDim &gt; &amp;element_size, const <a class="el" href="classOrientationMap.html">OrientationMap</a>&lt; VolumeDim &gt; &amp;orientation_map) const noexcept</td></tr>
+<tr class="memdesc:a184b72024a12dcd85393352323502bfa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Package data for sending to neighbor elements.  <a href="classLimiters_1_1Minmod_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html#a184b72024a12dcd85393352323502bfa">More...</a><br /></td></tr>
+<tr class="separator:a184b72024a12dcd85393352323502bfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aafebef2ec6aba4c1e55a173a59536ac3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLimiters_1_1Minmod_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html#aafebef2ec6aba4c1e55a173a59536ac3">operator()</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/add_pointer.html">std::add_pointer_t</a>&lt; typename Tags::type &gt;&gt;... tensors, const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim &gt; &amp;mesh, const <a class="el" href="classElement.html">Element</a>&lt; VolumeDim &gt; &amp;element, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt; &amp;logical_coords, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, VolumeDim &gt; &amp;element_size, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt;&gt;, PackagedData, boost::hash&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt;&gt;&gt;&gt; &amp;neighbor_data) const noexcept</td></tr>
+<tr class="memdesc:aafebef2ec6aba4c1e55a173a59536ac3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Limits the solution on the element.  <a href="classLimiters_1_1Minmod_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html#aafebef2ec6aba4c1e55a173a59536ac3">More...</a><br /></td></tr>
+<tr class="separator:aafebef2ec6aba4c1e55a173a59536ac3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a42fb0ba46f71d3ed609c0f817058d3ca"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a42fb0ba46f71d3ed609c0f817058d3ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a2be340e7b47d9430d31ed90c0d1fed5c"><td class="memTemplParams" colspan="2"><a id="a2be340e7b47d9430d31ed90c0d1fed5c"></a>
+template&lt;size_t LocalDim, typename LocalTagList &gt; </td></tr>
+<tr class="memitem:a2be340e7b47d9430d31ed90c0d1fed5c"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classLimiters_1_1Minmod.html">Minmod</a>&lt; LocalDim, LocalTagList &gt; &amp;lhs, const <a class="el" href="classLimiters_1_1Minmod.html">Minmod</a>&lt; LocalDim, LocalTagList &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a2be340e7b47d9430d31ed90c0d1fed5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a4bc8bf6e8d90e38b7d50dd61ecdee9ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4bc8bf6e8d90e38b7d50dd61ecdee9ad">&#9670;&nbsp;</a></span>Minmod()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t VolumeDim, typename... Tags&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classLimiters_1_1Minmod.html">Limiters::Minmod</a>&lt; VolumeDim, tmpl::list&lt; Tags... &gt; &gt;::<a class="el" href="classLimiters_1_1Minmod.html">Minmod</a> </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="group__LimitersGroup.html#ga530a6d3e2a08bb4bd61090a8f9aadd35">MinmodType</a>&#160;</td>
+          <td class="paramname"><em>minmod_type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>tvb_constant</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>disable_for_debugging</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">explicit</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Constuct a <a class="el" href="classLimiters_1_1Minmod.html" title="A minmod-based generalized slope limiter.">Minmod</a> slope limiter. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">minmod_type</td><td>The type of <a class="el" href="classLimiters_1_1Minmod.html" title="A minmod-based generalized slope limiter.">Minmod</a> slope limiter. </td></tr>
+    <tr><td class="paramname">tvb_constant</td><td>The value of the TVB constant. </td></tr>
+    <tr><td class="paramname">disable_for_debugging</td><td>Switch to turn the limiter off. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="aafebef2ec6aba4c1e55a173a59536ac3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aafebef2ec6aba4c1e55a173a59536ac3">&#9670;&nbsp;</a></span>operator()()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t VolumeDim, typename... Tags&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classLimiters_1_1Minmod.html">Limiters::Minmod</a>&lt; VolumeDim, tmpl::list&lt; Tags... &gt; &gt;::operator() </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/add_pointer.html">std::add_pointer_t</a>&lt; typename Tags::type &gt;&gt;...&#160;</td>
+          <td class="paramname"><em>tensors</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classElement.html">Element</a>&lt; VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>element</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>logical_coords</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>element_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt;&gt;, PackagedData, boost::hash&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt;&gt;&gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>neighbor_data</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Limits the solution on the element. </p>
+<p>For each component of each tensor, the limiter will (in general) linearize the data, then possibly reduce its slope, dimension-by-dimension, until it no longer looks oscillatory.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">tensors</td><td>The tensors to be limited. </td></tr>
+    <tr><td class="paramname">mesh</td><td>The mesh on which the tensor values are measured. </td></tr>
+    <tr><td class="paramname">element</td><td>The element on which the tensors to limit live. </td></tr>
+    <tr><td class="paramname">logical_coords</td><td>The logical coordinates of the mesh gridpoints. </td></tr>
+    <tr><td class="paramname">element_size</td><td>The size of the element, in the inertial coordinates. </td></tr>
+    <tr><td class="paramname">neighbor_data</td><td>The data from each neighbor.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p><em>Returns:</em> whether the limiter modified the solution or not.</p>
+<dl class="section note"><dt>Note</dt><dd>The return value is false if the limiter knows it has not modified the solution. True return values can indicate:<ul>
+<li>The solution was limited to reduce the slope, whether by a large factor or by a factor only roundoff away from unity.</li>
+<li>The solution was linearized but not limited.</li>
+<li>The solution is identical to the input, if the input was a linear function on a higher-order mesh, so that the limiter cannot know that the linearization step did not actually modify the data. This is somewhat contrived and is unlikely to occur outside of code tests or test cases with very clean initial data. </li>
+</ul>
+</dd></dl>
+
+</div>
+</div>
+<a id="a184b72024a12dcd85393352323502bfa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a184b72024a12dcd85393352323502bfa">&#9670;&nbsp;</a></span>package_data()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t VolumeDim, typename... Tags&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classLimiters_1_1Minmod.html">Limiters::Minmod</a>&lt; VolumeDim, tmpl::list&lt; Tags... &gt; &gt;::package_data </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; PackagedData * &gt;&#160;</td>
+          <td class="paramname"><em>packaged_data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const typename Tags::type &amp;...&#160;</td>
+          <td class="paramname"><em>tensors</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>element_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classOrientationMap.html">OrientationMap</a>&lt; VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>orientation_map</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Package data for sending to neighbor elements. </p>
+<p>The following quantities are stored in <code><a class="el" href="structLimiters_1_1Minmod_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1PackagedData.html" title="Data to send to neighbor elements.">PackagedData</a></code> and communicated between neighboring elements:</p><ul>
+<li>the cell-averaged mean of each tensor component, and</li>
+<li>the size of the cell along each logical coordinate direction.</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">packaged_data</td><td>The data package to fill with this element's values. </td></tr>
+    <tr><td class="paramname">tensors</td><td>The tensors to be averaged and packaged. </td></tr>
+    <tr><td class="paramname">mesh</td><td>The mesh on which the tensor values are measured. </td></tr>
+    <tr><td class="paramname">element_size</td><td>The size of the element in inertial coordinates, along each dimension of logical coordinates. </td></tr>
+    <tr><td class="paramname">orientation_map</td><td>The orientation of the neighbor </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="a42fb0ba46f71d3ed609c0f817058d3ca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a42fb0ba46f71d3ed609c0f817058d3ca">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t VolumeDim, typename... Tags&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classLimiters_1_1Minmod.html">Limiters::Minmod</a>&lt; VolumeDim, tmpl::list&lt; Tags... &gt; &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;A minmod-based generalized slope limiter.\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;The different types of minmod are more or less aggressive in trying\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;to reduce slopes. The TVB correction allows the limiter to ignore\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;&#39;small&#39; slopes, and helps to avoid limiting of smooth extrema in the\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;solution.\n&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/DiscontinuousGalerkin/Limiters/<a class="el" href="Evolution_2DiscontinuousGalerkin_2Limiters_2Minmod_8hpp_source.html">Minmod.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: grmhd::GhValenciaDivClean::BoundaryCorrections::ProductOfCorrections&lt; DerivedGhCorrection, DerivedValenciaCorrection &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacegrmhd.html">grmhd</a></li><li class="navelem"><a class="el" href="namespacegrmhd_1_1GhValenciaDivClean.html">GhValenciaDivClean</a></li><li class="navelem"><a class="el" href="namespacegrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections.html">BoundaryCorrections</a></li><li class="navelem"><a class="el" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1ProductOfCorrections.html">ProductOfCorrections</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1ProductOfCorrections-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">grmhd::GhValenciaDivClean::BoundaryCorrections::ProductOfCorrections&lt; DerivedGhCorrection, DerivedValenciaCorrection &gt; Class Template Reference<span class="mlabels"><span class="mlabel">final</span></span></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Apply a boundary condition to the combined Generalized Harmonic (GH) and Valencia GRMHD system using boundary corrections defined separately for the GH and Valencia systems.  
+ <a href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1ProductOfCorrections.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ProductOfCorrections_8hpp_source.html">ProductOfCorrections.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1ProductOfCorrections_1_1GhCorrection.html">GhCorrection</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1ProductOfCorrections_1_1ValenciaCorrection.html">ValenciaCorrection</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:af8c9f9f31169b500dfd30eaba2ba4f21"><td class="memItemLeft" align="right" valign="top"><a id="af8c9f9f31169b500dfd30eaba2ba4f21"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_package_field_tags</b> = tmpl::append&lt; typename DerivedGhCorrection::dg_package_field_tags, typename DerivedValenciaCorrection::dg_package_field_tags &gt;</td></tr>
+<tr class="separator:af8c9f9f31169b500dfd30eaba2ba4f21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc62736c2252bd4957808211a4e11a59"><td class="memItemLeft" align="right" valign="top"><a id="afc62736c2252bd4957808211a4e11a59"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_package_data_temporary_tags</b> = tmpl::remove_duplicates&lt; tmpl::append&lt; typename DerivedGhCorrection::dg_package_data_temporary_tags, typename DerivedValenciaCorrection::dg_package_data_temporary_tags &gt; &gt;</td></tr>
+<tr class="separator:afc62736c2252bd4957808211a4e11a59"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad5bf03450712d75a7e8fe894924a9ba"><td class="memItemLeft" align="right" valign="top"><a id="aad5bf03450712d75a7e8fe894924a9ba"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_package_data_primitive_tags</b> = typename DerivedValenciaCorrection::dg_package_data_primitive_tags</td></tr>
+<tr class="separator:aad5bf03450712d75a7e8fe894924a9ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afda1ad7991faa969efa39b152431adb9"><td class="memItemLeft" align="right" valign="top"><a id="afda1ad7991faa969efa39b152431adb9"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_package_data_volume_tags</b> = tmpl::append&lt; typename DerivedGhCorrection::dg_package_data_volume_tags, typename DerivedValenciaCorrection::dg_package_data_volume_tags &gt;</td></tr>
+<tr class="separator:afda1ad7991faa969efa39b152431adb9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:accdfb5ff9a528f8baf2eefb96503abbb"><td class="memItemLeft" align="right" valign="top"><a id="accdfb5ff9a528f8baf2eefb96503abbb"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>derived_product_correction_impl</b> = detail::ProductOfCorrectionsImpl&lt; DerivedGhCorrection, DerivedValenciaCorrection, typename DerivedGhCorrection::dg_package_field_tags, typename DerivedValenciaCorrection::dg_package_field_tags, typename <a class="el" href="structGeneralizedHarmonic_1_1System.html">GeneralizedHarmonic::System</a>&lt; 3_st &gt;::variables_tag::tags_list, typename grmhd::ValenciaDivClean::System::variables_tag::tags_list, <a class="el" href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e">db::wrap_tags_in</a>&lt; ::<a class="el" href="structTags_1_1Flux.html">Tags::Flux</a>, typename <a class="el" href="structGeneralizedHarmonic_1_1System.html">GeneralizedHarmonic::System</a>&lt; 3_st &gt;::flux_variables, tmpl::size_t&lt; 3_st &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e">db::wrap_tags_in</a>&lt;::<a class="el" href="structTags_1_1Flux.html">Tags::Flux</a>, typename grmhd::ValenciaDivClean::System::flux_variables, tmpl::size_t&lt; 3_st &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, typename DerivedGhCorrection::dg_package_data_temporary_tags, typename DerivedValenciaCorrection::dg_package_data_temporary_tags, dg_package_data_temporary_tags, tmpl::list&lt;&gt;, typename DerivedValenciaCorrection::dg_package_data_primitive_tags, typename DerivedGhCorrection::dg_package_data_volume_tags, typename DerivedValenciaCorrection::dg_package_data_volume_tags &gt;</td></tr>
+<tr class="separator:accdfb5ff9a528f8baf2eefb96503abbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a960471e05de61bd99a23d0cc7b67377c"><td class="memItemLeft" align="right" valign="top"><a id="a960471e05de61bd99a23d0cc7b67377c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1ProductOfCorrections_1_1GhCorrection.html">GhCorrection</a>, <a class="el" href="structgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1ProductOfCorrections_1_1ValenciaCorrection.html">ValenciaCorrection</a> &gt;</td></tr>
+<tr class="separator:a960471e05de61bd99a23d0cc7b67377c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection.html">grmhd::GhValenciaDivClean::BoundaryCorrections::BoundaryCorrection</a></td></tr>
+<tr class="memitem:a3cba3815652fb8ce96dcc13d4c21bff6 inherit pub_types_classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="a3cba3815652fb8ce96dcc13d4c21bff6"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = typename detail::AllProductCorrections&lt; typename <a class="el" href="classGeneralizedHarmonic_1_1BoundaryCorrections_1_1BoundaryCorrection.html">GeneralizedHarmonic::BoundaryCorrections::BoundaryCorrection</a>&lt; 3_st &gt;::creatable_classes, typename grmhd::ValenciaDivClean::BoundaryCorrections::BoundaryCorrection::creatable_classes &gt;::type</td></tr>
+<tr class="separator:a3cba3815652fb8ce96dcc13d4c21bff6 inherit pub_types_classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a83b69a894c7917ac25800faaa1a24056"><td class="memItemLeft" align="right" valign="top"><a id="a83b69a894c7917ac25800faaa1a24056"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ProductOfCorrections</b> (DerivedGhCorrection gh_correction, DerivedValenciaCorrection valencia_correction) noexcept</td></tr>
+<tr class="separator:a83b69a894c7917ac25800faaa1a24056"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a47294f641fae31c4dbf105fd2adc886b"><td class="memItemLeft" align="right" valign="top"><a id="a47294f641fae31c4dbf105fd2adc886b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ProductOfCorrections</b> (const <a class="el" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1ProductOfCorrections.html">ProductOfCorrections</a> &amp;)=default</td></tr>
+<tr class="separator:a47294f641fae31c4dbf105fd2adc886b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3b0ae42c44e4c4d079f780b3b654439"><td class="memItemLeft" align="right" valign="top"><a id="ae3b0ae42c44e4c4d079f780b3b654439"></a>
+<a class="el" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1ProductOfCorrections.html">ProductOfCorrections</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1ProductOfCorrections.html">ProductOfCorrections</a> &amp;)=default</td></tr>
+<tr class="separator:ae3b0ae42c44e4c4d079f780b3b654439"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9256473d99a7999126bfc8f32000b358"><td class="memItemLeft" align="right" valign="top"><a id="a9256473d99a7999126bfc8f32000b358"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ProductOfCorrections</b> (<a class="el" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1ProductOfCorrections.html">ProductOfCorrections</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a9256473d99a7999126bfc8f32000b358"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d19e01ade877364400b5f80abe96bef"><td class="memItemLeft" align="right" valign="top"><a id="a9d19e01ade877364400b5f80abe96bef"></a>
+<a class="el" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1ProductOfCorrections.html">ProductOfCorrections</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1ProductOfCorrections.html">ProductOfCorrections</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a9d19e01ade877364400b5f80abe96bef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af29e9a77d5ae63e1ddaa0486e185a184"><td class="memItemLeft" align="right" valign="top"><a id="af29e9a77d5ae63e1ddaa0486e185a184"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:af29e9a77d5ae63e1ddaa0486e185a184"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a79448809451983879e3ed9ea31e11d7c"><td class="memItemLeft" align="right" valign="top"><a id="a79448809451983879e3ed9ea31e11d7c"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const noexcept override</td></tr>
+<tr class="separator:a79448809451983879e3ed9ea31e11d7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac05aa9ac882150d0aed3bdcd2bd6f770"><td class="memTemplParams" colspan="2"><a id="ac05aa9ac882150d0aed3bdcd2bd6f770"></a>
+template&lt;typename... Args&gt; </td></tr>
+<tr class="memitem:ac05aa9ac882150d0aed3bdcd2bd6f770"><td class="memTemplItemLeft" align="right" valign="top">double&#160;</td><td class="memTemplItemRight" valign="bottom"><b>dg_package_data</b> (Args &amp;&amp;... args) const noexcept</td></tr>
+<tr class="separator:ac05aa9ac882150d0aed3bdcd2bd6f770"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad05649be0151ad07ecf0e585e28982a4"><td class="memTemplParams" colspan="2"><a id="ad05649be0151ad07ecf0e585e28982a4"></a>
+template&lt;typename... Args&gt; </td></tr>
+<tr class="memitem:ad05649be0151ad07ecf0e585e28982a4"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>dg_boundary_terms</b> (Args &amp;&amp;... args) const noexcept</td></tr>
+<tr class="separator:ad05649be0151ad07ecf0e585e28982a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection.html">grmhd::GhValenciaDivClean::BoundaryCorrections::BoundaryCorrection</a></td></tr>
+<tr class="memitem:a50d06d496b8d1840f5880b1361d108ff inherit pub_methods_classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="a50d06d496b8d1840f5880b1361d108ff"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCorrection</b> (const <a class="el" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;)=default</td></tr>
+<tr class="separator:a50d06d496b8d1840f5880b1361d108ff inherit pub_methods_classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1800ad7482dafd906aba7ff71f86bf46 inherit pub_methods_classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="a1800ad7482dafd906aba7ff71f86bf46"></a>
+<a class="el" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;)=default</td></tr>
+<tr class="separator:a1800ad7482dafd906aba7ff71f86bf46 inherit pub_methods_classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad2ea6cc2fd5fd5473b5336cdb79439eb inherit pub_methods_classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="ad2ea6cc2fd5fd5473b5336cdb79439eb"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCorrection</b> (<a class="el" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:ad2ea6cc2fd5fd5473b5336cdb79439eb inherit pub_methods_classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af533f47d09efbb003415b7c24b4e45fd inherit pub_methods_classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="af533f47d09efbb003415b7c24b4e45fd"></a>
+<a class="el" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:af533f47d09efbb003415b7c24b4e45fd inherit pub_methods_classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a3f3ed41017f843184c6d4be6d03b8220"><td class="memItemLeft" align="right" valign="top"><a id="a3f3ed41017f843184c6d4be6d03b8220"></a>
+static <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memItemRight" valign="bottom"><b>name</b> () noexcept</td></tr>
+<tr class="separator:a3f3ed41017f843184c6d4be6d03b8220"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a207b73d68ef03693aa6e4b21aa11c5ef"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a207b73d68ef03693aa6e4b21aa11c5ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename DerivedGhCorrection, typename DerivedValenciaCorrection&gt;<br />
+class grmhd::GhValenciaDivClean::BoundaryCorrections::ProductOfCorrections&lt; DerivedGhCorrection, DerivedValenciaCorrection &gt;</h3>
+
+<p>Apply a boundary condition to the combined Generalized Harmonic (GH) and Valencia GRMHD system using boundary corrections defined separately for the GH and Valencia systems. </p>
+<h3>Details</h3>
+<p>The implementation of this boundary correction applies the <code>DerivedGhCorrection</code> followed by the <code>DerivedValenciaCorrection</code>. It is anticipated that the systems are sufficiently independent that the order of application is inconsequential. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a207b73d68ef03693aa6e4b21aa11c5ef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a207b73d68ef03693aa6e4b21aa11c5ef">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DerivedGhCorrection , typename DerivedValenciaCorrection &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1ProductOfCorrections.html">grmhd::GhValenciaDivClean::BoundaryCorrections::ProductOfCorrections</a>&lt; DerivedGhCorrection, DerivedValenciaCorrection &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Direct product of a GH and ValenciaDivClean GRMHD boundary correction. &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;See the documentation for the two individual boundary corrections for &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;further details.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/<a class="el" href="ProductOfCorrections_8hpp_source.html">ProductOfCorrections.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

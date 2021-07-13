@@ -1,0 +1,314 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: tests/Unit/Helpers/DataStructures/MakeRandomVectorInMagnitudeRange.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_33df814919e476f9d56dccef9b24e276.html">tests</a></li><li class="navelem"><a class="el" href="dir_38113a4c235494bd05bb19f85d006940.html">Unit</a></li><li class="navelem"><a class="el" href="dir_b87ca7a475176b712f1482b79974072f.html">Helpers</a></li><li class="navelem"><a class="el" href="dir_860ea4fd035d69af0eadd63916cc8de7.html">DataStructures</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">MakeRandomVectorInMagnitudeRange.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cmath.html">cmath</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/random.html">random</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160; </div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataVector.hpp&quot;</span>  <span class="comment">// IWYU pragma: keep</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="IndexType_8hpp.html">DataStructures/Tensor/IndexType.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Tensor_8hpp.html">DataStructures/Tensor/Tensor.hpp</a>&quot;</span>  <span class="comment">// IWYU pragma: keep</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TypeAliases_8hpp.html">DataStructures/Tensor/TypeAliases.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="MakeWithRandomValues_8hpp.html">Helpers/DataStructures/MakeWithRandomValues.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;Helpers/DataStructures/RandomUnitNormal.hpp&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ConstantExpressions_8hpp.html">Utilities/ConstantExpressions.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment">/// \ingroup TestingFrameworkGroup</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment">/// \brief Construct a spatial vector in a given magnitude range</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment">/// The magnitude is computed with respect to the given metric, where the metric</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment">/// is assumed to have positive signature.</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> DataType, <span class="keywordtype">size_t</span> Dim, <a class="code" href="group__TensorGroup.html#gaab1181edf2ab2b664b0f174223f08c28">UpLo</a> Ul, <span class="keyword">typename</span> Fr = <a class="code" href="structFrame_1_1Inertial.html">Frame::Inertial</a>,</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;          <a class="code" href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a>&lt;(Ul == <a class="code" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28a258f49887ef8d14ac268c92b02503aaa">UpLo::Up</a>)&gt; = <span class="keyword">nullptr</span>&gt;</div>
+<div class="line"><a name="l00026"></a><span class="lineno"><a class="line" href="group__TestingFrameworkGroup.html#ga67a7537d548219483eb98017cf8cd1bd">   26</a></span>&#160;tnsr::I&lt;DataType, Dim, Fr&gt; <a class="code" href="group__TestingFrameworkGroup.html#ga67a7537d548219483eb98017cf8cd1bd">make_random_vector_in_magnitude_range</a>(</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;std::mt19937*&gt;</a> nn_generator,</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    <span class="keyword">const</span> tnsr::ii&lt;DataType, Dim, Fr&gt;&amp; metric, <span class="keyword">const</span> <span class="keywordtype">double</span> min_magnitude,</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">double</span> max_magnitude) noexcept {</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <span class="keywordflow">if</span> (min_magnitude &lt; 0) {</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <a class="code" href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a>(<span class="stringliteral">&quot;min_magnitude &lt; 0. Magnitude must be non-negative&quot;</span>);</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  }</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  <span class="keywordflow">if</span> (max_magnitude &lt; 0) {</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    <a class="code" href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a>(<span class="stringliteral">&quot;max_magnitude &lt; 0. Magnitude must be non-negative&quot;</span>);</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  }</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160; </div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="comment">// generate distribution</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/numeric/random/uniform_real_distribution.html">std::uniform_real_distribution&lt;&gt;</a> dist_magnitude(min_magnitude, max_magnitude);</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> <a class="code" href="group__TensorGroup.html#ga9d72b90417816ceb6825b710d931c8a1">magnitude</a> = make_with_random_values&lt;Scalar&lt;DataType&gt;&gt;(</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;      nn_generator, <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;dist_magnitude), metric);</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160; </div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  <span class="comment">// construct vector</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;  tnsr::I&lt;DataType, Dim, Fr&gt; x_up = <a class="code" href="group__TestingFrameworkGroup.html#ga08ddec1937980b51fb3410b955577fd2">random_unit_normal</a>(nn_generator, metric);</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160; </div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; Dim; i++) {</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    x_up.get(i) *= <a class="code" href="group__TensorGroup.html#ga9d72b90417816ceb6825b710d931c8a1">magnitude</a>.get();</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  }</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  <span class="keywordflow">return</span> x_up;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;}</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160; </div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> DataType, <span class="keywordtype">size_t</span> Dim, <a class="code" href="group__TensorGroup.html#gaab1181edf2ab2b664b0f174223f08c28">UpLo</a> Ul, <span class="keyword">typename</span> Fr = <a class="code" href="structFrame_1_1Inertial.html">Frame::Inertial</a>,</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;          <a class="code" href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a>&lt;(Ul == <a class="code" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28aff50b4aa1c9cc2197ef898436641c911">UpLo::Lo</a>)&gt; = <span class="keyword">nullptr</span>&gt;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;tnsr::i&lt;DataType, Dim, Fr&gt; <a class="code" href="group__TestingFrameworkGroup.html#ga67a7537d548219483eb98017cf8cd1bd">make_random_vector_in_magnitude_range</a>(</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;std::mt19937*&gt;</a> nn_generator,</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="keyword">const</span> tnsr::ii&lt;DataType, Dim, Fr&gt;&amp; metric, <span class="keyword">const</span> <span class="keywordtype">double</span> min_magnitude,</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">double</span> max_magnitude) noexcept {</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;  <span class="keyword">const</span> tnsr::I&lt;DataType, Dim, Fr&gt; x_up =</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;      make_random_vector_in_magnitude_range&lt;DataType, Dim, UpLo::Up, Fr&gt;(</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;          nn_generator, metric, min_magnitude, max_magnitude);</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;  <span class="keywordflow">return</span> <a class="code" href="group__GeneralRelativityGroup.html#ga202b05e03658b6010deb0cc51d471e28">raise_or_lower_index</a>(x_up, metric);</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;}</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment">/// \ingroup TestingFrameworkGroup</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment">/// \brief Construct a spatial vector in a given magnitude range</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment">/// The magnitude is computed with respect to the flat space Euclidian metric.</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> DataType, <span class="keywordtype">size_t</span> Dim, <a class="code" href="group__TensorGroup.html#gaab1181edf2ab2b664b0f174223f08c28">UpLo</a> Ul, <span class="keyword">typename</span> Fr = <a class="code" href="structFrame_1_1Inertial.html">Frame::Inertial</a>,</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;          <span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;Tensor&lt;DataType, Symmetry&lt;1&gt;, index_list&lt;SpatialIndex&lt;Dim, Ul, Fr&gt;&gt;&gt;</div>
+<div class="line"><a name="l00072"></a><span class="lineno"><a class="line" href="group__TestingFrameworkGroup.html#ga20a4744720b4c6627e920591154e58e8">   72</a></span>&#160;<a class="code" href="group__TestingFrameworkGroup.html#ga20a4744720b4c6627e920591154e58e8">make_random_vector_in_magnitude_range_flat</a>(</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;std::mt19937*&gt;</a> nn_generator, <span class="keyword">const</span> T&amp; used_for_size,</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">double</span> min_magnitude, <span class="keyword">const</span> <span class="keywordtype">double</span> max_magnitude) noexcept {</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;  <span class="comment">// construct flat spatial metric</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;  tnsr::ii&lt;DataType, Dim, Fr&gt; metric =</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;      make_with_value&lt;tnsr::ii&lt;DataType, Dim, Fr&gt;&gt;(used_for_size, 0.0);</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; Dim; i++) {</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    metric.get(i, i) = 1.0;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;  }</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;  <span class="keywordflow">return</span> make_random_vector_in_magnitude_range&lt;DataType, Dim, Ul, Fr&gt;(</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;      nn_generator, metric, min_magnitude, max_magnitude);</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;}</div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="astructFrame_1_1Inertial_html"><div class="ttname"><a href="structFrame_1_1Inertial.html">Frame::Inertial</a></div><div class="ttdef"><b>Definition:</b> IndexType.hpp:44</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_gaab1181edf2ab2b664b0f174223f08c28"><div class="ttname"><a href="group__TensorGroup.html#gaab1181edf2ab2b664b0f174223f08c28">UpLo</a></div><div class="ttdeci">UpLo</div><div class="ttdef"><b>Definition:</b> IndexType.hpp:20</div></div>
+<div class="ttc" id="aIndexType_8hpp_html"><div class="ttname"><a href="IndexType_8hpp.html">IndexType.hpp</a></div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_ga67a7537d548219483eb98017cf8cd1bd"><div class="ttname"><a href="group__TestingFrameworkGroup.html#ga67a7537d548219483eb98017cf8cd1bd">make_random_vector_in_magnitude_range</a></div><div class="ttdeci">tnsr::I&lt; DataType, Dim, Fr &gt; make_random_vector_in_magnitude_range(const gsl::not_null&lt; std::mt19937 * &gt; nn_generator, const tnsr::ii&lt; DataType, Dim, Fr &gt; &amp;metric, const double min_magnitude, const double max_magnitude) noexcept</div><div class="ttdoc">Construct a spatial vector in a given magnitude range.</div><div class="ttdef"><b>Definition:</b> MakeRandomVectorInMagnitudeRange.hpp:26</div></div>
+<div class="ttc" id="arandom_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/random.html">random</a></div></div>
+<div class="ttc" id="aMakeWithRandomValues_8hpp_html"><div class="ttname"><a href="MakeWithRandomValues_8hpp.html">MakeWithRandomValues.hpp</a></div></div>
+<div class="ttc" id="acmath_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cmath.html">cmath</a></div></div>
+<div class="ttc" id="auniform_real_distribution_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/numeric/random/uniform_real_distribution.html">std::uniform_real_distribution</a></div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_ga20a4744720b4c6627e920591154e58e8"><div class="ttname"><a href="group__TestingFrameworkGroup.html#ga20a4744720b4c6627e920591154e58e8">make_random_vector_in_magnitude_range_flat</a></div><div class="ttdeci">Tensor&lt; DataType, Symmetry&lt; 1 &gt;, index_list&lt; SpatialIndex&lt; Dim, Ul, Fr &gt; &gt; &gt; make_random_vector_in_magnitude_range_flat(const gsl::not_null&lt; std::mt19937 * &gt; nn_generator, const T &amp;used_for_size, const double min_magnitude, const double max_magnitude) noexcept</div><div class="ttdoc">Construct a spatial vector in a given magnitude range.</div><div class="ttdef"><b>Definition:</b> MakeRandomVectorInMagnitudeRange.hpp:72</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ggaab1181edf2ab2b664b0f174223f08c28aff50b4aa1c9cc2197ef898436641c911"><div class="ttname"><a href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28aff50b4aa1c9cc2197ef898436641c911">UpLo::Lo</a></div><div class="ttdeci">@ Lo</div><div class="ttdoc">Covariant, or Lower index.</div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_ga1d27028c1827976007fe9d29ad3a2f66"><div class="ttname"><a href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a></div><div class="ttdeci">#define ERROR(m)</div><div class="ttdoc">prints an error message to the standard error stream and aborts the program.</div><div class="ttdef"><b>Definition:</b> Error.hpp:37</div></div>
+<div class="ttc" id="agroup__GeneralRelativityGroup_html_ga202b05e03658b6010deb0cc51d471e28"><div class="ttname"><a href="group__GeneralRelativityGroup.html#ga202b05e03658b6010deb0cc51d471e28">raise_or_lower_index</a></div><div class="ttdeci">void raise_or_lower_index(gsl::not_null&lt; Tensor&lt; DataType, Symmetry&lt; 1 &gt;, index_list&lt; change_index_up_lo&lt; Index0 &gt;&gt;&gt; * &gt; result, const Tensor&lt; DataType, Symmetry&lt; 1 &gt;, index_list&lt; Index0 &gt;&gt; &amp;tensor, const Tensor&lt; DataType, Symmetry&lt; 1, 1 &gt;, index_list&lt; change_index_up_lo&lt; Index0 &gt;, change_index_up_lo&lt; Index0 &gt;&gt;&gt; &amp;metric) noexcept</div><div class="ttdoc">Raises or lowers the index of a rank 1 tensor.</div></div>
+<div class="ttc" id="aConstantExpressions_8hpp_html"><div class="ttname"><a href="ConstantExpressions_8hpp.html">ConstantExpressions.hpp</a></div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="aTypeAliases_8hpp_html"><div class="ttname"><a href="TypeAliases_8hpp.html">TypeAliases.hpp</a></div></div>
+<div class="ttc" id="aTensor_8hpp_html"><div class="ttname"><a href="Tensor_8hpp.html">Tensor.hpp</a></div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_ga08ddec1937980b51fb3410b955577fd2"><div class="ttname"><a href="group__TestingFrameworkGroup.html#ga08ddec1937980b51fb3410b955577fd2">random_unit_normal</a></div><div class="ttdeci">tnsr::I&lt; DataType, 1 &gt; random_unit_normal(gsl::not_null&lt; std::mt19937 * &gt; generator, const tnsr::ii&lt; DataType, 1 &gt; &amp;spatial_metric) noexcept</div><div class="ttdoc">Make a random unit normal vector at each element of DataType.</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga9d72b90417816ceb6825b710d931c8a1"><div class="ttname"><a href="group__TensorGroup.html#ga9d72b90417816ceb6825b710d931c8a1">magnitude</a></div><div class="ttdeci">Scalar&lt; DataType &gt; magnitude(const Tensor&lt; DataType, Symmetry&lt; 1 &gt;, index_list&lt; Index &gt;&gt; &amp;vector) noexcept</div><div class="ttdoc">Compute the Euclidean magnitude of a rank-1 tensor.</div><div class="ttdef"><b>Definition:</b> Magnitude.hpp:27</div></div>
+<div class="ttc" id="aGsl_8hpp_html_a649c6961f9146205c203e45d58fd0c4c"><div class="ttname"><a href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a></div><div class="ttdeci">gsl::not_null&lt; T * &gt; make_not_null(T *ptr) noexcept</div><div class="ttdoc">Construct a not_null from a pointer. Often this will be done as an implicit conversion,...</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:880</div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga084d535585c18d4e80f8ec6052d341a3"><div class="ttname"><a href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a></div><div class="ttdeci">typename Requires_detail::requires_impl&lt; B &gt;::template_error_type_failed_to_meet_requirements_on_template_parameters Requires</div><div class="ttdoc">Express requirements on the template parameters of a function or class, replaces std::enable_if_t</div><div class="ttdef"><b>Definition:</b> Requires.hpp:67</div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ggaab1181edf2ab2b664b0f174223f08c28a258f49887ef8d14ac268c92b02503aaa"><div class="ttname"><a href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28a258f49887ef8d14ac268c92b02503aaa">UpLo::Up</a></div><div class="ttdeci">@ Up</div><div class="ttdoc">Contravariant, or Upper index.</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

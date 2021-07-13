@@ -1,0 +1,197 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - 39f3c2b725318dcf91749887b1e61f477736e132 - Evolution/Systems/GrMhd/GhValenciaDivClean/StressEnergy.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title"> SpECTRE Documentation Coverage Report</td></tr>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../index.html">top level</a> - <a href="index.html">Evolution/Systems/GrMhd/GhValenciaDivClean</a> - StressEnergy.hpp</td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+             <td class="headerItem">Commit:</td>
+             <td class="headerValue"><a target="_blank" href="https://github.com/sxs-collaboration/spectre/commit/39f3c2b725318dcf91749887b1e61f477736e132">39f3c2b725318dcf91749887b1e61f477736e132</a></td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntryLo">66.7 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2021-07-13 03:19:40</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineNoCov">          0 : // Distributed under the MIT License.</span></a>
+<a name="2"><span class="lineNum">       2 </span>            : // See LICENSE.txt for details.</a>
+<a name="3"><span class="lineNum">       3 </span>            : </a>
+<a name="4"><span class="lineNum">       4 </span>            : #pragma once</a>
+<a name="5"><span class="lineNum">       5 </span>            : </a>
+<a name="6"><span class="lineNum">       6 </span>            : #include &quot;DataStructures/DataVector.hpp&quot;</a>
+<a name="7"><span class="lineNum">       7 </span>            : #include &quot;DataStructures/Tensor/Tensor.hpp&quot;</a>
+<a name="8"><span class="lineNum">       8 </span>            : #include &quot;Utilities/Gsl.hpp&quot;</a>
+<a name="9"><span class="lineNum">       9 </span>            : </a>
+<a name="10"><span class="lineNum">      10 </span>            : namespace grmhd::GhValenciaDivClean {</a>
+<a name="11"><span class="lineNum">      11 </span>            : </a>
+<a name="12"><span class="lineNum">      12 </span>            : /*!</a>
+<a name="13"><span class="lineNum">      13 </span>            :  * \brief Add in the trace-reversed stress-energy source term to the \f$\Pi\f$</a>
+<a name="14"><span class="lineNum">      14 </span>            :  * evolved variable of the Generalized Harmonic system.</a>
+<a name="15"><span class="lineNum">      15 </span>            :  *</a>
+<a name="16"><span class="lineNum">      16 </span>            :  * \details The only stress energy source term in the Generalized Harmonic</a>
+<a name="17"><span class="lineNum">      17 </span>            :  * evolution equations is in the equation for \f$\Pi_{a b}\f$:</a>
+<a name="18"><span class="lineNum">      18 </span>            :  *</a>
+<a name="19"><span class="lineNum">      19 </span>            :  * \f[</a>
+<a name="20"><span class="lineNum">      20 </span>            :  * \partial_t \Pi_{ab} + \text{(spatial derivative terms)} =</a>
+<a name="21"><span class="lineNum">      21 </span>            :  * \text{(GH source terms)}</a>
+<a name="22"><span class="lineNum">      22 </span>            :  * - 16 \pi \alpha (T_{ab} - \frac{1}{2} g_{a b} T^c{}_c)</a>
+<a name="23"><span class="lineNum">      23 </span>            :  * \f]</a>
+<a name="24"><span class="lineNum">      24 </span>            :  *</a>
+<a name="25"><span class="lineNum">      25 </span>            :  * (note that this function takes as argument the trace-reversed stress energy</a>
+<a name="26"><span class="lineNum">      26 </span>            :  * tensor)</a>
+<a name="27"><span class="lineNum">      27 </span>            :  *</a>
+<a name="28"><span class="lineNum">      28 </span>            :  * This function adds that contribution to the existing value of `dt_pi`. The</a>
+<a name="29"><span class="lineNum">      29 </span>            :  * spacetime terms in the GH equation should be computed before passing the</a>
+<a name="30"><span class="lineNum">      30 </span>            :  * `dt_pi` to this function for updating.</a>
+<a name="31"><span class="lineNum">      31 </span>            :  *</a>
+<a name="32"><span class="lineNum">      32 </span>            :  * \see `GeneralizedHarmonic::TimeDerivative` for details about the spacetime</a>
+<a name="33"><span class="lineNum">      33 </span>            :  * part of the time derivative calculation.</a>
+<a name="34"><span class="lineNum">      34 </span>            :  */</a>
+<a name="35"><span class="lineNum">      35 </span><span class="lineCov">          1 : void add_stress_energy_term_to_dt_pi(</span></a>
+<a name="36"><span class="lineNum">      36 </span>            :     gsl::not_null&lt;tnsr::aa&lt;DataVector, 3&gt;*&gt; dt_pi,</a>
+<a name="37"><span class="lineNum">      37 </span>            :     const tnsr::aa&lt;DataVector, 3&gt;&amp; trace_reversed_stress_energy,</a>
+<a name="38"><span class="lineNum">      38 </span>            :     const Scalar&lt;DataVector&gt;&amp; lapse) noexcept;</a>
+<a name="39"><span class="lineNum">      39 </span>            : </a>
+<a name="40"><span class="lineNum">      40 </span>            : /*!</a>
+<a name="41"><span class="lineNum">      41 </span>            :  * \brief Calculate the trace-reversed stress-energy tensor \f$(T_{\mu \nu} -</a>
+<a name="42"><span class="lineNum">      42 </span>            :  * 1/2 g_{\mu \nu} g^{\lambda \sigma} T_{\lambda \sigma}) \f$ associated with</a>
+<a name="43"><span class="lineNum">      43 </span>            :  * the matter part of the GRMHD system.</a>
+<a name="44"><span class="lineNum">      44 </span>            :  *</a>
+<a name="45"><span class="lineNum">      45 </span>            :  * \details The stress energy tensor is needed to compute the backreaction of</a>
+<a name="46"><span class="lineNum">      46 </span>            :  * the matter to the spacetime degrees of freedom. The stress energy is</a>
+<a name="47"><span class="lineNum">      47 </span>            :  * calculated as described in \cite Moesta2013dna :</a>
+<a name="48"><span class="lineNum">      48 </span>            :  *</a>
+<a name="49"><span class="lineNum">      49 </span>            :  * \f[</a>
+<a name="50"><span class="lineNum">      50 </span>            :  * T_{\mu \nu} = \rho h^* u_\mu u_\nu + p^* g_{\mu \nu} - b_\mu b_\nu,</a>
+<a name="51"><span class="lineNum">      51 </span>            :  * \f]</a>
+<a name="52"><span class="lineNum">      52 </span>            :  *</a>
+<a name="53"><span class="lineNum">      53 </span>            :  * where \f$u_\mu\f$ is the four-velocity, \f$\rho\f$ is the rest mass density,</a>
+<a name="54"><span class="lineNum">      54 </span>            :  * \f$h^*\f$ is the magnetically modified enthalpy, \f$p^*\f$ is the</a>
+<a name="55"><span class="lineNum">      55 </span>            :  * magnetically modified pressure, and \f$b_{\mu}\f$ is the comoving magnetic</a>
+<a name="56"><span class="lineNum">      56 </span>            :  * field (note that we deviate from the notation of \cite Moesta2013dna by</a>
+<a name="57"><span class="lineNum">      57 </span>            :  * denoting the pressure with a lower-case \f$p\f$ instead of an upper-case</a>
+<a name="58"><span class="lineNum">      58 </span>            :  * \f$P\f$).</a>
+<a name="59"><span class="lineNum">      59 </span>            :  *</a>
+<a name="60"><span class="lineNum">      60 </span>            :  * The spatial components of the four velocity \f$u_\mu\f$ are</a>
+<a name="61"><span class="lineNum">      61 </span>            :  *</a>
+<a name="62"><span class="lineNum">      62 </span>            :  * \f[</a>
+<a name="63"><span class="lineNum">      63 </span>            :  * u_i = W v_i,</a>
+<a name="64"><span class="lineNum">      64 </span>            :  * \f]</a>
+<a name="65"><span class="lineNum">      65 </span>            :  *</a>
+<a name="66"><span class="lineNum">      66 </span>            :  * and the time component is</a>
+<a name="67"><span class="lineNum">      67 </span>            :  *</a>
+<a name="68"><span class="lineNum">      68 </span>            :  * \f[</a>
+<a name="69"><span class="lineNum">      69 </span>            :  * u_0 = - \alpha W + \beta^i u_i.</a>
+<a name="70"><span class="lineNum">      70 </span>            :  * \f].</a>
+<a name="71"><span class="lineNum">      71 </span>            :  *</a>
+<a name="72"><span class="lineNum">      72 </span>            :  * The magnetically modified enthalpy is</a>
+<a name="73"><span class="lineNum">      73 </span>            :  *</a>
+<a name="74"><span class="lineNum">      74 </span>            :  * \f[</a>
+<a name="75"><span class="lineNum">      75 </span>            :  * h^* = 1 + \epsilon + (p + b^2) / \rho.</a>
+<a name="76"><span class="lineNum">      76 </span>            :  * \f]</a>
+<a name="77"><span class="lineNum">      77 </span>            :  *</a>
+<a name="78"><span class="lineNum">      78 </span>            :  * The magnetically modified pressure is</a>
+<a name="79"><span class="lineNum">      79 </span>            :  *</a>
+<a name="80"><span class="lineNum">      80 </span>            :  * \f[</a>
+<a name="81"><span class="lineNum">      81 </span>            :  * p^* = p + b^2 / 2.</a>
+<a name="82"><span class="lineNum">      82 </span>            :  * \f]</a>
+<a name="83"><span class="lineNum">      83 </span>            :  *</a>
+<a name="84"><span class="lineNum">      84 </span>            :  *</a>
+<a name="85"><span class="lineNum">      85 </span>            :  * The comoving magnetic field is computed via</a>
+<a name="86"><span class="lineNum">      86 </span>            :  *</a>
+<a name="87"><span class="lineNum">      87 </span>            :  * \f{align}{</a>
+<a name="88"><span class="lineNum">      88 </span>            :  * b_i &amp;= B_i / W + v_i W v^k B_k\\</a>
+<a name="89"><span class="lineNum">      89 </span>            :  * b_0 &amp;= - \alpha W v^i B_i + \beta^i b_i</a>
+<a name="90"><span class="lineNum">      90 </span>            :  * \f}</a>
+<a name="91"><span class="lineNum">      91 </span>            :  *</a>
+<a name="92"><span class="lineNum">      92 </span>            :  * Therefore, the trace-reversed stress energy simplifies to</a>
+<a name="93"><span class="lineNum">      93 </span>            :  *</a>
+<a name="94"><span class="lineNum">      94 </span>            :  * \f[</a>
+<a name="95"><span class="lineNum">      95 </span>            :  * (T_{\mu \nu} - \frac{1}{2} g_{\mu \nu} g^{\lambda \sigma} T_{\lambda \sigma})</a>
+<a name="96"><span class="lineNum">      96 </span>            :  * = \rho h^* u_\mu u_\nu  + \left(\frac{1}{2} \rho h^* - p\right) g_{\mu \nu}</a>
+<a name="97"><span class="lineNum">      97 </span>            :  *  - b_\mu b_\nu</a>
+<a name="98"><span class="lineNum">      98 </span>            :  * \f]</a>
+<a name="99"><span class="lineNum">      99 </span>            :  */</a>
+<a name="100"><span class="lineNum">     100 </span><span class="lineCov">          1 : void trace_reversed_stress_energy(</span></a>
+<a name="101"><span class="lineNum">     101 </span>            :     gsl::not_null&lt;tnsr::aa&lt;DataVector, 3&gt;*&gt; stress_energy,</a>
+<a name="102"><span class="lineNum">     102 </span>            :     gsl::not_null&lt;tnsr::a&lt;DataVector, 3&gt;*&gt; four_velocity_one_form_buffer,</a>
+<a name="103"><span class="lineNum">     103 </span>            :     gsl::not_null&lt;tnsr::a&lt;DataVector, 3&gt;*&gt;</a>
+<a name="104"><span class="lineNum">     104 </span>            :         comoving_magnetic_field_one_form_buffer,</a>
+<a name="105"><span class="lineNum">     105 </span>            :     const Scalar&lt;DataVector&gt;&amp; rest_mass_density,</a>
+<a name="106"><span class="lineNum">     106 </span>            :     const Scalar&lt;DataVector&gt;&amp; specific_enthalpy,</a>
+<a name="107"><span class="lineNum">     107 </span>            :     const tnsr::i&lt;DataVector, 3, Frame::Inertial&gt;&amp; spatial_velocity_one_form,</a>
+<a name="108"><span class="lineNum">     108 </span>            :     const tnsr::i&lt;DataVector, 3, Frame::Inertial&gt;&amp; magnetic_field_one_form,</a>
+<a name="109"><span class="lineNum">     109 </span>            :     const Scalar&lt;DataVector&gt;&amp; magnetic_field_squared,</a>
+<a name="110"><span class="lineNum">     110 </span>            :     const Scalar&lt;DataVector&gt;&amp; magnetic_field_dot_spatial_velocity,</a>
+<a name="111"><span class="lineNum">     111 </span>            :     const Scalar&lt;DataVector&gt;&amp; lorentz_factor,</a>
+<a name="112"><span class="lineNum">     112 </span>            :     const Scalar&lt;DataVector&gt;&amp; one_over_w_squared,</a>
+<a name="113"><span class="lineNum">     113 </span>            :     const Scalar&lt;DataVector&gt;&amp; pressure,</a>
+<a name="114"><span class="lineNum">     114 </span>            :     const tnsr::aa&lt;DataVector, 3, Frame::Inertial&gt;&amp; spacetime_metric,</a>
+<a name="115"><span class="lineNum">     115 </span>            :     const tnsr::I&lt;DataVector, 3, Frame::Inertial&gt;&amp; shift,</a>
+<a name="116"><span class="lineNum">     116 </span>            :     const Scalar&lt;DataVector&gt;&amp; lapse) noexcept;</a>
+<a name="117"><span class="lineNum">     117 </span>            : }  // namespace grmhd::GhValenciaDivClean</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

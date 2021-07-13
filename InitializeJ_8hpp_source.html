@@ -1,0 +1,374 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Evolution/Systems/Cce/Initialize/InitializeJ.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_d7cddb31ba741ba3a4d5be000d880a30.html">Evolution</a></li><li class="navelem"><a class="el" href="dir_ae9813db12dd9fd3f3106ad3644a1b2a.html">Systems</a></li><li class="navelem"><a class="el" href="dir_b9586a27d0e1f299c51d3004d7f0b675.html">Cce</a></li><li class="navelem"><a class="el" href="dir_7b99907404daab4e90f13377d99a5be2.html">Initialize</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">InitializeJ.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160; </div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;DataStructures/SpinWeighted.hpp&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TypeAliases_8hpp.html">DataStructures/Tensor/TypeAliases.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Spectral/SwshCollocation.hpp&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Spectral/SwshInterpolation.hpp&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Options_8hpp.html">Options/Options.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="CharmPupable_8hpp.html">Parallel/CharmPupable.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment"></span><span class="keyword">class </span><a class="code" href="classComplexDataVector.html">ComplexDataVector</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceCce.html">Cce</a> {</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="keyword">namespace </span>Tags {<span class="comment"></span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment"></span><span class="keyword">struct </span>LMax;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="keyword">struct </span>NumberOfRadialPoints;<span class="comment"></span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment"></span>}  <span class="comment">// namespace Tags</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="comment">/// Contains utilities and \ref DataBoxGroup mutators for generating data for</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment">/// \f$J\f$ on the initial CCE hypersurface.</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno"><a class="line" href="namespaceCce_1_1InitializeJ.html">   34</a></span>&#160;<span class="comment"></span><span class="keyword">namespace </span><a class="code" href="structCce_1_1InitializeJ_1_1InitializeJ.html">InitializeJ</a> {</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="keyword">namespace </span>detail {</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="keywordtype">double</span> adjust_angular_coordinates_for_j(</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 2&gt;</a>&gt;*&gt; volume_j,</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;tnsr::i&lt;DataVector, 3&gt;*&gt; cartesian_cauchy_coordinates,</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;        tnsr::i&lt;<a class="code" href="classDataVector.html">DataVector</a>, 2, ::<a class="code" href="structFrame_1_1Spherical.html">Frame::Spherical&lt;::Frame::Inertial&gt;</a>&gt;*&gt;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        angular_cauchy_coordinates,</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keyword">const</span> <a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 2&gt;</a>&amp; surface_j, <span class="keywordtype">size_t</span> l_max,</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keywordtype">double</span> tolerance, <span class="keywordtype">size_t</span> max_steps, <span class="keywordtype">bool</span> adjust_volume_gauge) noexcept;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;}  <span class="comment">// namespace detail</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment"> * \brief Apply a radius-independent angular gauge transformation to a volume</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment"> * \f$J\f$, for use with initial data generation.</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment"> * \details Performs the gauge transformation to \f$\hat J\f$,</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment"> * \f{align*}{</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment"> * \hat J = \frac{1}{4 \hat{\omega}^2} \left( \bar{\hat d}^2  J(\hat x^{\hat A})</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment"> *  + \hat c^2 \bar J(\hat x^{\hat A})</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment"> *  + 2 \hat c \bar{\hat d} K(\hat x^{\hat A}) \right).</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment"> * \f}</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment"> * Where \f$\hat c\f$ and \f$\hat d\f$ are the spin-weighted angular Jacobian</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment"> * factors computed by `GaugeUpdateJacobianFromCoords`, and \f$\hat \omega\f$ is</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment"> * the conformal factor associated with the angular coordinate transformation.</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment"> * Note that the right-hand sides with explicit \f$\hat x^{\hat A}\f$ dependence</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment"> * must be interpolated and that \f$K = \sqrt{1 + J \bar J}\f$.</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno"><a class="line" href="structCce_1_1InitializeJ_1_1GaugeAdjustInitialJ.html">   65</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1InitializeJ_1_1GaugeAdjustInitialJ.html">GaugeAdjustInitialJ</a> {</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;  <span class="keyword">using</span> boundary_tags =</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;      tmpl::list&lt;<a class="code" href="structCce_1_1Tags_1_1GaugeC.html">Tags::GaugeC</a>, <a class="code" href="structCce_1_1Tags_1_1GaugeD.html">Tags::GaugeD</a>, <a class="code" href="structCce_1_1Tags_1_1GaugeOmega.html">Tags::GaugeOmega</a>,</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;                 <a class="code" href="structCce_1_1Tags_1_1CauchyAngularCoords.html">Tags::CauchyAngularCoords</a>, <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1LMax.html">Spectral::Swsh::Tags::LMax</a>&gt;;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;  <span class="keyword">using</span> return_tags = tmpl::list&lt;Tags::BondiJ&gt;;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;  <span class="keyword">using</span> argument_tags = tmpl::append&lt;boundary_tags&gt;;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160; </div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">void</span> apply(</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 2&gt;</a>&gt;*&gt; volume_j,</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;      <span class="keyword">const</span> <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 2&gt;</a>&gt;&amp; gauge_c,</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;      <span class="keyword">const</span> <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;&amp; gauge_d,</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;      <span class="keyword">const</span> <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;&amp; gauge_omega,</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;      <span class="keyword">const</span> tnsr::i&lt;<a class="code" href="classDataVector.html">DataVector</a>, 2, ::<a class="code" href="structFrame_1_1Spherical.html">Frame::Spherical&lt;::Frame::Inertial&gt;</a>&gt;&amp;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;          cauchy_angular_coordinates,</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;      <span class="keywordtype">size_t</span> l_max) noexcept;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;};</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structCce_1_1InitializeJ_1_1InverseCubic.html">InverseCubic</a>;</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1InitializeJ_1_1NoIncomingRadiation.html">NoIncomingRadiation</a>;</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1InitializeJ_1_1ZeroNonSmooth.html">ZeroNonSmooth</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment"></span><span class="comment"></span> </div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment"> * \brief Abstract base class for an initial hypersurface data generator for</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment"> * Cce.</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment"> * \details The functions that are required to be overriden in the derived</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment"> * classes are:</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment"> * - `InitializeJ::get_clone()`: should return a</span></div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment"> * `std::unique_ptr&lt;InitializeJ&gt;` with cloned state.</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="comment"> * - `InitializeJ::operator() const`: should take as arguments, first a set of</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment"> * `gsl::not_null` pointers represented by `mutate_tags`, followed by a set of</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="comment"> * `const` references to quantities represented by `argument_tags`.</span></div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="comment"> * \note The `InitializeJ::operator()` should be const, and therefore not alter</span></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="comment"> * the internal state of the generator. This is compatible with all known</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="comment"> * use-cases and permits the `InitializeJ` generator to be placed in the</span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="comment"> * `GlobalCache`.</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00104"></a><span class="lineno"><a class="line" href="structCce_1_1InitializeJ_1_1InitializeJ.html">  104</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1InitializeJ_1_1InitializeJ.html">InitializeJ</a> : <span class="keyword">public</span> PUP::able {</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;  <span class="keyword">using</span> boundary_tags = tmpl::list&lt;Tags::BoundaryValue&lt;Tags::BondiJ&gt;,</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;                                   <a class="code" href="structCce_1_1Tags_1_1BoundaryValue.html">Tags::BoundaryValue&lt;Tags::Dr&lt;Tags::BondiJ&gt;</a>&gt;,</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;                                   <a class="code" href="structCce_1_1Tags_1_1BoundaryValue.html">Tags::BoundaryValue&lt;Tags::BondiR&gt;</a>&gt;;</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160; </div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;  <span class="keyword">using</span> mutate_tags = tmpl::list&lt;<a class="code" href="structCce_1_1Tags_1_1BondiJ.html">Tags::BondiJ</a>, <a class="code" href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Tags::CauchyCartesianCoords</a>,</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;                                 <a class="code" href="structCce_1_1Tags_1_1CauchyAngularCoords.html">Tags::CauchyAngularCoords</a>&gt;;</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;  <span class="keyword">using</span> argument_tags =</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;      tmpl::push_back&lt;boundary_tags, Tags::LMax, Tags::NumberOfRadialPoints&gt;;</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160; </div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;  <span class="keyword">using</span> creatable_classes =</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;      tmpl::list&lt;InverseCubic, NoIncomingRadiation, ZeroNonSmooth&gt;;</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160; </div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;  WRAPPED_PUPable_abstract(<a class="code" href="structCce_1_1InitializeJ_1_1InitializeJ.html">InitializeJ</a>);  <span class="comment">// NOLINT</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160; </div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;  <span class="keyword">virtual</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;InitializeJ&gt;</a> get_clone() <span class="keyword">const</span> noexcept = 0;</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160; </div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;  <span class="keyword">virtual</span> <span class="keywordtype">void</span> operator()(</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 2&gt;</a>&gt;*&gt; j,</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;tnsr::i&lt;DataVector, 3&gt;*&gt; cartesian_cauchy_coordinates,</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;          tnsr::i&lt;<a class="code" href="classDataVector.html">DataVector</a>, 2, ::<a class="code" href="structFrame_1_1Spherical.html">Frame::Spherical&lt;::Frame::Inertial&gt;</a>&gt;*&gt;</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;          angular_cauchy_coordinates,</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;      <span class="keyword">const</span> <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 2&gt;</a>&gt;&amp; boundary_j,</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;      <span class="keyword">const</span> <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 2&gt;</a>&gt;&amp; boundary_dr_j,</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;      <span class="keyword">const</span> <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, 0&gt;</a>&gt;&amp; r, <span class="keywordtype">size_t</span> l_max,</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;      <span class="keywordtype">size_t</span> number_of_radial_points) <span class="keyword">const</span> noexcept = 0;</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;};</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;}  <span class="comment">// namespace InitializeJ</span></div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;}  <span class="comment">// namespace Cce</span></div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160; </div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/Initialize/InverseCubic.hpp&quot;</span></div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/Initialize/NoIncomingRadiation.hpp&quot;</span></div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/Initialize/ZeroNonSmooth.hpp&quot;</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="astructCce_1_1InitializeJ_1_1InverseCubic_html"><div class="ttname"><a href="structCce_1_1InitializeJ_1_1InverseCubic.html">Cce::InitializeJ::InverseCubic</a></div><div class="ttdoc">Initialize  on the first hypersurface from provided boundary values of , , and .</div><div class="ttdef"><b>Definition:</b> InverseCubic.hpp:40</div></div>
+<div class="ttc" id="aCharmPupable_8hpp_html"><div class="ttname"><a href="CharmPupable_8hpp.html">CharmPupable.hpp</a></div></div>
+<div class="ttc" id="aOptions_8hpp_html"><div class="ttname"><a href="Options_8hpp.html">Options.hpp</a></div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1CauchyAngularCoords_html"><div class="ttname"><a href="structCce_1_1Tags_1_1CauchyAngularCoords.html">Cce::Tags::CauchyAngularCoords</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:158</div></div>
+<div class="ttc" id="astructCce_1_1InitializeJ_1_1GaugeAdjustInitialJ_html"><div class="ttname"><a href="structCce_1_1InitializeJ_1_1GaugeAdjustInitialJ.html">Cce::InitializeJ::GaugeAdjustInitialJ</a></div><div class="ttdoc">Apply a radius-independent angular gauge transformation to a volume , for use with initial data gener...</div><div class="ttdef"><b>Definition:</b> InitializeJ.hpp:65</div></div>
+<div class="ttc" id="astructSpinWeighted_html"><div class="ttname"><a href="structSpinWeighted.html">SpinWeighted</a></div><div class="ttdoc">Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...</div><div class="ttdef"><b>Definition:</b> SpinWeighted.hpp:24</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1BondiJ_html"><div class="ttname"><a href="structCce_1_1Tags_1_1BondiJ.html">Cce::Tags::BondiJ</a></div><div class="ttdoc">Bondi parameter .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:36</div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1BoundaryValue_html"><div class="ttname"><a href="structCce_1_1Tags_1_1BoundaryValue.html">Cce::Tags::BoundaryValue</a></div><div class="ttdoc">A prefix tag representing the boundary data for a quantity on the extraction surface.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:200</div></div>
+<div class="ttc" id="astructCce_1_1InitializeJ_1_1ZeroNonSmooth_html"><div class="ttname"><a href="structCce_1_1InitializeJ_1_1ZeroNonSmooth.html">Cce::InitializeJ::ZeroNonSmooth</a></div><div class="ttdoc">Initialize  on the first hypersurface to be vanishing, finding the appropriate angular coordinates to...</div><div class="ttdef"><b>Definition:</b> ZeroNonSmooth.hpp:37</div></div>
+<div class="ttc" id="aclassDataVector_html"><div class="ttname"><a href="classDataVector.html">DataVector</a></div><div class="ttdoc">Stores a collection of function values.</div><div class="ttdef"><b>Definition:</b> DataVector.hpp:46</div></div>
+<div class="ttc" id="amemory_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a></div></div>
+<div class="ttc" id="astructSpectral_1_1Swsh_1_1Tags_1_1LMax_html"><div class="ttname"><a href="structSpectral_1_1Swsh_1_1Tags_1_1LMax.html">Spectral::Swsh::Tags::LMax</a></div><div class="ttdoc">Tag for the maximum spin-weighted spherical harmonic l; sets angular resolution.</div><div class="ttdef"><b>Definition:</b> SwshTags.hpp:202</div></div>
+<div class="ttc" id="astructFrame_1_1Spherical_html"><div class="ttname"><a href="structFrame_1_1Spherical.html">Frame::Spherical</a></div><div class="ttdoc">Represents a spherical-coordinate frame that is associated with a Cartesian frame,...</div><div class="ttdef"><b>Definition:</b> IndexType.hpp:54</div></div>
+<div class="ttc" id="astructCce_1_1InitializeJ_1_1InitializeJ_html"><div class="ttname"><a href="structCce_1_1InitializeJ_1_1InitializeJ.html">Cce::InitializeJ::InitializeJ</a></div><div class="ttdoc">Abstract base class for an initial hypersurface data generator for Cce.</div><div class="ttdef"><b>Definition:</b> InitializeJ.hpp:104</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga06ebcb38a1f13c246e53378b9e8959ce"><div class="ttname"><a href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a></div><div class="ttdeci">Tensor&lt; T, Symmetry&lt;&gt;, index_list&lt;&gt; &gt; Scalar</div><div class="ttdef"><b>Definition:</b> TypeAliases.hpp:21</div></div>
+<div class="ttc" id="anamespaceCce_html"><div class="ttname"><a href="namespaceCce.html">Cce</a></div><div class="ttdoc">The set of utilities for performing Cauchy characteristic evolution and Cauchy characteristic matchin...</div><div class="ttdef"><b>Definition:</b> CharacteristicExtractFwd.hpp:6</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1GaugeD_html"><div class="ttname"><a href="structCce_1_1Tags_1_1GaugeD.html">Cce::Tags::GaugeD</a></div><div class="ttdoc">The spin-weight 0 angular Jacobian factor.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:143</div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="aTypeAliases_8hpp_html"><div class="ttname"><a href="TypeAliases_8hpp.html">TypeAliases.hpp</a></div></div>
+<div class="ttc" id="aclassComplexDataVector_html"><div class="ttname"><a href="classComplexDataVector.html">ComplexDataVector</a></div><div class="ttdoc">Stores a collection of complex function values.</div><div class="ttdef"><b>Definition:</b> ComplexDataVector.hpp:53</div></div>
+<div class="ttc" id="aunique_ptr_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1GaugeC_html"><div class="ttname"><a href="structCce_1_1Tags_1_1GaugeC.html">Cce::Tags::GaugeC</a></div><div class="ttdoc">The spin-weight 2 angular Jacobian factor.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:138</div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="astructCce_1_1InitializeJ_1_1NoIncomingRadiation_html"><div class="ttname"><a href="structCce_1_1InitializeJ_1_1NoIncomingRadiation.html">Cce::InitializeJ::NoIncomingRadiation</a></div><div class="ttdoc">Initialize  on the first hypersurface by constraining .</div><div class="ttdef"><b>Definition:</b> NoIncomingRadiation.hpp:35</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1CauchyCartesianCoords_html"><div class="ttname"><a href="structCce_1_1Tags_1_1CauchyCartesianCoords.html">Cce::Tags::CauchyCartesianCoords</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:164</div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1GaugeOmega_html"><div class="ttname"><a href="structCce_1_1Tags_1_1GaugeOmega.html">Cce::Tags::GaugeOmega</a></div><div class="ttdoc">The conformal factor associated with an angular transformation.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:148</div></div>
+<div class="ttc" id="astring_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/string.html">string</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

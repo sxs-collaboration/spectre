@@ -1,0 +1,423 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Utilities/TMPL.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_703734d551dc6f7d643184484c894e35.html">Utilities</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#define-members">Macros</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
+  <div class="headertitle">
+<div class="title">TMPL.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &lt;brigand/brigand.hpp&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/initializer_list.html">initializer_list</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a>&gt;</code><br />
+<code>#include &quot;Utilities/TmplDigraph.hpp&quot;</code><br />
+</div>
+<p><a href="TMPL_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbrigand_1_1power.html">brigand::power&lt; V, N &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbrigand_1_1factorial.html">brigand::factorial&lt; T &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbrigand_1_1factorial_3_01uint64__t_3_011_01_4_01_4.html">brigand::factorial&lt; uint64_t&lt; 1 &gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbrigand_1_1conditional.html">brigand::conditional&lt; bool &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbrigand_1_1conditional_3_01true_01_4.html">brigand::conditional&lt; true &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbrigand_1_1conditional_3_01false_01_4.html">brigand::conditional&lt; false &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbrigand_1_1branch__if.html">brigand::branch_if&lt; bool &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbrigand_1_1branch__if_3_01true_01_4.html">brigand::branch_if&lt; true &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structbrigand_1_1branch__if_3_01false_01_4.html">brigand::branch_if&lt; false &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtmpl2_1_1value__list.html">tmpl2::value_list&lt; T,... &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A compile-time list of values of the same type.  <a href="structtmpl2_1_1value__list.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespacetmpl2"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetmpl2.html">tmpl2</a></td></tr>
+<tr class="memdesc:namespacetmpl2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Metaprogramming things that are not planned to be submitted to Brigand. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:ga902d1cefbb10846eb8f5be9f6be5c340"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga902d1cefbb10846eb8f5be9f6be5c340">EXPAND_PACK_LEFT_TO_RIGHT</a>(...)&#160;&#160;&#160;(void)<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/initializer_list.html">std::initializer_list</a>&lt;char&gt; { ((void)(__VA_ARGS__), '0')... }</td></tr>
+<tr class="memdesc:ga902d1cefbb10846eb8f5be9f6be5c340"><td class="mdescLeft">&#160;</td><td class="mdescRight">Expand a parameter pack evaluating the terms from left to right.  <a href="group__UtilitiesGroup.html#ga902d1cefbb10846eb8f5be9f6be5c340">More...</a><br /></td></tr>
+<tr class="separator:ga902d1cefbb10846eb8f5be9f6be5c340"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a4835aad5713bb0ee33e8f7ed29d6e9e6"><td class="memTemplParams" colspan="2"><a id="a4835aad5713bb0ee33e8f7ed29d6e9e6"></a>
+template&lt;typename L , typename I , typename R &gt; </td></tr>
+<tr class="memitem:a4835aad5713bb0ee33e8f7ed29d6e9e6"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>brigand::lazy::replace_at</b> = ::brigand::detail::call_replace_at_impl&lt; L, I, R &gt;</td></tr>
+<tr class="separator:a4835aad5713bb0ee33e8f7ed29d6e9e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac025f27cc9b0ae74e4cf6b4102672d18"><td class="memTemplParams" colspan="2"><a id="ac025f27cc9b0ae74e4cf6b4102672d18"></a>
+template&lt;typename L , typename I , typename R &gt; </td></tr>
+<tr class="memitem:ac025f27cc9b0ae74e4cf6b4102672d18"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>brigand::replace_at</b> = typename ::brigand::lazy::replace_at&lt; L, I, R &gt;::type</td></tr>
+<tr class="separator:ac025f27cc9b0ae74e4cf6b4102672d18"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82d5659bc6d30084f349e8e9cff6a3da"><td class="memTemplParams" colspan="2"><a id="a82d5659bc6d30084f349e8e9cff6a3da"></a>
+template&lt;typename List , typename Ind1 , typename Ind2 &gt; </td></tr>
+<tr class="memitem:a82d5659bc6d30084f349e8e9cff6a3da"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>brigand::swap_at</b> = typename ::brigand::detail::swap_at_impl&lt; List, Ind1, Ind2 &gt;::type</td></tr>
+<tr class="separator:a82d5659bc6d30084f349e8e9cff6a3da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac819efe1d8374068e5a95ad2cad3eb65"><td class="memTemplParams" colspan="2"><a id="ac819efe1d8374068e5a95ad2cad3eb65"></a>
+template&lt;typename V &gt; </td></tr>
+<tr class="memitem:ac819efe1d8374068e5a95ad2cad3eb65"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>brigand::abs</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::integral_constant</a>&lt; typename V::value_type,(V::value&lt; 0 ? -V::value :V::value)&gt;</td></tr>
+<tr class="separator:ac819efe1d8374068e5a95ad2cad3eb65"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acdbeae22a80cd13b7a05221c44f6b487"><td class="memTemplParams" colspan="2"><a id="acdbeae22a80cd13b7a05221c44f6b487"></a>
+template&lt;typename V &gt; </td></tr>
+<tr class="memitem:acdbeae22a80cd13b7a05221c44f6b487"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>brigand::sign</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::integral_constant</a>&lt; typename V::value_type,(V::value&lt; 0 ? -1 :1)&gt;</td></tr>
+<tr class="separator:acdbeae22a80cd13b7a05221c44f6b487"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a234031281bf7d96331d4d43dcc8bca46"><td class="memTemplParams" colspan="2"><a id="a234031281bf7d96331d4d43dcc8bca46"></a>
+template&lt;int T&gt; </td></tr>
+<tr class="memitem:a234031281bf7d96331d4d43dcc8bca46"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>brigand::int_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::integral_constant</a>&lt; int, T &gt;</td></tr>
+<tr class="separator:a234031281bf7d96331d4d43dcc8bca46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af77dd1f8be387c77fd22b5b8b107992e"><td class="memTemplParams" colspan="2"><a id="af77dd1f8be387c77fd22b5b8b107992e"></a>
+template&lt;typename List &gt; </td></tr>
+<tr class="memitem:af77dd1f8be387c77fd22b5b8b107992e"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>brigand::lazy::permutations</b> = detail::permutations_impl&lt; List &gt;</td></tr>
+<tr class="separator:af77dd1f8be387c77fd22b5b8b107992e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c1af953add26c3344c7ca4d40ccdec2"><td class="memTemplParams" colspan="2"><a id="a8c1af953add26c3344c7ca4d40ccdec2"></a>
+template&lt;typename List &gt; </td></tr>
+<tr class="memitem:a8c1af953add26c3344c7ca4d40ccdec2"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>brigand::permutations</b> = typename lazy::permutations&lt; List &gt;::type</td></tr>
+<tr class="separator:a8c1af953add26c3344c7ca4d40ccdec2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6799d7c63dd0674e4ec0baee914cfec4"><td class="memTemplParams" colspan="2"><a id="a6799d7c63dd0674e4ec0baee914cfec4"></a>
+template&lt;typename List &gt; </td></tr>
+<tr class="memitem:a6799d7c63dd0674e4ec0baee914cfec4"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>brigand::lazy::generic_permutations</b> = detail::generic_permutations_impl&lt; List &gt;</td></tr>
+<tr class="separator:a6799d7c63dd0674e4ec0baee914cfec4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a0a18faa47ef6ddafebb0138126caba"><td class="memTemplParams" colspan="2"><a id="a6a0a18faa47ef6ddafebb0138126caba"></a>
+template&lt;typename List &gt; </td></tr>
+<tr class="memitem:a6a0a18faa47ef6ddafebb0138126caba"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>brigand::generic_permutations</b> = typename lazy::generic_permutations&lt; List &gt;::type</td></tr>
+<tr class="separator:a6a0a18faa47ef6ddafebb0138126caba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aec157410f45853d7641765f2b5eb313b"><td class="memTemplParams" colspan="2"><a id="aec157410f45853d7641765f2b5eb313b"></a>
+template&lt;typename List , typename OutSize  = uint32_t&lt;2&gt;&gt; </td></tr>
+<tr class="memitem:aec157410f45853d7641765f2b5eb313b"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>brigand::lazy::combinations</b> = detail::combinations_impl&lt; List, OutSize &gt;</td></tr>
+<tr class="separator:aec157410f45853d7641765f2b5eb313b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1decd49980a12f850b377a93de18ac72"><td class="memTemplParams" colspan="2"><a id="a1decd49980a12f850b377a93de18ac72"></a>
+template&lt;typename List , typename OutSize  = uint32_t&lt;2&gt;&gt; </td></tr>
+<tr class="memitem:a1decd49980a12f850b377a93de18ac72"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>brigand::combinations</b> = typename lazy::combinations&lt; List, OutSize &gt;::type</td></tr>
+<tr class="separator:a1decd49980a12f850b377a93de18ac72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa18b044efb8c02e79439d2b54c2b7fd0"><td class="memTemplParams" colspan="2"><a id="aa18b044efb8c02e79439d2b54c2b7fd0"></a>
+template&lt;typename List1 , typename List2 &gt; </td></tr>
+<tr class="memitem:aa18b044efb8c02e79439d2b54c2b7fd0"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>brigand::equal_members</b> = and_&lt; fold&lt; List1, bool_&lt; true &gt;, and_&lt; _state, detail::equal_members_helper&lt; pin&lt; List2 &gt;, _element &gt; &gt;&gt;, fold&lt; List2, bool_&lt; true &gt;, and_&lt; _state, detail::equal_members_helper&lt; pin&lt; List1 &gt;, _element &gt; &gt;&gt; &gt;</td></tr>
+<tr class="separator:aa18b044efb8c02e79439d2b54c2b7fd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a58deaf129d62a61f83118f6d0a9d96e6"><td class="memTemplParams" colspan="2"><a id="a58deaf129d62a61f83118f6d0a9d96e6"></a>
+template&lt;typename Sequence , typename State , typename Functor , typename I  = brigand::int32_t&lt;0&gt;&gt; </td></tr>
+<tr class="memitem:a58deaf129d62a61f83118f6d0a9d96e6"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>brigand::lazy::enumerated_fold</b> = typename detail::enumerated_fold_impl&lt; Functor, State, I, Sequence &gt;</td></tr>
+<tr class="separator:a58deaf129d62a61f83118f6d0a9d96e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7cd34d865d9913ebb08a928bf2d6eb18"><td class="memTemplParams" colspan="2"><a id="a7cd34d865d9913ebb08a928bf2d6eb18"></a>
+template&lt;typename Sequence , typename State , typename Functor , typename I  = brigand::int32_t&lt;0&gt;&gt; </td></tr>
+<tr class="memitem:a7cd34d865d9913ebb08a928bf2d6eb18"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>brigand::enumerated_fold</b> = typename lazy::enumerated_fold&lt; Sequence, State, Functor, I &gt;::type</td></tr>
+<tr class="separator:a7cd34d865d9913ebb08a928bf2d6eb18"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc96ecdba36056c9af58a9f62c307fb6"><td class="memTemplParams" colspan="2"><a id="adc96ecdba36056c9af58a9f62c307fb6"></a>
+template&lt;bool B, typename T , typename F &gt; </td></tr>
+<tr class="memitem:adc96ecdba36056c9af58a9f62c307fb6"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>brigand::conditional_t</b> = typename conditional&lt; B &gt;::template type&lt; T, F &gt;</td></tr>
+<tr class="separator:adc96ecdba36056c9af58a9f62c307fb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2fe1d22f5dbfb0521505ae0f8cebb7e1"><td class="memTemplParams" colspan="2"><a id="a2fe1d22f5dbfb0521505ae0f8cebb7e1"></a>
+template&lt;typename List &gt; </td></tr>
+<tr class="memitem:a2fe1d22f5dbfb0521505ae0f8cebb7e1"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>brigand::remove_duplicates</b> = fold&lt; List, list&lt;&gt;, detail::remove_duplicates_helper&lt; _state, _element &gt; &gt;</td></tr>
+<tr class="separator:a2fe1d22f5dbfb0521505ae0f8cebb7e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af336d8e900eb47d4b00729f00b0a1edf"><td class="memTemplParams" colspan="2"><a id="af336d8e900eb47d4b00729f00b0a1edf"></a>
+template&lt;bool B, typename T , typename F &gt; </td></tr>
+<tr class="memitem:af336d8e900eb47d4b00729f00b0a1edf"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>brigand::branch_if_t</b> = typename branch_if&lt; B &gt;::template type&lt; T, F &gt;</td></tr>
+<tr class="separator:af336d8e900eb47d4b00729f00b0a1edf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga01ee1794935080949a6995ae7d5e08cc"><td class="memTemplParams" colspan="2">template&lt;bool... Bs&gt; </td></tr>
+<tr class="memitem:ga01ee1794935080949a6995ae7d5e08cc"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga01ee1794935080949a6995ae7d5e08cc">tmpl2::flat_all</a> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::is_same</a>&lt; value_list&lt; bool, Bs... &gt;, value_list&lt; bool,(static_cast&lt; void &gt;(Bs), true)... &gt; &gt;</td></tr>
+<tr class="memdesc:ga01ee1794935080949a6995ae7d5e08cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">A non-short-circuiting logical AND between bools 'B"".  <a href="group__UtilitiesGroup.html#ga01ee1794935080949a6995ae7d5e08cc">More...</a><br /></td></tr>
+<tr class="separator:ga01ee1794935080949a6995ae7d5e08cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6e25dbfa539ff4513329969dbcd81c40"><td class="memTemplParams" colspan="2">template&lt;bool... Bs&gt; </td></tr>
+<tr class="memitem:ga6e25dbfa539ff4513329969dbcd81c40"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga6e25dbfa539ff4513329969dbcd81c40">tmpl2::flat_any</a> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::integral_constant</a>&lt; bool, not <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::is_same</a>&lt; value_list&lt; bool, Bs... &gt;, value_list&lt; bool,(static_cast&lt; void &gt;(Bs), false)... &gt; &gt;::value &gt;</td></tr>
+<tr class="memdesc:ga6e25dbfa539ff4513329969dbcd81c40"><td class="mdescLeft">&#160;</td><td class="mdescRight">A non-short-circuiting logical OR between bools 'B"".  <a href="group__UtilitiesGroup.html#ga6e25dbfa539ff4513329969dbcd81c40">More...</a><br /></td></tr>
+<tr class="separator:ga6e25dbfa539ff4513329969dbcd81c40"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acff529e6579854c00aa03d6e994c6467"><td class="memTemplParams" colspan="2"><a id="acff529e6579854c00aa03d6e994c6467"></a>
+template&lt;typename Sequence , typename Item &gt; </td></tr>
+<tr class="memitem:acff529e6579854c00aa03d6e994c6467"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="TMPL_8hpp.html#acff529e6579854c00aa03d6e994c6467">brigand::list_contains</a> = tmpl::found&lt; Sequence, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::is_same</a>&lt; tmpl::_1, tmpl::pin&lt; Item &gt; &gt;&gt;</td></tr>
+<tr class="memdesc:acff529e6579854c00aa03d6e994c6467"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if a typelist contains an item. <br /></td></tr>
+<tr class="separator:acff529e6579854c00aa03d6e994c6467"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90c06abcd00cb9026fdcdb7433edce8d"><td class="memTemplParams" colspan="2"><a id="a90c06abcd00cb9026fdcdb7433edce8d"></a>
+template&lt;typename Sequence1 , typename Sequence2 &gt; </td></tr>
+<tr class="memitem:a90c06abcd00cb9026fdcdb7433edce8d"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="TMPL_8hpp.html#a90c06abcd00cb9026fdcdb7433edce8d">brigand::list_difference</a> = fold&lt; Sequence2, Sequence1, lazy::remove&lt; _state, _element &gt; &gt;</td></tr>
+<tr class="memdesc:a90c06abcd00cb9026fdcdb7433edce8d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain the elements of <code>Sequence1</code> that are not in <code>Sequence2</code>. <br /></td></tr>
+<tr class="separator:a90c06abcd00cb9026fdcdb7433edce8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga45da409b9b03a4ad18e76036ab5a853c"><td class="memTemplParams" colspan="2">template&lt;typename... Ts&gt; </td></tr>
+<tr class="memitem:ga45da409b9b03a4ad18e76036ab5a853c"><td class="memTemplItemLeft" align="right" valign="top">constexpr void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga45da409b9b03a4ad18e76036ab5a853c">expand_pack</a> (Ts &amp;&amp;...) noexcept</td></tr>
+<tr class="memdesc:ga45da409b9b03a4ad18e76036ab5a853c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allows zero-cost unordered expansion of a parameter.  <a href="group__UtilitiesGroup.html#ga45da409b9b03a4ad18e76036ab5a853c">More...</a><br /></td></tr>
+<tr class="separator:ga45da409b9b03a4ad18e76036ab5a853c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaccb2a89d7a8daca3527693c77ab04f0b"><td class="memTemplParams" colspan="2">
+template&lt;typename T , typename... Ts&gt; </td></tr>
+<tr class="memitem:gaccb2a89d7a8daca3527693c77ab04f0b"><td class="memTemplItemLeft" align="right" valign="top">constexpr decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gaccb2a89d7a8daca3527693c77ab04f0b">get_first_argument</a> (T &amp;&amp;t, Ts &amp;&amp;...) noexcept</td></tr>
+<tr class="memdesc:gaccb2a89d7a8daca3527693c77ab04f0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the first argument of a parameter pack. <br /></td></tr>
+<tr class="separator:gaccb2a89d7a8daca3527693c77ab04f0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18e340b61413e00fb8bca2d0fa071fd6"><td class="memTemplParams" colspan="2">template&lt;typename List , typename F &gt; </td></tr>
+<tr class="memitem:a18e340b61413e00fb8bca2d0fa071fd6"><td class="memTemplItemLeft" align="right" valign="top">constexpr decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="TMPL_8hpp.html#a18e340b61413e00fb8bca2d0fa071fd6">brigand::as_pack</a> (F &amp;&amp;f)</td></tr>
+<tr class="memdesc:a18e340b61413e00fb8bca2d0fa071fd6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Call a functor with the types from a list.  <a href="TMPL_8hpp.html#a18e340b61413e00fb8bca2d0fa071fd6">More...</a><br /></td></tr>
+<tr class="separator:a18e340b61413e00fb8bca2d0fa071fd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:gab78389fadf763e3693ce893fad5d7fba"><td class="memTemplParams" colspan="2">template&lt;bool... Bs&gt; </td></tr>
+<tr class="memitem:gab78389fadf763e3693ce893fad5d7fba"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gab78389fadf763e3693ce893fad5d7fba">tmpl2::flat_all_v</a> = flat_all&lt;Bs...&gt;::value</td></tr>
+<tr class="memdesc:gab78389fadf763e3693ce893fad5d7fba"><td class="mdescLeft">&#160;</td><td class="mdescRight">A non-short-circuiting logical AND between bools 'B"".  <a href="group__UtilitiesGroup.html#gab78389fadf763e3693ce893fad5d7fba">More...</a><br /></td></tr>
+<tr class="separator:gab78389fadf763e3693ce893fad5d7fba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8a328cb983ebb1947b0eb9d924f40253"><td class="memTemplParams" colspan="2">template&lt;bool... Bs&gt; </td></tr>
+<tr class="memitem:ga8a328cb983ebb1947b0eb9d924f40253"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga8a328cb983ebb1947b0eb9d924f40253">tmpl2::flat_any_v</a> = flat_any&lt;Bs...&gt;::value</td></tr>
+<tr class="memdesc:ga8a328cb983ebb1947b0eb9d924f40253"><td class="mdescLeft">&#160;</td><td class="mdescRight">A non-short-circuiting logical OR between bools 'B"".  <a href="group__UtilitiesGroup.html#ga8a328cb983ebb1947b0eb9d924f40253">More...</a><br /></td></tr>
+<tr class="separator:ga8a328cb983ebb1947b0eb9d924f40253"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0edcc61491e59d4df48d24cdddfd19ab"><td class="memTemplParams" colspan="2"><a id="a0edcc61491e59d4df48d24cdddfd19ab"></a>
+template&lt;typename Sequence , typename Item &gt; </td></tr>
+<tr class="memitem:a0edcc61491e59d4df48d24cdddfd19ab"><td class="memTemplItemLeft" align="right" valign="top">constexpr const bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>brigand::list_contains_v</b> = list_contains&lt;Sequence, Item&gt;::value</td></tr>
+<tr class="separator:a0edcc61491e59d4df48d24cdddfd19ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Wraps the template metaprogramming library used (brigand) </p>
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="a18e340b61413e00fb8bca2d0fa071fd6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a18e340b61413e00fb8bca2d0fa071fd6">&#9670;&nbsp;</a></span>as_pack()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename List , typename F &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr decltype(auto) brigand::as_pack </td>
+          <td>(</td>
+          <td class="paramtype">F &amp;&amp;&#160;</td>
+          <td class="paramname"><em>f</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Call a functor with the types from a list. </p>
+<p>Given a typelist <code>List = tmpl::list&lt;A, B, ...&gt;</code> (not necessarily with head <code>tmpl::list</code>), calls <code>f</code> as <code>f(tmpl::type_&lt;A&gt;{}, tmpl::type_&lt;B&gt;{}, ...)</code> and returns the result.</p>
+<p>This is useful for converting a typelist into a parameter pack.</p>
+<div class="fragment"><div class="line">  <span class="keyword">using</span> List = tmpl::list&lt;tmpl::size_t&lt;1&gt;, tmpl::size_t&lt;2&gt;, tmpl::size_t&lt;3&gt;&gt;;</div>
+<div class="line">  <span class="keyword">const</span> <span class="keywordtype">size_t</span> result = tmpl::as_pack&lt;List&gt;([](<span class="keyword">auto</span>... args) {</div>
+<div class="line">    <span class="keywordflow">return</span> (... + tmpl::type_from&lt;decltype(args)&gt;::value);</div>
+<div class="line">  });</div>
+<div class="line">  CHECK(result == 6);</div>
+</div><!-- fragment -->
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

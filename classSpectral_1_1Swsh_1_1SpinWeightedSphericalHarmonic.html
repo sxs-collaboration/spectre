@@ -1,0 +1,353 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Spectral::Swsh::SpinWeightedSphericalHarmonic Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceSpectral.html">Spectral</a></li><li class="navelem"><a class="el" href="namespaceSpectral_1_1Swsh.html">Swsh</a></li><li class="navelem"><a class="el" href="classSpectral_1_1Swsh_1_1SpinWeightedSphericalHarmonic.html">SpinWeightedSphericalHarmonic</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classSpectral_1_1Swsh_1_1SpinWeightedSphericalHarmonic-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Spectral::Swsh::SpinWeightedSphericalHarmonic Class Reference<div class="ingroups"><a class="el" href="group__SwshGroup.html">Spin-weighted spherical harmonics</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><code>#include &lt;<a class="el" href="SwshInterpolation_8hpp_source.html">SwshInterpolation.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a5520115f0ec3427db8249113c9e87a85"><td class="memItemLeft" align="right" valign="top"><a id="a5520115f0ec3427db8249113c9e87a85"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SpinWeightedSphericalHarmonic</b> (int spin, size_t l, int m) noexcept</td></tr>
+<tr class="separator:a5520115f0ec3427db8249113c9e87a85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a738d274e653f268bfbe5ed316330246b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpectral_1_1Swsh_1_1SpinWeightedSphericalHarmonic.html#a738d274e653f268bfbe5ed316330246b">evaluate</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a> * &gt; result, const <a class="el" href="classDataVector.html">DataVector</a> &amp;theta, const <a class="el" href="classDataVector.html">DataVector</a> &amp;phi, const <a class="el" href="classDataVector.html">DataVector</a> &amp;sin_theta_over_2, const <a class="el" href="classDataVector.html">DataVector</a> &amp;cos_theta_over_2) const noexcept</td></tr>
+<tr class="separator:a738d274e653f268bfbe5ed316330246b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa53773dedd61fa4d452971b66d3a468d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classComplexDataVector.html">ComplexDataVector</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpectral_1_1Swsh_1_1SpinWeightedSphericalHarmonic.html#aa53773dedd61fa4d452971b66d3a468d">evaluate</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;theta, const <a class="el" href="classDataVector.html">DataVector</a> &amp;phi, const <a class="el" href="classDataVector.html">DataVector</a> &amp;sin_theta_over_2, const <a class="el" href="classDataVector.html">DataVector</a> &amp;cos_theta_over_2) const noexcept</td></tr>
+<tr class="memdesc:aa53773dedd61fa4d452971b66d3a468d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return by value the spin-weighted spherical harmonic evaluated at <code>theta</code> and <code>phi</code>.  <a href="classSpectral_1_1Swsh_1_1SpinWeightedSphericalHarmonic.html#aa53773dedd61fa4d452971b66d3a468d">More...</a><br /></td></tr>
+<tr class="separator:aa53773dedd61fa4d452971b66d3a468d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6008cefcbd6e27cb91d232310dc3b66c"><td class="memItemLeft" align="right" valign="top"><a id="a6008cefcbd6e27cb91d232310dc3b66c"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpectral_1_1Swsh_1_1SpinWeightedSphericalHarmonic.html#a6008cefcbd6e27cb91d232310dc3b66c">evaluate</a> (double theta, double phi) const noexcept</td></tr>
+<tr class="memdesc:a6008cefcbd6e27cb91d232310dc3b66c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return by value the spin-weighted spherical harmonic evaluated at <code>theta</code> and <code>phi</code>. <br /></td></tr>
+<tr class="separator:a6008cefcbd6e27cb91d232310dc3b66c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f1a172bdab3adad7e40f50bd64adca5"><td class="memItemLeft" align="right" valign="top"><a id="a3f1a172bdab3adad7e40f50bd64adca5"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpectral_1_1Swsh_1_1SpinWeightedSphericalHarmonic.html#a3f1a172bdab3adad7e40f50bd64adca5">pup</a> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="memdesc:a3f1a172bdab3adad7e40f50bd64adca5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialization for Charm++. <br /></td></tr>
+<tr class="separator:a3f1a172bdab3adad7e40f50bd64adca5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A utility for evaluating a particular spin-weighted spherical harmonic function at arbitrary points.</p>
+<dl class="section warning"><dt>Warning</dt><dd>This should NOT be used for interpolation; such an evaluation strategy is hopelessly slow compared to Clenshaw recurrence strategies. Instead use <code><a class="el" href="classSpectral_1_1Swsh_1_1SwshInterpolator.html" title="Performs interpolation for spin-weighted spherical harmonics by taking advantage of the Clenshaw meth...">SwshInterpolator</a></code>. </dd></dl>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="aa53773dedd61fa4d452971b66d3a468d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa53773dedd61fa4d452971b66d3a468d">&#9670;&nbsp;</a></span>evaluate() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classComplexDataVector.html">ComplexDataVector</a> Spectral::Swsh::SpinWeightedSphericalHarmonic::evaluate </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>theta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>phi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>sin_theta_over_2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>cos_theta_over_2</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return by value the spin-weighted spherical harmonic evaluated at <code>theta</code> and <code>phi</code>. </p>
+<h3>Details</h3>
+<p>The additional values <code>sin_theta_over_2</code> and <code>cos_theta_over_2</code>, representing \(\sin(\theta/2)\) and \(\cos(\theta/2)\) are taken as required input to improve the speed of evaluation when called more than once. </p>
+
+</div>
+</div>
+<a id="a738d274e653f268bfbe5ed316330246b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a738d274e653f268bfbe5ed316330246b">&#9670;&nbsp;</a></span>evaluate() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Spectral::Swsh::SpinWeightedSphericalHarmonic::evaluate </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a> * &gt;&#160;</td>
+          <td class="paramname"><em>result</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>theta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>phi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>sin_theta_over_2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>cos_theta_over_2</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return by pointer the values of the spin-weighted spherical harmonic evaluated at <code>theta</code> and <code>phi</code>.</p>
+<h3>Details</h3>
+<p>The additional values <code>sin_theta_over_2</code> and <code>cos_theta_over_2</code>, representing \(\sin(\theta/2)\) and \(\cos(\theta/2)\) are taken as required input to improve the speed of evaluation when called more than once.</p>
+<p>The formula we evaluate (with various prefactors precomputed, cached, and optimized from the factorials) is <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a></p>
+<p class="formulaDsp">
+\begin{align*} {}_s Y_{l m} = (-1)^m \sqrt{\frac{(l + m)! (l-m)! (2l + 1)} {4 \pi (l + s)! (l - s)!}} \sin^{2 l}(\theta / 2) \sum_{r = 0}^{l - s} {l - s \choose r} {l + s \choose r + s - m} (-1)^{l - r - s} e^{i m \phi} \cot^{2 r + s - m}(\theta / 2). \end{align*}
+</p>
+ 
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/NumericalAlgorithms/Spectral/<a class="el" href="SwshInterpolation_8hpp_source.html">SwshInterpolation.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

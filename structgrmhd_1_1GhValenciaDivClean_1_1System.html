@@ -1,0 +1,289 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: grmhd::GhValenciaDivClean::System Struct Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacegrmhd.html">grmhd</a></li><li class="navelem"><a class="el" href="namespacegrmhd_1_1GhValenciaDivClean.html">GhValenciaDivClean</a></li><li class="navelem"><a class="el" href="structgrmhd_1_1GhValenciaDivClean_1_1System.html">System</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structgrmhd_1_1GhValenciaDivClean_1_1System-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">grmhd::GhValenciaDivClean::System Struct Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a736959d6ab1259ac1194eeafc98e6c60"><td class="memItemLeft" align="right" valign="top"><a id="a736959d6ab1259ac1194eeafc98e6c60"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>boundary_conditions_base</b> = <a class="el" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryConditions::BoundaryCondition</a></td></tr>
+<tr class="separator:a736959d6ab1259ac1194eeafc98e6c60"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4e065f0e3eb5c66349d863d5aa95a4f"><td class="memItemLeft" align="right" valign="top"><a id="ac4e065f0e3eb5c66349d863d5aa95a4f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>boundary_correction_base</b> = <a class="el" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrections::BoundaryCorrection</a></td></tr>
+<tr class="separator:ac4e065f0e3eb5c66349d863d5aa95a4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0cd4ee5f549c216848b667e92df3d81d"><td class="memItemLeft" align="right" valign="top"><a id="a0cd4ee5f549c216848b667e92df3d81d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>grmhd_system</b> = <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1System.html">grmhd::ValenciaDivClean::System</a></td></tr>
+<tr class="separator:a0cd4ee5f549c216848b667e92df3d81d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7db9d67b0124d52ca1a4521485934455"><td class="memItemLeft" align="right" valign="top"><a id="a7db9d67b0124d52ca1a4521485934455"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>gh_system</b> = <a class="el" href="structGeneralizedHarmonic_1_1System.html">GeneralizedHarmonic::System</a>&lt; 3_st &gt;</td></tr>
+<tr class="separator:a7db9d67b0124d52ca1a4521485934455"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1abf1fc9a3827acdc5b8d47e95ea938d"><td class="memItemLeft" align="right" valign="top"><a id="a1abf1fc9a3827acdc5b8d47e95ea938d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>variables_tag</b> = ::<a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt; tmpl::append&lt; typename gh_system::variables_tag::tags_list, typename grmhd_system::variables_tag::tags_list &gt; &gt;</td></tr>
+<tr class="separator:a1abf1fc9a3827acdc5b8d47e95ea938d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad2bd1946024e1b4712088d66fec89aa3"><td class="memItemLeft" align="right" valign="top"><a id="ad2bd1946024e1b4712088d66fec89aa3"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>non_conservative_variables</b> = typename gh_system::variables_tag::tags_list</td></tr>
+<tr class="separator:ad2bd1946024e1b4712088d66fec89aa3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88a7e1753db367eb8e5abfab6bb38682"><td class="memItemLeft" align="right" valign="top"><a id="a88a7e1753db367eb8e5abfab6bb38682"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>flux_variables</b> = tmpl::append&lt; typename gh_system::flux_variables, typename grmhd_system::flux_variables &gt;</td></tr>
+<tr class="separator:a88a7e1753db367eb8e5abfab6bb38682"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a712a7d820cc12548b91bc31499565065"><td class="memItemLeft" align="right" valign="top"><a id="a712a7d820cc12548b91bc31499565065"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>gradient_variables</b> = tmpl::append&lt; typename gh_system::gradient_variables, typename grmhd_system::gradient_variables &gt;</td></tr>
+<tr class="separator:a712a7d820cc12548b91bc31499565065"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad4175e57b7f753e9880d79a9792042e"><td class="memItemLeft" align="right" valign="top"><a id="aad4175e57b7f753e9880d79a9792042e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>gradients_tags</b> = gradient_variables</td></tr>
+<tr class="separator:aad4175e57b7f753e9880d79a9792042e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a970a82876cd98693deb99712d2fa095d"><td class="memItemLeft" align="right" valign="top"><a id="a970a82876cd98693deb99712d2fa095d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>sourced_variables</b> = typename grmhd_system::sourced_variables</td></tr>
+<tr class="separator:a970a82876cd98693deb99712d2fa095d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a00c599790df10b36c502c97d7b8708f5"><td class="memItemLeft" align="right" valign="top"><a id="a00c599790df10b36c502c97d7b8708f5"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>primitive_variables_tag</b> = typename <a class="el" href="structTags_1_1Variables.html">grmhd_system::primitive_variables_tag</a></td></tr>
+<tr class="separator:a00c599790df10b36c502c97d7b8708f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f2de3b038dc74cebda9eefe7c51840c"><td class="memItemLeft" align="right" valign="top"><a id="a8f2de3b038dc74cebda9eefe7c51840c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>spacetime_variables_tag</b> = ::<a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt; tmpl::list&lt; ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, tmpl::size_t&lt; 3 &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, tmpl::size_t&lt; 3 &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, tmpl::size_t&lt; 3 &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1ExtrinsicCurvature.html">gr::Tags::ExtrinsicCurvature</a>&lt; 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;&gt;</td></tr>
+<tr class="separator:a8f2de3b038dc74cebda9eefe7c51840c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a70a482aaa6da4c861c489b3625e610e3"><td class="memItemLeft" align="right" valign="top"><a id="a70a482aaa6da4c861c489b3625e610e3"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>compute_volume_time_derivative_terms</b> = <a class="el" href="structgrmhd_1_1GhValenciaDivClean_1_1TimeDerivativeTerms.html">TimeDerivativeTerms</a></td></tr>
+<tr class="separator:a70a482aaa6da4c861c489b3625e610e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d5d8a32decb11ab8463321def5d35c9"><td class="memItemLeft" align="right" valign="top"><a id="a2d5d8a32decb11ab8463321def5d35c9"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>volume_fluxes</b> = typename <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1ComputeFluxes.html">grmhd_system::volume_fluxes</a></td></tr>
+<tr class="separator:a2d5d8a32decb11ab8463321def5d35c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c3451ba7d6431a7cf1068584fc08d38"><td class="memItemLeft" align="right" valign="top"><a id="a7c3451ba7d6431a7cf1068584fc08d38"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>volume_sources</b> = typename <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1ComputeSources.html">grmhd_system::volume_sources</a></td></tr>
+<tr class="separator:a7c3451ba7d6431a7cf1068584fc08d38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3dc0c4f01081163d00d6cecf0f861900"><td class="memItemLeft" align="right" valign="top"><a id="a3dc0c4f01081163d00d6cecf0f861900"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>conservative_from_primitive</b> = typename <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1ConservativeFromPrimitive.html">grmhd_system::conservative_from_primitive</a></td></tr>
+<tr class="separator:a3dc0c4f01081163d00d6cecf0f861900"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a95e132f3c7070b5349467fec055aa8d2"><td class="memTemplParams" colspan="2"><a id="a95e132f3c7070b5349467fec055aa8d2"></a>
+template&lt;typename OrderedListOfPrimitiveRecoverySchemes &gt; </td></tr>
+<tr class="memitem:a95e132f3c7070b5349467fec055aa8d2"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>primitive_from_conservative</b> = typename grmhd_system::template primitive_from_conservative&lt; OrderedListOfPrimitiveRecoverySchemes &gt;</td></tr>
+<tr class="separator:a95e132f3c7070b5349467fec055aa8d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9219ed598948f4f367ea0cbf80122b3a"><td class="memItemLeft" align="right" valign="top"><a id="a9219ed598948f4f367ea0cbf80122b3a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>compute_largest_characteristic_speed</b> = <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1ComputeLargestCharacteristicSpeed.html">gh_system::compute_largest_characteristic_speed</a></td></tr>
+<tr class="separator:a9219ed598948f4f367ea0cbf80122b3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4765e84dc222fc1a9cf1987f4b4a6f39"><td class="memItemLeft" align="right" valign="top"><a id="a4765e84dc222fc1a9cf1987f4b4a6f39"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>inverse_spatial_metric_tag</b> = typename <a class="el" href="structgr_1_1Tags_1_1InverseSpatialMetric.html">gh_system::inverse_spatial_metric_tag</a></td></tr>
+<tr class="separator:a4765e84dc222fc1a9cf1987f4b4a6f39"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a03f5ec742ffa92f4acf5d73aa8651679"><td class="memItemLeft" align="right" valign="top"><a id="a03f5ec742ffa92f4acf5d73aa8651679"></a>
+static constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><b>has_primitive_and_conservative_vars</b> = true</td></tr>
+<tr class="separator:a03f5ec742ffa92f4acf5d73aa8651679"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a96ae24a32c69f6aa8ea9322520287401"><td class="memItemLeft" align="right" valign="top"><a id="a96ae24a32c69f6aa8ea9322520287401"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = 3</td></tr>
+<tr class="separator:a96ae24a32c69f6aa8ea9322520287401"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa31352751f9584500088e703c7672249"><td class="memItemLeft" align="right" valign="top"><a id="aa31352751f9584500088e703c7672249"></a>
+static constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_in_flux_conservative_form</b> = false</td></tr>
+<tr class="separator:aa31352751f9584500088e703c7672249"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/Systems/GrMhd/GhValenciaDivClean/<a class="el" href="GrMhd_2GhValenciaDivClean_2System_8hpp_source.html">System.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

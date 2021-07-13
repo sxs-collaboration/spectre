@@ -1,0 +1,563 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Evolution/DgSubcell/Actions/TciAndSwitchToDg.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_d7cddb31ba741ba3a4d5be000d880a30.html">Evolution</a></li><li class="navelem"><a class="el" href="dir_4a23561a75228e2a7c81cfb0f2f95b3b.html">DgSubcell</a></li><li class="navelem"><a class="el" href="dir_a5043d33ca8315b14a6fd138ba5e3dcc.html">Actions</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">TciAndSwitchToDg.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/deque.html">deque</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/tuple.html">tuple</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataBox_8hpp.html">DataStructures/DataBox/DataBox.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataBox/PrefixHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Prefixes_8hpp.html">DataStructures/DataBox/Prefixes.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Variables_8hpp.html">DataStructures/Variables.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;DataStructures/VariablesTag.hpp&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Direction_8hpp.html">Domain/Structure/Direction.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ElementId_8hpp.html">Domain/Structure/ElementId.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Domain_2Tags_8hpp.html">Domain/Tags.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;Evolution/DgSubcell/ActiveGrid.hpp&quot;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &quot;Evolution/DgSubcell/NeighborData.hpp&quot;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;Evolution/DgSubcell/RdmpTci.hpp&quot;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;Evolution/DgSubcell/Reconstruction.hpp&quot;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;Evolution/DgSubcell/SubcellOptions.hpp&quot;</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;Evolution/DgSubcell/Tags/ActiveGrid.hpp&quot;</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;Evolution/DgSubcell/Tags/DidRollback.hpp&quot;</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &quot;Evolution/DgSubcell/Tags/Inactive.hpp&quot;</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#include &quot;Evolution/DgSubcell/Tags/Mesh.hpp&quot;</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#include &quot;Evolution/DgSubcell/Tags/NeighborData.hpp&quot;</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#include &quot;Evolution/DgSubcell/Tags/SubcellOptions.hpp&quot;</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#include &quot;Evolution/DgSubcell/Tags/TciGridHistory.hpp&quot;</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="NumericalAlgorithms_2Spectral_2Mesh_8hpp.html">NumericalAlgorithms/Spectral/Mesh.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="preprocessor">#include &quot;Time/History.hpp&quot;</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">#include &quot;Time/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TimeStepId_8hpp.html">Time/TimeStepId.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="preprocessor">#include &quot;Time/TimeSteppers/TimeStepper.hpp&quot;</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Assert_8hpp.html">Utilities/ErrorHandling/Assert.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment"></span><span class="keyword">namespace </span><a class="code" href="namespaceParallel.html">Parallel</a> {</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Metavariables&gt;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="keyword">class </span>GlobalCache;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;}  <span class="comment">// namespace Parallel</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="keyword">namespace </span>tuples {</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>...&gt;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="keyword">class </span>TaggedTuple;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;}  <span class="comment">// namespace tuples</span><span class="comment"></span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceevolution_1_1dg_1_1subcell_1_1Actions.html">evolution::dg::subcell::Actions</a> {<span class="comment"></span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment"> * \brief Run the troubled-cell indicator on the subcell solution to see if it</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment"> * is safe to switch back to DG.</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment"> * In terms of the DG-subcell/FD hybrid solver, this action is run after the FD</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment"> * step has calculated the solution at \f$t^{n+1}\f$. At this point we check if</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment"> * the FD solution at the new time \f$t^{n+1}\f$ is representable on the DG</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment"> * grid.</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment"> * The algorithm proceeds as follows:</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment"> * 1. If we are using a substep time integrator and are not at the end of a</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment"> *    step, or we are in the self-starting stage of a multistep method, or the</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment"> *    `subcell_options.always_use_subcells() == true`, then we do not run any</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment"> *    TCI or try to go back to DG. We need to avoid reconstructing (in the sense</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment"> *    of the inverse of projecting the DG solution to the subcells) the time</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment"> *    stepper history if there are shocks present in the history, and for</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment"> *    substep methods this is most easily handled by only switching back at the</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment"> *    end of a full time step. During the self-start phase of the multistep time</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment"> *    integrators we integrate over the same region of time at increasingly</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment"> *    higher order, which means if we were on subcell &quot;previously&quot; (since we use</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment"> *    a forward-in-time self-start method the time history is actually in the</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment"> *    future of the current step) then we will very likely need to again switch</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment"> *    to subcell.</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment"> * 2. Reconstruct the subcell solution to the DG grid.</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment"> * 3. Run the relaxed discrete maximum principle (RDMP) troubled-cell indicator</span></div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment"> *    (TCI), checking both the subcell solution at \f$t^{n+1}\f$ and the</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment"> *    reconstructed DG solution at \f$t^{n+1}\f$ to make sure they are</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment"> *    admissible.</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment"> * 4. If the RDMP TCI marked the DG solution as admissible, run the</span></div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment"> *    user-specified mutator TCI `TciMutator`.</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment"> * 5. If the cell is not troubled, and the time integrator type is substep or</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment"> *    the TCI history indicates the entire history for the multistep method is</span></div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="comment"> *    free of discontinuities, then we can switch back to DG. Switching back to</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment"> *    DG requires swapping the active and inactive evolved variables,</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment"> *    reconstructing the time stepper history, marking the active grid as</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment"> *    `ActiveGrid::Dg`, and clearing the subcell neighbor data.</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment"> * 6. If we are not using a substep method, then record the TCI decision in the</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment"> *    `subcell::Tags::TciGridHistory`.</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment"> * \note Unlike `Actions::TciAndRollback`, this action does _not_ jump back to</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment"> * `Labels::BeginDg`. This is because users may add actions after a time step</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment"> * has been completed. In that sense, it may be more proper to actually check</span></div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment"> * the TCI and switch back to DG at the start of the step rather than the end.</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment"> * \note This action always sets `subcell::Tags::DidRollback` to `false` at the</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="comment"> * very beginning since this action is called after an FD step has completed.</span></div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="comment"> * GlobalCache:</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="comment"> * - Uses:</span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="comment"> *   - `subcell::Tags::SubcellOptions`</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="comment"> * DataBox:</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="comment"> * - Uses:</span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="comment"> *   - `domain::Tags::Mesh&lt;Dim&gt;`</span></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="comment"> *   - `subcell::Tags::Mesh&lt;Dim&gt;`</span></div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="comment"> *   - `Tags::TimeStepId`</span></div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="comment"> *   - `subcell::Tags::ActiveGrid`</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="comment"> *   - `subcell::Tags::NeighborDataForReconstructionAndRdmpTci&lt;Dim&gt;`</span></div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="comment"> *   - `subcell::Tags::TciGridHistory`</span></div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="comment"> * - Adds: nothing</span></div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="comment"> * - Removes: nothing</span></div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="comment"> * - Modifies:</span></div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="comment"> *   - `subcell::Tags::Inactive&lt;System::variables_tag&gt;`</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment"> *   - `System::variables_tag` if the cell is not troubled</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="comment"> *   - `Tags::HistoryEvolvedVariables` if the cell is not troubled</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="comment"> *   - `subcell::Tags::ActiveGrid` if the cell is not troubled</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="comment"> *   - `subcell::Tags::DidRollback` sets to `false`</span></div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="comment"> *   - `subcell::Tags::NeighborDataForReconstructionAndRdmpTci&lt;Dim&gt;`</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="comment"> *     if the cell is not troubled</span></div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="comment"> *   - `subcell::Tags::TciGridHistory` if the time stepper is a multistep method</span></div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> TciMutator&gt;</div>
+<div class="line"><a name="l00125"></a><span class="lineno"><a class="line" href="structevolution_1_1dg_1_1subcell_1_1Actions_1_1TciAndSwitchToDg.html">  125</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structevolution_1_1dg_1_1subcell_1_1Actions_1_1TciAndSwitchToDg.html">TciAndSwitchToDg</a> {</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> DbTags, <span class="keyword">typename</span>... InboxTags, <span class="keyword">typename</span> Metavariables,</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;            <span class="keyword">typename</span> ArrayIndex, <span class="keyword">typename</span> ActionList,</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;            <span class="keyword">typename</span> ParallelComponent, <span class="keywordtype">size_t</span> Dim = Metavariables::volume_dim&gt;</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;db::DataBox&lt;DbTags&gt;</a>&amp;&amp;&gt; apply(</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;      db::DataBox&lt;DbTags&gt;&amp; box,</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;      <span class="keyword">const</span> <a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;InboxTags...&gt;</a>&amp; <span class="comment">/*inboxes*/</span>,</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;      <span class="keyword">const</span> <a class="code" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache&lt;Metavariables&gt;</a>&amp; <span class="comment">/*cache*/</span>,</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;      <span class="keyword">const</span> ArrayIndex&amp; <span class="comment">/*array_index*/</span>, <span class="keyword">const</span> ActionList <span class="comment">/*meta*/</span>,</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;      <span class="keyword">const</span> ParallelComponent* <span class="keyword">const</span> <span class="comment">/*meta*/</span>) noexcept {</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    static_assert(</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;        tmpl::count_if&lt;</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;            ActionList,</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;            <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::is_same</a>&lt;tmpl::_1, tmpl::pin&lt;TciAndSwitchToDg&gt;&gt;&gt;::value == 1,</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;        <span class="stringliteral">&quot;Must have the TciAndSwitchToDg action exactly once in the action list &quot;</span></div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;        <span class="stringliteral">&quot;of a phase.&quot;</span>);</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160; </div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;    db::mutate&lt;subcell::Tags::DidRollback&gt;(</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;        <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;box),</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;        [](<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;bool*&gt;</a> did_rollback) noexcept {</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;          *did_rollback = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;        });</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160; </div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;    <span class="keyword">const</span> <a class="code" href="classTimeStepId.html">TimeStepId</a>&amp; time_step_id = db::get&lt;::Tags::TimeStepId&gt;(box);</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;    <span class="keyword">const</span> <a class="code" href="classevolution_1_1dg_1_1subcell_1_1SubcellOptions.html">SubcellOptions</a>&amp; subcell_options = db::get&lt;Tags::SubcellOptions&gt;(box);</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;    <span class="keywordflow">if</span> (time_step_id.substep() != 0 or</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;        <a class="code" href="group__UtilitiesGroup.html#gab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a>(time_step_id.slab_number() &lt; 0) or</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;        <a class="code" href="group__UtilitiesGroup.html#gab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a>(subcell_options.always_use_subcells())) {</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;      <span class="comment">// The first condition is that for substep time integrators we only allow</span></div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;      <span class="comment">// switching back to DG on step boundaries. This is the easiest way to</span></div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;      <span class="comment">// avoid having a shock in the time stepper history, since there is no</span></div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;      <span class="comment">// history at step boundaries.</span></div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;      <span class="comment">//</span></div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;      <span class="comment">// The second condition is that if we are in the self-start procedure of</span></div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;      <span class="comment">// the time stepper, and we don&#39;t want to switch from subcell back to DG</span></div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;      <span class="comment">// during self-start since we integrate over the same temporal region at</span></div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;      <span class="comment">// increasingly higher order.</span></div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;      <span class="comment">//</span></div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;      <span class="comment">// The third condition is that the user has requested we always do</span></div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;      <span class="comment">// subcell, so effectively a finite difference/volume code.</span></div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;      <span class="keywordflow">return</span> {std::move(box)};</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;    }</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160; </div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;    <span class="keyword">using</span> variables_tag = <span class="keyword">typename</span> Metavariables::system::variables_tag;</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160; </div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;    <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(db::get&lt;Tags::ActiveGrid&gt;(box) == ActiveGrid::Subcell,</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;           <span class="stringliteral">&quot;Must be using subcells when calling TciAndSwitchToDg action.&quot;</span>);</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;    <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a>&amp; dg_mesh = db::get&lt;::domain::Tags::Mesh&lt;Dim&gt;&gt;(box);</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;    <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a>&amp; subcell_mesh = db::get&lt;subcell::Tags::Mesh&lt;Dim&gt;&gt;(box);</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160; </div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;    db::mutate&lt;Tags::Inactive&lt;variables_tag&gt;&gt;(</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;        <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;box),</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;        [&amp;dg_mesh, &amp;subcell_mesh](<span class="keyword">const</span> <span class="keyword">auto</span> inactive_vars_ptr,</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;                                  <span class="keyword">const</span> <span class="keyword">auto</span>&amp; active_vars) noexcept {</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;          <span class="comment">// Note: strictly speaking, to be conservative this should reconstruct</span></div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;          <span class="comment">// uJ instead of u.</span></div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;          <a class="code" href="group__DgSubcellGroup.html#ga25b578ae42ae0ed05d4b74140a6af2d1">fd::reconstruct</a>(inactive_vars_ptr, active_vars, dg_mesh,</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;                          subcell_mesh.extents());</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;        },</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;        db::get&lt;variables_tag&gt;(box));</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160; </div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;    <span class="comment">// Run RDMP TCI since no user info beyond the input file options are needed</span></div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;    <span class="comment">// for that.</span></div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a> self_id{<a class="code" href="classDirection.html#a1ce15c014af29c4065b154f680675d24">Direction&lt;Dim&gt;::lower_xi</a>(),</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;                            <a class="code" href="classElementId.html#a05c3d7598bfd4f51a75f6b85555421ea">ElementId&lt;Dim&gt;::external_boundary_id</a>()};</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;    <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;        <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">db::get</a>&lt;<a class="code" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1NeighborDataForReconstructionAndRdmpTci.html">Tags::NeighborDataForReconstructionAndRdmpTci&lt;Dim&gt;</a>&gt;(box).count(</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;            self_id) != 0,</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;        <span class="stringliteral">&quot;The self ID is not in the NeighborData but should have been added &quot;</span></div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;        <span class="stringliteral">&quot;before TciAndSwitchToDg was called.&quot;</span>);</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;    <span class="keyword">const</span> <a class="code" href="structevolution_1_1dg_1_1subcell_1_1NeighborData.html">NeighborData</a>&amp; self_neighbor_data =</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;        db::get&lt;Tags::NeighborDataForReconstructionAndRdmpTci&lt;Dim&gt;&gt;(box).<a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">at</a>(</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;            self_id);</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160; </div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;    <span class="comment">// Note: we assume the max/min over all neighbors and ourselves at the past</span></div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;    <span class="comment">// time step has been collected into</span></div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;    <span class="comment">// `self_neighbor_data.max/min_variables_values`</span></div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;    <span class="keywordtype">bool</span> cell_is_troubled =</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;        <a class="code" href="namespaceevolution_1_1dg_1_1subcell.html#a2e8601b489936a5aeeea7dcf8fe5f84e">rdmp_tci</a>(db::get&lt;variables_tag&gt;(box),</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;                 <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">db::get</a>&lt;<a class="code" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Inactive.html">Tags::Inactive&lt;variables_tag&gt;</a>&gt;(box),</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;                 self_neighbor_data.max_variables_values,</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;                 self_neighbor_data.min_variables_values,</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;                 subcell_options.rdmp_delta0(), subcell_options.rdmp_epsilon());</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160; </div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;    <span class="comment">// If the RDMP TCI marked the candidate as acceptable, check with the</span></div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;    <span class="comment">// user-specified TCI, since that could be stricter. We pass in the Persson</span></div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;    <span class="comment">// exponent with one added in order to avoid flip-flopping between DG and</span></div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;    <span class="comment">// subcell. That is, `persson_exponent+1.0` is stricter than</span></div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;    <span class="comment">// `persson_exponent`.</span></div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;    <span class="keywordflow">if</span> (not cell_is_troubled) {</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;      cell_is_troubled = db::mutate_apply&lt;TciMutator&gt;(</div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;          <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;box), subcell_options.persson_exponent() + 1.0);</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;    }</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160; </div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;    <span class="comment">// If the cell is not troubled, then we _might_ be able to switch back to</span></div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;    <span class="comment">// DG. This depends on the type of time stepper we are using:</span></div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;    <span class="comment">// - ADER: Not yet implemented, but here the TCI history is irrelevant</span></div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;    <span class="comment">//         because it is a one-step scheme, so we can always switch.</span></div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;    <span class="comment">// - Multistep: the TCI must have marked the entire evolved variable history</span></div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;    <span class="comment">//              as free of shocks. In practice for LMMs this means the TCI</span></div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;    <span class="comment">//              history is as long as the evolved variables history and that</span></div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;    <span class="comment">//              the entire TCI history is `ActiveGrid::Dg`.</span></div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;    <span class="comment">// - Substep: the easiest is to restrict switching back to DG to step</span></div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;    <span class="comment">//            boundaries where there is no history.</span></div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; time_stepper = db::get&lt;::Tags::TimeStepper&lt;&gt;&gt;(box);</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">bool</span> is_substep_method = time_stepper.number_of_substeps() != 1;</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;    <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(time_stepper.number_of_substeps() != 0,</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;           <span class="stringliteral">&quot;Don&#39;t know how to handle a time stepper with zero substeps. This &quot;</span></div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;           <span class="stringliteral">&quot;might be totally fine, but the case should be thought about.&quot;</span>);</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;    <span class="keywordflow">if</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; tci_history = db::get&lt;subcell::Tags::TciGridHistory&gt;(box);</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;        not cell_is_troubled and</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;        (is_substep_method or</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;         (tci_history.size() == time_stepper.order() and</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;          <a class="code" href="namespacealg.html#ac4ccfe69d35e3325e70f87b07bbca073">alg::all_of</a>(tci_history, [](<span class="keyword">const</span> <a class="code" href="group__DgSubcellGroup.html#ga97fbd926840d2508e331694db731e18a">ActiveGrid</a> tci_decision) noexcept {</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;            return tci_decision == ActiveGrid::Dg;</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;          })))) {</div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;      db::mutate&lt;variables_tag, Tags::Inactive&lt;variables_tag&gt;,</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;                 <a class="code" href="structTags_1_1HistoryEvolvedVariables.html">::Tags::HistoryEvolvedVariables&lt;variables_tag&gt;</a>,</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;                 <a class="code" href="group__DgSubcellGroup.html#ga97fbd926840d2508e331694db731e18a">Tags::ActiveGrid</a>,</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;                 <a class="code" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1NeighborDataForReconstructionAndRdmpTci.html">subcell::Tags::NeighborDataForReconstructionAndRdmpTci&lt;Dim&gt;</a>,</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;                 <a class="code" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1TciGridHistory.html">evolution::dg::subcell::Tags::TciGridHistory</a>&gt;(</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;          <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;box),</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;          [&amp;dg_mesh, &amp;subcell_mesh](</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;              <span class="keyword">const</span> <span class="keyword">auto</span> active_vars_ptr, <span class="keyword">const</span> <span class="keyword">auto</span> inactive_vars_ptr,</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;              <span class="keyword">const</span> <span class="keyword">auto</span> active_history_ptr,</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;              <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;ActiveGrid*&gt;</a> active_grid_ptr,</div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;              <span class="keyword">const</span> <span class="keyword">auto</span> subcell_neighbor_data_ptr,</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;              <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;                  <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/deque.html">std::deque&lt;evolution::dg::subcell::ActiveGrid&gt;</a>*&gt;</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;                  tci_grid_history_ptr) noexcept {</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;            <span class="keyword">using</span> std::swap;</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;            swap(*active_vars_ptr, *inactive_vars_ptr);</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160; </div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;            <span class="comment">// Reconstruct the DG solution for each time in the time stepper</span></div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;            <span class="comment">// history</span></div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;            <span class="keyword">using</span> dt_variables_tag =</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;                <a class="code" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix&lt;::Tags::dt, variables_tag&gt;</a>;</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;            <a class="code" href="classTimeSteppers_1_1History.html">TimeSteppers::History</a>&lt;<span class="keyword">typename</span> variables_tag::type,</div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;                                  <span class="keyword">typename</span> dt_variables_tag::type&gt;</div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;                dg_history{active_history_ptr-&gt;<a class="code" href="classTimeSteppers_1_1History.html#a2f61fbeea4155e24d1b6f709aaad5325">integration_order</a>()};</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;            <span class="keyword">const</span> <span class="keyword">auto</span> end_it = active_history_ptr-&gt;end();</div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;            <span class="keywordflow">for</span> (<span class="keyword">auto</span> it = active_history_ptr-&gt;begin(); it != end_it; ++it) {</div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;              dg_history.insert(it.time_step_id(),</div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;                                <a class="code" href="group__DgSubcellGroup.html#ga25b578ae42ae0ed05d4b74140a6af2d1">fd::reconstruct</a>(it.derivative(), dg_mesh,</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;                                                subcell_mesh.extents()));</div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;            }</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;            dg_history.most_recent_value() =</div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;                <a class="code" href="group__DgSubcellGroup.html#ga25b578ae42ae0ed05d4b74140a6af2d1">fd::reconstruct</a>(active_history_ptr-&gt;most_recent_value(),</div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;                                dg_mesh, subcell_mesh.extents()),</div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;            *active_history_ptr = std::move(dg_history);</div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;            *active_grid_ptr = ActiveGrid::Dg;</div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160; </div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;            <span class="comment">// Clear the neighbor data needed for subcell reconstruction since</span></div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;            <span class="comment">// we have now completed the time step.</span></div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;            subcell_neighbor_data_ptr-&gt;clear();</div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160; </div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;            <span class="comment">// Clear the TCI grid history since we don&#39;t need to use it when on</span></div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;            <span class="comment">// the DG grid.</span></div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;            tci_grid_history_ptr-&gt;clear();</div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;          });</div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;      <span class="keywordflow">return</span> {std::move(box)};</div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;    }</div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160; </div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;    <span class="keywordflow">if</span> (not is_substep_method) {</div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;      <span class="comment">// For multistep methods we need to record the TCI decision history.</span></div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;      <span class="comment">// We track the TCI decision, not which grid we are on because for</span></div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;      <span class="comment">// multistep methods we need the discontinuity to clear the entire</span></div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;      <span class="comment">// history before we can switch back to DG.</span></div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;      db::mutate&lt;evolution::dg::subcell::Tags::TciGridHistory&gt;(</div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;          <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;box),</div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;          [cell_is_troubled,</div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;           &amp;time_stepper](<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;</div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;                          <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/deque.html">std::deque&lt;evolution::dg::subcell::ActiveGrid&gt;</a>*&gt;</div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;                              tci_grid_history) noexcept {</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;            tci_grid_history-&gt;push_front(cell_is_troubled ? ActiveGrid::Subcell</div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;                                                          : ActiveGrid::Dg);</div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;            <span class="keywordflow">if</span> (tci_grid_history-&gt;size() &gt; time_stepper.order()) {</div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;              tci_grid_history-&gt;pop_back();</div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;            }</div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;          });</div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;    }</div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;    <span class="keywordflow">return</span> {std::move(box)};</div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;  }</div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;};</div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;}  <span class="comment">// namespace evolution::dg::subcell::Actions</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga818f101f2f8bd824a3bc7c2c2361c560"><div class="ttname"><a href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a></div><div class="ttdeci">constexpr T &amp; at(std::array&lt; T, N &gt; &amp;arr, Size index)</div><div class="ttdoc">Retrieve a entry from a container, with checks in Debug mode that the index being retrieved is valid.</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:125</div></div>
+<div class="ttc" id="ais_same_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/is_same.html">std::is_same</a></div></div>
+<div class="ttc" id="aclassElementId_html_a05c3d7598bfd4f51a75f6b85555421ea"><div class="ttname"><a href="classElementId.html#a05c3d7598bfd4f51a75f6b85555421ea">ElementId::external_boundary_id</a></div><div class="ttdeci">static ElementId&lt; VolumeDim &gt; external_boundary_id() noexcept</div><div class="ttdoc">Returns an ElementId meant for identifying data on external boundaries, which should never correspond...</div></div>
+<div class="ttc" id="anamespaceevolution_1_1dg_1_1subcell_1_1Actions_html"><div class="ttname"><a href="namespaceevolution_1_1dg_1_1subcell_1_1Actions.html">evolution::dg::subcell::Actions</a></div><div class="ttdoc">Actions for the DG-subcell hybrid solver.</div><div class="ttdef"><b>Definition:</b> Actions.hpp:9</div></div>
+<div class="ttc" id="autility_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a></div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_gab10d0a221f4d7a706701b806c8135fd7"><div class="ttname"><a href="group__UtilitiesGroup.html#gab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a></div><div class="ttdeci">#define UNLIKELY(x)</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:73</div></div>
+<div class="ttc" id="aclassParallel_1_1GlobalCache_html"><div class="ttname"><a href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a></div><div class="ttdef"><b>Definition:</b> ElementReceiveInterpPoints.hpp:15</div></div>
+<div class="ttc" id="apair_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a></div></div>
+<div class="ttc" id="aDomain_2Tags_8hpp_html"><div class="ttname"><a href="Domain_2Tags_8hpp.html">Tags.hpp</a></div></div>
+<div class="ttc" id="agroup__DataBoxTagsGroup_html_gafeeced2a7fb41fdced8c55e76343f63c"><div class="ttname"><a href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a></div><div class="ttdeci">typename detail::add_tag_prefix_impl&lt; Prefix, Tag, Args... &gt;::type add_tag_prefix</div><div class="ttdef"><b>Definition:</b> PrefixHelpers.hpp:51</div></div>
+<div class="ttc" id="atuple_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/tuple.html">tuple</a></div></div>
+<div class="ttc" id="agroup__DataBoxGroup_html_gae08744824ea7df89224f128b2080c5b1"><div class="ttname"><a href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">db::get</a></div><div class="ttdeci">const auto &amp; get(const DataBox&lt; TagList &gt; &amp;box) noexcept</div><div class="ttdoc">Retrieve the item with tag Tag from the DataBox.</div><div class="ttdef"><b>Definition:</b> DataBox.hpp:791</div></div>
+<div class="ttc" id="aclassDirection_html_a1ce15c014af29c4065b154f680675d24"><div class="ttname"><a href="classDirection.html#a1ce15c014af29c4065b154f680675d24">Direction::lower_xi</a></div><div class="ttdeci">static Direction&lt; VolumeDim &gt; lower_xi() noexcept</div><div class="ttdoc">Helper functions for creating specific Directions. These are labeled by the logical-coordinate names ...</div></div>
+<div class="ttc" id="agroup__DgSubcellGroup_html_ga97fbd926840d2508e331694db731e18a"><div class="ttname"><a href="group__DgSubcellGroup.html#ga97fbd926840d2508e331694db731e18a">evolution::dg::subcell::ActiveGrid</a></div><div class="ttdeci">ActiveGrid</div><div class="ttdef"><b>Definition:</b> ActiveGrid.hpp:11</div></div>
+<div class="ttc" id="aElementId_8hpp_html"><div class="ttname"><a href="ElementId_8hpp.html">ElementId.hpp</a></div></div>
+<div class="ttc" id="astructevolution_1_1dg_1_1subcell_1_1Tags_1_1NeighborDataForReconstructionAndRdmpTci_html"><div class="ttname"><a href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1NeighborDataForReconstructionAndRdmpTci.html">evolution::dg::subcell::Tags::NeighborDataForReconstructionAndRdmpTci</a></div><div class="ttdoc">The neighbor data for reconstruction and the RDMP troubled-cell indicator.</div><div class="ttdef"><b>Definition:</b> NeighborData.hpp:25</div></div>
+<div class="ttc" id="aDataBox_8hpp_html"><div class="ttname"><a href="DataBox_8hpp.html">DataBox.hpp</a></div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="aAssert_8hpp_html"><div class="ttname"><a href="Assert_8hpp.html">Assert.hpp</a></div></div>
+<div class="ttc" id="astructevolution_1_1dg_1_1subcell_1_1Tags_1_1TciGridHistory_html"><div class="ttname"><a href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1TciGridHistory.html">evolution::dg::subcell::Tags::TciGridHistory</a></div><div class="ttdoc">A record of which grid the TCI requested we use.</div><div class="ttdef"><b>Definition:</b> TciGridHistory.hpp:20</div></div>
+<div class="ttc" id="adeque_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/deque.html">deque</a></div></div>
+<div class="ttc" id="aclasstuples_1_1TaggedTuple_html"><div class="ttname"><a href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a></div><div class="ttdoc">An associative container that is indexed by structs.</div><div class="ttdef"><b>Definition:</b> TaggedTuple.hpp:271</div></div>
+<div class="ttc" id="aclassevolution_1_1dg_1_1subcell_1_1SubcellOptions_html"><div class="ttname"><a href="classevolution_1_1dg_1_1subcell_1_1SubcellOptions.html">evolution::dg::subcell::SubcellOptions</a></div><div class="ttdoc">Holds the system-agnostic subcell parameters, such as numbers controlling when to switch between DG a...</div><div class="ttdef"><b>Definition:</b> SubcellOptions.hpp:23</div></div>
+<div class="ttc" id="aclassTimeStepId_html"><div class="ttname"><a href="classTimeStepId.html">TimeStepId</a></div><div class="ttdef"><b>Definition:</b> TimeStepId.hpp:25</div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_gaf170f3984e3d0f809b2558dbd981ca35"><div class="ttname"><a href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a></div><div class="ttdeci">#define ASSERT(a, m)</div><div class="ttdoc">Assert that an expression should be true.</div><div class="ttdef"><b>Definition:</b> Assert.hpp:49</div></div>
+<div class="ttc" id="aVariables_8hpp_html"><div class="ttname"><a href="Variables_8hpp.html">Variables.hpp</a></div></div>
+<div class="ttc" id="aclassMesh_html"><div class="ttname"><a href="classMesh.html">Mesh</a></div><div class="ttdoc">Holds the number of grid points, basis, and quadrature in each direction of the computational grid.</div><div class="ttdef"><b>Definition:</b> Mesh.hpp:49</div></div>
+<div class="ttc" id="aclassTimeSteppers_1_1History_html_a2f61fbeea4155e24d1b6f709aaad5325"><div class="ttname"><a href="classTimeSteppers_1_1History.html#a2f61fbeea4155e24d1b6f709aaad5325">TimeSteppers::History::integration_order</a></div><div class="ttdeci">size_t integration_order() const noexcept</div><div class="ttdoc">Get or set the current order of integration. TimeSteppers may impose restrictions on the valid values...</div><div class="ttdef"><b>Definition:</b> History.hpp:105</div></div>
+<div class="ttc" id="astructevolution_1_1dg_1_1subcell_1_1NeighborData_html"><div class="ttname"><a href="structevolution_1_1dg_1_1subcell_1_1NeighborData.html">evolution::dg::subcell::NeighborData</a></div><div class="ttdoc">Holds neighbor data needed for the TCI and reconstruction.</div><div class="ttdef"><b>Definition:</b> NeighborData.hpp:24</div></div>
+<div class="ttc" id="aclassTimeSteppers_1_1History_html"><div class="ttname"><a href="classTimeSteppers_1_1History.html">TimeSteppers::History</a></div><div class="ttdef"><b>Definition:</b> History.hpp:33</div></div>
+<div class="ttc" id="aTimeStepId_8hpp_html"><div class="ttname"><a href="TimeStepId_8hpp.html">TimeStepId.hpp</a></div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="anamespaceevolution_1_1dg_1_1subcell_html_a2e8601b489936a5aeeea7dcf8fe5f84e"><div class="ttname"><a href="namespaceevolution_1_1dg_1_1subcell.html#a2e8601b489936a5aeeea7dcf8fe5f84e">evolution::dg::subcell::rdmp_tci</a></div><div class="ttdeci">bool rdmp_tci(const Variables&lt; tmpl::list&lt; EvolvedVarsTags... &gt;&gt; &amp;active_grid_candidate_evolved_vars, const Variables&lt; tmpl::list&lt; Tags::Inactive&lt; EvolvedVarsTags &gt;... &gt;&gt; &amp;inactive_grid_candidate_evolved_vars, const std::vector&lt; double &gt; &amp;max_of_past_variables, const std::vector&lt; double &gt; &amp;min_of_past_variables, const double rdmp_delta0, const double rdmp_epsilon) noexcept</div><div class="ttdoc">Troubled cell indicator using a relaxed discrete maximum principle, comparing the candidate solution ...</div><div class="ttdef"><b>Definition:</b> RdmpTci.hpp:61</div></div>
+<div class="ttc" id="astructevolution_1_1dg_1_1subcell_1_1Actions_1_1TciAndSwitchToDg_html"><div class="ttname"><a href="structevolution_1_1dg_1_1subcell_1_1Actions_1_1TciAndSwitchToDg.html">evolution::dg::subcell::Actions::TciAndSwitchToDg</a></div><div class="ttdoc">Run the troubled-cell indicator on the subcell solution to see if it is safe to switch back to DG.</div><div class="ttdef"><b>Definition:</b> TciAndSwitchToDg.hpp:125</div></div>
+<div class="ttc" id="aGsl_8hpp_html_a649c6961f9146205c203e45d58fd0c4c"><div class="ttname"><a href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a></div><div class="ttdeci">gsl::not_null&lt; T * &gt; make_not_null(T *ptr) noexcept</div><div class="ttdoc">Construct a not_null from a pointer. Often this will be done as an implicit conversion,...</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:880</div></div>
+<div class="ttc" id="aDirection_8hpp_html"><div class="ttname"><a href="Direction_8hpp.html">Direction.hpp</a></div></div>
+<div class="ttc" id="astructTags_1_1HistoryEvolvedVariables_html"><div class="ttname"><a href="structTags_1_1HistoryEvolvedVariables.html">Tags::HistoryEvolvedVariables</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:85</div></div>
+<div class="ttc" id="astructevolution_1_1dg_1_1subcell_1_1Tags_1_1Inactive_html"><div class="ttname"><a href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Inactive.html">evolution::dg::subcell::Tags::Inactive</a></div><div class="ttdoc">Mark a tag as holding data for the inactive grid.</div><div class="ttdef"><b>Definition:</b> Inactive.hpp:23</div></div>
+<div class="ttc" id="aPrefixes_8hpp_html"><div class="ttname"><a href="Prefixes_8hpp.html">Prefixes.hpp</a></div></div>
+<div class="ttc" id="anamespacealg_html_ac4ccfe69d35e3325e70f87b07bbca073"><div class="ttname"><a href="namespacealg.html#ac4ccfe69d35e3325e70f87b07bbca073">alg::all_of</a></div><div class="ttdeci">decltype(auto) all_of(const Container &amp;c, UnaryPredicate &amp;&amp;unary_predicate)</div><div class="ttdoc">Convenience wrapper around std::all_of.</div><div class="ttdef"><b>Definition:</b> Algorithm.hpp:181</div></div>
+<div class="ttc" id="anamespaceParallel_html"><div class="ttname"><a href="namespaceParallel.html">Parallel</a></div><div class="ttdoc">Functionality for parallelization.</div><div class="ttdef"><b>Definition:</b> ElementReceiveInterpPoints.hpp:13</div></div>
+<div class="ttc" id="atype_traits_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a></div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="agroup__DgSubcellGroup_html_ga25b578ae42ae0ed05d4b74140a6af2d1"><div class="ttname"><a href="group__DgSubcellGroup.html#ga25b578ae42ae0ed05d4b74140a6af2d1">evolution::dg::subcell::fd::reconstruct</a></div><div class="ttdeci">DataVector reconstruct(const DataVector &amp;subcell_u_times_projected_det_jac, const Mesh&lt; Dim &gt; &amp;dg_mesh, const Index&lt; Dim &gt; &amp;subcell_extents) noexcept</div><div class="ttdoc">reconstruct the variable subcell_u_times_projected_det_jac onto the DG grid dg_mesh.</div></div>
+<div class="ttc" id="aNumericalAlgorithms_2Spectral_2Mesh_8hpp_html"><div class="ttname"><a href="NumericalAlgorithms_2Spectral_2Mesh_8hpp.html">Mesh.hpp</a></div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

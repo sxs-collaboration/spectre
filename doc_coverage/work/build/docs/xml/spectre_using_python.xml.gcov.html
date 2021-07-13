@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - 39f3c2b725318dcf91749887b1e61f477736e132 - /work/build/docs/xml/spectre_using_python.xml</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title"> SpECTRE Documentation Coverage Report</td></tr>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../index.html">top level</a> - <a href="index.html">work/build/docs/xml</a> - spectre_using_python.xml</td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+             <td class="headerItem">Commit:</td>
+             <td class="headerValue"><a target="_blank" href="https://github.com/sxs-collaboration/spectre/commit/39f3c2b725318dcf91749887b1e61f477736e132">39f3c2b725318dcf91749887b1e61f477736e132</a></td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2021-07-13 03:19:40</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineCov">          1 : &lt;?xml version='1.0' encoding='UTF-8' standalone='no'?&gt;</span></a>
+<a name="2"><span class="lineNum">       2 </span>            : &lt;doxygen xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:noNamespaceSchemaLocation=&quot;compound.xsd&quot; version=&quot;1.8.17&quot;&gt;</a>
+<a name="3"><span class="lineNum">       3 </span>            :   &lt;compounddef id=&quot;spectre_using_python&quot; kind=&quot;page&quot;&gt;</a>
+<a name="4"><span class="lineNum">       4 </span>            :     &lt;compoundname&gt;spectre_using_python&lt;/compoundname&gt;</a>
+<a name="5"><span class="lineNum">       5 </span>            :     &lt;title&gt;Using SpECTRE&amp;apos;s Python modules&lt;/title&gt;</a>
+<a name="6"><span class="lineNum">       6 </span>            :     &lt;briefdescription&gt;</a>
+<a name="7"><span class="lineNum">       7 </span>            :     &lt;/briefdescription&gt;</a>
+<a name="8"><span class="lineNum">       8 </span>            :     &lt;detaileddescription&gt;</a>
+<a name="9"><span class="lineNum">       9 </span>            : &lt;para&gt;Some classes and functions from SpECTRE have Python bindings to make it easier to visualize data, write test code, and provide an introduction to numerical relativity without needing to delve into C++.&lt;/para&gt;</a>
+<a name="10"><span class="lineNum">      10 </span>            : &lt;sect1 id=&quot;spectre_using_python_1autotoc_md272&quot;&gt;</a>
+<a name="11"><span class="lineNum">      11 </span>            : &lt;title&gt;Installing the SpECTRE Python modules&lt;/title&gt;</a>
+<a name="12"><span class="lineNum">      12 </span>            : &lt;para&gt;First, build SpECTRE with Python bindings enabled by appending the &lt;computeroutput&gt;-D BUILD_PYTHON_BINDINGS=ON&lt;/computeroutput&gt; flag to the &lt;computeroutput&gt;cmake&lt;/computeroutput&gt; command. You can specify the Python version, interpreter and libraries used for compiling and testing the bindings by setting the &lt;computeroutput&gt;-D Python_EXECUTABLE&lt;/computeroutput&gt; to an absolute path such as &lt;computeroutput&gt;/usr/bin/python3&lt;/computeroutput&gt;. You will find that a &lt;computeroutput&gt;BUILD_DIR/bin/python&lt;/computeroutput&gt; directory is created that contains the Python modules. Then, you can install the modules into your Python environment in &lt;emphasis&gt;development mode&lt;/emphasis&gt;, which means they are symlinked so that changes to the modules will be reflected in your Python environment, with the command &lt;computeroutput&gt;pip install -e path/to/bin/python&lt;/computeroutput&gt;. Alternatively, remove the &lt;computeroutput&gt;-e&lt;/computeroutput&gt; flag to install the modules normally. You can do this in any Python environment that supports &lt;computeroutput&gt;pip&lt;/computeroutput&gt;, for instance in a &lt;ulink url=&quot;https://docs.python.org/3/tutorial/venv.html&quot;&gt;&lt;computeroutput&gt;virtualenv&lt;/computeroutput&gt;/&lt;computeroutput&gt;venv&lt;/computeroutput&gt;&lt;/ulink&gt; or in an &lt;ulink url=&quot;https://www.anaconda.com/distribution/&quot;&gt;Anaconda&lt;/ulink&gt; environment. You can also get access to the SpECTRE Python modules by adding &lt;computeroutput&gt;BUILD_DIR/bin/python&lt;/computeroutput&gt; to your &lt;computeroutput&gt;PYTHONPATH&lt;/computeroutput&gt;. This is done automatically by sourcing the &lt;computeroutput&gt;LoadPython.sh&lt;/computeroutput&gt; file with the command &lt;computeroutput&gt;. BUILD_DIR/bin/LoadPython.sh&lt;/computeroutput&gt;. By default, SpECTRE uses &lt;computeroutput&gt;jemalloc&lt;/computeroutput&gt; which needs to be pre-loaded for the python bindings to work. Therefore, you need to run &lt;computeroutput&gt;LD_PRELOAD=/path/to/libjemalloc.so python&lt;/computeroutput&gt; to execute python scripts or start python consoles. The path to your preferred jemalloc installation is printed out at the end of the &lt;computeroutput&gt;cmake&lt;/computeroutput&gt; configuration or can be found by running the script &lt;computeroutput&gt;BUILD_DIR/bin/LoadPython.sh&lt;/computeroutput&gt;. Alternatively, you can use your system&amp;apos;s memory allocator by appending the flag &lt;computeroutput&gt;-D MEMORY_ALLOCATOR=SYSTEM&lt;/computeroutput&gt; to the &lt;computeroutput&gt;cmake&lt;/computeroutput&gt; command. In this case you will not need to pre-load any libraries.&lt;/para&gt;</a>
+<a name="13"><span class="lineNum">      13 </span>            : &lt;/sect1&gt;</a>
+<a name="14"><span class="lineNum">      14 </span>            : &lt;sect1 id=&quot;spectre_using_python_1autotoc_md273&quot;&gt;</a>
+<a name="15"><span class="lineNum">      15 </span>            : &lt;title&gt;Running Jupyter within the Docker container&lt;/title&gt;</a>
+<a name="16"><span class="lineNum">      16 </span>            : &lt;para&gt;&lt;ulink url=&quot;https://jupyterlab.readthedocs.io/&quot;&gt;Jupyter lab&lt;/ulink&gt; is installed in the Docker container. You can run it in the container and access it through a browser on the host for a convenient way to work with the SpECTRE Python bindings. To do so, make sure you have exposed a port when running the Docker container, e.g. by appending the option &lt;computeroutput&gt;-p 8000:8000&lt;/computeroutput&gt; to the &lt;computeroutput&gt;docker run&lt;/computeroutput&gt; command (see &lt;ref refid=&quot;installation&quot; kindref=&quot;compound&quot;&gt;Installation&lt;/ref&gt;). Inside the docker container, it can be convenient to use &lt;computeroutput&gt;disown&lt;/computeroutput&gt; or to &lt;computeroutput&gt;apt-get install screen&lt;/computeroutput&gt; and use &lt;computeroutput&gt;screen&lt;/computeroutput&gt; to obtain a shell that runs the Jupyter server permanently in the background. Within the shell you want to run your Jupyter server, navigate to a directory that will serve as the root for the file system that Jupyter has access to. Make sure it is shared with the host (e.g. &lt;computeroutput&gt;SPECTRE_HOME&lt;/computeroutput&gt;) so your Jupyter notebooks are not lost when the container is deleted. Then, run the following command:&lt;/para&gt;</a>
+<a name="17"><span class="lineNum">      17 </span>            : &lt;para&gt;&lt;programlisting filename=&quot;.sh&quot;&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;jupyter&lt;sp/&gt;lab&lt;sp/&gt;--ip&lt;sp/&gt;0.0.0.0&lt;sp/&gt;--port&lt;sp/&gt;8000&lt;sp/&gt;--allow-root&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="18"><span class="lineNum">      18 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="19"><span class="lineNum">      19 </span>            : &lt;para&gt;Copy the token that is being displayed. Now you can open a browser on the host machine, point it to &lt;computeroutput&gt;&lt;ulink url=&quot;http://localhost:8000&quot;&gt;http://localhost:8000&lt;/ulink&gt;&lt;/computeroutput&gt; and paste in the token. You will have access to the Python environment within the Docker container. If you have followed the instructions above for installing the SpECTRE Python package, you can try importing the Python package in a notebook with:&lt;/para&gt;</a>
+<a name="20"><span class="lineNum">      20 </span>            : &lt;para&gt;&lt;programlisting filename=&quot;.py&quot;&gt;&lt;codeline&gt;&lt;highlight class=&quot;keyword&quot;&gt;import&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;spectre&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="21"><span class="lineNum">      21 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="22"><span class="lineNum">      22 </span>            : &lt;para&gt;While developing Python code in the &lt;computeroutput&gt;spectre&lt;/computeroutput&gt; packages it can be useful to configure Jupyter to reload packages when they change. Add the following code before any import statements:&lt;/para&gt;</a>
+<a name="23"><span class="lineNum">      23 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;%load_ext&lt;sp/&gt;autoreload&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="24"><span class="lineNum">      24 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;%autoreload&lt;sp/&gt;2&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="25"><span class="lineNum">      25 </span>            : &lt;/programlisting&gt; &lt;/para&gt;</a>
+<a name="26"><span class="lineNum">      26 </span>            : &lt;/sect1&gt;</a>
+<a name="27"><span class="lineNum">      27 </span>            :     &lt;/detaileddescription&gt;</a>
+<a name="28"><span class="lineNum">      28 </span>            :   &lt;/compounddef&gt;</a>
+<a name="29"><span class="lineNum">      29 </span>            : &lt;/doxygen&gt;</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

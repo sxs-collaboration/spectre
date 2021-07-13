@@ -1,0 +1,315 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Cce::BondiWorldtubeDataManager Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceCce.html">Cce</a></li><li class="navelem"><a class="el" href="classCce_1_1BondiWorldtubeDataManager.html">BondiWorldtubeDataManager</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classCce_1_1BondiWorldtubeDataManager-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Cce::BondiWorldtubeDataManager Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Manages the 'reduced' cached buffer dataset associated with a CCE worldtube and interpolates to requested time points to provide worldtube boundary data to the main evolution routines.  
+ <a href="classCce_1_1BondiWorldtubeDataManager.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="WorldtubeDataManager_8hpp_source.html">WorldtubeDataManager.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:acc93a7f971a23f84511ecd65c86f23f9"><td class="memItemLeft" align="right" valign="top"><a id="acc93a7f971a23f84511ecd65c86f23f9"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BondiWorldtubeDataManager</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classCce_1_1WorldtubeBufferUpdater.html">WorldtubeBufferUpdater</a>&lt; <a class="el" href="namespaceCce.html#ae56e5809bbb71c54f4bae68c190aaf1d">cce_bondi_input_tags</a> &gt;&gt; buffer_updater, size_t l_max, size_t buffer_depth, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classintrp_1_1SpanInterpolator.html">intrp::SpanInterpolator</a> &gt; interpolator) noexcept</td></tr>
+<tr class="separator:acc93a7f971a23f84511ecd65c86f23f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a23ee02cf4f921919e5a6b7ecf1530f36"><td class="memItemLeft" align="right" valign="top"><a id="a23ee02cf4f921919e5a6b7ecf1530f36"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_template</b> (<a class="el" href="classCce_1_1BondiWorldtubeDataManager.html">BondiWorldtubeDataManager</a>)</td></tr>
+<tr class="separator:a23ee02cf4f921919e5a6b7ecf1530f36"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adde8035bee69ed10d201591b27afd322"><td class="memItemLeft" align="right" valign="top"><a id="adde8035bee69ed10d201591b27afd322"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BondiWorldtubeDataManager</b> (CkMigrateMessage *) noexcept</td></tr>
+<tr class="separator:adde8035bee69ed10d201591b27afd322"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a92f83ad8f0469f32709e7e5f19a0ae1a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCce_1_1BondiWorldtubeDataManager.html#a92f83ad8f0469f32709e7e5f19a0ae1a">populate_hypersurface_boundary_data</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; <a class="el" href="namespaceCce_1_1Tags.html#a7527c94f3bb08dd4124926b9ff41ebac">Tags::characteristic_worldtube_boundary_tags</a>&lt; <a class="el" href="structCce_1_1Tags_1_1BoundaryValue.html">Tags::BoundaryValue</a> &gt;&gt; * &gt; boundary_data_variables, double time, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classParallel_1_1NodeLock.html">Parallel::NodeLock</a> * &gt; hdf5_lock) const noexcept override</td></tr>
+<tr class="memdesc:a92f83ad8f0469f32709e7e5f19a0ae1a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the <code>boundary_data_box</code> entries for all tags in <code><a class="el" href="namespaceCce_1_1Tags.html#a7527c94f3bb08dd4124926b9ff41ebac" title="The collection of tags mutated by create_bondi_boundary_data">Tags::characteristic_worldtube_boundary_tags</a></code> to the boundary data at <code>time</code>.  <a href="classCce_1_1BondiWorldtubeDataManager.html#a92f83ad8f0469f32709e7e5f19a0ae1a">More...</a><br /></td></tr>
+<tr class="separator:a92f83ad8f0469f32709e7e5f19a0ae1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76730459963d509dca833600367626b6"><td class="memItemLeft" align="right" valign="top"><a id="a76730459963d509dca833600367626b6"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classCce_1_1WorldtubeDataManager.html">WorldtubeDataManager</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const noexcept override</td></tr>
+<tr class="separator:a76730459963d509dca833600367626b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a07d12d6033fb7918e752bae9447d3cb8"><td class="memItemLeft" align="right" valign="top"><a id="a07d12d6033fb7918e752bae9447d3cb8"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCce_1_1BondiWorldtubeDataManager.html#a07d12d6033fb7918e752bae9447d3cb8">get_l_max</a> () const noexcept override</td></tr>
+<tr class="memdesc:a07d12d6033fb7918e752bae9447d3cb8"><td class="mdescLeft">&#160;</td><td class="mdescRight">retrieves the l_max that will be supplied to the <a class="el" href="group__DataBoxGroup.html">DataBox</a> in <code><a class="el" href="classCce_1_1BondiWorldtubeDataManager.html#a92f83ad8f0469f32709e7e5f19a0ae1a" title="Update the boundary_data_box entries for all tags in Tags::characteristic_worldtube_boundary_tags to ...">populate_hypersurface_boundary_data()</a></code> <br /></td></tr>
+<tr class="separator:a07d12d6033fb7918e752bae9447d3cb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af084436f4d6aab8f7abb7135ee8b538c"><td class="memItemLeft" align="right" valign="top"><a id="af084436f4d6aab8f7abb7135ee8b538c"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; size_t, size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCce_1_1BondiWorldtubeDataManager.html#af084436f4d6aab8f7abb7135ee8b538c">get_time_span</a> () const noexcept override</td></tr>
+<tr class="memdesc:af084436f4d6aab8f7abb7135ee8b538c"><td class="mdescLeft">&#160;</td><td class="mdescRight">retrieves the current time span associated with the <code>buffer_updater_</code> for diagnostics <br /></td></tr>
+<tr class="separator:af084436f4d6aab8f7abb7135ee8b538c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38a1d3c6182d87268cc8cdf7ad2e55d3"><td class="memItemLeft" align="right" valign="top"><a id="a38a1d3c6182d87268cc8cdf7ad2e55d3"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCce_1_1BondiWorldtubeDataManager.html#a38a1d3c6182d87268cc8cdf7ad2e55d3">pup</a> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="memdesc:a38a1d3c6182d87268cc8cdf7ad2e55d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialization for Charm++. <br /></td></tr>
+<tr class="separator:a38a1d3c6182d87268cc8cdf7ad2e55d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classCce_1_1WorldtubeDataManager"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classCce_1_1WorldtubeDataManager')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classCce_1_1WorldtubeDataManager.html">Cce::WorldtubeDataManager</a></td></tr>
+<tr class="memitem:aac802b7a418f2575f30bfaddb73a453c inherit pub_methods_classCce_1_1WorldtubeDataManager"><td class="memItemLeft" align="right" valign="top"><a id="aac802b7a418f2575f30bfaddb73a453c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_abstract</b> (<a class="el" href="classCce_1_1WorldtubeDataManager.html">WorldtubeDataManager</a>)</td></tr>
+<tr class="separator:aac802b7a418f2575f30bfaddb73a453c inherit pub_methods_classCce_1_1WorldtubeDataManager"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header pub_types_classCce_1_1WorldtubeDataManager"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classCce_1_1WorldtubeDataManager')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classCce_1_1WorldtubeDataManager.html">Cce::WorldtubeDataManager</a></td></tr>
+<tr class="memitem:abd2c97fc8936fe81b33dd2039e00f382 inherit pub_types_classCce_1_1WorldtubeDataManager"><td class="memItemLeft" align="right" valign="top"><a id="abd2c97fc8936fe81b33dd2039e00f382"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::list&lt; <a class="el" href="classCce_1_1MetricWorldtubeDataManager.html">MetricWorldtubeDataManager</a>, <a class="el" href="classCce_1_1BondiWorldtubeDataManager.html">BondiWorldtubeDataManager</a> &gt;</td></tr>
+<tr class="separator:abd2c97fc8936fe81b33dd2039e00f382 inherit pub_types_classCce_1_1WorldtubeDataManager"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Manages the 'reduced' cached buffer dataset associated with a CCE worldtube and interpolates to requested time points to provide worldtube boundary data to the main evolution routines. </p>
+<h3>Details</h3>
+<p>The maintained buffer will be kept at a length that is set by the <code>Interpolator</code> and the <code>buffer_depth</code> also passed to the constructor. A longer depth will ensure that the buffer updater is called less frequently, which is useful for slow updaters (e.g. those that perform file access). The main functionality is provided by the <code>WorldtubeDataManager::populate_hypersurface_boundary_data()</code> member function that handles buffer updating and boundary computation. This version of the data manager handles the 9 scalars of <code>cce_bondi_input_tags</code>, rather than direct metric components handled by <code><a class="el" href="classCce_1_1WorldtubeDataManager.html" title="Abstract base class for managers of CCE worldtube data that is provided in large time-series chunks,...">WorldtubeDataManager</a></code>. The set of 9 scalars is a far leaner (factor of ~4) data storage format. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a92f83ad8f0469f32709e7e5f19a0ae1a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a92f83ad8f0469f32709e7e5f19a0ae1a">&#9670;&nbsp;</a></span>populate_hypersurface_boundary_data()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Cce::BondiWorldtubeDataManager::populate_hypersurface_boundary_data </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; <a class="el" href="namespaceCce_1_1Tags.html#a7527c94f3bb08dd4124926b9ff41ebac">Tags::characteristic_worldtube_boundary_tags</a>&lt; <a class="el" href="structCce_1_1Tags_1_1BoundaryValue.html">Tags::BoundaryValue</a> &gt;&gt; * &gt;&#160;</td>
+          <td class="paramname"><em>boundary_data_variables</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>time</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classParallel_1_1NodeLock.html">Parallel::NodeLock</a> * &gt;&#160;</td>
+          <td class="paramname"><em>hdf5_lock</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Update the <code>boundary_data_box</code> entries for all tags in <code><a class="el" href="namespaceCce_1_1Tags.html#a7527c94f3bb08dd4124926b9ff41ebac" title="The collection of tags mutated by create_bondi_boundary_data">Tags::characteristic_worldtube_boundary_tags</a></code> to the boundary data at <code>time</code>. </p>
+<h3>Details</h3>
+<p>First, if the stored buffer requires updating, it will be updated via the <code>buffer_updater_</code> supplied in the constructor. Then, each of the 9 spin-weighted scalars in <code>cce_bondi_input_tags</code> are interpolated across buffer points to the requested time value (via the <code>Interpolator</code> provided in the constructor). Finally, the remaining two scalars not directly supplied in the input file are calculated in-line and put in the <a class="el" href="group__DataBoxGroup.html">DataBox</a>.</p>
+<p>Returns <code>true</code> if the time can be supplied from the <code>buffer_updater_</code>, and <code>false</code> otherwise. No tags are updated if <code>false</code> is returned. </p>
+
+<p>Implements <a class="el" href="classCce_1_1WorldtubeDataManager.html">Cce::WorldtubeDataManager</a>.</p>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/Systems/Cce/<a class="el" href="WorldtubeDataManager_8hpp_source.html">WorldtubeDataManager.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

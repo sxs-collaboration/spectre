@@ -1,0 +1,255 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: evolution::dg::ConservativeDuDt&lt; System, DgFormulation &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceevolution.html">evolution</a></li><li class="navelem"><a class="el" href="namespaceevolution_1_1dg.html">dg</a></li><li class="navelem"><a class="el" href="structevolution_1_1dg_1_1ConservativeDuDt.html">ConservativeDuDt</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structevolution_1_1dg_1_1ConservativeDuDt-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">evolution::dg::ConservativeDuDt&lt; System, DgFormulation &gt; Struct Template Reference<div class="ingroups"><a class="el" href="group__ConservativeGroup.html">Conservative System Evolution</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Calculate \(\partial u/\partial t\) for a conservative system.  
+ <a href="structevolution_1_1dg_1_1ConservativeDuDt.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ConservativeDuDt_8hpp_source.html">ConservativeDuDt.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a3a99b69f60d2b3ff0e1463de4583f7e7"><td class="memItemLeft" align="right" valign="top"><a id="a3a99b69f60d2b3ff0e1463de4583f7e7"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>frame</b> = <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a></td></tr>
+<tr class="separator:a3a99b69f60d2b3ff0e1463de4583f7e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ea1bbfef715ec87c782360a45cb71b9"><td class="memTemplParams" colspan="2"><a id="a9ea1bbfef715ec87c782360a45cb71b9"></a>
+template&lt;template&lt; class &gt; class StepPrefix&gt; </td></tr>
+<tr class="memitem:a9ea1bbfef715ec87c782360a45cb71b9"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>return_tags</b> = tmpl::list&lt; <a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt; StepPrefix, typename System::variables_tag &gt; &gt;</td></tr>
+<tr class="separator:a9ea1bbfef715ec87c782360a45cb71b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab210847370114d2cba3b23a9cd357947"><td class="memItemLeft" align="right" valign="top"><a id="ab210847370114d2cba3b23a9cd357947"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt; <a class="el" href="structdomain_1_1Tags_1_1Mesh.html">domain::Tags::Mesh</a>&lt; volume_dim &gt;, <a class="el" href="structdomain_1_1Tags_1_1InverseJacobian.html">domain::Tags::InverseJacobian</a>&lt; volume_dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt;::<a class="el" href="structTags_1_1Flux.html">Tags::Flux</a>, typename System::variables_tag, tmpl::size_t&lt; volume_dim &gt;, <a class="el" href="structFrame_1_1Inertial.html">frame</a> &gt;, <a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt;::<a class="el" href="structTags_1_1Source.html">Tags::Source</a>, typename System::variables_tag &gt; &gt;</td></tr>
+<tr class="separator:ab210847370114d2cba3b23a9cd357947"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a4c6ab6db771f5660de664e08dfb8b489"><td class="memTemplParams" colspan="2"><a id="a4c6ab6db771f5660de664e08dfb8b489"></a>
+template&lt;template&lt; class &gt; class StepPrefix, typename... VarsTags, size_t Dim&gt; </td></tr>
+<tr class="memitem:a4c6ab6db771f5660de664e08dfb8b489"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>apply</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; tmpl::list&lt; StepPrefix&lt; VarsTags &gt;... &gt;&gt; * &gt; dt_vars, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; mesh, const InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;inverse_jacobian, const Variables&lt; tmpl::list&lt;::<a class="el" href="structTags_1_1Flux.html">Tags::Flux</a>&lt; VarsTags, tmpl::size_t&lt; Dim &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;... &gt;&gt; &amp;fluxes, const Variables&lt; tmpl::list&lt;::<a class="el" href="structTags_1_1Source.html">Tags::Source</a>&lt; VarsTags &gt;... &gt;&gt; &amp;sources) noexcept</td></tr>
+<tr class="separator:a4c6ab6db771f5660de664e08dfb8b489"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a73a6b50a4f98e8d6757d7a4741791479"><td class="memItemLeft" align="right" valign="top"><a id="a73a6b50a4f98e8d6757d7a4741791479"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = System::volume_dim</td></tr>
+<tr class="separator:a73a6b50a4f98e8d6757d7a4741791479"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename System, ::dg::Formulation DgFormulation&gt;<br />
+struct evolution::dg::ConservativeDuDt&lt; System, DgFormulation &gt;</h3>
+
+<p>Calculate \(\partial u/\partial t\) for a conservative system. </p>
+<p>The time evolution of the variables \(u\) of any conservative system is given by \(\partial_t u = - \partial_i F^i + S\), where \(F^i\) are the fluxes and \(S\) are the sources.</p>
+<p>Source terms are only added for variables in the <code>System::sourced_variables</code> type list. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/Conservative/<a class="el" href="ConservativeDuDt_8hpp_source.html">ConservativeDuDt.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

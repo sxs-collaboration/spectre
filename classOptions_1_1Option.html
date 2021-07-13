@@ -1,0 +1,367 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Options::Option Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceOptions.html">Options</a></li><li class="navelem"><a class="el" href="classOptions_1_1Option.html">Option</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classOptions_1_1Option-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Options::Option Class Reference<div class="ingroups"><a class="el" href="group__OptionParsingGroup.html">Option Parsing</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><code>#include &lt;<a class="el" href="Options_8hpp_source.html">Options.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ab362b82454b0bc2859af3816831d7c8b"><td class="memItemLeft" align="right" valign="top"><a id="ab362b82454b0bc2859af3816831d7c8b"></a>
+const <a class="el" href="structOptions_1_1Context.html">Context</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>context</b> () const noexcept</td></tr>
+<tr class="separator:ab362b82454b0bc2859af3816831d7c8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a522db59f37f22dcca4aa18c465b5388e"><td class="memItemLeft" align="right" valign="top"><a id="a522db59f37f22dcca4aa18c465b5388e"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOptions_1_1Option.html#a522db59f37f22dcca4aa18c465b5388e">append_context</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;context) noexcept</td></tr>
+<tr class="memdesc:a522db59f37f22dcca4aa18c465b5388e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append a line to the contained context. <br /></td></tr>
+<tr class="separator:a522db59f37f22dcca4aa18c465b5388e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8cd6e13bfb6939866935411867cbfa0b"><td class="memTemplParams" colspan="2"><a id="a8cd6e13bfb6939866935411867cbfa0b"></a>
+template&lt;typename T , typename Metavariables  = NoSuchType&gt; </td></tr>
+<tr class="memitem:a8cd6e13bfb6939866935411867cbfa0b"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classOptions_1_1Option.html#a8cd6e13bfb6939866935411867cbfa0b">parse_as</a> () const</td></tr>
+<tr class="memdesc:a8cd6e13bfb6939866935411867cbfa0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert to an object of type <code>T</code>. <br /></td></tr>
+<tr class="separator:a8cd6e13bfb6939866935411867cbfa0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50d896dda1a54e4c76e72e3ea5e63657"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOptions_1_1Option.html#a50d896dda1a54e4c76e72e3ea5e63657">Option</a> (YAML::Node <a class="el" href="classOptions_1_1Option.html#a1e886ab04c94f853bf6974dd80ab5727">node</a>, <a class="el" href="structOptions_1_1Context.html">Context</a> context={}) noexcept</td></tr>
+<tr class="separator:a50d896dda1a54e4c76e72e3ea5e63657"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a02815cdddc853ce96a890aba1be97a03"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOptions_1_1Option.html#a02815cdddc853ce96a890aba1be97a03">Option</a> (<a class="el" href="structOptions_1_1Context.html">Context</a> context) noexcept</td></tr>
+<tr class="separator:a02815cdddc853ce96a890aba1be97a03"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1e886ab04c94f853bf6974dd80ab5727"><td class="memItemLeft" align="right" valign="top">const YAML::Node &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOptions_1_1Option.html#a1e886ab04c94f853bf6974dd80ab5727">node</a> () const noexcept</td></tr>
+<tr class="separator:a1e886ab04c94f853bf6974dd80ab5727"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab665d244d6c2e130484deb4b4a249455"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOptions_1_1Option.html#ab665d244d6c2e130484deb4b4a249455">set_node</a> (YAML::Node <a class="el" href="classOptions_1_1Option.html#a1e886ab04c94f853bf6974dd80ab5727">node</a>) noexcept</td></tr>
+<tr class="memdesc:ab665d244d6c2e130484deb4b4a249455"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the node and updates the context's mark to correspond to it.  <a href="classOptions_1_1Option.html#ab665d244d6c2e130484deb4b4a249455">More...</a><br /></td></tr>
+<tr class="separator:ab665d244d6c2e130484deb4b4a249455"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>The type that options are passed around as. Contains YAML node data and an <a class="el" href="structOptions_1_1Context.html">Context</a>.</p>
+<dl class="section note"><dt>Note</dt><dd>To use any methods on this class in a concrete function you must include <a class="el" href="ParseOptions_8hpp.html">ParseOptions.hpp</a>, but you do <em>not</em> need to include that header to use this in an uninstantiated <code>create_from_yaml::create</code> function. </dd></dl>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a50d896dda1a54e4c76e72e3ea5e63657"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a50d896dda1a54e4c76e72e3ea5e63657">&#9670;&nbsp;</a></span>Option() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Options::Option::Option </td>
+          <td>(</td>
+          <td class="paramtype">YAML::Node&#160;</td>
+          <td class="paramname"><em>node</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structOptions_1_1Context.html">Context</a>&#160;</td>
+          <td class="paramname"><em>context</em> = <code>{}</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">explicit</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section note"><dt>Note</dt><dd>This constructor overwrites the mark data in the supplied context with the one from the node.</dd></dl>
+<dl class="section warning"><dt>Warning</dt><dd>This method is for internal use of the option parser. </dd></dl>
+
+</div>
+</div>
+<a id="a02815cdddc853ce96a890aba1be97a03"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a02815cdddc853ce96a890aba1be97a03">&#9670;&nbsp;</a></span>Option() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Options::Option::Option </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structOptions_1_1Context.html">Context</a>&#160;</td>
+          <td class="paramname"><em>context</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">explicit</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section warning"><dt>Warning</dt><dd>This method is for internal use of the option parser. </dd></dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a1e886ab04c94f853bf6974dd80ab5727"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1e886ab04c94f853bf6974dd80ab5727">&#9670;&nbsp;</a></span>node()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const YAML::Node &amp; Options::Option::node </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section warning"><dt>Warning</dt><dd>This method is for internal use of the option parser. </dd></dl>
+
+</div>
+</div>
+<a id="ab665d244d6c2e130484deb4b4a249455"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab665d244d6c2e130484deb4b4a249455">&#9670;&nbsp;</a></span>set_node()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Options::Option::set_node </td>
+          <td>(</td>
+          <td class="paramtype">YAML::Node&#160;</td>
+          <td class="paramname"><em>node</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sets the node and updates the context's mark to correspond to it. </p>
+<dl class="section warning"><dt>Warning</dt><dd>This method is for internal use of the option parser. </dd></dl>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following files:<ul>
+<li>src/Options/<a class="el" href="Options_8hpp_source.html">Options.hpp</a></li>
+<li>src/Options/<a class="el" href="ParseOptions_8hpp_source.html">ParseOptions.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

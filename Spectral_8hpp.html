@@ -1,0 +1,390 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/NumericalAlgorithms/Spectral/Spectral.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_e67410f72df12b3cc042db20f578e557.html">NumericalAlgorithms</a></li><li class="navelem"><a class="el" href="dir_7a256e711fbf68e6594f644cfc4f7acb.html">Spectral</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
+  <div class="headertitle">
+<div class="title">Spectral.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/iosfwd.html">iosfwd</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/limits.html">limits</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</code><br />
+</div>
+<p><a href="Spectral_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceSpectral"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html">Spectral</a></td></tr>
+<tr class="memdesc:namespaceSpectral"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functionality associated with a particular choice of basis functions and quadrature for spectral operations. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:ga37c9c17d05dccca652060d117f72ee21"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__SpectralGroup.html#ga37c9c17d05dccca652060d117f72ee21">Spectral::Basis</a> { <b>Chebyshev</b>, 
+<b>Legendre</b>, 
+<b>FiniteDifference</b>, 
+<b>SphericalHarmonic</b>
+ }</td></tr>
+<tr class="memdesc:ga37c9c17d05dccca652060d117f72ee21"><td class="mdescLeft">&#160;</td><td class="mdescRight">The choice of basis functions for computing collocation points and weights.  <a href="group__SpectralGroup.html#ga37c9c17d05dccca652060d117f72ee21">More...</a><br /></td></tr>
+<tr class="separator:ga37c9c17d05dccca652060d117f72ee21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7744e520f6d553caf358a6f09f5978c1"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__SpectralGroup.html#ga7744e520f6d553caf358a6f09f5978c1">Spectral::Quadrature</a> { <b>Gauss</b>, 
+<b>GaussLobatto</b>, 
+<b>CellCentered</b>, 
+<b>FaceCentered</b>
+ }</td></tr>
+<tr class="memdesc:ga7744e520f6d553caf358a6f09f5978c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">The choice of quadrature method to compute integration weights.  <a href="group__SpectralGroup.html#ga7744e520f6d553caf358a6f09f5978c1">More...</a><br /></td></tr>
+<tr class="separator:ga7744e520f6d553caf358a6f09f5978c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a8f762708ae8e2fbef0e8d4bb4d021d73"><td class="memTemplParams" colspan="2"><a id="a8f762708ae8e2fbef0e8d4bb4d021d73"></a>
+template&lt;Basis BasisType, typename T &gt; </td></tr>
+<tr class="memitem:a8f762708ae8e2fbef0e8d4bb4d021d73"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#a8f762708ae8e2fbef0e8d4bb4d021d73">Spectral::compute_basis_function_value</a> (size_t k, const T &amp;x) noexcept</td></tr>
+<tr class="memdesc:a8f762708ae8e2fbef0e8d4bb4d021d73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the function values of the basis function \(\Phi_k(x)\) (zero-indexed). <br /></td></tr>
+<tr class="separator:a8f762708ae8e2fbef0e8d4bb4d021d73"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb5a0a69f640063dc391c403c97d71e1"><td class="memTemplParams" colspan="2"><a id="aeb5a0a69f640063dc391c403c97d71e1"></a>
+template&lt;Basis &gt; </td></tr>
+<tr class="memitem:aeb5a0a69f640063dc391c403c97d71e1"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classDataVector.html">DataVector</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#aeb5a0a69f640063dc391c403c97d71e1">Spectral::compute_inverse_weight_function_values</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;) noexcept</td></tr>
+<tr class="memdesc:aeb5a0a69f640063dc391c403c97d71e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the inverse of the weight function \(w(x)\) w.r.t. which the basis functions are orthogonal. See the description of <code><a class="el" href="namespaceSpectral.html#a43a7bb2e106dbab2bd3a306504a1c008" title="Weights to compute definite integrals.">quadrature_weights(size_t)</a></code> for details. <br /></td></tr>
+<tr class="separator:aeb5a0a69f640063dc391c403c97d71e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aae112111db00191023c93bf465549ed5"><td class="memTemplParams" colspan="2"><a id="aae112111db00191023c93bf465549ed5"></a>
+template&lt;Basis BasisType&gt; </td></tr>
+<tr class="memitem:aae112111db00191023c93bf465549ed5"><td class="memTemplItemLeft" align="right" valign="top">double&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#aae112111db00191023c93bf465549ed5">Spectral::compute_basis_function_normalization_square</a> (size_t k) noexcept</td></tr>
+<tr class="memdesc:aae112111db00191023c93bf465549ed5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the normalization square of the basis function \(\Phi_k\) (zero-indexed), i.e. the weighted definite integral over its square. <br /></td></tr>
+<tr class="separator:aae112111db00191023c93bf465549ed5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0029a8458d13dd113e3b17aedc305436"><td class="memTemplParams" colspan="2">template&lt;Basis BasisType, Quadrature QuadratureType&gt; </td></tr>
+<tr class="memitem:a0029a8458d13dd113e3b17aedc305436"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#a0029a8458d13dd113e3b17aedc305436">Spectral::compute_collocation_points_and_weights</a> (size_t num_points) noexcept</td></tr>
+<tr class="memdesc:a0029a8458d13dd113e3b17aedc305436"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the collocation points and weights associated to the basis and quadrature.  <a href="namespaceSpectral.html#a0029a8458d13dd113e3b17aedc305436">More...</a><br /></td></tr>
+<tr class="separator:a0029a8458d13dd113e3b17aedc305436"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2433e9284c6284a25ee9fc45a4eb538"><td class="memTemplParams" colspan="2">template&lt;Basis BasisType, Quadrature QuadratureType&gt; </td></tr>
+<tr class="memitem:ae2433e9284c6284a25ee9fc45a4eb538"><td class="memTemplItemLeft" align="right" valign="top">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#ae2433e9284c6284a25ee9fc45a4eb538">Spectral::collocation_points</a> (size_t num_points) noexcept</td></tr>
+<tr class="memdesc:ae2433e9284c6284a25ee9fc45a4eb538"><td class="mdescLeft">&#160;</td><td class="mdescRight">Collocation points.  <a href="namespaceSpectral.html#ae2433e9284c6284a25ee9fc45a4eb538">More...</a><br /></td></tr>
+<tr class="separator:ae2433e9284c6284a25ee9fc45a4eb538"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abdea51c8da9163a169b375fa91a4ffba"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#abdea51c8da9163a169b375fa91a4ffba">Spectral::collocation_points</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; 1 &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:abdea51c8da9163a169b375fa91a4ffba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Collocation points for a one-dimensional mesh.  <a href="namespaceSpectral.html#abdea51c8da9163a169b375fa91a4ffba">More...</a><br /></td></tr>
+<tr class="separator:abdea51c8da9163a169b375fa91a4ffba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a43a7bb2e106dbab2bd3a306504a1c008"><td class="memTemplParams" colspan="2">template&lt;Basis BasisType, Quadrature QuadratureType&gt; </td></tr>
+<tr class="memitem:a43a7bb2e106dbab2bd3a306504a1c008"><td class="memTemplItemLeft" align="right" valign="top">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#a43a7bb2e106dbab2bd3a306504a1c008">Spectral::quadrature_weights</a> (size_t num_points) noexcept</td></tr>
+<tr class="memdesc:a43a7bb2e106dbab2bd3a306504a1c008"><td class="mdescLeft">&#160;</td><td class="mdescRight">Weights to compute definite integrals.  <a href="namespaceSpectral.html#a43a7bb2e106dbab2bd3a306504a1c008">More...</a><br /></td></tr>
+<tr class="separator:a43a7bb2e106dbab2bd3a306504a1c008"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a204507ffd55e6295b8bfc650726a53c6"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#a204507ffd55e6295b8bfc650726a53c6">Spectral::quadrature_weights</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; 1 &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:a204507ffd55e6295b8bfc650726a53c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Quadrature weights for a one-dimensional mesh.  <a href="namespaceSpectral.html#a204507ffd55e6295b8bfc650726a53c6">More...</a><br /></td></tr>
+<tr class="separator:a204507ffd55e6295b8bfc650726a53c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1168f9e363d2ace1b13f8a3c025f2e2"><td class="memTemplParams" colspan="2">template&lt;Basis BasisType, Quadrature QuadratureType&gt; </td></tr>
+<tr class="memitem:ad1168f9e363d2ace1b13f8a3c025f2e2"><td class="memTemplItemLeft" align="right" valign="top">const <a class="el" href="classMatrix.html">Matrix</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#ad1168f9e363d2ace1b13f8a3c025f2e2">Spectral::differentiation_matrix</a> (size_t num_points) noexcept</td></tr>
+<tr class="memdesc:ad1168f9e363d2ace1b13f8a3c025f2e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Matrix used to compute the derivative of a function.  <a href="namespaceSpectral.html#ad1168f9e363d2ace1b13f8a3c025f2e2">More...</a><br /></td></tr>
+<tr class="separator:ad1168f9e363d2ace1b13f8a3c025f2e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5651d2608737447150c0de460a691ef"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classMatrix.html">Matrix</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#af5651d2608737447150c0de460a691ef">Spectral::differentiation_matrix</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; 1 &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:af5651d2608737447150c0de460a691ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Differentiation matrix for a one-dimensional mesh.  <a href="namespaceSpectral.html#af5651d2608737447150c0de460a691ef">More...</a><br /></td></tr>
+<tr class="separator:af5651d2608737447150c0de460a691ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60759a39c0fbaf7be7ee505bc98cbd53"><td class="memTemplParams" colspan="2">template&lt;Basis BasisType, Quadrature QuadratureType&gt; </td></tr>
+<tr class="memitem:a60759a39c0fbaf7be7ee505bc98cbd53"><td class="memTemplItemLeft" align="right" valign="top">const <a class="el" href="classMatrix.html">Matrix</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#a60759a39c0fbaf7be7ee505bc98cbd53">Spectral::weak_flux_differentiation_matrix</a> (size_t num_points) noexcept</td></tr>
+<tr class="memdesc:a60759a39c0fbaf7be7ee505bc98cbd53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Matrix used to compute the divergence of the flux in weak form.  <a href="namespaceSpectral.html#a60759a39c0fbaf7be7ee505bc98cbd53">More...</a><br /></td></tr>
+<tr class="separator:a60759a39c0fbaf7be7ee505bc98cbd53"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa38a6f26cc66dadda350ce96d44177d4"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classMatrix.html">Matrix</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#aa38a6f26cc66dadda350ce96d44177d4">Spectral::weak_flux_differentiation_matrix</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; 1 &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:aa38a6f26cc66dadda350ce96d44177d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Matrix used to compute the divergence of the flux in weak form.  <a href="namespaceSpectral.html#aa38a6f26cc66dadda350ce96d44177d4">More...</a><br /></td></tr>
+<tr class="separator:aa38a6f26cc66dadda350ce96d44177d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abcdb585b6ec3f6ccdbd5778b6ca396b6"><td class="memTemplParams" colspan="2">template&lt;Basis BasisType, Quadrature QuadratureType&gt; </td></tr>
+<tr class="memitem:abcdb585b6ec3f6ccdbd5778b6ca396b6"><td class="memTemplItemLeft" align="right" valign="top">const <a class="el" href="classMatrix.html">Matrix</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#abcdb585b6ec3f6ccdbd5778b6ca396b6">Spectral::integration_matrix</a> (size_t num_points) noexcept</td></tr>
+<tr class="memdesc:abcdb585b6ec3f6ccdbd5778b6ca396b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Matrix used to perform an indefinite integral of a function over the logical grid. The left boundary condition is such that the integral is 0 at \(\xi=-1\)  <a href="namespaceSpectral.html#abcdb585b6ec3f6ccdbd5778b6ca396b6">More...</a><br /></td></tr>
+<tr class="separator:abcdb585b6ec3f6ccdbd5778b6ca396b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae709e4ff33b9a414ff878529c91f58cc"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classMatrix.html">Matrix</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#ae709e4ff33b9a414ff878529c91f58cc">Spectral::integration_matrix</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; 1 &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:ae709e4ff33b9a414ff878529c91f58cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indefinite integration matrix for a one-dimensional mesh.  <a href="namespaceSpectral.html#ae709e4ff33b9a414ff878529c91f58cc">More...</a><br /></td></tr>
+<tr class="separator:ae709e4ff33b9a414ff878529c91f58cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73ec2be22ed7a694949db310c31bc5f6"><td class="memTemplParams" colspan="2">template&lt;Basis BasisType, Quadrature QuadratureType, typename T &gt; </td></tr>
+<tr class="memitem:a73ec2be22ed7a694949db310c31bc5f6"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classMatrix.html">Matrix</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#a73ec2be22ed7a694949db310c31bc5f6">Spectral::interpolation_matrix</a> (size_t num_points, const T &amp;target_points) noexcept</td></tr>
+<tr class="memdesc:a73ec2be22ed7a694949db310c31bc5f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Matrix used to interpolate to the <code>target_points</code>.  <a href="namespaceSpectral.html#a73ec2be22ed7a694949db310c31bc5f6">More...</a><br /></td></tr>
+<tr class="separator:a73ec2be22ed7a694949db310c31bc5f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3fa5a7b347ab6c7896fb397e193e0791"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a3fa5a7b347ab6c7896fb397e193e0791"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classMatrix.html">Matrix</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#a3fa5a7b347ab6c7896fb397e193e0791">Spectral::interpolation_matrix</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; 1 &gt; &amp;mesh, const T &amp;target_points) noexcept</td></tr>
+<tr class="memdesc:a3fa5a7b347ab6c7896fb397e193e0791"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interpolation matrix to the <code>target_points</code> for a one-dimensional mesh.  <a href="namespaceSpectral.html#a3fa5a7b347ab6c7896fb397e193e0791">More...</a><br /></td></tr>
+<tr class="separator:a3fa5a7b347ab6c7896fb397e193e0791"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aec4515583e06fd661630abf433049473"><td class="memTemplParams" colspan="2">template&lt;Basis BasisType, Quadrature QuadratureType&gt; </td></tr>
+<tr class="memitem:aec4515583e06fd661630abf433049473"><td class="memTemplItemLeft" align="right" valign="top">const <a class="el" href="classMatrix.html">Matrix</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#aec4515583e06fd661630abf433049473">Spectral::modal_to_nodal_matrix</a> (size_t num_points) noexcept</td></tr>
+<tr class="memdesc:aec4515583e06fd661630abf433049473"><td class="mdescLeft">&#160;</td><td class="mdescRight">Matrix used to transform from the spectral coefficients (modes) of a function to its nodal coefficients. Also referred to as the <em>Vandermonde matrix</em>.  <a href="namespaceSpectral.html#aec4515583e06fd661630abf433049473">More...</a><br /></td></tr>
+<tr class="separator:aec4515583e06fd661630abf433049473"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69e816032f6ded356d96ad078d6793db"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classMatrix.html">Matrix</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#a69e816032f6ded356d96ad078d6793db">Spectral::modal_to_nodal_matrix</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; 1 &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:a69e816032f6ded356d96ad078d6793db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transformation matrix from modal to nodal coefficients for a one-dimensional mesh.  <a href="namespaceSpectral.html#a69e816032f6ded356d96ad078d6793db">More...</a><br /></td></tr>
+<tr class="separator:a69e816032f6ded356d96ad078d6793db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a690676a766e2de8b0a2cc1d29aa25888"><td class="memTemplParams" colspan="2">template&lt;Basis BasisType, Quadrature QuadratureType&gt; </td></tr>
+<tr class="memitem:a690676a766e2de8b0a2cc1d29aa25888"><td class="memTemplItemLeft" align="right" valign="top">const <a class="el" href="classMatrix.html">Matrix</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#a690676a766e2de8b0a2cc1d29aa25888">Spectral::nodal_to_modal_matrix</a> (size_t num_points) noexcept</td></tr>
+<tr class="memdesc:a690676a766e2de8b0a2cc1d29aa25888"><td class="mdescLeft">&#160;</td><td class="mdescRight">Matrix used to transform from the nodal coefficients of a function to its spectral coefficients (modes). Also referred to as the inverse <em>Vandermonde matrix</em>.  <a href="namespaceSpectral.html#a690676a766e2de8b0a2cc1d29aa25888">More...</a><br /></td></tr>
+<tr class="separator:a690676a766e2de8b0a2cc1d29aa25888"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a57cabbd140d7c7f76b917fe7a0a6e5dc"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classMatrix.html">Matrix</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#a57cabbd140d7c7f76b917fe7a0a6e5dc">Spectral::nodal_to_modal_matrix</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; 1 &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:a57cabbd140d7c7f76b917fe7a0a6e5dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transformation matrix from nodal to modal coefficients for a one-dimensional mesh.  <a href="namespaceSpectral.html#a57cabbd140d7c7f76b917fe7a0a6e5dc">More...</a><br /></td></tr>
+<tr class="separator:a57cabbd140d7c7f76b917fe7a0a6e5dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3e64dd72191760a25a1272efadf12a1"><td class="memTemplParams" colspan="2">template&lt;Basis BasisType, Quadrature QuadratureType&gt; </td></tr>
+<tr class="memitem:af3e64dd72191760a25a1272efadf12a1"><td class="memTemplItemLeft" align="right" valign="top">const <a class="el" href="classMatrix.html">Matrix</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#af3e64dd72191760a25a1272efadf12a1">Spectral::linear_filter_matrix</a> (size_t num_points) noexcept</td></tr>
+<tr class="memdesc:af3e64dd72191760a25a1272efadf12a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Matrix used to linearize a function.  <a href="namespaceSpectral.html#af3e64dd72191760a25a1272efadf12a1">More...</a><br /></td></tr>
+<tr class="separator:af3e64dd72191760a25a1272efadf12a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a166b38f2e7742f281fce9392b8f5a431"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classMatrix.html">Matrix</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#a166b38f2e7742f281fce9392b8f5a431">Spectral::linear_filter_matrix</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; 1 &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:a166b38f2e7742f281fce9392b8f5a431"><td class="mdescLeft">&#160;</td><td class="mdescRight">Linear filter matrix for a one-dimensional mesh.  <a href="namespaceSpectral.html#a166b38f2e7742f281fce9392b8f5a431">More...</a><br /></td></tr>
+<tr class="separator:a166b38f2e7742f281fce9392b8f5a431"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a5d0827ba2db1474f1d9a540ee78faa76"><td class="memItemLeft" align="right" valign="top">const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classMatrix.html">Matrix</a>, <a class="el" href="classMatrix.html">Matrix</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#a5d0827ba2db1474f1d9a540ee78faa76">Spectral::boundary_interpolation_matrices</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; 1 &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:a5d0827ba2db1474f1d9a540ee78faa76"><td class="mdescLeft">&#160;</td><td class="mdescRight">Matrices that interpolate to the lower and upper boundaries of the element.  <a href="namespaceSpectral.html#a5d0827ba2db1474f1d9a540ee78faa76">More...</a><br /></td></tr>
+<tr class="separator:a5d0827ba2db1474f1d9a540ee78faa76"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9185eb47c9cb028e1b8c3107e671a231"><td class="memTemplParams" colspan="2">template&lt;Basis BasisType, Quadrature QuadratureType&gt; </td></tr>
+<tr class="memitem:a9185eb47c9cb028e1b8c3107e671a231"><td class="memTemplItemLeft" align="right" valign="top">const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classMatrix.html">Matrix</a>, <a class="el" href="classMatrix.html">Matrix</a> &gt; &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#a9185eb47c9cb028e1b8c3107e671a231">Spectral::boundary_interpolation_matrices</a> (size_t num_points) noexcept</td></tr>
+<tr class="memdesc:a9185eb47c9cb028e1b8c3107e671a231"><td class="mdescLeft">&#160;</td><td class="mdescRight">Matrices that interpolate to the lower and upper boundaries of the element.  <a href="namespaceSpectral.html#a9185eb47c9cb028e1b8c3107e671a231">More...</a><br /></td></tr>
+<tr class="separator:a9185eb47c9cb028e1b8c3107e671a231"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a2f84590b99b233f1956d6561560727f3"><td class="memItemLeft" align="right" valign="top">const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#a2f84590b99b233f1956d6561560727f3">Spectral::boundary_interpolation_term</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; 1 &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:a2f84590b99b233f1956d6561560727f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interpolates values from the boundary into the volume, which is needed when applying time derivative or Bjorhus-type boundary conditions in a discontinuous Galerkin scheme using Gauss points.  <a href="namespaceSpectral.html#a2f84590b99b233f1956d6561560727f3">More...</a><br /></td></tr>
+<tr class="separator:a2f84590b99b233f1956d6561560727f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85f54bd3beb497596290ccbcced24eb8"><td class="memTemplParams" colspan="2">template&lt;Basis BasisType, Quadrature QuadratureType&gt; </td></tr>
+<tr class="memitem:a85f54bd3beb497596290ccbcced24eb8"><td class="memTemplItemLeft" align="right" valign="top">const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#a85f54bd3beb497596290ccbcced24eb8">Spectral::boundary_interpolation_term</a> (size_t num_points) noexcept</td></tr>
+<tr class="memdesc:a85f54bd3beb497596290ccbcced24eb8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interpolates values from the boundary into the volume, which is needed when applying time derivative or Bjorhus-type boundary conditions in a discontinuous Galerkin scheme using Gauss points.  <a href="namespaceSpectral.html#a85f54bd3beb497596290ccbcced24eb8">More...</a><br /></td></tr>
+<tr class="separator:a85f54bd3beb497596290ccbcced24eb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ad7fa735467cd61826e3513790369ffac"><td class="memItemLeft" align="right" valign="top">const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#ad7fa735467cd61826e3513790369ffac">Spectral::boundary_lifting_term</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; 1 &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:ad7fa735467cd61826e3513790369ffac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Terms used during the lifting portion of a discontinuous Galerkin scheme when using Gauss points.  <a href="namespaceSpectral.html#ad7fa735467cd61826e3513790369ffac">More...</a><br /></td></tr>
+<tr class="separator:ad7fa735467cd61826e3513790369ffac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff298e3433d7eb6369f17f11a297aa9e"><td class="memTemplParams" colspan="2">template&lt;Basis BasisType, Quadrature QuadratureType&gt; </td></tr>
+<tr class="memitem:aff298e3433d7eb6369f17f11a297aa9e"><td class="memTemplItemLeft" align="right" valign="top">const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#aff298e3433d7eb6369f17f11a297aa9e">Spectral::boundary_lifting_term</a> (size_t num_points) noexcept</td></tr>
+<tr class="memdesc:aff298e3433d7eb6369f17f11a297aa9e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Terms used during the lifting portion of a discontinuous Galerkin scheme when using Gauss points.  <a href="namespaceSpectral.html#aff298e3433d7eb6369f17f11a297aa9e">More...</a><br /></td></tr>
+<tr class="separator:aff298e3433d7eb6369f17f11a297aa9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a5d0827ba2db1474f1d9a540ee78faa76"><td class="memItemLeft" align="right" valign="top">const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classMatrix.html">Matrix</a>, <a class="el" href="classMatrix.html">Matrix</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#a5d0827ba2db1474f1d9a540ee78faa76">Spectral::boundary_interpolation_matrices</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; 1 &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:a5d0827ba2db1474f1d9a540ee78faa76"><td class="mdescLeft">&#160;</td><td class="mdescRight">Matrices that interpolate to the lower and upper boundaries of the element.  <a href="namespaceSpectral.html#a5d0827ba2db1474f1d9a540ee78faa76">More...</a><br /></td></tr>
+<tr class="separator:a5d0827ba2db1474f1d9a540ee78faa76"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9185eb47c9cb028e1b8c3107e671a231"><td class="memTemplParams" colspan="2">template&lt;Basis BasisType, Quadrature QuadratureType&gt; </td></tr>
+<tr class="memitem:a9185eb47c9cb028e1b8c3107e671a231"><td class="memTemplItemLeft" align="right" valign="top">const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classMatrix.html">Matrix</a>, <a class="el" href="classMatrix.html">Matrix</a> &gt; &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#a9185eb47c9cb028e1b8c3107e671a231">Spectral::boundary_interpolation_matrices</a> (size_t num_points) noexcept</td></tr>
+<tr class="memdesc:a9185eb47c9cb028e1b8c3107e671a231"><td class="mdescLeft">&#160;</td><td class="mdescRight">Matrices that interpolate to the lower and upper boundaries of the element.  <a href="namespaceSpectral.html#a9185eb47c9cb028e1b8c3107e671a231">More...</a><br /></td></tr>
+<tr class="separator:a9185eb47c9cb028e1b8c3107e671a231"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a2f84590b99b233f1956d6561560727f3"><td class="memItemLeft" align="right" valign="top">const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#a2f84590b99b233f1956d6561560727f3">Spectral::boundary_interpolation_term</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; 1 &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:a2f84590b99b233f1956d6561560727f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interpolates values from the boundary into the volume, which is needed when applying time derivative or Bjorhus-type boundary conditions in a discontinuous Galerkin scheme using Gauss points.  <a href="namespaceSpectral.html#a2f84590b99b233f1956d6561560727f3">More...</a><br /></td></tr>
+<tr class="separator:a2f84590b99b233f1956d6561560727f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85f54bd3beb497596290ccbcced24eb8"><td class="memTemplParams" colspan="2">template&lt;Basis BasisType, Quadrature QuadratureType&gt; </td></tr>
+<tr class="memitem:a85f54bd3beb497596290ccbcced24eb8"><td class="memTemplItemLeft" align="right" valign="top">const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#a85f54bd3beb497596290ccbcced24eb8">Spectral::boundary_interpolation_term</a> (size_t num_points) noexcept</td></tr>
+<tr class="memdesc:a85f54bd3beb497596290ccbcced24eb8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interpolates values from the boundary into the volume, which is needed when applying time derivative or Bjorhus-type boundary conditions in a discontinuous Galerkin scheme using Gauss points.  <a href="namespaceSpectral.html#a85f54bd3beb497596290ccbcced24eb8">More...</a><br /></td></tr>
+<tr class="separator:a85f54bd3beb497596290ccbcced24eb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ad7fa735467cd61826e3513790369ffac"><td class="memItemLeft" align="right" valign="top">const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#ad7fa735467cd61826e3513790369ffac">Spectral::boundary_lifting_term</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; 1 &gt; &amp;mesh) noexcept</td></tr>
+<tr class="memdesc:ad7fa735467cd61826e3513790369ffac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Terms used during the lifting portion of a discontinuous Galerkin scheme when using Gauss points.  <a href="namespaceSpectral.html#ad7fa735467cd61826e3513790369ffac">More...</a><br /></td></tr>
+<tr class="separator:ad7fa735467cd61826e3513790369ffac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff298e3433d7eb6369f17f11a297aa9e"><td class="memTemplParams" colspan="2">template&lt;Basis BasisType, Quadrature QuadratureType&gt; </td></tr>
+<tr class="memitem:aff298e3433d7eb6369f17f11a297aa9e"><td class="memTemplItemLeft" align="right" valign="top">const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#aff298e3433d7eb6369f17f11a297aa9e">Spectral::boundary_lifting_term</a> (size_t num_points) noexcept</td></tr>
+<tr class="memdesc:aff298e3433d7eb6369f17f11a297aa9e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Terms used during the lifting portion of a discontinuous Galerkin scheme when using Gauss points.  <a href="namespaceSpectral.html#aff298e3433d7eb6369f17f11a297aa9e">More...</a><br /></td></tr>
+<tr class="separator:aff298e3433d7eb6369f17f11a297aa9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a7ed70608b007d26c6e7bf23ea14e8357"><td class="memTemplParams" colspan="2">template&lt;Basis basis, Quadrature quadrature&gt; </td></tr>
+<tr class="memitem:a7ed70608b007d26c6e7bf23ea14e8357"><td class="memTemplItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#a7ed70608b007d26c6e7bf23ea14e8357">Spectral::minimum_number_of_points</a></td></tr>
+<tr class="memdesc:a7ed70608b007d26c6e7bf23ea14e8357"><td class="mdescLeft">&#160;</td><td class="mdescRight">Minimum number of possible collocation points for a quadrature type.  <a href="namespaceSpectral.html#a7ed70608b007d26c6e7bf23ea14e8357">More...</a><br /></td></tr>
+<tr class="separator:a7ed70608b007d26c6e7bf23ea14e8357"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad3f83fd18f48d47423e1d5cf9d718a7a"><td class="memTemplParams" colspan="2">template&lt;Basis basis&gt; </td></tr>
+<tr class="memitem:ad3f83fd18f48d47423e1d5cf9d718a7a"><td class="memTemplItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceSpectral.html#ad3f83fd18f48d47423e1d5cf9d718a7a">Spectral::maximum_number_of_points</a></td></tr>
+<tr class="memdesc:ad3f83fd18f48d47423e1d5cf9d718a7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum number of allowed collocation points.  <a href="namespaceSpectral.html#ad3f83fd18f48d47423e1d5cf9d718a7a">More...</a><br /></td></tr>
+<tr class="separator:ad3f83fd18f48d47423e1d5cf9d718a7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Declares functionality to retrieve spectral quantities associated with a particular choice of basis functions and quadrature. </p>
+</div></div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

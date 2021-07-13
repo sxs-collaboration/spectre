@@ -1,0 +1,400 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: h5::VolumeData Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceh5.html">h5</a></li><li class="navelem"><a class="el" href="classh5_1_1VolumeData.html">VolumeData</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="classh5_1_1VolumeData-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">h5::VolumeData Class Reference<div class="ingroups"><a class="el" href="group__HDF5Group.html">HDF5</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A volume data subfile written inside an H5 file.  
+ <a href="classh5_1_1VolumeData.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="VolumeData_8hpp_source.html">VolumeData.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:acb2056492872ed2f5eb8b53746cec227"><td class="memItemLeft" align="right" valign="top"><a id="acb2056492872ed2f5eb8b53746cec227"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>VolumeData</b> (bool subfile_exists, detail::OpenGroup &amp;&amp;group, hid_t location, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;name, uint32_t version=1) noexcept</td></tr>
+<tr class="separator:acb2056492872ed2f5eb8b53746cec227"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a33edce1463c2ef68151e426e8e3c079e"><td class="memItemLeft" align="right" valign="top"><a id="a33edce1463c2ef68151e426e8e3c079e"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>VolumeData</b> (const <a class="el" href="classh5_1_1VolumeData.html">VolumeData</a> &amp;)=delete</td></tr>
+<tr class="separator:a33edce1463c2ef68151e426e8e3c079e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63d5ea3b00c115c911c65b44c6169553"><td class="memItemLeft" align="right" valign="top"><a id="a63d5ea3b00c115c911c65b44c6169553"></a>
+<a class="el" href="classh5_1_1VolumeData.html">VolumeData</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classh5_1_1VolumeData.html">VolumeData</a> &amp;)=delete</td></tr>
+<tr class="separator:a63d5ea3b00c115c911c65b44c6169553"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ed050d705bcd567e2a52b41b8ecbf6f"><td class="memItemLeft" align="right" valign="top"><a id="a3ed050d705bcd567e2a52b41b8ecbf6f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>VolumeData</b> (<a class="el" href="classh5_1_1VolumeData.html">VolumeData</a> &amp;&amp;) noexcept=delete</td></tr>
+<tr class="separator:a3ed050d705bcd567e2a52b41b8ecbf6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62524d218e4749ed37092c5de9909843"><td class="memItemLeft" align="right" valign="top"><a id="a62524d218e4749ed37092c5de9909843"></a>
+<a class="el" href="classh5_1_1VolumeData.html">VolumeData</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classh5_1_1VolumeData.html">VolumeData</a> &amp;&amp;) noexcept=delete</td></tr>
+<tr class="separator:a62524d218e4749ed37092c5de9909843"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01e3a37f313dce230f71540660045b5d"><td class="memItemLeft" align="right" valign="top">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1VolumeData.html#a01e3a37f313dce230f71540660045b5d">get_header</a> () const noexcept</td></tr>
+<tr class="separator:a01e3a37f313dce230f71540660045b5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ef1f857a17b7d3c54a1ebd328328ea7"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1VolumeData.html#a8ef1f857a17b7d3c54a1ebd328328ea7">get_version</a> () const noexcept</td></tr>
+<tr class="separator:a8ef1f857a17b7d3c54a1ebd328328ea7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd80dd0f1fa1fa2e6f64955f1e732219"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1VolumeData.html#acd80dd0f1fa1fa2e6f64955f1e732219">write_volume_data</a> (size_t observation_id, double observation_value, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="structElementVolumeData.html">ElementVolumeData</a> &gt; &amp;elements) noexcept</td></tr>
+<tr class="memdesc:acd80dd0f1fa1fa2e6f64955f1e732219"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert tensor components at <code>observation_id</code> with floating point value <code>observation_value</code>  <a href="classh5_1_1VolumeData.html#acd80dd0f1fa1fa2e6f64955f1e732219">More...</a><br /></td></tr>
+<tr class="separator:acd80dd0f1fa1fa2e6f64955f1e732219"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31ae7ee43ca292fb7803e33fd83faf2f"><td class="memItemLeft" align="right" valign="top"><a id="a31ae7ee43ca292fb7803e33fd83faf2f"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1VolumeData.html#a31ae7ee43ca292fb7803e33fd83faf2f">list_observation_ids</a> () const noexcept</td></tr>
+<tr class="memdesc:a31ae7ee43ca292fb7803e33fd83faf2f"><td class="mdescLeft">&#160;</td><td class="mdescRight">List all the integral observation ids in the subfile. <br /></td></tr>
+<tr class="separator:a31ae7ee43ca292fb7803e33fd83faf2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4635db23a97299bc325fe7956c826709"><td class="memItemLeft" align="right" valign="top"><a id="a4635db23a97299bc325fe7956c826709"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1VolumeData.html#a4635db23a97299bc325fe7956c826709">get_observation_value</a> (size_t observation_id) const noexcept</td></tr>
+<tr class="memdesc:a4635db23a97299bc325fe7956c826709"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the observation value at the the integral observation id in the subfile. <br /></td></tr>
+<tr class="separator:a4635db23a97299bc325fe7956c826709"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e7b04203c058c04fdcf3135cc6a6179"><td class="memItemLeft" align="right" valign="top"><a id="a7e7b04203c058c04fdcf3135cc6a6179"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1VolumeData.html#a7e7b04203c058c04fdcf3135cc6a6179">find_observation_id</a> (const double observation_value) const noexcept</td></tr>
+<tr class="memdesc:a7e7b04203c058c04fdcf3135cc6a6179"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find the observation ID that matches the <code>observation_value</code> <br /></td></tr>
+<tr class="separator:a7e7b04203c058c04fdcf3135cc6a6179"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8949a428a440642db7783a6d0a09d40b"><td class="memItemLeft" align="right" valign="top"><a id="a8949a428a440642db7783a6d0a09d40b"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1VolumeData.html#a8949a428a440642db7783a6d0a09d40b">list_tensor_components</a> (size_t observation_id) const noexcept</td></tr>
+<tr class="memdesc:a8949a428a440642db7783a6d0a09d40b"><td class="mdescLeft">&#160;</td><td class="mdescRight">List all the tensor components at observation id <code>observation_id</code> <br /></td></tr>
+<tr class="separator:a8949a428a440642db7783a6d0a09d40b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d7eb51b150337138d10be2d822f7a9a"><td class="memItemLeft" align="right" valign="top"><a id="a3d7eb51b150337138d10be2d822f7a9a"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1VolumeData.html#a3d7eb51b150337138d10be2d822f7a9a">get_grid_names</a> (size_t observation_id) const noexcept</td></tr>
+<tr class="memdesc:a3d7eb51b150337138d10be2d822f7a9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">List the names of all the grids at observation id <code>observation_id</code> <br /></td></tr>
+<tr class="separator:a3d7eb51b150337138d10be2d822f7a9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afde2e4f4636b184735a051ebcaccee7a"><td class="memItemLeft" align="right" valign="top"><a id="afde2e4f4636b184735a051ebcaccee7a"></a>
+<a class="el" href="classDataVector.html">DataVector</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1VolumeData.html#afde2e4f4636b184735a051ebcaccee7a">get_tensor_component</a> (size_t observation_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;tensor_component) const noexcept</td></tr>
+<tr class="memdesc:afde2e4f4636b184735a051ebcaccee7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a tensor component with name <code>tensor_component</code> at observation id <code>observation_id</code> from all grids in the file. <br /></td></tr>
+<tr class="separator:afde2e4f4636b184735a051ebcaccee7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3b13a368b4ec30751ce78a23ed09f0d"><td class="memItemLeft" align="right" valign="top"><a id="af3b13a368b4ec30751ce78a23ed09f0d"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; size_t &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1VolumeData.html#af3b13a368b4ec30751ce78a23ed09f0d">get_extents</a> (size_t observation_id) const noexcept</td></tr>
+<tr class="memdesc:af3b13a368b4ec30751ce78a23ed09f0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the extents of all the grids stored in the file at the observation id <code>observation_id</code> <br /></td></tr>
+<tr class="separator:af3b13a368b4ec30751ce78a23ed09f0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e5b6860ae68c5f0da3ce8c1898ceff0"><td class="memItemLeft" align="right" valign="top"><a id="a2e5b6860ae68c5f0da3ce8c1898ceff0"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1VolumeData.html#a2e5b6860ae68c5f0da3ce8c1898ceff0">get_dimension</a> () const noexcept</td></tr>
+<tr class="memdesc:a2e5b6860ae68c5f0da3ce8c1898ceff0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the dimensionality of the grids. Note : This is the dimension of the grids as manifolds, not the dimension of the embedding space. For example, the volume data of a sphere is 2-dimensional, even though each point has an x, y, and z coordinate. <br /></td></tr>
+<tr class="separator:a2e5b6860ae68c5f0da3ce8c1898ceff0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa6e3999bf175c7194c8b9510861bb8b2"><td class="memItemLeft" align="right" valign="top"><a id="aa6e3999bf175c7194c8b9510861bb8b2"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1VolumeData.html#aa6e3999bf175c7194c8b9510861bb8b2">get_bases</a> (size_t observation_id) const noexcept</td></tr>
+<tr class="memdesc:aa6e3999bf175c7194c8b9510861bb8b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the basis being used for each element along each axis. <br /></td></tr>
+<tr class="separator:aa6e3999bf175c7194c8b9510861bb8b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3470eaf9665047c164fa166c552b27a1"><td class="memItemLeft" align="right" valign="top"><a id="a3470eaf9665047c164fa166c552b27a1"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1VolumeData.html#a3470eaf9665047c164fa166c552b27a1">get_quadratures</a> (size_t observation_id) const noexcept</td></tr>
+<tr class="memdesc:a3470eaf9665047c164fa166c552b27a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the quadrature being used for each element along each axis. <br /></td></tr>
+<tr class="separator:a3470eaf9665047c164fa166c552b27a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:affbb04bbb147c22c219f8262ff9366ba"><td class="memItemLeft" align="right" valign="top"><a id="affbb04bbb147c22c219f8262ff9366ba"></a>
+static <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memItemRight" valign="bottom"><b>extension</b> () noexcept</td></tr>
+<tr class="separator:affbb04bbb147c22c219f8262ff9366ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaae23601440b19dcef5618f3d32b9d64"><td class="memItemLeft" align="right" valign="top"><a id="aaae23601440b19dcef5618f3d32b9d64"></a>
+static char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1VolumeData.html#aaae23601440b19dcef5618f3d32b9d64">separator</a> () noexcept</td></tr>
+<tr class="memdesc:aaae23601440b19dcef5618f3d32b9d64"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the character used as a separator between grids in the subfile. <br /></td></tr>
+<tr class="separator:aaae23601440b19dcef5618f3d32b9d64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A volume data subfile written inside an H5 file. </p>
+<p>The volume data inside the subfile can be of any dimensionality greater than zero. This means that in a 3D simulation, data on 2-dimensional surfaces are written as a <a class="el" href="classh5_1_1VolumeData.html" title="A volume data subfile written inside an H5 file.">VolumeData</a> subfile. Data can be written using the <code><a class="el" href="classh5_1_1VolumeData.html#acd80dd0f1fa1fa2e6f64955f1e732219" title="Insert tensor components at observation_id with floating point value observation_value">write_volume_data()</a></code> method. An integral observation id is used to keep track of the observation instance at which the data is written, and associated with it is a floating point observation value, such as the simulation time at which the data was written. The observation id will generally be the result of hashing the temporal identifier used for the simulation.</p>
+<p>The data stored in the subfile are the tensor components passed to the <code><a class="el" href="classh5_1_1VolumeData.html#acd80dd0f1fa1fa2e6f64955f1e732219" title="Insert tensor components at observation_id with floating point value observation_value">write_volume_data()</a></code> method as a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="el" href="structExtentsAndTensorVolumeData.html" title="Holds the extents of the mesh and the tensor components on the mesh.">ExtentsAndTensorVolumeData</a>&gt;</code>. The name of each tensor component must follow the format <code>GRID_NAME/TENSOR_NAME_COMPONENT</code>, e.g. <code>Element0/T_xx</code>. Typically the <code>GRID_NAME</code> should be the output of the stream operator of the spatial ID of the parallel component element sending the data to be observed. For example, in the case of a dG evolution where the spatial IDs are <code><a class="el" href="classElementId.html" title="An ElementId uniquely labels an Element.">ElementId</a></code>s, the grid names would be of the form <code>[B0,(L2I3,L2I3,L2I3)]</code>. The data are written contiguously inside of the H5 subfile, in that each tensor component has a single dataset which holds all of the data from all elements, e.g. a tensor component <code>T_xx</code> which is found on all grids appears in the path <code>H5_FILE_NAME/element_data.vol/T_xx</code> and that is where all of the <code>T_xx</code> data from all of the grids resides. Note that coordinates must be written as tensors in order to visualize the data in ParaView, Visit, etc. In order to reconstruct which data came from which grid, the <code><a class="el" href="classh5_1_1VolumeData.html#a3d7eb51b150337138d10be2d822f7a9a" title="List the names of all the grids at observation id observation_id">get_grid_names()</a></code>, and <code><a class="el" href="classh5_1_1VolumeData.html#af3b13a368b4ec30751ce78a23ed09f0d" title="Read the extents of all the grids stored in the file at the observation id observation_id">get_extents()</a></code> methods list the grids and their extents in the order which they and the data were written. For example, if the first grid has name <code>GRID_NAME</code> with extents <code>{2, 2, 2}</code>, it was responsible for contributing the first 2*2*2 = 8 grid points worth of data in each tensor dataset. Use the <code><a class="el" href="namespaceh5.html#ae25beccb55fb637dbe39a526ed9d3cc2" title="Find the interval within the contiguous dataset stored in h5::VolumeData that holds data for a partic...">h5::offset_and_length_for_grid</a></code> function to compute the offset into the contiguous dataset that corresponds to a particular grid.</p>
+<dl class="section warning"><dt>Warning</dt><dd>Currently the topology of the grids is assumed to be tensor products of lines, i.e. lines, quadrilaterals, and hexahedrons. However, this can be extended in the future. If support for more topologies is required, please file an issue. </dd></dl>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a01e3a37f313dce230f71540660045b5d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a01e3a37f313dce230f71540660045b5d">&#9670;&nbsp;</a></span>get_header()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&amp; h5::VolumeData::get_header </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p><em>Returns:</em> the header of the <a class="el" href="classh5_1_1VolumeData.html" title="A volume data subfile written inside an H5 file.">VolumeData</a> file </p>
+
+</div>
+</div>
+<a id="a8ef1f857a17b7d3c54a1ebd328328ea7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8ef1f857a17b7d3c54a1ebd328328ea7">&#9670;&nbsp;</a></span>get_version()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t h5::VolumeData::get_version </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p><em>Returns:</em> the user-specified version number of the <a class="el" href="classh5_1_1VolumeData.html" title="A volume data subfile written inside an H5 file.">VolumeData</a> file</p>
+<dl class="section note"><dt>Note</dt><dd><a class="el" href="classh5_1_1Version.html" title="Used to store the version of the file.">h5::Version</a> returns a uint32_t, so we return one here too for the version </dd></dl>
+
+</div>
+</div>
+<a id="acd80dd0f1fa1fa2e6f64955f1e732219"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acd80dd0f1fa1fa2e6f64955f1e732219">&#9670;&nbsp;</a></span>write_volume_data()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void h5::VolumeData::write_volume_data </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>observation_id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>observation_value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="structElementVolumeData.html">ElementVolumeData</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>elements</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Insert tensor components at <code>observation_id</code> with floating point value <code>observation_value</code> </p>
+<p><em>Requires:</em> The names of the tensor components is of the form <code>GRID_NAME/TENSOR_NAME_COMPONENT</code>, e.g. <code>Element0/T_xx</code> </p>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/IO/H5/<a class="el" href="VolumeData_8hpp_source.html">VolumeData.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

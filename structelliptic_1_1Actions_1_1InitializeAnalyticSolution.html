@@ -1,0 +1,257 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: elliptic::Actions::InitializeAnalyticSolution&lt; AnalyticSolutionTag, AnalyticSolutionFields &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceelliptic.html">elliptic</a></li><li class="navelem"><b>Actions</b></li><li class="navelem"><a class="el" href="structelliptic_1_1Actions_1_1InitializeAnalyticSolution.html">InitializeAnalyticSolution</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="structelliptic_1_1Actions_1_1InitializeAnalyticSolution-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">elliptic::Actions::InitializeAnalyticSolution&lt; AnalyticSolutionTag, AnalyticSolutionFields &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Place the analytic solution of the system fields in the DataBox.  
+ <a href="structelliptic_1_1Actions_1_1InitializeAnalyticSolution.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="InitializeAnalyticSolution_8hpp_source.html">InitializeAnalyticSolution.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ad7261aefa4a622f9bf200c8416fa735a"><td class="memItemLeft" align="right" valign="top"><a id="ad7261aefa4a622f9bf200c8416fa735a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>simple_tags</b> = tmpl::list&lt; <a class="el" href="structTags_1_1AnalyticSolutions.html">analytic_fields_tag</a> &gt;</td></tr>
+<tr class="separator:ad7261aefa4a622f9bf200c8416fa735a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb7d8dc4a4481eb5f936d13c16d54a09"><td class="memItemLeft" align="right" valign="top"><a id="adb7d8dc4a4481eb5f936d13c16d54a09"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>compute_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:adb7d8dc4a4481eb5f936d13c16d54a09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:ac9dd6e93cfe40c456d3e7bdfe502fdf0"><td class="memTemplParams" colspan="2"><a id="ac9dd6e93cfe40c456d3e7bdfe502fdf0"></a>
+template&lt;typename DbTagsList , typename... InboxTags, typename Metavariables , size_t Dim, typename ActionList , typename ParallelComponent &gt; </td></tr>
+<tr class="memitem:ac9dd6e93cfe40c456d3e7bdfe502fdf0"><td class="memTemplItemLeft" align="right" valign="top">static <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; db::DataBox&lt; DbTagsList &gt; &amp;&amp; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>apply</b> (db::DataBox&lt; DbTagsList &gt; &amp;box, const <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; InboxTags... &gt; &amp;, const <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt; &amp;, const <a class="el" href="classElementId.html">ElementId</a>&lt; Dim &gt; &amp;, const ActionList, const ParallelComponent *const) noexcept</td></tr>
+<tr class="separator:ac9dd6e93cfe40c456d3e7bdfe502fdf0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename AnalyticSolutionTag, typename AnalyticSolutionFields&gt;<br />
+struct elliptic::Actions::InitializeAnalyticSolution&lt; AnalyticSolutionTag, AnalyticSolutionFields &gt;</h3>
+
+<p>Place the analytic solution of the system fields in the DataBox. </p>
+<p>Use <code><a class="el" href="structelliptic_1_1Actions_1_1InitializeAnalyticSolution.html" title="Place the analytic solution of the system fields in the DataBox.">InitializeAnalyticSolution</a></code> if it is clear at compile-time that an analytic solution is available, and <code><a class="el" href="structelliptic_1_1Actions_1_1InitializeOptionalAnalyticSolution.html">InitializeOptionalAnalyticSolution</a></code> if that is a runtime decision, e.g. based on a choice in the input file. The <code><a class="el" href="structTags_1_1AnalyticSolutionsBase.html" title="Base tag for the analytic solution tensors. Retrieved values can be either Variables or std::optional...">Tags::AnalyticSolutionsBase</a></code> tag can be retrieved from the DataBox in either case, but it will hold a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a></code> when <code><a class="el" href="structelliptic_1_1Actions_1_1InitializeOptionalAnalyticSolution.html">InitializeOptionalAnalyticSolution</a></code> is used. In that case, the analytic solution is only evaluated and stored in the DataBox if the <code>BackgroundTag</code> holds a type that inherits from the <code>AnalyticSolutionType</code>.</p>
+<p>Uses:</p><ul>
+<li>DataBox:<ul>
+<li><code>AnalyticSolutionTag</code> or <code>BackgroundTag</code></li>
+<li><code>Tags::Coordinates&lt;Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt;</code></li>
+</ul>
+</li>
+</ul>
+<p>DataBox:</p><ul>
+<li>Adds:<ul>
+<li><code><a class="el" href="structTags_1_1AnalyticSolutionsBase.html" title="Base tag for the analytic solution tensors. Retrieved values can be either Variables or std::optional...">Tags::AnalyticSolutionsBase</a></code></li>
+</ul>
+</li>
+</ul>
+<dl class="section note"><dt>Note</dt><dd>This action relies on the <code>SetupDataBox</code> aggregated initialization mechanism, so <code><a class="el" href="structActions_1_1SetupDataBox.html" title="Add into the DataBox default constructed items for the collection of tags requested by any of the act...">Actions::SetupDataBox</a></code> must be present in the <code>Initialization</code> phase action list prior to this action. </dd></dl>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Elliptic/Actions/<a class="el" href="InitializeAnalyticSolution_8hpp_source.html">InitializeAnalyticSolution.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

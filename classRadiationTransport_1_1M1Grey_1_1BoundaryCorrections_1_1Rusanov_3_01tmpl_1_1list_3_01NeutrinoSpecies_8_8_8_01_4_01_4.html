@@ -1,0 +1,332 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: RadiationTransport::M1Grey::BoundaryCorrections::Rusanov&lt; tmpl::list&lt; NeutrinoSpecies... &gt; &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceRadiationTransport.html">RadiationTransport</a></li><li class="navelem"><a class="el" href="namespaceRadiationTransport_1_1M1Grey.html">M1Grey</a></li><li class="navelem"><a class="el" href="namespaceRadiationTransport_1_1M1Grey_1_1BoundaryCorrections.html">BoundaryCorrections</a></li><li class="navelem"><a class="el" href="classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1Rusanov_3_01tmpl_1_1list_3_01NeutrinoSpecies_8_8_8_01_4_01_4.html">Rusanov&lt; tmpl::list&lt; NeutrinoSpecies... &gt; &gt;</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1Rusanov_3_01tmpl_1_1list_3_01Neutrin6740324085faf93268bd579347acf329.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">RadiationTransport::M1Grey::BoundaryCorrections::Rusanov&lt; tmpl::list&lt; NeutrinoSpecies... &gt; &gt; Class Template Reference<span class="mlabels"><span class="mlabel">final</span></span></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A Rusanov/local Lax-Friedrichs Riemann solver.  
+ <a href="classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1Rusanov_3_01tmpl_1_1list_3_01NeutrinoSpecies_8_8_8_01_4_01_4.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="RadiationTransport_2M1Grey_2BoundaryCorrections_2Rusanov_8hpp_source.html">Rusanov.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ad00b7988d6f0c0d46f9f5994c6b5802c"><td class="memItemLeft" align="right" valign="top"><a id="ad00b7988d6f0c0d46f9f5994c6b5802c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:ad00b7988d6f0c0d46f9f5994c6b5802c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4721f85a7f7660aae286e155e77a1deb"><td class="memItemLeft" align="right" valign="top"><a id="a4721f85a7f7660aae286e155e77a1deb"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_package_field_tags</b> = tmpl::list&lt; <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeE.html">Tags::TildeE</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;..., <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeS.html">Tags::TildeS</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;..., ::<a class="el" href="structTags_1_1NormalDotFlux.html">Tags::NormalDotFlux</a>&lt; <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeE.html">Tags::TildeE</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt; &gt;..., ::<a class="el" href="structTags_1_1NormalDotFlux.html">Tags::NormalDotFlux</a>&lt; <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeS.html">Tags::TildeS</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt; &gt;... &gt;</td></tr>
+<tr class="separator:a4721f85a7f7660aae286e155e77a1deb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b50232e06794cebc2f3bd4bc0ab4f6a"><td class="memItemLeft" align="right" valign="top"><a id="a5b50232e06794cebc2f3bd4bc0ab4f6a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_package_data_temporary_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a5b50232e06794cebc2f3bd4bc0ab4f6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f3d63a83df783241d7cf1ae3cc76b5e"><td class="memItemLeft" align="right" valign="top"><a id="a1f3d63a83df783241d7cf1ae3cc76b5e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_package_data_primitive_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a1f3d63a83df783241d7cf1ae3cc76b5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4fba6c8ad36003063cfed8da0e102eca"><td class="memItemLeft" align="right" valign="top"><a id="a4fba6c8ad36003063cfed8da0e102eca"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_package_data_volume_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a4fba6c8ad36003063cfed8da0e102eca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection.html">RadiationTransport::M1Grey::BoundaryCorrections::BoundaryCorrection&lt; tmpl::list&lt; NeutrinoSpecies... &gt; &gt;</a></td></tr>
+<tr class="memitem:af0efbc0bbac575ddc3b68ef36f3bff2e inherit pub_types_classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="af0efbc0bbac575ddc3b68ef36f3bff2e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::list&lt; Rusanov&lt; tmpl::list&lt; NeutrinoSpecies... &gt; &gt; &gt;</td></tr>
+<tr class="separator:af0efbc0bbac575ddc3b68ef36f3bff2e inherit pub_types_classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a853a108821b2e7f4f82fdbd4e1a3dc22"><td class="memItemLeft" align="right" valign="top"><a id="a853a108821b2e7f4f82fdbd4e1a3dc22"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Rusanov</b> (const Rusanov &amp;)=default</td></tr>
+<tr class="separator:a853a108821b2e7f4f82fdbd4e1a3dc22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a594ff17f98d2581d2c9c84d694f48d8e"><td class="memItemLeft" align="right" valign="top"><a id="a594ff17f98d2581d2c9c84d694f48d8e"></a>
+Rusanov &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const Rusanov &amp;)=default</td></tr>
+<tr class="separator:a594ff17f98d2581d2c9c84d694f48d8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acdbc13de0bfa51435980872f1a0d388d"><td class="memItemLeft" align="right" valign="top"><a id="acdbc13de0bfa51435980872f1a0d388d"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Rusanov</b> (Rusanov &amp;&amp;)=default</td></tr>
+<tr class="separator:acdbc13de0bfa51435980872f1a0d388d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91dfe05c7d4b253badae1937c18b0536"><td class="memItemLeft" align="right" valign="top"><a id="a91dfe05c7d4b253badae1937c18b0536"></a>
+Rusanov &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (Rusanov &amp;&amp;)=default</td></tr>
+<tr class="separator:a91dfe05c7d4b253badae1937c18b0536"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a19225ee82b2300c067a2a16425c27982"><td class="memItemLeft" align="right" valign="top"><a id="a19225ee82b2300c067a2a16425c27982"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) override</td></tr>
+<tr class="separator:a19225ee82b2300c067a2a16425c27982"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab4251baa88b5d727734322f02d710478"><td class="memItemLeft" align="right" valign="top"><a id="ab4251baa88b5d727734322f02d710478"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a>&lt; tmpl::list&lt; NeutrinoSpecies... &gt; &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const noexcept override</td></tr>
+<tr class="separator:ab4251baa88b5d727734322f02d710478"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d2334f43f4755800c62cc1c3ecfe1f8"><td class="memItemLeft" align="right" valign="top"><a id="a9d2334f43f4755800c62cc1c3ecfe1f8"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>dg_package_data</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeE.html">Tags::TildeE</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type * &gt;... packaged_tilde_e, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeS.html">Tags::TildeS</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type * &gt;... packaged_tilde_s, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeE.html">Tags::TildeE</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type * &gt;... packaged_normal_dot_flux_tilde_e, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeS.html">Tags::TildeS</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type * &gt;... packaged_normal_dot_flux_tilde_s, const typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeE.html">Tags::TildeE</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type &amp;... tilde_e, const typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeS.html">Tags::TildeS</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type &amp;... tilde_s, const typename ::<a class="el" href="structTags_1_1Flux.html">Tags::Flux</a>&lt; <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeE.html">Tags::TildeE</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;, tmpl::size_t&lt; 3 &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;::type &amp;... flux_tilde_e, const typename ::<a class="el" href="structTags_1_1Flux.html">Tags::Flux</a>&lt; <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeS.html">Tags::TildeS</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;, tmpl::size_t&lt; 3 &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;::type &amp;... flux_tilde_s, const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;normal_covector, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;normal_vector, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt; &amp;mesh_velocity, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt; &amp;normal_dot_mesh_velocity) const noexcept</td></tr>
+<tr class="separator:a9d2334f43f4755800c62cc1c3ecfe1f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a14f397108ecb4edcdb51f614a3ebb418"><td class="memItemLeft" align="right" valign="top"><a id="a14f397108ecb4edcdb51f614a3ebb418"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>dg_boundary_terms</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeE.html">Tags::TildeE</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type * &gt;... boundary_correction_tilde_e, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeS.html">Tags::TildeS</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type * &gt;... boundary_correction_tilde_s, const typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeE.html">Tags::TildeE</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type &amp;... tilde_e_int, const typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeS.html">Tags::TildeS</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type &amp;... tilde_s_int, const typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeE.html">Tags::TildeE</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type &amp;... normal_dot_flux_tilde_e_int, const typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeS.html">Tags::TildeS</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type &amp;... normal_dot_flux_tilde_s_int, const typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeE.html">Tags::TildeE</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type &amp;... tilde_e_ext, const typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeS.html">Tags::TildeS</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type &amp;... tilde_s_ext, const typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeE.html">Tags::TildeE</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type &amp;... normal_dot_flux_tilde_e_ext, const typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeS.html">Tags::TildeS</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type &amp;... normal_dot_flux_tilde_s_ext, <a class="el" href="group__DiscontinuousGalerkinGroup.html#ga102ad013b7e4298b4c14c52a39bcd8da">dg::Formulation</a> dg_formulation) const noexcept</td></tr>
+<tr class="separator:a14f397108ecb4edcdb51f614a3ebb418"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection.html">RadiationTransport::M1Grey::BoundaryCorrections::BoundaryCorrection&lt; tmpl::list&lt; NeutrinoSpecies... &gt; &gt;</a></td></tr>
+<tr class="memitem:a190b703f2d9229a4f61f2801d277bf15 inherit pub_methods_classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="a190b703f2d9229a4f61f2801d277bf15"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCorrection</b> (const <a class="el" href="classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;)=default</td></tr>
+<tr class="separator:a190b703f2d9229a4f61f2801d277bf15 inherit pub_methods_classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30e86c43e26b09cc7afb57fc19a10daa inherit pub_methods_classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="a30e86c43e26b09cc7afb57fc19a10daa"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCorrection</b> (<a class="el" href="classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a30e86c43e26b09cc7afb57fc19a10daa inherit pub_methods_classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acade0c60fdfaf6c9203cfe5e5971207e inherit pub_methods_classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="acade0c60fdfaf6c9203cfe5e5971207e"></a>
+<a class="el" href="classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;)=default</td></tr>
+<tr class="separator:acade0c60fdfaf6c9203cfe5e5971207e inherit pub_methods_classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad423a23ad351e92f3b1c086fc9744cf0 inherit pub_methods_classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="ad423a23ad351e92f3b1c086fc9744cf0"></a>
+<a class="el" href="classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:ad423a23ad351e92f3b1c086fc9744cf0 inherit pub_methods_classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2fc3cb777cdedeec17f38d2da3770096 inherit pub_methods_classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="a2fc3cb777cdedeec17f38d2da3770096"></a>
+virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a>&lt; tmpl::list&lt; NeutrinoSpecies... &gt; &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const noexcept=0</td></tr>
+<tr class="separator:a2fc3cb777cdedeec17f38d2da3770096 inherit pub_methods_classRadiationTransport_1_1M1Grey_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a177c92c04b92967bcd77de8601f25a3d"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a177c92c04b92967bcd77de8601f25a3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename... NeutrinoSpecies&gt;<br />
+class RadiationTransport::M1Grey::BoundaryCorrections::Rusanov&lt; tmpl::list&lt; NeutrinoSpecies... &gt; &gt;</h3>
+
+<p>A Rusanov/local Lax-Friedrichs Riemann solver. </p>
+<p>Let \(U\) be the state vector of evolved variables, \(F^i\) the corresponding fluxes, and \(n_i\) be the outward directed unit normal to the interface. Denoting \(F := n_i F^i\), the Rusanov boundary correction is</p>
+<p class="formulaDsp">
+\begin{align*} G_\text{Rusanov} = \frac{F_\text{int} - F_\text{ext}}{2} - \frac{\text{max}\left(\{|\lambda_\text{int}|\}, \{|\lambda_\text{ext}|\}\right)}{2} \left(U_\text{ext} - U_\text{int}\right), \end{align*}
+</p>
+<p>where "int" and "ext" stand for interior and exterior, and \(\{|\lambda|\}\) is the set of characteristic/signal speeds. The minus sign in front of the \(F_{\text{ext}}\) is necessary because the outward directed normal of the neighboring element has the opposite sign, i.e. \(n_i^{\text{ext}}=-n_i^{\text{int}}\).</p>
+<p>For radiation, the max characteristic/signal speed is 1 (the speed of light). Note that the characteristic speeds of this system are <em>not</em> yet fully implemented, see the warning in the documentation for the characteristics.</p>
+<dl class="section note"><dt>Note</dt><dd>In the strong form the <code>dg_boundary_terms</code> function returns \(G - F_\text{int}\) </dd></dl>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a177c92c04b92967bcd77de8601f25a3d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a177c92c04b92967bcd77de8601f25a3d">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... NeutrinoSpecies&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> RadiationTransport::M1Grey::BoundaryCorrections::Rusanov&lt; tmpl::list&lt; NeutrinoSpecies... &gt; &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Computes the Rusanov or local Lax-Friedrichs boundary correction term &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;for the M1Grey radiation transport system.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/Systems/RadiationTransport/M1Grey/BoundaryCorrections/<a class="el" href="RadiationTransport_2M1Grey_2BoundaryCorrections_2Rusanov_8hpp_source.html">Rusanov.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

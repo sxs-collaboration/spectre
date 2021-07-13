@@ -1,0 +1,1559 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Data Structures</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#define-members">Macros</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">Data Structures</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Various useful data structures used in SpECTRE.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceMakeWithValueImpls"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceMakeWithValueImpls.html">MakeWithValueImpls</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCachedTempBuffer.html">CachedTempBuffer&lt; Computer, Tags &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classComplexDataVector.html">ComplexDataVector</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stores a collection of complex function values.  <a href="classComplexDataVector.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classComplexDiagonalModalOperator.html">ComplexDiagonalModalOperator</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A class for an element-wise complex multiplier of modal coefficients.  <a href="classComplexDiagonalModalOperator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classComplexModalVector.html">ComplexModalVector</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A class for storing complex spectral coefficients on a spectral grid.  <a href="classComplexModalVector.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDataVector.html">DataVector</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stores a collection of function values.  <a href="classDataVector.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDenseMatrix.html">DenseMatrix&lt; T, SO &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A dynamically sized matrix of arbitrary type.  <a href="classDenseMatrix.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDenseVector.html">DenseVector&lt; T, TF &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A dynamically sized vector of arbitrary type.  <a href="classDenseVector.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDiagonalModalOperator.html">DiagonalModalOperator</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A class for an element-wise multiplier of modal coefficients.  <a href="classDiagonalModalOperator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDynamicBuffer.html">DynamicBuffer&lt; T &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A dynamically sized vector of <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>s. For convenience it can also be instantiated for fundamental types.  <a href="classDynamicBuffer.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFixedHashMap.html">FixedHashMap&lt; MaxSize, Key, ValueType, Hash, KeyEqual &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A hash table with a compile-time specified maximum size and ability to efficiently handle perfect hashes.  <a href="classFixedHashMap.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structIdPair.html">IdPair&lt; IdType, DataType &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A data structure that contains an ID and data associated with that ID.  <a href="structIdPair.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classIndex.html">Index&lt; Dim &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classIndexIterator.html">IndexIterator&lt; Dim &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeviCivitaIterator.html">LeviCivitaIterator&lt; Dim &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Iterate over all nonzero index permutations for a Levi-Civita symbol.  <a href="classLeviCivitaIterator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classMatrix.html">Matrix</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A dynamically sized matrix of <code>double</code>s with column-major storage.  <a href="classMatrix.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classModalVector.html">ModalVector</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A class for storing spectral coefficients on a spectral grid.  <a href="classModalVector.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSliceIterator.html">SliceIterator</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Iterate over a (dim-1)-dimensional slice.  <a href="classSliceIterator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSpinWeighted.html">SpinWeighted&lt; T, Spin, is_vector &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Make a spin-weighted type <code>T</code> with spin-weight <code>Spin</code>. Mathematical operators are restricted to addition, subtraction, multiplication and division, with spin-weights checked for validity.  <a href="structSpinWeighted.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structis__any__spin__weighted.html">is_any_spin_weighted&lt; T &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structis__spin__weighted__of.html">is_spin_weighted_of&lt; InternalType, T &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structis__spin__weighted__of__same__type.html">is_spin_weighted_of_same_type&lt; T1, T2 &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classStripeIterator.html">StripeIterator</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Iterates over the 1-dimensional stripes with info on how to iterate over the current stripe.  <a href="classStripeIterator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTempBuffer.html">TempBuffer&lt; TagList, is_fundamental &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A <a class="el" href="structTempBuffer.html" title="A TempBuffer holds a set of Tensor&lt;DataType&gt;s, where DataType is either a DataVector (or similar type...">TempBuffer</a> holds a set of <code>Tensor&lt;DataType&gt;</code>s, where DataType is either a <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> (or similar type) or a fundamental type, in a way that minimizes allocations.  <a href="structTempBuffer.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1Magnitude.html">Tags::Magnitude&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1EuclideanMagnitude.html">Tags::EuclideanMagnitude&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1NonEuclideanMagnitude.html">Tags::NonEuclideanMagnitude&lt; Tag, MetricTag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1Normalized.html">Tags::Normalized&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1NormalizedCompute.html">Tags::NormalizedCompute&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1Sqrt.html">Tags::Sqrt&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1SqrtCompute.html">Tags::SqrtCompute&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1PointwiseL2Norm.html">Tags::PointwiseL2Norm&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1PointwiseL2NormCompute.html">Tags::PointwiseL2NormCompute&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1L2Norm.html">Tags::L2Norm&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1L2NormCompute.html">Tags::L2NormCompute&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTensorComponent.html">TensorComponent</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An untyped tensor component with a name for observation.  <a href="structTensorComponent.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structExtentsAndTensorVolumeData.html">ExtentsAndTensorVolumeData</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds the extents of the mesh and the tensor components on the mesh.  <a href="structExtentsAndTensorVolumeData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classVariables_3_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html">Variables&lt; tmpl::list&lt; Tags... &gt; &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A Variables holds a contiguous memory block with Tensors pointing into it.  <a href="classVariables_3_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classVectorImpl.html">VectorImpl&lt; T, VectorType &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base class template for various <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> and related types.  <a href="classVectorImpl.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structget__vector__element__type.html">get_vector_element_type&lt; T, bool &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper struct to determine the element type of a <a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a> or container of <a class="el" href="classVectorImpl.html" title="Base class template for various DataVector and related types.">VectorImpl</a>.  <a href="structget__vector__element__type.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDirectionMap.html">DirectionMap&lt; Dim, T &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classMesh.html">Mesh&lt; Dim &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds the number of grid points, basis, and quadrature in each direction of the computational grid.  <a href="classMesh.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:gafecda8db57d55c644d6cf13c9321883c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#gafecda8db57d55c644d6cf13c9321883c">BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT</a>(VECTOR_TYPE,  BLAZE_MATH_TRAIT)</td></tr>
+<tr class="memdesc:gafecda8db57d55c644d6cf13c9321883c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instructs Blaze to provide the appropriate vector result type after math operations. This is accomplished by specializing Blaze's type traits that are used for handling return type deduction and specifying the <code>using Type =</code> nested type alias in the traits.  <a href="group__DataStructuresGroup.html#gafecda8db57d55c644d6cf13c9321883c">More...</a><br /></td></tr>
+<tr class="separator:gafecda8db57d55c644d6cf13c9321883c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad678231c651cb6e4e6b428467c860f0d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#gad678231c651cb6e4e6b428467c860f0d">BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT</a>( VECTOR_TYPE,  COMPATIBLE,  BLAZE_MATH_TRAIT,  RESULT_TYPE)</td></tr>
+<tr class="memdesc:gad678231c651cb6e4e6b428467c860f0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instructs Blaze to provide the appropriate vector result type of an operator between <code>VECTOR_TYPE</code> and <code>COMPATIBLE</code>, where the operation is represented by <code>BLAZE_MATH_TRAIT</code>  <a href="group__DataStructuresGroup.html#gad678231c651cb6e4e6b428467c860f0d">More...</a><br /></td></tr>
+<tr class="separator:gad678231c651cb6e4e6b428467c860f0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac6e23b3575c630977f52a42c99af6aec"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#gac6e23b3575c630977f52a42c99af6aec">VECTOR_BLAZE_TRAIT_SPECIALIZE_ARITHMETIC_TRAITS</a>(VECTOR_TYPE)</td></tr>
+<tr class="memdesc:gac6e23b3575c630977f52a42c99af6aec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instructs Blaze to provide the appropriate vector result type of arithmetic operations for <code>VECTOR_TYPE</code>. This is accomplished by specializing Blaze's type traits that are used for handling return type deduction.  <a href="group__DataStructuresGroup.html#gac6e23b3575c630977f52a42c99af6aec">More...</a><br /></td></tr>
+<tr class="separator:gac6e23b3575c630977f52a42c99af6aec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7174934f57eac4f19e94aaabbcf4f5fc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#ga7174934f57eac4f19e94aaabbcf4f5fc">VECTOR_BLAZE_TRAIT_SPECIALIZE_ALL_MAP_TRAITS</a>(VECTOR_TYPE)</td></tr>
+<tr class="memdesc:ga7174934f57eac4f19e94aaabbcf4f5fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instructs Blaze to provide the appropriate vector result type of <code>Map</code> operations (unary and binary) acting on <code>VECTOR_TYPE</code>. This is accomplished by specializing Blaze's type traits that are used for handling return type deduction.  <a href="group__DataStructuresGroup.html#ga7174934f57eac4f19e94aaabbcf4f5fc">More...</a><br /></td></tr>
+<tr class="separator:ga7174934f57eac4f19e94aaabbcf4f5fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga05d20a8d7699c607544de057dcb975ee"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#ga05d20a8d7699c607544de057dcb975ee">MAKE_STD_ARRAY_VECTOR_BINOPS</a>(VECTOR_TYPE)</td></tr>
+<tr class="memdesc:ga05d20a8d7699c607544de057dcb975ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines the set of binary operations often supported for <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;VECTOR_TYPE, size&gt;</code>, for arbitrary <code>size</code>.  <a href="group__DataStructuresGroup.html#ga05d20a8d7699c607544de057dcb975ee">More...</a><br /></td></tr>
+<tr class="separator:ga05d20a8d7699c607544de057dcb975ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabe9b48242b12719bc435709531049d47"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#gabe9b48242b12719bc435709531049d47">MAKE_WITH_VALUE_IMPL_DEFINITION_FOR</a>(VECTOR_TYPE)</td></tr>
+<tr class="memdesc:gabe9b48242b12719bc435709531049d47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines the <code>MakeWithValueImpl</code> <code>apply</code> specialization.  <a href="group__DataStructuresGroup.html#gabe9b48242b12719bc435709531049d47">More...</a><br /></td></tr>
+<tr class="separator:gabe9b48242b12719bc435709531049d47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:ga69056b282471606143ecf15450342528"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#ga69056b282471606143ecf15450342528">FloatingPointType</a> { <b>Float</b>, 
+<b>Double</b>
+ }</td></tr>
+<tr class="memdesc:ga69056b282471606143ecf15450342528"><td class="mdescLeft">&#160;</td><td class="mdescRight">Which floating point type to use.  <a href="group__DataStructuresGroup.html#ga69056b282471606143ecf15450342528">More...</a><br /></td></tr>
+<tr class="separator:ga69056b282471606143ecf15450342528"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:gac2de486a64a176604f89cbbfbb8fffc9"><td class="memTemplParams" colspan="2">template&lt;size_t N&gt; </td></tr>
+<tr class="memitem:gac2de486a64a176604f89cbbfbb8fffc9"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#gac2de486a64a176604f89cbbfbb8fffc9">collapsed_index</a> (const <a class="el" href="classIndex.html">Index</a>&lt; N &gt; &amp;index, const <a class="el" href="classIndex.html">Index</a>&lt; N &gt; &amp;extents) noexcept</td></tr>
+<tr class="separator:gac2de486a64a176604f89cbbfbb8fffc9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa5c51794a36de6bd027c6f423be72e6e"><td class="memTemplParams" colspan="2">template&lt;size_t VolumeDim&gt; </td></tr>
+<tr class="memitem:gaa5c51794a36de6bd027c6f423be72e6e"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#gaa5c51794a36de6bd027c6f423be72e6e">volume_and_slice_indices</a> (const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;extents) noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; size_t, size_t &gt;[]&gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; size_t, size_t &gt;&gt;, <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; size_t, size_t &gt;&gt;&gt;, VolumeDim &gt;&gt;</td></tr>
+<tr class="memdesc:gaa5c51794a36de6bd027c6f423be72e6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the mapping between volume and boundary slice indices.  <a href="group__DataStructuresGroup.html#gaa5c51794a36de6bd027c6f423be72e6e">More...</a><br /></td></tr>
+<tr class="separator:gaa5c51794a36de6bd027c6f423be72e6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf172eb2293211a5f294f9c2c7e7b9b1d"><td class="memTemplParams" colspan="2">template&lt;std::size_t VolumeDim, typename... VolumeTags, typename... SliceTags&gt; </td></tr>
+<tr class="memitem:gaf172eb2293211a5f294f9c2c7e7b9b1d"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#gaf172eb2293211a5f294f9c2c7e7b9b1d">add_slice_to_data</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; tmpl::list&lt; VolumeTags... &gt;&gt; * &gt; volume_vars, const Variables&lt; tmpl::list&lt; SliceTags... &gt;&gt; &amp;vars_on_slice, const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;extents, const size_t sliced_dim, const size_t fixed_index) noexcept</td></tr>
+<tr class="memdesc:gaf172eb2293211a5f294f9c2c7e7b9b1d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds data on a codimension 1 slice to a volume quantity. The slice has a constant logical coordinate in direction <code>sliced_dim</code>, slicing the volume at <code>fixed_index</code> in that dimension. For example, to add to the lower boundary of <code>sliced_dim</code>, pass <code>0</code> for <code>fixed_index</code>; to add to the upper boundary, pass <code>extents[sliced_dim] - 1</code>.  <a href="group__DataStructuresGroup.html#gaf172eb2293211a5f294f9c2c7e7b9b1d">More...</a><br /></td></tr>
+<tr class="separator:gaf172eb2293211a5f294f9c2c7e7b9b1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad3e9dbf822156ded56a56203bfde2076"><td class="memTemplParams" colspan="2">template&lt;typename SpinWeightedType , Requires&lt; is_any_spin_weighted_v&lt; SpinWeightedType &gt; and is_derived_of_vector_impl_v&lt; typename SpinWeightedType::value_type &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:gad3e9dbf822156ded56a56203bfde2076"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#gad3e9dbf822156ded56a56203bfde2076">make_const_view</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; const SpinWeightedType * &gt; view, const SpinWeightedType &amp;spin_weighted, const size_t offset, const size_t extent) noexcept</td></tr>
+<tr class="separator:gad3e9dbf822156ded56a56203bfde2076"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga72c56e579182a94d0f96e9a845a02bc7"><td class="memTemplParams" colspan="2">template&lt;typename... Tags&gt; </td></tr>
+<tr class="memitem:ga72c56e579182a94d0f96e9a845a02bc7"><td class="memTemplItemLeft" align="right" valign="top">Variables&lt; tmpl::list&lt; Tags... &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#ga72c56e579182a94d0f96e9a845a02bc7">variables_from_tagged_tuple</a> (const <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt; &amp;tuple) noexcept</td></tr>
+<tr class="separator:ga72c56e579182a94d0f96e9a845a02bc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga14d24a5726fa5cdc1872f06af1529a96"><td class="memTemplParams" colspan="2">template&lt;typename VectorType , Requires&lt; is_derived_of_vector_impl_v&lt; VectorType &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:ga14d24a5726fa5cdc1872f06af1529a96"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#ga14d24a5726fa5cdc1872f06af1529a96">make_const_view</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; const VectorType * &gt; view, const VectorType &amp;vector, const size_t offset, const size_t extent) noexcept</td></tr>
+<tr class="separator:ga14d24a5726fa5cdc1872f06af1529a96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaafb2f0ad21af6d51f10551d50d122032"><td class="memTemplParams" colspan="2">template&lt;typename R , typename T , typename ValueType &gt; </td></tr>
+<tr class="memitem:gaafb2f0ad21af6d51f10551d50d122032"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/types/remove_cv.html">std::remove_const_t</a>&lt; R &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#gaafb2f0ad21af6d51f10551d50d122032">make_with_value</a> (const T &amp;input, const ValueType &amp;value) noexcept</td></tr>
+<tr class="memdesc:gaafb2f0ad21af6d51f10551d50d122032"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given an object of type <code>T</code>, create an object of type <code>R</code> whose elements are initialized to <code>value</code>.  <a href="group__DataStructuresGroup.html#gaafb2f0ad21af6d51f10551d50d122032">More...</a><br /></td></tr>
+<tr class="separator:gaafb2f0ad21af6d51f10551d50d122032"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9cd1e87ec0efdc5f841201115b6169d3"><td class="memTemplParams" colspan="2">template&lt;typename... TagsToSlice, size_t VolumeDim&gt; </td></tr>
+<tr class="memitem:ga9cd1e87ec0efdc5f841201115b6169d3"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#ga9cd1e87ec0efdc5f841201115b6169d3">data_on_slice</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; tmpl::list&lt; TagsToSlice... &gt;&gt; * &gt; interface_vars, const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;element_extents, const size_t sliced_dim, const size_t fixed_index, const typename TagsToSlice::type &amp;... tensors) noexcept</td></tr>
+<tr class="memdesc:ga9cd1e87ec0efdc5f841201115b6169d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Slices volume <code>Tensor</code>s into a <code>Variables</code>  <a href="group__DataStructuresGroup.html#ga9cd1e87ec0efdc5f841201115b6169d3">More...</a><br /></td></tr>
+<tr class="separator:ga9cd1e87ec0efdc5f841201115b6169d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabfe29b420227efff9e2b14eea688f257"><td class="memTemplParams" colspan="2">template&lt;typename... TagsToSlice, size_t VolumeDim&gt; </td></tr>
+<tr class="memitem:gabfe29b420227efff9e2b14eea688f257"><td class="memTemplItemLeft" align="right" valign="top">Variables&lt; tmpl::list&lt; TagsToSlice... &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#gabfe29b420227efff9e2b14eea688f257">data_on_slice</a> (const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;element_extents, const size_t sliced_dim, const size_t fixed_index, const typename TagsToSlice::type &amp;... tensors) noexcept</td></tr>
+<tr class="memdesc:gabfe29b420227efff9e2b14eea688f257"><td class="mdescLeft">&#160;</td><td class="mdescRight">Slices volume <code>Tensor</code>s into a <code>Variables</code>  <a href="group__DataStructuresGroup.html#gabfe29b420227efff9e2b14eea688f257">More...</a><br /></td></tr>
+<tr class="separator:gabfe29b420227efff9e2b14eea688f257"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga07d6c25719aa36b99fbc9ca3dc58203f"><td class="memTemplParams" colspan="2">template&lt;std::size_t VolumeDim, typename TagsList &gt; </td></tr>
+<tr class="memitem:ga07d6c25719aa36b99fbc9ca3dc58203f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#ga07d6c25719aa36b99fbc9ca3dc58203f">data_on_slice</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; TagsList &gt; * &gt; interface_vars, const Variables&lt; TagsList &gt; &amp;vars, const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;element_extents, const size_t sliced_dim, const size_t fixed_index) noexcept</td></tr>
+<tr class="memdesc:ga07d6c25719aa36b99fbc9ca3dc58203f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Slices the data within <code>vars</code> to a codimension 1 slice. The slice has a constant logical coordinate in direction <code>sliced_dim</code>, slicing the volume at <code>fixed_index</code> in that dimension. For example, to get the lower boundary of <code>sliced_dim</code>, pass <code>0</code> for <code>fixed_index</code>; to get the upper boundary, pass <code>extents[sliced_dim] - 1</code>.  <a href="group__DataStructuresGroup.html#ga07d6c25719aa36b99fbc9ca3dc58203f">More...</a><br /></td></tr>
+<tr class="separator:ga07d6c25719aa36b99fbc9ca3dc58203f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga29bb8308f2d30745b013da80b0199c44"><td class="memTemplParams" colspan="2">template&lt;std::size_t VolumeDim, typename TagsList &gt; </td></tr>
+<tr class="memitem:ga29bb8308f2d30745b013da80b0199c44"><td class="memTemplItemLeft" align="right" valign="top">Variables&lt; TagsList &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#ga29bb8308f2d30745b013da80b0199c44">data_on_slice</a> (const Variables&lt; TagsList &gt; &amp;vars, const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;element_extents, const size_t sliced_dim, const size_t fixed_index) noexcept</td></tr>
+<tr class="memdesc:ga29bb8308f2d30745b013da80b0199c44"><td class="mdescLeft">&#160;</td><td class="mdescRight">Slices the data within <code>vars</code> to a codimension 1 slice. The slice has a constant logical coordinate in direction <code>sliced_dim</code>, slicing the volume at <code>fixed_index</code> in that dimension. For example, to get the lower boundary of <code>sliced_dim</code>, pass <code>0</code> for <code>fixed_index</code>; to get the upper boundary, pass <code>extents[sliced_dim] - 1</code>.  <a href="group__DataStructuresGroup.html#ga29bb8308f2d30745b013da80b0199c44">More...</a><br /></td></tr>
+<tr class="separator:ga29bb8308f2d30745b013da80b0199c44"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga02523df41e3f69c9df52152f0dae0d9d"><td class="memTemplParams" colspan="2">template&lt;std::size_t VolumeDim, typename VectorType , typename... Structure&gt; </td></tr>
+<tr class="memitem:ga02523df41e3f69c9df52152f0dae0d9d"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#ga02523df41e3f69c9df52152f0dae0d9d">data_on_slice</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Tensor&lt; VectorType, Structure... &gt; * &gt; interface_tensor, const Tensor&lt; VectorType, Structure... &gt; &amp;volume_tensor, const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;element_extents, const size_t sliced_dim, const size_t fixed_index) noexcept</td></tr>
+<tr class="memdesc:ga02523df41e3f69c9df52152f0dae0d9d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Slices the data within <code>volume_tensor</code> to a codimension 1 slice. The slice has a constant logical coordinate in direction <code>sliced_dim</code>, slicing the volume at <code>fixed_index</code> in that dimension. For example, to get the lower boundary of <code>sliced_dim</code>, pass <code>0</code> for <code>fixed_index</code>; to get the upper boundary, pass <code>extents[sliced_dim] - 1</code>.  <a href="group__DataStructuresGroup.html#ga02523df41e3f69c9df52152f0dae0d9d">More...</a><br /></td></tr>
+<tr class="separator:ga02523df41e3f69c9df52152f0dae0d9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga675b367809670f47456cc12377e91cd6"><td class="memTemplParams" colspan="2">template&lt;std::size_t VolumeDim, typename VectorType , typename... Structure&gt; </td></tr>
+<tr class="memitem:ga675b367809670f47456cc12377e91cd6"><td class="memTemplItemLeft" align="right" valign="top">Tensor&lt; VectorType, Structure... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#ga675b367809670f47456cc12377e91cd6">data_on_slice</a> (const Tensor&lt; VectorType, Structure... &gt; &amp;volume_tensor, const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;element_extents, const size_t sliced_dim, const size_t fixed_index) noexcept</td></tr>
+<tr class="memdesc:ga675b367809670f47456cc12377e91cd6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Slices the data within <code>volume_tensor</code> to a codimension 1 slice. The slice has a constant logical coordinate in direction <code>sliced_dim</code>, slicing the volume at <code>fixed_index</code> in that dimension. For example, to get the lower boundary of <code>sliced_dim</code>, pass <code>0</code> for <code>fixed_index</code>; to get the upper boundary, pass <code>extents[sliced_dim] - 1</code>.  <a href="group__DataStructuresGroup.html#ga675b367809670f47456cc12377e91cd6">More...</a><br /></td></tr>
+<tr class="separator:ga675b367809670f47456cc12377e91cd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaab7b50c70096584837d57bf32dd04559"><td class="memTemplParams" colspan="2">template&lt;std::size_t VolumeDim, typename VectorType , typename... Structure&gt; </td></tr>
+<tr class="memitem:gaab7b50c70096584837d57bf32dd04559"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#gaab7b50c70096584837d57bf32dd04559">data_on_slice</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; Tensor&lt; VectorType, Structure... &gt;&gt; * &gt; interface_tensor, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; Tensor&lt; VectorType, Structure... &gt;&gt; &amp;volume_tensor, const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;element_extents, const size_t sliced_dim, const size_t fixed_index) noexcept</td></tr>
+<tr class="memdesc:gaab7b50c70096584837d57bf32dd04559"><td class="mdescLeft">&#160;</td><td class="mdescRight">Slices the data within <code>volume_tensor</code> to a codimension 1 slice. The slice has a constant logical coordinate in direction <code>sliced_dim</code>, slicing the volume at <code>fixed_index</code> in that dimension. For example, to get the lower boundary of <code>sliced_dim</code>, pass <code>0</code> for <code>fixed_index</code>; to get the upper boundary, pass <code>extents[sliced_dim] - 1</code>.  <a href="group__DataStructuresGroup.html#gaab7b50c70096584837d57bf32dd04559">More...</a><br /></td></tr>
+<tr class="separator:gaab7b50c70096584837d57bf32dd04559"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga39aac8577f7b502b4b0e5822b9cb4cc1"><td class="memTemplParams" colspan="2">template&lt;std::size_t VolumeDim, typename VectorType , typename... Structure&gt; </td></tr>
+<tr class="memitem:ga39aac8577f7b502b4b0e5822b9cb4cc1"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; Tensor&lt; VectorType, Structure... &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#ga39aac8577f7b502b4b0e5822b9cb4cc1">data_on_slice</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; Tensor&lt; VectorType, Structure... &gt;&gt; &amp;volume_tensor, const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;element_extents, const size_t sliced_dim, const size_t fixed_index) noexcept</td></tr>
+<tr class="memdesc:ga39aac8577f7b502b4b0e5822b9cb4cc1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Slices the data within <code>volume_tensor</code> to a codimension 1 slice. The slice has a constant logical coordinate in direction <code>sliced_dim</code>, slicing the volume at <code>fixed_index</code> in that dimension. For example, to get the lower boundary of <code>sliced_dim</code>, pass <code>0</code> for <code>fixed_index</code>; to get the upper boundary, pass <code>extents[sliced_dim] - 1</code>.  <a href="group__DataStructuresGroup.html#ga39aac8577f7b502b4b0e5822b9cb4cc1">More...</a><br /></td></tr>
+<tr class="separator:ga39aac8577f7b502b4b0e5822b9cb4cc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabf5aa6d8efa0b2546f7e409a25b4f7dd"><td class="memTemplParams" colspan="2">template&lt;typename Tag , typename TagList &gt; </td></tr>
+<tr class="memitem:gabf5aa6d8efa0b2546f7e409a25b4f7dd"><td class="memTemplItemLeft" align="right" valign="top">constexpr Tag::type &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#gabf5aa6d8efa0b2546f7e409a25b4f7dd">get</a> (Variables&lt; TagList &gt; &amp;v) noexcept</td></tr>
+<tr class="memdesc:gabf5aa6d8efa0b2546f7e409a25b4f7dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return Tag::type pointing into the contiguous array.  <a href="group__DataStructuresGroup.html#gabf5aa6d8efa0b2546f7e409a25b4f7dd">More...</a><br /></td></tr>
+<tr class="separator:gabf5aa6d8efa0b2546f7e409a25b4f7dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga15f646be5767f7105455b04aa4c00b1b"><td class="memTemplParams" colspan="2">template&lt;typename Tag , typename TagList &gt; </td></tr>
+<tr class="memitem:ga15f646be5767f7105455b04aa4c00b1b"><td class="memTemplItemLeft" align="right" valign="top">constexpr const Tag::type &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DataStructuresGroup.html#ga15f646be5767f7105455b04aa4c00b1b">get</a> (const Variables&lt; TagList &gt; &amp;v) noexcept</td></tr>
+<tr class="memdesc:ga15f646be5767f7105455b04aa4c00b1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return Tag::type pointing into the contiguous array.  <a href="group__DataStructuresGroup.html#ga15f646be5767f7105455b04aa4c00b1b">More...</a><br /></td></tr>
+<tr class="separator:ga15f646be5767f7105455b04aa4c00b1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>Various useful data structures used in SpECTRE. </p>
+<h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="gafecda8db57d55c644d6cf13c9321883c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gafecda8db57d55c644d6cf13c9321883c">&#9670;&nbsp;</a></span>BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">VECTOR_TYPE, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">BLAZE_MATH_TRAIT&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keyword">template</span> &lt;&gt;                                                              \</div>
+<div class="line">  struct BLAZE_MATH_TRAIT&lt;VECTOR_TYPE, VECTOR_TYPE&gt; {                      \</div>
+<div class="line">    using Type = VECTOR_TYPE;                                              \</div>
+<div class="line">  };                                                                       \</div>
+<div class="line">  template &lt;&gt;                                                              \</div>
+<div class="line">  struct BLAZE_MATH_TRAIT&lt;VECTOR_TYPE, VECTOR_TYPE::value_type&gt; {          \</div>
+<div class="line">    using Type = VECTOR_TYPE;                                              \</div>
+<div class="line">  };                                                                       \</div>
+<div class="line">  template &lt;&gt;                                                              \</div>
+<div class="line">  struct BLAZE_MATH_TRAIT&lt;VECTOR_TYPE::value_type, VECTOR_TYPE&gt; {          \</div>
+<div class="line">    using Type = VECTOR_TYPE;                                              \</div>
+<div class="line">  }</div>
+</div><!-- fragment -->
+<p>Instructs Blaze to provide the appropriate vector result type after math operations. This is accomplished by specializing Blaze's type traits that are used for handling return type deduction and specifying the <code>using Type =</code> nested type alias in the traits. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">VECTOR_TYPE</td><td>The vector type, which matches the type of the operation result (e.g. <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>)</td></tr>
+    <tr><td class="paramname">BLAZE_MATH_TRAIT</td><td>The blaze trait/expression for which you want to specify the return type (e.g. <code>AddTrait</code>). </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gad678231c651cb6e4e6b428467c860f0d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad678231c651cb6e4e6b428467c860f0d">&#9670;&nbsp;</a></span>BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">VECTOR_TYPE, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">COMPATIBLE, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">BLAZE_MATH_TRAIT, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">RESULT_TYPE&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keyword">template</span> &lt;&gt;                                               \</div>
+<div class="line">  struct BLAZE_MATH_TRAIT&lt;VECTOR_TYPE, COMPATIBLE&gt; {        \</div>
+<div class="line">    using Type = RESULT_TYPE;                               \</div>
+<div class="line">  };                                                        \</div>
+<div class="line">  template &lt;&gt;                                               \</div>
+<div class="line">  struct BLAZE_MATH_TRAIT&lt;COMPATIBLE, VECTOR_TYPE&gt; {        \</div>
+<div class="line">    using Type = RESULT_TYPE;                               \</div>
+<div class="line">  }</div>
+</div><!-- fragment -->
+<p>Instructs Blaze to provide the appropriate vector result type of an operator between <code>VECTOR_TYPE</code> and <code>COMPATIBLE</code>, where the operation is represented by <code>BLAZE_MATH_TRAIT</code> </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">VECTOR_TYPE</td><td>The vector type, which matches the type of the operation result (e.g. <code><a class="el" href="classComplexDataVector.html" title="Stores a collection of complex function values.">ComplexDataVector</a></code>)</td></tr>
+    <tr><td class="paramname">COMPATIBLE</td><td>the type for which you want math operations to work with <code>VECTOR_TYPE</code> smoothly (e.g. <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>)</td></tr>
+    <tr><td class="paramname">BLAZE_MATH_TRAIT</td><td>The blaze trait for which you want declare the Type field (e.g. <code>AddTrait</code>)</td></tr>
+    <tr><td class="paramname">RESULT_TYPE</td><td>The type which should be used as the 'return' type for the binary operation </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga05d20a8d7699c607544de057dcb975ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga05d20a8d7699c607544de057dcb975ee">&#9670;&nbsp;</a></span>MAKE_STD_ARRAY_VECTOR_BINOPS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define MAKE_STD_ARRAY_VECTOR_BINOPS</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">VECTOR_TYPE</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <a class="code" href="group__UtilitiesGroup.html#gaee1c0cc775bf58891fab30b95a3ac51f">DEFINE_STD_ARRAY_BINOP</a>(VECTOR_TYPE, VECTOR_TYPE::value_type,               \</div>
+<div class="line">                         VECTOR_TYPE, <span class="keyword">operator</span>+, <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/functional/plus.html">std::plus&lt;&gt;</a>())              \</div>
+<div class="line">  DEFINE_STD_ARRAY_BINOP(VECTOR_TYPE, VECTOR_TYPE,                           \</div>
+<div class="line">                         VECTOR_TYPE::value_type, <span class="keyword">operator</span>+, <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/functional/plus.html">std::plus&lt;&gt;</a>())  \</div>
+<div class="line">  DEFINE_STD_ARRAY_BINOP(VECTOR_TYPE, VECTOR_TYPE, VECTOR_TYPE, <span class="keyword">operator</span>+,   \</div>
+<div class="line">                         <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/functional/plus.html">std::plus&lt;&gt;</a>())                                      <a class="code" href="group__UtilitiesGroup.html#gaee1c0cc775bf58891fab30b95a3ac51f">\</a></div>
+<div class="line"><a class="code" href="group__UtilitiesGroup.html#gaee1c0cc775bf58891fab30b95a3ac51f">                                                                             \</a></div>
+<div class="line"><a class="code" href="group__UtilitiesGroup.html#gaee1c0cc775bf58891fab30b95a3ac51f">  DEFINE_STD_ARRAY_BINOP</a>(VECTOR_TYPE, VECTOR_TYPE::value_type,               \</div>
+<div class="line">                         VECTOR_TYPE, <span class="keyword">operator</span>-, <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/functional/minus.html">std::minus&lt;&gt;</a>())             \</div>
+<div class="line">  DEFINE_STD_ARRAY_BINOP(VECTOR_TYPE, VECTOR_TYPE,                           \</div>
+<div class="line">                         VECTOR_TYPE::value_type, <span class="keyword">operator</span>-, <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/functional/minus.html">std::minus&lt;&gt;</a>()) \</div>
+<div class="line">  DEFINE_STD_ARRAY_BINOP(VECTOR_TYPE, VECTOR_TYPE, VECTOR_TYPE, <span class="keyword">operator</span>-,   \</div>
+<div class="line">                         <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/functional/minus.html">std::minus&lt;&gt;</a>())                                     <a class="code" href="group__UtilitiesGroup.html#ga4409dfaeeba8ef49967a7c98e4709c98">\</a></div>
+<div class="line"><a class="code" href="group__UtilitiesGroup.html#ga4409dfaeeba8ef49967a7c98e4709c98">                                                                             \</a></div>
+<div class="line"><a class="code" href="group__UtilitiesGroup.html#ga4409dfaeeba8ef49967a7c98e4709c98">  DEFINE_STD_ARRAY_INPLACE_BINOP</a>(VECTOR_TYPE, VECTOR_TYPE, <span class="keyword">operator</span>-=,       \</div>
+<div class="line">                                 <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/functional/minus.html">std::minus&lt;&gt;</a>())                             \</div>
+<div class="line">  DEFINE_STD_ARRAY_INPLACE_BINOP(                                            \</div>
+<div class="line">      VECTOR_TYPE, VECTOR_TYPE::value_type, <span class="keyword">operator</span>-=, <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/functional/minus.html">std::minus&lt;&gt;</a>())      \</div>
+<div class="line">  DEFINE_STD_ARRAY_INPLACE_BINOP(VECTOR_TYPE, VECTOR_TYPE, <span class="keyword">operator</span>+=,       \</div>
+<div class="line">                                 <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/functional/plus.html">std::plus&lt;&gt;</a>())                              \</div>
+<div class="line">  DEFINE_STD_ARRAY_INPLACE_BINOP(                                            \</div>
+<div class="line">      VECTOR_TYPE, VECTOR_TYPE::value_type, <span class="keyword">operator</span>+=, <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/functional/plus.html">std::plus&lt;&gt;</a>())</div>
+</div><!-- fragment -->
+<p>Defines the set of binary operations often supported for <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;VECTOR_TYPE, size&gt;</code>, for arbitrary <code>size</code>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">VECTOR_TYPE</td><td>The vector type (e.g. <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gabe9b48242b12719bc435709531049d47"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gabe9b48242b12719bc435709531049d47">&#9670;&nbsp;</a></span>MAKE_WITH_VALUE_IMPL_DEFINITION_FOR</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define MAKE_WITH_VALUE_IMPL_DEFINITION_FOR</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">VECTOR_TYPE</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keyword">namespace </span><a class="code" href="namespaceMakeWithValueImpls.html">MakeWithValueImpls</a> {                                             \</div>
+<div class="line">  template &lt;&gt;                                                                \</div>
+<div class="line">  struct NumberOfPoints&lt;VECTOR_TYPE&gt; {                                       \</div>
+<div class="line">    static <a class="code" href="group__UtilitiesGroup.html#ga9d571cd642604cb7bd87bb039ca3760f">SPECTRE_ALWAYS_INLINE</a> size_t                                      \</div>
+<div class="line">    apply(<span class="keyword">const</span> VECTOR_TYPE&amp; input) noexcept {                               \</div>
+<div class="line">      return input.size();                                                   \</div>
+<div class="line">    }                                                                        \</div>
+<div class="line">  };                                                                         \</div>
+<div class="line">  template &lt;&gt;                                                                \</div>
+<div class="line">  struct MakeWithSize&lt;VECTOR_TYPE&gt; {                                         \</div>
+<div class="line">    static <a class="code" href="group__UtilitiesGroup.html#ga9d571cd642604cb7bd87bb039ca3760f">SPECTRE_ALWAYS_INLINE</a> VECTOR_TYPE                                 \</div>
+<div class="line">    apply(<span class="keyword">const</span> <span class="keywordtype">size_t</span> size, <span class="keyword">const</span> VECTOR_TYPE::value_type value) noexcept { \</div>
+<div class="line">      return VECTOR_TYPE(size, value);                                       \</div>
+<div class="line">    }                                                                        \</div>
+<div class="line">  };                                                                         \</div>
+<div class="line">  }</div>
+</div><!-- fragment -->
+<p>Defines the <code>MakeWithValueImpl</code> <code>apply</code> specialization. </p>
+<h3>Details</h3>
+<p>The <code>MakeWithValueImpl&lt;VECTOR_TYPE, VECTOR_TYPE&gt;</code> member <code>apply(VECTOR_TYPE, VECTOR_TYPE::value_type)</code> specialization defined by this macro produces an object with the same size as the <code>input</code> argument, initialized with the <code>value</code> argument in every entry.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">VECTOR_TYPE</td><td>The vector type (e.g. <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga7174934f57eac4f19e94aaabbcf4f5fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7174934f57eac4f19e94aaabbcf4f5fc">&#9670;&nbsp;</a></span>VECTOR_BLAZE_TRAIT_SPECIALIZE_ALL_MAP_TRAITS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define VECTOR_BLAZE_TRAIT_SPECIALIZE_ALL_MAP_TRAITS</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">VECTOR_TYPE</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Operator&gt;                                    \</div>
+<div class="line">  struct MapTrait&lt;VECTOR_TYPE, Operator&gt; {                        \</div>
+<div class="line">    using Type = VECTOR_TYPE;                                     \</div>
+<div class="line">  };                                                              \</div>
+<div class="line">  template &lt;typename Operator&gt;                                    \</div>
+<div class="line">  struct MapTrait&lt;VECTOR_TYPE, VECTOR_TYPE, Operator&gt; {           \</div>
+<div class="line">    using Type = VECTOR_TYPE;                                     \</div>
+<div class="line">  }</div>
+</div><!-- fragment -->
+<p>Instructs Blaze to provide the appropriate vector result type of <code>Map</code> operations (unary and binary) acting on <code>VECTOR_TYPE</code>. This is accomplished by specializing Blaze's type traits that are used for handling return type deduction. </p>
+<h3>Details</h3>
+<p>Type declarations here are suitable for contiguous data (e.g. <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>), but this macro might need to be tweaked for other types of data, for instance Fourier coefficients.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">VECTOR_TYPE</td><td>The vector type, which for the <code>Map</code> operations is the type of the operation result (e.g. <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gac6e23b3575c630977f52a42c99af6aec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac6e23b3575c630977f52a42c99af6aec">&#9670;&nbsp;</a></span>VECTOR_BLAZE_TRAIT_SPECIALIZE_ARITHMETIC_TRAITS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define VECTOR_BLAZE_TRAIT_SPECIALIZE_ARITHMETIC_TRAITS</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">VECTOR_TYPE</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keyword">template</span> &lt;&gt;                                                        \</div>
+<div class="line">  struct TransposeFlag&lt;VECTOR_TYPE&gt;                                  \</div>
+<div class="line">      : BoolConstant&lt;VECTOR_TYPE::transpose_flag&gt; {};                \</div>
+<div class="line">  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, AddTrait);        \</div>
+<div class="line">  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, SubTrait);        \</div>
+<div class="line">  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, MultTrait);       \</div>
+<div class="line">  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, DivTrait)</div>
+</div><!-- fragment -->
+<p>Instructs Blaze to provide the appropriate vector result type of arithmetic operations for <code>VECTOR_TYPE</code>. This is accomplished by specializing Blaze's type traits that are used for handling return type deduction. </p>
+<h3>Details</h3>
+<p>Type definitions here are suitable for contiguous data (e.g. <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>), but this macro might need to be tweaked for other types of data, for instance Fourier coefficients.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">VECTOR_TYPE</td><td>The vector type, which for the arithmetic operations is the type of the operation result (e.g. <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="ga69056b282471606143ecf15450342528"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga69056b282471606143ecf15450342528">&#9670;&nbsp;</a></span>FloatingPointType</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="group__DataStructuresGroup.html#ga69056b282471606143ecf15450342528">FloatingPointType</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Which floating point type to use. </p>
+<p>An example use-case is for specifying in an input file to what precision data is written to disk, since most simulations will not have full double precision accuracy on volume data and we don't need all digits to visualize the data. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="gaf172eb2293211a5f294f9c2c7e7b9b1d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf172eb2293211a5f294f9c2c7e7b9b1d">&#9670;&nbsp;</a></span>add_slice_to_data()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t VolumeDim, typename... VolumeTags, typename... SliceTags&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void add_slice_to_data </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; tmpl::list&lt; VolumeTags... &gt;&gt; * &gt;&#160;</td>
+          <td class="paramname"><em>volume_vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variables&lt; tmpl::list&lt; SliceTags... &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vars_on_slice</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>extents</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>sliced_dim</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>fixed_index</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Adds data on a codimension 1 slice to a volume quantity. The slice has a constant logical coordinate in direction <code>sliced_dim</code>, slicing the volume at <code>fixed_index</code> in that dimension. For example, to add to the lower boundary of <code>sliced_dim</code>, pass <code>0</code> for <code>fixed_index</code>; to add to the upper boundary, pass <code>extents[sliced_dim] - 1</code>. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__DataStructuresGroup.html#ga07d6c25719aa36b99fbc9ca3dc58203f" title="Slices the data within vars to a codimension 1 slice. The slice has a constant logical coordinate in ...">data_on_slice</a> </dd></dl>
+
+</div>
+</div>
+<a id="gac2de486a64a176604f89cbbfbb8fffc9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac2de486a64a176604f89cbbfbb8fffc9">&#9670;&nbsp;</a></span>collapsed_index()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t collapsed_index </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; N &gt; &amp;&#160;</td>
+          <td class="paramname"><em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; N &gt; &amp;&#160;</td>
+          <td class="paramname"><em>extents</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get the collapsed index into a 1D array of the data corresponding to this <a class="el" href="classIndex.html">Index</a>. Note that the first dimension of the <a class="el" href="classIndex.html">Index</a> varies fastest when computing the collapsed index. </p>
+
+</div>
+</div>
+<a id="gaab7b50c70096584837d57bf32dd04559"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaab7b50c70096584837d57bf32dd04559">&#9670;&nbsp;</a></span>data_on_slice() <span class="overload">[1/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t VolumeDim, typename VectorType , typename... Structure&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void data_on_slice </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; Tensor&lt; VectorType, Structure... &gt;&gt; * &gt;&#160;</td>
+          <td class="paramname"><em>interface_tensor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; Tensor&lt; VectorType, Structure... &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_tensor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>element_extents</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>sliced_dim</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>fixed_index</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Slices the data within <code>volume_tensor</code> to a codimension 1 slice. The slice has a constant logical coordinate in direction <code>sliced_dim</code>, slicing the volume at <code>fixed_index</code> in that dimension. For example, to get the lower boundary of <code>sliced_dim</code>, pass <code>0</code> for <code>fixed_index</code>; to get the upper boundary, pass <code>extents[sliced_dim] - 1</code>. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__DataStructuresGroup.html#gaf172eb2293211a5f294f9c2c7e7b9b1d" title="Adds data on a codimension 1 slice to a volume quantity. The slice has a constant logical coordinate ...">add_slice_to_data</a></dd></dl>
+<p>Returns Tensor class sliced to a hypersurface. </p>
+
+</div>
+</div>
+<a id="ga02523df41e3f69c9df52152f0dae0d9d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga02523df41e3f69c9df52152f0dae0d9d">&#9670;&nbsp;</a></span>data_on_slice() <span class="overload">[2/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t VolumeDim, typename VectorType , typename... Structure&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void data_on_slice </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Tensor&lt; VectorType, Structure... &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>interface_tensor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; VectorType, Structure... &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_tensor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>element_extents</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>sliced_dim</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>fixed_index</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Slices the data within <code>volume_tensor</code> to a codimension 1 slice. The slice has a constant logical coordinate in direction <code>sliced_dim</code>, slicing the volume at <code>fixed_index</code> in that dimension. For example, to get the lower boundary of <code>sliced_dim</code>, pass <code>0</code> for <code>fixed_index</code>; to get the upper boundary, pass <code>extents[sliced_dim] - 1</code>. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__DataStructuresGroup.html#gaf172eb2293211a5f294f9c2c7e7b9b1d" title="Adds data on a codimension 1 slice to a volume quantity. The slice has a constant logical coordinate ...">add_slice_to_data</a></dd></dl>
+<p>Returns Tensor class sliced to a hypersurface. </p>
+
+</div>
+</div>
+<a id="ga07d6c25719aa36b99fbc9ca3dc58203f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga07d6c25719aa36b99fbc9ca3dc58203f">&#9670;&nbsp;</a></span>data_on_slice() <span class="overload">[3/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t VolumeDim, typename TagsList &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void data_on_slice </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; TagsList &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>interface_vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variables&lt; TagsList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>element_extents</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>sliced_dim</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>fixed_index</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Slices the data within <code>vars</code> to a codimension 1 slice. The slice has a constant logical coordinate in direction <code>sliced_dim</code>, slicing the volume at <code>fixed_index</code> in that dimension. For example, to get the lower boundary of <code>sliced_dim</code>, pass <code>0</code> for <code>fixed_index</code>; to get the upper boundary, pass <code>extents[sliced_dim] - 1</code>. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__DataStructuresGroup.html#gaf172eb2293211a5f294f9c2c7e7b9b1d" title="Adds data on a codimension 1 slice to a volume quantity. The slice has a constant logical coordinate ...">add_slice_to_data</a></dd></dl>
+<p>Returns Variables class sliced to a hypersurface. </p>
+
+</div>
+</div>
+<a id="ga9cd1e87ec0efdc5f841201115b6169d3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9cd1e87ec0efdc5f841201115b6169d3">&#9670;&nbsp;</a></span>data_on_slice() <span class="overload">[4/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... TagsToSlice, size_t VolumeDim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void data_on_slice </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; tmpl::list&lt; TagsToSlice... &gt;&gt; * &gt;&#160;</td>
+          <td class="paramname"><em>interface_vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>element_extents</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>sliced_dim</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>fixed_index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const typename TagsToSlice::type &amp;...&#160;</td>
+          <td class="paramname"><em>tensors</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Slices volume <code>Tensor</code>s into a <code>Variables</code> </p>
+<p>The slice has a constant logical coordinate in direction <code>sliced_dim</code>, slicing the volume at <code>fixed_index</code> in that dimension. For example, to get the lower boundary of <code>sliced_dim</code>, pass <code>0</code> for <code>fixed_index</code>; to get the upper boundary, pass <code>extents[sliced_dim] - 1</code>. </p>
+
+</div>
+</div>
+<a id="gabfe29b420227efff9e2b14eea688f257"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gabfe29b420227efff9e2b14eea688f257">&#9670;&nbsp;</a></span>data_on_slice() <span class="overload">[5/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... TagsToSlice, size_t VolumeDim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variables&lt;tmpl::list&lt;TagsToSlice...&gt; &gt; data_on_slice </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>element_extents</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>sliced_dim</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>fixed_index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const typename TagsToSlice::type &amp;...&#160;</td>
+          <td class="paramname"><em>tensors</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Slices volume <code>Tensor</code>s into a <code>Variables</code> </p>
+<p>The slice has a constant logical coordinate in direction <code>sliced_dim</code>, slicing the volume at <code>fixed_index</code> in that dimension. For example, to get the lower boundary of <code>sliced_dim</code>, pass <code>0</code> for <code>fixed_index</code>; to get the upper boundary, pass <code>extents[sliced_dim] - 1</code>. </p>
+
+</div>
+</div>
+<a id="ga39aac8577f7b502b4b0e5822b9cb4cc1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga39aac8577f7b502b4b0e5822b9cb4cc1">&#9670;&nbsp;</a></span>data_on_slice() <span class="overload">[6/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t VolumeDim, typename VectorType , typename... Structure&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt;Tensor&lt;VectorType, Structure...&gt; &gt; data_on_slice </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; Tensor&lt; VectorType, Structure... &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_tensor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>element_extents</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>sliced_dim</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>fixed_index</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Slices the data within <code>volume_tensor</code> to a codimension 1 slice. The slice has a constant logical coordinate in direction <code>sliced_dim</code>, slicing the volume at <code>fixed_index</code> in that dimension. For example, to get the lower boundary of <code>sliced_dim</code>, pass <code>0</code> for <code>fixed_index</code>; to get the upper boundary, pass <code>extents[sliced_dim] - 1</code>. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__DataStructuresGroup.html#gaf172eb2293211a5f294f9c2c7e7b9b1d" title="Adds data on a codimension 1 slice to a volume quantity. The slice has a constant logical coordinate ...">add_slice_to_data</a></dd></dl>
+<p>Returns Tensor class sliced to a hypersurface. </p>
+
+</div>
+</div>
+<a id="ga675b367809670f47456cc12377e91cd6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga675b367809670f47456cc12377e91cd6">&#9670;&nbsp;</a></span>data_on_slice() <span class="overload">[7/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t VolumeDim, typename VectorType , typename... Structure&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Tensor&lt;VectorType, Structure...&gt; data_on_slice </td>
+          <td>(</td>
+          <td class="paramtype">const Tensor&lt; VectorType, Structure... &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_tensor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>element_extents</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>sliced_dim</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>fixed_index</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Slices the data within <code>volume_tensor</code> to a codimension 1 slice. The slice has a constant logical coordinate in direction <code>sliced_dim</code>, slicing the volume at <code>fixed_index</code> in that dimension. For example, to get the lower boundary of <code>sliced_dim</code>, pass <code>0</code> for <code>fixed_index</code>; to get the upper boundary, pass <code>extents[sliced_dim] - 1</code>. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__DataStructuresGroup.html#gaf172eb2293211a5f294f9c2c7e7b9b1d" title="Adds data on a codimension 1 slice to a volume quantity. The slice has a constant logical coordinate ...">add_slice_to_data</a></dd></dl>
+<p>Returns Tensor class sliced to a hypersurface. </p>
+
+</div>
+</div>
+<a id="ga29bb8308f2d30745b013da80b0199c44"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga29bb8308f2d30745b013da80b0199c44">&#9670;&nbsp;</a></span>data_on_slice() <span class="overload">[8/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t VolumeDim, typename TagsList &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variables&lt;TagsList&gt; data_on_slice </td>
+          <td>(</td>
+          <td class="paramtype">const Variables&lt; TagsList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>element_extents</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>sliced_dim</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>fixed_index</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Slices the data within <code>vars</code> to a codimension 1 slice. The slice has a constant logical coordinate in direction <code>sliced_dim</code>, slicing the volume at <code>fixed_index</code> in that dimension. For example, to get the lower boundary of <code>sliced_dim</code>, pass <code>0</code> for <code>fixed_index</code>; to get the upper boundary, pass <code>extents[sliced_dim] - 1</code>. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__DataStructuresGroup.html#gaf172eb2293211a5f294f9c2c7e7b9b1d" title="Adds data on a codimension 1 slice to a volume quantity. The slice has a constant logical coordinate ...">add_slice_to_data</a></dd></dl>
+<p>Returns Variables class sliced to a hypersurface. </p>
+
+</div>
+</div>
+<a id="ga15f646be5767f7105455b04aa4c00b1b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga15f646be5767f7105455b04aa4c00b1b">&#9670;&nbsp;</a></span>get() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Tag , typename TagList &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr const Tag::type&amp; get </td>
+          <td>(</td>
+          <td class="paramtype">const Variables&lt; TagList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>v</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return Tag::type pointing into the contiguous array. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Tag</td><td>the variable to return </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gabf5aa6d8efa0b2546f7e409a25b4f7dd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gabf5aa6d8efa0b2546f7e409a25b4f7dd">&#9670;&nbsp;</a></span>get() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Tag , typename TagList &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr Tag::type&amp; get </td>
+          <td>(</td>
+          <td class="paramtype">Variables&lt; TagList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>v</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return Tag::type pointing into the contiguous array. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Tag</td><td>the variable to return </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gad3e9dbf822156ded56a56203bfde2076"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad3e9dbf822156ded56a56203bfde2076">&#9670;&nbsp;</a></span>make_const_view() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename SpinWeightedType , Requires&lt; is_any_spin_weighted_v&lt; SpinWeightedType &gt; and is_derived_of_vector_impl_v&lt; typename SpinWeightedType::value_type &gt;&gt;  = nullptr&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void make_const_view </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; const SpinWeightedType * &gt;&#160;</td>
+          <td class="paramname"><em>view</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const SpinWeightedType &amp;&#160;</td>
+          <td class="paramname"><em>spin_weighted</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>offset</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>extent</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Make the input <code>view</code> a <code>const</code> view of the const data <code>spin_weighted</code>, at offset <code>offset</code> and length <code>extent</code>.</p>
+<dl class="section warning"><dt>Warning</dt><dd>This DOES modify the (const) input <code>view</code>. The reason <code>view</code> is taken by const pointer is to try to insist that the object to be a <code>const</code> view is actually const. Of course, there are ways of subverting this intended functionality and editing the data pointed into by <code>view</code> after this function is called; doing so is highly discouraged and results in undefined behavior. </dd></dl>
+
+</div>
+</div>
+<a id="ga14d24a5726fa5cdc1872f06af1529a96"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga14d24a5726fa5cdc1872f06af1529a96">&#9670;&nbsp;</a></span>make_const_view() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename VectorType , Requires&lt; is_derived_of_vector_impl_v&lt; VectorType &gt;&gt;  = nullptr&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void make_const_view </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; const VectorType * &gt;&#160;</td>
+          <td class="paramname"><em>view</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const VectorType &amp;&#160;</td>
+          <td class="paramname"><em>vector</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>offset</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>extent</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Make the input <code>view</code> a <code>const</code> view of the const data <code>vector</code>, at offset <code>offset</code> and length <code>extent</code>.</p>
+<dl class="section warning"><dt>Warning</dt><dd>This DOES modify the (const) input <code>view</code>. The reason <code>view</code> is taken by const pointer is to try to insist that the object to be a <code>const</code> view is actually const. Of course, there are ways of subverting this intended functionality and editing the data pointed into by <code>view</code> after this function is called; doing so is highly discouraged and results in undefined behavior. </dd></dl>
+
+</div>
+</div>
+<a id="gaafb2f0ad21af6d51f10551d50d122032"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaafb2f0ad21af6d51f10551d50d122032">&#9670;&nbsp;</a></span>make_with_value()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename R , typename T , typename ValueType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/types/remove_cv.html">std::remove_const_t</a>&lt;R&gt; make_with_value </td>
+          <td>(</td>
+          <td class="paramtype">const T &amp;&#160;</td>
+          <td class="paramname"><em>input</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const ValueType &amp;&#160;</td>
+          <td class="paramname"><em>value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Given an object of type <code>T</code>, create an object of type <code>R</code> whose elements are initialized to <code>value</code>. </p>
+<h3>Details</h3>
+<p>This function is useful in function templates in order to initialize the return type of a function template with <code>value</code> for functions that can be called either at a single grid-point or to fill a data structure at the same set of grid-points as the <code>input</code> </p><dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">ValueType</td><td>The type of <code>value</code>. For most containers, this will be <code>double</code>.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="namespaceMakeWithValueImpls.html">MakeWithValueImpls</a> </dd></dl>
+
+</div>
+</div>
+<a id="ga72c56e579182a94d0f96e9a845a02bc7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga72c56e579182a94d0f96e9a845a02bc7">&#9670;&nbsp;</a></span>variables_from_tagged_tuple()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Tags&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variables&lt;tmpl::list&lt;Tags...&gt; &gt; variables_from_tagged_tuple </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt; &amp;&#160;</td>
+          <td class="paramname"><em>tuple</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Construct a variables from the <code>Tensor</code>s in a <code>TaggedTuple</code>. </p>
+
+</div>
+</div>
+<a id="gaa5c51794a36de6bd027c6f423be72e6e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa5c51794a36de6bd027c6f423be72e6e">&#9670;&nbsp;</a></span>volume_and_slice_indices()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t VolumeDim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto volume_and_slice_indices </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>extents</em></td><td>)</td>
+          <td> -&gt;  <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; size_t, size_t &gt;[]&gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; size_t, size_t &gt;&gt;, <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; size_t, size_t &gt;&gt;&gt;, VolumeDim &gt;&gt;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the mapping between volume and boundary slice indices. </p>
+<p><a class="el" href="classSliceIterator.html" title="Iterate over a (dim-1)-dimensional slice.">SliceIterator</a> is used to map between the index of a point on a slice in the volume data and the index in the corresponding sliced data. Repeatedly applying the <a class="el" href="classSliceIterator.html" title="Iterate over a (dim-1)-dimensional slice.">SliceIterator</a> on various components of a tensor becomes very expensive and so precomputing the index map is sometimes advantageous. This function computes the index map onto all boundary slices of volume mesh with extents <code>extents</code>.</p>
+<p>The <code>unique_ptr</code> is where the volume and slice indices are stored in memory, the array holds views into the memory buffer. The index of the array is the fixed dimension, the outer <code>pair</code> holds the indices for the lower and upper side, respectively, while the <code>pair</code>s in the <code>span</code>s hold the volume and slice indices, respectively. </p>
+
+</div>
+</div>
+</div><!-- contents -->
+<div class="ttc" id="aminus_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/functional/minus.html">std::minus</a></div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga4409dfaeeba8ef49967a7c98e4709c98"><div class="ttname"><a href="group__UtilitiesGroup.html#ga4409dfaeeba8ef49967a7c98e4709c98">DEFINE_STD_ARRAY_INPLACE_BINOP</a></div><div class="ttdeci">#define DEFINE_STD_ARRAY_INPLACE_BINOP(LTYPE, RTYPE, OP_FUNCTION_NAME, BINARY_OP)</div><div class="ttdoc">Declares an in-place binary function on an array, intended for operations such as +=</div><div class="ttdef"><b>Definition:</b> StdArrayHelpers.hpp:264</div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga9d571cd642604cb7bd87bb039ca3760f"><div class="ttname"><a href="group__UtilitiesGroup.html#ga9d571cd642604cb7bd87bb039ca3760f">SPECTRE_ALWAYS_INLINE</a></div><div class="ttdeci">#define SPECTRE_ALWAYS_INLINE</div><div class="ttdef"><b>Definition:</b> ForceInline.hpp:16</div></div>
+<div class="ttc" id="anamespaceMakeWithValueImpls_html"><div class="ttname"><a href="namespaceMakeWithValueImpls.html">MakeWithValueImpls</a></div><div class="ttdef"><b>Definition:</b> DenseVector.hpp:61</div></div>
+<div class="ttc" id="aplus_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/functional/plus.html">std::plus</a></div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_gaee1c0cc775bf58891fab30b95a3ac51f"><div class="ttname"><a href="group__UtilitiesGroup.html#gaee1c0cc775bf58891fab30b95a3ac51f">DEFINE_STD_ARRAY_BINOP</a></div><div class="ttdeci">#define DEFINE_STD_ARRAY_BINOP(RESULT_TYPE, LTYPE, RTYPE, OP_FUNCTION_NAME, BINARY_OP)</div><div class="ttdoc">Declares a binary function on an array, intended for binary operators such as +</div><div class="ttdef"><b>Definition:</b> StdArrayHelpers.hpp:235</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

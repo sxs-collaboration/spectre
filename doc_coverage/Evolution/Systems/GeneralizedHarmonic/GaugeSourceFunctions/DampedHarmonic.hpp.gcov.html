@@ -1,0 +1,279 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - 39f3c2b725318dcf91749887b1e61f477736e132 - Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DampedHarmonic.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title"> SpECTRE Documentation Coverage Report</td></tr>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../index.html">top level</a> - <a href="index.html">Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions</a> - DampedHarmonic.hpp</td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+             <td class="headerItem">Commit:</td>
+             <td class="headerValue"><a target="_blank" href="https://github.com/sxs-collaboration/spectre/commit/39f3c2b725318dcf91749887b1e61f477736e132">39f3c2b725318dcf91749887b1e61f477736e132</a></td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntry">4</td>
+            <td class="headerCovTableEntryMed">75.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2021-07-13 03:19:40</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineNoCov">          0 : // Distributed under the MIT License.</span></a>
+<a name="2"><span class="lineNum">       2 </span>            : // See LICENSE.txt for details.</a>
+<a name="3"><span class="lineNum">       3 </span>            : </a>
+<a name="4"><span class="lineNum">       4 </span>            : #pragma once</a>
+<a name="5"><span class="lineNum">       5 </span>            : </a>
+<a name="6"><span class="lineNum">       6 </span>            : #include &lt;cstddef&gt;</a>
+<a name="7"><span class="lineNum">       7 </span>            : </a>
+<a name="8"><span class="lineNum">       8 </span>            : #include &quot;DataStructures/DataBox/Tag.hpp&quot;</a>
+<a name="9"><span class="lineNum">       9 </span>            : #include &quot;DataStructures/Tensor/TypeAliases.hpp&quot;</a>
+<a name="10"><span class="lineNum">      10 </span>            : #include &quot;Domain/Tags.hpp&quot;</a>
+<a name="11"><span class="lineNum">      11 </span>            : #include &quot;Evolution/Systems/GeneralizedHarmonic/Tags.hpp&quot;</a>
+<a name="12"><span class="lineNum">      12 </span>            : #include &quot;PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp&quot;</a>
+<a name="13"><span class="lineNum">      13 </span>            : #include &quot;Time/Tags.hpp&quot;</a>
+<a name="14"><span class="lineNum">      14 </span>            : #include &quot;Utilities/ContainerHelpers.hpp&quot;</a>
+<a name="15"><span class="lineNum">      15 </span>            : #include &quot;Utilities/TMPL.hpp&quot;</a>
+<a name="16"><span class="lineNum">      16 </span>            : </a>
+<a name="17"><span class="lineNum">      17 </span>            : /// \cond</a>
+<a name="18"><span class="lineNum">      18 </span>            : class DataVector;</a>
+<a name="19"><span class="lineNum">      19 </span>            : namespace gsl {</a>
+<a name="20"><span class="lineNum">      20 </span>            : template &lt;class T&gt;</a>
+<a name="21"><span class="lineNum">      21 </span>            : class not_null;</a>
+<a name="22"><span class="lineNum">      22 </span>            : }  // namespace gsl</a>
+<a name="23"><span class="lineNum">      23 </span>            : /// \endcond</a>
+<a name="24"><span class="lineNum">      24 </span>            : </a>
+<a name="25"><span class="lineNum">      25 </span>            : namespace GeneralizedHarmonic {</a>
+<a name="26"><span class="lineNum">      26 </span><span class="lineCov">          1 : namespace gauges {</span></a>
+<a name="27"><span class="lineNum">      27 </span>            : /*!</a>
+<a name="28"><span class="lineNum">      28 </span>            :  * \brief Damped harmonic gauge source function and its spacetime derivative.</a>
+<a name="29"><span class="lineNum">      29 </span>            :  *</a>
+<a name="30"><span class="lineNum">      30 </span>            :  * \details The gauge condition has been taken from \cite Szilagyi2009qz and</a>
+<a name="31"><span class="lineNum">      31 </span>            :  * \cite Deppe2018uye. We provide both a &quot;rollon&quot; version</a>
+<a name="32"><span class="lineNum">      32 </span>            :  * (`damped_harmonic_rollon`), and a &quot;non-rollon&quot; version (`damped_harmonic`).</a>
+<a name="33"><span class="lineNum">      33 </span>            :  * In the non-rollon version the rollon function \f$R(t)=1\f$.</a>
+<a name="34"><span class="lineNum">      34 </span>            :  *</a>
+<a name="35"><span class="lineNum">      35 </span>            :  * \warning Only the non-rollon version can be used with a moving mesh.</a>
+<a name="36"><span class="lineNum">      36 </span>            :  *</a>
+<a name="37"><span class="lineNum">      37 </span>            :  * The covariant form of the source function \f$H_a\f$ is written as:</a>
+<a name="38"><span class="lineNum">      38 </span>            :  *</a>
+<a name="39"><span class="lineNum">      39 </span>            :  * \f{align*}</a>
+<a name="40"><span class="lineNum">      40 </span>            :  * H_a :=  [1 - R(t)] H_a^\mathrm{init} +</a>
+<a name="41"><span class="lineNum">      41 </span>            :  *  [\mu_{L1} \mathrm{log}(\sqrt{g}/N) + \mu_{L2} \mathrm{log}(1/N)] t_a</a>
+<a name="42"><span class="lineNum">      42 </span>            :  *   - \mu_S g_{ai} N^i / N</a>
+<a name="43"><span class="lineNum">      43 </span>            :  * \f}</a>
+<a name="44"><span class="lineNum">      44 </span>            :  *</a>
+<a name="45"><span class="lineNum">      45 </span>            :  * where \f$N, N^k\f$ are the lapse and shift respectively, \f$t_a\f$ is the</a>
+<a name="46"><span class="lineNum">      46 </span>            :  * unit normal one-form to the spatial slice, and \f$g_{ab}\f$ is</a>
+<a name="47"><span class="lineNum">      47 </span>            :  * the spatial metric (obtained by projecting the spacetime metric onto the</a>
+<a name="48"><span class="lineNum">      48 </span>            :  * 3-slice, i.e. \f$g_{ab} = \psi_{ab} + t_a t_b\f$). The prefactors are:</a>
+<a name="49"><span class="lineNum">      49 </span>            :  *</a>
+<a name="50"><span class="lineNum">      50 </span>            :  * \f{align*}</a>
+<a name="51"><span class="lineNum">      51 </span>            :  *  \mu_{L1} &amp;= A_{L1} R(t) W(x^i) \mathrm{log}(\sqrt{g}/N)^{e_{L1}}, \\</a>
+<a name="52"><span class="lineNum">      52 </span>            :  *  \mu_{L2} &amp;= A_{L2} R(t) W(x^i) \mathrm{log}(1/N)^{e_{L2}}, \\</a>
+<a name="53"><span class="lineNum">      53 </span>            :  *  \mu_{S} &amp;= A_{S} R(t) W(x^i) \mathrm{log}(\sqrt{g}/N)^{e_{S}},</a>
+<a name="54"><span class="lineNum">      54 </span>            :  * \f}</a>
+<a name="55"><span class="lineNum">      55 </span>            :  *</a>
+<a name="56"><span class="lineNum">      56 </span>            :  * temporal roll-on function \f$ R(t)\f$ is:</a>
+<a name="57"><span class="lineNum">      57 </span>            :  *</a>
+<a name="58"><span class="lineNum">      58 </span>            :  * \f{align*}</a>
+<a name="59"><span class="lineNum">      59 </span>            :  * \begin{array}{ll}</a>
+<a name="60"><span class="lineNum">      60 </span>            :  *     R(t) &amp; = 0, &amp; t&lt; t_{0} \\</a>
+<a name="61"><span class="lineNum">      61 </span>            :  *          &amp; = 1 - \exp[-((t - t_{0})/ \sigma_t)^4], &amp; t\geq t_{0} \\</a>
+<a name="62"><span class="lineNum">      62 </span>            :  * \end{array}</a>
+<a name="63"><span class="lineNum">      63 </span>            :  * \f}</a>
+<a name="64"><span class="lineNum">      64 </span>            :  *</a>
+<a name="65"><span class="lineNum">      65 </span>            :  * and the spatial weight function is:</a>
+<a name="66"><span class="lineNum">      66 </span>            :  *</a>
+<a name="67"><span class="lineNum">      67 </span>            :  * \f{align*}</a>
+<a name="68"><span class="lineNum">      68 </span>            :  * W(x^i) = \exp[-(r/\sigma_r)^2].</a>
+<a name="69"><span class="lineNum">      69 </span>            :  * \f}</a>
+<a name="70"><span class="lineNum">      70 </span>            :  *</a>
+<a name="71"><span class="lineNum">      71 </span>            :  * This weight function can be written with multiple constant factors in the</a>
+<a name="72"><span class="lineNum">      72 </span>            :  * exponent in literature \cite Deppe2018uye, but we absorb them all into</a>
+<a name="73"><span class="lineNum">      73 </span>            :  * \f$ \sigma_r\f$ here. The coordinate \f$ r\f$ is the Euclidean radius</a>
+<a name="74"><span class="lineNum">      74 </span>            :  * in Inertial coordinates.</a>
+<a name="75"><span class="lineNum">      75 </span>            :  *</a>
+<a name="76"><span class="lineNum">      76 </span>            :  * Note that for the last three terms in \f$H_a\f$ (with \f$ X = \{L1, L2, S\}</a>
+<a name="77"><span class="lineNum">      77 </span>            :  * \f$):</a>
+<a name="78"><span class="lineNum">      78 </span>            :  *   - Amplitude factors \f$ A_{X} \f$ are taken as input here as `amp_coef_X`</a>
+<a name="79"><span class="lineNum">      79 </span>            :  *   - Exponents \f$ e_X\f$ are taken as input here as `exp_X`.</a>
+<a name="80"><span class="lineNum">      80 </span>            :  *   - Spatial weight function \f$W\f$ is specified completely by</a>
+<a name="81"><span class="lineNum">      81 </span>            :  *     \f$\sigma_r\f$, which is taken as input here as `sigma_r`.</a>
+<a name="82"><span class="lineNum">      82 </span>            :  *</a>
+<a name="83"><span class="lineNum">      83 </span>            :  * Also computes spacetime derivatives, i.e. \f$\partial_a H_b\f$, of the damped</a>
+<a name="84"><span class="lineNum">      84 </span>            :  * harmonic source function H. Using notation from damped_harmonic_h(), we</a>
+<a name="85"><span class="lineNum">      85 </span>            :  * rewrite the same as:</a>
+<a name="86"><span class="lineNum">      86 </span>            :  *</a>
+<a name="87"><span class="lineNum">      87 </span>            :  * \f{align*}</a>
+<a name="88"><span class="lineNum">      88 </span>            :  * \partial_a H_b =&amp; \partial_a T_1 + \partial_a T_2 + \partial_a T_3, \\</a>
+<a name="89"><span class="lineNum">      89 </span>            :  * H_a =&amp; T_1 + T_2 + T_3,</a>
+<a name="90"><span class="lineNum">      90 </span>            :  * \f}</a>
+<a name="91"><span class="lineNum">      91 </span>            :  *</a>
+<a name="92"><span class="lineNum">      92 </span>            :  * where:</a>
+<a name="93"><span class="lineNum">      93 </span>            :  *</a>
+<a name="94"><span class="lineNum">      94 </span>            :  * \f{align*}</a>
+<a name="95"><span class="lineNum">      95 </span>            :  * T_1 =&amp; [1 - R(t)] H_a^\mathrm{init}, \\</a>
+<a name="96"><span class="lineNum">      96 </span>            :  * T_2 =&amp; [\mu_{L1} \mathrm{log}(\sqrt{g}/N) + \mu_{L2} \mathrm{log}(1/N)] t_a,</a>
+<a name="97"><span class="lineNum">      97 </span>            :  * \\</a>
+<a name="98"><span class="lineNum">      98 </span>            :  * T_3 =&amp; - \mu_S g_{ai} N^i / N.</a>
+<a name="99"><span class="lineNum">      99 </span>            :  * \f}</a>
+<a name="100"><span class="lineNum">     100 </span>            :  *</a>
+<a name="101"><span class="lineNum">     101 </span>            :  * Derivation:</a>
+<a name="102"><span class="lineNum">     102 </span>            :  *</a>
+<a name="103"><span class="lineNum">     103 </span>            :  * \f$\blacksquare\f$ For \f$ T_1 \f$, the derivatives are:</a>
+<a name="104"><span class="lineNum">     104 </span>            :  * \f{align*}</a>
+<a name="105"><span class="lineNum">     105 </span>            :  * \partial_a T_1 = (1 - R(t))</a>
+<a name="106"><span class="lineNum">     106 </span>            :  * \partial_a H_b^\mathrm{init}</a>
+<a name="107"><span class="lineNum">     107 </span>            :  *                - H_b^\mathrm{init} \partial_a R.</a>
+<a name="108"><span class="lineNum">     108 </span>            :  * \f}</a>
+<a name="109"><span class="lineNum">     109 </span>            :  *</a>
+<a name="110"><span class="lineNum">     110 </span>            :  * \f$\blacksquare\f$ Write \f$ T_2 \equiv (\mu_1 + \mu_2) t_b \f$. Then:</a>
+<a name="111"><span class="lineNum">     111 </span>            :  *</a>
+<a name="112"><span class="lineNum">     112 </span>            :  * \f{align*}</a>
+<a name="113"><span class="lineNum">     113 </span>            :  * \partial_a T_2 =&amp; (\partial_a \mu_1 + \partial_a \mu_2) t_b \\</a>
+<a name="114"><span class="lineNum">     114 </span>            :  *               +&amp; (\mu_1 + \mu_2) \partial_a t_b,</a>
+<a name="115"><span class="lineNum">     115 </span>            :  * \f}</a>
+<a name="116"><span class="lineNum">     116 </span>            :  *</a>
+<a name="117"><span class="lineNum">     117 </span>            :  * where</a>
+<a name="118"><span class="lineNum">     118 </span>            :  *</a>
+<a name="119"><span class="lineNum">     119 </span>            :  * \f{align*}</a>
+<a name="120"><span class="lineNum">     120 </span>            :  * \partial_a t_b =&amp; \left(-\partial_a N, 0, 0, 0\right) \\</a>
+<a name="121"><span class="lineNum">     121 </span>            :  *</a>
+<a name="122"><span class="lineNum">     122 </span>            :  * \partial_a \mu_1</a>
+<a name="123"><span class="lineNum">     123 </span>            :  *  =&amp; \partial_a [A_{L1} R(t) W(x^i) \mathrm{log}(\sqrt{g}/N)^{e_{L1} +</a>
+<a name="124"><span class="lineNum">     124 </span>            :  * 1}], \\</a>
+<a name="125"><span class="lineNum">     125 </span>            :  *  =&amp; A_{L1} R(t) W(x^i) \partial_a [\mathrm{log}(\sqrt{g}/N)^{e_{L1} +</a>
+<a name="126"><span class="lineNum">     126 </span>            :  * 1}] \\</a>
+<a name="127"><span class="lineNum">     127 </span>            :  *   +&amp; A_{L1} \mathrm{log}(\sqrt{g}/N)^{e_{L1} + 1} \partial_a [R(t)</a>
+<a name="128"><span class="lineNum">     128 </span>            :  * W(x^i)],\\</a>
+<a name="129"><span class="lineNum">     129 </span>            :  *</a>
+<a name="130"><span class="lineNum">     130 </span>            :  * \partial_a \mu_2</a>
+<a name="131"><span class="lineNum">     131 </span>            :  *  =&amp; \partial_a [A_{L2} R(t) W(x^i) \mathrm{log}(1/N)^{e_{L2} + 1}], \\</a>
+<a name="132"><span class="lineNum">     132 </span>            :  *  =&amp; A_{L2} R(t) W(x^i) \partial_a [\mathrm{log}(1/N)^{e_{L2} + 1}] \\</a>
+<a name="133"><span class="lineNum">     133 </span>            :  *     +&amp; A_{L2} \mathrm{log}(1/N)^{e_{L2} + 1} \partial_a [R(t) W(x^i)],</a>
+<a name="134"><span class="lineNum">     134 </span>            :  * \f}</a>
+<a name="135"><span class="lineNum">     135 </span>            :  *</a>
+<a name="136"><span class="lineNum">     136 </span>            :  * where \f$\partial_a [R W] = \left(\partial_0 R(t), \partial_i</a>
+<a name="137"><span class="lineNum">     137 </span>            :  * W(x^j)\right)\f$.</a>
+<a name="138"><span class="lineNum">     138 </span>            :  *</a>
+<a name="139"><span class="lineNum">     139 </span>            :  * \f$\blacksquare\f$ Finally, the derivatives of \f$ T_3 \f$ are:</a>
+<a name="140"><span class="lineNum">     140 </span>            :  *</a>
+<a name="141"><span class="lineNum">     141 </span>            :  * \f[</a>
+<a name="142"><span class="lineNum">     142 </span>            :  * \partial_a T_3 = -\partial_a(\mu_S/N) g_{bi} N^i</a>
+<a name="143"><span class="lineNum">     143 </span>            :  *                  -(\mu_S/N) \partial_a(g_{bi}) N^i</a>
+<a name="144"><span class="lineNum">     144 </span>            :  *                  -(\mu_S/N) g_{bi}\partial_a N^i,</a>
+<a name="145"><span class="lineNum">     145 </span>            :  * \f]</a>
+<a name="146"><span class="lineNum">     146 </span>            :  *</a>
+<a name="147"><span class="lineNum">     147 </span>            :  * where</a>
+<a name="148"><span class="lineNum">     148 </span>            :  *</a>
+<a name="149"><span class="lineNum">     149 </span>            :  * \f{align*}</a>
+<a name="150"><span class="lineNum">     150 </span>            :  * \partial_a(\mu_S / N) =&amp; (1/N)\partial_a \mu_S</a>
+<a name="151"><span class="lineNum">     151 </span>            :  *                       - \frac{\mu_S}{N^2}\partial_a N, \,\,\mathrm{and}\\</a>
+<a name="152"><span class="lineNum">     152 </span>            :  * \partial_a \mu_S =&amp; \partial_a [A_S R(t) W(x^i)</a>
+<a name="153"><span class="lineNum">     153 </span>            :  * \mathrm{log}(\sqrt{g}/N)^{e_S}], \\</a>
+<a name="154"><span class="lineNum">     154 </span>            :  *                  =&amp; A_S R(t) W(x^i) \partial_a</a>
+<a name="155"><span class="lineNum">     155 </span>            :  * [\mathrm{log}(\sqrt{g}/N)^{e_S}] \\</a>
+<a name="156"><span class="lineNum">     156 </span>            :  *                  +&amp; A_S \mathrm{log}(\sqrt{g} / N)^{e_S} \partial_a [R(t)</a>
+<a name="157"><span class="lineNum">     157 </span>            :  * W(x^i)].</a>
+<a name="158"><span class="lineNum">     158 </span>            :  * \f}</a>
+<a name="159"><span class="lineNum">     159 </span>            :  */</a>
+<a name="160"><span class="lineNum">     160 </span>            : template &lt;size_t SpatialDim, typename Frame&gt;</a>
+<a name="161"><span class="lineNum">     161 </span><span class="lineCov">          1 : void damped_harmonic_rollon(</span></a>
+<a name="162"><span class="lineNum">     162 </span>            :     gsl::not_null&lt;tnsr::a&lt;DataVector, SpatialDim, Frame&gt;*&gt; gauge_h,</a>
+<a name="163"><span class="lineNum">     163 </span>            :     gsl::not_null&lt;tnsr::ab&lt;DataVector, SpatialDim, Frame&gt;*&gt; d4_gauge_h,</a>
+<a name="164"><span class="lineNum">     164 </span>            :     const tnsr::a&lt;DataVector, SpatialDim, Frame&gt;&amp; gauge_h_init,</a>
+<a name="165"><span class="lineNum">     165 </span>            :     const tnsr::ab&lt;DataVector, SpatialDim, Frame&gt;&amp; dgauge_h_init,</a>
+<a name="166"><span class="lineNum">     166 </span>            :     const Scalar&lt;DataVector&gt;&amp; lapse,</a>
+<a name="167"><span class="lineNum">     167 </span>            :     const tnsr::I&lt;DataVector, SpatialDim, Frame&gt;&amp; shift,</a>
+<a name="168"><span class="lineNum">     168 </span>            :     const tnsr::a&lt;DataVector, SpatialDim, Frame&gt;&amp;</a>
+<a name="169"><span class="lineNum">     169 </span>            :     spacetime_unit_normal_one_form,</a>
+<a name="170"><span class="lineNum">     170 </span>            :     const Scalar&lt;DataVector&gt;&amp; sqrt_det_spatial_metric,</a>
+<a name="171"><span class="lineNum">     171 </span>            :     const tnsr::II&lt;DataVector, SpatialDim, Frame&gt;&amp; inverse_spatial_metric,</a>
+<a name="172"><span class="lineNum">     172 </span>            :     const tnsr::aa&lt;DataVector, SpatialDim, Frame&gt;&amp; spacetime_metric,</a>
+<a name="173"><span class="lineNum">     173 </span>            :     const tnsr::aa&lt;DataVector, SpatialDim, Frame&gt;&amp; pi,</a>
+<a name="174"><span class="lineNum">     174 </span>            :     const tnsr::iaa&lt;DataVector, SpatialDim, Frame&gt;&amp; phi, double time,</a>
+<a name="175"><span class="lineNum">     175 </span>            :     const tnsr::I&lt;DataVector, SpatialDim, Frame&gt;&amp; coords, double amp_coef_L1,</a>
+<a name="176"><span class="lineNum">     176 </span>            :     double amp_coef_L2, double amp_coef_S, int exp_L1, int exp_L2, int exp_S,</a>
+<a name="177"><span class="lineNum">     177 </span>            :     double rollon_start_time, double rollon_width, double sigma_r) noexcept;</a>
+<a name="178"><span class="lineNum">     178 </span>            : </a>
+<a name="179"><span class="lineNum">     179 </span>            : /*!</a>
+<a name="180"><span class="lineNum">     180 </span>            :  * \copydoc damped_harmonic_rollon()</a>
+<a name="181"><span class="lineNum">     181 </span>            :  */</a>
+<a name="182"><span class="lineNum">     182 </span>            : template &lt;size_t SpatialDim, typename Frame&gt;</a>
+<a name="183"><span class="lineNum">     183 </span><span class="lineCov">          1 : void damped_harmonic(</span></a>
+<a name="184"><span class="lineNum">     184 </span>            :     gsl::not_null&lt;tnsr::a&lt;DataVector, SpatialDim, Frame&gt;*&gt; gauge_h,</a>
+<a name="185"><span class="lineNum">     185 </span>            :     gsl::not_null&lt;tnsr::ab&lt;DataVector, SpatialDim, Frame&gt;*&gt; d4_gauge_h,</a>
+<a name="186"><span class="lineNum">     186 </span>            :     const Scalar&lt;DataVector&gt;&amp; lapse,</a>
+<a name="187"><span class="lineNum">     187 </span>            :     const tnsr::I&lt;DataVector, SpatialDim, Frame&gt;&amp; shift,</a>
+<a name="188"><span class="lineNum">     188 </span>            :     const tnsr::a&lt;DataVector, SpatialDim, Frame&gt;&amp;</a>
+<a name="189"><span class="lineNum">     189 </span>            :         spacetime_unit_normal_one_form,</a>
+<a name="190"><span class="lineNum">     190 </span>            :     const Scalar&lt;DataVector&gt;&amp; sqrt_det_spatial_metric,</a>
+<a name="191"><span class="lineNum">     191 </span>            :     const tnsr::II&lt;DataVector, SpatialDim, Frame&gt;&amp; inverse_spatial_metric,</a>
+<a name="192"><span class="lineNum">     192 </span>            :     const tnsr::aa&lt;DataVector, SpatialDim, Frame&gt;&amp; spacetime_metric,</a>
+<a name="193"><span class="lineNum">     193 </span>            :     const tnsr::aa&lt;DataVector, SpatialDim, Frame&gt;&amp; pi,</a>
+<a name="194"><span class="lineNum">     194 </span>            :     const tnsr::iaa&lt;DataVector, SpatialDim, Frame&gt;&amp; phi,</a>
+<a name="195"><span class="lineNum">     195 </span>            :     const tnsr::I&lt;DataVector, SpatialDim, Frame&gt;&amp; coords, double amp_coef_L1,</a>
+<a name="196"><span class="lineNum">     196 </span>            :     double amp_coef_L2, double amp_coef_S, int exp_L1, int exp_L2, int exp_S,</a>
+<a name="197"><span class="lineNum">     197 </span>            :     double sigma_r) noexcept;</a>
+<a name="198"><span class="lineNum">     198 </span>            : }  // namespace gauges</a>
+<a name="199"><span class="lineNum">     199 </span>            : }  // namespace GeneralizedHarmonic</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

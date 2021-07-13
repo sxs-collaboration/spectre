@@ -1,0 +1,271 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Elasticity::FirstOrderSystem&lt; Dim &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceElasticity.html">Elasticity</a></li><li class="navelem"><a class="el" href="structElasticity_1_1FirstOrderSystem.html">FirstOrderSystem</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structElasticity_1_1FirstOrderSystem-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Elasticity::FirstOrderSystem&lt; Dim &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>The linear elasticity equation formulated as a set of coupled first-order PDEs.  
+ <a href="structElasticity_1_1FirstOrderSystem.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="src_2Elliptic_2Systems_2Elasticity_2FirstOrderSystem_8hpp_source.html">FirstOrderSystem.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a5b6d6f14741c0f27608897fafca74a42"><td class="memItemLeft" align="right" valign="top"><a id="a5b6d6f14741c0f27608897fafca74a42"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>primal_fields</b> = tmpl::list&lt; <a class="el" href="structElasticity_1_1Tags_1_1Displacement.html">displacement</a> &gt;</td></tr>
+<tr class="separator:a5b6d6f14741c0f27608897fafca74a42"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4a1197bb71554c002503c6b78b83c0f"><td class="memItemLeft" align="right" valign="top"><a id="af4a1197bb71554c002503c6b78b83c0f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>auxiliary_fields</b> = tmpl::list&lt; <a class="el" href="structElasticity_1_1Tags_1_1Strain.html">strain</a> &gt;</td></tr>
+<tr class="separator:af4a1197bb71554c002503c6b78b83c0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab191214ee91b01a429aa019ef7d80ba7"><td class="memItemLeft" align="right" valign="top"><a id="ab191214ee91b01a429aa019ef7d80ba7"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>primal_fluxes</b> = tmpl::list&lt; <a class="el" href="structElasticity_1_1Tags_1_1MinusStress.html">minus_stress</a> &gt;</td></tr>
+<tr class="separator:ab191214ee91b01a429aa019ef7d80ba7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6879309da23ed921926d19d59936ec1c"><td class="memItemLeft" align="right" valign="top"><a id="a6879309da23ed921926d19d59936ec1c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>auxiliary_fluxes</b> = tmpl::list&lt;::<a class="el" href="structTags_1_1Flux.html">Tags::Flux</a>&lt; <a class="el" href="structElasticity_1_1Tags_1_1Strain.html">strain</a>, tmpl::size_t&lt; Dim &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;</td></tr>
+<tr class="separator:a6879309da23ed921926d19d59936ec1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abb3202b0ba69cc2700528ca959b929f4"><td class="memItemLeft" align="right" valign="top"><a id="abb3202b0ba69cc2700528ca959b929f4"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>background_fields</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:abb3202b0ba69cc2700528ca959b929f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a08350ea445b7d4b6c5fa9462e9953b17"><td class="memItemLeft" align="right" valign="top"><a id="a08350ea445b7d4b6c5fa9462e9953b17"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>inv_metric_tag</b> = void</td></tr>
+<tr class="separator:a08350ea445b7d4b6c5fa9462e9953b17"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9b9ba480d6831ed5792652d1016384c7"><td class="memItemLeft" align="right" valign="top"><a id="a9b9ba480d6831ed5792652d1016384c7"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>fluxes_computer</b> = <a class="el" href="structElasticity_1_1Fluxes.html">Fluxes</a>&lt; Dim &gt;</td></tr>
+<tr class="separator:a9b9ba480d6831ed5792652d1016384c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45560b27aa8b8beb234882d2320f31c1"><td class="memItemLeft" align="right" valign="top"><a id="a45560b27aa8b8beb234882d2320f31c1"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>sources_computer</b> = <a class="el" href="structElasticity_1_1Sources.html">Sources</a>&lt; Dim &gt;</td></tr>
+<tr class="separator:a45560b27aa8b8beb234882d2320f31c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba19392191241b7a5569987c0571b422"><td class="memItemLeft" align="right" valign="top"><a id="aba19392191241b7a5569987c0571b422"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>boundary_conditions_base</b> = <a class="el" href="classelliptic_1_1BoundaryConditions_1_1BoundaryCondition.html">elliptic::BoundaryConditions::BoundaryCondition</a>&lt; Dim, tmpl::append&lt; tmpl::list&lt; elliptic::BoundaryConditions::Registrars::AnalyticSolution&lt; <a class="el" href="structElasticity_1_1FirstOrderSystem.html">FirstOrderSystem</a> &gt;, BoundaryConditions::Registrars::Zero&lt; Dim, <a class="el" href="namespaceelliptic.html#af6d0ee338cc58bc9669207626dd17e4cabac152b762896edff34ed668ae1a546f">elliptic::BoundaryConditionType::Dirichlet</a> &gt;, BoundaryConditions::Registrars::Zero&lt; Dim, <a class="el" href="namespaceelliptic.html#af6d0ee338cc58bc9669207626dd17e4cab8537a769dbc90cb1762215441212152">elliptic::BoundaryConditionType::Neumann</a> &gt; &gt;, tmpl::conditional_t&lt; Dim==3, tmpl::list&lt; BoundaryConditions::Registrars::LaserBeam &gt;, tmpl::list&lt;&gt; &gt;&gt; &gt;</td></tr>
+<tr class="separator:aba19392191241b7a5569987c0571b422"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a4f658aa5366f675fe9d0f88ff37ab9c5"><td class="memItemLeft" align="right" valign="top"><a id="a4f658aa5366f675fe9d0f88ff37ab9c5"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = Dim</td></tr>
+<tr class="separator:a4f658aa5366f675fe9d0f88ff37ab9c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+struct Elasticity::FirstOrderSystem&lt; Dim &gt;</h3>
+
+<p>The linear elasticity equation formulated as a set of coupled first-order PDEs. </p>
+<p>This system formulates the elasticity equation \(\nabla_i T^{ij} = f_\mathrm{ext}^j\) (see <code><a class="el" href="namespaceElasticity.html" title="Items related to solving elasticity problems.">Elasticity</a></code>). It introduces the symmetric strain tensor \(S_{kl}\) as an auxiliary variable which satisfies the <code><a class="el" href="namespaceElasticity_1_1ConstitutiveRelations.html" title="Constitutive (stress-strain) relations that characterize the elastic properties of a material.">Elasticity::ConstitutiveRelations</a></code> \(T^{ij} = -Y^{ijkl} S_{kl}\) with the material-specific elasticity tensor \(Y^{ijkl}\). Written as a set of coupled first-order PDEs, we get</p>
+<p class="formulaDsp">
+\begin{align*} -\nabla_i Y^{ijkl} S_{kl} = f_\mathrm{ext}^j \\ -\nabla_{(k} \xi_{l)} + S_{kl} = 0 \end{align*}
+</p>
+<p>The fluxes and sources in terms of the system variables \(\xi^j\) and \(S_{kl}\) are given by</p>
+<p class="formulaDsp">
+\begin{align*} F^i_{\xi^j} &amp;= Y^{ijkl}_{(\xi, S)} S_{kl} \\ S_{\xi^j} &amp;= 0 \\ f_{\xi^j} &amp;= f_\mathrm{ext}^j \\ F^i_{S_{kl}} &amp;= \delta^{i}_{(k} \xi_{l)} \\ S_{S_{kl}} &amp;= S_{kl} \\ f_{S_{kl}} &amp;= 0 \text{.} \end{align*}
+</p>
+<p>See <code><a class="el" href="structPoisson_1_1FirstOrderSystem.html" title="The Poisson equation formulated as a set of coupled first-order PDEs.">Poisson::FirstOrderSystem</a></code> for details on the first-order flux-formulation. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Elliptic/Systems/Elasticity/<a class="el" href="src_2Elliptic_2Systems_2Elasticity_2FirstOrderSystem_8hpp_source.html">FirstOrderSystem.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

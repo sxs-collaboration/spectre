@@ -1,0 +1,360 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: NewtonianEuler::Solutions::IsentropicVortex&lt; Dim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceNewtonianEuler.html">NewtonianEuler</a></li><li class="navelem"><a class="el" href="namespaceNewtonianEuler_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="classNewtonianEuler_1_1Solutions_1_1IsentropicVortex.html">IsentropicVortex</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classNewtonianEuler_1_1Solutions_1_1IsentropicVortex-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">NewtonianEuler::Solutions::IsentropicVortex&lt; Dim &gt; Class Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Newtonian isentropic vortex in Cartesian coordinates.  
+ <a href="classNewtonianEuler_1_1Solutions_1_1IsentropicVortex.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="IsentropicVortex_8hpp_source.html">IsentropicVortex.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1Solutions_1_1IsentropicVortex_1_1AdiabaticIndex.html">AdiabaticIndex</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The adiabatic index of the fluid.  <a href="structNewtonianEuler_1_1Solutions_1_1IsentropicVortex_1_1AdiabaticIndex.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1Solutions_1_1IsentropicVortex_1_1Center.html">Center</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The position of the center of the vortex at \(t = 0\).  <a href="structNewtonianEuler_1_1Solutions_1_1IsentropicVortex_1_1Center.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1Solutions_1_1IsentropicVortex_1_1MeanVelocity.html">MeanVelocity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The mean flow velocity.  <a href="structNewtonianEuler_1_1Solutions_1_1IsentropicVortex_1_1MeanVelocity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1Solutions_1_1IsentropicVortex_1_1PerturbAmplitude.html">PerturbAmplitude</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The amplitude of the perturbation generating a source term.  <a href="structNewtonianEuler_1_1Solutions_1_1IsentropicVortex_1_1PerturbAmplitude.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1Solutions_1_1IsentropicVortex_1_1Strength.html">Strength</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The strength of the vortex.  <a href="structNewtonianEuler_1_1Solutions_1_1IsentropicVortex_1_1Strength.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ac593a8cff91c805885c245b873243d9c"><td class="memItemLeft" align="right" valign="top"><a id="ac593a8cff91c805885c245b873243d9c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state_type</b> = <a class="el" href="classEquationsOfState_1_1PolytropicFluid.html">EquationsOfState::PolytropicFluid</a>&lt; false &gt;</td></tr>
+<tr class="separator:ac593a8cff91c805885c245b873243d9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64d0264b959260fde67ec444083e685d"><td class="memItemLeft" align="right" valign="top"><a id="a64d0264b959260fde67ec444083e685d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>source_term_type</b> = <a class="el" href="structNewtonianEuler_1_1Sources_1_1VortexPerturbation.html">Sources::VortexPerturbation</a>&lt; Dim &gt;</td></tr>
+<tr class="separator:a64d0264b959260fde67ec444083e685d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a3cd748a28b8a797ac9cff359f47df8"><td class="memItemLeft" align="right" valign="top"><a id="a5a3cd748a28b8a797ac9cff359f47df8"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::conditional_t&lt; Dim==3, tmpl::list&lt; <a class="el" href="structNewtonianEuler_1_1Solutions_1_1IsentropicVortex_1_1AdiabaticIndex.html">AdiabaticIndex</a>, <a class="el" href="structNewtonianEuler_1_1Solutions_1_1IsentropicVortex_1_1Center.html">Center</a>, <a class="el" href="structNewtonianEuler_1_1Solutions_1_1IsentropicVortex_1_1MeanVelocity.html">MeanVelocity</a>, <a class="el" href="structNewtonianEuler_1_1Solutions_1_1IsentropicVortex_1_1Strength.html">Strength</a>, <a class="el" href="structNewtonianEuler_1_1Solutions_1_1IsentropicVortex_1_1PerturbAmplitude.html">PerturbAmplitude</a> &gt;, tmpl::list&lt; <a class="el" href="structNewtonianEuler_1_1Solutions_1_1IsentropicVortex_1_1AdiabaticIndex.html">AdiabaticIndex</a>, <a class="el" href="structNewtonianEuler_1_1Solutions_1_1IsentropicVortex_1_1Center.html">Center</a>, <a class="el" href="structNewtonianEuler_1_1Solutions_1_1IsentropicVortex_1_1MeanVelocity.html">MeanVelocity</a>, <a class="el" href="structNewtonianEuler_1_1Solutions_1_1IsentropicVortex_1_1Strength.html">Strength</a> &gt; &gt;</td></tr>
+<tr class="separator:a5a3cd748a28b8a797ac9cff359f47df8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a35da7ee81e464809161b91e893ddb508"><td class="memItemLeft" align="right" valign="top"><a id="a35da7ee81e464809161b91e893ddb508"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>IsentropicVortex</b> (const <a class="el" href="classNewtonianEuler_1_1Solutions_1_1IsentropicVortex.html">IsentropicVortex</a> &amp;)=delete</td></tr>
+<tr class="separator:a35da7ee81e464809161b91e893ddb508"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f6990493fe5c2785215cb16c942eea4"><td class="memItemLeft" align="right" valign="top"><a id="a5f6990493fe5c2785215cb16c942eea4"></a>
+<a class="el" href="classNewtonianEuler_1_1Solutions_1_1IsentropicVortex.html">IsentropicVortex</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classNewtonianEuler_1_1Solutions_1_1IsentropicVortex.html">IsentropicVortex</a> &amp;)=delete</td></tr>
+<tr class="separator:a5f6990493fe5c2785215cb16c942eea4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38f36e169948041d2a50e3b5db02b26e"><td class="memItemLeft" align="right" valign="top"><a id="a38f36e169948041d2a50e3b5db02b26e"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>IsentropicVortex</b> (<a class="el" href="classNewtonianEuler_1_1Solutions_1_1IsentropicVortex.html">IsentropicVortex</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a38f36e169948041d2a50e3b5db02b26e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb16c189546fd7b0531cb6a40d330f2f"><td class="memItemLeft" align="right" valign="top"><a id="aeb16c189546fd7b0531cb6a40d330f2f"></a>
+<a class="el" href="classNewtonianEuler_1_1Solutions_1_1IsentropicVortex.html">IsentropicVortex</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classNewtonianEuler_1_1Solutions_1_1IsentropicVortex.html">IsentropicVortex</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:aeb16c189546fd7b0531cb6a40d330f2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc0f6f01cdda4065d62ad452854b3df3"><td class="memItemLeft" align="right" valign="top"><a id="acc0f6f01cdda4065d62ad452854b3df3"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>IsentropicVortex</b> (double adiabatic_index, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, Dim &gt; &amp;center, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, Dim &gt; &amp;mean_velocity, double strength, double perturbation_amplitude=0.0) noexcept</td></tr>
+<tr class="separator:acc0f6f01cdda4065d62ad452854b3df3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8998600cbb60016e24c06272722eee2e"><td class="memTemplParams" colspan="2"><a id="a8998600cbb60016e24c06272722eee2e"></a>
+template&lt;typename DataType , typename... Tags&gt; </td></tr>
+<tr class="memitem:a8998600cbb60016e24c06272722eee2e"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classNewtonianEuler_1_1Solutions_1_1IsentropicVortex.html#a8998600cbb60016e24c06272722eee2e">variables</a> (const tnsr::I&lt; DataType, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;x, const double t, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:a8998600cbb60016e24c06272722eee2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a collection of hydrodynamic variables at position x and time t. <br /></td></tr>
+<tr class="separator:a8998600cbb60016e24c06272722eee2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a501433e59b3d52309260396903c8e590"><td class="memTemplParams" colspan="2"><a id="a501433e59b3d52309260396903c8e590"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a501433e59b3d52309260396903c8e590"><td class="memTemplItemLeft" align="right" valign="top">DataType&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classNewtonianEuler_1_1Solutions_1_1IsentropicVortex.html#a501433e59b3d52309260396903c8e590">perturbation_profile</a> (const DataType &amp;z) const noexcept</td></tr>
+<tr class="memdesc:a501433e59b3d52309260396903c8e590"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function of <code>z</code> coordinate to compute the perturbation generating a source term. Public so the corresponding source class can also use it. <br /></td></tr>
+<tr class="separator:a501433e59b3d52309260396903c8e590"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab125f81eecaa301b524dbfc87545647b"><td class="memTemplParams" colspan="2"><a id="ab125f81eecaa301b524dbfc87545647b"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:ab125f81eecaa301b524dbfc87545647b"><td class="memTemplItemLeft" align="right" valign="top">DataType&#160;</td><td class="memTemplItemRight" valign="bottom"><b>deriv_of_perturbation_profile</b> (const DataType &amp;z) const noexcept</td></tr>
+<tr class="separator:ab125f81eecaa301b524dbfc87545647b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c06183e378567609b1e788ec5298f13"><td class="memItemLeft" align="right" valign="top"><a id="a1c06183e378567609b1e788ec5298f13"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>perturbation_amplitude</b> () const noexcept</td></tr>
+<tr class="separator:a1c06183e378567609b1e788ec5298f13"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6f2cff37a0adfde85688c5d059ced9cc"><td class="memItemLeft" align="right" valign="top"><a id="a6f2cff37a0adfde85688c5d059ced9cc"></a>
+const <a class="el" href="classEquationsOfState_1_1PolytropicFluid.html">EquationsOfState::PolytropicFluid</a>&lt; false &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state</b> () const noexcept</td></tr>
+<tr class="separator:a6f2cff37a0adfde85688c5d059ced9cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a107acdb7b84aea5660e8f4bf66561d04"><td class="memItemLeft" align="right" valign="top"><a id="a107acdb7b84aea5660e8f4bf66561d04"></a>
+const <a class="el" href="structNewtonianEuler_1_1Sources_1_1VortexPerturbation.html">Sources::VortexPerturbation</a>&lt; Dim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>source_term</b> () const noexcept</td></tr>
+<tr class="separator:a107acdb7b84aea5660e8f4bf66561d04"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3966311e7b765d8f5c79e45aab626c4"><td class="memItemLeft" align="right" valign="top"><a id="af3966311e7b765d8f5c79e45aab626c4"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;) noexcept</td></tr>
+<tr class="separator:af3966311e7b765d8f5c79e45aab626c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a6b2d39a46fabbb297dd47c6c367f6def"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a6b2d39a46fabbb297dd47c6c367f6def"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:ad58074e9b91f8a29c70a5697128628c5"><td class="memTemplParams" colspan="2"><a id="ad58074e9b91f8a29c70a5697128628c5"></a>
+template&lt;size_t SpatialDim&gt; </td></tr>
+<tr class="memitem:ad58074e9b91f8a29c70a5697128628c5"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classNewtonianEuler_1_1Solutions_1_1IsentropicVortex.html">IsentropicVortex</a>&lt; SpatialDim &gt; &amp;lhs, const <a class="el" href="classNewtonianEuler_1_1Solutions_1_1IsentropicVortex.html">IsentropicVortex</a>&lt; SpatialDim &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:ad58074e9b91f8a29c70a5697128628c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+class NewtonianEuler::Solutions::IsentropicVortex&lt; Dim &gt;</h3>
+
+<p>Newtonian isentropic vortex in Cartesian coordinates. </p>
+<p>The analytic solution to the 2-D Newtonian Euler system representing the slow advection of an incompressible, isentropic vortex <a class="el" href="citelist.html#CITEREF_Yee1999">[109]</a>. The initial condition is the superposition of a mean uniform flow with a gaussian-profile vortex. When embedded in 3-D space, the isentropic vortex is still a solution to the corresponding 3-D system if the velocity along the third axis is a constant. In Cartesian coordinates \((x, y, z)\), and using dimensionless units, the primitive quantities at a given time \(t\) are then</p>
+<p class="formulaDsp">
+\begin{align*} \rho &amp;= \left[1 - \dfrac{(\gamma - 1)\beta^2}{8\gamma\pi^2}\exp\left( 1 - r^2\right)\right]^{1/(\gamma - 1)}, \\ v_x &amp;= U - \dfrac{\beta\tilde y}{2\pi}\exp\left(\dfrac{1 - r^2}{2}\right),\\ v_y &amp;= V + \dfrac{\beta\tilde x}{2\pi}\exp\left(\dfrac{1 - r^2}{2}\right),\\ v_z &amp;= W,\\ \epsilon &amp;= \frac{\rho^{\gamma - 1}}{\gamma - 1}, \end{align*}
+</p>
+<p>with</p>
+<p class="formulaDsp">
+\begin{align*} r^2 &amp;= {\tilde x}^2 + {\tilde y}^2,\\ \tilde x &amp;= x - X_0 - U t,\\ \tilde y &amp;= y - Y_0 - V t, \end{align*}
+</p>
+<p>where \((X_0, Y_0)\) is the position of the vortex on the \((x, y)\) plane at \(t = 0\), \((U, V, W)\) are the components of the mean flow velocity, \(\beta\) is the vortex strength, and \(\gamma\) is the adiabatic index. The pressure \(p\) is then obtained from the dimensionless polytropic relation</p>
+<p class="formulaDsp">
+\begin{align*} p = \rho^\gamma. \end{align*}
+</p>
+<p>On the other hand, if the velocity along the \(z-\)axis is not a constant but a function of the \(z\) coordinate, the resulting modified isentropic vortex is still a solution to the Newtonian Euler system, but with source terms that are proportional to \(dv_z/dz\). (See <a class="el" href="structNewtonianEuler_1_1Sources_1_1VortexPerturbation.html" title="Source generating a modified isentropic vortex.">NewtonianEuler::Sources::VortexPerturbation</a>.) For testing purposes, we choose to write the velocity as a uniform field plus a periodic perturbation,</p>
+<p class="formulaDsp">
+\begin{align*} v_z(z) = W + \epsilon \sin{z}, \end{align*}
+</p>
+<p>where \(\epsilon\) is the amplitude of the perturbation. The resulting source for the Newtonian Euler system will then be proportional to \(\epsilon \cos{z}\). </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a6b2d39a46fabbb297dd47c6c367f6def"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6b2d39a46fabbb297dd47c6c367f6def">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classNewtonianEuler_1_1Solutions_1_1IsentropicVortex.html">NewtonianEuler::Solutions::IsentropicVortex</a>&lt; Dim &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Newtonian Isentropic Vortex. Works in 2 and 3 dimensions.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following files:<ul>
+<li>src/Evolution/Executables/NewtonianEuler/<a class="el" href="EvolveNewtonianEulerFwd_8hpp_source.html">EvolveNewtonianEulerFwd.hpp</a></li>
+<li>src/PointwiseFunctions/AnalyticSolutions/NewtonianEuler/<a class="el" href="IsentropicVortex_8hpp_source.html">IsentropicVortex.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

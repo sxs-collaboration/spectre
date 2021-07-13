@@ -1,0 +1,795 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/ParallelAlgorithms/LinearSolver/Schwarz/ElementActions.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_52eadd4f43f0b98e08a2e8dc15a77911.html">ParallelAlgorithms</a></li><li class="navelem"><a class="el" href="dir_ef07fb1efed83c700c2b8fea8f1b7679.html">LinearSolver</a></li><li class="navelem"><a class="el" href="dir_b4658c0d8adb042d29d709f17b5bff74.html">Schwarz</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">ElementActions.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/map.html">map</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/tuple.html">tuple</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/unordered_map.html">unordered_map</a>&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a>&gt;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160; </div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataBox_8hpp.html">DataStructures/DataBox/DataBox.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataBox/PrefixHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataBox/Tag.hpp&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Index_8hpp.html">DataStructures/Index.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Direction_8hpp.html">Domain/Structure/Direction.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;Domain/Structure/DirectionMap.hpp&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Element_8hpp.html">Domain/Structure/Element.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ElementId_8hpp.html">Domain/Structure/ElementId.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;Domain/Structure/OrientationMapHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Domain_2Tags_8hpp.html">Domain/Tags.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;Domain/Tags/Faces.hpp&quot;</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;IO/Logging/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;IO/Logging/Verbosity.hpp&quot;</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &quot;IO/Observer/Actions/RegisterWithObservers.hpp&quot;</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#include &quot;IO/Observer/ArrayComponentId.hpp&quot;</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#include &quot;IO/Observer/ObservationId.hpp&quot;</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#include &quot;IO/Observer/Protocols/ReductionDataFormatter.hpp&quot;</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#include &quot;IO/Observer/ReductionActions.hpp&quot;</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#include &quot;IO/Observer/TypeOfObservation.hpp&quot;</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Convergence/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/DiscontinuousGalerkin/HasReceivedFromAllMortars.hpp&quot;</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/LinearSolver/ExplicitInverse.hpp&quot;</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/LinearSolver/Gmres.hpp&quot;</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="NumericalAlgorithms_2Spectral_2Mesh_8hpp.html">NumericalAlgorithms/Spectral/Mesh.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Spectral_8hpp.html">NumericalAlgorithms/Spectral/Spectral.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Options_8hpp.html">Options/Options.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="preprocessor">#include &quot;Parallel/AlgorithmMetafunctions.hpp&quot;</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="GlobalCache_8hpp.html">Parallel/GlobalCache.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor">#include &quot;Parallel/InboxInserters.hpp&quot;</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="preprocessor">#include &quot;Parallel/Invoke.hpp&quot;</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="preprocessor">#include &quot;Parallel/ParallelComponentHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Printf_8hpp.html">Parallel/Printf.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="preprocessor">#include &quot;Parallel/Reduction.hpp&quot;</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="preprocessor">#include &quot;ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp&quot;</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="preprocessor">#include &quot;ParallelAlgorithms/Initialization/MutateAssign.hpp&quot;</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="CommunicateOverlapFields_8hpp.html">ParallelAlgorithms/LinearSolver/Schwarz/Actions/CommunicateOverlapFields.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="preprocessor">#include &quot;ParallelAlgorithms/LinearSolver/Schwarz/ElementCenteredSubdomainData.hpp&quot;</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="preprocessor">#include &quot;ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="preprocessor">#include &quot;ParallelAlgorithms/LinearSolver/Schwarz/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="preprocessor">#include &quot;ParallelAlgorithms/LinearSolver/Schwarz/Weighting.hpp&quot;</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ParallelAlgorithms_2LinearSolver_2Tags_8hpp.html">ParallelAlgorithms/LinearSolver/Tags.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="PrettyType_8hpp.html">Utilities/PrettyType.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="preprocessor">#include &quot;Utilities/ProtocolHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="preprocessor">#include &quot;Utilities/TaggedTuple.hpp&quot;</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="keyword">namespace </span>LinearSolver::Schwarz::detail {</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160; </div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="keyword">using</span> <a class="code" href="namespacePhaseControl.html#ae32e3c999be8835381696c3e9985f326">reduction_data</a> = Parallel::ReductionData&lt;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="comment">// Iteration</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <a class="code" href="structParallel_1_1ReductionDatum.html">Parallel::ReductionDatum&lt;size_t, funcl::AssertEqual&lt;&gt;</a>&gt;,</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="comment">// Number of subdomains (= number of elements)</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <a class="code" href="structParallel_1_1ReductionDatum.html">Parallel::ReductionDatum&lt;size_t, funcl::Plus&lt;&gt;</a>&gt;,</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="comment">// Average number of subdomain solver iterations</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <a class="code" href="structParallel_1_1ReductionDatum.html">Parallel::ReductionDatum&lt;size_t, funcl::Plus&lt;&gt;</a>, <a class="code" href="structfuncl_1_1Divides.html">funcl::Divides&lt;&gt;</a>,</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;                             <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::index_sequence&lt;1&gt;</a>&gt;,</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="comment">// Minimum number of subdomain solver iterations</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <a class="code" href="structParallel_1_1ReductionDatum.html">Parallel::ReductionDatum&lt;size_t, funcl::Min&lt;&gt;</a>&gt;,</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="comment">// Maximum number of subdomain solver iterations</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <a class="code" href="structParallel_1_1ReductionDatum.html">Parallel::ReductionDatum&lt;size_t, funcl::Max&lt;&gt;</a>&gt;&gt;;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> OptionsGroup&gt;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="keyword">struct </span>SubdomainStatsFormatter</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    : <a class="code" href="structtt_1_1ConformsTo.html">tt::ConformsTo</a>&lt;observers::protocols::ReductionDataFormatter&gt; {</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;  <span class="keyword">using</span> <a class="code" href="namespacePhaseControl.html#ae32e3c999be8835381696c3e9985f326">reduction_data</a> = Schwarz::detail::reduction_data;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> operator()(<span class="keyword">const</span> <span class="keywordtype">size_t</span> iteration_id, <span class="keyword">const</span> <span class="keywordtype">size_t</span> num_subdomains,</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;                         <span class="keyword">const</span> <span class="keywordtype">size_t</span> avg_subdomain_its,</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;                         <span class="keyword">const</span> <span class="keywordtype">size_t</span> min_subdomain_its,</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;                         <span class="keyword">const</span> <span class="keywordtype">size_t</span> max_subdomain_its) <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="keywordflow">return</span> Options::name&lt;OptionsGroup&gt;() + <span class="stringliteral">&quot;(&quot;</span> + <a class="code" href="group__UtilitiesGroup.html#gae1b1a8fbda55342653e23c0806e0ee7b">get_output</a>(iteration_id) +</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;           <span class="stringliteral">&quot;) completed all &quot;</span> + <a class="code" href="group__UtilitiesGroup.html#gae1b1a8fbda55342653e23c0806e0ee7b">get_output</a>(num_subdomains) +</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;           <span class="stringliteral">&quot; subdomain solves. Average of number of iterations: &quot;</span> +</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;           <a class="code" href="group__UtilitiesGroup.html#gae1b1a8fbda55342653e23c0806e0ee7b">get_output</a>(avg_subdomain_its) + <span class="stringliteral">&quot; (min &quot;</span> +</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;           <a class="code" href="group__UtilitiesGroup.html#gae1b1a8fbda55342653e23c0806e0ee7b">get_output</a>(min_subdomain_its) + <span class="stringliteral">&quot;, max &quot;</span> +</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;           <a class="code" href="group__UtilitiesGroup.html#gae1b1a8fbda55342653e23c0806e0ee7b">get_output</a>(max_subdomain_its) + <span class="stringliteral">&quot;).&quot;</span>;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;  }</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;  <span class="comment">// NOLINTNEXTLINE(google-runtime-references)</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;  <span class="keywordtype">void</span> pup(PUP::er&amp; <span class="comment">/*p*/</span>) noexcept {}</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;};</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160; </div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> OptionsGroup&gt;</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="keyword">struct </span>RegisterObservers {</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ParallelComponent, <span class="keyword">typename</span> DbTagsList,</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;            <span class="keyword">typename</span> ArrayIndex&gt;</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair&lt;observers::TypeOfObservation, observers::ObservationKey&gt;</a></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;  register_info(<span class="keyword">const</span> db::DataBox&lt;DbTagsList&gt;&amp; <span class="comment">/*box*/</span>,</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;                <span class="keyword">const</span> ArrayIndex&amp; <span class="comment">/*array_index*/</span>) noexcept {</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="keywordflow">return</span> {<a class="code" href="group__ObserversGroup.html#gga9601b9f188609201444e989ee8825b45a9e834f13e35e4edf64863ab414a6217a">observers::TypeOfObservation::Reduction</a>,</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;            <a class="code" href="classobservers_1_1ObservationKey.html">observers::ObservationKey</a>{pretty_type::get_name&lt;OptionsGroup&gt;() +</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;                                      <span class="stringliteral">&quot;SubdomainSolves&quot;</span>}};</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;  }</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;};</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160; </div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> FieldsTag, <span class="keyword">typename</span> OptionsGroup, <span class="keyword">typename</span> SourceTag&gt;</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="keyword">using</span> RegisterElement =</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    <a class="code" href="structobservers_1_1Actions_1_1RegisterWithObservers.html">observers::Actions::RegisterWithObservers&lt;RegisterObservers&lt;OptionsGroup&gt;</a>&gt;;</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160; </div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> OptionsGroup, <span class="keyword">typename</span> ParallelComponent,</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;          <span class="keyword">typename</span> Metavariables, <span class="keyword">typename</span> ArrayIndex&gt;</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="keywordtype">void</span> contribute_to_subdomain_stats_observation(</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">size_t</span> iteration_id, <span class="keyword">const</span> <span class="keywordtype">size_t</span> subdomain_solve_num_iterations,</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    <a class="code" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache&lt;Metavariables&gt;</a>&amp; <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>,</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    <span class="keyword">const</span> ArrayIndex&amp; array_index) noexcept {</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;  <span class="keyword">auto</span>&amp; local_observer =</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;      *Parallel::get_parallel_component&lt;observers::Observer&lt;Metavariables&gt;&gt;(</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;           <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>)</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;           .ckLocalBranch();</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;  <span class="keyword">auto</span> formatter =</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;      <a class="code" href="group__UtilitiesGroup.html#gab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a>(<a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>&lt;<a class="code" href="structlogging_1_1Tags_1_1Verbosity.html">logging::Tags::Verbosity&lt;OptionsGroup&gt;</a>&gt;(<a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>) &gt;=</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;               ::Verbosity::Verbose)</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;          ? std::make_optional(SubdomainStatsFormatter&lt;OptionsGroup&gt;{})</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;          : std::nullopt;</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;  Parallel::simple_action&lt;observers::Actions::ContributeReductionData&gt;(</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;      local_observer,</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;      <a class="code" href="classobservers_1_1ObservationId.html">observers::ObservationId</a>(</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;          iteration_id,</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;          pretty_type::get_name&lt;OptionsGroup&gt;() + <span class="stringliteral">&quot;SubdomainSolves&quot;</span>),</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;      <a class="code" href="classobservers_1_1ArrayComponentId.html">observers::ArrayComponentId</a>{</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;          <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/add_pointer.html">std::add_pointer_t&lt;ParallelComponent&gt;</a>{<span class="keyword">nullptr</span>},</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;          <a class="code" href="structParallel_1_1ArrayIndex.html">Parallel::ArrayIndex&lt;ArrayIndex&gt;</a>(array_index)},</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;      <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>{<span class="stringliteral">&quot;/&quot;</span> + Options::name&lt;OptionsGroup&gt;() + <span class="stringliteral">&quot;SubdomainSolves&quot;</span>},</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;      <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;std::string&gt;</a>{<span class="stringliteral">&quot;Iteration&quot;</span>, <span class="stringliteral">&quot;NumSubdomains&quot;</span>, <span class="stringliteral">&quot;AvgNumIterations&quot;</span>,</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;                               <span class="stringliteral">&quot;MinNumIterations&quot;</span>, <span class="stringliteral">&quot;MaxNumIterations&quot;</span>},</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;      <a class="code" href="namespacePhaseControl.html#ae32e3c999be8835381696c3e9985f326">reduction_data</a>{iteration_id, 1, subdomain_solve_num_iterations,</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;                     subdomain_solve_num_iterations,</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;                     subdomain_solve_num_iterations},</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;      std::move(formatter));</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;}</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160; </div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> SubdomainDataType, <span class="keyword">typename</span> OptionsGroup&gt;</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;<span class="keyword">struct </span>SubdomainDataBufferTag : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept {</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;    <span class="keywordflow">return</span> <span class="stringliteral">&quot;SubdomainData(&quot;</span> + Options::name&lt;OptionsGroup&gt;() + <span class="stringliteral">&quot;)&quot;</span>;</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;  }</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;  <span class="keyword">using</span> type = SubdomainDataType;</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;};</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160; </div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;<span class="comment">// Allow factory-creating any of these serial linear solvers for use as</span></div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;<span class="comment">// subdomain solver</span></div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> FieldsTag, <span class="keyword">typename</span> SubdomainOperator,</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;          <span class="keyword">typename</span> SubdomainData = ElementCenteredSubdomainData&lt;</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;              SubdomainOperator::volume_dim,</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;              <span class="keyword">typename</span> <a class="code" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt;<a class="code" href="structLinearSolver_1_1Tags_1_1Residual.html">LinearSolver::Tags::Residual</a>,</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;                                          FieldsTag&gt;::tags_list&gt;&gt;</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;<span class="keyword">using</span> subdomain_solver = <a class="code" href="classLinearSolver_1_1Serial_1_1LinearSolver.html">LinearSolver::Serial::LinearSolver</a>&lt;</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;    tmpl::list&lt;::LinearSolver::Serial::Registrars::Gmres&lt;SubdomainData&gt;,</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;               <a class="code" href="structRegistration_1_1Registrar.html">::LinearSolver::Serial::Registrars::ExplicitInverse</a>&gt;&gt;;</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160; </div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> FieldsTag, <span class="keyword">typename</span> OptionsGroup, <span class="keyword">typename</span> SubdomainOperator&gt;</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;<span class="keyword">struct </span>InitializeElement {</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;  <span class="keyword">using</span> fields_tag = FieldsTag;</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;  <span class="keyword">using</span> residual_tag =</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;      <a class="code" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix&lt;LinearSolver::Tags::Residual, fields_tag&gt;</a>;</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;  <span class="keyword">static</span> constexpr <span class="keywordtype">size_t</span> Dim = SubdomainOperator::volume_dim;</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;  <span class="keyword">using</span> SubdomainData =</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;      ElementCenteredSubdomainData&lt;Dim, typename residual_tag::tags_list&gt;;</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;  <span class="keyword">using</span> subdomain_solver_tag = Tags::SubdomainSolver&lt;</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;      <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;subdomain_solver&lt;FieldsTag, SubdomainOperator&gt;</a>&gt;,</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;      OptionsGroup&gt;;</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160; </div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;  <span class="keyword">using</span> initialization_tags =</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;      tmpl::list&lt;domain::Tags::InitialExtents&lt;Dim&gt;, subdomain_solver_tag&gt;;</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;  <span class="keyword">using</span> initialization_tags_to_keep = tmpl::list&lt;subdomain_solver_tag&gt;;</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;  <span class="keyword">using</span> const_global_cache_tags = tmpl::list&lt;Tags::MaxOverlap&lt;OptionsGroup&gt;&gt;;</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160; </div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;  <span class="keyword">using</span> simple_tags =</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;      tmpl::list&lt;Tags::IntrudingExtents&lt;Dim, OptionsGroup&gt;,</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;                 Tags::Weight&lt;OptionsGroup&gt;,</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;                 <a class="code" href="structdomain_1_1Tags_1_1Faces.html">domain::Tags::Faces&lt;Dim, Tags::Weight&lt;OptionsGroup&gt;</a>&gt;,</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;                 SubdomainDataBufferTag&lt;SubdomainData, OptionsGroup&gt;&gt;;</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;  <span class="keyword">using</span> compute_tags = tmpl::list&lt;&gt;;</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> DbTagsList, <span class="keyword">typename</span>... InboxTags, <span class="keyword">typename</span> Metavariables,</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;            <span class="keyword">typename</span> ActionList, <span class="keyword">typename</span> ParallelComponent&gt;</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;  <span class="keyword">static</span> <span class="keyword">auto</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(db::DataBox&lt;DbTagsList&gt;&amp; box,</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;                    <span class="keyword">const</span> <a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;InboxTags...&gt;</a>&amp; <span class="comment">/*inboxes*/</span>,</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;                    <span class="keyword">const</span> <a class="code" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache&lt;Metavariables&gt;</a>&amp; <span class="comment">/*cache*/</span>,</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;                    <span class="keyword">const</span> <a class="code" href="classElementId.html">ElementId&lt;Dim&gt;</a>&amp; <span class="comment">/*element_id*/</span>,</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;                    <span class="keyword">const</span> ActionList <span class="comment">/*meta*/</span>,</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;                    <span class="keyword">const</span> ParallelComponent* <span class="keyword">const</span> <span class="comment">/*meta*/</span>) noexcept {</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; element = db::get&lt;domain::Tags::Element&lt;Dim&gt;&gt;(box);</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; <a class="code" href="namespaceevolution_1_1dg_1_1subcell_1_1fd.html#aee4d7253aeb3ba0f1034c0ed6738c030">mesh</a> = db::get&lt;domain::Tags::Mesh&lt;Dim&gt;&gt;(box);</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">size_t</span> num_points = <a class="code" href="namespaceevolution_1_1dg_1_1subcell_1_1fd.html#aee4d7253aeb3ba0f1034c0ed6738c030">mesh</a>.number_of_grid_points();</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; logical_coords =</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;        db::get&lt;domain::Tags::Coordinates&lt;Dim, Frame::Logical&gt;&gt;(box);</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">size_t</span> max_overlap = db::get&lt;Tags::MaxOverlap&lt;OptionsGroup&gt;&gt;(box);</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160; </div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;    <span class="comment">// Intruding overlaps</span></div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;    <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;size_t, Dim&gt;</a> intruding_extents{};</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;    <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;double, Dim&gt;</a> intruding_overlap_widths{};</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> d = 0; d &lt; Dim; ++d) {</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;      <a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(intruding_extents, d) =</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;          <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">LinearSolver::Schwarz::overlap_extent</a>(<a class="code" href="namespaceevolution_1_1dg_1_1subcell_1_1fd.html#aee4d7253aeb3ba0f1034c0ed6738c030">mesh</a>.extents(d), max_overlap);</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;      <span class="keyword">const</span> <span class="keyword">auto</span>&amp; <a class="code" href="namespaceSpectral.html#ae2433e9284c6284a25ee9fc45a4eb538">collocation_points</a> =</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;          <a class="code" href="namespaceSpectral.html#ae2433e9284c6284a25ee9fc45a4eb538">Spectral::collocation_points</a>(<a class="code" href="namespaceevolution_1_1dg_1_1subcell_1_1fd.html#aee4d7253aeb3ba0f1034c0ed6738c030">mesh</a>.slice_through(d));</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;      <a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(intruding_overlap_widths, d) =</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;          <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a7d0aef214331418e9e3a25e9f8d47c59">LinearSolver::Schwarz::overlap_width</a>(<a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(intruding_extents, d),</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;                                               <a class="code" href="namespaceSpectral.html#ae2433e9284c6284a25ee9fc45a4eb538">collocation_points</a>);</div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;    }</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160; </div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;    <span class="comment">// Element weight</span></div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;    <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;DataVector&gt;</a> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a8ff9561dede68f2d52687b9d6d6ee826">element_weight</a>{num_points, 1.};</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;    <span class="comment">// For max_overlap &gt; 0 all overlaps will have non-zero extents on an LGL</span></div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;    <span class="comment">// mesh (because it has at least 2 points per dimension), so we don&#39;t need</span></div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;    <span class="comment">// to check their extents are non-zero individually</span></div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;    <span class="keywordflow">if</span> (<a class="code" href="group__UtilitiesGroup.html#gaffde14445f49f65ff4f5b592e44ee71a">LIKELY</a>(max_overlap &gt; 0)) {</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;      <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a8ff9561dede68f2d52687b9d6d6ee826">LinearSolver::Schwarz::element_weight</a>(</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;          <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;<a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a8ff9561dede68f2d52687b9d6d6ee826">element_weight</a>), logical_coords,</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;          intruding_overlap_widths, element.external_boundaries());</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;    }</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160; </div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;    <span class="comment">// Intruding overlap weights</span></div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;    <a class="code" href="classDirectionMap.html">DirectionMap&lt;Dim, Scalar&lt;DataVector&gt;</a>&gt; intruding_overlap_weights{};</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;    <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; direction : element.internal_boundaries()) {</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;      <span class="keyword">const</span> <span class="keywordtype">size_t</span> dim = direction.dimension();</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;      <span class="keywordflow">if</span> (<a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(intruding_extents, dim) &gt; 0) {</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;        <span class="keyword">const</span> <span class="keyword">auto</span> intruding_logical_coords =</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;            <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a93d56df56230079863bb60142a4c4e57">LinearSolver::Schwarz::data_on_overlap</a>(</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;                logical_coords, <a class="code" href="namespaceevolution_1_1dg_1_1subcell_1_1fd.html#aee4d7253aeb3ba0f1034c0ed6738c030">mesh</a>.extents(), <a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(intruding_extents, dim),</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;                direction);</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;        intruding_overlap_weights[direction] =</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;            <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a6a464e0577222e9f23fc152c2d520dac">LinearSolver::Schwarz::intruding_weight</a>(</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;                intruding_logical_coords, direction, intruding_overlap_widths,</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;                element.neighbors().at(direction).size(),</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;                element.external_boundaries());</div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;      }</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;    }</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160; </div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;    Initialization::mutate_assign&lt;simple_tags&gt;(</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;        <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;box), std::move(intruding_extents),</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;        std::move(<a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a8ff9561dede68f2d52687b9d6d6ee826">element_weight</a>), std::move(intruding_overlap_weights),</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;        SubdomainData{num_points});</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;    <span class="keywordflow">return</span> std::make_tuple(std::move(box));</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;  }</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;};</div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160; </div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;<span class="comment">// Restrict the residual to neighboring subdomains that overlap with this</span></div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;<span class="comment">// element and send the data to those elements</span></div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> FieldsTag, <span class="keyword">typename</span> OptionsGroup, <span class="keyword">typename</span> SubdomainOperator&gt;</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;<span class="keyword">using</span> SendOverlapData = <a class="code" href="structLinearSolver_1_1Schwarz_1_1Actions_1_1SendOverlapFields.html">LinearSolver::Schwarz::Actions::SendOverlapFields</a>&lt;</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;    tmpl::list&lt;db::add_tag_prefix&lt;LinearSolver::Tags::Residual, FieldsTag&gt;&gt;,</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;    OptionsGroup, <span class="keyword">true</span>&gt;;</div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160; </div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim, <span class="keyword">typename</span> OptionsGroup, <span class="keyword">typename</span> OverlapSolution&gt;</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;<span class="keyword">struct </span>OverlapSolutionInboxTag</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;    : <span class="keyword">public</span> <a class="code" href="structParallel_1_1InboxInserters_1_1Map.html">Parallel::InboxInserters::Map</a>&lt;</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;          OverlapSolutionInboxTag&lt;Dim, OptionsGroup, OverlapSolution&gt;&gt; {</div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;  <span class="keyword">using</span> temporal_id = size_t;</div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;  <span class="keyword">using</span> type = <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map&lt;temporal_id, OverlapMap&lt;Dim, OverlapSolution&gt;</a>&gt;;</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;};</div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160; </div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;<span class="comment">// Wait for the residual data on regions of this element&#39;s subdomain that</span></div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;<span class="comment">// overlap with other elements. Once the residual data is available on all</span></div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;<span class="comment">// overlaps, solve the restricted problem for this element-centered subdomain.</span></div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;<span class="comment">// Apply the weighted solution on this element directly and send the solution on</span></div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;<span class="comment">// overlap regions to the neighbors that they overlap with.</span></div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> FieldsTag, <span class="keyword">typename</span> OptionsGroup, <span class="keyword">typename</span> SubdomainOperator&gt;</div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;<span class="keyword">struct </span>SolveSubdomain {</div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;  <span class="keyword">using</span> fields_tag = FieldsTag;</div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;  <span class="keyword">using</span> residual_tag =</div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;      <a class="code" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix&lt;LinearSolver::Tags::Residual, fields_tag&gt;</a>;</div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;  <span class="keyword">static</span> constexpr <span class="keywordtype">size_t</span> Dim = SubdomainOperator::volume_dim;</div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;  <span class="keyword">using</span> overlap_residuals_inbox_tag =</div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;      Actions::detail::OverlapFieldsTag&lt;Dim, tmpl::list&lt;residual_tag&gt;,</div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;                                        OptionsGroup&gt;;</div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;  <span class="keyword">using</span> SubdomainData =</div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;      ElementCenteredSubdomainData&lt;Dim, typename residual_tag::tags_list&gt;;</div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;  <span class="keyword">using</span> OverlapData = <span class="keyword">typename</span> SubdomainData::OverlapData;</div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;  <span class="keyword">using</span> overlap_solution_inbox_tag =</div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;      OverlapSolutionInboxTag&lt;Dim, OptionsGroup, OverlapData&gt;;</div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160; </div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;  <span class="keyword">using</span> const_global_cache_tags =</div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;      tmpl::list&lt;Tags::MaxOverlap&lt;OptionsGroup&gt;,</div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;                 <a class="code" href="structlogging_1_1Tags_1_1Verbosity.html">logging::Tags::Verbosity&lt;OptionsGroup&gt;</a>&gt;;</div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;  <span class="keyword">using</span> inbox_tags = tmpl::list&lt;overlap_residuals_inbox_tag&gt;;</div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160; </div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> DbTagsList, <span class="keyword">typename</span>... InboxTags, <span class="keyword">typename</span> Metavariables,</div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;            <span class="keyword">typename</span> ActionList, <span class="keyword">typename</span> ParallelComponent&gt;</div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;db::DataBox&lt;DbTagsList&gt;</a>&amp;&amp;, <a class="code" href="namespaceParallel.html#af31fff079d116e958890e079a35955cf">Parallel::AlgorithmExecution</a>&gt;</div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(db::DataBox&lt;DbTagsList&gt;&amp; box,</div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;        <a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;InboxTags...&gt;</a>&amp; inboxes,</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;        <a class="code" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache&lt;Metavariables&gt;</a>&amp; <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>,</div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;        <span class="keyword">const</span> <a class="code" href="classElementId.html">ElementId&lt;Dim&gt;</a>&amp; element_id, <span class="keyword">const</span> ActionList <span class="comment">/*meta*/</span>,</div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;        <span class="keyword">const</span> ParallelComponent* <span class="keyword">const</span> <span class="comment">/*meta*/</span>) noexcept {</div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">size_t</span> iteration_id =</div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;        get&lt;Convergence::Tags::IterationId&lt;OptionsGroup&gt;&gt;(box);</div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; element = db::get&lt;domain::Tags::Element&lt;Dim&gt;&gt;(box);</div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">size_t</span> max_overlap = db::get&lt;Tags::MaxOverlap&lt;OptionsGroup&gt;&gt;(box);</div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160; </div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;    <span class="comment">// Wait for communicated overlap data</span></div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">bool</span> has_overlap_data =</div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;        max_overlap &gt; 0 and element.number_of_neighbors() &gt; 0;</div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;    <span class="keywordflow">if</span> (<a class="code" href="group__UtilitiesGroup.html#gaffde14445f49f65ff4f5b592e44ee71a">LIKELY</a>(has_overlap_data) and</div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;        not dg::has_received_from_all_mortars&lt;overlap_residuals_inbox_tag&gt;(</div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;            iteration_id, element, inboxes)) {</div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;      <span class="keywordflow">return</span> {std::move(box), <a class="code" href="namespaceParallel.html#af31fff079d116e958890e079a35955cfa6327b4e59f58137083214a1fec358855">Parallel::AlgorithmExecution::Retry</a>};</div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;    }</div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160; </div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;    <span class="comment">// Do some logging</span></div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;    <span class="keywordflow">if</span> (<a class="code" href="group__UtilitiesGroup.html#gab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a>(<a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>&lt;<a class="code" href="structlogging_1_1Tags_1_1Verbosity.html">logging::Tags::Verbosity&lt;OptionsGroup&gt;</a>&gt;(box) &gt;=</div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;                 ::Verbosity::Debug)) {</div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;      <a class="code" href="group__ParallelGroup.html#gae21964b5d28608afd21ae090c1c4c073">Parallel::printf</a>(<span class="stringliteral">&quot;%s %s(%zu): Solve subdomain\n&quot;</span>, element_id,</div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;                       Options::name&lt;OptionsGroup&gt;(), iteration_id);</div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;    }</div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160; </div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;    <span class="comment">// Assemble the subdomain data from the data on the element and the</span></div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;    <span class="comment">// communicated overlap data</span></div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;    db::mutate&lt;SubdomainDataBufferTag&lt;SubdomainData, OptionsGroup&gt;&gt;(</div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;        <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;box),</div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;        [&amp;inboxes, &amp;iteration_id, &amp;has_overlap_data](</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;            <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;SubdomainData*&gt;</a> subdomain_data,</div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;            <span class="keyword">const</span> <span class="keyword">auto</span>&amp; residual) noexcept {</div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;          subdomain_data-&gt;element_data = residual;</div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;          <span class="comment">// Nothing was communicated if the overlaps are empty</span></div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;          <span class="keywordflow">if</span> (<a class="code" href="group__UtilitiesGroup.html#gaffde14445f49f65ff4f5b592e44ee71a">LIKELY</a>(has_overlap_data)) {</div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;            subdomain_data-&gt;overlap_data =</div>
+<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;                std::move(tuples::get&lt;overlap_residuals_inbox_tag&gt;(inboxes)</div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;                              .extract(iteration_id)</div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;                              .mapped());</div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;          }</div>
+<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;        },</div>
+<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;        db::get&lt;residual_tag&gt;(box));</div>
+<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; subdomain_residual =</div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;        db::get&lt;SubdomainDataBufferTag&lt;SubdomainData, OptionsGroup&gt;&gt;(box);</div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160; </div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;    <span class="comment">// Allocate workspace memory for repeatedly applying the subdomain operator</span></div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;    SubdomainOperator subdomain_operator{};</div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160; </div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;    <span class="comment">// Construct the subdomain operator</span></div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> apply_subdomain_operator =</div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;        [&amp;box, &amp;subdomain_operator](<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;SubdomainData*&gt;</a> result,</div>
+<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;                                    <span class="keyword">const</span> SubdomainData&amp; operand) noexcept {</div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;      <span class="comment">// The subdomain operator can retrieve any information on the subdomain</span></div>
+<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;      <span class="comment">// geometry that is available through the DataBox. The user is responsible</span></div>
+<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;      <span class="comment">// for communicating this information across neighbors if necessary.</span></div>
+<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;      subdomain_operator(result, operand, box);</div>
+<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;    };</div>
+<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160; </div>
+<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;    <span class="comment">// Solve the subdomain problem</span></div>
+<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; subdomain_solver =</div>
+<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;        get&lt;Tags::SubdomainSolverBase&lt;OptionsGroup&gt;&gt;(box);</div>
+<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;    <span class="keyword">auto</span> subdomain_solve_initial_guess_in_solution_out =</div>
+<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;        make_with_value&lt;SubdomainData&gt;(subdomain_residual, 0.);</div>
+<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> subdomain_solve_has_converged = subdomain_solver.solve(</div>
+<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;        <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;subdomain_solve_initial_guess_in_solution_out),</div>
+<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;        apply_subdomain_operator, subdomain_residual);</div>
+<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;    <span class="comment">// Re-naming the solution buffer for the code below</span></div>
+<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;    <span class="keyword">auto</span>&amp; subdomain_solution = subdomain_solve_initial_guess_in_solution_out;</div>
+<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160; </div>
+<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;    <span class="comment">// Do some logging and observing</span></div>
+<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;    <span class="keywordflow">if</span> (<a class="code" href="group__UtilitiesGroup.html#gab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a>(<a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>&lt;<a class="code" href="structlogging_1_1Tags_1_1Verbosity.html">logging::Tags::Verbosity&lt;OptionsGroup&gt;</a>&gt;(box) &gt;=</div>
+<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;                 ::Verbosity::Quiet)) {</div>
+<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;      <span class="keywordflow">if</span> (not subdomain_solve_has_converged or</div>
+<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;          subdomain_solve_has_converged.reason() ==</div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;              <a class="code" href="namespaceConvergence.html#a68326988a25b1d31073f46ee6de60f4ca89d18cc81de326d8fc836491777795e0">Convergence::Reason::MaxIterations</a>) {</div>
+<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;        <a class="code" href="group__ParallelGroup.html#gae21964b5d28608afd21ae090c1c4c073">Parallel::printf</a>(</div>
+<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;            <span class="stringliteral">&quot;%s %s(%zu): WARNING: Subdomain solver did not converge in %zu &quot;</span></div>
+<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;            <span class="stringliteral">&quot;iterations: %e -&gt; %e\n&quot;</span>,</div>
+<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;            element_id, Options::name&lt;OptionsGroup&gt;(), iteration_id,</div>
+<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;            subdomain_solve_has_converged.num_iterations(),</div>
+<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;            subdomain_solve_has_converged.initial_residual_magnitude(),</div>
+<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;            subdomain_solve_has_converged.residual_magnitude());</div>
+<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;      } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (<a class="code" href="group__UtilitiesGroup.html#gab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a>(<a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>&lt;<a class="code" href="structlogging_1_1Tags_1_1Verbosity.html">logging::Tags::Verbosity&lt;OptionsGroup&gt;</a>&gt;(box) &gt;=</div>
+<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;                          ::Verbosity::Debug)) {</div>
+<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;        <a class="code" href="group__ParallelGroup.html#gae21964b5d28608afd21ae090c1c4c073">Parallel::printf</a>(</div>
+<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;            <span class="stringliteral">&quot;%s %s(%zu): Subdomain solver converged in %zu iterations (%s): %e &quot;</span></div>
+<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;            <span class="stringliteral">&quot;-&gt; %e\n&quot;</span>,</div>
+<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;            element_id, Options::name&lt;OptionsGroup&gt;(), iteration_id,</div>
+<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;            subdomain_solve_has_converged.num_iterations(),</div>
+<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;            subdomain_solve_has_converged.reason(),</div>
+<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;            subdomain_solve_has_converged.initial_residual_magnitude(),</div>
+<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;            subdomain_solve_has_converged.residual_magnitude());</div>
+<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;      }</div>
+<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;    }</div>
+<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;    contribute_to_subdomain_stats_observation&lt;OptionsGroup, ParallelComponent&gt;(</div>
+<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;        iteration_id + 1, subdomain_solve_has_converged.num_iterations(), <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>,</div>
+<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;        element_id);</div>
+<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160; </div>
+<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;    <span class="comment">// Apply weighting</span></div>
+<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;    <span class="keywordflow">if</span> (<a class="code" href="group__UtilitiesGroup.html#gaffde14445f49f65ff4f5b592e44ee71a">LIKELY</a>(max_overlap &gt; 0)) {</div>
+<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;      subdomain_solution.element_data *=</div>
+<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;          <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(<a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">db::get</a>&lt;Tags::Weight&lt;OptionsGroup&gt;&gt;(box));</div>
+<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;    }</div>
+<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160; </div>
+<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;    <span class="comment">// Apply solution to central element</span></div>
+<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;    db::mutate&lt;fields_tag&gt;(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;box),</div>
+<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;                           [&amp;subdomain_solution](<span class="keyword">const</span> <span class="keyword">auto</span> fields) noexcept {</div>
+<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;                             *fields += subdomain_solution.element_data;</div>
+<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;                           });</div>
+<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160; </div>
+<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;    <span class="comment">// Send overlap solutions back to the neighbors that they are on</span></div>
+<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;    <span class="keywordflow">if</span> (<a class="code" href="group__UtilitiesGroup.html#gaffde14445f49f65ff4f5b592e44ee71a">LIKELY</a>(max_overlap &gt; 0)) {</div>
+<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;      <span class="keyword">auto</span>&amp; receiver_proxy =</div>
+<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;          Parallel::get_parallel_component&lt;ParallelComponent&gt;(<a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>);</div>
+<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;      <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; [overlap_id, overlap_solution] :</div>
+<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;           subdomain_solution.overlap_data) {</div>
+<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;        <span class="keyword">const</span> <span class="keyword">auto</span>&amp; direction = overlap_id.first;</div>
+<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;        <span class="keyword">const</span> <span class="keyword">auto</span>&amp; neighbor_id = overlap_id.second;</div>
+<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;        <span class="keyword">const</span> <span class="keyword">auto</span>&amp; orientation =</div>
+<div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;            element.neighbors().at(direction).orientation();</div>
+<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;        <span class="keyword">const</span> <span class="keyword">auto</span> direction_from_neighbor = orientation(direction.opposite());</div>
+<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;        Parallel::receive_data&lt;overlap_solution_inbox_tag&gt;(</div>
+<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;            receiver_proxy[neighbor_id], iteration_id,</div>
+<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;            std::make_pair(</div>
+<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;                OverlapId&lt;Dim&gt;{direction_from_neighbor, element.id()},</div>
+<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;                std::move(overlap_solution)));</div>
+<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;      }</div>
+<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;    }</div>
+<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;    <span class="keywordflow">return</span> {std::move(box), <a class="code" href="namespaceParallel.html#af31fff079d116e958890e079a35955cfaa0bfb8e59e6c13fc8d990781f77694fe">Parallel::AlgorithmExecution::Continue</a>};</div>
+<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;  }</div>
+<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;};</div>
+<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160; </div>
+<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;<span class="comment">// Wait for the subdomain solutions on regions within this element that overlap</span></div>
+<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;<span class="comment">// with neighboring element-centered subdomains. Combine the solutions as a</span></div>
+<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160;<span class="comment">// weighted sum.</span></div>
+<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> FieldsTag, <span class="keyword">typename</span> OptionsGroup, <span class="keyword">typename</span> SubdomainOperator&gt;</div>
+<div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160;<span class="keyword">struct </span>ReceiveOverlapSolution {</div>
+<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;  <span class="keyword">using</span> fields_tag = FieldsTag;</div>
+<div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160;  <span class="keyword">using</span> residual_tag =</div>
+<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160;      <a class="code" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix&lt;LinearSolver::Tags::Residual, fields_tag&gt;</a>;</div>
+<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;  <span class="keyword">static</span> constexpr <span class="keywordtype">size_t</span> Dim = SubdomainOperator::volume_dim;</div>
+<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160;  <span class="keyword">using</span> SubdomainData =</div>
+<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;      ElementCenteredSubdomainData&lt;Dim, typename residual_tag::tags_list&gt;;</div>
+<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;  <span class="keyword">using</span> OverlapSolution = <span class="keyword">typename</span> SubdomainData::OverlapData;</div>
+<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;  <span class="keyword">using</span> overlap_solution_inbox_tag =</div>
+<div class="line"><a name="l00444"></a><span class="lineno">  444</span>&#160;      OverlapSolutionInboxTag&lt;Dim, OptionsGroup, OverlapSolution&gt;;</div>
+<div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160; </div>
+<div class="line"><a name="l00446"></a><span class="lineno">  446</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160;  <span class="keyword">using</span> const_global_cache_tags = tmpl::list&lt;Tags::MaxOverlap&lt;OptionsGroup&gt;&gt;;</div>
+<div class="line"><a name="l00448"></a><span class="lineno">  448</span>&#160;  <span class="keyword">using</span> inbox_tags = tmpl::list&lt;overlap_solution_inbox_tag&gt;;</div>
+<div class="line"><a name="l00449"></a><span class="lineno">  449</span>&#160; </div>
+<div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> DbTagsList, <span class="keyword">typename</span>... InboxTags, <span class="keyword">typename</span> Metavariables,</div>
+<div class="line"><a name="l00451"></a><span class="lineno">  451</span>&#160;            <span class="keyword">typename</span> ActionList, <span class="keyword">typename</span> ParallelComponent&gt;</div>
+<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;db::DataBox&lt;DbTagsList&gt;</a>&amp;&amp;, <a class="code" href="namespaceParallel.html#af31fff079d116e958890e079a35955cf">Parallel::AlgorithmExecution</a>&gt;</div>
+<div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(db::DataBox&lt;DbTagsList&gt;&amp; box,</div>
+<div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160;        <a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;InboxTags...&gt;</a>&amp; inboxes,</div>
+<div class="line"><a name="l00455"></a><span class="lineno">  455</span>&#160;        <span class="keyword">const</span> <a class="code" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache&lt;Metavariables&gt;</a>&amp; <span class="comment">/*cache*/</span>,</div>
+<div class="line"><a name="l00456"></a><span class="lineno">  456</span>&#160;        <span class="keyword">const</span> <a class="code" href="classElementId.html">ElementId&lt;Dim&gt;</a>&amp; element_id, <span class="keyword">const</span> ActionList <span class="comment">/*meta*/</span>,</div>
+<div class="line"><a name="l00457"></a><span class="lineno">  457</span>&#160;        <span class="keyword">const</span> ParallelComponent* <span class="keyword">const</span> <span class="comment">/*meta*/</span>) noexcept {</div>
+<div class="line"><a name="l00458"></a><span class="lineno">  458</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">size_t</span> iteration_id =</div>
+<div class="line"><a name="l00459"></a><span class="lineno">  459</span>&#160;        get&lt;Convergence::Tags::IterationId&lt;OptionsGroup&gt;&gt;(box);</div>
+<div class="line"><a name="l00460"></a><span class="lineno">  460</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; element = db::get&lt;domain::Tags::Element&lt;Dim&gt;&gt;(box);</div>
+<div class="line"><a name="l00461"></a><span class="lineno">  461</span>&#160; </div>
+<div class="line"><a name="l00462"></a><span class="lineno">  462</span>&#160;    <span class="comment">// Nothing to do if overlap is empty</span></div>
+<div class="line"><a name="l00463"></a><span class="lineno">  463</span>&#160;    <span class="keywordflow">if</span> (<a class="code" href="group__UtilitiesGroup.html#gab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a>(<a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">db::get</a>&lt;Tags::MaxOverlap&lt;OptionsGroup&gt;&gt;(box) == 0 or</div>
+<div class="line"><a name="l00464"></a><span class="lineno">  464</span>&#160;                 element.number_of_neighbors() == 0)) {</div>
+<div class="line"><a name="l00465"></a><span class="lineno">  465</span>&#160;      <span class="keywordflow">return</span> {std::move(box), <a class="code" href="namespaceParallel.html#af31fff079d116e958890e079a35955cfaa0bfb8e59e6c13fc8d990781f77694fe">Parallel::AlgorithmExecution::Continue</a>};</div>
+<div class="line"><a name="l00466"></a><span class="lineno">  466</span>&#160;    }</div>
+<div class="line"><a name="l00467"></a><span class="lineno">  467</span>&#160; </div>
+<div class="line"><a name="l00468"></a><span class="lineno">  468</span>&#160;    <span class="keywordflow">if</span> (not dg::has_received_from_all_mortars&lt;overlap_solution_inbox_tag&gt;(</div>
+<div class="line"><a name="l00469"></a><span class="lineno">  469</span>&#160;            iteration_id, element, inboxes)) {</div>
+<div class="line"><a name="l00470"></a><span class="lineno">  470</span>&#160;      <span class="keywordflow">return</span> {std::move(box), <a class="code" href="namespaceParallel.html#af31fff079d116e958890e079a35955cfa6327b4e59f58137083214a1fec358855">Parallel::AlgorithmExecution::Retry</a>};</div>
+<div class="line"><a name="l00471"></a><span class="lineno">  471</span>&#160;    }</div>
+<div class="line"><a name="l00472"></a><span class="lineno">  472</span>&#160; </div>
+<div class="line"><a name="l00473"></a><span class="lineno">  473</span>&#160;    <span class="comment">// Do some logging</span></div>
+<div class="line"><a name="l00474"></a><span class="lineno">  474</span>&#160;    <span class="keywordflow">if</span> (<a class="code" href="group__UtilitiesGroup.html#gab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a>(<a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>&lt;<a class="code" href="structlogging_1_1Tags_1_1Verbosity.html">logging::Tags::Verbosity&lt;OptionsGroup&gt;</a>&gt;(box) &gt;=</div>
+<div class="line"><a name="l00475"></a><span class="lineno">  475</span>&#160;                 ::Verbosity::Debug)) {</div>
+<div class="line"><a name="l00476"></a><span class="lineno">  476</span>&#160;      <a class="code" href="group__ParallelGroup.html#gae21964b5d28608afd21ae090c1c4c073">Parallel::printf</a>(<span class="stringliteral">&quot;%s %s(%zu): Receive overlap solution\n&quot;</span>, element_id,</div>
+<div class="line"><a name="l00477"></a><span class="lineno">  477</span>&#160;                       Options::name&lt;OptionsGroup&gt;(), iteration_id);</div>
+<div class="line"><a name="l00478"></a><span class="lineno">  478</span>&#160;    }</div>
+<div class="line"><a name="l00479"></a><span class="lineno">  479</span>&#160; </div>
+<div class="line"><a name="l00480"></a><span class="lineno">  480</span>&#160;    <span class="comment">// Add solutions on overlaps to this element&#39;s solution in a weighted sum</span></div>
+<div class="line"><a name="l00481"></a><span class="lineno">  481</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> received_overlap_solutions =</div>
+<div class="line"><a name="l00482"></a><span class="lineno">  482</span>&#160;        std::move(tuples::get&lt;overlap_solution_inbox_tag&gt;(inboxes)</div>
+<div class="line"><a name="l00483"></a><span class="lineno">  483</span>&#160;                      .extract(iteration_id)</div>
+<div class="line"><a name="l00484"></a><span class="lineno">  484</span>&#160;                      .mapped());</div>
+<div class="line"><a name="l00485"></a><span class="lineno">  485</span>&#160;    db::mutate&lt;fields_tag&gt;(</div>
+<div class="line"><a name="l00486"></a><span class="lineno">  486</span>&#160;        <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;box),</div>
+<div class="line"><a name="l00487"></a><span class="lineno">  487</span>&#160;        [&amp;received_overlap_solutions](</div>
+<div class="line"><a name="l00488"></a><span class="lineno">  488</span>&#160;            <span class="keyword">const</span> <span class="keyword">auto</span> fields, <span class="keyword">const</span> <a class="code" href="classIndex.html">Index&lt;Dim&gt;</a>&amp; full_extents,</div>
+<div class="line"><a name="l00489"></a><span class="lineno">  489</span>&#160;            <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;size_t, Dim&gt;</a>&amp; all_intruding_extents,</div>
+<div class="line"><a name="l00490"></a><span class="lineno">  490</span>&#160;            <span class="keyword">const</span> <a class="code" href="classDirectionMap.html">DirectionMap</a>&lt;Dim, <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;DataVector&gt;</a>&gt;&amp;</div>
+<div class="line"><a name="l00491"></a><span class="lineno">  491</span>&#160;                all_intruding_overlap_weights) noexcept {</div>
+<div class="line"><a name="l00492"></a><span class="lineno">  492</span>&#160;          <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; [overlap_id, overlap_solution] :</div>
+<div class="line"><a name="l00493"></a><span class="lineno">  493</span>&#160;               received_overlap_solutions) {</div>
+<div class="line"><a name="l00494"></a><span class="lineno">  494</span>&#160;            <span class="keyword">const</span> <span class="keyword">auto</span>&amp; direction = overlap_id.first;</div>
+<div class="line"><a name="l00495"></a><span class="lineno">  495</span>&#160;            <span class="keyword">const</span> <span class="keyword">auto</span>&amp; intruding_extents =</div>
+<div class="line"><a name="l00496"></a><span class="lineno">  496</span>&#160;                <a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(all_intruding_extents, direction.dimension());</div>
+<div class="line"><a name="l00497"></a><span class="lineno">  497</span>&#160;            <span class="keyword">const</span> <span class="keyword">auto</span>&amp; overlap_weight =</div>
+<div class="line"><a name="l00498"></a><span class="lineno">  498</span>&#160;                all_intruding_overlap_weights.at(direction);</div>
+<div class="line"><a name="l00499"></a><span class="lineno">  499</span>&#160;            <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#ab5b5b1d6b4f185bdbd7357f28655b677">LinearSolver::Schwarz::add_overlap_data</a>(</div>
+<div class="line"><a name="l00500"></a><span class="lineno">  500</span>&#160;                fields, overlap_solution * <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(overlap_weight), full_extents,</div>
+<div class="line"><a name="l00501"></a><span class="lineno">  501</span>&#160;                intruding_extents, direction);</div>
+<div class="line"><a name="l00502"></a><span class="lineno">  502</span>&#160;          }</div>
+<div class="line"><a name="l00503"></a><span class="lineno">  503</span>&#160;        },</div>
+<div class="line"><a name="l00504"></a><span class="lineno">  504</span>&#160;        db::get&lt;domain::Tags::Mesh&lt;Dim&gt;&gt;(box).extents(),</div>
+<div class="line"><a name="l00505"></a><span class="lineno">  505</span>&#160;        db::get&lt;Tags::IntrudingExtents&lt;Dim, OptionsGroup&gt;&gt;(box),</div>
+<div class="line"><a name="l00506"></a><span class="lineno">  506</span>&#160;        <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">db::get</a>&lt;<a class="code" href="structdomain_1_1Tags_1_1Faces.html">domain::Tags::Faces</a>&lt;Dim, Tags::Weight&lt;OptionsGroup&gt;&gt;&gt;(box));</div>
+<div class="line"><a name="l00507"></a><span class="lineno">  507</span>&#160;    <span class="keywordflow">return</span> {std::move(box), <a class="code" href="namespaceParallel.html#af31fff079d116e958890e079a35955cfaa0bfb8e59e6c13fc8d990781f77694fe">Parallel::AlgorithmExecution::Continue</a>};</div>
+<div class="line"><a name="l00508"></a><span class="lineno">  508</span>&#160;  }</div>
+<div class="line"><a name="l00509"></a><span class="lineno">  509</span>&#160;};</div>
+<div class="line"><a name="l00510"></a><span class="lineno">  510</span>&#160; </div>
+<div class="line"><a name="l00511"></a><span class="lineno">  511</span>&#160;}  <span class="comment">// namespace LinearSolver::Schwarz::detail</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="anamespaceLinearSolver_1_1Schwarz_html_a6a464e0577222e9f23fc152c2d520dac"><div class="ttname"><a href="namespaceLinearSolver_1_1Schwarz.html#a6a464e0577222e9f23fc152c2d520dac">LinearSolver::Schwarz::intruding_weight</a></div><div class="ttdeci">DataVector intruding_weight(const DataVector &amp;logical_coords, double width, const Side &amp;side) noexcept</div><div class="ttdoc">Weights for the intruding solution of a neighboring element-centered subdomain, increasing from 0 to ...</div></div>
+<div class="ttc" id="aclassLinearSolver_1_1Serial_1_1LinearSolver_html"><div class="ttname"><a href="classLinearSolver_1_1Serial_1_1LinearSolver.html">LinearSolver::Serial::LinearSolver</a></div><div class="ttdoc">Base class for serial linear solvers that supports factory-creation.</div><div class="ttdef"><b>Definition:</b> LinearSolver.hpp:37</div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga818f101f2f8bd824a3bc7c2c2361c560"><div class="ttname"><a href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a></div><div class="ttdeci">constexpr T &amp; at(std::array&lt; T, N &gt; &amp;arr, Size index)</div><div class="ttdoc">Retrieve a entry from a container, with checks in Debug mode that the index being retrieved is valid.</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:125</div></div>
+<div class="ttc" id="aclassobservers_1_1ObservationId_html"><div class="ttname"><a href="classobservers_1_1ObservationId.html">observers::ObservationId</a></div><div class="ttdoc">A unique identifier for an observation representing the type of observation and the instance (e....</div><div class="ttdef"><b>Definition:</b> ObservationId.hpp:71</div></div>
+<div class="ttc" id="aapply_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/apply.html">std::apply</a></div><div class="ttdeci">T apply(T... args)</div></div>
+<div class="ttc" id="astructfuncl_1_1Divides_html"><div class="ttname"><a href="structfuncl_1_1Divides.html">funcl::Divides</a></div><div class="ttdoc">Functional for computing / of two objects.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:235</div></div>
+<div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
+<div class="ttc" id="autility_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a></div></div>
+<div class="ttc" id="anamespaceParallel_html_af31fff079d116e958890e079a35955cfa6327b4e59f58137083214a1fec358855"><div class="ttname"><a href="namespaceParallel.html#af31fff079d116e958890e079a35955cfa6327b4e59f58137083214a1fec358855">Parallel::AlgorithmExecution::Retry</a></div><div class="ttdeci">@ Retry</div><div class="ttdoc">Temporarily stop executing iterable actions, but try the same action again after receiving data from ...</div></div>
+<div class="ttc" id="anamespaceLinearSolver_1_1Schwarz_html_a1366a47573e66a972bda3027b35dc5cd"><div class="ttname"><a href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">LinearSolver::Schwarz::overlap_extent</a></div><div class="ttdeci">size_t overlap_extent(size_t volume_extent, size_t max_overlap) noexcept</div><div class="ttdoc">The number of points that an overlap extends into the volume_extent</div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_gab10d0a221f4d7a706701b806c8135fd7"><div class="ttname"><a href="group__UtilitiesGroup.html#gab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a></div><div class="ttdeci">#define UNLIKELY(x)</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:73</div></div>
+<div class="ttc" id="aclassParallel_1_1GlobalCache_html"><div class="ttname"><a href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a></div><div class="ttdef"><b>Definition:</b> ElementReceiveInterpPoints.hpp:15</div></div>
+<div class="ttc" id="astructParallel_1_1ReductionDatum_html"><div class="ttname"><a href="structParallel_1_1ReductionDatum.html">Parallel::ReductionDatum</a></div><div class="ttdoc">The data to be reduced, and invokables to be called whenever two reduction messages are combined and ...</div><div class="ttdef"><b>Definition:</b> Reduction.hpp:65</div></div>
+<div class="ttc" id="anamespaceLinearSolver_1_1Schwarz_html_a8ff9561dede68f2d52687b9d6d6ee826"><div class="ttname"><a href="namespaceLinearSolver_1_1Schwarz.html#a8ff9561dede68f2d52687b9d6d6ee826">LinearSolver::Schwarz::element_weight</a></div><div class="ttdeci">void element_weight(gsl::not_null&lt; Scalar&lt; DataVector &gt; * &gt; element_weight, const tnsr::I&lt; DataVector, Dim, Frame::Logical &gt; &amp;logical_coords, const std::array&lt; double, Dim &gt; &amp;overlap_widths, const std::unordered_set&lt; Direction&lt; Dim &gt;&gt; &amp;external_boundaries) noexcept</div><div class="ttdoc">Weights for data on the central element of an element-centered subdomain.</div></div>
+<div class="ttc" id="apair_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a></div></div>
+<div class="ttc" id="aGlobalCache_8hpp_html"><div class="ttname"><a href="GlobalCache_8hpp.html">GlobalCache.hpp</a></div></div>
+<div class="ttc" id="ainteger_sequence_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::index_sequence</a></div></div>
+<div class="ttc" id="aOptions_8hpp_html"><div class="ttname"><a href="Options_8hpp.html">Options.hpp</a></div></div>
+<div class="ttc" id="aCommunicateOverlapFields_8hpp_html"><div class="ttname"><a href="CommunicateOverlapFields_8hpp.html">CommunicateOverlapFields.hpp</a></div></div>
+<div class="ttc" id="aDomain_2Tags_8hpp_html"><div class="ttname"><a href="Domain_2Tags_8hpp.html">Tags.hpp</a></div></div>
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a></div></div>
+<div class="ttc" id="aPrettyType_8hpp_html"><div class="ttname"><a href="PrettyType_8hpp.html">PrettyType.hpp</a></div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_gae21964b5d28608afd21ae090c1c4c073"><div class="ttname"><a href="group__ParallelGroup.html#gae21964b5d28608afd21ae090c1c4c073">Parallel::printf</a></div><div class="ttdeci">void printf(const std::string &amp;format, Args &amp;&amp;... args)</div><div class="ttdoc">Print an atomic message to stdout with C printf usage.</div><div class="ttdef"><b>Definition:</b> Printf.hpp:103</div></div>
+<div class="ttc" id="agroup__DataBoxTagsGroup_html_gafeeced2a7fb41fdced8c55e76343f63c"><div class="ttname"><a href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a></div><div class="ttdeci">typename detail::add_tag_prefix_impl&lt; Prefix, Tag, Args... &gt;::type add_tag_prefix</div><div class="ttdef"><b>Definition:</b> PrefixHelpers.hpp:51</div></div>
+<div class="ttc" id="aclassobservers_1_1ObservationKey_html"><div class="ttname"><a href="classobservers_1_1ObservationKey.html">observers::ObservationKey</a></div><div class="ttdoc">Used as a key in maps to keep track of how many elements have registered.</div><div class="ttdef"><b>Definition:</b> ObservationId.hpp:28</div></div>
+<div class="ttc" id="atuple_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/tuple.html">tuple</a></div></div>
+<div class="ttc" id="agroup__DataBoxGroup_html_gae08744824ea7df89224f128b2080c5b1"><div class="ttname"><a href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">db::get</a></div><div class="ttdeci">const auto &amp; get(const DataBox&lt; TagList &gt; &amp;box) noexcept</div><div class="ttdoc">Retrieve the item with tag Tag from the DataBox.</div><div class="ttdef"><b>Definition:</b> DataBox.hpp:791</div></div>
+<div class="ttc" id="aclassIndex_html"><div class="ttname"><a href="classIndex.html">Index</a></div><div class="ttdef"><b>Definition:</b> Index.hpp:31</div></div>
+<div class="ttc" id="astructdb_1_1SimpleTag_html"><div class="ttname"><a href="structdb_1_1SimpleTag.html">db::SimpleTag</a></div><div class="ttdoc">Mark a struct as a simple tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:36</div></div>
+<div class="ttc" id="anamespaceevolution_1_1dg_1_1subcell_1_1fd_html_aee4d7253aeb3ba0f1034c0ed6738c030"><div class="ttname"><a href="namespaceevolution_1_1dg_1_1subcell_1_1fd.html#aee4d7253aeb3ba0f1034c0ed6738c030">evolution::dg::subcell::fd::mesh</a></div><div class="ttdeci">Mesh&lt; Dim &gt; mesh(const Mesh&lt; Dim &gt; &amp;dg_mesh) noexcept</div><div class="ttdoc">Computes the cell-centered finite-difference mesh from the DG mesh, using  grid points per dimension,...</div></div>
+<div class="ttc" id="aSpectral_8hpp_html"><div class="ttname"><a href="Spectral_8hpp.html">Spectral.hpp</a></div></div>
+<div class="ttc" id="aParallelAlgorithms_2LinearSolver_2Tags_8hpp_html"><div class="ttname"><a href="ParallelAlgorithms_2LinearSolver_2Tags_8hpp.html">Tags.hpp</a></div></div>
+<div class="ttc" id="astructdomain_1_1Tags_1_1Faces_html"><div class="ttname"><a href="structdomain_1_1Tags_1_1Faces.html">domain::Tags::Faces</a></div><div class="ttdoc">The Tag on element faces.</div><div class="ttdef"><b>Definition:</b> Faces.hpp:25</div></div>
+<div class="ttc" id="astructLinearSolver_1_1Schwarz_1_1Actions_1_1SendOverlapFields_html"><div class="ttname"><a href="structLinearSolver_1_1Schwarz_1_1Actions_1_1SendOverlapFields.html">LinearSolver::Schwarz::Actions::SendOverlapFields</a></div><div class="ttdoc">Send data on regions that overlap with other subdomains to their corresponding elements.</div><div class="ttdef"><b>Definition:</b> CommunicateOverlapFields.hpp:72</div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_gae1b1a8fbda55342653e23c0806e0ee7b"><div class="ttname"><a href="group__UtilitiesGroup.html#gae1b1a8fbda55342653e23c0806e0ee7b">get_output</a></div><div class="ttdeci">std::string get_output(const T &amp;t) noexcept</div><div class="ttdoc">Get the streamed output of t as a std::string</div><div class="ttdef"><b>Definition:</b> GetOutput.hpp:14</div></div>
+<div class="ttc" id="astructRegistration_1_1Registrar_html"><div class="ttname"><a href="structRegistration_1_1Registrar.html">Registration::Registrar</a></div><div class="ttdoc">A template for defining a registrar.</div><div class="ttdef"><b>Definition:</b> Registration.hpp:42</div></div>
+<div class="ttc" id="aclassElementId_html"><div class="ttname"><a href="classElementId.html">ElementId&lt; Dim &gt;</a></div></div>
+<div class="ttc" id="anamespaceSpectral_html_ae2433e9284c6284a25ee9fc45a4eb538"><div class="ttname"><a href="namespaceSpectral.html#ae2433e9284c6284a25ee9fc45a4eb538">Spectral::collocation_points</a></div><div class="ttdeci">const DataVector &amp; collocation_points(size_t num_points) noexcept</div><div class="ttdoc">Collocation points.</div></div>
+<div class="ttc" id="aElementId_8hpp_html"><div class="ttname"><a href="ElementId_8hpp.html">ElementId.hpp</a></div></div>
+<div class="ttc" id="aadd_pointer_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/add_pointer.html">std::add_pointer_t</a></div></div>
+<div class="ttc" id="anamespaceLinearSolver_1_1Schwarz_html_ab5b5b1d6b4f185bdbd7357f28655b677"><div class="ttname"><a href="namespaceLinearSolver_1_1Schwarz.html#ab5b5b1d6b4f185bdbd7357f28655b677">LinearSolver::Schwarz::add_overlap_data</a></div><div class="ttdeci">void add_overlap_data(const gsl::not_null&lt; Variables&lt; VolumeTagsList &gt; * &gt; volume_data, const Variables&lt; OverlapTagsList &gt; &amp;overlap_data, const Index&lt; Dim &gt; &amp;volume_extents, const size_t overlap_extent, const Direction&lt; Dim &gt; &amp;direction) noexcept</div><div class="ttdoc">Add the overlap_data to the volume_data</div><div class="ttdef"><b>Definition:</b> OverlapHelpers.hpp:226</div></div>
+<div class="ttc" id="aPrintf_8hpp_html"><div class="ttname"><a href="Printf_8hpp.html">Printf.hpp</a></div></div>
+<div class="ttc" id="anamespaceLinearSolver_1_1Schwarz_html_a7d0aef214331418e9e3a25e9f8d47c59"><div class="ttname"><a href="namespaceLinearSolver_1_1Schwarz.html#a7d0aef214331418e9e3a25e9f8d47c59">LinearSolver::Schwarz::overlap_width</a></div><div class="ttdeci">double overlap_width(size_t overlap_extent, const DataVector &amp;collocation_points) noexcept</div><div class="ttdoc">Width of an overlap extending overlap_extent points into the collocation_points from either side.</div></div>
+<div class="ttc" id="anamespaceParallel_html_af31fff079d116e958890e079a35955cfaa0bfb8e59e6c13fc8d990781f77694fe"><div class="ttname"><a href="namespaceParallel.html#af31fff079d116e958890e079a35955cfaa0bfb8e59e6c13fc8d990781f77694fe">Parallel::AlgorithmExecution::Continue</a></div><div class="ttdeci">@ Continue</div><div class="ttdoc">Leave the algorithm termination flag in its current state.</div></div>
+<div class="ttc" id="aDataBox_8hpp_html"><div class="ttname"><a href="DataBox_8hpp.html">DataBox.hpp</a></div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="astructlogging_1_1Tags_1_1Verbosity_html"><div class="ttname"><a href="structlogging_1_1Tags_1_1Verbosity.html">logging::Tags::Verbosity</a></div><div class="ttdoc">Tag for putting Verbosity in a DataBox.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:33</div></div>
+<div class="ttc" id="anamespaceLinearSolver_1_1Schwarz_html_a93d56df56230079863bb60142a4c4e57"><div class="ttname"><a href="namespaceLinearSolver_1_1Schwarz.html#a93d56df56230079863bb60142a4c4e57">LinearSolver::Schwarz::data_on_overlap</a></div><div class="ttdeci">void data_on_overlap(const gsl::not_null&lt; Tensor&lt; DataType, TensorStructure... &gt; * &gt; restricted_tensor, const Tensor&lt; DataType, TensorStructure... &gt; &amp;tensor, const Index&lt; Dim &gt; &amp;volume_extents, const size_t overlap_extent, const Direction&lt; Dim &gt; &amp;direction) noexcept</div><div class="ttdoc">The part of the tensor data that lies within the overlap region.</div><div class="ttdef"><b>Definition:</b> OverlapHelpers.hpp:139</div></div>
+<div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt; size_t, Dim &gt;</a></div></div>
+<div class="ttc" id="aIndex_8hpp_html"><div class="ttname"><a href="Index_8hpp.html">Index.hpp</a></div></div>
+<div class="ttc" id="aclasstuples_1_1TaggedTuple_html"><div class="ttname"><a href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a></div><div class="ttdoc">An associative container that is indexed by structs.</div><div class="ttdef"><b>Definition:</b> TaggedTuple.hpp:271</div></div>
+<div class="ttc" id="amap_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/map.html">map</a></div></div>
+<div class="ttc" id="anamespaceParallel_html_af31fff079d116e958890e079a35955cf"><div class="ttname"><a href="namespaceParallel.html#af31fff079d116e958890e079a35955cf">Parallel::AlgorithmExecution</a></div><div class="ttdeci">AlgorithmExecution</div><div class="ttdoc">The possible options for altering the current execution of the algorithm, used in the return type of ...</div><div class="ttdef"><b>Definition:</b> AlgorithmMetafunctions.hpp:31</div></div>
+<div class="ttc" id="aElement_8hpp_html"><div class="ttname"><a href="Element_8hpp.html">Element.hpp</a></div></div>
+<div class="ttc" id="aclassDirectionMap_html"><div class="ttname"><a href="classDirectionMap.html">DirectionMap</a></div><div class="ttdef"><b>Definition:</b> DirectionMap.hpp:15</div></div>
+<div class="ttc" id="anamespaceActionTesting_html_af2cb56d7012b27cab5d118a9fa0783d2"><div class="ttname"><a href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">ActionTesting::cache</a></div><div class="ttdeci">Parallel::GlobalCache&lt; Metavariables &gt; &amp; cache(MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const ArrayIndex &amp;array_index) noexcept</div><div class="ttdoc">Returns the GlobalCache of Component with index array_index.</div><div class="ttdef"><b>Definition:</b> MockRuntimeSystemFreeFunctions.hpp:382</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga06ebcb38a1f13c246e53378b9e8959ce"><div class="ttname"><a href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a></div><div class="ttdeci">Tensor&lt; T, Symmetry&lt;&gt;, index_list&lt;&gt; &gt; Scalar</div><div class="ttdef"><b>Definition:</b> TypeAliases.hpp:21</div></div>
+<div class="ttc" id="anamespacePhaseControl_html_ae32e3c999be8835381696c3e9985f326"><div class="ttname"><a href="namespacePhaseControl.html#ae32e3c999be8835381696c3e9985f326">PhaseControl::reduction_data</a></div><div class="ttdeci">Parallel::ReductionData&lt; Parallel::ReductionDatum&lt; tuples::tagged_tuple_from_typelist&lt; TagsAndCombinesPresent &gt;, TaggedTupleCombine &gt; &gt; reduction_data</div><div class="ttdoc">A Parallel::ReductionData with a single Parallel::ReductionDatum for a given tagged tuple type determ...</div><div class="ttdef"><b>Definition:</b> PhaseControlReductionHelpers.hpp:83</div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="astructLinearSolver_1_1Tags_1_1Residual_html"><div class="ttname"><a href="structLinearSolver_1_1Tags_1_1Residual.html">LinearSolver::Tags::Residual</a></div><div class="ttdoc">The residual .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:66</div></div>
+<div class="ttc" id="agroup__ObserversGroup_html_gga9601b9f188609201444e989ee8825b45a9e834f13e35e4edf64863ab414a6217a"><div class="ttname"><a href="group__ObserversGroup.html#gga9601b9f188609201444e989ee8825b45a9e834f13e35e4edf64863ab414a6217a">observers::TypeOfObservation::Reduction</a></div><div class="ttdeci">@ Reduction</div><div class="ttdoc">The sender will only perform reduction observations.</div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_gaffde14445f49f65ff4f5b592e44ee71a"><div class="ttname"><a href="group__UtilitiesGroup.html#gaffde14445f49f65ff4f5b592e44ee71a">LIKELY</a></div><div class="ttdeci">#define LIKELY(x)</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:67</div></div>
+<div class="ttc" id="aclassobservers_1_1ArrayComponentId_html"><div class="ttname"><a href="classobservers_1_1ArrayComponentId.html">observers::ArrayComponentId</a></div><div class="ttdoc">An ID type that identifies both the parallel component and the index in the parallel component.</div><div class="ttdef"><b>Definition:</b> ArrayComponentId.hpp:27</div></div>
+<div class="ttc" id="aGsl_8hpp_html_a649c6961f9146205c203e45d58fd0c4c"><div class="ttname"><a href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a></div><div class="ttdeci">gsl::not_null&lt; T * &gt; make_not_null(T *ptr) noexcept</div><div class="ttdoc">Construct a not_null from a pointer. Often this will be done as an implicit conversion,...</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:880</div></div>
+<div class="ttc" id="astructParallel_1_1ArrayIndex_html"><div class="ttname"><a href="structParallel_1_1ArrayIndex.html">Parallel::ArrayIndex</a></div><div class="ttdoc">The array index used for indexing Chare Arrays, mostly an implementation detail.</div><div class="ttdef"><b>Definition:</b> ArrayIndex.hpp:28</div></div>
+<div class="ttc" id="aDirection_8hpp_html"><div class="ttname"><a href="Direction_8hpp.html">Direction.hpp</a></div></div>
+<div class="ttc" id="aunique_ptr_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></div></div>
+<div class="ttc" id="aunordered_map_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/unordered_map.html">unordered_map</a></div></div>
+<div class="ttc" id="astructtt_1_1ConformsTo_html"><div class="ttname"><a href="structtt_1_1ConformsTo.html">tt::ConformsTo</a></div><div class="ttdoc">Indicate a class conforms to the Protocol.</div><div class="ttdef"><b>Definition:</b> ProtocolHelpers.hpp:22</div></div>
+<div class="ttc" id="anamespaceConvergence_html_a68326988a25b1d31073f46ee6de60f4ca89d18cc81de326d8fc836491777795e0"><div class="ttname"><a href="namespaceConvergence.html#a68326988a25b1d31073f46ee6de60f4ca89d18cc81de326d8fc836491777795e0">Convergence::Reason::MaxIterations</a></div><div class="ttdeci">@ MaxIterations</div><div class="ttdoc">Reached the maximum number of iterations. Can be interpreted as an error condition.</div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="aNumericalAlgorithms_2Spectral_2Mesh_8hpp_html"><div class="ttname"><a href="NumericalAlgorithms_2Spectral_2Mesh_8hpp.html">Mesh.hpp</a></div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<div class="ttc" id="astructParallel_1_1InboxInserters_1_1Map_html"><div class="ttname"><a href="structParallel_1_1InboxInserters_1_1Map.html">Parallel::InboxInserters::Map</a></div><div class="ttdoc">Inserter for inserting data that is received as the value_type (with non-const key_type) of a map dat...</div><div class="ttdef"><b>Definition:</b> InboxInserters.hpp:36</div></div>
+<div class="ttc" id="astructobservers_1_1Actions_1_1RegisterWithObservers_html"><div class="ttname"><a href="structobservers_1_1Actions_1_1RegisterWithObservers.html">observers::Actions::RegisterWithObservers</a></div><div class="ttdoc">Register an observation ID with the observers.</div><div class="ttdef"><b>Definition:</b> RegisterWithObservers.hpp:47</div></div>
+<div class="ttc" id="astring_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/string.html">string</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,426 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: intrp::InterpolationTarget&lt; Metavariables, InterpolationTargetTag &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceintrp.html">intrp</a></li><li class="navelem"><a class="el" href="structintrp_1_1InterpolationTarget.html">InterpolationTarget</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="structintrp_1_1InterpolationTarget-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">intrp::InterpolationTarget&lt; Metavariables, InterpolationTargetTag &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>ParallelComponent representing a set of points to be interpolated to and a function to call upon interpolation to those points.  
+ <a href="structintrp_1_1InterpolationTarget.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="InterpolationTarget_8hpp_source.html">InterpolationTarget.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1InterpolationTarget_1_1RegistrationHelper.html">RegistrationHelper</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a1f804467a5b6277ca3113ce45d3e9a22"><td class="memItemLeft" align="right" valign="top"><a id="a1f804467a5b6277ca3113ce45d3e9a22"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>chare_type</b> = ::<a class="el" href="structParallel_1_1Algorithms_1_1Singleton.html">Parallel::Algorithms::Singleton</a></td></tr>
+<tr class="separator:a1f804467a5b6277ca3113ce45d3e9a22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1355d8f589c9deb60d4515d62ffe362f"><td class="memItemLeft" align="right" valign="top"><a id="a1355d8f589c9deb60d4515d62ffe362f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>const_global_cache_tags</b> = <a class="el" href="group__ParallelGroup.html#gab2c3e5b7084f5cb31c8c5cc7595349a6">Parallel::get_const_global_cache_tags_from_actions</a>&lt; tmpl::list&lt; typename InterpolationTargetTag::compute_target_points, typename InterpolationTargetTag::post_interpolation_callback &gt; &gt;</td></tr>
+<tr class="separator:a1355d8f589c9deb60d4515d62ffe362f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50323b0e589e07118b1cfbc39cc3107e"><td class="memItemLeft" align="right" valign="top"><a id="a50323b0e589e07118b1cfbc39cc3107e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>metavariables</b> = Metavariables</td></tr>
+<tr class="separator:a50323b0e589e07118b1cfbc39cc3107e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc59ed53d28d11368cecb26aa1671d14"><td class="memItemLeft" align="right" valign="top"><a id="adc59ed53d28d11368cecb26aa1671d14"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>phase_dependent_action_list</b> = tmpl::list&lt; <a class="el" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt; typename Metavariables::Phase, Metavariables::Phase::Initialization, tmpl::list&lt;::<a class="el" href="structActions_1_1SetupDataBox.html">Actions::SetupDataBox</a>, <a class="el" href="structintrp_1_1Actions_1_1InitializeInterpolationTarget.html">intrp::Actions::InitializeInterpolationTarget</a>&lt; Metavariables, InterpolationTargetTag &gt;, <a class="el" href="structParallel_1_1Actions_1_1TerminatePhase.html">Parallel::Actions::TerminatePhase</a> &gt; &gt;, <a class="el" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt; typename Metavariables::Phase, Metavariables::Phase::Register, tmpl::list&lt; tmpl::conditional_t&lt; InterpolationTargetTag::compute_target_points::is_sequential::value, tmpl::list&lt;&gt;, tmpl::list&lt; <a class="el" href="structintrp_1_1Actions_1_1InterpolationTargetSendTimeIndepPointsToElements.html">Actions::InterpolationTargetSendTimeIndepPointsToElements</a>&lt; InterpolationTargetTag &gt; &gt;&gt;, tmpl::conditional_t&lt; std::is_same_v&lt; typename InterpolationTargetTag::post_interpolation_callback::observation_types, tmpl::list&lt;&gt; &gt;, tmpl::list&lt; <a class="el" href="structParallel_1_1Actions_1_1TerminatePhase.html">Parallel::Actions::TerminatePhase</a> &gt;, tmpl::list&lt; ::<a class="el" href="structobservers_1_1Actions_1_1RegisterSingletonWithObserverWriter.html">observers::Actions::RegisterSingletonWithObserverWriter</a>&lt; <a class="el" href="structintrp_1_1InterpolationTarget_1_1RegistrationHelper.html">RegistrationHelper</a> &gt;, <a class="el" href="structParallel_1_1Actions_1_1TerminatePhase.html">Parallel::Actions::TerminatePhase</a> &gt; &gt;&gt; &gt;&gt;</td></tr>
+<tr class="separator:adc59ed53d28d11368cecb26aa1671d14"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a07b5120d74a8b7cd0fee6bd6c5dbfc06"><td class="memItemLeft" align="right" valign="top"><a id="a07b5120d74a8b7cd0fee6bd6c5dbfc06"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>initialization_tags</b> = <a class="el" href="group__ParallelGroup.html#ga1e2e4c961e55eb461d66770393e4f45d">Parallel::get_initialization_tags</a>&lt; <a class="el" href="group__ParallelGroup.html#gac5fb42f8eaf4da2707e32ed37ecf4e66">Parallel::get_initialization_actions_list</a>&lt; phase_dependent_action_list &gt; &gt;</td></tr>
+<tr class="separator:a07b5120d74a8b7cd0fee6bd6c5dbfc06"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a97639eb43e775bc5c9cb2bae213af10a"><td class="memItemLeft" align="right" valign="top"><a id="a97639eb43e775bc5c9cb2bae213af10a"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>execute_next_phase</b> (typename metavariables::Phase next_phase, Parallel::CProxy_GlobalCache&lt; metavariables &gt; &amp;global_cache) noexcept</td></tr>
+<tr class="separator:a97639eb43e775bc5c9cb2bae213af10a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;class Metavariables, typename InterpolationTargetTag&gt;<br />
+struct intrp::InterpolationTarget&lt; Metavariables, InterpolationTargetTag &gt;</h3>
+
+<p>ParallelComponent representing a set of points to be interpolated to and a function to call upon interpolation to those points. </p>
+<p>Each <a class="el" href="structintrp_1_1InterpolationTarget.html" title="ParallelComponent representing a set of points to be interpolated to and a function to call upon inte...">InterpolationTarget</a> will communicate with the <code><a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a></code>.</p>
+<p><code>InterpolationTargetTag</code> must contain the following type aliases:</p><ul>
+<li>vars_to_interpolate_to_target: A <code>tmpl::list</code> of tags describing variables to interpolate. Will be used to construct a <code>Variables</code>.</li>
+<li>compute_items_on_source: A <code>tmpl::list</code> of compute items that uses <code>Metavariables::interpolator_source_vars</code> as input and computes the <code>Variables</code> defined by <code>vars_to_interpolate_to_target</code>.</li>
+<li>compute_items_on_target: A <code>tmpl::list</code> of compute items that uses <code>vars_to_interpolate_to_target</code> as input.</li>
+<li>compute_target_points: A <code>simple_action</code> of <code><a class="el" href="structintrp_1_1InterpolationTarget.html" title="ParallelComponent representing a set of points to be interpolated to and a function to call upon inte...">InterpolationTarget</a></code> that computes the target points and sends them to <code>Interpolators</code>. It takes a <code>temporal_id</code> as an extra argument. <code>compute_target_points</code> can (optionally) have an additional function <div class="fragment"><div class="line"><span class="keyword">static</span> <span class="keyword">auto</span> initialize(<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;db::DataBox&lt;DbTags&gt;*&gt;,</div>
+<div class="line">                       <span class="keyword">const</span> <a class="code" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache&lt;Metavariables&gt;</a>&amp;)</div>
+<div class="line">                       noexcept;</div>
+</div><!-- fragment --> <pre class="fragment">  that mutates arbitrary tags in the `DataBox` when the
+  `InterpolationTarget` is initialized. Additional simple tags to
+  include should be put in the typelist `simple_tags` and additional
+  compute tags in `compute_tags`.  If `compute_target_points` has
+  an `initialize` function, it must also have a type alias
+  `initialization_tags` which is a `tmpl::list` of the tags that are
+  added by `initialize`.
+</pre></li>
+<li>post_interpolation_callback: A struct with a type alias <code>const_global_cache_tags</code> (listing tags that should be read from option parsing), with a type alias <code>observation_types</code> (listing any ObservationTypes that the callback will use in constructing ObserverIds to call <a class="el" href="structobservers_1_1ThreadedActions_1_1WriteReductionData.html" title="Write reduction data to disk from node 0.">observers::ThreadedActions::WriteReductionData</a>), and with a function <div class="fragment"><div class="line"><span class="keywordtype">void</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(<span class="keyword">const</span> DataBox&lt;DbTags&gt;&amp;,</div>
+<div class="line">           <span class="keyword">const</span> intrp::GlobalCache&lt;Metavariables&gt;&amp;,</div>
+<div class="line">           <span class="keyword">const</span> Metavariables::temporal_id&amp;) noexcept;</div>
+</div><!-- fragment --></li>
+</ul>
+<p>or </p><div class="fragment"><div class="line"><span class="keywordtype">bool</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;db::DataBox&lt;DbTags&gt;*&gt;,</div>
+<div class="line">           <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;intrp::GlobalCache&lt;Metavariables&gt;*&gt;,</div>
+<div class="line">           <span class="keyword">const</span> Metavariables::temporal_id&amp;) noexcept;</div>
+</div><!-- fragment --> <pre class="fragment">  that will be called when interpolation is complete.  `DbTags` includes
+  everything in `vars_to_interpolate_to_target`, plus everything in
+  `compute_items_on_target`.  The second form of the `apply` function
+  should return false only if it calls another `intrp::Action` that still
+  needs the volume data at this temporal_id (such as another iteration of
+  the horizon finder).
+
+  post_interpolation_callback can optionally have a static constexpr
+  double called `fill_invalid_points_with`.  Any points outside the
+  Domain will be filled with this value. If this variable is not defined,
+  then the `apply` function must check for invalid points,
+  and should typically exit with an error message if it finds any.
+</pre><ul>
+<li>should_interpolate (optional): A template function that takes as a single argument a const reference to the <a class="el" href="group__DataBoxGroup.html">DataBox</a>, and returns a <code>bool</code>: <code>true</code> if the element should interpolate in the current state, <code>false</code> otherwise. Often, this will examine the <code>temporal_id</code> to determine whether to interpolate, but it may examine any part of the <a class="el" href="group__DataBoxGroup.html">DataBox</a>. If omitted, the behavior is as if the <code>should_interpolate</code> function always returns true. This function is called using the DG element's <a class="el" href="group__DataBoxGroup.html">DataBox</a> and is only used if <code>InterpolateToTarget</code> is in the element's action list.</li>
+<li>interpolating_component (used only if not <code>is_sequential</code>): A type alias for the component that will be interpolating to the interpolation target.</li>
+</ul>
+<p><code>Metavariables</code> must contain the following type aliases:</p><ul>
+<li>interpolator_source_vars: A <code>tmpl::list</code> of tags that define a <code>Variables</code> sent from all <code><a class="el" href="classElement.html">Element</a></code>s to the local <code><a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a></code>.</li>
+<li>interpolation_target_tags: A <code>tmpl::list</code> of all <code>InterpolationTargetTag</code>s.</li>
+<li>temporal_id: The type held by <a class="el" href="structintrp_1_1Tags_1_1TemporalIds.html" title="temporal_ids on which to interpolate.">intrp::Tags::TemporalIds</a>.</li>
+</ul>
+<p><code>Metavariables</code> must contain the following static constexpr members:</p><ul>
+<li>size_t volume_dim: The dimension of the <a class="el" href="classDomain.html" title="A wrapper around a vector of Blocks that represent the computational domain.">Domain</a>.</li>
+</ul>
+<h3><a class="anchor" id="autotoc_md94"></a>
+Interpolation with time-dependent CoordinateMaps</h3>
+<p>Each set of points to be interpolated onto is labeled by a <code>temporal_id</code>. If any step of the interpolation procedure ever uses a time-dependent <code>CoordinateMap</code>, then it needs to grab <code>FunctionOfTime</code>s from the <code>GlobalCache</code>. Before doing so, it must verify that those <code>FunctionOfTime</code>s are up-to-date for the given <code>temporal_id</code>.</p>
+<p>Note that once the <code>FunctionOfTime</code> has been verified to be up-to-date for a particular <code>temporal_id</code> at one step in the interpolation procedure, all subsequent steps of the interpolation procedure for that same <code>temporal_id</code> need not worry about re-verifying the <code>FunctionOfTime</code>. Therefore, we need only focus on the first step in the interpolation procedure that needs <code>FunctionOfTime</code>s: computing the points on which to interpolate.</p>
+<p>Each <code><a class="el" href="structintrp_1_1InterpolationTarget.html" title="ParallelComponent representing a set of points to be interpolated to and a function to call upon inte...">InterpolationTarget</a></code> has a function <code>InterpolationTargetTag::compute_target_points</code> that returns the points to be interpolated onto, expressed in the frame <code>InterpolationTargetTag::compute_target_points::frame</code>. Then the function <code>block_logical_coordinates</code> (and eventually <code>element_logical_coordinates</code>) is called to convert those points to the logical frame to do the interpolation. If <code>InterpolationTargetTag::compute_target_points::frame</code> is different from the grid frame, and if the <code>CoordinateMap</code> is time-dependent, then <code>block_logical_coordinates</code> grabs <code>FunctionOfTime</code>s from the <code>GlobalCache</code>. So therefore any Action calling <code>block_logical_coordinates</code> must wait until the <code>FunctionOfTime</code>s in the <code>GlobalCache</code> are up-to-date for the <code>temporal_id</code> being passed into <code>block_logical_coordinates</code>.</p>
+<p>Here we describe the logic used in all the <a class="el" href="namespaceintrp_1_1Actions.html" title="Holds Actions for Interpolator and InterpolationTarget.">Actions</a> that call <code>block_logical_coordinates</code>.</p>
+<h4><a class="anchor" id="autotoc_md95"></a>
+Interpolation using the Interpolator ParallelComponent</h4>
+<p>Recall that <code><a class="el" href="structintrp_1_1InterpolationTarget.html" title="ParallelComponent representing a set of points to be interpolated to and a function to call upon inte...">InterpolationTarget</a></code> can be used with the <code><a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a></code> ParallelComponent (as for the horizon finder), or by having the <code><a class="el" href="classElement.html">Element</a></code>s interpolate directly (as for most Observers). Here we discuss the case when the <code><a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a></code> is used; the other case is discussed below.</p>
+<p>Ensuring the <code>FunctionOfTime</code>s are up-to-date is done via two <a class="el" href="namespaceintrp_1_1Tags.html" title="Tags for items held in the DataBox of InterpolationTarget or Interpolator.">Tags</a> in the DataBox and a helper Action. When interpolation is requested for a new <code>temporal_id</code> (e.g. by <code><a class="el" href="classintrp_1_1Events_1_1Interpolate.html" title="Does an interpolation onto InterpolationTargetTag by calling Actions on the Interpolator and Interpol...">intrp::Events::Interpolate</a></code>), the <code>temporal_id</code> is added to <code><a class="el" href="structintrp_1_1Tags_1_1PendingTemporalIds.html" title="temporal_ids that have been flagged to interpolate on, but that have not yet been added to Tags::Temp...">Tags::PendingTemporalIds</a></code>, which holds a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/deque.html">std::deque</a>&lt;temporal_id&gt;</code>, and represents <code>temporal_ids</code> that we want to interpolate onto, but for which <code>FunctionOfTime</code>s are not necessarily up-to-date. We also keep another list of <code>temporal_ids</code>: <code><a class="el" href="structintrp_1_1Tags_1_1TemporalIds.html" title="temporal_ids on which to interpolate.">Tags::TemporalIds</a></code>, for which <code>FunctionOfTime</code>s are guaranteed to be up-to-date.</p>
+<p>The action <code><a class="el" href="structintrp_1_1Actions_1_1VerifyTemporalIdsAndSendPoints.html" title="Sends points to an Interpolator for verified temporal_ids.">Actions::VerifyTemporalIdsAndSendPoints</a></code> moves <code>temporal_id</code>s from <code>PendingTemporalIds</code> to <code>TemporalIds</code> as appropriate, and if any <code>temporal_id</code>s have been so moved, it generates the <code>block_logical_coordinates</code> and sends them to the <code><a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a></code> <code>ParallelComponent</code>. The logic is illustrated in pseudocode below. Recall that some InterpolationTargets are sequential, (i.e. you cannot interpolate onto one temporal_id until interpolation on previous ones are done, like the apparent horizon finder), and some are non-sequential (i.e. you can interpolate in any order).</p>
+<div class="fragment"><div class="line"><span class="keywordflow">if</span> (map is time-independent or frame is grid frame) {</div>
+<div class="line">  move all PendingTemporalIds to TemporalIds</div>
+<div class="line">  <span class="keywordflow">if</span> (sequential) {</div>
+<div class="line">    <a class="code" href="namespacepypp.html#a0b8520e3e6d5c1abb3110b134c10683f">call</a> block_logical_coords and interpolate <span class="keywordflow">for</span> first temporal_id.</div>
+<div class="line">    <span class="comment">// when interpolation is complete,</span></div>
+<div class="line">    <span class="comment">// Actions::InterpolationTargetReceiveVars will begin interpolation</span></div>
+<div class="line">    <span class="comment">// on the next temporal_id.</span></div>
+<div class="line">  } <span class="keywordflow">else</span> {</div>
+<div class="line">    <a class="code" href="namespacepypp.html#a0b8520e3e6d5c1abb3110b134c10683f">call</a> block_logical_coords and interpolate <span class="keywordflow">for</span> all temporal_ids.</div>
+<div class="line">  }</div>
+<div class="line">  <span class="keywordflow">return</span>;</div>
+<div class="line">}</div>
+<div class="line"><span class="keywordflow">if</span> (FunctionOfTimes are up-to-date <span class="keywordflow">for</span> any PendingTemporalIds) {</div>
+<div class="line">  move up-to-date PendingTemporalIds to TemporalIds</div>
+<div class="line">  <span class="keywordflow">if</span> (sequential) {</div>
+<div class="line">    <a class="code" href="namespacepypp.html#a0b8520e3e6d5c1abb3110b134c10683f">call</a> block_logical_coords and interpolate <span class="keywordflow">for</span> first temporal_id.</div>
+<div class="line">    <span class="comment">// when interpolation is complete,</span></div>
+<div class="line">    <span class="comment">// Actions::InterpolationTargetReceiveVars will begin interpolation</span></div>
+<div class="line">    <span class="comment">// on the next temporal_id.</span></div>
+<div class="line">  } <span class="keywordflow">else</span> {</div>
+<div class="line">    <a class="code" href="namespacepypp.html#a0b8520e3e6d5c1abb3110b134c10683f">call</a> block_logical_coords and interpolate <span class="keywordflow">for</span> all temporal_ids.</div>
+<div class="line">    <span class="keywordflow">if</span> (PendingTemporalIds is non-empty) {</div>
+<div class="line">      <a class="code" href="namespacepypp.html#a0b8520e3e6d5c1abb3110b134c10683f">call</a> myself (i.e. execute VerifyTemporalIdsAndSendPoints)</div>
+<div class="line">    }</div>
+<div class="line">  }</div>
+<div class="line">} <span class="keywordflow">else</span> {</div>
+<div class="line">  set VerifyTemporalIdsAndSendPoints as a callback <span class="keywordflow">for</span> the</div>
+<div class="line">  `<a class="code" href="structdomain_1_1Tags_1_1FunctionsOfTime.html">domain::Tags::FunctionsOfTime</a>` in MutableGlobalCache, so that</div>
+<div class="line">  once `FunctionsOfTime` are updated, VerifyTemporalIdsAndSendPoints</div>
+<div class="line">  is called.</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>Note that VerifyTemporalIdsAndSendPoints always exits in one of three ways:</p><ul>
+<li>It has set itself up as a callback, so it will be called again.</li>
+<li>It started a sequential interpolation that will automatically start another sequential interpolation when finished.</li>
+<li>It started non-sequential interpolations on all <code>TemporalIds</code>, and there are no <code>PendingTemporalIds</code> left.</li>
+</ul>
+<p>We now describe the logic of the <a class="el" href="namespaceintrp_1_1Actions.html" title="Holds Actions for Interpolator and InterpolationTarget.">Actions</a> that use VerifyTemporalIdsAndSendPoints.</p>
+<p><a class="anchor" id="autotoc_md96"></a></p><h5><a class="el" href="structintrp_1_1Actions_1_1AddTemporalIdsToInterpolationTarget.html" title="Adds temporal_ids on which this InterpolationTarget should be triggered.">Actions::AddTemporalIdsToInterpolationTarget</a></h5>
+<p><code><a class="el" href="structintrp_1_1Actions_1_1AddTemporalIdsToInterpolationTarget.html" title="Adds temporal_ids on which this InterpolationTarget should be triggered.">Actions::AddTemporalIdsToInterpolationTarget</a></code> is called by <code><a class="el" href="classintrp_1_1Events_1_1Interpolate.html" title="Does an interpolation onto InterpolationTargetTag by calling Actions on the Interpolator and Interpol...">intrp::Events::Interpolate</a></code> to trigger interpolation for new <code>temporal_id</code>s. Its logic is as follows, in pseudocode:</p>
+<div class="fragment"><div class="line"> Add passed-in temporal_ids to PendingTemporalIds</div>
+<div class="line"> <span class="keywordflow">if</span> (sequential) {</div>
+<div class="line">   <span class="keywordflow">if</span> (TemporalIds is empty and</div>
+<div class="line">       PendingTemporalIds was empty before it was appended above) {</div>
+<div class="line">     <a class="code" href="namespacepypp.html#a0b8520e3e6d5c1abb3110b134c10683f">call</a> VerifyTemporalIdsAndSendPoints</div>
+<div class="line">   } <span class="keywordflow">else</span> {</div>
+<div class="line">     Do nothing, because there is already a sequential interpolation in</div>
+<div class="line">     progress, or there is a callback already waiting.</div>
+<div class="line">   }</div>
+<div class="line"> } <span class="keywordflow">else</span> { <span class="comment">// not sequential</span></div>
+<div class="line">   <span class="keywordflow">if</span> (TemporalIds is non-empty) {</div>
+<div class="line">     <a class="code" href="namespacepypp.html#a0b8520e3e6d5c1abb3110b134c10683f">call</a> <a class="code" href="group__ComputationalDomainGroup.html#ga37ad158d6e2a4ccd07f6b2f3c23a17d3">block_logical_coordinates</a> and <a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/begin.html">begin</a> interpolating <span class="keywordflow">for</span></div>
+<div class="line">     all TemporalIds.</div>
+<div class="line">   }</div>
+<div class="line">   <span class="keywordflow">if</span> (PendingTemporalIds is non-empty) {</div>
+<div class="line">     <a class="code" href="namespacepypp.html#a0b8520e3e6d5c1abb3110b134c10683f">call</a> VerifyTemporalIdsAndSendPoints</div>
+<div class="line">   }</div>
+<div class="line">}</div>
+</div><!-- fragment --><p><a class="anchor" id="autotoc_md97"></a></p><h5><a class="el" href="structintrp_1_1Actions_1_1InterpolationTargetReceiveVars.html" title="Receives interpolated variables from an Interpolator on a subset of the target points.">Actions::InterpolationTargetReceiveVars</a></h5>
+<p><code><a class="el" href="structintrp_1_1Actions_1_1InterpolationTargetReceiveVars.html" title="Receives interpolated variables from an Interpolator on a subset of the target points.">Actions::InterpolationTargetReceiveVars</a></code> is called by the <code><a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a></code> when it is finished interpolating the current <code>temporal_id</code>. For the sequential case, it needs to start interpolating for the next <code>temporal_id</code>. The logic is, in pseudocode:</p>
+<div class="fragment"><div class="line"><span class="keywordflow">if</span> (sequential) {</div>
+<div class="line">  <span class="keywordflow">if</span> (TemporalIds is not empty) {</div>
+<div class="line">    <a class="code" href="namespacepypp.html#a0b8520e3e6d5c1abb3110b134c10683f">call</a> <a class="code" href="group__ComputationalDomainGroup.html#ga37ad158d6e2a4ccd07f6b2f3c23a17d3">block_logical_coordinates</a> and interpolate <span class="keywordflow">for</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/next.html">next</a> temporal_id</div>
+<div class="line">  } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (PendingTemporalIds is not empty) {</div>
+<div class="line">    <a class="code" href="namespacepypp.html#a0b8520e3e6d5c1abb3110b134c10683f">call</a> VerifyTemporalIdsAndSendPoints</div>
+<div class="line">  }</div>
+<div class="line">}</div>
+</div><!-- fragment --><p><a class="anchor" id="autotoc_md98"></a></p><h5><a class="el" href="structintrp_1_1callbacks_1_1FindApparentHorizon.html" title="post interpolation callback (see InterpolationTarget) that does a FastFlow iteration and triggers ano...">intrp::callbacks::FindApparentHorizon</a></h5>
+<p><code><a class="el" href="structintrp_1_1callbacks_1_1FindApparentHorizon.html" title="post interpolation callback (see InterpolationTarget) that does a FastFlow iteration and triggers ano...">intrp::callbacks::FindApparentHorizon</a> calls</code> <code>block_logical_coordinates</code> when it needs to start a new iteration of the horizon finder at the same <code>temporal_id</code>, so one might think you need to worry about up-to-date <code>FunctionOfTime</code>s. But since <code><a class="el" href="structintrp_1_1callbacks_1_1FindApparentHorizon.html" title="post interpolation callback (see InterpolationTarget) that does a FastFlow iteration and triggers ano...">intrp::callbacks::FindApparentHorizon</a></code> always works on the same <code>temporal_id</code> for which the <code>FunctionOfTime</code>s have already been verified as up-to-date from the last iteration, no special consideration of <code>FunctionOfTime</code>s need be done here.</p>
+<h4><a class="anchor" id="autotoc_md99"></a>
+Interpolation without using the Interpolator ParallelComponent</h4>
+<p>This case is easier than the case with the <code><a class="el" href="structintrp_1_1Interpolator.html" title="ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...">Interpolator</a></code>, because the target points are always time-independent in the frame <code>compute_target_points::frame</code>.</p>
+<p><a class="anchor" id="autotoc_md100"></a></p><h5>Actions::EnsureFunctionOfTimeUpToDate</h5>
+<p><code>Actions::EnsureFunctionOfTimeUpToDate</code> verifies that the <code>FunctionOfTime</code>s are up-to-date at the <code><a class="el" href="structDgElementArray.html" title="The parallel component responsible for managing the DG elements that compose the computational domain...">DgElementArray</a></code>s current time.</p>
+<h6>Current logic:</h6>
+<blockquote class="doxtable">
+<p><code>Actions::EnsureFunctionOfTimeUpToDate</code> does not exist </p>
+</blockquote>
+<h6>New logic:</h6>
+<blockquote class="doxtable">
+<p><code>Actions::EnsureFunctionOfTimeUpToDate</code> is placed in <code><a class="el" href="structDgElementArray.html" title="The parallel component responsible for managing the DG elements that compose the computational domain...">DgElementArray</a></code>s PDAL before any use of interpolation. </p>
+</blockquote>
+<p><a class="anchor" id="autotoc_md101"></a></p><h5><a class="el" href="structintrp_1_1Actions_1_1InterpolationTargetSendTimeIndepPointsToElements.html" title="Sends interpolation points to all the Elements.">Actions::InterpolationTargetSendTimeIndepPointsToElements</a></h5>
+<p><code><a class="el" href="structintrp_1_1Actions_1_1InterpolationTargetSendTimeIndepPointsToElements.html" title="Sends interpolation points to all the Elements.">Actions::InterpolationTargetSendTimeIndepPointsToElements</a></code> is invoked on <code><a class="el" href="structintrp_1_1InterpolationTarget.html" title="ParallelComponent representing a set of points to be interpolated to and a function to call upon inte...">InterpolationTarget</a></code> during the <a class="el" href="namespaceRegistration.html" title="Helpers for derived class registration.">Registration</a> PDAL, to send time-independent point information to <code><a class="el" href="classElement.html">Element</a></code>s.</p>
+<h6>Current logic:</h6>
+<blockquote class="doxtable">
+<p>Call <code>block_logical_coordinates</code> and send points to <code><a class="el" href="classElement.html">Element</a></code>s. </p>
+</blockquote>
+<h6>New logic:</h6>
+<blockquote class="doxtable">
+<p>Send the result of <code>compute_target_points</code> to all <code><a class="el" href="classElement.html">Element</a></code>s. </p>
+</blockquote>
+<p>Note that this may need to be revisited because every <code><a class="el" href="classElement.html">Element</a></code> has a copy of every target point, which will use a lot of memory. An alternative is to invoke an Action on each <code><a class="el" href="structintrp_1_1InterpolationTarget.html" title="ParallelComponent representing a set of points to be interpolated to and a function to call upon inte...">InterpolationTarget</a></code> (presumably from an <code><a class="el" href="classEvent.html">Event</a></code>).</p>
+<h4><a class="anchor" id="autotoc_md102"></a>
+Actions::InterpolateToTarget</h4>
+<p><code><a class="el" href="structintrp_1_1Actions_1_1InterpolateToTarget.html" title="Interpolates and sends points to an InterpolationTarget.">Actions::InterpolateToTarget</a></code> is invoked on <code><a class="el" href="classElement.html">Element</a></code>s, and does interpolation at the current <code>temporal_id</code> of the <code><a class="el" href="classElement.html">Element</a></code>.</p>
+<h6>Current logic:</h6>
+<blockquote class="doxtable">
+<p>Does interpolation using the precomputed <code>block_logical_coordinates</code>. It does so by computing <code>element_logical_coordinates</code> and interpolating any points that are contained in that <code>element</code> (with care to avoid repeating points on boundaries). </p>
+</blockquote>
+<h6>New logic:</h6>
+<blockquote class="doxtable">
+<p>Calls <code>block_logical_coordinates</code> itself, and then does the interpolation of appropriate points. </p>
+</blockquote>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/NumericalAlgorithms/Interpolation/<a class="el" href="InterpolationTarget_8hpp_source.html">InterpolationTarget.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="aapply_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/apply.html">std::apply</a></div><div class="ttdeci">T apply(T... args)</div></div>
+<div class="ttc" id="aclassParallel_1_1GlobalCache_html"><div class="ttname"><a href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a></div><div class="ttdef"><b>Definition:</b> ElementReceiveInterpPoints.hpp:15</div></div>
+<div class="ttc" id="astructdomain_1_1Tags_1_1FunctionsOfTime_html"><div class="ttname"><a href="structdomain_1_1Tags_1_1FunctionsOfTime.html">domain::Tags::FunctionsOfTime</a></div><div class="ttdoc">The FunctionsOfTime initialized from a DomainCreator or (if override_functions_of_time is true in the...</div><div class="ttdef"><b>Definition:</b> Tags.hpp:60</div></div>
+<div class="ttc" id="anamespacepypp_html_a0b8520e3e6d5c1abb3110b134c10683f"><div class="ttname"><a href="namespacepypp.html#a0b8520e3e6d5c1abb3110b134c10683f">pypp::call</a></div><div class="ttdeci">ReturnType call(const std::string &amp;module_name, const std::string &amp;function_name, const Args &amp;... t)</div><div class="ttdoc">Calls a Python function from a module/file with given parameters.</div><div class="ttdef"><b>Definition:</b> Pypp.hpp:494</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ga37ad158d6e2a4ccd07f6b2f3c23a17d3"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ga37ad158d6e2a4ccd07f6b2f3c23a17d3">block_logical_coordinates</a></div><div class="ttdeci">auto block_logical_coordinates(const Domain&lt; Dim &gt; &amp;domain, const tnsr::I&lt; DataVector, Dim, Frame &gt; &amp;x, double time=std::numeric_limits&lt; double &gt;::signaling_NaN(), const std::unordered_map&lt; std::string, std::unique_ptr&lt; domain::FunctionsOfTime::FunctionOfTime &gt;&gt; &amp;functions_of_time=std::unordered_map&lt; std::string, std::unique_ptr&lt; domain::FunctionsOfTime::FunctionOfTime &gt;&gt;{}) noexcept -&gt; std::vector&lt; std::optional&lt; IdPair&lt; domain::BlockId, tnsr::I&lt; double, Dim, ::Frame::Logical &gt;&gt;&gt;&gt;</div></div>
+<div class="ttc" id="abegin_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/iterator/begin.html">std::begin</a></div><div class="ttdeci">T begin(T... args)</div></div>
+<div class="ttc" id="anext_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/iterator/next.html">std::next</a></div><div class="ttdeci">T next(T... args)</div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

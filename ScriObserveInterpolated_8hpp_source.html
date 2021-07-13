@@ -1,0 +1,509 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Evolution/Systems/Cce/Actions/ScriObserveInterpolated.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_d7cddb31ba741ba3a4d5be000d880a30.html">Evolution</a></li><li class="navelem"><a class="el" href="dir_ae9813db12dd9fd3f3106ad3644a1b2a.html">Systems</a></li><li class="navelem"><a class="el" href="dir_b9586a27d0e1f299c51d3004d7f0b675.html">Cce</a></li><li class="navelem"><a class="el" href="dir_efb1f0ebbe6a479bafa0f2ad4c3e7c95.html">Actions</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">ScriObserveInterpolated.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/tuple.html">tuple</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a>&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;DataStructures/ComplexDataVector.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataBox_8hpp.html">DataStructures/DataBox/DataBox.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;DataStructures/SpinWeighted.hpp&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/OptionTags.hpp&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/ScriPlusInterpolationManager.hpp&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;IO/Observer/WriteSimpleData.hpp&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Spectral/SwshCoefficients.hpp&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Spectral/SwshTransform.hpp&quot;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="GlobalCache_8hpp.html">Parallel/GlobalCache.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;Parallel/Invoke.hpp&quot;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;Time/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;Utilities/MakeString.hpp&quot;</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Utilities_2System_2ParallelInfo_8hpp.html">Utilities/System/ParallelInfo.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceCce.html">Cce</a> {<span class="comment"></span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Metavariables&gt;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keyword">struct </span>AnalyticWorldtubeBoundary;<span class="comment"></span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment"></span><span class="keyword">namespace </span>Actions {</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="keyword">namespace </span>detail {</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment">// Provide a nicer name for the output h5 files for some of the uglier</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment">// combinations we need</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="keyword">struct </span>ScriOutput {</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> db::tag_name&lt;Tag&gt;(); }</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;};</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="keyword">struct </span>ScriOutput&lt;Tags::ScriPlus&lt;Tag&gt;&gt; {</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> pretty_type::short_name&lt;Tag&gt;(); }</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;};</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="keyword">template</span> &lt;&gt;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="keyword">struct </span>ScriOutput&lt;Tags::Du&lt;Tags::TimeIntegral&lt;Tags::ScriPlus&lt;Tags::Psi4&gt;&gt;&gt;&gt; {</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> <span class="stringliteral">&quot;Psi4&quot;</span>; }</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;};</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="keyword">using</span> weyl_correction_list =</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    tmpl::list&lt;Tags::Du&lt;Tags::TimeIntegral&lt;Tags::ScriPlus&lt;Tags::Psi4&gt;&gt;&gt;,</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;               Tags::ScriPlus&lt;Tags::Psi3&gt;, Tags::ScriPlus&lt;Tags::Psi2&gt;,</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;               Tags::ScriPlus&lt;Tags::Psi1&gt;, Tags::ScriPlus&lt;Tags::Psi0&gt;,</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;               Tags::EthInertialRetardedTime&gt;;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="keywordtype">void</span> correct_weyl_scalars_for_inertial_time(</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;Variables&lt;weyl_correction_list&gt;*&gt;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        weyl_correction_variables) noexcept;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;}  <span class="comment">// namespace detail</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment"> * \ingroup ActionsGroup</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment"> * \brief Checks the interpolation managers and if they are ready, performs the</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment"> * interpolation and sends the data to file via</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment"> * `observers::ThreadedActions::WriteSimpleData`.</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment"> * \details This uses the `ScriPlusInterpolationManager` to perform the</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment"> * interpolations of all requested scri quantities (determined by</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment"> * `scri_values_to_observe` in the metavariables), and write them to disk using</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment"> * `observers::threadedActions::WriteSimpleData`. When using an analytic</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment"> * worldtube solution, this action also uses the `AnalyticBoundaryDataManager`</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment"> * to output the expected News value at the appropriate asymptotically inertial</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment"> * time.</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment"> * \note This action also uses the `Tags::EthInertialRetardedTime`, interpolated</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment"> * to the inertial frame, to perform the coordinate transformations presented in</span></div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment"> * \cite Boyle:2015nqa to the Weyl scalars after interpolation. For our</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment"> * formulas, we need to adjust the signs and factors of two to be compatible</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment"> * with our definitions of \f$\eth\f$ and choice of Newman-Penrose tetrad.</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment"> * \f{align*}{</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment"> * \Psi_0^{\prime (5)}</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment"> * =&amp;  \Psi_0^{(5)} + 2 \eth u^\prime \Psi_1^{(4)}</span></div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="comment"> * + \frac{3}{4} \left(\eth u^\prime\right)^2 \Psi_2^{(3)}</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment"> * + \frac{1}{2} \left( \eth u^\prime\right)^3  \Psi_3^{(2)}</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment"> * + \frac{1}{16} \left(\eth u^\prime\right)^4 \Psi_4^{(1)}, \\</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment"> * \Psi_1^{\prime (4)}</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment"> * =&amp;  \Psi_1^{(4)} + \frac{3}{2} \eth u^\prime \Psi_2^{(3)}</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment"> * + \frac{3}{4} \left(\eth u^\prime\right)^2  \Psi_3^{(2)}</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment"> * + \frac{1}{8} \left(\eth u^\prime\right)^3 \Psi_4^{(1)}, \\</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment"> * \Psi_2^{\prime (3)}</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment"> * =&amp;  \Psi_2^{(3)}</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment"> * + \eth u^\prime  \Psi_3^{(2)}</span></div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment"> * + \frac{1}{4} \left(\eth  u^\prime\right)^2 \Psi_4^{(1)}, \\</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="comment"> * \Psi_3^{\prime (2)}</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment"> * =&amp; \Psi_3^{(2)} + \frac{1}{2} \eth u^{\prime} \Psi_4^{ (1)}, \\</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="comment"> * \Psi_4^{\prime (1)}</span></div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="comment"> * =&amp; \Psi_4^{(1)}.</span></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="comment"> * \f}</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="comment"> * \ref DataBoxGroup changes:</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="comment"> * - Adds: nothing</span></div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="comment"> * - Removes: nothing</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="comment"> * - Modifies: `InterpolagionManager&lt;ComplexDataVector, Tag&gt;` for each `Tag` in</span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="comment"> * `Metavariables::scri_values_to_observe`</span></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> ObserverWriterComponent, <span class="keyword">typename</span> BoundaryComponent&gt;</div>
+<div class="line"><a name="l00109"></a><span class="lineno"><a class="line" href="structCce_1_1Actions_1_1ScriObserveInterpolated.html">  109</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1Actions_1_1ScriObserveInterpolated.html">ScriObserveInterpolated</a> {</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;  <span class="keyword">using</span> const_global_cache_tags = tmpl::flatten&lt;</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;      tmpl::list&lt;<a class="code" href="structCce_1_1Tags_1_1ObservationLMax.html">Tags::ObservationLMax</a>,</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;                 <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/conditional.html">std::conditional_t</a>&lt;</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;                     tt::is_a_v&lt;AnalyticWorldtubeBoundary, BoundaryComponent&gt;,</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;                     tmpl::list&lt;Tags::OutputNoninertialNews&gt;, tmpl::list&lt;&gt;&gt;&gt;&gt;;</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> DbTags, <span class="keyword">typename</span>... InboxTags, <span class="keyword">typename</span> Metavariables,</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;            <span class="keyword">typename</span> ArrayIndex, <span class="keyword">typename</span> ActionList,</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;            <span class="keyword">typename</span> ParallelComponent&gt;</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;db::DataBox&lt;DbTags&gt;</a>&amp;&amp;&gt; apply(</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;      db::DataBox&lt;DbTags&gt;&amp; box,</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;      <span class="keyword">const</span> <a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;InboxTags...&gt;</a>&amp; <span class="comment">/*inboxes*/</span>,</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;      <a class="code" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache&lt;Metavariables&gt;</a>&amp; <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>,</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;      <span class="keyword">const</span> ArrayIndex&amp; <span class="comment">/*array_index*/</span>, <span class="keyword">const</span> ActionList <span class="comment">/*meta*/</span>,</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;      <span class="keyword">const</span> ParallelComponent* <span class="keyword">const</span> <span class="comment">/*meta*/</span>) noexcept {</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">size_t</span> observation_l_max = db::get&lt;Tags::ObservationLMax&gt;(box);</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">size_t</span> l_max = db::get&lt;Tags::LMax&gt;(box);</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a> data_to_write(2 * <a class="code" href="group__ConstantExpressionsGroup.html#gaef1fe82faee8c46e9706f252a5a00937">square</a>(observation_l_max + 1) + 1);</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;    <a class="code" href="classComplexModalVector.html">ComplexModalVector</a> goldberg_modes{<a class="code" href="group__ConstantExpressionsGroup.html#gaef1fe82faee8c46e9706f252a5a00937">square</a>(l_max + 1)};</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;std::string&gt;</a> file_legend;</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;    file_legend.reserve(2 * <a class="code" href="group__ConstantExpressionsGroup.html#gaef1fe82faee8c46e9706f252a5a00937">square</a>(observation_l_max + 1) + 1);</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    file_legend.emplace_back(<span class="stringliteral">&quot;time&quot;</span>);</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt;= static_cast&lt;int&gt;(observation_l_max); ++i) {</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;      <span class="keywordflow">for</span> (<span class="keywordtype">int</span> j = -i; j &lt;= i; ++j) {</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;        file_legend.push_back(<a class="code" href="classMakeString.html">MakeString</a>{} &lt;&lt; <span class="stringliteral">&quot;Real Y_&quot;</span> &lt;&lt; i &lt;&lt; <span class="stringliteral">&quot;,&quot;</span> &lt;&lt; j);</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;        file_legend.push_back(<a class="code" href="classMakeString.html">MakeString</a>{} &lt;&lt; <span class="stringliteral">&quot;Imag Y_&quot;</span> &lt;&lt; i &lt;&lt; <span class="stringliteral">&quot;,&quot;</span> &lt;&lt; j);</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;      }</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;    }</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;    <span class="comment">// alternative for the coordinate transformation getting scri+ values of the</span></div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;    <span class="comment">// weyl scalars:</span></div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;    <span class="comment">// need to obtain the eth of the inertial retarded time, each of the Weyl</span></div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;    <span class="comment">// scalars, and then we&#39;ll perform a transformation on that temporary</span></div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;    <span class="comment">// variables object, then output.</span></div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;    <span class="comment">// it won&#39;t be as general, but that&#39;s largely fine. The main frustration is</span></div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;    <span class="comment">// the loss of precision.</span></div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;    Variables&lt;detail::weyl_correction_list&gt; corrected_scri_plus_weyl{</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;        <a class="code" href="group__SwshGroup.html#ga65a7e73757da97e151c31f656f9bcfef">Spectral::Swsh::number_of_swsh_collocation_points</a>(l_max)};</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160; </div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;    <span class="keywordflow">while</span> (</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;        <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">db::get</a>&lt;<a class="code" href="structCce_1_1Tags_1_1InterpolationManager.html">Tags::InterpolationManager</a>&lt;</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;            <a class="code" href="classComplexDataVector.html">ComplexDataVector</a>,</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;            tmpl::front&lt;typename Metavariables::scri_values_to_observe&gt;&gt;&gt;(box)</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;            .first_time_is_ready_to_interpolate()) {</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;      <span class="comment">// first get the weyl scalars and correct them</span></div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;      <span class="keywordtype">double</span> interpolation_time = 0.0;</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;      tmpl::for_each&lt;detail::weyl_correction_list&gt;([&amp;interpolation_time,</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;                                                    &amp;corrected_scri_plus_weyl,</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;                                                    &amp;box](<span class="keyword">auto</span> tag_v) noexcept {</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;        <span class="keyword">using</span> tag = <span class="keyword">typename</span> decltype(tag_v)::type;</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair&lt;double, ComplexDataVector&gt;</a> interpolation;</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;        db::mutate&lt;Tags::InterpolationManager&lt;ComplexDataVector, tag&gt;&gt;(</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;            <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;box),</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;            [&amp;interpolation](</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;                <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;                    <a class="code" href="structCce_1_1ScriPlusInterpolationManager.html">ScriPlusInterpolationManager&lt;ComplexDataVector, tag&gt;</a>*&gt;</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;                    interpolation_manager) {</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;              interpolation =</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;                  interpolation_manager-&gt;interpolate_and_pop_first_time();</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;            });</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;        interpolation_time = interpolation.first;</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;        <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(get&lt;tag&gt;(corrected_scri_plus_weyl)).data() = interpolation.second;</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;      });</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160; </div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;      detail::correct_weyl_scalars_for_inertial_time(</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;          <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;corrected_scri_plus_weyl));</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160; </div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;      <span class="comment">// then output each of them</span></div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;      tmpl::for_each&lt;detail::weyl_correction_list&gt;(</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;          [&amp;data_to_write, &amp;corrected_scri_plus_weyl, &amp;interpolation_time,</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;           &amp;file_legend, &amp;observation_l_max, &amp;l_max, &amp;<a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>,</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;           &amp;goldberg_modes](<span class="keyword">auto</span> tag_v) noexcept {</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;            <span class="keyword">using</span> tag = <span class="keyword">typename</span> decltype(tag_v)::type;</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;            <span class="keywordflow">if</span> constexpr (tmpl::list_contains_v&lt;</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;                              <span class="keyword">typename</span> Metavariables::scri_values_to_observe,</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;                              tag&gt;) {</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;              ScriObserveInterpolated::transform_and_write&lt;</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;                  tag, tag::type::type::spin, ParallelComponent&gt;(</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;                  <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(get&lt;tag&gt;(corrected_scri_plus_weyl)).data(),</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;                  interpolation_time, <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;goldberg_modes),</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;                  <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;data_to_write), file_legend, l_max,</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;                  observation_l_max, <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>);</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;            }</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;          });</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160; </div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;      <span class="comment">// then do the interpolation and output of each of the rest of the tags.</span></div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;      tmpl::for_each&lt;</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;          <a class="code" href="TMPL_8hpp.html#a90c06abcd00cb9026fdcdb7433edce8d">tmpl::list_difference</a>&lt;<span class="keyword">typename</span> Metavariables::scri_values_to_observe,</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;                                detail::weyl_correction_list&gt;&gt;(</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;          [&amp;box, &amp;data_to_write, &amp;file_legend, &amp;observation_l_max, &amp;l_max,</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;           &amp;<a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>, &amp;goldberg_modes](<span class="keyword">auto</span> tag_v) noexcept {</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;            <span class="keyword">using</span> tag = <span class="keyword">typename</span> decltype(tag_v)::type;</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;            <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair&lt;double, ComplexDataVector&gt;</a> interpolation;</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;            db::mutate&lt;Tags::InterpolationManager&lt;ComplexDataVector, tag&gt;&gt;(</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;                <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;box),</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;                [&amp;interpolation](</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;                    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;                        <a class="code" href="structCce_1_1ScriPlusInterpolationManager.html">ScriPlusInterpolationManager&lt;ComplexDataVector, tag&gt;</a>*&gt;</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;                        interpolation_manager) {</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;                  interpolation =</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;                      interpolation_manager-&gt;interpolate_and_pop_first_time();</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;                });</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;            ScriObserveInterpolated::transform_and_write&lt;</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;                tag, tag::type::type::spin, ParallelComponent&gt;(</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;                interpolation.second, interpolation.first,</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;                <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;goldberg_modes), <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;data_to_write),</div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;                file_legend, l_max, observation_l_max, <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>);</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;          });</div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;      <span class="comment">// output the expected news associated with the time value interpolated at</span></div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;      <span class="comment">// scri+.</span></div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;      <span class="keywordflow">if</span> constexpr (tmpl::list_contains_v&lt;DbTags,</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;                                          <a class="code" href="structCce_1_1Tags_1_1AnalyticBoundaryDataManager.html">Tags::AnalyticBoundaryDataManager</a>&gt;) {</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;        <span class="keywordflow">if</span> (not db::get&lt;Tags::OutputNoninertialNews&gt;(box)) {</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;          db::get&lt;Tags::AnalyticBoundaryDataManager&gt;(box)</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;              .template write_news&lt;ParallelComponent&gt;(<a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>,</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;                                                      interpolation_time);</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;        }</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;      }</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;    }</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;    <span class="keywordflow">return</span> std::forward_as_tuple(std::move(box));</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;  }</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160; </div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag, <span class="keywordtype">int</span> Spin, <span class="keyword">typename</span> ParallelComponent,</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;            <span class="keyword">typename</span> Metavariables&gt;</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">void</span> transform_and_write(</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;      <span class="keyword">const</span> <a class="code" href="classComplexDataVector.html">ComplexDataVector</a>&amp; data, <span class="keyword">const</span> <span class="keywordtype">double</span> time,</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;ComplexModalVector*&gt;</a> goldberg_mode_buffer,</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a>*&gt; data_to_write_buffer,</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;      <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;std::string&gt;</a>&amp; legend, <span class="keyword">const</span> <span class="keywordtype">size_t</span> l_max,</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;      <span class="keyword">const</span> <span class="keywordtype">size_t</span> observation_l_max,</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;      <a class="code" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache&lt;Metavariables&gt;</a>&amp; <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>) noexcept {</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;    <span class="keyword">const</span> <a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexDataVector, Spin&gt;</a> to_transform;</div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;    <a class="code" href="group__DataStructuresGroup.html#gad3e9dbf822156ded56a56203bfde2076">make_const_view</a>(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;to_transform.data()), data, 0, data.size());</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;    <a class="code" href="structSpinWeighted.html">SpinWeighted&lt;ComplexModalVector, Spin&gt;</a> goldberg_modes;</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;    goldberg_modes.set_data_ref(goldberg_mode_buffer);</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;    <a class="code" href="group__SwshGroup.html#ga98021522583c1ddddf77ca868dd54b9b">Spectral::Swsh::libsharp_to_goldberg_modes</a>(</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;        <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;goldberg_modes),</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;        <a class="code" href="group__SwshGroup.html#ga701ff2b1c56fe2928d5eb79d17e1ae9b">Spectral::Swsh::swsh_transform</a>(l_max, 1, to_transform), l_max);</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160; </div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;    (*data_to_write_buffer)[0] = time;</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; <a class="code" href="group__ConstantExpressionsGroup.html#gaef1fe82faee8c46e9706f252a5a00937">square</a>(observation_l_max + 1); ++i) {</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;      (*data_to_write_buffer)[2 * i + 1] = real(goldberg_modes.data()[i]);</div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;      (*data_to_write_buffer)[2 * i + 2] = imag(goldberg_modes.data()[i]);</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;    }</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;     <span class="keyword">auto</span>&amp; my_proxy =</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;          Parallel::get_parallel_component&lt;ParallelComponent&gt;(<a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>);</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;     <span class="keyword">auto</span> observer_proxy =</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;         Parallel::get_parallel_component&lt;ObserverWriterComponent&gt;(</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;             <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>)[<span class="keyword">static_cast&lt;</span><span class="keywordtype">size_t</span><span class="keyword">&gt;</span>(</div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;             <a class="code" href="group__ParallelGroup.html#ga94abef85fb91d5d39148ffcc7b7a4e2a">Parallel::my_node</a>(*my_proxy.ckLocal()))];</div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;     Parallel::threaded_action&lt;observers::ThreadedActions::WriteSimpleData&gt;(</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;         observer_proxy, legend, *data_to_write_buffer,</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;         <span class="stringliteral">&quot;/&quot;</span> + detail::ScriOutput&lt;Tag&gt;::name());</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;  }</div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;};</div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;}  <span class="comment">// namespace Actions</span></div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;}  <span class="comment">// namespace Cce</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
+<div class="ttc" id="autility_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a></div></div>
+<div class="ttc" id="aclassParallel_1_1GlobalCache_html"><div class="ttname"><a href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a></div><div class="ttdef"><b>Definition:</b> ElementReceiveInterpPoints.hpp:15</div></div>
+<div class="ttc" id="apair_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a></div></div>
+<div class="ttc" id="aGlobalCache_8hpp_html"><div class="ttname"><a href="GlobalCache_8hpp.html">GlobalCache.hpp</a></div></div>
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a></div></div>
+<div class="ttc" id="agroup__ConstantExpressionsGroup_html_gaef1fe82faee8c46e9706f252a5a00937"><div class="ttname"><a href="group__ConstantExpressionsGroup.html#gaef1fe82faee8c46e9706f252a5a00937">square</a></div><div class="ttdeci">constexpr decltype(auto) square(const T &amp;x)</div><div class="ttdoc">Compute the square of x</div><div class="ttdef"><b>Definition:</b> ConstantExpressions.hpp:55</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1InterpolationManager_html"><div class="ttname"><a href="structCce_1_1Tags_1_1InterpolationManager.html">Cce::Tags::InterpolationManager</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:369</div></div>
+<div class="ttc" id="aUtilities_2System_2ParallelInfo_8hpp_html"><div class="ttname"><a href="Utilities_2System_2ParallelInfo_8hpp.html">ParallelInfo.hpp</a></div></div>
+<div class="ttc" id="atuple_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/tuple.html">tuple</a></div></div>
+<div class="ttc" id="agroup__DataBoxGroup_html_gae08744824ea7df89224f128b2080c5b1"><div class="ttname"><a href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">db::get</a></div><div class="ttdeci">const auto &amp; get(const DataBox&lt; TagList &gt; &amp;box) noexcept</div><div class="ttdoc">Retrieve the item with tag Tag from the DataBox.</div><div class="ttdef"><b>Definition:</b> DataBox.hpp:791</div></div>
+<div class="ttc" id="astructCce_1_1Actions_1_1ScriObserveInterpolated_html"><div class="ttname"><a href="structCce_1_1Actions_1_1ScriObserveInterpolated.html">Cce::Actions::ScriObserveInterpolated</a></div><div class="ttdoc">Checks the interpolation managers and if they are ready, performs the interpolation and sends the dat...</div><div class="ttdef"><b>Definition:</b> ScriObserveInterpolated.hpp:109</div></div>
+<div class="ttc" id="astructSpinWeighted_html"><div class="ttname"><a href="structSpinWeighted.html">SpinWeighted</a></div><div class="ttdoc">Make a spin-weighted type T with spin-weight Spin. Mathematical operators are restricted to addition,...</div><div class="ttdef"><b>Definition:</b> SpinWeighted.hpp:24</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1ObservationLMax_html"><div class="ttname"><a href="structCce_1_1Tags_1_1ObservationLMax.html">Cce::Tags::ObservationLMax</a></div><div class="ttdef"><b>Definition:</b> OptionTags.hpp:330</div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_ga94abef85fb91d5d39148ffcc7b7a4e2a"><div class="ttname"><a href="group__ParallelGroup.html#ga94abef85fb91d5d39148ffcc7b7a4e2a">Parallel::my_node</a></div><div class="ttdeci">int my_node(const DistribObject &amp;distributed_object) noexcept</div><div class="ttdoc">Index of my node.</div><div class="ttdef"><b>Definition:</b> Info.hpp:51</div></div>
+<div class="ttc" id="aDataBox_8hpp_html"><div class="ttname"><a href="DataBox_8hpp.html">DataBox.hpp</a></div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="aclasstuples_1_1TaggedTuple_html"><div class="ttname"><a href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a></div><div class="ttdoc">An associative container that is indexed by structs.</div><div class="ttdef"><b>Definition:</b> TaggedTuple.hpp:271</div></div>
+<div class="ttc" id="agroup__SwshGroup_html_ga98021522583c1ddddf77ca868dd54b9b"><div class="ttname"><a href="group__SwshGroup.html#ga98021522583c1ddddf77ca868dd54b9b">Spectral::Swsh::libsharp_to_goldberg_modes</a></div><div class="ttdeci">void libsharp_to_goldberg_modes(gsl::not_null&lt; SpinWeighted&lt; ComplexModalVector, Spin &gt; * &gt; goldberg_modes, const SpinWeighted&lt; ComplexModalVector, Spin &gt; &amp;libsharp_modes, size_t l_max) noexcept</div><div class="ttdoc">Compute the set of Goldberg Spin-weighted spherical harmonic modes (in the convention of ) from a lib...</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1AnalyticBoundaryDataManager_html"><div class="ttname"><a href="structCce_1_1Tags_1_1AnalyticBoundaryDataManager.html">Cce::Tags::AnalyticBoundaryDataManager</a></div><div class="ttdoc">A tag that constructs a AnalyticBoundaryDataManager from options.</div><div class="ttdef"><b>Definition:</b> OptionTags.hpp:552</div></div>
+<div class="ttc" id="aclassComplexModalVector_html"><div class="ttname"><a href="classComplexModalVector.html">ComplexModalVector</a></div><div class="ttdoc">A class for storing complex spectral coefficients on a spectral grid.</div><div class="ttdef"><b>Definition:</b> ComplexModalVector.hpp:40</div></div>
+<div class="ttc" id="agroup__SwshGroup_html_ga701ff2b1c56fe2928d5eb79d17e1ae9b"><div class="ttname"><a href="group__SwshGroup.html#ga701ff2b1c56fe2928d5eb79d17e1ae9b">Spectral::Swsh::swsh_transform</a></div><div class="ttdeci">void swsh_transform(const size_t l_max, const size_t number_of_radial_points, const gsl::not_null&lt; SpinWeighted&lt; ComplexModalVector, Spin &gt; * &gt; first_coefficient, const ModalThenNodalTypes &amp;... coefficients_then_collocations) noexcept</div><div class="ttdoc">Perform a forward libsharp spin-weighted spherical harmonic transform on any number of supplied SpinW...</div><div class="ttdef"><b>Definition:</b> SwshTransform.hpp:171</div></div>
+<div class="ttc" id="anamespaceActionTesting_html_af2cb56d7012b27cab5d118a9fa0783d2"><div class="ttname"><a href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">ActionTesting::cache</a></div><div class="ttdeci">Parallel::GlobalCache&lt; Metavariables &gt; &amp; cache(MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const ArrayIndex &amp;array_index) noexcept</div><div class="ttdoc">Returns the GlobalCache of Component with index array_index.</div><div class="ttdef"><b>Definition:</b> MockRuntimeSystemFreeFunctions.hpp:382</div></div>
+<div class="ttc" id="anamespaceCce_html"><div class="ttname"><a href="namespaceCce.html">Cce</a></div><div class="ttdoc">The set of utilities for performing Cauchy characteristic evolution and Cauchy characteristic matchin...</div><div class="ttdef"><b>Definition:</b> CharacteristicExtractFwd.hpp:6</div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="astructCce_1_1ScriPlusInterpolationManager_html"><div class="ttname"><a href="structCce_1_1ScriPlusInterpolationManager.html">Cce::ScriPlusInterpolationManager</a></div><div class="ttdoc">Stores necessary data and interpolates on to new time points at scri+.</div><div class="ttdef"><b>Definition:</b> ScriPlusInterpolationManager.hpp:48</div></div>
+<div class="ttc" id="aGsl_8hpp_html_a649c6961f9146205c203e45d58fd0c4c"><div class="ttname"><a href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a></div><div class="ttdeci">gsl::not_null&lt; T * &gt; make_not_null(T *ptr) noexcept</div><div class="ttdoc">Construct a not_null from a pointer. Often this will be done as an implicit conversion,...</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:880</div></div>
+<div class="ttc" id="aconditional_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/conditional.html">std::conditional_t</a></div></div>
+<div class="ttc" id="aclassComplexDataVector_html"><div class="ttname"><a href="classComplexDataVector.html">ComplexDataVector</a></div><div class="ttdoc">Stores a collection of complex function values.</div><div class="ttdef"><b>Definition:</b> ComplexDataVector.hpp:53</div></div>
+<div class="ttc" id="aTMPL_8hpp_html_a90c06abcd00cb9026fdcdb7433edce8d"><div class="ttname"><a href="TMPL_8hpp.html#a90c06abcd00cb9026fdcdb7433edce8d">brigand::list_difference</a></div><div class="ttdeci">fold&lt; Sequence2, Sequence1, lazy::remove&lt; _state, _element &gt; &gt; list_difference</div><div class="ttdoc">Obtain the elements of Sequence1 that are not in Sequence2.</div><div class="ttdef"><b>Definition:</b> TMPL.hpp:589</div></div>
+<div class="ttc" id="agroup__DataStructuresGroup_html_gad3e9dbf822156ded56a56203bfde2076"><div class="ttname"><a href="group__DataStructuresGroup.html#gad3e9dbf822156ded56a56203bfde2076">make_const_view</a></div><div class="ttdeci">void make_const_view(const gsl::not_null&lt; const SpinWeightedType * &gt; view, const SpinWeightedType &amp;spin_weighted, const size_t offset, const size_t extent) noexcept</div><div class="ttdef"><b>Definition:</b> SpinWeighted.hpp:544</div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="aclassMakeString_html"><div class="ttname"><a href="classMakeString.html">MakeString</a></div><div class="ttdoc">Make a string by streaming into object.</div><div class="ttdef"><b>Definition:</b> MakeString.hpp:18</div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<div class="ttc" id="agroup__SwshGroup_html_ga65a7e73757da97e151c31f656f9bcfef"><div class="ttname"><a href="group__SwshGroup.html#ga65a7e73757da97e151c31f656f9bcfef">Spectral::Swsh::number_of_swsh_collocation_points</a></div><div class="ttdeci">constexpr size_t number_of_swsh_collocation_points(const size_t l_max) noexcept</div><div class="ttdoc">Convenience function for determining the number of spin-weighted spherical harmonic collocation value...</div><div class="ttdef"><b>Definition:</b> SwshCollocation.hpp:24</div></div>
+<div class="ttc" id="astring_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/string.html">string</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

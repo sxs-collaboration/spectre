@@ -1,0 +1,321 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Code development quick-start with Docker and Visual Studio Code</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">Code development quick-start with Docker and Visual Studio Code </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><p>This page describes how to get started developing SpECTRE on Mac, Linux, or Windows using <a href="https://docker.com">Docker</a> and the <a href="https://code.visualstudio.com">Visual Studio Code</a> editor. This is a particularly quick way to get up and running with SpECTRE code development, though of course not the only way. If you prefer setting up your development environment differently, we suggest you read the <a class="el" href="installation.html">Installation</a> page. If you would like to jump right into a working development environment, read on!</p>
+<h1><a class="anchor" id="autotoc_md196"></a>
+Fork the SpECTRE repository on GitHub</h1>
+<p>The SpECTRE code lives on GitHub in the <a href="https://github.com/sxs-collaboration/spectre">sxs-collaboration/spectre</a> repository. Developers work on their own copy (or <a href="https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-forks">"fork"</a>) of the repository and contribute back to <a href="https://github.com/sxs-collaboration/spectre">sxs-collaboration/spectre</a> through <a href="https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests">pull requests</a>. Fork the repository to your own account:</p>
+<ul>
+<li><a href="https://github.com/sxs-collaboration/spectre/fork">Fork sxs-collaboration/spectre on GitHub</a></li>
+</ul>
+<h1><a class="anchor" id="autotoc_md197"></a>
+Clone the SpECTRE repository to your computer</h1>
+<p>To work on SpECTRE code you will need a local copy (or "clone") of the repository on your computer. We use SSH to communicate with GitHub, so you need to set up your SSH keys first. Follow GitHub's instructions to generate an SSH key and add it to your GitHub account:</p>
+<ul>
+<li><a href="https://docs.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent">Generating an SSH key and adding to to GitHub</a></li>
+</ul>
+<p>Now you can download the repository via SSH. Navigate to <b>your fork</b> of the SpECTRE repository (i.e. the repository at the URL <a href="https://github.com/YOURNAME/spectre">https://github.com/YOURNAME/spectre</a>). Follow GitHub's instructions to clone the repository to your computer, selecting the SSH option:</p>
+<ul>
+<li><a href="https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository">Cloning a repository</a></li>
+</ul>
+<h1><a class="anchor" id="autotoc_md198"></a>
+Enable the development environment in the repository</h1>
+<p>The development environment is included in the repository, but not enabled by default. To enable it, copy or symlink the directory <code>support/DevEnvironments/.devcontainer</code> to the repository root. This is easiest done with the command line. Navigate into the repository that you just cloned to your computer:</p>
+<div class="fragment"><div class="line">cd spectre</div>
+</div><!-- fragment --><p>Now symlink the development environment:</p>
+<div class="fragment"><div class="line">ln -s support/DevEnvironments/.devcontainer .devcontainer</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md199"></a>
+Install Docker</h1>
+<p>On your computer you will need Docker to run the containerized development environment. Install and start Docker:</p>
+<ul>
+<li><a href="https://docs.docker.com/get-docker/">Get Docker</a></li>
+</ul>
+<p>If you're new to Docker, you can read through Docker's <a href="https://docs.docker.com/get-started/">Getting started</a> documentation to learn about their basic concepts. We will use Docker to download and jump into a prebuilt development environment that has everything installed to compile and run SpECTRE.</p>
+<h1><a class="anchor" id="autotoc_md200"></a>
+Install Visual Studio Code</h1>
+<p>We will use the Visual Studio Code editor to jump into the containerized development environment, edit code, compile executables and run them. Download and install Visual Studio Code:</p>
+<ul>
+<li><a href="https://code.visualstudio.com">Get Visual Studio Code</a></li>
+</ul>
+<p>Microsoft maintains <a href="https://code.visualstudio.com/docs">extensive documentation</a> for Visual Studio Code that you can read to get started using the editor. We recommend you take a look through the <a href="https://code.visualstudio.com/docs/getstarted/tips-and-tricks">Tips and Tricks</a> to get an idea of the editor's features.</p>
+<h1><a class="anchor" id="autotoc_md201"></a>
+Install the "Remote - Containers" extension</h1>
+<p>Visual Studio Code's "Remote - Containers" extension lets you run the editor in a Docker container. Install the extension:</p>
+<ul>
+<li><a href="vscode:extension/ms-vscode-remote.remote-containers">Install the "Remote - Containers" extension</a></li>
+</ul>
+<h1><a class="anchor" id="autotoc_md202"></a>
+Open the SpECTRE repository in Visual Studio Code</h1>
+<p>Now open the SpECTRE repository that you have cloned to your computer in Visual Studio Code. Depending on your operating system you can select <code>File &gt; Open</code>, type <code>Cmd+O</code> (macOS) or <code>Ctrl+O</code> (Linux or Windows), drag the repository folder onto the Visual Studio Code icon or any other means to open the folder in Visual Studio Code.</p>
+<p>Now is also time to learn how to use the single most important tool in Visual Studio Code, the command palette. Try it now: Hit <code>Cmd+P</code> (macOS) or <code>Ctrl+P</code> (Linux or Windows) and start typing the name of any file, for example <code>QuickStart.md</code>. Hit <code>Enter</code> to open the file. This is how you can quickly open any file in the repository. Note that the search is fuzzy, so you can type any few letters in the path to the file. In addition to opening files, you can hit <code>Cmd+Shift+P</code> (macOS) or <code>Ctrl+Shift+P</code> (Linux or Windows) and type the name of any command that Visual Studio Code supports (or parts of it), for example <code>Preferences: Open User Settings</code>.</p>
+<h1><a class="anchor" id="autotoc_md203"></a>
+Reopen the SpECTRE repository in the development container</h1>
+<p>Open the command palette by hitting <code>Cmd+Shift+P</code> (macOS) or <code>Ctrl+Shift+P</code> (Linux or Windows) and run the command <code>Remote-Containers: Reopen in container</code> by starting to type a few letters of this command and then hitting <code>Enter</code>.</p>
+<p>Visual Studio Code will download and run the container and drop you into a fully configured environment where you can proceed to compile and run SpECTRE.</p>
+<p>If you are interested to learn more about this feature works you can read through the <a href="https://code.visualstudio.com/docs/remote/containers">VS Code documentation on remote containers</a> and inspect the <code>.devcontainer/devcontainer.json</code> file that's included in the SpECTRE repository.</p>
+<h1><a class="anchor" id="autotoc_md204"></a>
+Configure, compile and run SpECTRE</h1>
+<p>With Visual Studio Code running in the development container you can now configure, compile and run SpECTRE with no additional setup. Hit <code>Cmd+Shift+P</code> (macOS) or <code>Ctrl+Shift+P</code> (Linux or Windows) to open the command palette and run the command <code>CMake: Configure</code>. It will set up a build directory. You can open Visual Studio Code's <a href="https://code.visualstudio.com/docs/editor/integrated-terminal">integrated terminal</a> with the keyboard shortcut <code>Ctrl+`</code> and navigate to the newly created build directory to inspect it:</p>
+<div class="fragment"><div class="line">cd build-Default-Debug</div>
+</div><!-- fragment --><p>For compiling and running SpECTRE you can either use Visual Studio Code's CMake integration by looking up further commands in the command palette, or use the terminal. We will be using the terminal from now on. Try compiling an executable, for example:</p>
+<div class="fragment"><div class="line">make -j4 ExportCoordinates3D</div>
+</div><!-- fragment --><p>Once the executable has compiled successfully you can try running it:</p>
+<div class="fragment"><div class="line">./bin/ExportCoordinates3D \</div>
+<div class="line">  --input-file $SPECTRE_HOME/tests/InputFiles/ExportCoordinates/Input3D.yaml</div>
+</div><!-- fragment --><p>This executable produced a volume data file that we can visualize in ParaView. Generate an XMF file from the volume data file that ParaView understands:</p>
+<div class="fragment"><div class="line">$SPECTRE_HOME/src/Visualization/Python/GenerateXdmf.py \</div>
+<div class="line">  --file-prefix ExportCoordinates3DVolume --subfile-name element_data \</div>
+<div class="line">  --output ExportCoordinates3DVolume</div>
+</div><!-- fragment --><p>Since the build directory is shared with the host file system you can now open ParaView on your computer and load the generated XMF file as described in the <a class="el" href="tutorial_visualization.html">visualization tutorial</a>.</p>
+<h1><a class="anchor" id="autotoc_md205"></a>
+Edit and contribute code to SpECTRE with VS Code</h1>
+<p>You are now ready to code! The other <a class="el" href="dev_guide.html">dev guides</a> will teach you how to write SpECTRE code. Return to the <a href="https://code.visualstudio.com/docs">Visual Studio Code documentation</a> to learn more about editing code with Visual Studio Code.</p>
+<p>In particular, the Visual Studio Code documentation can teach you how to use Git to commit your code changes to your repository:</p>
+<ul>
+<li><a href="https://code.visualstudio.com/docs/editor/versioncontrol#_git-support">Git support in Visual Studio Code</a></li>
+</ul>
+<p>SpECTRE code development follows a pull-request model. You can learn more about this process in our contributing guide:</p>
+<ul>
+<li><a href="https://spectre-code.org/contributing_to_spectre.html#pull-requests">Contributing to SpECTRE through pull requests</a></li>
+</ul>
+<p>Visual Studio Code can also help you create and review pull requests:</p>
+<ul>
+<li><a href="https://code.visualstudio.com/docs/editor/github#_pull-requests">Working with pull requests in VS Code</a></li>
+</ul>
+<h1><a class="anchor" id="autotoc_md206"></a>
+Interactively debug a SpECTRE test with VS Code</h1>
+<p>To track down an issue with your code it can be very useful to interactively debug it. First, make sure you have written a test case where the issue occurs. If you have not written a test yet, this is a great time to do it. Refer to the <a class="el" href="writing_unit_tests.html">Writing Unit Tests</a> dev guide to learn how to write tests.</p>
+<p>Now configure the <code>RunSingleTest</code> executable to run your particular test so you don't have to repeatedly compile the extensive <code>RunTests</code> executable. Also refer to the <a class="el" href="writing_unit_tests.html">Writing Unit Tests</a> dev guide for this.</p>
+<p>To launch the interactive debugger, hit <code>Cmd+Shift+P</code> (macOS) or <code>Ctrl+Shift+P</code> (Linux or Windows) to open the command palette, run the command <code>CMake: Set Debug Target</code> and select <code>RunSingleTest</code>. Then run the command <code>CMake: Debug</code>. The test executable will compile, run and stop on any breakpoints. Follow the Visual Studio Code documentation to learn how to set breakpoints in your code and inspect the state of your variables:</p>
+<ul>
+<li><a href="https://code.visualstudio.com/docs/editor/debugging#_debug-actions">Debug actions in VS Code</a></li>
+</ul>
+<h1><a class="anchor" id="autotoc_md207"></a>
+Real-time collaboration with Live Share</h1>
+<p>You can use the <a href="https://docs.microsoft.com/en-us/visualstudio/liveshare/">Live Share</a> extension to work together with others and edit code simultaneously. Live Share can be very useful to debug code together. Follow these instructions to share a link to your current Visual Studio Code workspace:</p>
+<ul>
+<li><a href="https://docs.microsoft.com/en-us/visualstudio/liveshare/quickstart/share">Live Share Quickstart: Share your first project</a></li>
+</ul>
+<h1><a class="anchor" id="autotoc_md208"></a>
+Tips and tricks</h1>
+<ul>
+<li>The <a href="https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens"><b>GitLens extension</b></a> is very useful to browse your repository. Select the "Source Control" icon and explore the various panels.</li>
+<li>When you build the <b>documentation</b> (e.g. with <code>make doc</code>), you can open it in a web server within VS Code:</li>
+</ul>
+<div class="fragment"><div class="line">python3 -m http.server -d docs/html</div>
+</div><!-- fragment --><p>The web server launches on port 8000 by default, which is being forwarded outside the container, so you can just open <a href="http://127.0.0.1:8000">http://127.0.0.1:8000</a> in your browser to view the documentation.</p>
+<ul>
+<li>Instead of working in the Docker container, you can use the <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh">Remote - SSH</a> extension to <b>work on a remote machine</b> such as your local supercomputing cluster. Ask the cluster administrators or users for suggestions concerning installing and running SpECTRE on the particular supercomputer.</li>
+<li>You can work with <b>Jupyter notebooks in Visual Studio Code</b>. First, install Jupyter and all other Python packages you want to work with in the container:</li>
+</ul>
+<div class="fragment"><div class="line">pip3 install jupyter matplotlib</div>
+</div><!-- fragment --><p>Any <code>.ipynb</code> notebook files you create or open will be displayed in VS Code's notebook editor. This is very useful for quickly plotting data from SpECTRE runs or using SpECTRE's Python bindings. Refer to the <a href="https://code.visualstudio.com/docs/python/jupyter-support">VS Code documentation on Jupyter support</a> for more information.</p>
+<ul>
+<li><p class="startli">Docker can quickly use up a lot of disk space. From time to time you can "prune" unneeded images and containers to reclaim disk space:</p><ul>
+<li><a href="https://docs.docker.com/config/pruning/">Prune unused Docker objects</a></li>
+</ul>
+<p class="startli">When pruning containers, make sure no data is deleted that you care about! </p>
+</li>
+</ul>
+</div></div><!-- contents -->
+</div><!-- PageDoc -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

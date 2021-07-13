@@ -1,0 +1,254 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Spectral::Swsh::SwshTransform&lt; TagList, Representation &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceSpectral.html">Spectral</a></li><li class="navelem"><a class="el" href="namespaceSpectral_1_1Swsh.html">Swsh</a></li><li class="navelem"><a class="el" href="structSpectral_1_1Swsh_1_1SwshTransform.html">SwshTransform</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">Spectral::Swsh::SwshTransform&lt; TagList, Representation &gt; Struct Template Reference<div class="ingroups"><a class="el" href="group__SwshGroup.html">Spin-weighted spherical harmonics</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A <a class="el" href="group__DataBoxGroup.html">DataBox</a> mutate-compatible computational struct for performing several spin-weighted spherical harmonic transforms. Internally dispatches to libsharp.  
+ <a href="structSpectral_1_1Swsh_1_1SwshTransform.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="SwshTransform_8hpp_source.html">SwshTransform.hpp</a>&gt;</code></p>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename TagList, ComplexRepresentation Representation = ComplexRepresentation::Interleaved&gt;<br />
+struct Spectral::Swsh::SwshTransform&lt; TagList, Representation &gt;</h3>
+
+<p>A <a class="el" href="group__DataBoxGroup.html">DataBox</a> mutate-compatible computational struct for performing several spin-weighted spherical harmonic transforms. Internally dispatches to libsharp. </p>
+<h3>Details</h3>
+<p>Template Parameters:</p><ul>
+<li><p class="startli"><code>Representation</code>: The element of the <code>ComplexRepresentation</code> enum which parameterizes how the data passed to libsharp will be represented. Two options are available:</p><ul>
+<li><code>ComplexRepresentation:Interleaved</code>: indicates that the real and imaginary parts of the collocation values will be passed to libsharp as pointers into existing complex data structures, minimizing copies, but maintaining a stride of 2 for 'adjacent' real or imaginary values.</li>
+<li><code>ComplexRepresentation::RealsThenImags</code>: indicates that the real and imaginary parts of the collocation values will be passed to libsharp as separate contiguous blocks. At current, this introduces both allocations and copies. <b>optimization note</b> In the future most of the allocations can be aggregated to calling code, which would pass in buffers by <code>not_null</code> pointers.</li>
+</ul>
+<p class="startli">For performance-sensitive code, both options should be tested, as each strategy has trade-offs.</p>
+</li>
+<li><code>TagList</code>: A <code>tmpl::list</code> of Tags to be forward transformed. The tags must represent the nodal data.</li>
+</ul>
+<dl class="section note"><dt>Note</dt><dd>The signs obtained from libsharp transformations must be handled carefully. (In particular, it does not use the sign convention you will find in <a href="https://en.wikipedia.org/wiki/Spin-weighted_spherical_harmonics">Wikipedia</a>).<ul>
+<li>libsharp deals only with the transformation of real values, so transformation of complex values must be done for real and imaginary parts separately.</li>
+<li>due to only transforming real components, it stores only the positive \(m\) modes (as the rest would be redundant). Therefore, the negative \(m\) modes must be inferred from conjugation and further sign changes.</li>
+<li>libsharp only has the capability of transforming positive spin weighted quantities. Therefore, additional steps are taken (involving further conjugation of the provided data) in order to use those utilities on negative spin-weighted quantities. The resulting modes have yet more sign changes that must be taken into account.</li>
+</ul>
+</dd></dl>
+<p>The decomposition resulting from the libsharp transform for spin \(s\) and complex spin-weighted \({}_s f\) can be represented mathematically as:</p>
+<p class="formulaDsp">
+\begin{align*} {}_s f(\theta, \phi) = \sum_{\ell = 0}^{\ell_\mathrm{max}} \Bigg\{&amp; \left(\sum_{m = 0}^{\ell} a^\mathrm{sharp, real}_{l m} {}_s Y_{\ell m}^\mathrm{sharp, real}\right) + \left(\sum_{m=1}^{\ell} \left(a^\mathrm{sharp, real}_{l m}{}\right)^* {}_s Y_{\ell -m}^\mathrm{sharp, real}\right) \notag\\ &amp;+ i \left[\left(\sum_{m = 0}^{\ell} a^\mathrm{sharp, imag}_{l m} {}_s Y_{\ell m}^\mathrm{sharp, imag}\right) + \left(\sum_{m=1}^{\ell} \left(a^\mathrm{sharp, imag}_{l m}{}\right)^* {}_s Y_{\ell -m}^\mathrm{sharp, imag} \right)\right] \Bigg\}, \end{align*}
+</p>
+<p>where</p>
+<p class="formulaDsp">
+\begin{align*} {}_s Y_{\ell m}^\mathrm{sharp, real} &amp;= \begin{cases} (-1)^{s + 1} {}_s Y_{\ell m}, &amp; \mathrm{for}\; s &lt; 0, m \ge 0 \\ {}_s Y_{\ell m}, &amp; \mathrm{for}\; s = 0, m \ge 0 \\ - {}_s Y_{\ell m}, &amp; \mathrm{for}\; s &gt; 0, m \ge 0 \\ (-1)^{s + m + 1} {}_s Y_{\ell m}, &amp; \mathrm{for}\; s &lt; 0, m &lt; 0 \\ (-1)^{m} {}_s Y_{\ell m}, &amp; \mathrm{for}\; s = 0, m &lt; 0 \\ (-1)^{m + 1} {}_s Y_{\ell m}, &amp; \mathrm{for}\; s &gt; 0, m &lt; 0 \end{cases} \\ &amp;\equiv {}_s S_{\ell m}^{\mathrm{real}} {}_s Y_{\ell m}\\ {}_s Y_{\ell m}^\mathrm{sharp, imag} &amp;= \begin{cases} (-1)^{s + 1} {}_s Y_{\ell m}, &amp; \mathrm{for}\; s &lt; 0, m \ge 0 \\ -{}_s Y_{\ell m}, &amp; \mathrm{for}\; s = 0, m \ge 0 \\ {}_s Y_{\ell m}, &amp; \mathrm{for}\; s &gt; 0, m \ge 0 \\ (-1)^{s + m} {}_s Y_{\ell m}, &amp; \mathrm{for}\; s &lt; 0, m &lt; 0 \\ (-1)^{m} {}_s Y_{\ell m}, &amp; \mathrm{for}\; s = 0, m &lt; 0 \\ (-1)^{m + 1} {}_s Y_{\ell m}, &amp; \mathrm{for}\; s &gt; 0, m &lt; 0 \end{cases} \\ &amp;\equiv {}_s S_{\ell m}^{\mathrm{real}} {}_s Y_{\ell m}, \end{align*}
+</p>
+<p>where the unadorned \({}_s Y_{\ell m}\) on the right-hand-sides follow the (older) convention of <a class="el" href="citelist.html#CITEREF_Goldberg1966uu">[48]</a>. Note the phase in these expressions is not completely standardized, so should be checked carefully whenever coefficient data is directly manipulated.</p>
+<p>For reference, we can compute the relation between Goldberg spin-weighted moments \({}_s f_{\ell m}\), defined as</p>
+<p class="formulaDsp">
+\[ {}_s f(\theta, \phi) = \sum_{\ell = 0}^{\ell_\mathrm{max}} \sum_{m = -\ell}^{\ell} {}_s f_{\ell m} {}_s Y_{\ell m} \]
+</p>
+<p>so, </p><p class="formulaDsp">
+\[ {}_s f_{\ell m} = \begin{cases} a_{\ell m}^{\mathrm{sharp}, \mathrm{real}} {}_s S_{\ell m}^{\mathrm{real}} + a_{\ell m}^{\mathrm{sharp}, \mathrm{imag}} {}_s S_{\ell m}^{\mathrm{imag}} &amp; \mathrm{for} \; m \ge 0 \\ \left(a_{\ell -m}^{\mathrm{sharp}, \mathrm{real}}\right)^* {}_s S_{\ell m}^{\mathrm{real}} + \left(a_{\ell -m}^{\mathrm{sharp}, \mathrm{imag}}\right)^* {}_s S_{\ell m}^{\mathrm{imag}} &amp; \mathrm{for} \; m &lt; 0 \\ \end{cases} \]
+</p>
+<p>The resulting coefficients \(a_{\ell m}\) are stored in a triangular, \(\ell\)-varies-fastest configuration. So, for instance, the first \(\ell_\mathrm{max}\) entries contain the coefficients for \(m=0\) and all \(\ell\)s, and the next \(\ell_\mathrm{max} - 1\) entries contain the coefficients for \(m=1\) and \(1 \le \ell \le \ell_\mathrm{max} \), and so on. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/NumericalAlgorithms/Spectral/<a class="el" href="SwshTransform_8hpp_source.html">SwshTransform.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

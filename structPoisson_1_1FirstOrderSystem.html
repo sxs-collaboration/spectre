@@ -1,0 +1,278 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Poisson::FirstOrderSystem&lt; Dim, BackgroundGeometry &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacePoisson.html">Poisson</a></li><li class="navelem"><a class="el" href="structPoisson_1_1FirstOrderSystem.html">FirstOrderSystem</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structPoisson_1_1FirstOrderSystem-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Poisson::FirstOrderSystem&lt; Dim, BackgroundGeometry &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>The <a class="el" href="namespacePoisson.html" title="Items related to solving a Poisson equation .">Poisson</a> equation formulated as a set of coupled first-order PDEs.  
+ <a href="structPoisson_1_1FirstOrderSystem.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="src_2Elliptic_2Systems_2Poisson_2FirstOrderSystem_8hpp_source.html">FirstOrderSystem.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a94a61df4ad56be00668d2fd135b5e40a"><td class="memItemLeft" align="right" valign="top"><a id="a94a61df4ad56be00668d2fd135b5e40a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>primal_fields</b> = tmpl::list&lt; <a class="el" href="structPoisson_1_1Tags_1_1Field.html">field</a> &gt;</td></tr>
+<tr class="separator:a94a61df4ad56be00668d2fd135b5e40a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26ac956d4673f9fe79d9349312d2ec64"><td class="memItemLeft" align="right" valign="top"><a id="a26ac956d4673f9fe79d9349312d2ec64"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>auxiliary_fields</b> = tmpl::list&lt; <a class="el" href="structTags_1_1deriv.html">field_gradient</a> &gt;</td></tr>
+<tr class="separator:a26ac956d4673f9fe79d9349312d2ec64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a39a5ddae43d84168d6d43e663005ba25"><td class="memItemLeft" align="right" valign="top"><a id="a39a5ddae43d84168d6d43e663005ba25"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>primal_fluxes</b> = tmpl::list&lt;::<a class="el" href="structTags_1_1Flux.html">Tags::Flux</a>&lt; <a class="el" href="structPoisson_1_1Tags_1_1Field.html">field</a>, tmpl::size_t&lt; Dim &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;</td></tr>
+<tr class="separator:a39a5ddae43d84168d6d43e663005ba25"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8fe3b26cad9943888d56e70bcef11e2"><td class="memItemLeft" align="right" valign="top"><a id="ac8fe3b26cad9943888d56e70bcef11e2"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>auxiliary_fluxes</b> = tmpl::list&lt; ::<a class="el" href="structTags_1_1Flux.html">Tags::Flux</a>&lt; <a class="el" href="structTags_1_1deriv.html">field_gradient</a>, tmpl::size_t&lt; Dim &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;</td></tr>
+<tr class="separator:ac8fe3b26cad9943888d56e70bcef11e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a986b504a0e0985d2b967e3615871a450"><td class="memItemLeft" align="right" valign="top"><a id="a986b504a0e0985d2b967e3615871a450"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>background_fields</b> = tmpl::conditional_t&lt; BackgroundGeometry==<a class="el" href="namespacePoisson.html#a39c34b89d6a514ee3b9c9d6e53d2d64ba4e98dfef39bb5b4bbfec908085352ac4">Geometry::FlatCartesian</a>, tmpl::list&lt;&gt;, tmpl::list&lt; <a class="el" href="structgr_1_1Tags_1_1InverseSpatialMetric.html">gr::Tags::InverseSpatialMetric</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1SpatialChristoffelSecondKindContracted.html">gr::Tags::SpatialChristoffelSecondKindContracted</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;&gt;</td></tr>
+<tr class="separator:a986b504a0e0985d2b967e3615871a450"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3fe0e293f125f32632615cf299736e6"><td class="memItemLeft" align="right" valign="top"><a id="ae3fe0e293f125f32632615cf299736e6"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>inv_metric_tag</b> = tmpl::conditional_t&lt; BackgroundGeometry==<a class="el" href="namespacePoisson.html#a39c34b89d6a514ee3b9c9d6e53d2d64ba4e98dfef39bb5b4bbfec908085352ac4">Geometry::FlatCartesian</a>, void, <a class="el" href="structgr_1_1Tags_1_1InverseSpatialMetric.html">gr::Tags::InverseSpatialMetric</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;</td></tr>
+<tr class="separator:ae3fe0e293f125f32632615cf299736e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4faa2ec61aaf4d8eb798965bb6cfe05f"><td class="memItemLeft" align="right" valign="top"><a id="a4faa2ec61aaf4d8eb798965bb6cfe05f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>fluxes_computer</b> = Fluxes&lt; Dim, BackgroundGeometry &gt;</td></tr>
+<tr class="separator:a4faa2ec61aaf4d8eb798965bb6cfe05f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13e2457570a60cd3ad0dc6500d8402b9"><td class="memItemLeft" align="right" valign="top"><a id="a13e2457570a60cd3ad0dc6500d8402b9"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>sources_computer</b> = Sources&lt; Dim, BackgroundGeometry &gt;</td></tr>
+<tr class="separator:a13e2457570a60cd3ad0dc6500d8402b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed6074b78003dc18cd765370b13c757c"><td class="memItemLeft" align="right" valign="top"><a id="aed6074b78003dc18cd765370b13c757c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>boundary_conditions_base</b> = <a class="el" href="classelliptic_1_1BoundaryConditions_1_1BoundaryCondition.html">elliptic::BoundaryConditions::BoundaryCondition</a>&lt; Dim, tmpl::list&lt; elliptic::BoundaryConditions::Registrars::AnalyticSolution&lt; <a class="el" href="structPoisson_1_1FirstOrderSystem.html">FirstOrderSystem</a> &gt;, Poisson::BoundaryConditions::Registrars::Robin&lt; Dim &gt; &gt;&gt;</td></tr>
+<tr class="separator:aed6074b78003dc18cd765370b13c757c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a8ffb372c97a3921508626abd9a0fd056"><td class="memItemLeft" align="right" valign="top"><a id="a8ffb372c97a3921508626abd9a0fd056"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = Dim</td></tr>
+<tr class="separator:a8ffb372c97a3921508626abd9a0fd056"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim, Geometry BackgroundGeometry&gt;<br />
+struct Poisson::FirstOrderSystem&lt; Dim, BackgroundGeometry &gt;</h3>
+
+<p>The <a class="el" href="namespacePoisson.html" title="Items related to solving a Poisson equation .">Poisson</a> equation formulated as a set of coupled first-order PDEs. </p>
+<h3>Details</h3>
+<p>This system formulates the <a class="el" href="namespacePoisson.html" title="Items related to solving a Poisson equation .">Poisson</a> equation \(-\Delta_\gamma u(x) = f(x)\) on a background metric \(\gamma_{ij}\) as the set of coupled first-order PDEs</p>
+<p class="formulaDsp">
+\[ -\partial_i \gamma^{ij} v_j(x) - \Gamma^i_{ij}\gamma^{jk}v_k = f(x) \\ -\partial_i u(x) + v_i(x) = 0 \]
+</p>
+<p>where we have chosen the field gradient as an auxiliary variable \(v_i\) and where \(\Gamma^i_{jk}=\frac{1}{2}\gamma^{il}\left(\partial_j\gamma_{kl} +\partial_k\gamma_{jl}-\partial_l\gamma_{jk}\right)\) are the Christoffel symbols of the second kind of the background metric \(\gamma_{ij}\). The background metric \(\gamma_{ij}\) and the Christoffel symbols derived from it are assumed to be independent of the variables \(u\) and \(v_i\), i.e. constant throughout an iterative elliptic solve.</p>
+<p>This scheme also goes by the name of <em>mixed</em> or <em>flux</em> formulation (see e.g. <a class="el" href="citelist.html#CITEREF_Arnold2002">[2]</a>). The reason for the latter name is that we can write the set of coupled first-order PDEs in flux-form</p>
+<p class="formulaDsp">
+\[ -\partial_i F^i_A + S_A = f_A(x) \]
+</p>
+<p>by choosing the fluxes and sources in terms of the system variables \(u(x)\) and \(v_i(x)\) as</p>
+<p class="formulaDsp">
+\begin{align*} F^i_u &amp;= \gamma^{ij} v_j(x) \\ S_u &amp;= -\Gamma^i_{ij}\gamma^{jk}v_k \\ f_u &amp;= f(x) \\ F^i_{v_j} &amp;= u \delta^i_j \\ S_{v_j} &amp;= v_j \\ f_{v_j} &amp;= 0 \text{.} \end{align*}
+</p>
+<p>Note that we use the system variables to index the fluxes and sources, which we also do in the code by using DataBox tags. Also note that we have defined the <em>fixed sources</em> \(f_A\) as those source terms that are independent of the system variables.</p>
+<p>The fluxes und sources simplify significantly when the background metric is flat and we employ Cartesian coordinates so \(\gamma_{ij} = delta_{ij}\) and \(\Gamma^i_{jk} = 0\). Set the template parameter <code>BackgroundGeometry</code> to <code><a class="el" href="namespacePoisson.html#a39c34b89d6a514ee3b9c9d6e53d2d64ba4e98dfef39bb5b4bbfec908085352ac4" title="Euclidean (flat) manifold with Cartesian coordinates, i.e. the metric has components  in these coordi...">Poisson::Geometry::FlatCartesian</a></code> to specialise the system for this case. Set it to <code><a class="el" href="namespacePoisson.html#a39c34b89d6a514ee3b9c9d6e53d2d64ba1e0e0b1e4554e27d30a562a079215f33" title="The manifold is either curved or employs curved coordinates, so non-vanishing Christoffel symbols mus...">Poisson::Geometry::Curved</a></code> for the general case. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Elliptic/Systems/Poisson/<a class="el" href="src_2Elliptic_2Systems_2Poisson_2FirstOrderSystem_8hpp_source.html">FirstOrderSystem.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

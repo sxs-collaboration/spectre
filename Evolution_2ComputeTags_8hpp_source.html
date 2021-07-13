@@ -1,0 +1,309 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Evolution/ComputeTags.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_d7cddb31ba741ba3a4d5be000d880a30.html">Evolution</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">ComputeTags.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataBox/PrefixHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataBox/Tag.hpp&quot;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Tensor_8hpp.html">DataStructures/Tensor/Tensor.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Variables_8hpp.html">DataStructures/Variables.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;DataStructures/VariablesTag.hpp&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Domain_2Tags_8hpp.html">Domain/Tags.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/AnalyticSolutions/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;Time/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160; </div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceevolution.html">evolution</a> {</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="keyword">namespace </span>Tags {<span class="comment"></span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment"> * \brief Use the `AnalyticSolutionTag` to compute the analytic solution of the</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment"> * tags in `AnalyticFieldsTagList`.</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim, <span class="keyword">typename</span> AnalyticSolutionTag,</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;          <span class="keyword">typename</span> AnalyticFieldsTagList&gt;</div>
+<div class="line"><a name="l00024"></a><span class="lineno"><a class="line" href="structevolution_1_1Tags_1_1AnalyticCompute.html">   24</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structevolution_1_1Tags_1_1AnalyticCompute.html">AnalyticCompute</a> : <a class="code" href="structTags_1_1AnalyticSolutions.html">::Tags::AnalyticSolutions</a>&lt;AnalyticFieldsTagList&gt;,</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;                         <a class="code" href="structdb_1_1ComputeTag.html">db::ComputeTag</a> {</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;  <span class="keyword">using</span> <a class="code" href="structTags_1_1AnalyticSolutions.html">base</a> = <a class="code" href="structTags_1_1AnalyticSolutions.html">::Tags::AnalyticSolutions&lt;AnalyticFieldsTagList&gt;</a>;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  <span class="keyword">using</span> return_type = <span class="keyword">typename</span> <a class="code" href="structTags_1_1Variables.html">base::type</a>;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  <span class="keyword">using</span> argument_tags =</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;      tmpl::list&lt;AnalyticSolutionTag,</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;                 <a class="code" href="structdomain_1_1Tags_1_1Coordinates.html">domain::Tags::Coordinates&lt;Dim, Frame::Inertial&gt;</a>, <a class="code" href="structTags_1_1Time.html">::Tags::Time</a>&gt;;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">void</span> <span class="keyword">function</span>(</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;return_type*&gt;</a> analytic_solution,</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;      <span class="keyword">const</span> <span class="keyword">typename</span> AnalyticSolutionTag::type&amp; analytic_solution_computer,</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;      <span class="keyword">const</span> tnsr::I&lt;DataVector, Dim, Frame::Inertial&gt;&amp; inertial_coords,</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;      <span class="keyword">const</span> <span class="keywordtype">double</span> time) noexcept {</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    *analytic_solution =</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;        <a class="code" href="group__DataStructuresGroup.html#ga72c56e579182a94d0f96e9a845a02bc7">variables_from_tagged_tuple</a>(analytic_solution_computer.variables(</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;            inertial_coords, time, AnalyticFieldsTagList{}));</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  }</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;};</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment">/// @{</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment"></span><span class="comment">/*!</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment"> * \brief For each `Tag` in `TagsList`, compute its difference from the</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment"> * analytic solution.</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim, <span class="keyword">typename</span> AnalyticSolutionTag, <span class="keyword">typename</span> TagsList&gt;</div>
+<div class="line"><a name="l00048"></a><span class="lineno"><a class="line" href="structevolution_1_1Tags_1_1ErrorsCompute.html">   48</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structevolution_1_1Tags_1_1ErrorsCompute.html">ErrorsCompute</a></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    : <a class="code" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt;::Tags::Error, ::Tags::Variables&lt;TagsList&gt;&gt;,</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;      <a class="code" href="structdb_1_1ComputeTag.html">db::ComputeTag</a> {</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;  <span class="keyword">using</span> base = <a class="code" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix&lt;::Tags::Error, ::Tags::Variables&lt;TagsList&gt;</a>&gt;;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;  <span class="keyword">using</span> return_type = tmpl::type_from&lt;base&gt;;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  <span class="keyword">using</span> argument_tags = tmpl::append&lt;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;      tmpl::list&lt;AnalyticSolutionTag,</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;                 <a class="code" href="structdomain_1_1Tags_1_1Coordinates.html">domain::Tags::Coordinates&lt;VolumeDim, Frame::Inertial&gt;</a>,</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;                 <a class="code" href="structTags_1_1Time.html">::Tags::Time</a>&gt;,</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;      TagsList&gt;;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160; </div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> AnalyticSolution, <span class="keyword">typename</span>... ErrorTags,</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;            <span class="keyword">typename</span>... FieldTypes&gt;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;  <span class="keyword">static</span> constexpr <span class="keywordtype">void</span> <span class="keyword">function</span>(</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;Variables&lt;tmpl::list&lt;ErrorTags...&gt;&gt;*&gt; errors,</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;      <span class="keyword">const</span> AnalyticSolution&amp; analytic_solution_computer,</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;      <span class="keyword">const</span> tnsr::I&lt;DataVector, VolumeDim, Frame::Inertial&gt;&amp; inertial_coords,</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;      <span class="keyword">const</span> <span class="keywordtype">double</span> time, <span class="keyword">const</span> FieldTypes&amp;... fields) noexcept {</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    *errors = return_type{get&lt;0&gt;(inertial_coords).size()};</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> helper = [](<span class="keyword">const</span> <span class="keyword">auto</span> error, <span class="keyword">const</span> <span class="keyword">auto</span>&amp; field) noexcept {</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;      <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; field.size(); ++i) {</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        (*error)[i] = field[i];</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;      }</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    };</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <a class="code" href="group__UtilitiesGroup.html#ga902d1cefbb10846eb8f5be9f6be5c340">EXPAND_PACK_LEFT_TO_RIGHT</a>(</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        helper(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;get&lt;ErrorTags&gt;(*errors)), fields));</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> analytic =</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        <a class="code" href="group__DataStructuresGroup.html#ga72c56e579182a94d0f96e9a845a02bc7">variables_from_tagged_tuple</a>(analytic_solution_computer.variables(</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;            inertial_coords, time, TagsList{}));</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    *errors -= analytic;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;  }</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;};<span class="comment"></span></div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment">/// @}</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment"></span>}  <span class="comment">// namespace Tags</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;}  <span class="comment">// namespace evolution</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="astructdb_1_1ComputeTag_html"><div class="ttname"><a href="structdb_1_1ComputeTag.html">db::ComputeTag</a></div><div class="ttdoc">Mark a struct as a compute tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:157</div></div>
+<div class="ttc" id="agroup__DataStructuresGroup_html_ga72c56e579182a94d0f96e9a845a02bc7"><div class="ttname"><a href="group__DataStructuresGroup.html#ga72c56e579182a94d0f96e9a845a02bc7">variables_from_tagged_tuple</a></div><div class="ttdeci">Variables&lt; tmpl::list&lt; Tags... &gt; &gt; variables_from_tagged_tuple(const tuples::TaggedTuple&lt; Tags... &gt; &amp;tuple) noexcept</div><div class="ttdef"><b>Definition:</b> Variables.hpp:842</div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga902d1cefbb10846eb8f5be9f6be5c340"><div class="ttname"><a href="group__UtilitiesGroup.html#ga902d1cefbb10846eb8f5be9f6be5c340">EXPAND_PACK_LEFT_TO_RIGHT</a></div><div class="ttdeci">#define EXPAND_PACK_LEFT_TO_RIGHT(...)</div><div class="ttdoc">Expand a parameter pack evaluating the terms from left to right.</div><div class="ttdef"><b>Definition:</b> TMPL.hpp:565</div></div>
+<div class="ttc" id="anamespaceevolution_html"><div class="ttname"><a href="namespaceevolution.html">evolution</a></div><div class="ttdoc">Functionality for evolving hyperbolic partial differential equations.</div><div class="ttdef"><b>Definition:</b> RunEventsAndDenseTriggers.hpp:30</div></div>
+<div class="ttc" id="astructdomain_1_1Tags_1_1Coordinates_html"><div class="ttname"><a href="structdomain_1_1Tags_1_1Coordinates.html">domain::Tags::Coordinates&lt; Dim, Frame::Inertial &gt;</a></div></div>
+<div class="ttc" id="astructTags_1_1AnalyticSolutions_html"><div class="ttname"><a href="structTags_1_1AnalyticSolutions.html">Tags::AnalyticSolutions</a></div><div class="ttdoc">The analytic solutions for all FieldTags</div><div class="ttdef"><b>Definition:</b> Tags.hpp:110</div></div>
+<div class="ttc" id="aDomain_2Tags_8hpp_html"><div class="ttname"><a href="Domain_2Tags_8hpp.html">Tags.hpp</a></div></div>
+<div class="ttc" id="astructevolution_1_1Tags_1_1AnalyticCompute_html"><div class="ttname"><a href="structevolution_1_1Tags_1_1AnalyticCompute.html">evolution::Tags::AnalyticCompute</a></div><div class="ttdoc">Use the AnalyticSolutionTag to compute the analytic solution of the tags in AnalyticFieldsTagList.</div><div class="ttdef"><b>Definition:</b> ComputeTags.hpp:24</div></div>
+<div class="ttc" id="agroup__DataBoxTagsGroup_html_gafeeced2a7fb41fdced8c55e76343f63c"><div class="ttname"><a href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a></div><div class="ttdeci">typename detail::add_tag_prefix_impl&lt; Prefix, Tag, Args... &gt;::type add_tag_prefix</div><div class="ttdef"><b>Definition:</b> PrefixHelpers.hpp:51</div></div>
+<div class="ttc" id="astructTags_1_1Variables_html"><div class="ttname"><a href="structTags_1_1Variables.html">Tags::Variables</a></div><div class="ttdef"><b>Definition:</b> VariablesTag.hpp:21</div></div>
+<div class="ttc" id="astructTags_1_1Time_html"><div class="ttname"><a href="structTags_1_1Time.html">Tags::Time</a></div><div class="ttdoc">Tag for the current time as a double.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:73</div></div>
+<div class="ttc" id="aVariables_8hpp_html"><div class="ttname"><a href="Variables_8hpp.html">Variables.hpp</a></div></div>
+<div class="ttc" id="aTensor_8hpp_html"><div class="ttname"><a href="Tensor_8hpp.html">Tensor.hpp</a></div></div>
+<div class="ttc" id="aGsl_8hpp_html_a649c6961f9146205c203e45d58fd0c4c"><div class="ttname"><a href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a></div><div class="ttdeci">gsl::not_null&lt; T * &gt; make_not_null(T *ptr) noexcept</div><div class="ttdoc">Construct a not_null from a pointer. Often this will be done as an implicit conversion,...</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:880</div></div>
+<div class="ttc" id="astructevolution_1_1Tags_1_1ErrorsCompute_html"><div class="ttname"><a href="structevolution_1_1Tags_1_1ErrorsCompute.html">evolution::Tags::ErrorsCompute</a></div><div class="ttdoc">For each Tag in TagsList, compute its difference from the analytic solution.</div><div class="ttdef"><b>Definition:</b> ComputeTags.hpp:48</div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

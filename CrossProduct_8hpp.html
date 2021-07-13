@@ -1,0 +1,239 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/DataStructures/Tensor/EagerMath/CrossProduct.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_f794354f56b7b0ecf5e40827268a3615.html">DataStructures</a></li><li class="navelem"><a class="el" href="dir_e969dbac9dfe3edfad5e001128532f32.html">Tensor</a></li><li class="navelem"><a class="el" href="dir_64cb457a875e34b8bdbce841d3521045.html">EagerMath</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">CrossProduct.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</code><br />
+<code>#include &quot;DataStructures/LeviCivitaIterator.hpp&quot;</code><br />
+<code>#include &quot;<a class="el" href="IndexType_8hpp_source.html">DataStructures/Tensor/IndexType.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="Tensor_8hpp_source.html">DataStructures/Tensor/Tensor.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="MakeWithValue_8hpp_source.html">Utilities/MakeWithValue.hpp</a>&quot;</code><br />
+</div>
+<p><a href="CrossProduct_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:gaa1ed07a07e44db3061d20d945d8aae36"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Index &gt; </td></tr>
+<tr class="memitem:gaa1ed07a07e44db3061d20d945d8aae36"><td class="memTemplItemLeft" align="right" valign="top">Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#gaa1ed07a07e44db3061d20d945d8aae36">cross_product</a> (const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_a, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_b) noexcept</td></tr>
+<tr class="memdesc:gaa1ed07a07e44db3061d20d945d8aae36"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the Euclidean cross product of two vectors or one forms.  <a href="group__TensorGroup.html#gaa1ed07a07e44db3061d20d945d8aae36">More...</a><br /></td></tr>
+<tr class="separator:gaa1ed07a07e44db3061d20d945d8aae36"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga39ba3fcae856f79175a241a1272d1796"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Index &gt; </td></tr>
+<tr class="memitem:ga39ba3fcae856f79175a241a1272d1796"><td class="memTemplItemLeft" align="right" valign="top">Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt; &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga39ba3fcae856f79175a241a1272d1796">cross_product</a> (const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_a, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt;&gt; &amp;vector_b) noexcept</td></tr>
+<tr class="memdesc:ga39ba3fcae856f79175a241a1272d1796"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the Euclidean cross product of a vector and a one form.  <a href="group__TensorGroup.html#ga39ba3fcae856f79175a241a1272d1796">More...</a><br /></td></tr>
+<tr class="separator:ga39ba3fcae856f79175a241a1272d1796"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacbf01b3290d5c59cefe9d6aa419738fc"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Index &gt; </td></tr>
+<tr class="memitem:gacbf01b3290d5c59cefe9d6aa419738fc"><td class="memTemplItemLeft" align="right" valign="top">Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#gacbf01b3290d5c59cefe9d6aa419738fc">cross_product</a> (const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_a, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_b, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1, 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a>, <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;metric_or_inverse_metric, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; &amp;metric_determinant) noexcept</td></tr>
+<tr class="memdesc:gacbf01b3290d5c59cefe9d6aa419738fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the cross product of two vectors or one forms.  <a href="group__TensorGroup.html#gacbf01b3290d5c59cefe9d6aa419738fc">More...</a><br /></td></tr>
+<tr class="separator:gacbf01b3290d5c59cefe9d6aa419738fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacf423e552e0fbc1d6254d2a11b4ea6f9"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Index &gt; </td></tr>
+<tr class="memitem:gacf423e552e0fbc1d6254d2a11b4ea6f9"><td class="memTemplItemLeft" align="right" valign="top">Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt; &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#gacf423e552e0fbc1d6254d2a11b4ea6f9">cross_product</a> (const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_a, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt;&gt; &amp;vector_b, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1, 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a>, <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;metric_or_inverse_metric, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; &amp;metric_determinant) noexcept</td></tr>
+<tr class="memdesc:gacf423e552e0fbc1d6254d2a11b4ea6f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the cross product of a vector and a one form.  <a href="group__TensorGroup.html#gacf423e552e0fbc1d6254d2a11b4ea6f9">More...</a><br /></td></tr>
+<tr class="separator:gacf423e552e0fbc1d6254d2a11b4ea6f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Defines functions <code>cross_product</code> for flat and curved-space cross products. </p>
+</div></div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,393 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: grmhd::AnalyticData::BondiHoyleAccretion Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacegrmhd.html">grmhd</a></li><li class="navelem"><a class="el" href="namespacegrmhd_1_1AnalyticData.html">AnalyticData</a></li><li class="navelem"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion.html">BondiHoyleAccretion</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">grmhd::AnalyticData::BondiHoyleAccretion Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Analytic initial data for axially symmetric Bondi-Hoyle accretion.  
+ <a href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="BondiHoyleAccretion_8hpp_source.html">BondiHoyleAccretion.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1BhDimlessSpin.html">BhDimlessSpin</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The dimensionless black hole spin, \(a_* = a/M\).  <a href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1BhDimlessSpin.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1BhMass.html">BhMass</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The mass of the black hole, \(M\).  <a href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1BhMass.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1FlowSpeed.html">FlowSpeed</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The magnitude of the spatial velocity far from the black hole.  <a href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1FlowSpeed.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1MagFieldStrength.html">MagFieldStrength</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The strength of the magnetic field.  <a href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1MagFieldStrength.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1PolytropicConstant.html">PolytropicConstant</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The polytropic constant of the fluid.  <a href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1PolytropicConstant.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1PolytropicExponent.html">PolytropicExponent</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The polytropic exponent of the fluid.  <a href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1PolytropicExponent.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1RestMassDensity.html">RestMassDensity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The rest mass density of the fluid far from the black hole.  <a href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1RestMassDensity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a9013d78f50fd8ab2cda9fd7ea0034325"><td class="memItemLeft" align="right" valign="top"><a id="a9013d78f50fd8ab2cda9fd7ea0034325"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state_type</b> = <a class="el" href="classEquationsOfState_1_1PolytropicFluid.html">EquationsOfState::PolytropicFluid</a>&lt; true &gt;</td></tr>
+<tr class="separator:a9013d78f50fd8ab2cda9fd7ea0034325"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97ffb8d901bc1f7bf62fce34b3dcfc95"><td class="memItemLeft" align="right" valign="top"><a id="a97ffb8d901bc1f7bf62fce34b3dcfc95"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1BhMass.html">BhMass</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1BhDimlessSpin.html">BhDimlessSpin</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1RestMassDensity.html">RestMassDensity</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1FlowSpeed.html">FlowSpeed</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1MagFieldStrength.html">MagFieldStrength</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1PolytropicConstant.html">PolytropicConstant</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion_1_1PolytropicExponent.html">PolytropicExponent</a> &gt;</td></tr>
+<tr class="separator:a97ffb8d901bc1f7bf62fce34b3dcfc95"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_structgrmhd_1_1AnalyticDataBase"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structgrmhd_1_1AnalyticDataBase')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structgrmhd_1_1AnalyticDataBase.html">grmhd::AnalyticDataBase</a></td></tr>
+<tr class="memitem:aa92f95f25847f29278962e0f4b29f484 inherit pub_types_structgrmhd_1_1AnalyticDataBase"><td class="memTemplParams" colspan="2"><a id="aa92f95f25847f29278962e0f4b29f484"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:aa92f95f25847f29278962e0f4b29f484 inherit pub_types_structgrmhd_1_1AnalyticDataBase"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>tags</b> = tmpl::push_back&lt; typename <a class="el" href="structgr_1_1AnalyticSolution.html">gr::AnalyticSolution</a>&lt; 3 &gt;::template tags&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1RestMassDensity.html">hydro::Tags::RestMassDensity</a>&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1SpecificInternalEnergy.html">hydro::Tags::SpecificInternalEnergy</a>&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1Pressure.html">hydro::Tags::Pressure</a>&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; DataType, 3 &gt;, <a class="el" href="structhydro_1_1Tags_1_1MagneticField.html">hydro::Tags::MagneticField</a>&lt; DataType, 3 &gt;, <a class="el" href="structhydro_1_1Tags_1_1DivergenceCleaningField.html">hydro::Tags::DivergenceCleaningField</a>&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1SpecificEnthalpy.html">hydro::Tags::SpecificEnthalpy</a>&lt; DataType &gt; &gt;</td></tr>
+<tr class="separator:aa92f95f25847f29278962e0f4b29f484 inherit pub_types_structgrmhd_1_1AnalyticDataBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:aa9536df87f99f5ed0aabae6c5992959c"><td class="memItemLeft" align="right" valign="top"><a id="aa9536df87f99f5ed0aabae6c5992959c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BondiHoyleAccretion</b> (const <a class="el" href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion.html">BondiHoyleAccretion</a> &amp;)=delete</td></tr>
+<tr class="separator:aa9536df87f99f5ed0aabae6c5992959c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a90a0033845b363e0b67f934700f32f"><td class="memItemLeft" align="right" valign="top"><a id="a3a90a0033845b363e0b67f934700f32f"></a>
+<a class="el" href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion.html">BondiHoyleAccretion</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion.html">BondiHoyleAccretion</a> &amp;)=delete</td></tr>
+<tr class="separator:a3a90a0033845b363e0b67f934700f32f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67b97b51d4b69f190d569383df1d96e3"><td class="memItemLeft" align="right" valign="top"><a id="a67b97b51d4b69f190d569383df1d96e3"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BondiHoyleAccretion</b> (<a class="el" href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion.html">BondiHoyleAccretion</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a67b97b51d4b69f190d569383df1d96e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc2b2b00d79d5d17bfc16bcae762eca6"><td class="memItemLeft" align="right" valign="top"><a id="adc2b2b00d79d5d17bfc16bcae762eca6"></a>
+<a class="el" href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion.html">BondiHoyleAccretion</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion.html">BondiHoyleAccretion</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:adc2b2b00d79d5d17bfc16bcae762eca6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abeb81b05a006befc07d01ae3a5674851"><td class="memItemLeft" align="right" valign="top"><a id="abeb81b05a006befc07d01ae3a5674851"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BondiHoyleAccretion</b> (double bh_mass, double bh_dimless_spin, double rest_mass_density, double flow_speed, double magnetic_field_strength, double polytropic_constant, double polytropic_exponent) noexcept</td></tr>
+<tr class="separator:abeb81b05a006befc07d01ae3a5674851"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a048414d0006348d79356885f8fbda08a"><td class="memTemplParams" colspan="2"><a id="a048414d0006348d79356885f8fbda08a"></a>
+template&lt;typename DataType , typename... Tags&gt; </td></tr>
+<tr class="memitem:a048414d0006348d79356885f8fbda08a"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion.html#a048414d0006348d79356885f8fbda08a">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:a048414d0006348d79356885f8fbda08a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a collection of hydro variables at <code>x</code> <br /></td></tr>
+<tr class="separator:a048414d0006348d79356885f8fbda08a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f0f25dd72b9daea1b9e2f12ac201a21"><td class="memTemplParams" colspan="2"><a id="a5f0f25dd72b9daea1b9e2f12ac201a21"></a>
+template&lt;typename DataType , typename Tag , Requires&lt; not tmpl::list_contains_v&lt; hydro::grmhd_tags&lt; DataType &gt;, Tag &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a5f0f25dd72b9daea1b9e2f12ac201a21"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tag &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion.html#a5f0f25dd72b9daea1b9e2f12ac201a21">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; Tag &gt;) const noexcept</td></tr>
+<tr class="memdesc:a5f0f25dd72b9daea1b9e2f12ac201a21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the metric variables at <code>x</code> <br /></td></tr>
+<tr class="separator:a5f0f25dd72b9daea1b9e2f12ac201a21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a184abc78a3defbc69ffd9f47f52cafd1"><td class="memItemLeft" align="right" valign="top"><a id="a184abc78a3defbc69ffd9f47f52cafd1"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;) noexcept</td></tr>
+<tr class="separator:a184abc78a3defbc69ffd9f47f52cafd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7337b786f7fb90ad044bc84f48d6259f"><td class="memItemLeft" align="right" valign="top"><a id="a7337b786f7fb90ad044bc84f48d6259f"></a>
+const <a class="el" href="classEquationsOfState_1_1PolytropicFluid.html">EquationsOfState::PolytropicFluid</a>&lt; true &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state</b> () const noexcept</td></tr>
+<tr class="separator:a7337b786f7fb90ad044bc84f48d6259f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:aafcebd177d69624dec51211fbc2a7d9d"><td class="memTemplParams" colspan="2"><a id="aafcebd177d69624dec51211fbc2a7d9d"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:aafcebd177d69624dec51211fbc2a7d9d"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion.html#aafcebd177d69624dec51211fbc2a7d9d">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1RestMassDensity.html">hydro::Tags::RestMassDensity</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1RestMassDensity.html">hydro::Tags::RestMassDensity</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:aafcebd177d69624dec51211fbc2a7d9d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve hydro variable at <code>x</code> <br /></td></tr>
+<tr class="separator:aafcebd177d69624dec51211fbc2a7d9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab001cb702d69c46890943ac5518c7d19"><td class="memTemplParams" colspan="2"><a id="ab001cb702d69c46890943ac5518c7d19"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:ab001cb702d69c46890943ac5518c7d19"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion.html#ab001cb702d69c46890943ac5518c7d19">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificInternalEnergy.html">hydro::Tags::SpecificInternalEnergy</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificInternalEnergy.html">hydro::Tags::SpecificInternalEnergy</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:ab001cb702d69c46890943ac5518c7d19"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve hydro variable at <code>x</code> <br /></td></tr>
+<tr class="separator:ab001cb702d69c46890943ac5518c7d19"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4fb9c5bf0d8c098d27fea92ccd658410"><td class="memTemplParams" colspan="2"><a id="a4fb9c5bf0d8c098d27fea92ccd658410"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a4fb9c5bf0d8c098d27fea92ccd658410"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion.html#a4fb9c5bf0d8c098d27fea92ccd658410">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1Pressure.html">hydro::Tags::Pressure</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1Pressure.html">hydro::Tags::Pressure</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:a4fb9c5bf0d8c098d27fea92ccd658410"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve hydro variable at <code>x</code> <br /></td></tr>
+<tr class="separator:a4fb9c5bf0d8c098d27fea92ccd658410"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a4d3f49bb8a133f930f1526dbb171c4"><td class="memTemplParams" colspan="2"><a id="a5a4d3f49bb8a133f930f1526dbb171c4"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a5a4d3f49bb8a133f930f1526dbb171c4"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion.html#a5a4d3f49bb8a133f930f1526dbb171c4">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; DataType, 3 &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; DataType, 3 &gt;&gt;</td></tr>
+<tr class="memdesc:a5a4d3f49bb8a133f930f1526dbb171c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve hydro variable at <code>x</code> <br /></td></tr>
+<tr class="separator:a5a4d3f49bb8a133f930f1526dbb171c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a06879c227e80df7fa144bdb1936da250"><td class="memTemplParams" colspan="2"><a id="a06879c227e80df7fa144bdb1936da250"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a06879c227e80df7fa144bdb1936da250"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion.html#a06879c227e80df7fa144bdb1936da250">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1MagneticField.html">hydro::Tags::MagneticField</a>&lt; DataType, 3 &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1MagneticField.html">hydro::Tags::MagneticField</a>&lt; DataType, 3 &gt;&gt;</td></tr>
+<tr class="memdesc:a06879c227e80df7fa144bdb1936da250"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve hydro variable at <code>x</code> <br /></td></tr>
+<tr class="separator:a06879c227e80df7fa144bdb1936da250"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b41cba4e69be85b2ae56af88f8099e1"><td class="memTemplParams" colspan="2"><a id="a5b41cba4e69be85b2ae56af88f8099e1"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a5b41cba4e69be85b2ae56af88f8099e1"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion.html#a5b41cba4e69be85b2ae56af88f8099e1">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1DivergenceCleaningField.html">hydro::Tags::DivergenceCleaningField</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1DivergenceCleaningField.html">hydro::Tags::DivergenceCleaningField</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:a5b41cba4e69be85b2ae56af88f8099e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve hydro variable at <code>x</code> <br /></td></tr>
+<tr class="separator:a5b41cba4e69be85b2ae56af88f8099e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9322cf499ecfae56b81776970f2c94fa"><td class="memTemplParams" colspan="2"><a id="a9322cf499ecfae56b81776970f2c94fa"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a9322cf499ecfae56b81776970f2c94fa"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion.html#a9322cf499ecfae56b81776970f2c94fa">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:a9322cf499ecfae56b81776970f2c94fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve hydro variable at <code>x</code> <br /></td></tr>
+<tr class="separator:a9322cf499ecfae56b81776970f2c94fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa4ef91d4a87d704ac1edc69a7ab6bcba"><td class="memTemplParams" colspan="2"><a id="aa4ef91d4a87d704ac1edc69a7ab6bcba"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:aa4ef91d4a87d704ac1edc69a7ab6bcba"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion.html#aa4ef91d4a87d704ac1edc69a7ab6bcba">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificEnthalpy.html">hydro::Tags::SpecificEnthalpy</a>&lt; DataType &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificEnthalpy.html">hydro::Tags::SpecificEnthalpy</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="memdesc:aa4ef91d4a87d704ac1edc69a7ab6bcba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve hydro variable at <code>x</code> <br /></td></tr>
+<tr class="separator:aa4ef91d4a87d704ac1edc69a7ab6bcba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a95c5b1cd9ccf5d3bf2ae0e13061eae01"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a95c5b1cd9ccf5d3bf2ae0e13061eae01"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_static_attribs_structgrmhd_1_1AnalyticDataBase"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_structgrmhd_1_1AnalyticDataBase')"><img src="closed.png" alt="-"/>&#160;Static Public Attributes inherited from <a class="el" href="structgrmhd_1_1AnalyticDataBase.html">grmhd::AnalyticDataBase</a></td></tr>
+<tr class="memitem:a9e0369b4cf539fead1ffa3618ff3f86f inherit pub_static_attribs_structgrmhd_1_1AnalyticDataBase"><td class="memItemLeft" align="right" valign="top"><a id="a9e0369b4cf539fead1ffa3618ff3f86f"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = 3_st</td></tr>
+<tr class="separator:a9e0369b4cf539fead1ffa3618ff3f86f inherit pub_static_attribs_structgrmhd_1_1AnalyticDataBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:aa7c81c06487301056452edca4680d682"><td class="memItemLeft" align="right" valign="top"><a id="aa7c81c06487301056452edca4680d682"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion.html">BondiHoyleAccretion</a> &amp;lhs, const <a class="el" href="classgrmhd_1_1AnalyticData_1_1BondiHoyleAccretion.html">BondiHoyleAccretion</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:aa7c81c06487301056452edca4680d682"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Analytic initial data for axially symmetric Bondi-Hoyle accretion. </p>
+<p>In the context of studying Bondi-Hoyle accretion, i.e. non-spherical accretion on to a Kerr black hole moving relative to a gas cloud, this class implements the method proposed by <a class="el" href="citelist.html#CITEREF_Font1998">[42]</a> to initialize the GRMHD variables. The fluid quantities are initialized with their (constant) values far from the black hole, e.g. \(\rho = \rho_\infty\). Here we assume a polytropic equation of state, so only the rest mass density, as well as the polytropic constant and the polytropic exponent, are provided as inputs. The spatial velocity is initialized using a field that ensures that the injected gas reproduces a continuous parallel wind at large distances. The direction of this flow is chosen to be along the black hole spin. In Kerr (or "spherical Kerr-Schild", see <a class="el" href="classgr_1_1KerrSchildCoords.html" title="Contains helper functions for transforming tensors in Kerr spacetime to Kerr-Schild coordinates.">gr::KerrSchildCoords</a>) coordinates,</p>
+<p class="formulaDsp">
+\begin{align*} v^r &amp;= \frac{1}{\sqrt{\gamma_{rr}}}v_\infty \cos\theta\\ v^\theta &amp;= -\frac{1}{\sqrt{\gamma_{\theta\theta}}}v_\infty \sin\theta\\ v^\phi &amp;= 0. \end{align*}
+</p>
+<p>where \(\gamma_{ij} = g_{ij}\) is the spatial metric, and \(v_\infty\) is the flow speed far from the black hole. Note that \(v_\infty^2 = v_i v^i\). Finally, following the work by <a class="el" href="citelist.html#CITEREF_Penner2011">[84]</a>, the magnetic field is initialized using Wald's solution to Maxwell's equations in Kerr black hole spacetime. In Kerr ("spherical
+Kerr-Schild") coordinates, the spatial components of the Faraday tensor read</p>
+<p class="formulaDsp">
+\begin{align*} F_{r\theta} &amp;= a B_0 \left[1 + \frac{2Mr}{\Sigma^2}(r^2 - a^2)\right] \sin\theta\cos\theta\\ F_{\theta\phi} &amp;= B_0\left[\Delta + \frac{2Mr}{\Sigma^2}(r^4 - a^4)\right]\sin\theta\cos\theta\\ F_{\phi r} &amp;= - B_0\left[r + \frac{M a^2}{\Sigma^2} (r^2 - a^2\cos^2\theta)(1 + \cos^2\theta)\right]\sin^2\theta. \end{align*}
+</p>
+<p>where \(\Sigma = r^2 + a^2\cos^2\theta\) and \(\Delta = r^2 - 2Mr + a^2\). The associated Eulerian magnetic field is</p>
+<p class="formulaDsp">
+\begin{align*} B^r = \frac{F_{\theta\phi}}{\sqrt\gamma},\quad B^\theta = \frac{F_{\phi r}}{\sqrt\gamma},\quad B^\phi = \frac{F_{r\theta}}{\sqrt\gamma}. \end{align*}
+</p>
+<p>where \(\gamma = \text{det}(\gamma_{ij})\). Wald's solution reproduces a uniform magnetic field far from the black hole. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a95c5b1cd9ccf5d3bf2ae0e13061eae01"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a95c5b1cd9ccf5d3bf2ae0e13061eae01">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> grmhd::AnalyticData::BondiHoyleAccretion::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Axially symmetric accretion on to a Kerr black hole.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticData/GrMhd/<a class="el" href="BondiHoyleAccretion_8hpp_source.html">BondiHoyleAccretion.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

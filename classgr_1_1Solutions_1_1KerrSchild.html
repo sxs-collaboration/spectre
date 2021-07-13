@@ -1,0 +1,398 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: gr::Solutions::KerrSchild Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacegr.html">gr</a></li><li class="navelem"><a class="el" href="namespacegr_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">KerrSchild</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classgr_1_1Solutions_1_1KerrSchild-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">gr::Solutions::KerrSchild Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Kerr black hole in Kerr-Schild coordinates.  
+ <a href="classgr_1_1Solutions_1_1KerrSchild.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="KerrSchild_8hpp_source.html">KerrSchild.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgr_1_1Solutions_1_1KerrSchild_1_1Center.html">Center</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgr_1_1Solutions_1_1KerrSchild_1_1IntermediateComputer.html">IntermediateComputer</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgr_1_1Solutions_1_1KerrSchild_1_1IntermediateVars.html">IntermediateVars</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgr_1_1Solutions_1_1KerrSchild_1_1internal__tags.html">internal_tags</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgr_1_1Solutions_1_1KerrSchild_1_1Mass.html">Mass</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgr_1_1Solutions_1_1KerrSchild_1_1Spin.html">Spin</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a39d4488889a588a1be2ce8f73202f9ce"><td class="memItemLeft" align="right" valign="top"><a id="a39d4488889a588a1be2ce8f73202f9ce"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structgr_1_1Solutions_1_1KerrSchild_1_1Mass.html">Mass</a>, <a class="el" href="structgr_1_1Solutions_1_1KerrSchild_1_1Spin.html">Spin</a>, <a class="el" href="structgr_1_1Solutions_1_1KerrSchild_1_1Center.html">Center</a> &gt;</td></tr>
+<tr class="separator:a39d4488889a588a1be2ce8f73202f9ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88e0b6e468fb93726e993b2f372c2ff4"><td class="memTemplParams" colspan="2"><a id="a88e0b6e468fb93726e993b2f372c2ff4"></a>
+template&lt;typename DataType , typename Frame  = ::Frame::Inertial&gt; </td></tr>
+<tr class="memitem:a88e0b6e468fb93726e993b2f372c2ff4"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>CachedBuffer</b> = <a class="el" href="classCachedTempBuffer.html">CachedTempBuffer</a>&lt; <a class="el" href="classgr_1_1Solutions_1_1KerrSchild_1_1IntermediateComputer.html">IntermediateComputer</a>&lt; DataType, Frame &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::x_minus_center</a>&lt; DataType, Frame &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::a_dot_x</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::a_dot_x_squared</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::half_xsq_minus_asq</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::r_squared</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::r</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::a_dot_x_over_rsquared</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_log_r_denom</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_log_r</a>&lt; DataType, Frame &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::H_denom</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::H</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_H_temp1</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_H_temp2</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_H</a>&lt; DataType, Frame &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::denom</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::a_dot_x_over_r</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::null_form</a>&lt; DataType, Frame &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_null_form</a>&lt; DataType, Frame &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::lapse_squared</a>&lt; DataType &gt;, <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_lapse_multiplier</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::shift_multiplier</a>&lt; DataType &gt;, <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, Frame, DataType &gt;, <a class="el" href="structTags_1_1deriv.html">DerivShift</a>&lt; DataType, Frame &gt;, <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, Frame, DataType &gt;, <a class="el" href="structTags_1_1deriv.html">DerivSpatialMetric</a>&lt; DataType, Frame &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, Frame, DataType &gt; &gt;&gt;</td></tr>
+<tr class="separator:a88e0b6e468fb93726e993b2f372c2ff4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_structgr_1_1AnalyticSolution"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structgr_1_1AnalyticSolution')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structgr_1_1AnalyticSolution.html">gr::AnalyticSolution&lt; 3_st &gt;</a></td></tr>
+<tr class="memitem:a01ebfa926cdac437de642a3d71291079 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="a01ebfa926cdac437de642a3d71291079"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>DerivLapse</b> = ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; DataType &gt;, tmpl::size_t&lt; volume_dim &gt;, Frame &gt;</td></tr>
+<tr class="separator:a01ebfa926cdac437de642a3d71291079 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f751afb8f2bbf566d6e94064a272c98 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="a5f751afb8f2bbf566d6e94064a272c98"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>DerivShift</b> = ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; volume_dim, Frame, DataType &gt;, tmpl::size_t&lt; volume_dim &gt;, Frame &gt;</td></tr>
+<tr class="separator:a5f751afb8f2bbf566d6e94064a272c98 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a134c9ecf2c5a4bc3f18fa10b1adcaaab inherit pub_types_structgr_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="a134c9ecf2c5a4bc3f18fa10b1adcaaab"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>DerivSpatialMetric</b> = ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; volume_dim, Frame, DataType &gt;, tmpl::size_t&lt; volume_dim &gt;, Frame &gt;</td></tr>
+<tr class="separator:a134c9ecf2c5a4bc3f18fa10b1adcaaab inherit pub_types_structgr_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b907b96b69eebd67298c9da7a913388 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="a4b907b96b69eebd67298c9da7a913388"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>tags</b> = tmpl::list&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; DataType &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; DataType &gt; &gt;, <a class="el" href="structTags_1_1deriv.html">DerivLapse</a>&lt; DataType, Frame &gt;, <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; volume_dim, Frame, DataType &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; volume_dim, Frame, DataType &gt; &gt;, <a class="el" href="structTags_1_1deriv.html">DerivShift</a>&lt; DataType, Frame &gt;, <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; volume_dim, Frame, DataType &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; volume_dim, Frame, DataType &gt; &gt;, <a class="el" href="structTags_1_1deriv.html">DerivSpatialMetric</a>&lt; DataType, Frame &gt;, <a class="el" href="structgr_1_1Tags_1_1SqrtDetSpatialMetric.html">gr::Tags::SqrtDetSpatialMetric</a>&lt; DataType &gt;, <a class="el" href="structgr_1_1Tags_1_1ExtrinsicCurvature.html">gr::Tags::ExtrinsicCurvature</a>&lt; volume_dim, Frame, DataType &gt;, <a class="el" href="structgr_1_1Tags_1_1InverseSpatialMetric.html">gr::Tags::InverseSpatialMetric</a>&lt; volume_dim, Frame, DataType &gt; &gt;</td></tr>
+<tr class="separator:a4b907b96b69eebd67298c9da7a913388 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:afe280d0de83631b490f05c0afbf1e4cd"><td class="memItemLeft" align="right" valign="top"><a id="afe280d0de83631b490f05c0afbf1e4cd"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>KerrSchild</b> (double mass, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">Spin::type</a> dimensionless_spin, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">Center::type</a> center, const <a class="el" href="structOptions_1_1Context.html">Options::Context</a> &amp;context={})</td></tr>
+<tr class="separator:afe280d0de83631b490f05c0afbf1e4cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c039f2addc64e2d28217ccb74512a95"><td class="memItemLeft" align="right" valign="top"><a id="a8c039f2addc64e2d28217ccb74512a95"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>KerrSchild</b> (CkMigrateMessage *) noexcept</td></tr>
+<tr class="separator:a8c039f2addc64e2d28217ccb74512a95"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59c045e410112106b1188542b51ac84e"><td class="memItemLeft" align="right" valign="top"><a id="a59c045e410112106b1188542b51ac84e"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>KerrSchild</b> (const <a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">KerrSchild</a> &amp;)=default</td></tr>
+<tr class="separator:a59c045e410112106b1188542b51ac84e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9cbbe772982b49885e5b6f875cf470a0"><td class="memItemLeft" align="right" valign="top"><a id="a9cbbe772982b49885e5b6f875cf470a0"></a>
+<a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">KerrSchild</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">KerrSchild</a> &amp;)=default</td></tr>
+<tr class="separator:a9cbbe772982b49885e5b6f875cf470a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1deefb4103d9e707056b4c06ab246841"><td class="memItemLeft" align="right" valign="top"><a id="a1deefb4103d9e707056b4c06ab246841"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>KerrSchild</b> (<a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">KerrSchild</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a1deefb4103d9e707056b4c06ab246841"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6684ead4e2eeda90cf8c8ca94a7583e4"><td class="memItemLeft" align="right" valign="top"><a id="a6684ead4e2eeda90cf8c8ca94a7583e4"></a>
+<a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">KerrSchild</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">KerrSchild</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a6684ead4e2eeda90cf8c8ca94a7583e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeecd94556fd093f81b2d445ce0faeee9"><td class="memTemplParams" colspan="2"><a id="aeecd94556fd093f81b2d445ce0faeee9"></a>
+template&lt;typename DataType , typename Frame , typename... Tags&gt; </td></tr>
+<tr class="memitem:aeecd94556fd093f81b2d445ce0faeee9"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, volume_dim, Frame &gt; &amp;x, double, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="separator:aeecd94556fd093f81b2d445ce0faeee9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ba97ba71e3467218af3a4a6f8747d7f"><td class="memItemLeft" align="right" valign="top"><a id="a9ba97ba71e3467218af3a4a6f8747d7f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a9ba97ba71e3467218af3a4a6f8747d7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b1c25140700b513ef1ce3d02c81f1db"><td class="memItemLeft" align="right" valign="top"><a id="a8b1c25140700b513ef1ce3d02c81f1db"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>mass</b> () const noexcept</td></tr>
+<tr class="separator:a8b1c25140700b513ef1ce3d02c81f1db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac0b9a424b6cc0f11900a4f88ad6e3091"><td class="memItemLeft" align="right" valign="top"><a id="ac0b9a424b6cc0f11900a4f88ad6e3091"></a>
+const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, volume_dim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>center</b> () const noexcept</td></tr>
+<tr class="separator:ac0b9a424b6cc0f11900a4f88ad6e3091"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a609a30d421c3867217bd3046926e43c6"><td class="memItemLeft" align="right" valign="top"><a id="a609a30d421c3867217bd3046926e43c6"></a>
+const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, volume_dim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>dimensionless_spin</b> () const noexcept</td></tr>
+<tr class="separator:a609a30d421c3867217bd3046926e43c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:abc0a9ec85caebfc4d9bb8d7b3fdb213c"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:abc0a9ec85caebfc4d9bb8d7b3fdb213c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_static_attribs_structgr_1_1AnalyticSolution"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_structgr_1_1AnalyticSolution')"><img src="closed.png" alt="-"/>&#160;Static Public Attributes inherited from <a class="el" href="structgr_1_1AnalyticSolution.html">gr::AnalyticSolution&lt; 3_st &gt;</a></td></tr>
+<tr class="memitem:ae5b357444661e278b8bbad8c96b6b666 inherit pub_static_attribs_structgr_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="ae5b357444661e278b8bbad8c96b6b666"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b></td></tr>
+<tr class="separator:ae5b357444661e278b8bbad8c96b6b666 inherit pub_static_attribs_structgr_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Kerr black hole in Kerr-Schild coordinates. </p>
+<h3>Details</h3>
+<p>The metric is \(g_{\mu\nu} = \eta_{\mu\nu} + 2 H l_\mu l_\nu\), where \(\eta_{\mu\nu}\) is the <a class="el" href="classgr_1_1Solutions_1_1Minkowski.html" title="The Minkowski solution for flat space in Dim spatial dimensions.">Minkowski</a> metric, \(H\) is a scalar function, and \(l_\mu\) is the outgoing null vector. \(H\) and \(l_\mu\) are known functions of the coordinates and of the mass and spin vector.</p>
+<p>The following are input file options that can be specified:</p><ul>
+<li><a class="el" href="structgr_1_1Solutions_1_1KerrSchild_1_1Mass.html">Mass</a> (default: 1.)</li>
+<li><a class="el" href="structgr_1_1Solutions_1_1KerrSchild_1_1Center.html">Center</a> (default: {0,0,0})</li>
+<li><a class="el" href="structgr_1_1Solutions_1_1KerrSchild_1_1Spin.html">Spin</a> (default: {0,0,0})</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md114"></a>
+Kerr-Schild Coordinates</h2>
+<p>A Kerr-Schild coordinate system is defined by </p><p class="formulaDsp">
+\begin{equation} g_{\mu\nu} \equiv \eta_{\mu\nu} + 2 H l_\mu l_\nu, \end{equation}
+</p>
+<p> where \(H\) is a scalar function of the coordinates, \(\eta_{\mu\nu}\) is the <a class="el" href="classgr_1_1Solutions_1_1Minkowski.html" title="The Minkowski solution for flat space in Dim spatial dimensions.">Minkowski</a> metric, and \(l^\mu\) is a null vector. Note that the form of the metric along with the nullness of \(l^\mu\) allows one to raise and lower indices of \(l^\mu\) using \(\eta_{\mu\nu}\), and that \(l^t l^t = l_t l_t = l^i l_i\). Note also that </p><p class="formulaDsp">
+\begin{equation} g^{\mu\nu} \equiv \eta^{\mu\nu} - 2 H l^\mu l^\nu, \end{equation}
+</p>
+<p> and that \(\sqrt{-g}=1\). Also, \(l_\mu\) is a geodesic with respect to both the physical metric and the <a class="el" href="classgr_1_1Solutions_1_1Minkowski.html" title="The Minkowski solution for flat space in Dim spatial dimensions.">Minkowski</a> metric: </p><p class="formulaDsp">
+\begin{equation} l^\mu \partial_\mu l_\nu = l^\mu\nabla_\mu l_\nu = 0. \end{equation}
+</p>
+<p>The corresponding 3+1 quantities are </p><p class="formulaDsp">
+\begin{eqnarray} g_{i j} &amp;=&amp; \delta_{i j} + 2 H l_i l_j,\\ g^{i j} &amp;=&amp; \delta^{i j} - {2 H l^i l^j \over 1+2H l^t l^t},\\ {\rm det} g_{i j}&amp;=&amp; 1+2H l^t l^t,\\ \beta^i &amp;=&amp; - {2 H l^t l^i \over 1+2H l^t l^t},\\ N &amp;=&amp; \left(1+2 H l^t l^t\right)^{-1/2},\quad\hbox{(lapse)}\\ \alpha &amp;=&amp; \left(1+2 H l^t l^t\right)^{-1}, \quad\hbox{(densitized lapse)}\\ K_{i j} &amp;=&amp; - \left(1+2 H l^t l^t\right)^{1/2} \left[l_i l_j \partial_{t} H + 2 H l_{(i} \partial_{t} l_{j)}\right] \nonumber \\ &amp;&amp;-2\left(1+2 H l^t l^t\right)^{-1/2} \left[H l^t \partial_{(i}l_{j)} + H l_{(i}\partial_{j)}l^t + l^t l_{(i}\partial_{j)} H + 2H^2 l^t l_{(i} l^k\partial_{k}l_{j)} + H l^t l_i l_j l^k \partial_{k} H\right],\\ \partial_{k}g_{i j}&amp;=&amp; 2 l_i l_j\partial_{k} H + 4 H l_{(i} \partial_{k}l_{j)},\\ \partial_{k}N &amp;=&amp; -\left(1+2 H l^t l^t\right)^{-3/2} \left(l^tl^t\partial_{k}H+2Hl^t\partial_{k}l^t\right),\\ \partial_{k}\beta^i &amp;=&amp; - 2\left(1+2H l^t l^t\right)^{-1} \left(l^tl^i\partial_{k}H+Hl^t\partial_{k}l^i+Hl^i\partial_{k}l^t\right) + 4 H l^t l^i \left(1+2H l^t l^t\right)^{-2} \left(l^tl^t\partial_{k}H+2Hl^t\partial_{k}l^t\right),\\ \Gamma^k{}_{i j}&amp;=&amp; -\delta^{k m}\left(l_i l_j \partial_{m}H + 2l_{(i} \partial_{m}l_{j)} \right) + 2 H l_{(i}\partial_{j)} l^k \nonumber \\ &amp;&amp;+\left(1+2 H l^t l^t\right)^{-1} \left[2 l^k l_{(i}\partial_{j)} H +2 H l_i l_j l^k l^m \partial_{m}H +2 H l^k \partial_{(i}l_{j)} +4 H^2 l^k l_{(i} (l^m \partial_{m}l_{j)} -\partial_{j)} l^t) \right]. \end{eqnarray}
+</p>
+<p> Note that \(l^i\) is <b>not</b> equal to \(g^{i j} l_j\); it is equal to \({}^{(4)}g^{i \mu} l_\mu\).</p>
+<h2><a class="anchor" id="autotoc_md115"></a>
+Kerr Spacetime</h2>
+<h3><a class="anchor" id="autotoc_md116"></a>
+Spin in the z direction</h3>
+<p>Assume Cartesian coordinates \((t,x,y,z)\). Then for stationary Kerr spacetime with mass \(M\) and angular momentum \(a M\) in the \(z\) direction, </p><p class="formulaDsp">
+\begin{eqnarray} H &amp;=&amp; {M r^3 \over r^4 + a^2 z^2},\\ l_\mu &amp;=&amp; \left(1,{rx+ay\over r^2+a^2},{ry-ax\over r^2+a^2},{z\over r}\right), \end{eqnarray}
+</p>
+<p> where \(r\) is defined by </p><p class="formulaDsp">
+\begin{equation} \label{eq:rdefinition1} {x^2+y^2\over a^2+r^2} + {z^2\over r^2} = 1, \end{equation}
+</p>
+<p> or equivalently, </p><p class="formulaDsp">
+\begin{equation} r^2 = {1\over 2}(x^2 + y^2 + z^2 - a^2) + \left({1\over 4}(x^2 + y^2 + z^2 - a^2)^2 + a^2 z^2\right)^{1/2}. \end{equation}
+</p>
+<p>Possibly useful formula: </p><p class="formulaDsp">
+\begin{equation} \partial_{i} r = {x_i + z \delta_{i z} \displaystyle {a^2\over r^2} \over 2 r\left(1 - \displaystyle {x^2 + y^2 + z^2 - a^2\over 2 r^2}\right)}. \end{equation}
+</p>
+<h3><a class="anchor" id="autotoc_md117"></a>
+Spin in an arbitrary direction</h3>
+<p>For arbitrary spin direction, let \(\vec{x}\equiv (x,y,z)\) and \(\vec{a}\) be a flat-space three-vector with magnitude-squared ( \(\delta_{ij}\) norm) equal to \(a^2\). Then the Kerr-Schild quantities for Kerr spacetime are: </p><p class="formulaDsp">
+\begin{eqnarray} H &amp;=&amp; {M r^3 \over r^4 + (\vec{a}\cdot\vec{x})^2},\\ \vec{l} &amp;=&amp; {r\vec{x}-\vec{a}\times\vec{x}+(\vec{a}\cdot\vec{x})\vec{a}/r \over r^2+a^2 },\\ l_t &amp;=&amp; 1,\\ \label{eq:rdefinition2} r^2 &amp;=&amp; {1\over 2}(\vec{x}\cdot\vec{x}-a^2) + \left({1\over 4}(\vec{x}\cdot\vec{x}-a^2)^2 + (\vec{a}\cdot\vec{x})^2\right)^{1/2}, \end{eqnarray}
+</p>
+<p> where \(\vec{l}\equiv (l_x,l_y,l_z)\), and all dot and cross products are evaluated as flat-space 3-vector operations.</p>
+<p>Possibly useful formulae: </p><p class="formulaDsp">
+\begin{equation} \partial_{i} r = {x_i + (\vec{a}\cdot\vec{x})a_i/r^2 \over 2 r\left(1 - \displaystyle {\vec{x}\cdot\vec{x}-a^2\over 2 r^2}\right)}, \end{equation}
+</p>
+ <p class="formulaDsp">
+\begin{equation} {\partial_{i} H \over H} = {3\partial_{i}r\over r} - {4 r^3 \partial_{i}r + 2(\vec{a}\cdot\vec{x})\vec{a} \over r^4 + (\vec{a}\cdot\vec{x})^2}, \end{equation}
+</p>
+ <p class="formulaDsp">
+\begin{equation} (r^2+a^2)\partial_{j} l_i = (x_i-2 r l_i-(\vec{a}\cdot\vec{x})a_i/r^2)\partial_{j}r + r\delta_{ij} + a_i a_j/r + \epsilon^{ijk} a_k. \end{equation}
+</p>
+<h2><a class="anchor" id="autotoc_md118"></a>
+Cartesian and Spherical Coordinates for Kerr</h2>
+<p>The Kerr-Schild coordinates are defined in terms of the Cartesian coordinates \((x,y,z)\). If one wishes to express Kerr-Schild coordinates in terms of the spherical polar coordinates \((\tilde{r},\theta,\phi)\) then one can make the obvious and usual transformation </p><p class="formulaDsp">
+\begin{equation} \label{eq:sphertocartsimple} x=\tilde{r}\sin\theta\cos\phi,\quad y=\tilde{r}\sin\theta\sin\phi,\quad z=\tilde{r}\cos\theta. \end{equation}
+</p>
+<p>This is simple, and has the advantage that in this coordinate system for \(M\to0\), Kerr spacetime becomes <a class="el" href="classgr_1_1Solutions_1_1Minkowski.html" title="The Minkowski solution for flat space in Dim spatial dimensions.">Minkowski</a> space in spherical coordinates \((\tilde{r},\theta,\phi)\). However, the disadvantage is that the horizon of a Kerr hole is <b>not</b> located at constant \(\tilde{r}\), but is located instead at constant \(r\), where \(r\) is the radial Boyer-Lindquist coordinate defined in ( \(\ref{eq:rdefinition2}\)).</p>
+<p>For spin in the \(z\) direction, one could use the transformation </p><p class="formulaDsp">
+\begin{equation} x=\sqrt{r^2+a^2}\sin\theta\cos\phi,\quad y=\sqrt{r^2+a^2}\sin\theta\sin\phi,\quad z=r\cos\theta. \end{equation}
+</p>
+<p> In this case, for \(M\to0\), Kerr spacetime becomes <a class="el" href="classgr_1_1Solutions_1_1Minkowski.html" title="The Minkowski solution for flat space in Dim spatial dimensions.">Minkowski</a> space in spheroidal coordinates, but now the horizon is on a constant-coordinate surface.</p>
+<p>Right now we use ( \(\ref{eq:sphertocartsimple}\)), but we may wish to use the other transformation in the future. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="abc0a9ec85caebfc4d9bb8d7b3fdb213c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abc0a9ec85caebfc4d9bb8d7b3fdb213c">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> gr::Solutions::KerrSchild::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      <span class="stringliteral">&quot;Black hole in Kerr-Schild coordinates&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticSolutions/GeneralRelativity/<a class="el" href="KerrSchild_8hpp_source.html">KerrSchild.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

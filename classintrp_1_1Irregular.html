@@ -1,0 +1,329 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: intrp::Irregular&lt; Dim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceintrp.html">intrp</a></li><li class="navelem"><a class="el" href="classintrp_1_1Irregular.html">Irregular</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classintrp_1_1Irregular-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">intrp::Irregular&lt; Dim &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__NumericalAlgorithmsGroup.html">Numerical Algorithms</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><code>#include &lt;<a class="el" href="IrregularInterpolant_8hpp_source.html">IrregularInterpolant.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ad9adfa294312818f44c2ff72e69e8d50"><td class="memItemLeft" align="right" valign="top"><a id="ad9adfa294312818f44c2ff72e69e8d50"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Irregular</b> (const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;source_mesh, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt; &amp;target_points) noexcept</td></tr>
+<tr class="separator:ad9adfa294312818f44c2ff72e69e8d50"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6eac37a04281301d1f21e44a39b87182"><td class="memItemLeft" align="right" valign="top"><a id="a6eac37a04281301d1f21e44a39b87182"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classintrp_1_1Irregular.html#a6eac37a04281301d1f21e44a39b87182">pup</a> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="memdesc:a6eac37a04281301d1f21e44a39b87182"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialization for Charm++. <br /></td></tr>
+<tr class="separator:a6eac37a04281301d1f21e44a39b87182"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae92b24cf1b3cb80e5e6e749e741f6e99"><td class="memTemplParams" colspan="2"><a id="ae92b24cf1b3cb80e5e6e749e741f6e99"></a>
+template&lt;typename TagsList &gt; </td></tr>
+<tr class="memitem:ae92b24cf1b3cb80e5e6e749e741f6e99"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>interpolate</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; TagsList &gt; * &gt; result, const Variables&lt; TagsList &gt; &amp;vars) const noexcept</td></tr>
+<tr class="separator:ae92b24cf1b3cb80e5e6e749e741f6e99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a7997ec5997f6040b58694723c8db6220"><td class="memTemplParams" colspan="2">template&lt;typename TagsList &gt; </td></tr>
+<tr class="memitem:a7997ec5997f6040b58694723c8db6220"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classintrp_1_1Irregular.html#a7997ec5997f6040b58694723c8db6220">interpolate</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; TagsList &gt; * &gt; result, const Variables&lt; TagsList &gt; &amp;vars) const noexcept</td></tr>
+<tr class="memdesc:a7997ec5997f6040b58694723c8db6220"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs the interpolation on a <code>Variables</code> with grid points corresponding to the <code><a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a>&lt;Dim&gt;</code> specified in the constructor. The result is a <code>Variables</code> whose internal <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> goes over the list of target_points that were specified in the constructor.  <a href="classintrp_1_1Irregular.html#a7997ec5997f6040b58694723c8db6220">More...</a><br /></td></tr>
+<tr class="separator:a7997ec5997f6040b58694723c8db6220"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a210c3f30df9bc75a0dd7e80405ae6f25"><td class="memTemplParams" colspan="2">template&lt;typename TagsList &gt; </td></tr>
+<tr class="memitem:a210c3f30df9bc75a0dd7e80405ae6f25"><td class="memTemplItemLeft" align="right" valign="top">Variables&lt; TagsList &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classintrp_1_1Irregular.html#a210c3f30df9bc75a0dd7e80405ae6f25">interpolate</a> (const Variables&lt; TagsList &gt; &amp;vars) const noexcept</td></tr>
+<tr class="memdesc:a210c3f30df9bc75a0dd7e80405ae6f25"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs the interpolation on a <code>Variables</code> with grid points corresponding to the <code><a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a>&lt;Dim&gt;</code> specified in the constructor. The result is a <code>Variables</code> whose internal <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> goes over the list of target_points that were specified in the constructor.  <a href="classintrp_1_1Irregular.html#a210c3f30df9bc75a0dd7e80405ae6f25">More...</a><br /></td></tr>
+<tr class="separator:a210c3f30df9bc75a0dd7e80405ae6f25"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a1369cc17ffa803df26e667c2693be41b"><td class="memItemLeft" align="right" valign="top"><a id="a1369cc17ffa803df26e667c2693be41b"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classintrp_1_1Irregular.html">Irregular</a> &amp;lhs, const <a class="el" href="classintrp_1_1Irregular.html">Irregular</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a1369cc17ffa803df26e667c2693be41b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+class intrp::Irregular&lt; Dim &gt;</h3>
+
+<p>Interpolates a <code>Variables</code> onto an arbitrary set of points. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a210c3f30df9bc75a0dd7e80405ae6f25"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a210c3f30df9bc75a0dd7e80405ae6f25">&#9670;&nbsp;</a></span>interpolate() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<div class="memtemplate">
+template&lt;typename TagsList &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variables&lt; TagsList &gt; <a class="el" href="classintrp_1_1Irregular.html">intrp::Irregular</a>&lt; Dim &gt;::interpolate </td>
+          <td>(</td>
+          <td class="paramtype">const Variables&lt; TagsList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>vars</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Performs the interpolation on a <code>Variables</code> with grid points corresponding to the <code><a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a>&lt;Dim&gt;</code> specified in the constructor. The result is a <code>Variables</code> whose internal <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> goes over the list of target_points that were specified in the constructor. </p>
+<dl class="section note"><dt>Note</dt><dd>for the void function, <code>result</code> will be resized to the proper size. </dd></dl>
+
+</div>
+</div>
+<a id="a7997ec5997f6040b58694723c8db6220"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7997ec5997f6040b58694723c8db6220">&#9670;&nbsp;</a></span>interpolate() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<div class="memtemplate">
+template&lt;typename TagsList &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classintrp_1_1Irregular.html">intrp::Irregular</a>&lt; Dim &gt;::interpolate </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; TagsList &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>result</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variables&lt; TagsList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>vars</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Performs the interpolation on a <code>Variables</code> with grid points corresponding to the <code><a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a>&lt;Dim&gt;</code> specified in the constructor. The result is a <code>Variables</code> whose internal <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> goes over the list of target_points that were specified in the constructor. </p>
+<dl class="section note"><dt>Note</dt><dd>for the void function, <code>result</code> will be resized to the proper size. </dd></dl>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/NumericalAlgorithms/Interpolation/<a class="el" href="IrregularInterpolant_8hpp_source.html">IrregularInterpolant.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

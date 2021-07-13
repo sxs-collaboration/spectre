@@ -1,0 +1,274 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Tags::DerivCompute&lt; VariablesTag, InverseJacobianTag, DerivTags &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>Tags</b></li><li class="navelem"><a class="el" href="structTags_1_1DerivCompute.html">DerivCompute</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structTags_1_1DerivCompute-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Tags::DerivCompute&lt; VariablesTag, InverseJacobianTag, DerivTags &gt; Struct Template Reference<div class="ingroups"><a class="el" href="group__DataBoxTagsGroup.html">DataBox Tags</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Compute the spatial derivatives of tags in a <a class="el" href="structTags_1_1Variables.html">Variables</a>.  
+ <a href="structTags_1_1DerivCompute.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="PartialDerivatives_8hpp_source.html">PartialDerivatives.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a902f695d04740308942876518ce9ba8a"><td class="memItemLeft" align="right" valign="top"><a id="a902f695d04740308942876518ce9ba8a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>base</b> = <a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt; <a class="el" href="structTags_1_1deriv.html">deriv</a>, ::<a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt; DerivTags &gt;, tmpl::size_t&lt; tmpl::back&lt; typename InverseJacobianTag::type::index_list &gt;::dim &gt;, typename tmpl::back&lt; typename InverseJacobianTag::type::index_list &gt;::Frame &gt;</td></tr>
+<tr class="separator:a902f695d04740308942876518ce9ba8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f4c73c8a4c56a57102b460fb20c59c2"><td class="memItemLeft" align="right" valign="top"><a id="a1f4c73c8a4c56a57102b460fb20c59c2"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_type</b> = typename base::type</td></tr>
+<tr class="separator:a1f4c73c8a4c56a57102b460fb20c59c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3da8de7693050a3ac8f8f0357e42391f"><td class="memItemLeft" align="right" valign="top"><a id="a3da8de7693050a3ac8f8f0357e42391f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt; VariablesTag, <a class="el" href="structdomain_1_1Tags_1_1Mesh.html">domain::Tags::Mesh</a>&lt; Dim &gt;, InverseJacobianTag &gt;</td></tr>
+<tr class="separator:a3da8de7693050a3ac8f8f0357e42391f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:ad2cef33e5cd266936081eaa8f18d137e"><td class="memItemLeft" align="right" valign="top">static constexpr void(*&#160;</td><td class="memItemRight" valign="bottom"><b>function</b> )(<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; return_type * &gt;, const typename VariablesTag::type &amp;, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;, const InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, deriv_frame &gt; &amp;)</td></tr>
+<tr class="separator:ad2cef33e5cd266936081eaa8f18d137e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename VariablesTag, typename InverseJacobianTag, typename DerivTags = typename VariablesTag::type::tags_list&gt;<br />
+struct Tags::DerivCompute&lt; VariablesTag, InverseJacobianTag, DerivTags &gt;</h3>
+
+<p>Compute the spatial derivatives of tags in a <a class="el" href="structTags_1_1Variables.html">Variables</a>. </p>
+<p>Computes the spatial derivatives of the Tensors in the <a class="el" href="structTags_1_1Variables.html">Variables</a> represented by <code>VariablesTag</code> in the frame mapped to by <code>InverseJacobianTag</code>. To only take the derivatives of a subset of these Tensors you can set the <code>DerivTags</code> template parameter. It takes a <code>tmpl::list</code> of the desired tags and defaults to the full <code>tags_list</code> of the <a class="el" href="structTags_1_1Variables.html">Variables</a>.</p>
+<p>This tag may be retrieved via <code><a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt;<a class="el" href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e" title="Create a new tmpl::list of tags by wrapping each tag in TagList in Wrapper&lt;_, Args....">db::wrap_tags_in</a>&lt;deriv, DerivTags, Dim, deriv_frame&gt;</code>. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="ad2cef33e5cd266936081eaa8f18d137e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad2cef33e5cd266936081eaa8f18d137e">&#9670;&nbsp;</a></span>function</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename VariablesTag , typename InverseJacobianTag , typename DerivTags  = typename VariablesTag::type::tags_list&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr void(* <a class="el" href="structTags_1_1DerivCompute.html">Tags::DerivCompute</a>&lt; VariablesTag, InverseJacobianTag, DerivTags &gt;::function) (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; return_type * &gt;, const typename VariablesTag::type &amp;, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;, const InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, deriv_frame &gt; &amp;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      <a class="code" href="group__NumericalAlgorithmsGroup.html#ga3aba17e357844bc9470b7cc273e0ca84">partial_derivatives</a>&lt;DerivTags, <span class="keyword">typename</span> VariablesTag::type::tags_list,</div>
+<div class="line">                          Dim, deriv_frame&gt;</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/NumericalAlgorithms/LinearOperators/<a class="el" href="PartialDerivatives_8hpp_source.html">PartialDerivatives.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="agroup__NumericalAlgorithmsGroup_html_ga3aba17e357844bc9470b7cc273e0ca84"><div class="ttname"><a href="group__NumericalAlgorithmsGroup.html#ga3aba17e357844bc9470b7cc273e0ca84">partial_derivatives</a></div><div class="ttdeci">void partial_derivatives(gsl::not_null&lt; Variables&lt; db::wrap_tags_in&lt; Tags::deriv, DerivativeTags, tmpl::size_t&lt; Dim &gt;, DerivativeFrame &gt;&gt; * &gt; du, const std::array&lt; Variables&lt; DerivativeTags &gt;, Dim &gt; &amp;logical_partial_derivatives_of_u, const InverseJacobian&lt; DataVector, Dim, Frame::Logical, DerivativeFrame &gt; &amp;inverse_jacobian) noexcept</div><div class="ttdoc">Compute the partial derivatives of each variable with respect to the coordinates of DerivativeFrame.</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

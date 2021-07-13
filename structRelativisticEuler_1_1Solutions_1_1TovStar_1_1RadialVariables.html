@@ -1,0 +1,281 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: RelativisticEuler::Solutions::TovStar&lt; RadialSolution &gt;::RadialVariables&lt; DataType &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceRelativisticEuler.html">RelativisticEuler</a></li><li class="navelem"><a class="el" href="namespaceRelativisticEuler_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="classRelativisticEuler_1_1Solutions_1_1TovStar.html">TovStar</a></li><li class="navelem"><a class="el" href="structRelativisticEuler_1_1Solutions_1_1TovStar_1_1RadialVariables.html">RadialVariables</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="structRelativisticEuler_1_1Solutions_1_1TovStar_1_1RadialVariables-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">RelativisticEuler::Solutions::TovStar&lt; RadialSolution &gt;::RadialVariables&lt; DataType &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>The radial variables needed to compute the full <code>TOVStar</code> solution.  
+ <a href="structRelativisticEuler_1_1Solutions_1_1TovStar_1_1RadialVariables.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="TovStar_8hpp_source.html">TovStar.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a9a63cc2d46d66fbf2aff29f7d99f71c9"><td class="memItemLeft" align="right" valign="top"><a id="a9a63cc2d46d66fbf2aff29f7d99f71c9"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RadialVariables</b> (DataType radial_coordinate_in)</td></tr>
+<tr class="separator:a9a63cc2d46d66fbf2aff29f7d99f71c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:a84298d7502d30ef459290d6de2a406c3"><td class="memItemLeft" align="right" valign="top"><a id="a84298d7502d30ef459290d6de2a406c3"></a>
+DataType&#160;</td><td class="memItemRight" valign="bottom"><b>radial_coordinate</b> {}</td></tr>
+<tr class="separator:a84298d7502d30ef459290d6de2a406c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca7815276b48d4a0080982223ec2f1fc"><td class="memItemLeft" align="right" valign="top"><a id="aca7815276b48d4a0080982223ec2f1fc"></a>
+<a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>rest_mass_density</b> {}</td></tr>
+<tr class="separator:aca7815276b48d4a0080982223ec2f1fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad540b87f28160185f38b6404a3a1fd9"><td class="memItemLeft" align="right" valign="top"><a id="aad540b87f28160185f38b6404a3a1fd9"></a>
+<a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>pressure</b> {}</td></tr>
+<tr class="separator:aad540b87f28160185f38b6404a3a1fd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f48c0916c160dbf7aa67f4a02beefc2"><td class="memItemLeft" align="right" valign="top"><a id="a7f48c0916c160dbf7aa67f4a02beefc2"></a>
+<a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>specific_internal_energy</b> {}</td></tr>
+<tr class="separator:a7f48c0916c160dbf7aa67f4a02beefc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a4fcfa050e579c5ba59cf28b39580ad"><td class="memItemLeft" align="right" valign="top"><a id="a1a4fcfa050e579c5ba59cf28b39580ad"></a>
+<a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>specific_enthalpy</b> {}</td></tr>
+<tr class="separator:a1a4fcfa050e579c5ba59cf28b39580ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8e3503467a7109e519ac1827ba5e1853"><td class="memItemLeft" align="right" valign="top"><a id="a8e3503467a7109e519ac1827ba5e1853"></a>
+DataType&#160;</td><td class="memItemRight" valign="bottom"><b>dr_pressure</b> {}</td></tr>
+<tr class="separator:a8e3503467a7109e519ac1827ba5e1853"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e5a3800eadcd7b657bed422338547d1"><td class="memItemLeft" align="right" valign="top"><a id="a4e5a3800eadcd7b657bed422338547d1"></a>
+DataType&#160;</td><td class="memItemRight" valign="bottom"><b>metric_time_potential</b> {}</td></tr>
+<tr class="separator:a4e5a3800eadcd7b657bed422338547d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a984bd5b77b1d4a01f6cdfbacc48b102a"><td class="memItemLeft" align="right" valign="top"><a id="a984bd5b77b1d4a01f6cdfbacc48b102a"></a>
+DataType&#160;</td><td class="memItemRight" valign="bottom"><b>dr_metric_time_potential</b> {}</td></tr>
+<tr class="separator:a984bd5b77b1d4a01f6cdfbacc48b102a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9bedbf30f094e57dbf42c53aa870a926"><td class="memItemLeft" align="right" valign="top"><a id="a9bedbf30f094e57dbf42c53aa870a926"></a>
+DataType&#160;</td><td class="memItemRight" valign="bottom"><b>metric_radial_potential</b> {}</td></tr>
+<tr class="separator:a9bedbf30f094e57dbf42c53aa870a926"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21249d67c4eade46f9a560febf4b00e7"><td class="memItemLeft" align="right" valign="top"><a id="a21249d67c4eade46f9a560febf4b00e7"></a>
+DataType&#160;</td><td class="memItemRight" valign="bottom"><b>dr_metric_radial_potential</b> {}</td></tr>
+<tr class="separator:a21249d67c4eade46f9a560febf4b00e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2abd95e7ae86af4c215a9a5c2f0767a8"><td class="memItemLeft" align="right" valign="top"><a id="a2abd95e7ae86af4c215a9a5c2f0767a8"></a>
+DataType&#160;</td><td class="memItemRight" valign="bottom"><b>metric_angular_potential</b> {}</td></tr>
+<tr class="separator:a2abd95e7ae86af4c215a9a5c2f0767a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9a4a93a38ef95d417f987cb0aea855b"><td class="memItemLeft" align="right" valign="top"><a id="aa9a4a93a38ef95d417f987cb0aea855b"></a>
+DataType&#160;</td><td class="memItemRight" valign="bottom"><b>dr_metric_angular_potential</b> {}</td></tr>
+<tr class="separator:aa9a4a93a38ef95d417f987cb0aea855b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename RadialSolution&gt;<br />
+template&lt;typename DataType&gt;<br />
+struct RelativisticEuler::Solutions::TovStar&lt; RadialSolution &gt;::RadialVariables&lt; DataType &gt;</h3>
+
+<p>The radial variables needed to compute the full <code>TOVStar</code> solution. </p>
+<p>RadialSolution must provide a method that fills the radial variables given the equation of state and the Cartesian coordinates \(x^i\)</p>
+<p>If the spherically symmetric metric is written as</p>
+<p class="formulaDsp">
+\[ ds^2 = - e^{2 \Phi_t} dt^2 + e^{2 \Phi_r} dr^2 + e^{2 \Phi_\Omega} r^2 d\Omega^2 \]
+</p>
+<p>where \(r = \delta_{mn} x^m x^n\) is the <code>radial_coordinate</code> and \(\Phi_t\), \(\Phi_r\), and \(\Phi_\Omega\) are respectvely the <code>metric_time_potential</code>, <code>metric_radial_potential</code>, and <code>metric_angular_potential</code>, then the lapse, shift, and spatial metric in the Cartesian coordinates are</p>
+<p class="formulaDsp">
+\begin{align*} \alpha &amp;= e^{\Phi_t} \\ \beta^i &amp;= 0 \\ \gamma_{ij} &amp;= \delta_{ij} e^{2 \Phi_r} + \delta_{im} \delta_{jn} \frac{x^m x^n}{r^2} \left( e^{2 \Phi_r} - e^{2 \Phi_\Omega} \right) \end{align*}
+</p>
+ </div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticSolutions/RelativisticEuler/<a class="el" href="TovStar_8hpp_source.html">TovStar.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

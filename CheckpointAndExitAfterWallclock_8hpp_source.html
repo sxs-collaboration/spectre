@@ -1,0 +1,524 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_f1a490c609eea752f5cd0b5c139209b7.html">Parallel</a></li><li class="navelem"><a class="el" href="dir_eff9ee7d99ff9f92398c6ef344024c3d.html">PhaseControl</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">CheckpointAndExitAfterWallclock.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/optional.html">optional</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;pup.h&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;Options/Auto.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Options_8hpp.html">Options/Options.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;Parallel/AlgorithmMetafunctions.hpp&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="CharmPupable_8hpp.html">Parallel/CharmPupable.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="GlobalCache_8hpp.html">Parallel/GlobalCache.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Main_8hpp.html">Parallel/Main.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;Parallel/PhaseControl/PhaseChange.hpp&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Error_8hpp.html">Utilities/ErrorHandling/Error.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;Utilities/Functional.hpp&quot;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Utilities_2System_2ParallelInfo_8hpp.html">Utilities/System/ParallelInfo.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;Utilities/TaggedTuple.hpp&quot;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment"></span><span class="keyword">namespace </span><a class="code" href="namespacePhaseControl.html">PhaseControl</a> {</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Metavariables, <span class="keyword">typename</span> PhaseChangeRegistrars&gt;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="keyword">class </span><a class="code" href="structCheckpointAndExitAfterWallclock.html">CheckpointAndExitAfterWallclock</a>;</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="keyword">namespace </span>Registrars {</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Metavariables&gt;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keyword">struct </span><a class="code" href="structCheckpointAndExitAfterWallclock.html">CheckpointAndExitAfterWallclock</a> {</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> PhaseChangeRegistrars&gt;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="keyword">using</span> f =</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;      ::PhaseControl::CheckpointAndExitAfterWallclock&lt;Metavariables,</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;                                                      PhaseChangeRegistrars&gt;;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;};</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;}  <span class="comment">// namespace Registrars</span><span class="comment"></span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="keyword">namespace </span>Tags {<span class="comment"></span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment">/// Storage in the phase change decision tuple so that the Main chare can record</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment">/// the phase to go to when restarting the run from a checkpoint file.</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment">/// \note This tag is not intended to participate in any of the reduction</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment">/// procedures, so will error if the combine method is called.</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> PhaseType&gt;</div>
+<div class="line"><a name="l00048"></a><span class="lineno"><a class="line" href="structTags_1_1RestartPhase.html">   48</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structTags_1_1RestartPhase.html">RestartPhase</a> {</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  <span class="keyword">using</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">type</a> = <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional&lt;PhaseType&gt;</a>;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
+<div class="line"><a name="l00051"></a><span class="lineno"><a class="line" href="structTags_1_1RestartPhase_1_1combine__method.html">   51</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structTags_1_1RestartPhase_1_1combine__method.html">combine_method</a> {</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional&lt;PhaseType&gt;</a> operator()(</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional&lt;PhaseType&gt;</a> <span class="comment">/*first_phase*/</span>,</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional&lt;PhaseType&gt;</a>&amp; <span class="comment">/*second_phase*/</span>) noexcept {</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;      <a class="code" href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a>(</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;          <span class="stringliteral">&quot;The restart phase should only be altered by the phase change &quot;</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;          <span class="stringliteral">&quot;arbitration in the Main chare, so no reduction data should be &quot;</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;          <span class="stringliteral">&quot;provided.&quot;</span>);</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    }</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;  };</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;  <span class="keyword">using</span> <a class="code" href="structTags_1_1RestartPhase_1_1combine__method.html">main_combine_method</a> = <a class="code" href="structTags_1_1RestartPhase_1_1combine__method.html">combine_method</a>;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;};</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment">/// Storage in the phase change decision tuple so that the Main chare can record</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment">/// the elapsed wallclock time since the start of the run.</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment">/// \note This tag is not intended to participate in any of the reduction</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment">/// procedures, so will error if the combine method is called.</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno"><a class="line" href="structTags_1_1WallclockHoursAtCheckpoint.html">   70</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structTags_1_1WallclockHoursAtCheckpoint.html">WallclockHoursAtCheckpoint</a> {</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;  <span class="keyword">using</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">type</a> = <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional&lt;double&gt;</a>;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
+<div class="line"><a name="l00073"></a><span class="lineno"><a class="line" href="structTags_1_1WallclockHoursAtCheckpoint_1_1combine__method.html">   73</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structTags_1_1WallclockHoursAtCheckpoint_1_1combine__method.html">combine_method</a> {</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional&lt;double&gt;</a> operator()(</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional&lt;double&gt;</a> <span class="comment">/*first_time*/</span>,</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional&lt;double&gt;</a>&amp; <span class="comment">/*second_time*/</span>) noexcept {</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;      <a class="code" href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a>(</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;          <span class="stringliteral">&quot;The wallclock time at which a checkpoint was requested should &quot;</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;          <span class="stringliteral">&quot;only be altered by the phase change arbitration in the Main &quot;</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;          <span class="stringliteral">&quot;chare, so no reduction data should be provided.&quot;</span>);</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    }</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;  };</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;  <span class="keyword">using</span> <a class="code" href="structTags_1_1WallclockHoursAtCheckpoint_1_1combine__method.html">main_combine_method</a> = <a class="code" href="structTags_1_1WallclockHoursAtCheckpoint_1_1combine__method.html">combine_method</a>;</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;};</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment">/// Stores whether the checkpoint and exit has been requested.</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment">/// Combinations are performed via `funcl::Or`, as the phase in question should</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment">/// be chosen if any component requests the jump.</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno"><a class="line" href="structTags_1_1CheckpointAndExitRequested.html">   90</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structTags_1_1CheckpointAndExitRequested.html">CheckpointAndExitRequested</a> {</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;  <span class="keyword">using</span> type = bool;</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;  <span class="keyword">using</span> <a class="code" href="structfuncl_1_1Or.html">combine_method</a> = <a class="code" href="structfuncl_1_1Or.html">funcl::Or&lt;&gt;</a>;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;  <span class="keyword">using</span> <a class="code" href="structfuncl_1_1Or.html">main_combine_method</a> = <a class="code" href="structfuncl_1_1Or.html">funcl::Or&lt;&gt;</a>;</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;};</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160; </div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;}  <span class="comment">// namespace Tags</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="comment"> * \brief Phase control object that runs the WriteCheckpoint and Exit phases</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="comment"> * after a specified amount of wallclock time has elapsed.</span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="comment"> * This phase control is useful for running SpECTRE executables performing</span></div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="comment"> * lengthy computations that may exceed a supercomputer&#39;s wallclock limits.</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="comment"> * Writing a single checkpoint at the end of the job&#39;s allocated time allows</span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="comment"> * the computation to be continued, while minimizing the disc space taken up by</span></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="comment"> * checkpoint files.</span></div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="comment"> * Note that this phase control is not a trigger on wallclock time. Rather,</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="comment"> * it checks the elapsed wallclock time when called, likely from a global sync</span></div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="comment"> * point triggered by some other mechanism, e.g., at some slab boundary.</span></div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="comment"> * Therefore, the WriteCheckpoint and Exit phases will run the first time</span></div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="comment"> * this phase control is called after the specified wallclock time has been</span></div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="comment"> * reached.</span></div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment"> * \warning the global sync points _must_ be triggered often enough to ensure</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="comment"> * there will be at least one sync point (i.e., one call to this phase control)</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="comment"> * in the window between the requested checkpoint-and-exit time and the time at</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="comment"> * which the batch system will kill the executable. To make this more concrete,</span></div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="comment"> * consider this example: when running on a 12-hour queue with a</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="comment"> * checkpoint-and-exit requested after 11.5 hours, there is a 0.5-hour window</span></div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="comment"> * for a global sync to occur, the checkpoint files to be written to disc, and</span></div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="comment"> * the executable to clean up. In this case, triggering a global sync every</span></div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;<span class="comment"> * 2-10 minutes might be desirable. Matching the global sync frequency with the</span></div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;<span class="comment"> * time window for checkpoint and exit is the responsibility of the user!</span></div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Metavariables,</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;          <span class="keyword">typename</span> PhaseChangeRegistrars = tmpl::list&lt;</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;              Registrars::CheckpointAndExitAfterWallclock&lt;Metavariables&gt;&gt;&gt;</div>
+<div class="line"><a name="l00130"></a><span class="lineno"><a class="line" href="structCheckpointAndExitAfterWallclock.html">  130</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCheckpointAndExitAfterWallclock.html">CheckpointAndExitAfterWallclock</a></div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;    : <span class="keyword">public</span> <a class="code" href="structPhaseChange.html">PhaseChange</a>&lt;PhaseChangeRegistrars&gt; {</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;  <span class="comment">// This PhaseChange only makes sense if Metavars has a WriteCheckpoint phase</span></div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;  static_assert(Parallel::Algorithm_detail::has_WriteCheckpoint_v&lt;</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;                    <span class="keyword">typename</span> Metavariables::Phase&gt;,</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;                <span class="stringliteral">&quot;Requested to write checkpoints but Metavariables::Phase &quot;</span></div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;                <span class="stringliteral">&quot;doesn&#39;t have a WriteCheckpoint phase&quot;</span>);</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160; </div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;  <a class="code" href="structCheckpointAndExitAfterWallclock.html">CheckpointAndExitAfterWallclock</a>(<span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional&lt;double&gt;</a> wallclock_hours,</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;                                  <span class="keyword">const</span> <a class="code" href="structOptions_1_1Context.html">Options::Context</a>&amp; context = {})</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;      : wallclock_hours_for_checkpoint_and_exit_(wallclock_hours) {</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;    <span class="keywordflow">if</span> (wallclock_hours.has_value() and wallclock_hours.value() &lt; 0.0) {</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;      <a class="code" href="group__OptionParsingGroup.html#ga2724ed7a660af53bf365f99878d79c82">PARSE_ERROR</a>(context, <span class="stringliteral">&quot;Must give a positive time in hours, but got &quot;</span></div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;                               &lt;&lt; wallclock_hours.value());</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;    }</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;  }</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;  <span class="keyword">explicit</span> <a class="code" href="structCheckpointAndExitAfterWallclock.html">CheckpointAndExitAfterWallclock</a>(CkMigrateMessage* msg) noexcept</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;      : <a class="code" href="structPhaseChange.html">PhaseChange&lt;PhaseChangeRegistrars&gt;</a>(msg) {}</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;<span class="comment">  /// \cond</span></div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;<span class="comment"></span>  <a class="code" href="structCheckpointAndExitAfterWallclock.html">CheckpointAndExitAfterWallclock</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;  <span class="keyword">using</span> PUP::able::register_constructor;</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;  <a class="code" href="group__ParallelGroup.html#ga54770b986b9c522da6d651e1be125a03">WRAPPED_PUPable_decl_template</a>(<a class="code" href="structCheckpointAndExitAfterWallclock.html">CheckpointAndExitAfterWallclock</a>);  <span class="comment">// NOLINT</span><span class="comment"></span></div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;<span class="comment">  /// \endcond</span></div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00155"></a><span class="lineno"><a class="line" href="structCheckpointAndExitAfterWallclock_1_1WallclockHours.html">  155</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structCheckpointAndExitAfterWallclock_1_1WallclockHours.html">WallclockHours</a> {</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;    <span class="keyword">using</span> <a class="code" href="classOptions_1_1Auto.html">type</a> = <a class="code" href="classOptions_1_1Auto.html">Options::Auto&lt;double, Options::AutoLabel::None&gt;</a>;</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;    <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;        <span class="stringliteral">&quot;Time in hours after which to write the checkpoint and exit. &quot;</span></div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;        <span class="stringliteral">&quot;If &#39;None&#39; is specified, no action will be taken.&quot;</span>};</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;  };</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;  <span class="keyword">using</span> options = tmpl::list&lt;WallclockHours&gt;;</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help{</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;      <span class="stringliteral">&quot;Once the wallclock time has exceeded the specified amount, trigger &quot;</span></div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;      <span class="stringliteral">&quot;writing a checkpoint and then exit.&quot;</span>};</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160; </div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;  <span class="keyword">using</span> argument_tags = tmpl::list&lt;&gt;;</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;  <span class="keyword">using</span> return_tags = tmpl::list&lt;&gt;;</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160; </div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;  <span class="keyword">using</span> phase_change_tags_and_combines =</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;      tmpl::list&lt;Tags::RestartPhase&lt;typename Metavariables::Phase&gt;,</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;                 <a class="code" href="structTags_1_1WallclockHoursAtCheckpoint.html">Tags::WallclockHoursAtCheckpoint</a>,</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;                 <a class="code" href="structTags_1_1CheckpointAndExitRequested.html">Tags::CheckpointAndExitRequested</a>&gt;;</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160; </div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> LocalMetavariables&gt;</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;  <span class="keyword">using</span> participating_components = <span class="keyword">typename</span> LocalMetavariables::component_list;</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160; </div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span>... DecisionTags&gt;</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;  <span class="keywordtype">void</span> initialize_phase_data_impl(</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;DecisionTags...&gt;</a>*&gt;</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;          phase_change_decision_data) <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;    tuples::get&lt;Tags::RestartPhase&lt;typename Metavariables::Phase&gt;&gt;(</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;        *phase_change_decision_data) = std::nullopt;</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;    tuples::get&lt;Tags::WallclockHoursAtCheckpoint&gt;(*phase_change_decision_data) =</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;        std::nullopt;</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;    tuples::get&lt;Tags::CheckpointAndExitRequested&gt;(*phase_change_decision_data) =</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;        <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;  }</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160; </div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ParallelComponent, <span class="keyword">typename</span> ArrayIndex,</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;            <span class="keyword">typename</span> LocalMetavariables&gt;</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;  <span class="keywordtype">void</span> contribute_phase_data_impl(</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;      <a class="code" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache&lt;LocalMetavariables&gt;</a>&amp; <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>,</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;      <span class="keyword">const</span> ArrayIndex&amp; array_index) <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;    <span class="keywordflow">if</span> constexpr (std::is_same_v&lt;<span class="keyword">typename</span> ParallelComponent::chare_type,</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;                                 <a class="code" href="structParallel_1_1Algorithms_1_1Array.html">Parallel::Algorithms::Array</a>&gt;) {</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;      Parallel::contribute_to_phase_change_reduction&lt;ParallelComponent&gt;(</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;          <a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;Tags::CheckpointAndExitRequested&gt;</a>{<span class="keyword">true</span>}, <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>,</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;          array_index);</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;      Parallel::contribute_to_phase_change_reduction&lt;ParallelComponent&gt;(</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;          <a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;Tags::CheckpointAndExitRequested&gt;</a>{<span class="keyword">true</span>}, <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>);</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;    }</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;  }</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160; </div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span>... DecisionTags, <span class="keyword">typename</span> LocalMetavariables&gt;</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;  <span class="keyword">typename</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt;</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;      <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair&lt;typename Metavariables::Phase, ArbitrationStrategy&gt;</a>&gt;</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;  arbitrate_phase_change_impl(</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;DecisionTags...&gt;</a>*&gt;</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;          phase_change_decision_data,</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;      <span class="keyword">const</span> <span class="keyword">typename</span> LocalMetavariables::Phase current_phase,</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;      <span class="keyword">const</span> <a class="code" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache&lt;LocalMetavariables&gt;</a>&amp; <span class="comment">/*cache*/</span>)</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;      <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;    <span class="comment">// If no checkpoint-and-exit time given, then do nothing</span></div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;    <span class="keywordflow">if</span> (not wallclock_hours_for_checkpoint_and_exit_.has_value()) {</div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;      <span class="keywordflow">return</span> std::nullopt;</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;    }</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160; </div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">double</span> elapsed_hours = <a class="code" href="Utilities_2System_2ParallelInfo_8hpp.html#ab8852629860f09d0d0423ab122331b5f">sys::wall_time</a>() / 3600.0;</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160; </div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;    <span class="keyword">auto</span>&amp; restart_phase =</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;        tuples::get&lt;Tags::RestartPhase&lt;typename Metavariables::Phase&gt;&gt;(</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;            *phase_change_decision_data);</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;    <span class="keyword">auto</span>&amp; wallclock_hours_at_checkpoint =</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;        tuples::get&lt;Tags::WallclockHoursAtCheckpoint&gt;(</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;            *phase_change_decision_data);</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;    <span class="keywordflow">if</span> (restart_phase.has_value()) {</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;      <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(wallclock_hours_at_checkpoint.has_value(),</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;             <span class="stringliteral">&quot;Consistency error: Should have recorded the Wallclock time &quot;</span></div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;             <span class="stringliteral">&quot;while recording a phase to restart from.&quot;</span>);</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;      <span class="comment">// This `if` branch, where restart_phase has a value, is the</span></div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;      <span class="comment">// post-checkpoint call to arbitrate_phase_change. Depending on the time</span></div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;      <span class="comment">// elapsed so far in this run, next phase is...</span></div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;      <span class="comment">// - Exit, if the time is large</span></div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;      <span class="comment">// - restart_phase, if the time is small</span></div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;      <span class="keywordflow">if</span> (elapsed_hours &gt;= wallclock_hours_at_checkpoint.value()) {</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;        <span class="comment">// Preserve restart_phase for use after restarting from the checkpoint</span></div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;        <span class="keywordflow">return</span> std::make_pair(Metavariables::Phase::Exit,</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;                              ArbitrationStrategy::RunPhaseImmediately);</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;      } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;        <span class="comment">// Reset restart_phase until it is needed for the next checkpoint</span></div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;        <span class="keyword">const</span> <span class="keyword">auto</span> result = restart_phase;</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;        restart_phase.reset();</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;        wallclock_hours_at_checkpoint.reset();</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;        <span class="keywordflow">return</span> std::make_pair(result.value(),</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;                              ArbitrationStrategy::PermitAdditionalJumps);</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;      }</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;    }</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160; </div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;    <span class="keyword">auto</span>&amp; checkpoint_and_exit_requested =</div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;        tuples::get&lt;Tags::CheckpointAndExitRequested&gt;(</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;            *phase_change_decision_data);</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;    <span class="keywordflow">if</span> (checkpoint_and_exit_requested) {</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;      checkpoint_and_exit_requested = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;      <span class="comment">// We checked wallclock_hours_for_checkpoint_and_exit_ has value above</span></div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;      <span class="keywordflow">if</span> (elapsed_hours &gt;= wallclock_hours_for_checkpoint_and_exit_.value()) {</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;        <span class="comment">// Record phase and actual elapsed time for determining following phase</span></div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;        restart_phase = current_phase;</div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;        wallclock_hours_at_checkpoint = elapsed_hours;</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;        <span class="keywordflow">return</span> std::make_pair(Metavariables::Phase::WriteCheckpoint,</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;                              ArbitrationStrategy::RunPhaseImmediately);</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;      }</div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;    }</div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;    <span class="keywordflow">return</span> std::nullopt;</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;  }</div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160; </div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;  <span class="keywordtype">void</span> pup(PUP::er&amp; p) noexcept <span class="keyword">override</span> {</div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;    <a class="code" href="structPhaseChange.html">PhaseChange&lt;PhaseChangeRegistrars&gt;::pup</a>(p);</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;    p | wallclock_hours_for_checkpoint_and_exit_;</div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;  }</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160; </div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional&lt;double&gt;</a> wallclock_hours_for_checkpoint_and_exit_ = std::nullopt;</div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;};</div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;}  <span class="comment">// namespace PhaseControl</span></div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Metavariables, <span class="keyword">typename</span> PhaseChangeRegistrars&gt;</div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;PUP::able::PUP_ID PhaseControl::CheckpointAndExitAfterWallclock&lt;</div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;    Metavariables, PhaseChangeRegistrars&gt;::my_PUP_ID = 0;<span class="comment"></span></div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;<span class="comment">/// \endcond</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="anamespacePhaseControl_html"><div class="ttname"><a href="namespacePhaseControl.html">PhaseControl</a></div><div class="ttdoc">Contains utilities for determining control-flow among phases.</div><div class="ttdef"><b>Definition:</b> ExecutePhaseChange.hpp:17</div></div>
+<div class="ttc" id="astructTags_1_1WallclockHoursAtCheckpoint_html"><div class="ttname"><a href="structTags_1_1WallclockHoursAtCheckpoint.html">Tags::WallclockHoursAtCheckpoint</a></div><div class="ttdoc">Storage in the phase change decision tuple so that the Main chare can record the elapsed wallclock ti...</div><div class="ttdef"><b>Definition:</b> CheckpointAndExitAfterWallclock.hpp:70</div></div>
+<div class="ttc" id="aCharmPupable_8hpp_html"><div class="ttname"><a href="CharmPupable_8hpp.html">CharmPupable.hpp</a></div></div>
+<div class="ttc" id="aMain_8hpp_html"><div class="ttname"><a href="Main_8hpp.html">Main.hpp</a></div></div>
+<div class="ttc" id="autility_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a></div></div>
+<div class="ttc" id="aclassParallel_1_1GlobalCache_html"><div class="ttname"><a href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a></div><div class="ttdef"><b>Definition:</b> ElementReceiveInterpPoints.hpp:15</div></div>
+<div class="ttc" id="agroup__OptionParsingGroup_html_ga2724ed7a660af53bf365f99878d79c82"><div class="ttname"><a href="group__OptionParsingGroup.html#ga2724ed7a660af53bf365f99878d79c82">PARSE_ERROR</a></div><div class="ttdeci">#define PARSE_ERROR(context, m)</div><div class="ttdef"><b>Definition:</b> Options.hpp:71</div></div>
+<div class="ttc" id="apair_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a></div></div>
+<div class="ttc" id="aGlobalCache_8hpp_html"><div class="ttname"><a href="GlobalCache_8hpp.html">GlobalCache.hpp</a></div></div>
+<div class="ttc" id="aOptions_8hpp_html"><div class="ttname"><a href="Options_8hpp.html">Options.hpp</a></div></div>
+<div class="ttc" id="aError_8hpp_html"><div class="ttname"><a href="Error_8hpp.html">Error.hpp</a></div></div>
+<div class="ttc" id="astructTags_1_1CheckpointAndExitRequested_html"><div class="ttname"><a href="structTags_1_1CheckpointAndExitRequested.html">Tags::CheckpointAndExitRequested</a></div><div class="ttdoc">Stores whether the checkpoint and exit has been requested.</div><div class="ttdef"><b>Definition:</b> CheckpointAndExitAfterWallclock.hpp:90</div></div>
+<div class="ttc" id="aUtilities_2System_2ParallelInfo_8hpp_html"><div class="ttname"><a href="Utilities_2System_2ParallelInfo_8hpp.html">ParallelInfo.hpp</a></div></div>
+<div class="ttc" id="astructTags_1_1RestartPhase_1_1combine__method_html"><div class="ttname"><a href="structTags_1_1RestartPhase_1_1combine__method.html">Tags::RestartPhase::combine_method</a></div><div class="ttdef"><b>Definition:</b> CheckpointAndExitAfterWallclock.hpp:51</div></div>
+<div class="ttc" id="astructOptions_1_1Context_html"><div class="ttname"><a href="structOptions_1_1Context.html">Options::Context</a></div><div class="ttdef"><b>Definition:</b> Options.hpp:41</div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_ga1d27028c1827976007fe9d29ad3a2f66"><div class="ttname"><a href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a></div><div class="ttdeci">#define ERROR(m)</div><div class="ttdoc">prints an error message to the standard error stream and aborts the program.</div><div class="ttdef"><b>Definition:</b> Error.hpp:37</div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_ga54770b986b9c522da6d651e1be125a03"><div class="ttname"><a href="group__ParallelGroup.html#ga54770b986b9c522da6d651e1be125a03">WRAPPED_PUPable_decl_template</a></div><div class="ttdeci">#define WRAPPED_PUPable_decl_template(className)</div><div class="ttdoc">Mark derived classes as serializable.</div><div class="ttdef"><b>Definition:</b> CharmPupable.hpp:22</div></div>
+<div class="ttc" id="astructCheckpointAndExitAfterWallclock_1_1WallclockHours_html"><div class="ttname"><a href="structCheckpointAndExitAfterWallclock_1_1WallclockHours.html">CheckpointAndExitAfterWallclock::WallclockHours</a></div><div class="ttdef"><b>Definition:</b> CheckpointAndExitAfterWallclock.hpp:155</div></div>
+<div class="ttc" id="aclasstuples_1_1TaggedTuple_html"><div class="ttname"><a href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a></div><div class="ttdoc">An associative container that is indexed by structs.</div><div class="ttdef"><b>Definition:</b> TaggedTuple.hpp:271</div></div>
+<div class="ttc" id="astructTags_1_1WallclockHoursAtCheckpoint_1_1combine__method_html"><div class="ttname"><a href="structTags_1_1WallclockHoursAtCheckpoint_1_1combine__method.html">Tags::WallclockHoursAtCheckpoint::combine_method</a></div><div class="ttdef"><b>Definition:</b> CheckpointAndExitAfterWallclock.hpp:73</div></div>
+<div class="ttc" id="astructTags_1_1RestartPhase_html"><div class="ttname"><a href="structTags_1_1RestartPhase.html">Tags::RestartPhase</a></div><div class="ttdoc">Storage in the phase change decision tuple so that the Main chare can record the phase to go to when ...</div><div class="ttdef"><b>Definition:</b> CheckpointAndExitAfterWallclock.hpp:48</div></div>
+<div class="ttc" id="aclassOptions_1_1Auto_html"><div class="ttname"><a href="classOptions_1_1Auto.html">Options::Auto</a></div><div class="ttdoc">A class indicating that a parsed value can be automatically computed instead of specified.</div><div class="ttdef"><b>Definition:</b> Auto.hpp:33</div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_gaf170f3984e3d0f809b2558dbd981ca35"><div class="ttname"><a href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a></div><div class="ttdeci">#define ASSERT(a, m)</div><div class="ttdoc">Assert that an expression should be true.</div><div class="ttdef"><b>Definition:</b> Assert.hpp:49</div></div>
+<div class="ttc" id="aUtilities_2System_2ParallelInfo_8hpp_html_ab8852629860f09d0d0423ab122331b5f"><div class="ttname"><a href="Utilities_2System_2ParallelInfo_8hpp.html#ab8852629860f09d0d0423ab122331b5f">sys::wall_time</a></div><div class="ttdeci">double wall_time()</div><div class="ttdoc">The elapsed wall time in seconds.</div><div class="ttdef"><b>Definition:</b> ParallelInfo.hpp:94</div></div>
+<div class="ttc" id="anamespaceActionTesting_html_af2cb56d7012b27cab5d118a9fa0783d2"><div class="ttname"><a href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">ActionTesting::cache</a></div><div class="ttdeci">Parallel::GlobalCache&lt; Metavariables &gt; &amp; cache(MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const ArrayIndex &amp;array_index) noexcept</div><div class="ttdoc">Returns the GlobalCache of Component with index array_index.</div><div class="ttdef"><b>Definition:</b> MockRuntimeSystemFreeFunctions.hpp:382</div></div>
+<div class="ttc" id="astructParallel_1_1Algorithms_1_1Array_html"><div class="ttname"><a href="structParallel_1_1Algorithms_1_1Array.html">Parallel::Algorithms::Array</a></div><div class="ttdoc">A struct that stores the charm++ types relevant for a particular array component.</div><div class="ttdef"><b>Definition:</b> AlgorithmArrayDeclarations.hpp:31</div></div>
+<div class="ttc" id="astructPhaseChange_html"><div class="ttname"><a href="structPhaseChange.html">PhaseChange</a></div><div class="ttdoc">PhaseChange objects determine the storage types and logic for moving between phases based on runtime ...</div><div class="ttdef"><b>Definition:</b> PhaseChange.hpp:141</div></div>
+<div class="ttc" id="anamespaceOptions_html_aa61c7f41f21afa7646811456f673be89"><div class="ttname"><a href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a></div><div class="ttdeci">const char *const String</div><div class="ttdoc">The string used in option structs.</div><div class="ttdef"><b>Definition:</b> Options.hpp:32</div></div>
+<div class="ttc" id="aoptional_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/optional.html">optional</a></div></div>
+<div class="ttc" id="astructCheckpointAndExitAfterWallclock_html"><div class="ttname"><a href="structCheckpointAndExitAfterWallclock.html">CheckpointAndExitAfterWallclock</a></div><div class="ttdoc">Phase control object that runs the WriteCheckpoint and Exit phases after a specified amount of wallcl...</div><div class="ttdef"><b>Definition:</b> CheckpointAndExitAfterWallclock.hpp:130</div></div>
+<div class="ttc" id="astructfuncl_1_1Or_html"><div class="ttname"><a href="structfuncl_1_1Or.html">funcl::Or</a></div><div class="ttdoc">Functional for computing or of two objects.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:240</div></div>
+<div class="ttc" id="atype_traits_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a></div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<div class="ttc" id="astring_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/string.html">string</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

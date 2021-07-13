@@ -1,0 +1,395 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: GeneralizedHarmonic::BoundaryConditions::ConstraintPreservingBjorhus&lt; Dim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceGeneralizedHarmonic.html">GeneralizedHarmonic</a></li><li class="navelem"><a class="el" href="namespaceGeneralizedHarmonic_1_1BoundaryConditions.html">BoundaryConditions</a></li><li class="navelem"><a class="el" href="classGeneralizedHarmonic_1_1BoundaryConditions_1_1ConstraintPreservingBjorhus.html">ConstraintPreservingBjorhus</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classGeneralizedHarmonic_1_1BoundaryConditions_1_1ConstraintPreservingBjorhus-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">GeneralizedHarmonic::BoundaryConditions::ConstraintPreservingBjorhus&lt; Dim &gt; Class Template Reference<span class="mlabels"><span class="mlabel">final</span></span></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Sets constraint preserving boundary conditions using the <a class="el" href="namespaceGeneralizedHarmonic_1_1BoundaryConditions_1_1Bjorhus.html" title="Detailed implementation of Bjorhus-type boundary corrections.">Bjorhus</a> method.  
+ <a href="classGeneralizedHarmonic_1_1BoundaryConditions_1_1ConstraintPreservingBjorhus.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Bjorhus_8hpp_source.html">Bjorhus.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structGeneralizedHarmonic_1_1BoundaryConditions_1_1ConstraintPreservingBjorhus_1_1TypeOptionTag.html">TypeOptionTag</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:aa2df8271bc1406ac7bd18ed175aa7aa4"><td class="memItemLeft" align="right" valign="top"><a id="aa2df8271bc1406ac7bd18ed175aa7aa4"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structGeneralizedHarmonic_1_1BoundaryConditions_1_1ConstraintPreservingBjorhus_1_1TypeOptionTag.html">TypeOptionTag</a> &gt;</td></tr>
+<tr class="separator:aa2df8271bc1406ac7bd18ed175aa7aa4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d4dd2a102a35b907780b7524d7a4002"><td class="memItemLeft" align="right" valign="top"><a id="a1d4dd2a102a35b907780b7524d7a4002"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_interior_evolved_variables_tags</b> = tmpl::list&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Pi.html">Tags::Pi</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Phi.html">Tags::Phi</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;</td></tr>
+<tr class="separator:a1d4dd2a102a35b907780b7524d7a4002"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af51c0c570a9dc5b16af630b3c1ba8b5d"><td class="memItemLeft" align="right" valign="top"><a id="af51c0c570a9dc5b16af630b3c1ba8b5d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_interior_temporary_tags</b> = tmpl::list&lt; <a class="el" href="structdomain_1_1Tags_1_1Coordinates.html">domain::Tags::Coordinates</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1ConstraintGamma1.html">ConstraintDamping::Tags::ConstraintGamma1</a>, <a class="el" href="structGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1ConstraintGamma2.html">ConstraintDamping::Tags::ConstraintGamma2</a>, <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1InverseSpacetimeMetric.html">gr::Tags::InverseSpacetimeMetric</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1SpacetimeNormalVector.html">gr::Tags::SpacetimeNormalVector</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1SpacetimeNormalOneForm.html">gr::Tags::SpacetimeNormalOneForm</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1ThreeIndexConstraint.html">Tags::ThreeIndexConstraint</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1GaugeH.html">Tags::GaugeH</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1SpacetimeDerivGaugeH.html">Tags::SpacetimeDerivGaugeH</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;</td></tr>
+<tr class="separator:af51c0c570a9dc5b16af630b3c1ba8b5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee4e6307c9566613927ea337f0c6ad55"><td class="memItemLeft" align="right" valign="top"><a id="aee4e6307c9566613927ea337f0c6ad55"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_interior_dt_vars_tags</b> = tmpl::list&lt; ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Pi.html">Tags::Pi</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Phi.html">Tags::Phi</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;&gt;</td></tr>
+<tr class="separator:aee4e6307c9566613927ea337f0c6ad55"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade51a81efc052c001c57ce12897f6360"><td class="memItemLeft" align="right" valign="top"><a id="ade51a81efc052c001c57ce12897f6360"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_interior_deriv_vars_tags</b> = tmpl::list&lt; ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, tmpl::size_t&lt; Dim &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Pi.html">Tags::Pi</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, tmpl::size_t&lt; Dim &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Phi.html">Tags::Phi</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, tmpl::size_t&lt; Dim &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;</td></tr>
+<tr class="separator:ade51a81efc052c001c57ce12897f6360"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a202a73e616373abcadc754d988398412"><td class="memItemLeft" align="right" valign="top"><a id="a202a73e616373abcadc754d988398412"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_gridless_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a202a73e616373abcadc754d988398412"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition.html">GeneralizedHarmonic::BoundaryConditions::BoundaryCondition&lt; Dim &gt;</a></td></tr>
+<tr class="memitem:ad3fd3b3959b72b34628e7de74f916675 inherit pub_types_classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="ad3fd3b3959b72b34628e7de74f916675"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::list&lt; <a class="el" href="classGeneralizedHarmonic_1_1BoundaryConditions_1_1ConstraintPreservingBjorhus.html">ConstraintPreservingBjorhus</a>&lt; Dim &gt;, <a class="el" href="classGeneralizedHarmonic_1_1BoundaryConditions_1_1DirichletAnalytic.html">DirichletAnalytic</a>&lt; Dim &gt;, <a class="el" href="classGeneralizedHarmonic_1_1BoundaryConditions_1_1Outflow.html">Outflow</a>&lt; Dim &gt;, <a class="el" href="structdomain_1_1BoundaryConditions_1_1Periodic.html">domain::BoundaryConditions::Periodic</a>&lt; <a class="el" href="classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a>&lt; Dim &gt; &gt;&gt;</td></tr>
+<tr class="separator:ad3fd3b3959b72b34628e7de74f916675 inherit pub_types_classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:aa83e55cd49656b6d0f3c737f31904c3e"><td class="memItemLeft" align="right" valign="top"><a id="aa83e55cd49656b6d0f3c737f31904c3e"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ConstraintPreservingBjorhus</b> (detail::ConstraintPreservingBjorhusType type) noexcept</td></tr>
+<tr class="separator:aa83e55cd49656b6d0f3c737f31904c3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8292db12c2815c3b18112882d91a65d6"><td class="memItemLeft" align="right" valign="top"><a id="a8292db12c2815c3b18112882d91a65d6"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ConstraintPreservingBjorhus</b> (CkMigrateMessage *msg) noexcept</td></tr>
+<tr class="separator:a8292db12c2815c3b18112882d91a65d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a749be90f13bf5eb387a7aca7647cc89b"><td class="memItemLeft" align="right" valign="top"><a id="a749be90f13bf5eb387a7aca7647cc89b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_base_template</b> (<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a>, <a class="el" href="classGeneralizedHarmonic_1_1BoundaryConditions_1_1ConstraintPreservingBjorhus.html">ConstraintPreservingBjorhus</a>)</td></tr>
+<tr class="separator:a749be90f13bf5eb387a7aca7647cc89b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aadc3e6f168ca91f366635fdcebc5be20"><td class="memItemLeft" align="right" valign="top"><a id="aadc3e6f168ca91f366635fdcebc5be20"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a> &gt; override</td></tr>
+<tr class="separator:aadc3e6f168ca91f366635fdcebc5be20"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d4290a85e58402c84100b7dcb57b65a"><td class="memItemLeft" align="right" valign="top"><a id="a4d4290a85e58402c84100b7dcb57b65a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) override</td></tr>
+<tr class="separator:a4d4290a85e58402c84100b7dcb57b65a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b969d47ed6579a18d3d9165d0ac3622"><td class="memItemLeft" align="right" valign="top"><a id="a2b969d47ed6579a18d3d9165d0ac3622"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>dg_time_derivative</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; dt_spacetime_metric_correction, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; dt_pi_correction, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; dt_phi_correction, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt; &amp;face_mesh_velocity, const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;normal_covector, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;, const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;spacetime_metric, const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;<a class="el" href="group__GeneralRelativityGroup.html#ga0f8ea77b898950a2a3ab6a5feea01935">pi</a>, const tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;<a class="el" href="group__GeneralRelativityGroup.html#gaecccadb6658f3735cfb7344c780abd97">phi</a>, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;coords, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;gamma1, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;gamma2, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;lapse, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;shift, const tnsr::AA&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;inverse_spacetime_metric, const tnsr::A&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;spacetime_unit_normal_vector, const tnsr::a&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;spacetime_unit_normal_one_form, const tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;<a class="el" href="namespaceGeneralizedHarmonic.html#ad9710cd1684a03fae39eb3126ef4bc35">three_index_constraint</a>, const tnsr::a&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;<a class="el" href="group__GeneralRelativityGroup.html#ga5e39537251d3d4d97d0cf27217c109de">gauge_source</a>, const tnsr::ab&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;spacetime_deriv_gauge_source, const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;dt_spacetime_metric, const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;dt_pi, const tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;dt_phi, const tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;d_spacetime_metric, const tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;d_pi, const tnsr::ijaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;d_phi) const noexcept</td></tr>
+<tr class="separator:a2b969d47ed6579a18d3d9165d0ac3622"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition.html">GeneralizedHarmonic::BoundaryConditions::BoundaryCondition&lt; Dim &gt;</a></td></tr>
+<tr class="memitem:a4adfaadfef17644a43bcae89fa9cce3b inherit pub_methods_classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a4adfaadfef17644a43bcae89fa9cce3b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (<a class="el" href="classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a4adfaadfef17644a43bcae89fa9cce3b inherit pub_methods_classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a280001302e511bb1c5bb3ab2a745845b inherit pub_methods_classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a280001302e511bb1c5bb3ab2a745845b"></a>
+<a class="el" href="classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a280001302e511bb1c5bb3ab2a745845b inherit pub_methods_classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae73ee83cb7706644014b6e5ca95ee9ad inherit pub_methods_classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="ae73ee83cb7706644014b6e5ca95ee9ad"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (const <a class="el" href="classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;)=default</td></tr>
+<tr class="separator:ae73ee83cb7706644014b6e5ca95ee9ad inherit pub_methods_classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d272f05a2f0e709d9c2043306a81c3b inherit pub_methods_classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a9d272f05a2f0e709d9c2043306a81c3b"></a>
+<a class="el" href="classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;)=default</td></tr>
+<tr class="separator:a9d272f05a2f0e709d9c2043306a81c3b inherit pub_methods_classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c3f023bcd43f3a63aec0e38be47d1c0 inherit pub_methods_classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a1c3f023bcd43f3a63aec0e38be47d1c0"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (CkMigrateMessage *msg) noexcept</td></tr>
+<tr class="separator:a1c3f023bcd43f3a63aec0e38be47d1c0 inherit pub_methods_classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac0bb63e54b2c93e64c90393599d07888 inherit pub_methods_classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="ac0bb63e54b2c93e64c90393599d07888"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) override</td></tr>
+<tr class="separator:ac0bb63e54b2c93e64c90393599d07888 inherit pub_methods_classGeneralizedHarmonic_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a></td></tr>
+<tr class="memitem:a3ce9f36399b12ce36bf1502ee0e85e8f inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a3ce9f36399b12ce36bf1502ee0e85e8f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a3ce9f36399b12ce36bf1502ee0e85e8f inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ed654e75ef4544a679a893f2bae7634 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a9ed654e75ef4544a679a893f2bae7634"></a>
+<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a9ed654e75ef4544a679a893f2bae7634 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abce6f2c0829a37f447cc253097f44c07 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="abce6f2c0829a37f447cc253097f44c07"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (const <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;)=default</td></tr>
+<tr class="separator:abce6f2c0829a37f447cc253097f44c07 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abaaefff13f64678066bbbeeb566c8989 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="abaaefff13f64678066bbbeeb566c8989"></a>
+<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> &amp;)=default</td></tr>
+<tr class="separator:abaaefff13f64678066bbbeeb566c8989 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75292db0a162bb159e5bebbc4e10a118 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="a75292db0a162bb159e5bebbc4e10a118"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCondition</b> (CkMigrateMessage *const msg) noexcept</td></tr>
+<tr class="separator:a75292db0a162bb159e5bebbc4e10a118 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1ba92c0d19a6e2de8fc1c86e406a539 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memItemLeft" align="right" valign="top"><a id="ad1ba92c0d19a6e2de8fc1c86e406a539"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_abstract</b> (<a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a>)</td></tr>
+<tr class="separator:ad1ba92c0d19a6e2de8fc1c86e406a539 inherit pub_methods_classdomain_1_1BoundaryConditions_1_1BoundaryCondition"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a3043edd8b7da21a846a44813184ad66e"><td class="memItemLeft" align="right" valign="top"><a id="a3043edd8b7da21a846a44813184ad66e"></a>
+static <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memItemRight" valign="bottom"><b>name</b> () noexcept</td></tr>
+<tr class="separator:a3043edd8b7da21a846a44813184ad66e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a70955471b4499db5de8ff603139ec46e"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a70955471b4499db5de8ff603139ec46e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a388561d30b693f6aabd170b3834266da"><td class="memItemLeft" align="right" valign="top">static constexpr evolution::BoundaryConditions::Type&#160;</td><td class="memItemRight" valign="bottom"><b>bc_type</b></td></tr>
+<tr class="separator:a388561d30b693f6aabd170b3834266da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+class GeneralizedHarmonic::BoundaryConditions::ConstraintPreservingBjorhus&lt; Dim &gt;</h3>
+
+<p>Sets constraint preserving boundary conditions using the <a class="el" href="namespaceGeneralizedHarmonic_1_1BoundaryConditions_1_1Bjorhus.html" title="Detailed implementation of Bjorhus-type boundary corrections.">Bjorhus</a> method. </p>
+<h3>Details</h3>
+<p>Boundary conditions for the generalized harmonic evolution system can be divided in to three parts, constraint-preserving, physical and gauge boundary conditions.</p>
+<p>The generalized harmonic (GH) evolution system is a first-order reduction of Einstein equations brought about by the imposition of GH gauge. This introduces constraints on the free (evolved) variables in addition to the standard Hamiltonian and momentum constraints. The constraint-preserving portion of the boundary conditions is designed to prevent the influx of constraint violations from external faces of the evolution domain, by damping them away on a controlled and short time-scale. These conditions are imposed as corrections to the projections of the right-hand-sides of the GH evolution equations (i.e. using <a class="el" href="namespaceGeneralizedHarmonic_1_1BoundaryConditions_1_1Bjorhus.html" title="Detailed implementation of Bjorhus-type boundary corrections.">Bjorhus</a>' method <a class="el" href="citelist.html#CITEREF_Bjorhus1995">[15]</a>), and are written down in Eq. (63) - (65) of <a class="el" href="citelist.html#CITEREF_Lindblom2005qh">[70]</a> . The gauge degrees of freedom are controlled by imposing a Sommerfeld-type condition ( \(L=0\) member of the hierarchy derived in <a class="el" href="citelist.html#CITEREF_BaylissTurkel">[11]</a>) that allow gauge perturbations to pass through the boundary without strong reflections. These assume a spherical outer boundary, and can be written down as in Eq. (25) of <a class="el" href="citelist.html#CITEREF_Rinne2007ui">[90]</a> . Finally, the physical boundary conditions control the influx of inward propagating gravitational-wave solutions from the external boundaries. These are derived by considering the evolution system of the Weyl curvature tensor, and controlling the inward propagating characteristics of the system that are proportional to the Newman-Penrose curvature spinor components \(\Psi_4\) and \(\Psi_0\). Here we use Eq. (68) of <a class="el" href="citelist.html#CITEREF_Lindblom2005qh">[70]</a> to disallow any incoming waves. It is to be noted that all the above conditions are also imposed on characteristic modes with speeds exactly zero.</p>
+<p>This class provides two choices of combinations of the above corrections:</p><ul>
+<li><code>ConstraintPreserving</code> : this imposes the constraint-preserving and gauge-controlling corrections;</li>
+<li><code>ConstraintPreservingPhysical</code> : this additionally restricts the influx of any physical gravitational waves from the outer boundary, in addition to preventing the influx of constraint violations and gauge perturbations.</li>
+</ul>
+<p>We refer to <code><a class="el" href="namespaceGeneralizedHarmonic_1_1BoundaryConditions_1_1Bjorhus.html#a495a2f9f2af672f21de1ce9740241153" title="Computes the expression needed to set boundary conditions on the time derivative of the characteristi...">Bjorhus::constraint_preserving_bjorhus_corrections_dt_v_psi()</a></code>, <code><a class="el" href="namespaceGeneralizedHarmonic_1_1BoundaryConditions_1_1Bjorhus.html#ae2dd8de23041848f93c6e2ccde3f13ec" title="Computes the expression needed to set boundary conditions on the time derivative of the characteristi...">Bjorhus::constraint_preserving_bjorhus_corrections_dt_v_zero()</a></code>, <code><a class="el" href="namespaceGeneralizedHarmonic_1_1BoundaryConditions_1_1Bjorhus.html#aa7134fc43517bc6a760f1fcb64b370c0" title="Computes the expression needed to set boundary conditions on the time derivative of the characteristi...">Bjorhus::constraint_preserving_bjorhus_corrections_dt_v_minus()</a></code>, and <code><a class="el" href="namespaceGeneralizedHarmonic_1_1BoundaryConditions_1_1Bjorhus.html#a6ca38ac1aae8a86d91c7022f57ea77b7" title="Computes the expression needed to set boundary conditions on the time derivative of the characteristi...">Bjorhus::constraint_preserving_physical_bjorhus_corrections_dt_v_minus()</a></code> for the further details on implementation.</p>
+<dl class="section note"><dt>Note</dt><dd>These boundary conditions assume a spherical outer boundary. Also, we do not yet have an option to inject incoming gravitational waves at the outer boundary. </dd></dl>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a388561d30b693f6aabd170b3834266da"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a388561d30b693f6aabd170b3834266da">&#9670;&nbsp;</a></span>bc_type</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr evolution::BoundaryConditions::Type <a class="el" href="classGeneralizedHarmonic_1_1BoundaryConditions_1_1ConstraintPreservingBjorhus.html">GeneralizedHarmonic::BoundaryConditions::ConstraintPreservingBjorhus</a>&lt; Dim &gt;::bc_type</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      evolution::BoundaryConditions::Type::TimeDerivative</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a70955471b4499db5de8ff603139ec46e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a70955471b4499db5de8ff603139ec46e">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classGeneralizedHarmonic_1_1BoundaryConditions_1_1ConstraintPreservingBjorhus.html">GeneralizedHarmonic::BoundaryConditions::ConstraintPreservingBjorhus</a>&lt; Dim &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      <span class="stringliteral">&quot;ConstraintPreservingBjorhus boundary conditions setting the value of the&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;time derivatives of the spacetime metric, Phi and Pi to expressions that&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;prevent the influx of constraint violations and reflections.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/<a class="el" href="Bjorhus_8hpp_source.html">Bjorhus.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

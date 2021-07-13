@@ -1,0 +1,424 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: NewtonianEuler::Solutions::RiemannProblem&lt; Dim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceNewtonianEuler.html">NewtonianEuler</a></li><li class="navelem"><a class="el" href="namespaceNewtonianEuler_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="classNewtonianEuler_1_1Solutions_1_1RiemannProblem.html">RiemannProblem</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classNewtonianEuler_1_1Solutions_1_1RiemannProblem-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">NewtonianEuler::Solutions::RiemannProblem&lt; Dim &gt; Class Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Analytic solution to the Riemann Problem.  
+ <a href="classNewtonianEuler_1_1Solutions_1_1RiemannProblem.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="AnalyticSolutions_2NewtonianEuler_2RiemannProblem_8hpp_source.html">RiemannProblem.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1AdiabaticIndex.html">AdiabaticIndex</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The adiabatic index of the fluid.  <a href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1AdiabaticIndex.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1InitialData.html">InitialData</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds initial data on a side of the discontinuity and related quantities.  <a href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1InitialData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1InitialPosition.html">InitialPosition</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initial position of the discontinuity.  <a href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1InitialPosition.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1LeftMassDensity.html">LeftMassDensity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The mass density on the left of the initial discontinuity.  <a href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1LeftMassDensity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1LeftPressure.html">LeftPressure</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The pressure on the left of the initial discontinuity.  <a href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1LeftPressure.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1LeftVelocity.html">LeftVelocity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The velocity on the left of the initial discontinuity.  <a href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1LeftVelocity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1PressureStarTol.html">PressureStarTol</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The tolerance for solving for \(p_*\).  <a href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1PressureStarTol.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1RightMassDensity.html">RightMassDensity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The mass density on the right of the initial discontinuity.  <a href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1RightMassDensity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1RightPressure.html">RightPressure</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The pressure on the right of the initial discontinuity.  <a href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1RightPressure.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1RightVelocity.html">RightVelocity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The velocity on the right of the initial discontinuity.  <a href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1RightVelocity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a41999a53f251f2aaa02c27d2f21f89ef"><td class="memItemLeft" align="right" valign="top"><a id="a41999a53f251f2aaa02c27d2f21f89ef"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state_type</b> = <a class="el" href="classEquationsOfState_1_1IdealFluid.html">EquationsOfState::IdealFluid</a>&lt; false &gt;</td></tr>
+<tr class="separator:a41999a53f251f2aaa02c27d2f21f89ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38e0f09d3749a11febac766c073c8d05"><td class="memItemLeft" align="right" valign="top"><a id="a38e0f09d3749a11febac766c073c8d05"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>source_term_type</b> = <a class="el" href="structNewtonianEuler_1_1Sources_1_1NoSource.html">Sources::NoSource</a></td></tr>
+<tr class="separator:a38e0f09d3749a11febac766c073c8d05"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a49df1878b977f8af933b0aa1ffd2b42d"><td class="memItemLeft" align="right" valign="top"><a id="a49df1878b977f8af933b0aa1ffd2b42d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1AdiabaticIndex.html">AdiabaticIndex</a>, <a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1InitialPosition.html">InitialPosition</a>, <a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1LeftMassDensity.html">LeftMassDensity</a>, <a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1LeftVelocity.html">LeftVelocity</a>, <a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1LeftPressure.html">LeftPressure</a>, <a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1RightMassDensity.html">RightMassDensity</a>, <a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1RightVelocity.html">RightVelocity</a>, <a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1RightPressure.html">RightPressure</a>, <a class="el" href="structNewtonianEuler_1_1Solutions_1_1RiemannProblem_1_1PressureStarTol.html">PressureStarTol</a> &gt;</td></tr>
+<tr class="separator:a49df1878b977f8af933b0aa1ffd2b42d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a3e7b03ff1061790500fda9100f8d754a"><td class="memItemLeft" align="right" valign="top"><a id="a3e7b03ff1061790500fda9100f8d754a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RiemannProblem</b> (const <a class="el" href="classNewtonianEuler_1_1Solutions_1_1RiemannProblem.html">RiemannProblem</a> &amp;)=delete</td></tr>
+<tr class="separator:a3e7b03ff1061790500fda9100f8d754a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a492ae2cbf5e01a8ed6127dbf71e69e8e"><td class="memItemLeft" align="right" valign="top"><a id="a492ae2cbf5e01a8ed6127dbf71e69e8e"></a>
+<a class="el" href="classNewtonianEuler_1_1Solutions_1_1RiemannProblem.html">RiemannProblem</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classNewtonianEuler_1_1Solutions_1_1RiemannProblem.html">RiemannProblem</a> &amp;)=delete</td></tr>
+<tr class="separator:a492ae2cbf5e01a8ed6127dbf71e69e8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52a61a25bd11948efb426801d44c5b7b"><td class="memItemLeft" align="right" valign="top"><a id="a52a61a25bd11948efb426801d44c5b7b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RiemannProblem</b> (<a class="el" href="classNewtonianEuler_1_1Solutions_1_1RiemannProblem.html">RiemannProblem</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a52a61a25bd11948efb426801d44c5b7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4ae0d0d61d627c861aefe23bb56391f"><td class="memItemLeft" align="right" valign="top"><a id="ad4ae0d0d61d627c861aefe23bb56391f"></a>
+<a class="el" href="classNewtonianEuler_1_1Solutions_1_1RiemannProblem.html">RiemannProblem</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classNewtonianEuler_1_1Solutions_1_1RiemannProblem.html">RiemannProblem</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:ad4ae0d0d61d627c861aefe23bb56391f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a561a1d8fbedce5cef8a6972951d0b3ba"><td class="memItemLeft" align="right" valign="top"><a id="a561a1d8fbedce5cef8a6972951d0b3ba"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RiemannProblem</b> (double adiabatic_index, double initial_position, double left_mass_density, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, Dim &gt; &amp;left_velocity, double left_pressure, double right_mass_density, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, Dim &gt; &amp;right_velocity, double right_pressure, double pressure_star_tol=PressureStarTol::suggested_value()) noexcept</td></tr>
+<tr class="separator:a561a1d8fbedce5cef8a6972951d0b3ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abb1e5481cac1648886280c4188e7dd9a"><td class="memTemplParams" colspan="2"><a id="abb1e5481cac1648886280c4188e7dd9a"></a>
+template&lt;typename DataType , typename... Tags&gt; </td></tr>
+<tr class="memitem:abb1e5481cac1648886280c4188e7dd9a"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classNewtonianEuler_1_1Solutions_1_1RiemannProblem.html#abb1e5481cac1648886280c4188e7dd9a">variables</a> (const tnsr::I&lt; DataType, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;x, double t, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:abb1e5481cac1648886280c4188e7dd9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a collection of hydrodynamic variables at position <code>x</code> and time <code>t</code> <br /></td></tr>
+<tr class="separator:abb1e5481cac1648886280c4188e7dd9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a889becc3cc2380d190a92c661545549e"><td class="memItemLeft" align="right" valign="top"><a id="a889becc3cc2380d190a92c661545549e"></a>
+const <a class="el" href="classEquationsOfState_1_1IdealFluid.html">EquationsOfState::IdealFluid</a>&lt; false &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state</b> () const noexcept</td></tr>
+<tr class="separator:a889becc3cc2380d190a92c661545549e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a2468a0de4e79df68c2fafd5aa8cf0e"><td class="memItemLeft" align="right" valign="top"><a id="a0a2468a0de4e79df68c2fafd5aa8cf0e"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;) noexcept</td></tr>
+<tr class="separator:a0a2468a0de4e79df68c2fafd5aa8cf0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a58cec9cf496105b3c8e5ad24873e8f8f"><td class="memItemLeft" align="right" valign="top"><a id="a58cec9cf496105b3c8e5ad24873e8f8f"></a>
+constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 2 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>diagnostic_star_region_values</b> () const noexcept</td></tr>
+<tr class="separator:a58cec9cf496105b3c8e5ad24873e8f8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aecd3894e289554a82b5646e167a99ed6"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:aecd3894e289554a82b5646e167a99ed6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a4fe30adaa77a2e580a1ef20e101cd76e"><td class="memTemplParams" colspan="2"><a id="a4fe30adaa77a2e580a1ef20e101cd76e"></a>
+template&lt;size_t SpatialDim&gt; </td></tr>
+<tr class="memitem:a4fe30adaa77a2e580a1ef20e101cd76e"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classNewtonianEuler_1_1Solutions_1_1RiemannProblem.html">RiemannProblem</a>&lt; SpatialDim &gt; &amp;lhs, const <a class="el" href="classNewtonianEuler_1_1Solutions_1_1RiemannProblem.html">RiemannProblem</a>&lt; SpatialDim &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a4fe30adaa77a2e580a1ef20e101cd76e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+class NewtonianEuler::Solutions::RiemannProblem&lt; Dim &gt;</h3>
+
+<p>Analytic solution to the Riemann Problem. </p>
+<p>This class implements the exact Riemann solver described in detail in Chapter 4 of <a class="el" href="citelist.html#CITEREF_Toro2009">[105]</a>. We follow the notation there. The algorithm implemented here allows for 1, 2 and 3D wave propagation along any coordinate axis. Typical initial data for test cases (see <a class="el" href="citelist.html#CITEREF_Toro2009">[105]</a>) include:</p>
+<ul>
+<li>Sod's Shock Tube (shock on the right, rarefaction on the left):<ul>
+<li>\((\rho_L, u_L, p_L) = (1.0, 0.0, 1.0)\)</li>
+<li>\((\rho_R, u_R, p_R) = (0.125, 0.0, 0.1)\)</li>
+<li>Recommended setup for sample run:<ul>
+<li>InitialTimeStep: 0.0001</li>
+<li>Final time: 0.2</li>
+<li><a class="el" href="classDomainCreator.html" title="Base class for creating Domains from an option string.">DomainCreator</a> along wave propagation (no AMR):<ul>
+<li>Interval of length 1</li>
+<li>InitialRefinement: 8</li>
+<li>InitialGridPoints: 2</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>"123" problem (two symmetric rarefaction waves):<ul>
+<li>\((\rho_L, u_L, p_L) = (1.0, -2.0, 0.4)\)</li>
+<li>\((\rho_R, u_R, p_R) = (1.0, 2.0, 0.4)\)</li>
+<li>Recommended setup for sample run:<ul>
+<li>InitialTimeStep: 0.0001</li>
+<li>Final time: 0.15</li>
+<li><a class="el" href="classDomainCreator.html" title="Base class for creating Domains from an option string.">DomainCreator</a> along wave propagation (no AMR):<ul>
+<li>Interval of length 1</li>
+<li>InitialRefinement: 8</li>
+<li>InitialGridPoints: 2</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Collision of two blast waves (this test is challenging):<ul>
+<li>\((\rho_L, u_L, p_L) = (5.99924, 19.5975, 460.894)\)</li>
+<li>\((\rho_R, u_R, p_R) = (5.99242, -6.19633, 46.0950)\)</li>
+<li>Recommended setup for sample run:<ul>
+<li>InitialTimeStep: 0.00001</li>
+<li>Final time: 0.012</li>
+<li><a class="el" href="classDomainCreator.html" title="Base class for creating Domains from an option string.">DomainCreator</a> along wave propagation (no AMR):<ul>
+<li>Interval of length 1</li>
+<li>InitialRefinement: 8</li>
+<li>InitialGridPoints: 2</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Lax problem:<ul>
+<li>\((\rho_L, u_L, p_L) = (0.445, 0.698, 3.528)\)</li>
+<li>\((\rho_R, u_R, p_R) = (0.5, 0.0, 0.571)\)</li>
+<li>Recommended setup for sample run:<ul>
+<li>InitialTimeStep: 0.00001</li>
+<li>Final time: 0.1</li>
+<li><a class="el" href="classDomainCreator.html" title="Base class for creating Domains from an option string.">DomainCreator</a> along wave propagation (no AMR):<ul>
+<li>Interval of length 1</li>
+<li>InitialRefinement: 8</li>
+<li>InitialGridPoints: 2</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>where \(\rho\) is the mass density, \(p\) is the pressure, and \(u\) denotes the normal velocity.</p>
+<dl class="section note"><dt>Note</dt><dd>Currently the propagation axis must be hard-coded as a <code>size_t</code> private member variable <code>propagation_axis_</code>, which can take one of the three values <code>PropagationAxis::X</code>, <code>PropagationAxis::Y</code>, and <code>PropagationAxis::Z</code>.</dd></dl>
+<h3>Details</h3>
+<p>The algorithm makes use of the following recipe:</p>
+<ul>
+<li>Given the initial data on both sides of the initial interface of the discontinuity (here called "left" and "right" sides, where a coordinate axis points from left to right), we compute the pressure, \(p_*\), and the normal velocity, \(u_*\), in the so-called star region. This is done in the constructor. Here "normal" refers to the normal direction to the initial interface.</li>
+<li>Given the pressure and the normal velocity in the star region, two <code>Wave</code> <code>struct</code>s are created, which represent the waves propagating at later times on each side of the contact discontinuity. Each <code>Wave</code> is equipped with two <code>struct</code>s named <code>Shock</code> and <code>Rarefaction</code> which contain functions that compute the primitive variables depending on whether the wave is a shock or a rarefaction.</li>
+<li>If \(p_* &gt; p_K\), the wave is a shock, otherwise the wave is a rarefaction. Here \(K\) stands for \(L\) or \(R\): the left and right initial pressure, respectively. Since this comparison can't be performed at compile time, each <code>Wave</code> holds a <code>bool</code> member <code>is_shock_</code> which is <code>true</code> if it is a shock, and <code>false</code> if it is a rarefaction wave. This variable is used to evaluate the correct functions at run time.</li>
+<li>In order to obtain the primitives at a certain time and spatial location, we evaluate whether the spatial location is on the left of the propagating contact discontinuity \((x &lt; u_* t)\) or on the right \((x &gt; u_* t)\), and we use the corresponding functions for left or right <code>Wave</code>s, respectively.</li>
+</ul>
+<dl class="section note"><dt>Note</dt><dd>The characterization of each propagating wave will only depend on the normal velocity, while the initial jump in the components of the velocity transverse to the wave propagation will be advected at the speed of the contact discontinuity ( \(u_*\)). </dd></dl>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="aecd3894e289554a82b5646e167a99ed6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aecd3894e289554a82b5646e167a99ed6">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classNewtonianEuler_1_1Solutions_1_1RiemannProblem.html">NewtonianEuler::Solutions::RiemannProblem</a>&lt; Dim &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Riemann Problem in 1, 2 or 3D along any coordinate axis.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following files:<ul>
+<li>src/Evolution/Executables/NewtonianEuler/<a class="el" href="EvolveNewtonianEulerFwd_8hpp_source.html">EvolveNewtonianEulerFwd.hpp</a></li>
+<li>src/PointwiseFunctions/AnalyticSolutions/NewtonianEuler/<a class="el" href="AnalyticSolutions_2NewtonianEuler_2RiemannProblem_8hpp_source.html">RiemannProblem.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,284 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: dg::FirstOrderScheme::FirstOrderSchemeLts&lt; Dim, VariablesTag, DtVariablesTag, NumericalFluxComputerTag, TemporalIdTag, TimeStepperTag &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacedg.html">dg</a></li><li class="navelem"><a class="el" href="namespacedg_1_1FirstOrderScheme.html">FirstOrderScheme</a></li><li class="navelem"><a class="el" href="structdg_1_1FirstOrderScheme_1_1FirstOrderSchemeLts.html">FirstOrderSchemeLts</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structdg_1_1FirstOrderScheme_1_1FirstOrderSchemeLts-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">dg::FirstOrderScheme::FirstOrderSchemeLts&lt; Dim, VariablesTag, DtVariablesTag, NumericalFluxComputerTag, TemporalIdTag, TimeStepperTag &gt; Struct Template Reference<div class="ingroups"><a class="el" href="group__DiscontinuousGalerkinGroup.html">Discontinuous Galerkin</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Boundary contributions for a first-order DG scheme with local time-stepping.  
+ <a href="structdg_1_1FirstOrderScheme_1_1FirstOrderSchemeLts.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="FirstOrderSchemeLts_8hpp_source.html">FirstOrderSchemeLts.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ab94811c3891f4d78309826e7a69a1736"><td class="memItemLeft" align="right" valign="top"><a id="ab94811c3891f4d78309826e7a69a1736"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>variables_tag</b> = VariablesTag</td></tr>
+<tr class="separator:ab94811c3891f4d78309826e7a69a1736"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a094be3219351522203c10e58f04909fe"><td class="memItemLeft" align="right" valign="top"><a id="a094be3219351522203c10e58f04909fe"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>numerical_flux_computer_tag</b> = NumericalFluxComputerTag</td></tr>
+<tr class="separator:a094be3219351522203c10e58f04909fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aded889b7b791900b0a44a5e78c17f74c"><td class="memItemLeft" align="right" valign="top"><a id="aded889b7b791900b0a44a5e78c17f74c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>NumericalFlux</b> = typename NumericalFluxComputerTag::type</td></tr>
+<tr class="separator:aded889b7b791900b0a44a5e78c17f74c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72ada52c3fa90b60d66a4e061fed9398"><td class="memItemLeft" align="right" valign="top"><a id="a72ada52c3fa90b60d66a4e061fed9398"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>temporal_id_tag</b> = TemporalIdTag</td></tr>
+<tr class="separator:a72ada52c3fa90b60d66a4e061fed9398"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af90a44adbd26e25c18f4809a8f26ae32"><td class="memItemLeft" align="right" valign="top"><a id="af90a44adbd26e25c18f4809a8f26ae32"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>receive_temporal_id_tag</b> = ::<a class="el" href="structTags_1_1Next.html">Tags::Next</a>&lt; temporal_id_tag &gt;</td></tr>
+<tr class="separator:af90a44adbd26e25c18f4809a8f26ae32"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0516656b58f27835f6730e95515494cf"><td class="memItemLeft" align="right" valign="top"><a id="a0516656b58f27835f6730e95515494cf"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>time_stepper_tag</b> = TimeStepperTag</td></tr>
+<tr class="separator:a0516656b58f27835f6730e95515494cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40fc6baabf86631394e239c567f76a8b"><td class="memItemLeft" align="right" valign="top"><a id="a40fc6baabf86631394e239c567f76a8b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>magnitude_of_face_normal_tag</b> = ::<a class="el" href="structTags_1_1Magnitude.html">Tags::Magnitude</a>&lt; <a class="el" href="structdomain_1_1Tags_1_1UnnormalizedFaceNormal.html">domain::Tags::UnnormalizedFaceNormal</a>&lt; volume_dim &gt; &gt;</td></tr>
+<tr class="separator:a40fc6baabf86631394e239c567f76a8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd4b930bf4c6f46ec33596be76c6260d"><td class="memItemLeft" align="right" valign="top"><a id="acd4b930bf4c6f46ec33596be76c6260d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryData</b> = <a class="el" href="structdg_1_1SimpleBoundaryData.html">dg::SimpleBoundaryData</a>&lt; typename base::BoundaryData::field_tags, tmpl::push_back&lt; typename base::BoundaryData::extra_data_tags, <a class="el" href="structTags_1_1Magnitude.html">magnitude_of_face_normal_tag</a> &gt; &gt;</td></tr>
+<tr class="separator:acd4b930bf4c6f46ec33596be76c6260d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a00ed71eeb57da0d4d45e1f2fdeeeba25"><td class="memItemLeft" align="right" valign="top"><a id="a00ed71eeb57da0d4d45e1f2fdeeeba25"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>boundary_data_computer</b> = detail::boundary_data_computer_lts_impl&lt; volume_dim, variables_tag, numerical_flux_computer_tag, <a class="el" href="structdg_1_1SimpleBoundaryData.html">BoundaryData</a> &gt;</td></tr>
+<tr class="separator:a00ed71eeb57da0d4d45e1f2fdeeeba25"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0295e14cc1e080d8c636e88016a9b1d1"><td class="memItemLeft" align="right" valign="top"><a id="a0295e14cc1e080d8c636e88016a9b1d1"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>mortar_data_tag</b> = ::<a class="el" href="structTags_1_1BoundaryHistory.html">Tags::BoundaryHistory</a>&lt; <a class="el" href="structdg_1_1SimpleBoundaryData.html">BoundaryData</a>, <a class="el" href="structdg_1_1SimpleBoundaryData.html">BoundaryData</a>, typename variables_tag::type &gt;</td></tr>
+<tr class="separator:a0295e14cc1e080d8c636e88016a9b1d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a903a6f3f69d37f666fbb2ce25d1af327"><td class="memItemLeft" align="right" valign="top"><a id="a903a6f3f69d37f666fbb2ce25d1af327"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_tags</b> = tmpl::list&lt; variables_tag, ::<a class="el" href="structTags_1_1Mortars.html">Tags::Mortars</a>&lt; <a class="el" href="structTags_1_1BoundaryHistory.html">mortar_data_tag</a>, Dim &gt; &gt;</td></tr>
+<tr class="separator:a903a6f3f69d37f666fbb2ce25d1af327"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5d6ddc6a8aa697e32fb2ffb45846f76"><td class="memItemLeft" align="right" valign="top"><a id="af5d6ddc6a8aa697e32fb2ffb45846f76"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt; <a class="el" href="structdomain_1_1Tags_1_1Mesh.html">domain::Tags::Mesh</a>&lt; Dim &gt;, ::<a class="el" href="structTags_1_1Mortars.html">Tags::Mortars</a>&lt; <a class="el" href="structdomain_1_1Tags_1_1Mesh.html">domain::Tags::Mesh</a>&lt; Dim - 1 &gt;, Dim &gt;, ::<a class="el" href="structTags_1_1Mortars.html">Tags::Mortars</a>&lt;::<a class="el" href="structTags_1_1MortarSize.html">Tags::MortarSize</a>&lt; Dim - 1 &gt;, Dim &gt;, NumericalFluxComputerTag, time_stepper_tag, ::<a class="el" href="structTags_1_1TimeStep.html">Tags::TimeStep</a> &gt;</td></tr>
+<tr class="separator:af5d6ddc6a8aa697e32fb2ffb45846f76"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a18014873aa9fce643de9162e6f2b354e"><td class="memItemLeft" align="right" valign="top"><a id="a18014873aa9fce643de9162e6f2b354e"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>apply</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; typename variables_tag::type * &gt; variables, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; typename ::<a class="el" href="structTags_1_1Mortars.html">Tags::Mortars</a>&lt; <a class="el" href="structTags_1_1BoundaryHistory.html">mortar_data_tag</a>, Dim &gt;::type * &gt; all_mortar_data, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;volume_mesh, const typename ::<a class="el" href="structTags_1_1Mortars.html">Tags::Mortars</a>&lt; <a class="el" href="structdomain_1_1Tags_1_1Mesh.html">domain::Tags::Mesh</a>&lt; Dim - 1 &gt;, Dim &gt;::type &amp;mortar_meshes, const typename ::<a class="el" href="structTags_1_1Mortars.html">Tags::Mortars</a>&lt;::<a class="el" href="structTags_1_1MortarSize.html">Tags::MortarSize</a>&lt; Dim - 1 &gt;, Dim &gt;::type &amp;mortar_sizes, const NumericalFlux &amp;normal_dot_numerical_flux_computer, const typename time_stepper_tag::type::element_type &amp;time_stepper, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;time_step) noexcept</td></tr>
+<tr class="separator:a18014873aa9fce643de9162e6f2b354e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:ab344c782cb45dfb942c4d4d5d0b87125"><td class="memItemLeft" align="right" valign="top"><a id="ab344c782cb45dfb942c4d4d5d0b87125"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = Dim</td></tr>
+<tr class="separator:ab344c782cb45dfb942c4d4d5d0b87125"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim, typename VariablesTag, typename DtVariablesTag, typename NumericalFluxComputerTag, typename TemporalIdTag, typename TimeStepperTag&gt;<br />
+struct dg::FirstOrderScheme::FirstOrderSchemeLts&lt; Dim, VariablesTag, DtVariablesTag, NumericalFluxComputerTag, TemporalIdTag, TimeStepperTag &gt;</h3>
+
+<p>Boundary contributions for a first-order DG scheme with local time-stepping. </p>
+<p>This class is the local time-stepping equivalent to the <code><a class="el" href="structdg_1_1FirstOrderScheme_1_1FirstOrderScheme.html" title="Boundary contributions for a first-order DG scheme.">dg::FirstOrderScheme::FirstOrderScheme</a></code>. Notable differences are:</p>
+<ul>
+<li>Boundary contributions are added to the <code>VariablesTag</code> directly.</li>
+<li>We use the <code><a class="el" href="structTags_1_1BoundaryHistory.html">Tags::BoundaryHistory</a></code> on mortars.</li>
+<li>We need to store the face-normal magnitude in the boundary history, as opposed to the non-LTS case where we can retrieve it when needed. </li>
+</ul>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/<a class="el" href="FirstOrderSchemeLts_8hpp_source.html">FirstOrderSchemeLts.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

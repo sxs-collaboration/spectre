@@ -1,0 +1,510 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Evolution/Systems/ScalarWave/BoundaryConditions/ConstraintPreservingSphericalRadiation.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_d7cddb31ba741ba3a4d5be000d880a30.html">Evolution</a></li><li class="navelem"><a class="el" href="dir_ae9813db12dd9fd3f3106ad3644a1b2a.html">Systems</a></li><li class="navelem"><a class="el" href="dir_cc37fb065962670ef90ca49fd8e1434a.html">ScalarWave</a></li><li class="navelem"><a class="el" href="dir_234825918489598feff229077f1af735.html">BoundaryConditions</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">ConstraintPreservingSphericalRadiation.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/optional.html">optional</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;pup.h&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a>&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Prefixes_8hpp.html">DataStructures/DataBox/Prefixes.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataVector.hpp&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Tensor_8hpp.html">DataStructures/Tensor/Tensor.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Variables_8hpp.html">DataStructures/Variables.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;Evolution/BoundaryConditions/Type.hpp&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/ScalarWave/BoundaryConditions/BoundaryCondition.hpp&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Evolution_2Systems_2ScalarWave_2Tags_8hpp.html">Evolution/Systems/ScalarWave/Tags.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="PartialDerivatives_8hpp.html">NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Options_8hpp.html">Options/Options.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="CharmPupable_8hpp.html">Parallel/CharmPupable.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/AnalyticData/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp&quot;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;Time/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment"></span><span class="keyword">namespace </span><a class="code" href="namespacedomain_1_1Tags.html">domain::Tags</a> {</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim, <span class="keyword">typename</span> Frame&gt;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="keyword">struct </span>Coordinates;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;}  <span class="comment">// namespace domain::Tags</span><span class="comment"></span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceScalarWave_1_1BoundaryConditions.html">ScalarWave::BoundaryConditions</a> {</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="keyword">namespace </span>detail {<span class="comment"></span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment">/// The type of spherical radiation boundary condition to impose</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="comment"></span><span class="keyword">enum class</span> ConstraintPreservingSphericalRadiationType {<span class="comment"></span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment">  /// Impose \f$(\partial_t + \partial_r)\Psi=0\f$</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment"></span>  Sommerfeld,<span class="comment"></span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment">  /// Impose \f$(\partial_t + \partial_r + r^{-1})\Psi=0\f$</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment"></span>  FirstOrderBaylissTurkel,<span class="comment"></span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment">  /// Imposes a second-order Bayliss-Turkel boundary condition</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment"></span>  SecondOrderBaylissTurkel</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;};</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160; </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;ConstraintPreservingSphericalRadiationType</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;convert_constraint_preserving_spherical_radiation_type_from_yaml(</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keyword">const</span> <a class="code" href="classOptions_1_1Option.html">Options::Option</a>&amp; options);</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;}  <span class="comment">// namespace detail</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment"> * \brief Constraint-preserving spherical radiation boundary condition that</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment"> * seeks to avoid ingoing constraint violations and radiation.</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment"> * The constraint-preserving part of the boundary condition imposes the</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment"> * following condition on the time derivatives of the characteristic fields:</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment"> * \f{align*}{</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment"> *   d_tw^\Psi&amp;\to d_tw^{\Psi}+\lambda_{\Psi}n^i\mathcal{C}_i, \\</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment"> *   d_tw^0_i&amp;\to d_tw^{0}_i+\lambda_{0}n^jP^k_i\mathcal{C}_{ik},</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment"> * \f}</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment"> * where</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment"> * \f{align*}{</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment"> * P^k{}_i=\delta^k_i-n^kn_i</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment"> * \f}</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment"> * projects a tensor onto the spatial surface to which \f$n_i\f$ is normal, and</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment"> * \f$d_t w\f$ is the evolved to characteristic field transformation applied to</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment"> * the time derivatives of the evolved fields. That is,</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment"> * \f{align*}{</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment"> * d_t w^\Psi&amp;=\partial_t \Psi, \\</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment"> * d_t w_i^0&amp;=(\delta^k_i-n^k n_i)\partial_t \Phi_k, \\</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment"> * d_t w^{\pm}&amp;=\partial_t\Pi\pm n^k\partial_t\Phi_k - \gamma_2\partial_t\Psi.</span></div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment"> * \f}</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment"> * The constraints are defined as:</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment"> * \f{align*}{</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment"> *  \mathcal{C}_i&amp;=\partial_i\Psi - \Phi_i=0, \\</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment"> *  \mathcal{C}_{ij}&amp;=\partial_{[i}\Phi_{j]}=0</span></div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="comment"> * \f}</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment"> * Radiation boundary conditions impose a condition on \f$\Pi\f$ or its time</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment"> * derivative. We denote the boundary condition value of the time derivative of</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment"> * \f$\Pi\f$ by \f$\partial_t\Pi^{\mathrm{BC}}\f$. With this, we can impose</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment"> * boundary conditions on the time derivatives of the evolved variables as</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment"> * follows:</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment"> * \f{align*}{</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment"> * \partial_{t} \Psi&amp;\to\partial_{t}\Psi +</span></div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment"> *                    \lambda_\Psi n^i \mathcal{C}_i, \\</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="comment"> * \partial_{t}\Pi&amp;\to\partial_{t}\Pi-\left(\partial_t\Pi</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment"> *                  - \partial_t\Pi^{\mathrm{BC}}\right)</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="comment"> *                  +\gamma_2\lambda_\Psi n^i \mathcal{C}_i</span></div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="comment"> *                  =\partial_t\Pi^{\mathrm{BC}}</span></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="comment"> *                  +\gamma_2\lambda_\Psi n^i \mathcal{C}_i, \\</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="comment"> * \partial_{t}\Phi_i&amp;\to\partial_{t}\Phi_i+</span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="comment"> *                     \lambda_0n^jP^k{}_i\mathcal{C}_{jk}</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="comment"> *   = \partial_{t}\Phi_i+ \lambda_0n^j \mathcal{C}_{ji}.</span></div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="comment"> * \f}</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="comment"> * Below we assume the normal vector \f$n^i\f$ is the radial unit normal vector.</span></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="comment"> * That is, we assume the outer boundary is spherical. A Sommerfeld</span></div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="comment"> * \cite Sommerfeld1949 radiation condition is given by</span></div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="comment"> * \f{align*}{</span></div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="comment"> *  \partial_t\Psi=n^i\Phi_i</span></div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="comment"> * \f}</span></div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="comment"> * Or, assuming that \f$\partial_tn^i=0\f$ (or is very small),</span></div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment"> * \f{align*}{</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="comment"> *  \partial_t\Pi^{\mathrm{BC}}=n^i\partial_t\Phi_i</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="comment"> * \f}</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="comment"> * The Bayliss-Turkel \cite BaylissTurkel boundary conditions are given by:</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="comment"> * \f{align*}{</span></div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="comment"> *  \prod_{l=1}^m\left(\partial_t + \partial_r + \frac{2l-1}{r}\right)\Psi=0</span></div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;<span class="comment"> * \f}</span></div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;<span class="comment"> * The first-order form is</span></div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;<span class="comment"> * \f{align*}{</span></div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;<span class="comment"> *  \partial_t\Pi^{\mathrm{BC}}=n^i\partial_t\Phi_i + \frac{1}{r}\partial_t\Psi,</span></div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;<span class="comment"> * \f}</span></div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;<span class="comment"> * assuming \f$\partial_t n^i=0\f$ and \f$\partial_t r=0\f$.</span></div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;<span class="comment"> * The second-order boundary condition is given by,</span></div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;<span class="comment"> * \f{align*}{</span></div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;<span class="comment"> *  \partial_t\Pi^{\mathrm{BC}}</span></div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;<span class="comment"> *   &amp;=\left(\partial_t\partial_r + \partial_r\partial_t +</span></div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;<span class="comment"> *     \partial_r^2+\frac{4}{r}\partial_t</span></div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;<span class="comment"> *     +\frac{4}{r}\partial_r + \frac{2}{r^2}\right)\Psi \notag \\</span></div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;<span class="comment"> *     &amp;=n^i(\partial_t\Phi_i-\partial_i\Pi) + n^i n^j\partial_i\Phi_j -</span></div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;<span class="comment"> *     \frac{4}{r}\Pi+\frac{4}{r}n^i\Phi_i + \frac{2}{r^2}\Psi,</span></div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;<span class="comment"> * \f}</span></div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;<span class="comment"> * assuming \f$\partial_t n^i=0\f$ and \f$\partial_t r=0\f$.</span></div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;<span class="comment"> * The moving mesh can be accounted for by using</span></div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;<span class="comment"> * \f{align*}{</span></div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;<span class="comment"> * \partial_t r = \frac{1}{r}x^i\delta_{ij}\partial_t x^j</span></div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;<span class="comment"> * \f}</span></div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;<span class="comment"> * \note It is not clear if \f$\partial_t\Phi_i\f$ should be replaced by</span></div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;<span class="comment"> * \f$-\partial_i\Pi\f$, which is the evolution equation but without the</span></div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;<span class="comment"> * constraint.</span></div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;<span class="comment"> * \note On a moving mesh the characteristic speeds change according to</span></div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;<span class="comment"> * \f$\lambda\to\lambda-v^i_gn_i\f$ where \f$v^i_g\f$ is the mesh velocity.</span></div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;<span class="comment"> * \note For the scalar wave system \f$\lambda_0 = \lambda_\psi\f$</span></div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;<span class="comment"> * \warning The boundary conditions are implemented assuming the outer boundary</span></div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;<span class="comment"> * is spherical. It might be possible to generalize the condition to</span></div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;<span class="comment"> * non-spherical boundaries by using \f$x^i/r\f$ instead of \f$n^i\f$, but this</span></div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;<span class="comment"> * hasn&#39;t been tested.</span></div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00168"></a><span class="lineno"><a class="line" href="classScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation.html">  168</a></span>&#160;<span class="keyword">class </span><a class="code" href="classScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation.html">ConstraintPreservingSphericalRadiation</a> final</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;    : <span class="keyword">public</span> <a class="code" href="classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a>&lt;Dim&gt; {</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00171"></a><span class="lineno"><a class="line" href="structScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation_1_1TypeOptionTag.html">  171</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation_1_1TypeOptionTag.html">TypeOptionTag</a> {</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;    <span class="keyword">using</span> type = detail::ConstraintPreservingSphericalRadiationType;</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;    <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> <span class="stringliteral">&quot;Type&quot;</span>; }</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;    <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help{</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;        <span class="stringliteral">&quot;Whether to impose Sommerfeld, first-order Bayliss-Turkel, or &quot;</span></div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;        <span class="stringliteral">&quot;second-order Bayliss-Turkel spherical radiation boundary conditions.&quot;</span>};</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;  };</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160; </div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;  <span class="keyword">using</span> options = tmpl::list&lt;TypeOptionTag&gt;;</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help{</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;      <span class="stringliteral">&quot;Constraint-preserving spherical radiation boundary conditions setting &quot;</span></div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;      <span class="stringliteral">&quot;the time derivatives of Psi, Phi, and Pi to avoid incoming constraint &quot;</span></div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;      <span class="stringliteral">&quot;violations, and imposing radiation boundary conditions.&quot;</span>};</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160; </div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;  <a class="code" href="classScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation.html">ConstraintPreservingSphericalRadiation</a>(</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;      detail::ConstraintPreservingSphericalRadiationType type) noexcept;</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160; </div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;  <a class="code" href="classScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation.html">ConstraintPreservingSphericalRadiation</a>() = <span class="keywordflow">default</span>;<span class="comment"></span></div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;<span class="comment">  /// \cond</span></div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;<span class="comment"></span>  <a class="code" href="classScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation.html">ConstraintPreservingSphericalRadiation</a>(</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;      <a class="code" href="classScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation.html">ConstraintPreservingSphericalRadiation</a>&amp;&amp;) noexcept = default;</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;  <a class="code" href="classScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation.html">ConstraintPreservingSphericalRadiation</a>&amp; operator=(</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;      <a class="code" href="classScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation.html">ConstraintPreservingSphericalRadiation</a>&amp;&amp;) noexcept = default;</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;  <a class="code" href="classScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation.html">ConstraintPreservingSphericalRadiation</a>(</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;      const <a class="code" href="classScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation.html">ConstraintPreservingSphericalRadiation</a>&amp;) = default;</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;  <a class="code" href="classScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation.html">ConstraintPreservingSphericalRadiation</a>&amp; operator=(</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;      const <a class="code" href="classScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation.html">ConstraintPreservingSphericalRadiation</a>&amp;) = default;<span class="comment"></span></div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;<span class="comment">  /// \endcond</span></div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;<span class="comment"></span>  ~<a class="code" href="classScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation.html">ConstraintPreservingSphericalRadiation</a>() override = default;</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160; </div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;  explicit <a class="code" href="classScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation.html">ConstraintPreservingSphericalRadiation</a>(</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;      CkMigrateMessage* msg) noexcept;</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160; </div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;  WRAPPED_PUPable_decl_base_template(</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;      domain::BoundaryConditions::<a class="code" href="classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a>,</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;      <a class="code" href="classScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation.html">ConstraintPreservingSphericalRadiation</a>);</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160; </div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;  auto get_clone() const noexcept -&gt; std::unique_ptr&lt;</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;      domain::BoundaryConditions::<a class="code" href="classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a>&gt; override;</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160; </div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;  static constexpr <a class="code" href="namespaceevolution.html">evolution</a>::BoundaryConditions::Type bc_type =</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;      <a class="code" href="namespaceevolution.html">evolution</a>::BoundaryConditions::Type::<a class="code" href="structScalarWave_1_1TimeDerivative.html">TimeDerivative</a>;</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160; </div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;  <span class="keywordtype">void</span> pup(PUP::er&amp; p) override;</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160; </div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;  using dg_interior_evolved_variables_tags =</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;      tmpl::list&lt;<a class="code" href="namespaceScalarWave.html">ScalarWave</a>::<a class="code" href="structScalarWave_1_1Pi.html">Pi</a>, <a class="code" href="namespaceScalarWave.html">ScalarWave</a>::<a class="code" href="structScalarWave_1_1Phi.html">Phi</a>&lt;Dim&gt;, <a class="code" href="namespaceScalarWave.html">ScalarWave</a>::<a class="code" href="structScalarWave_1_1Psi.html">Psi</a>&gt;;</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;  using dg_interior_temporary_tags =</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;      tmpl::list&lt;domain::Tags::Coordinates&lt;Dim, <a class="code" href="namespaceFrame.html">Frame</a>::Inertial&gt;,</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;                 Tags::ConstraintGamma2&gt;;</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;  using dg_interior_dt_vars_tags =</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;      tmpl::list&lt;::Tags::dt&lt;<a class="code" href="namespaceScalarWave.html">ScalarWave</a>::<a class="code" href="structScalarWave_1_1Pi.html">Pi</a>&gt;, ::Tags::dt&lt;<a class="code" href="namespaceScalarWave.html">ScalarWave</a>::<a class="code" href="structScalarWave_1_1Phi.html">Phi</a>&lt;Dim&gt;&gt;,</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;                 ::Tags::dt&lt;<a class="code" href="namespaceScalarWave.html">ScalarWave</a>::<a class="code" href="structScalarWave_1_1Psi.html">Psi</a>&gt;&gt;;</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;  using dg_interior_deriv_vars_tags = tmpl::list&lt;</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;      ::Tags::deriv&lt;<a class="code" href="namespaceScalarWave.html">ScalarWave</a>::<a class="code" href="structScalarWave_1_1Pi.html">Pi</a>, tmpl::<span class="keywordtype">size_t</span>&lt;Dim&gt;, <a class="code" href="namespaceFrame.html">Frame</a>::Inertial&gt;,</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;      ::Tags::deriv&lt;<a class="code" href="namespaceScalarWave.html">ScalarWave</a>::<a class="code" href="structScalarWave_1_1Psi.html">Psi</a>, tmpl::<span class="keywordtype">size_t</span>&lt;Dim&gt;, <a class="code" href="namespaceFrame.html">Frame</a>::Inertial&gt;,</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;      ::Tags::deriv&lt;<a class="code" href="namespaceScalarWave.html">ScalarWave</a>::<a class="code" href="structScalarWave_1_1Phi.html">Phi</a>&lt;Dim&gt;, tmpl::<span class="keywordtype">size_t</span>&lt;Dim&gt;, <a class="code" href="namespaceFrame.html">Frame</a>::Inertial&gt;&gt;;</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;  using dg_gridless_tags = tmpl::list&lt;&gt;;</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160; </div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;  std::optional&lt;std::<span class="keywordtype">string</span>&gt; dg_time_derivative(</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;      <a class="code" href="namespacegsl.html">gsl</a>::not_null&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="classDataVector.html">DataVector</a>&gt;*&gt; dt_pi_correction,</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;      <a class="code" href="namespacegsl.html">gsl</a>::not_null&lt;<a class="code" href="namespacetnsr.html">tnsr</a>::i&lt;<a class="code" href="classDataVector.html">DataVector</a>, Dim, <a class="code" href="namespaceFrame.html">Frame</a>::Inertial&gt;*&gt;</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;          dt_phi_correction,</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;      <a class="code" href="namespacegsl.html">gsl</a>::not_null&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="classDataVector.html">DataVector</a>&gt;*&gt; dt_psi_correction,</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;      const std::optional&lt;<a class="code" href="namespacetnsr.html">tnsr</a>::I&lt;<a class="code" href="classDataVector.html">DataVector</a>, Dim, <a class="code" href="namespaceFrame.html">Frame</a>::Inertial&gt;&gt;&amp;</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;          face_mesh_velocity,</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;      const <a class="code" href="namespacetnsr.html">tnsr</a>::i&lt;<a class="code" href="classDataVector.html">DataVector</a>, Dim, <a class="code" href="namespaceFrame.html">Frame</a>::Inertial&gt;&amp; normal_covector,</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;      const <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="classDataVector.html">DataVector</a>&gt;&amp; <a class="code" href="group__GeneralRelativityGroup.html#ga0f8ea77b898950a2a3ab6a5feea01935">pi</a>,</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;      const <a class="code" href="namespacetnsr.html">tnsr</a>::i&lt;<a class="code" href="classDataVector.html">DataVector</a>, Dim, <a class="code" href="namespaceFrame.html">Frame</a>::Inertial&gt;&amp; <a class="code" href="group__GeneralRelativityGroup.html#gaecccadb6658f3735cfb7344c780abd97">phi</a>,</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;      const <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="classDataVector.html">DataVector</a>&gt;&amp; psi,</div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;      const <a class="code" href="namespacetnsr.html">tnsr</a>::I&lt;<a class="code" href="classDataVector.html">DataVector</a>, Dim, <a class="code" href="namespaceFrame.html">Frame</a>::Inertial&gt;&amp; coords,</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;      const <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="classDataVector.html">DataVector</a>&gt;&amp; gamma2, const <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="classDataVector.html">DataVector</a>&gt;&amp; dt_pi,</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;      const <a class="code" href="namespacetnsr.html">tnsr</a>::i&lt;<a class="code" href="classDataVector.html">DataVector</a>, Dim, <a class="code" href="namespaceFrame.html">Frame</a>::Inertial&gt;&amp; dt_phi,</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;      const <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="code" href="classDataVector.html">DataVector</a>&gt;&amp; dt_psi,</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;      const <a class="code" href="namespacetnsr.html">tnsr</a>::i&lt;<a class="code" href="classDataVector.html">DataVector</a>, Dim, <a class="code" href="namespaceFrame.html">Frame</a>::Inertial&gt;&amp; d_pi,</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;      const <a class="code" href="namespacetnsr.html">tnsr</a>::i&lt;<a class="code" href="classDataVector.html">DataVector</a>, Dim, <a class="code" href="namespaceFrame.html">Frame</a>::Inertial&gt;&amp; d_psi,</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;      const <a class="code" href="namespacetnsr.html">tnsr</a>::ij&lt;<a class="code" href="classDataVector.html">DataVector</a>, Dim, <a class="code" href="namespaceFrame.html">Frame</a>::Inertial&gt;&amp; d_phi) const noexcept;</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160; </div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160; private:</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;  detail::ConstraintPreservingSphericalRadiationType type_{</div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;      detail::ConstraintPreservingSphericalRadiationType::Sommerfeld};</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;};</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;}  <span class="comment">// namespace ScalarWave::BoundaryConditions</span></div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160; </div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;<span class="keyword">template</span> &lt;&gt;</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;<span class="keyword">struct </span><a class="code" href="structOptions_1_1create__from__yaml.html">Options::create_from_yaml</a>&lt;</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;    <a class="code" href="namespaceScalarWave.html">ScalarWave</a>::BoundaryConditions::detail::</div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;        ConstraintPreservingSphericalRadiationType&gt; {</div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Metavariables&gt;</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;  <span class="keyword">static</span> <span class="keyword">typename</span> ScalarWave::BoundaryConditions::detail::</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;      ConstraintPreservingSphericalRadiationType</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;      create(<span class="keyword">const</span> <a class="code" href="classOptions_1_1Option.html">Options::Option</a>&amp; options) {</div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;    <span class="keywordflow">return</span> ScalarWave::BoundaryConditions::detail::</div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;        convert_constraint_preserving_spherical_radiation_type_from_yaml(</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;            options);</div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;  }</div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;};</div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="agroup__GeneralRelativityGroup_html_ga0f8ea77b898950a2a3ab6a5feea01935"><div class="ttname"><a href="group__GeneralRelativityGroup.html#ga0f8ea77b898950a2a3ab6a5feea01935">GeneralizedHarmonic::pi</a></div><div class="ttdeci">void pi(gsl::not_null&lt; tnsr::aa&lt; DataType, SpatialDim, Frame &gt; * &gt; pi, const Scalar&lt; DataType &gt; &amp;lapse, const Scalar&lt; DataType &gt; &amp;dt_lapse, const tnsr::I&lt; DataType, SpatialDim, Frame &gt; &amp;shift, const tnsr::I&lt; DataType, SpatialDim, Frame &gt; &amp;dt_shift, const tnsr::ii&lt; DataType, SpatialDim, Frame &gt; &amp;spatial_metric, const tnsr::ii&lt; DataType, SpatialDim, Frame &gt; &amp;dt_spatial_metric, const tnsr::iaa&lt; DataType, SpatialDim, Frame &gt; &amp;phi) noexcept</div><div class="ttdoc">Computes the conjugate momentum  of the spacetime metric .</div></div>
+<div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
+<div class="ttc" id="aCharmPupable_8hpp_html"><div class="ttname"><a href="CharmPupable_8hpp.html">CharmPupable.hpp</a></div></div>
+<div class="ttc" id="astructScalarWave_1_1TimeDerivative_html"><div class="ttname"><a href="structScalarWave_1_1TimeDerivative.html">ScalarWave::TimeDerivative</a></div><div class="ttdoc">Compute the time derivatives for scalar wave system.</div><div class="ttdef"><b>Definition:</b> TimeDerivative.hpp:26</div></div>
+<div class="ttc" id="anamespaceevolution_html"><div class="ttname"><a href="namespaceevolution.html">evolution</a></div><div class="ttdoc">Functionality for evolving hyperbolic partial differential equations.</div><div class="ttdef"><b>Definition:</b> RunEventsAndDenseTriggers.hpp:30</div></div>
+<div class="ttc" id="aOptions_8hpp_html"><div class="ttname"><a href="Options_8hpp.html">Options.hpp</a></div></div>
+<div class="ttc" id="astructScalarWave_1_1Phi_html"><div class="ttname"><a href="structScalarWave_1_1Phi.html">ScalarWave::Phi</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:31</div></div>
+<div class="ttc" id="aEvolution_2Systems_2ScalarWave_2Tags_8hpp_html"><div class="ttname"><a href="Evolution_2Systems_2ScalarWave_2Tags_8hpp.html">Tags.hpp</a></div></div>
+<div class="ttc" id="astructScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation_1_1TypeOptionTag_html"><div class="ttname"><a href="structScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation_1_1TypeOptionTag.html">ScalarWave::BoundaryConditions::ConstraintPreservingSphericalRadiation::TypeOptionTag</a></div><div class="ttdef"><b>Definition:</b> ConstraintPreservingSphericalRadiation.hpp:171</div></div>
+<div class="ttc" id="aclassOptions_1_1Option_html"><div class="ttname"><a href="classOptions_1_1Option.html">Options::Option</a></div><div class="ttdef"><b>Definition:</b> Options.hpp:108</div></div>
+<div class="ttc" id="aclassScalarWave_1_1BoundaryConditions_1_1BoundaryCondition_html"><div class="ttname"><a href="classScalarWave_1_1BoundaryConditions_1_1BoundaryCondition.html">ScalarWave::BoundaryConditions::BoundaryCondition</a></div><div class="ttdoc">The base class off of which all boundary conditions must inherit.</div><div class="ttdef"><b>Definition:</b> BoundaryCondition.hpp:27</div></div>
+<div class="ttc" id="astructOptions_1_1create__from__yaml_html"><div class="ttname"><a href="structOptions_1_1create__from__yaml.html">Options::create_from_yaml</a></div><div class="ttdef"><b>Definition:</b> MinmodType.hpp:11</div></div>
+<div class="ttc" id="anamespaceScalarWave_1_1BoundaryConditions_html"><div class="ttname"><a href="namespaceScalarWave_1_1BoundaryConditions.html">ScalarWave::BoundaryConditions</a></div><div class="ttdoc">Boundary conditions for the scalar wave system.</div><div class="ttdef"><b>Definition:</b> BoundaryCondition.hpp:24</div></div>
+<div class="ttc" id="aclassDataVector_html"><div class="ttname"><a href="classDataVector.html">DataVector</a></div><div class="ttdoc">Stores a collection of function values.</div><div class="ttdef"><b>Definition:</b> DataVector.hpp:46</div></div>
+<div class="ttc" id="agroup__GeneralRelativityGroup_html_gaecccadb6658f3735cfb7344c780abd97"><div class="ttname"><a href="group__GeneralRelativityGroup.html#gaecccadb6658f3735cfb7344c780abd97">GeneralizedHarmonic::phi</a></div><div class="ttdeci">void phi(gsl::not_null&lt; tnsr::iaa&lt; DataType, SpatialDim, Frame &gt; * &gt; phi, const Scalar&lt; DataType &gt; &amp;lapse, const tnsr::i&lt; DataType, SpatialDim, Frame &gt; &amp;deriv_lapse, const tnsr::I&lt; DataType, SpatialDim, Frame &gt; &amp;shift, const tnsr::iJ&lt; DataType, SpatialDim, Frame &gt; &amp;deriv_shift, const tnsr::ii&lt; DataType, SpatialDim, Frame &gt; &amp;spatial_metric, const tnsr::ijj&lt; DataType, SpatialDim, Frame &gt; &amp;deriv_spatial_metric) noexcept</div><div class="ttdoc">Computes the auxiliary variable  used by the generalized harmonic formulation of Einstein's equations...</div></div>
+<div class="ttc" id="amemory_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a></div></div>
+<div class="ttc" id="aVariables_8hpp_html"><div class="ttname"><a href="Variables_8hpp.html">Variables.hpp</a></div></div>
+<div class="ttc" id="anamespacetnsr_html"><div class="ttname"><a href="namespacetnsr.html">tnsr</a></div><div class="ttdoc">Type aliases to construct common Tensors.</div><div class="ttdef"><b>Definition:</b> TypeAliases.hpp:31</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga06ebcb38a1f13c246e53378b9e8959ce"><div class="ttname"><a href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a></div><div class="ttdeci">Tensor&lt; T, Symmetry&lt;&gt;, index_list&lt;&gt; &gt; Scalar</div><div class="ttdef"><b>Definition:</b> TypeAliases.hpp:21</div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="anamespaceOptions_html_aa61c7f41f21afa7646811456f673be89"><div class="ttname"><a href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a></div><div class="ttdeci">const char *const String</div><div class="ttdoc">The string used in option structs.</div><div class="ttdef"><b>Definition:</b> Options.hpp:32</div></div>
+<div class="ttc" id="anamespaceFrame_html"><div class="ttname"><a href="namespaceFrame.html">Frame</a></div><div class="ttdef"><b>Definition:</b> IndexType.hpp:36</div></div>
+<div class="ttc" id="aTensor_8hpp_html"><div class="ttname"><a href="Tensor_8hpp.html">Tensor.hpp</a></div></div>
+<div class="ttc" id="anamespaceScalarWave_html"><div class="ttname"><a href="namespaceScalarWave.html">ScalarWave</a></div><div class="ttdoc">Items related to evolving the scalar wave equation.</div><div class="ttdef"><b>Definition:</b> BoundaryCondition.hpp:24</div></div>
+<div class="ttc" id="astructScalarWave_1_1Psi_html"><div class="ttname"><a href="structScalarWave_1_1Psi.html">ScalarWave::Psi</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:20</div></div>
+<div class="ttc" id="aoptional_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/optional.html">optional</a></div></div>
+<div class="ttc" id="aPartialDerivatives_8hpp_html"><div class="ttname"><a href="PartialDerivatives_8hpp.html">PartialDerivatives.hpp</a></div></div>
+<div class="ttc" id="aPrefixes_8hpp_html"><div class="ttname"><a href="Prefixes_8hpp.html">Prefixes.hpp</a></div></div>
+<div class="ttc" id="aclassScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation_html"><div class="ttname"><a href="classScalarWave_1_1BoundaryConditions_1_1ConstraintPreservingSphericalRadiation.html">ScalarWave::BoundaryConditions::ConstraintPreservingSphericalRadiation</a></div><div class="ttdoc">Constraint-preserving spherical radiation boundary condition that seeks to avoid ingoing constraint v...</div><div class="ttdef"><b>Definition:</b> ConstraintPreservingSphericalRadiation.hpp:168</div></div>
+<div class="ttc" id="anamespacegsl_html"><div class="ttname"><a href="namespacegsl.html">gsl</a></div><div class="ttdoc">Implementations from the Guideline Support Library.</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:11</div></div>
+<div class="ttc" id="atype_traits_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a></div></div>
+<div class="ttc" id="astructScalarWave_1_1Pi_html"><div class="ttname"><a href="structScalarWave_1_1Pi.html">ScalarWave::Pi</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:25</div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="anamespacedomain_1_1Tags_html"><div class="ttname"><a href="namespacedomain_1_1Tags.html">domain::Tags</a></div><div class="ttdoc">Tags for the domain.</div><div class="ttdef"><b>Definition:</b> FaceNormal.hpp:107</div></div>
+<div class="ttc" id="astring_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/string.html">string</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

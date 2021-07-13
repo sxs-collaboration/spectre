@@ -1,0 +1,943 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Tensor Expressions</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">Tensor Expressions</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Tensor Expressions allow writing expressions of tensors in a way similar to what is used with pen and paper.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceTensorExpressions"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTensorExpressions.html">TensorExpressions</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTensorExpressions_1_1TensorContract.html">TensorExpressions::TensorContract&lt; FirstContractedIndexPos, SecondContractedIndexPos, T, X, Symm, IndexList, ArgsList &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTensorExpressions_1_1LhsTensorSymmAndIndices.html">TensorExpressions::LhsTensorSymmAndIndices&lt; RhsTensorIndexList, LhsTensorIndexList, RhsSymmetry, RhsTensorIndexTypeList, NumIndices, IndexSequence &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines and stores a LHS tensor's symmetry and index list from a RHS tensor expression and desired LHS index order.  <a href="structTensorExpressions_1_1LhsTensorSymmAndIndices.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTensorExpressions_1_1NumberAsExpression.html">TensorExpressions::NumberAsExpression</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines an expression representing a <code>double</code>  <a href="structTensorExpressions_1_1NumberAsExpression.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTensorExpressions_1_1OuterProduct.html">TensorExpressions::OuterProduct&lt; T1, T2, IndexList1, IndexList2, ArgsList1, ArgsList2 &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines the tensor expression representing the outer product of two tensor expressions.  <a href="structTensorExpressions_1_1OuterProduct.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTensorExpressions_1_1OuterProduct_3_01T1_00_01T2_00_01IndexList1_3_01Indices1_8_8_8_01_4_0c91c427832e059937c95b09c18e32fe4.html">TensorExpressions::OuterProduct&lt; T1, T2, IndexList1&lt; Indices1... &gt;, IndexList2&lt; Indices2... &gt;, ArgsList1&lt; Args1... &gt;, ArgsList2&lt; Args2... &gt; &gt;::GetOpTensorMultiIndex&lt; OperandTensorIndexList &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper struct for computing the multi-index of a component of an operand of the outer product from the multi-index of a component of the outer product.  <a href="structTensorExpressions_1_1OuterProduct_3_01T1_00_01T2_00_01IndexList1_3_01Indices1_8_8_8_01_4_0c91c427832e059937c95b09c18e32fe4.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTensorExpressions_1_1SquareRoot.html">TensorExpressions::SquareRoot&lt; T &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines the tensor expression representing the square root of a tensor expression that evaluates to a rank 0 tensor.  <a href="structTensorExpressions_1_1SquareRoot.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTensorExpressions_1_1TensorAsExpression.html">TensorExpressions::TensorAsExpression&lt; T, ArgsList &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines an expression representing a Tensor.  <a href="structTensorExpressions_1_1TensorAsExpression.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structExpression.html">Expression</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Marks a class as being a TensorExpression.  <a href="structExpression.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTensorExpression_3_01Derived_00_01DataType_00_01Symm_00_01tmpl_1_1list_3_01Indices_8_8_8_0325e1bafc70f036ee2f18c4f6a988515.html">TensorExpression&lt; Derived, DataType, Symm, tmpl::list&lt; Indices... &gt;, ArgsList&lt; Args... &gt; &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The base class all tensor expression implementations derive from.  <a href="structTensorExpression_3_01Derived_00_01DataType_00_01Symm_00_01tmpl_1_1list_3_01Indices_8_8_8_0325e1bafc70f036ee2f18c4f6a988515.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTensorIndex.html">TensorIndex&lt; I, &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents the geeric indices in a TensorExpression.  <a href="structTensorIndex.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__tensor__index.html">tt::is_tensor_index&lt; T &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if a type <code>T</code> is a <a class="el" href="structTensorIndex.html" title="Represents the geeric indices in a TensorExpression.">TensorIndex</a> used in <a class="el" href="namespaceTensorExpressions.html">TensorExpressions</a>.  <a href="structtt_1_1is__tensor__index.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:gae461e3ceb9cab2a26eb9d0704aadadce"><td class="memTemplParams" colspan="2">template&lt;auto &amp;... TensorIndices&gt; </td></tr>
+<tr class="memitem:gae461e3ceb9cab2a26eb9d0704aadadce"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorExpressionsGroup.html#gae461e3ceb9cab2a26eb9d0704aadadce">make_tensorindex_list</a> = typename TensorIndex_detail::make_tensorindex_list_impl&lt; TensorIndices... &gt;::type</td></tr>
+<tr class="memdesc:gae461e3ceb9cab2a26eb9d0704aadadce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a <a class="el" href="structTensorIndex.html" title="Represents the geeric indices in a TensorExpression.">TensorIndex</a> type list from a list of <a class="el" href="structTensorIndex.html" title="Represents the geeric indices in a TensorExpression.">TensorIndex</a> objects.  <a href="group__TensorExpressionsGroup.html#gae461e3ceb9cab2a26eb9d0704aadadce">More...</a><br /></td></tr>
+<tr class="separator:gae461e3ceb9cab2a26eb9d0704aadadce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga702fc5dbc87cb179f0868e9ce9ff22dd"><td class="memTemplParams" colspan="2"><a id="ga702fc5dbc87cb179f0868e9ce9ff22dd"></a>
+template&lt;typename T1 , typename T2 , typename X1 , typename X2 , typename Symm1 , typename Symm2 , typename IndexList1 , typename IndexList2 , typename Args1 , typename Args2 &gt; </td></tr>
+<tr class="memitem:ga702fc5dbc87cb179f0868e9ce9ff22dd"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator+</b> (const TensorExpression&lt; T1, X1, Symm1, IndexList1, Args1 &gt; &amp;t1, const TensorExpression&lt; T2, X2, Symm2, IndexList2, Args2 &gt; &amp;t2)</td></tr>
+<tr class="separator:ga702fc5dbc87cb179f0868e9ce9ff22dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad15727391dd98d3862c08b543eed1dde"><td class="memTemplParams" colspan="2"><a id="gad15727391dd98d3862c08b543eed1dde"></a>
+template&lt;typename T1 , typename T2 , typename X1 , typename X2 , typename Symm1 , typename Symm2 , typename IndexList1 , typename IndexList2 , typename Args1 , typename Args2 &gt; </td></tr>
+<tr class="memitem:gad15727391dd98d3862c08b543eed1dde"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator-</b> (const TensorExpression&lt; T1, X1, Symm1, IndexList1, Args1 &gt; &amp;t1, const TensorExpression&lt; T2, X2, Symm2, IndexList2, Args2 &gt; &amp;t2)</td></tr>
+<tr class="separator:gad15727391dd98d3862c08b543eed1dde"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga28314c9978ef6a01b7bb827da5f72af3"><td class="memTemplParams" colspan="2">template&lt;auto &amp;... LhsTensorIndices, typename X , typename LhsSymmetry , typename LhsIndexList , typename Derived , typename RhsSymmetry , typename RhsIndexList , typename... RhsTensorIndices&gt; </td></tr>
+<tr class="memitem:ga28314c9978ef6a01b7bb827da5f72af3"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorExpressionsGroup.html#ga28314c9978ef6a01b7bb827da5f72af3">TensorExpressions::evaluate</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Tensor&lt; X, LhsSymmetry, LhsIndexList &gt; * &gt; lhs_tensor, const TensorExpression&lt; Derived, X, RhsSymmetry, RhsIndexList, tmpl::list&lt; RhsTensorIndices... &gt;&gt; &amp;rhs_tensorexpression)</td></tr>
+<tr class="memdesc:ga28314c9978ef6a01b7bb827da5f72af3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate a RHS tensor expression to a tensor with the LHS index order set in the template parameters.  <a href="group__TensorExpressionsGroup.html#ga28314c9978ef6a01b7bb827da5f72af3">More...</a><br /></td></tr>
+<tr class="separator:ga28314c9978ef6a01b7bb827da5f72af3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad7c617aa6645bc71d61662c87d51929f"><td class="memTemplParams" colspan="2">template&lt;auto &amp;... LhsTensorIndices, typename RhsTE , Requires&lt; std::is_base_of_v&lt; Expression, RhsTE &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:gad7c617aa6645bc71d61662c87d51929f"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorExpressionsGroup.html#gad7c617aa6645bc71d61662c87d51929f">TensorExpressions::evaluate</a> (const RhsTE &amp;rhs_tensorexpression)</td></tr>
+<tr class="memdesc:gad7c617aa6645bc71d61662c87d51929f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate a RHS tensor expression to a tensor with the LHS index order set in the template parameters.  <a href="group__TensorExpressionsGroup.html#gad7c617aa6645bc71d61662c87d51929f">More...</a><br /></td></tr>
+<tr class="separator:gad7c617aa6645bc71d61662c87d51929f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa7852a46dd6ad7f02169b7652bd788b0"><td class="memTemplParams" colspan="2">template&lt;typename... LhsTensorIndices&gt; </td></tr>
+<tr class="memitem:gaa7852a46dd6ad7f02169b7652bd788b0"><td class="memTemplItemLeft" align="right" valign="top">static constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, sizeof...(OperandTensorIndices)&gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorExpressionsGroup.html#gaa7852a46dd6ad7f02169b7652bd788b0">TensorExpressions::OuterProduct&lt; T1, T2, IndexList1&lt; Indices1... &gt;, IndexList2&lt; Indices2... &gt;, ArgsList1&lt; Args1... &gt;, ArgsList2&lt; Args2... &gt; &gt;::GetOpTensorMultiIndex&lt; tmpl::list&lt; OperandTensorIndices... &gt; &gt;::apply</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, num_tensor_indices &gt; &amp;lhs_tensor_multi_index)</td></tr>
+<tr class="memdesc:gaa7852a46dd6ad7f02169b7652bd788b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the multi-index of a component of an operand of the outer product from the multi-index of a component of the outer product.  <a href="group__TensorExpressionsGroup.html#gaa7852a46dd6ad7f02169b7652bd788b0">More...</a><br /></td></tr>
+<tr class="separator:gaa7852a46dd6ad7f02169b7652bd788b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga078bcec08b0bef602762b194bf6ecb95"><td class="memTemplParams" colspan="2">template&lt;typename T1 , typename T2 , typename ArgsList1 , typename ArgsList2 &gt; </td></tr>
+<tr class="memitem:ga078bcec08b0bef602762b194bf6ecb95"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorExpressionsGroup.html#ga078bcec08b0bef602762b194bf6ecb95">operator*</a> (const TensorExpression&lt; T1, typename T1::type, typename T1::symmetry, typename T1::index_list, ArgsList1 &gt; &amp;t1, const TensorExpression&lt; T2, typename T2::type, typename T2::symmetry, typename T2::index_list, ArgsList2 &gt; &amp;t2)</td></tr>
+<tr class="memdesc:ga078bcec08b0bef602762b194bf6ecb95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the tensor expression representing the product of two tensor expressions.  <a href="group__TensorExpressionsGroup.html#ga078bcec08b0bef602762b194bf6ecb95">More...</a><br /></td></tr>
+<tr class="separator:ga078bcec08b0bef602762b194bf6ecb95"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga56e53a2fed384bb74924894c76ee23d2"><td class="memTemplParams" colspan="2">template&lt;typename T , typename X , typename ArgsList &gt; </td></tr>
+<tr class="memitem:ga56e53a2fed384bb74924894c76ee23d2"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorExpressionsGroup.html#ga56e53a2fed384bb74924894c76ee23d2">operator/</a> (const TensorExpression&lt; T, X, typename T::symmetry, typename T::index_list, ArgsList &gt; &amp;t, const double number)</td></tr>
+<tr class="memdesc:ga56e53a2fed384bb74924894c76ee23d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the tensor expression representing the quotient of a tensor expression and a <code>double</code>  <a href="group__TensorExpressionsGroup.html#ga56e53a2fed384bb74924894c76ee23d2">More...</a><br /></td></tr>
+<tr class="separator:ga56e53a2fed384bb74924894c76ee23d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf9042e362077610ab68fd91c2dd55e18"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:gaf9042e362077610ab68fd91c2dd55e18"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorExpressionsGroup.html#gaf9042e362077610ab68fd91c2dd55e18">sqrt</a> (const TensorExpression&lt; T, typename T::type, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;&gt; &amp;t)</td></tr>
+<tr class="memdesc:gaf9042e362077610ab68fd91c2dd55e18"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the tensor expression representing the square root of a tensor expression that evaluates to a rank 0 tensor.  <a href="group__TensorExpressionsGroup.html#gaf9042e362077610ab68fd91c2dd55e18">More...</a><br /></td></tr>
+<tr class="separator:gaf9042e362077610ab68fd91c2dd55e18"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga598a33a002def0a8c6f3c8a8d4314a7b"><td class="memTemplParams" colspan="2">template&lt;typename T , typename X &gt; </td></tr>
+<tr class="memitem:ga598a33a002def0a8c6f3c8a8d4314a7b"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorExpressionsGroup.html#ga598a33a002def0a8c6f3c8a8d4314a7b">operator+</a> (const TensorExpression&lt; T, X, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;&gt; &amp;t, const double number)</td></tr>
+<tr class="memdesc:ga598a33a002def0a8c6f3c8a8d4314a7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the tensor expression representing the sum of a tensor expression and a <code>double</code>  <a href="group__TensorExpressionsGroup.html#ga598a33a002def0a8c6f3c8a8d4314a7b">More...</a><br /></td></tr>
+<tr class="separator:ga598a33a002def0a8c6f3c8a8d4314a7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa0c5b1f696e9a44ddeb6f34acb97fe3b"><td class="memTemplParams" colspan="2">template&lt;typename T , typename X &gt; </td></tr>
+<tr class="memitem:gaa0c5b1f696e9a44ddeb6f34acb97fe3b"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorExpressionsGroup.html#gaa0c5b1f696e9a44ddeb6f34acb97fe3b">operator+</a> (const double number, const TensorExpression&lt; T, X, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;&gt; &amp;t)</td></tr>
+<tr class="memdesc:gaa0c5b1f696e9a44ddeb6f34acb97fe3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the tensor expression representing the sum of a tensor expression and a <code>double</code>  <a href="group__TensorExpressionsGroup.html#gaa0c5b1f696e9a44ddeb6f34acb97fe3b">More...</a><br /></td></tr>
+<tr class="separator:gaa0c5b1f696e9a44ddeb6f34acb97fe3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa9a55c858be98e130cc580141806a2b2"><td class="memTemplParams" colspan="2">template&lt;typename T , typename X &gt; </td></tr>
+<tr class="memitem:gaa9a55c858be98e130cc580141806a2b2"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorExpressionsGroup.html#gaa9a55c858be98e130cc580141806a2b2">operator-</a> (const TensorExpression&lt; T, X, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;&gt; &amp;t, const double number)</td></tr>
+<tr class="memdesc:gaa9a55c858be98e130cc580141806a2b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the tensor expression representing the difference of a tensor expression and a <code>double</code>  <a href="group__TensorExpressionsGroup.html#gaa9a55c858be98e130cc580141806a2b2">More...</a><br /></td></tr>
+<tr class="separator:gaa9a55c858be98e130cc580141806a2b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf657658cdd86ad08356d63b49f8ad61c"><td class="memTemplParams" colspan="2">template&lt;typename T , typename X &gt; </td></tr>
+<tr class="memitem:gaf657658cdd86ad08356d63b49f8ad61c"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorExpressionsGroup.html#gaf657658cdd86ad08356d63b49f8ad61c">operator-</a> (const double number, const TensorExpression&lt; T, X, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;&gt; &amp;t)</td></tr>
+<tr class="memdesc:gaf657658cdd86ad08356d63b49f8ad61c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the tensor expression representing the difference of a tensor expression and a <code>double</code>  <a href="group__TensorExpressionsGroup.html#gaf657658cdd86ad08356d63b49f8ad61c">More...</a><br /></td></tr>
+<tr class="separator:gaf657658cdd86ad08356d63b49f8ad61c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5391a3346aee013115d63e30da7bfbbc"><td class="memTemplParams" colspan="2">template&lt;typename T , typename X , typename ArgsList &gt; </td></tr>
+<tr class="memitem:ga5391a3346aee013115d63e30da7bfbbc"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorExpressionsGroup.html#ga5391a3346aee013115d63e30da7bfbbc">operator*</a> (const TensorExpression&lt; T, X, typename T::symmetry, typename T::index_list, ArgsList &gt; &amp;t, const double number)</td></tr>
+<tr class="memdesc:ga5391a3346aee013115d63e30da7bfbbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the tensor expression representing the product of a tensor expression and a <code>double</code>  <a href="group__TensorExpressionsGroup.html#ga5391a3346aee013115d63e30da7bfbbc">More...</a><br /></td></tr>
+<tr class="separator:ga5391a3346aee013115d63e30da7bfbbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga86500da21daadbc6454d0385055bdac5"><td class="memTemplParams" colspan="2">template&lt;typename T , typename X , typename ArgsList &gt; </td></tr>
+<tr class="memitem:ga86500da21daadbc6454d0385055bdac5"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorExpressionsGroup.html#ga86500da21daadbc6454d0385055bdac5">operator*</a> (const double number, const TensorExpression&lt; T, X, typename T::symmetry, typename T::index_list, ArgsList &gt; &amp;t)</td></tr>
+<tr class="memdesc:ga86500da21daadbc6454d0385055bdac5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the tensor expression representing the product of a tensor expression and a <code>double</code>  <a href="group__TensorExpressionsGroup.html#ga86500da21daadbc6454d0385055bdac5">More...</a><br /></td></tr>
+<tr class="separator:ga86500da21daadbc6454d0385055bdac5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>Tensor Expressions allow writing expressions of tensors in a way similar to what is used with pen and paper. </p>
+<p>Tensor expressions are implemented using (smart) expression templates. This allows a domain specific language making expressions such as </p><div class="fragment"><div class="line"><span class="keyword">auto</span> T = evaluate&lt;Indices::_a_t, Indices::_b_t&gt;(F(Indices::_b,</div>
+<div class="line">Indices::_a));</div>
+</div><!-- fragment --><p> possible. </p>
+<h2 class="groupheader">Typedef Documentation</h2>
+<a id="gae461e3ceb9cab2a26eb9d0704aadadce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae461e3ceb9cab2a26eb9d0704aadadce">&#9670;&nbsp;</a></span>make_tensorindex_list</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;auto &amp;... TensorIndices&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TensorExpressionsGroup.html#gae461e3ceb9cab2a26eb9d0704aadadce">make_tensorindex_list</a> =  typename TensorIndex_detail::make_tensorindex_list_impl&lt; TensorIndices...&gt;::type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Creates a <a class="el" href="structTensorIndex.html" title="Represents the geeric indices in a TensorExpression.">TensorIndex</a> type list from a list of <a class="el" href="structTensorIndex.html" title="Represents the geeric indices in a TensorExpression.">TensorIndex</a> objects. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">TensorIndices</td><td>list of generic index objects, e.g. <code>ti_a, ti_b</code> </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="gaa7852a46dd6ad7f02169b7652bd788b0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa7852a46dd6ad7f02169b7652bd788b0">&#9670;&nbsp;</a></span>apply()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T1 , typename T2 , template&lt; typename... &gt; class IndexList1, typename... Indices1, template&lt; typename... &gt; class IndexList2, typename... Indices2, template&lt; typename... &gt; class ArgsList1, typename... Args1, template&lt; typename... &gt; class ArgsList2, typename... Args2&gt; </div>
+<div class="memtemplate">
+template&lt;typename... OperandTensorIndices&gt; </div>
+<div class="memtemplate">
+template&lt;typename... LhsTensorIndices&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, sizeof...(OperandTensorIndices)&gt; <a class="el" href="structTensorExpressions_1_1OuterProduct.html">TensorExpressions::OuterProduct</a>&lt; T1, T2, IndexList1&lt; Indices1... &gt;, IndexList2&lt; Indices2... &gt;, ArgsList1&lt; Args1... &gt;, ArgsList2&lt; Args2... &gt; &gt;::GetOpTensorMultiIndex&lt; tmpl::list&lt; OperandTensorIndices... &gt; &gt;::apply </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, num_tensor_indices &gt; &amp;&#160;</td>
+          <td class="paramname"><em>lhs_tensor_multi_index</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Computes the multi-index of a component of an operand of the outer product from the multi-index of a component of the outer product. </p>
+<h3>Details</h3>
+<p>Example: Let's say we are evaluating \(L_abc = R_{b} * S_{ca}\). Let <code>ti_a_t</code> denote the type of <code>ti_a</code>, and apply the same convention for other generic indices. Let <code>LhsTensorIndices == ti_a_t, ti_b_t, ti_c_t</code>, and <code>OperandTensorIndices</code> is either <code>ti_b_t</code> or <code>ti_c_t, ti_a_t</code>. Let <code>lhs_tensor_multi_index == [0, 1, 2]</code>, representing the multi-index of the component \(L_{012}\). If <code>OperandTensorIndices == ti_c_t, ti_a_t</code>, this function will return the tensor multi-index representing the component \(S_{20}\), which is <code>[2, 0]</code>.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">LhsTensorIndices</td><td>the TensorIndexs of the outer product tensor </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">lhs_tensor_multi_index</td><td>the tensor multi-index of a component in the outer product tensor </td></tr>
+  </table>
+  </dd>
+</dl>
+<p><em>Returns:</em> the tensor multi-index of an operand of the outer product </p>
+
+</div>
+</div>
+<a id="ga28314c9978ef6a01b7bb827da5f72af3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga28314c9978ef6a01b7bb827da5f72af3">&#9670;&nbsp;</a></span>evaluate() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;auto &amp;... LhsTensorIndices, typename X , typename LhsSymmetry , typename LhsIndexList , typename Derived , typename RhsSymmetry , typename RhsIndexList , typename... RhsTensorIndices&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void TensorExpressions::evaluate </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Tensor&lt; X, LhsSymmetry, LhsIndexList &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>lhs_tensor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const TensorExpression&lt; Derived, X, RhsSymmetry, RhsIndexList, tmpl::list&lt; RhsTensorIndices... &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>rhs_tensorexpression</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Evaluate a RHS tensor expression to a tensor with the LHS index order set in the template parameters. </p>
+<h3>Details</h3>
+<p>Uses the right hand side (RHS) TensorExpression's index ordering (<code>RhsTE::args_list</code>) and the desired left hand side (LHS) tensor's index ordering (<code>LhsTensorIndices</code>) to fill the provided LHS Tensor with that LHS index ordering. This can carry out the evaluation of a RHS tensor expression to a LHS tensor with the same index ordering, such as \(L_{ab} = R_{ab}\), or different ordering, such as \(L_{ba} = R_{ab}\).</p>
+<p>The symmetry of the provided LHS Tensor need not match the symmetry determined from evaluating the RHS TensorExpression according to its order of operations. This allows one to specify LHS symmetries (via <code>lhs_tensor</code>) that may not be preserved by the RHS expression's order of operations, which depends on how the expression is written and implemented.</p>
+<h3><a class="anchor" id="autotoc_md13"></a>
+Example usage</h3>
+<p>Given two rank 2 Tensors <code>R</code> and <code>S</code> with index order (a, b), add them together and fill the provided resultant LHS Tensor <code>L</code> with index order (b, a): </p><div class="fragment"><div class="line">TensorExpressions::evaluate&lt;ti_b, ti_a&gt;(</div>
+<div class="line">    <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;L), R(ti_a, ti_b) + S(ti_a, ti_b));</div>
+</div><!-- fragment --><p>This represents evaluating: \(L_{ba} = R_{ab} + S_{ab}\)</p>
+<p>Note: <code>LhsTensorIndices</code> must be passed by reference because non-type template parameters cannot be class types until C++20.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">LhsTensorIndices</td><td>the TensorIndexs of the Tensor on the LHS of the tensor expression, e.g. <code>ti_a</code>, <code>ti_b</code>, <code>ti_c</code> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">lhs_tensor</td><td>pointer to the resultant LHS Tensor to fill </td></tr>
+    <tr><td class="paramname">rhs_tensorexpression</td><td>the RHS TensorExpression to be evaluated </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gad7c617aa6645bc71d61662c87d51929f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad7c617aa6645bc71d61662c87d51929f">&#9670;&nbsp;</a></span>evaluate() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;auto &amp;... LhsTensorIndices, typename RhsTE , Requires&lt; std::is_base_of_v&lt; Expression, RhsTE &gt;&gt;  = nullptr&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">auto TensorExpressions::evaluate </td>
+          <td>(</td>
+          <td class="paramtype">const RhsTE &amp;&#160;</td>
+          <td class="paramname"><em>rhs_tensorexpression</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Evaluate a RHS tensor expression to a tensor with the LHS index order set in the template parameters. </p>
+<h3>Details</h3>
+<p>Uses the right hand side (RHS) TensorExpression's index ordering (<code>RhsTE::args_list</code>) and the desired left hand side (LHS) tensor's index ordering (<code>LhsTensorIndices</code>) to construct a LHS Tensor with that LHS index ordering. This can carry out the evaluation of a RHS tensor expression to a LHS tensor with the same index ordering, such as \(L_{ab} = R_{ab}\), or different ordering, such as \(L_{ba} = R_{ab}\).</p>
+<p>The symmetry of the returned LHS Tensor depends on the order of operations in the RHS TensorExpression, i.e. how the expression is written. If you would like to specify the symmetry of the LHS Tensor instead of it being determined by the order of operations in the RHS expression, please use the other <code>evaluate</code> overload that takes an empty LHS Tensor as its first argument.</p>
+<h3><a class="anchor" id="autotoc_md14"></a>
+Example usage</h3>
+<p>Given two rank 2 Tensors <code>R</code> and <code>S</code> with index order (a, b), add them together and generate the resultant LHS Tensor <code>L</code> with index order (b, a): </p><div class="fragment"><div class="line"><span class="keyword">auto</span> L = TensorExpressions::evaluate&lt;ti_b, ti_a&gt;(</div>
+<div class="line">    R(ti_a, ti_b) + S(ti_a, ti_b));</div>
+</div><!-- fragment --> <p><em>Returns:</em> Tensor</p>
+<p>This represents evaluating: \(L_{ba} = R_{ab} + S_{ab}\)</p>
+<p>Note: If a generic spatial index is used for a spacetime index in the RHS tensor, its corresponding index in the LHS tensor type will be a spatial index with the same valence, frame, and number of spatial dimensions.</p>
+<p>Note: <code>LhsTensorIndices</code> must be passed by reference because non-type template parameters cannot be class types until C++20.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">LhsTensorIndices</td><td>the TensorIndexs of the Tensor on the LHS of the tensor expression, e.g. <code>ti_a</code>, <code>ti_b</code>, <code>ti_c</code> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">rhs_tensorexpression</td><td>the RHS TensorExpression to be evaluated </td></tr>
+  </table>
+  </dd>
+</dl>
+<p><em>Returns:</em> the resultant LHS Tensor with index order specified by LhsTensorIndices </p>
+
+</div>
+</div>
+<a id="ga86500da21daadbc6454d0385055bdac5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga86500da21daadbc6454d0385055bdac5">&#9670;&nbsp;</a></span>operator*() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename X , typename ArgsList &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">auto operator* </td>
+          <td>(</td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const TensorExpression&lt; T, X, typename T::symmetry, typename T::index_list, ArgsList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>t</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns the tensor expression representing the product of a tensor expression and a <code>double</code> </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>the derived TensorExpression type of the tensor expression operand of the product </td></tr>
+    <tr><td class="paramname">X</td><td>the type of data stored in the tensor expression operand of the product </td></tr>
+    <tr><td class="paramname">ArgsList</td><td>the TensorIndexs of the tensor expression operand of the product </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">t</td><td>the tensor expression operand of the product </td></tr>
+    <tr><td class="paramname">number</td><td>the <code>double</code> operand of the product </td></tr>
+  </table>
+  </dd>
+</dl>
+<p><em>Returns:</em> the tensor expression representing the product of a tensor expression and a <code>double</code> </p>
+
+</div>
+</div>
+<a id="ga5391a3346aee013115d63e30da7bfbbc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5391a3346aee013115d63e30da7bfbbc">&#9670;&nbsp;</a></span>operator*() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename X , typename ArgsList &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">auto operator* </td>
+          <td>(</td>
+          <td class="paramtype">const TensorExpression&lt; T, X, typename T::symmetry, typename T::index_list, ArgsList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>t</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>number</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns the tensor expression representing the product of a tensor expression and a <code>double</code> </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>the derived TensorExpression type of the tensor expression operand of the product </td></tr>
+    <tr><td class="paramname">X</td><td>the type of data stored in the tensor expression operand of the product </td></tr>
+    <tr><td class="paramname">ArgsList</td><td>the TensorIndexs of the tensor expression operand of the product </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">t</td><td>the tensor expression operand of the product </td></tr>
+    <tr><td class="paramname">number</td><td>the <code>double</code> operand of the product </td></tr>
+  </table>
+  </dd>
+</dl>
+<p><em>Returns:</em> the tensor expression representing the product of a tensor expression and a <code>double</code> </p>
+
+</div>
+</div>
+<a id="ga078bcec08b0bef602762b194bf6ecb95"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga078bcec08b0bef602762b194bf6ecb95">&#9670;&nbsp;</a></span>operator*() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T1 , typename T2 , typename ArgsList1 , typename ArgsList2 &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">auto operator* </td>
+          <td>(</td>
+          <td class="paramtype">const TensorExpression&lt; T1, typename T1::type, typename T1::symmetry, typename T1::index_list, ArgsList1 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>t1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const TensorExpression&lt; T2, typename T2::type, typename T2::symmetry, typename T2::index_list, ArgsList2 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>t2</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns the tensor expression representing the product of two tensor expressions. </p>
+<h3>Details</h3>
+<p>If the two operands have N pairs of indices that need to be contracted, the returned expression will be an <code>OuterProduct</code> expression nested inside N <code>TensorContract</code> expressions. This represents computing the inner product of the outer product of the two operands. If the operands do not have any indices to be contracted, the returned expression will be an <code>OuterProduct</code>.</p>
+<p>The two arguments are expressions that contain the two operands of the product, where the types of the operands are <code>T1</code> and <code>T2</code>.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T1</td><td>the derived TensorExpression type of the first operand of the product </td></tr>
+    <tr><td class="paramname">T2</td><td>the derived TensorExpression type of the second operand of the product </td></tr>
+    <tr><td class="paramname">ArgsList1</td><td>the TensorIndexs of the first operand </td></tr>
+    <tr><td class="paramname">ArgsList2</td><td>the TensorIndexs of the second operand </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">t1</td><td>first operand expression of the product </td></tr>
+    <tr><td class="paramname">t2</td><td>the second operand expression of the product </td></tr>
+  </table>
+  </dd>
+</dl>
+<p><em>Returns:</em> the tensor expression representing the product of two tensor expressions </p>
+
+</div>
+</div>
+<a id="gaa0c5b1f696e9a44ddeb6f34acb97fe3b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa0c5b1f696e9a44ddeb6f34acb97fe3b">&#9670;&nbsp;</a></span>operator+() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename X &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">auto operator+ </td>
+          <td>(</td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const TensorExpression&lt; T, X, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>t</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns the tensor expression representing the sum of a tensor expression and a <code>double</code> </p>
+<h3>Details</h3>
+<p>The tensor expression operand must represent an expression that, when evaluated, would be a rank 0 tensor. For example, if <code>R</code> and <code>S</code> are Tensors, here is a non-exhaustive list of some of the acceptable forms that the tensor expression operand could take:</p><ul>
+<li><code>R()</code></li>
+<li><code>R(ti_A, ti_a)</code></li>
+<li><code>(R(ti_A, ti_B) * S(ti_a, ti_b))</code></li>
+</ul>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>the derived TensorExpression type of the tensor expression operand of the sum </td></tr>
+    <tr><td class="paramname">X</td><td>the type of data stored in the tensor expression operand of the sum </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">t</td><td>the tensor expression operand of the sum </td></tr>
+    <tr><td class="paramname">number</td><td>the <code>double</code> operand of the sum </td></tr>
+  </table>
+  </dd>
+</dl>
+<p><em>Returns:</em> the tensor expression representing the sum of a tensor expression and a <code>double</code> </p>
+
+</div>
+</div>
+<a id="ga598a33a002def0a8c6f3c8a8d4314a7b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga598a33a002def0a8c6f3c8a8d4314a7b">&#9670;&nbsp;</a></span>operator+() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename X &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">auto operator+ </td>
+          <td>(</td>
+          <td class="paramtype">const TensorExpression&lt; T, X, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>t</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>number</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns the tensor expression representing the sum of a tensor expression and a <code>double</code> </p>
+<h3>Details</h3>
+<p>The tensor expression operand must represent an expression that, when evaluated, would be a rank 0 tensor. For example, if <code>R</code> and <code>S</code> are Tensors, here is a non-exhaustive list of some of the acceptable forms that the tensor expression operand could take:</p><ul>
+<li><code>R()</code></li>
+<li><code>R(ti_A, ti_a)</code></li>
+<li><code>(R(ti_A, ti_B) * S(ti_a, ti_b))</code></li>
+</ul>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>the derived TensorExpression type of the tensor expression operand of the sum </td></tr>
+    <tr><td class="paramname">X</td><td>the type of data stored in the tensor expression operand of the sum </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">t</td><td>the tensor expression operand of the sum </td></tr>
+    <tr><td class="paramname">number</td><td>the <code>double</code> operand of the sum </td></tr>
+  </table>
+  </dd>
+</dl>
+<p><em>Returns:</em> the tensor expression representing the sum of a tensor expression and a <code>double</code> </p>
+
+</div>
+</div>
+<a id="gaf657658cdd86ad08356d63b49f8ad61c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf657658cdd86ad08356d63b49f8ad61c">&#9670;&nbsp;</a></span>operator-() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename X &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">auto operator- </td>
+          <td>(</td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const TensorExpression&lt; T, X, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>t</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns the tensor expression representing the difference of a tensor expression and a <code>double</code> </p>
+<h3>Details</h3>
+<p>The tensor expression operand must represent an expression that, when evaluated, would be a rank 0 tensor. For example, if <code>R</code> and <code>S</code> are Tensors, here is a non-exhaustive list of some of the acceptable forms that the tensor expression operand could take:</p><ul>
+<li><code>R()</code></li>
+<li><code>R(ti_A, ti_a)</code></li>
+<li><code>(R(ti_A, ti_B) * S(ti_a, ti_b))</code></li>
+</ul>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>the derived TensorExpression type of the tensor expression operand of the difference </td></tr>
+    <tr><td class="paramname">X</td><td>the type of data stored in the tensor expression operand of the difference </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">t</td><td>the tensor expression operand of the difference </td></tr>
+    <tr><td class="paramname">number</td><td>the <code>double</code> operand of the difference </td></tr>
+  </table>
+  </dd>
+</dl>
+<p><em>Returns:</em> the tensor expression representing the difference of a tensor expression and a <code>double</code> </p>
+
+</div>
+</div>
+<a id="gaa9a55c858be98e130cc580141806a2b2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa9a55c858be98e130cc580141806a2b2">&#9670;&nbsp;</a></span>operator-() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename X &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">auto operator- </td>
+          <td>(</td>
+          <td class="paramtype">const TensorExpression&lt; T, X, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>t</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>number</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns the tensor expression representing the difference of a tensor expression and a <code>double</code> </p>
+<h3>Details</h3>
+<p>The tensor expression operand must represent an expression that, when evaluated, would be a rank 0 tensor. For example, if <code>R</code> and <code>S</code> are Tensors, here is a non-exhaustive list of some of the acceptable forms that the tensor expression operand could take:</p><ul>
+<li><code>R()</code></li>
+<li><code>R(ti_A, ti_a)</code></li>
+<li><code>(R(ti_A, ti_B) * S(ti_a, ti_b))</code></li>
+</ul>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>the derived TensorExpression type of the tensor expression operand of the difference </td></tr>
+    <tr><td class="paramname">X</td><td>the type of data stored in the tensor expression operand of the difference </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">t</td><td>the tensor expression operand of the difference </td></tr>
+    <tr><td class="paramname">number</td><td>the <code>double</code> operand of the difference </td></tr>
+  </table>
+  </dd>
+</dl>
+<p><em>Returns:</em> the tensor expression representing the difference of a tensor expression and a <code>double</code> </p>
+
+</div>
+</div>
+<a id="ga56e53a2fed384bb74924894c76ee23d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga56e53a2fed384bb74924894c76ee23d2">&#9670;&nbsp;</a></span>operator/()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename X , typename ArgsList &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">auto operator/ </td>
+          <td>(</td>
+          <td class="paramtype">const TensorExpression&lt; T, X, typename T::symmetry, typename T::index_list, ArgsList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>t</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>number</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns the tensor expression representing the quotient of a tensor expression and a <code>double</code> </p>
+<dl class="section note"><dt>Note</dt><dd>The implementation instead uses the operation, <code>t * (1.0 / number)</code></dd></dl>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>the derived TensorExpression type of the tensor expression operand of the quotient </td></tr>
+    <tr><td class="paramname">X</td><td>the type of data stored in the tensor expression operand of the quotient </td></tr>
+    <tr><td class="paramname">ArgsList</td><td>the TensorIndexs of the tensor expression operand of the quotient </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">t</td><td>the tensor expression operand of the quotient </td></tr>
+    <tr><td class="paramname">number</td><td>the <code>double</code> operand of the quotient </td></tr>
+  </table>
+  </dd>
+</dl>
+<p><em>Returns:</em> the tensor expression representing the quotient of a tensor expression and a <code>double</code> </p>
+
+</div>
+</div>
+<a id="gaf9042e362077610ab68fd91c2dd55e18"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf9042e362077610ab68fd91c2dd55e18">&#9670;&nbsp;</a></span>sqrt()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">auto sqrt </td>
+          <td>(</td>
+          <td class="paramtype">const TensorExpression&lt; T, typename T::type, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>t</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns the tensor expression representing the square root of a tensor expression that evaluates to a rank 0 tensor. </p>
+<h3>Details</h3>
+<p><code>t</code> must be an expression that, when evaluated, would be a rank 0 tensor. For example, if <code>R</code> and <code>S</code> are Tensors, here is a non-exhaustive list of some of the acceptable forms that <code>t</code> could take:</p><ul>
+<li><code>R()</code></li>
+<li><code>R(ti_A, ti_a)</code></li>
+<li><code>(R(ti_A, ti_B) * S(ti_a, ti_b))</code></li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">t</td><td>the type of the tensor expression of which to take the square root </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+</div><!-- contents -->
+<div class="ttc" id="aGsl_8hpp_html_a649c6961f9146205c203e45d58fd0c4c"><div class="ttname"><a href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a></div><div class="ttdeci">gsl::not_null&lt; T * &gt; make_not_null(T *ptr) noexcept</div><div class="ttdoc">Construct a not_null from a pointer. Often this will be done as an implicit conversion,...</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:880</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

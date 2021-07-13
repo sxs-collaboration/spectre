@@ -1,0 +1,303 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/PointwiseFunctions/AnalyticSolutions/Xcts/CommonVariables.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_5af74f315b2a84c0171c7133321f1381.html">PointwiseFunctions</a></li><li class="navelem"><a class="el" href="dir_d93e8149823fa91d7841f9be0ed87c77.html">AnalyticSolutions</a></li><li class="navelem"><a class="el" href="dir_15a50f64d5f6cb7c0144f3cf7b387642.html">Xcts</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">CommonVariables.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160; </div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Prefixes_8hpp.html">DataStructures/DataBox/Prefixes.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Tensor_8hpp.html">DataStructures/Tensor/Tensor.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;Elliptic/Systems/Xcts/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/AnalyticData/Xcts/CommonVariables.hpp&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160; </div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceXcts_1_1Solutions.html">Xcts::Solutions</a> {</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="comment">/// Tags for variables that solutions can share</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> DataType&gt;</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="keyword">using</span> <a class="code" href="namespaceXcts_1_1Solutions.html#a2cfa9b6670b46e7a99d869f34d6dc3ac">common_tags</a> = <a class="code" href="group__ComputationalDomainGroup.html#ga398bdce722c9ba655f479a7712f1a0e5">tmpl::push_back</a>&lt;</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    AnalyticData::common_tags&lt;DataType&gt;,</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    <a class="code" href="structTags_1_1Flux.html">::Tags::Flux&lt;Tags::ConformalFactor&lt;DataType&gt;</a>, tmpl::size_t&lt;3&gt;,</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;                 <a class="code" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt;,</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    <a class="code" href="structTags_1_1Flux.html">::Tags::Flux&lt;Tags::LapseTimesConformalFactor&lt;DataType&gt;</a>, tmpl::size_t&lt;3&gt;,</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;                 <a class="code" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt;,</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    Tags::LongitudinalShiftExcess&lt;DataType, 3, Frame::Inertial&gt;,</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <a class="code" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift&lt;3, Frame::Inertial, DataType&gt;</a>,</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    Tags::LongitudinalShiftMinusDtConformalMetricSquare&lt;DataType&gt;,</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    Tags::LongitudinalShiftMinusDtConformalMetricOverLapseSquare&lt;DataType&gt;,</div>
+<div class="line"><a name="l00029"></a><span class="lineno"><a class="line" href="namespaceXcts_1_1Solutions.html#a2cfa9b6670b46e7a99d869f34d6dc3ac">   29</a></span>&#160;    <a class="code" href="structXcts_1_1Tags_1_1ShiftDotDerivExtrinsicCurvatureTrace.html">Tags::ShiftDotDerivExtrinsicCurvatureTrace&lt;DataType&gt;</a>&gt;;</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment">/// Implementations for variables that solutions can share</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> DataType, <span class="keyword">typename</span> Cache&gt;</div>
+<div class="line"><a name="l00033"></a><span class="lineno"><a class="line" href="structXcts_1_1Solutions_1_1CommonVariables.html">   33</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structXcts_1_1Solutions_1_1CommonVariables.html">CommonVariables</a> : <a class="code" href="structXcts_1_1AnalyticData_1_1CommonVariables.html">AnalyticData::CommonVariables</a>&lt;DataType, Cache&gt; {</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="keyword">static</span> constexpr <span class="keywordtype">size_t</span> Dim = 3;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  <span class="keyword">using</span> <a class="code" href="structXcts_1_1AnalyticData_1_1CommonVariables.html">AnalyticData::CommonVariables&lt;DataType, Cache&gt;::operator</a>();</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  <span class="keywordtype">void</span> operator()(</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;tnsr::I&lt;DataType, Dim&gt;*&gt; conformal_factor_flux,</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;Cache*&gt;</a> <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>,</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;      ::<a class="code" href="structTags_1_1Flux.html">Tags::Flux</a>&lt;<a class="code" href="structXcts_1_1Tags_1_1ConformalFactor.html">Tags::ConformalFactor&lt;DataType&gt;</a>, tmpl::size_t&lt;Dim&gt;,</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;                   <a class="code" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt; <span class="comment">/*meta*/</span>) <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;  <span class="keywordtype">void</span> operator()(</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;tnsr::I&lt;DataType, Dim&gt;*&gt; lapse_times_conformal_factor_flux,</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;Cache*&gt;</a> <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>,</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;      ::<a class="code" href="structTags_1_1Flux.html">Tags::Flux</a>&lt;<a class="code" href="structXcts_1_1Tags_1_1LapseTimesConformalFactor.html">Tags::LapseTimesConformalFactor&lt;DataType&gt;</a>, tmpl::size_t&lt;Dim&gt;,</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;                   <a class="code" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt; <span class="comment">/*meta*/</span>) <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;  <span class="keywordtype">void</span> operator()(</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;tnsr::II&lt;DataType, Dim&gt;*&gt; longitudinal_shift_excess,</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;Cache*&gt;</a> <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>,</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;      <a class="code" href="structXcts_1_1Tags_1_1LongitudinalShiftExcess.html">Tags::LongitudinalShiftExcess&lt;DataType, Dim, Frame::Inertial&gt;</a> <span class="comment">/*meta*/</span>)</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;      <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;  <span class="keywordtype">void</span> operator()(</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;tnsr::I&lt;DataType, Dim&gt;*&gt; <a class="code" href="group__GeneralRelativityGroup.html#gac067e03fcb04c8c6c45d9708539a56b0">shift</a>, <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;Cache*&gt;</a> <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>,</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;      <a class="code" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift&lt;Dim, Frame::Inertial, DataType&gt;</a> <span class="comment">/*meta*/</span>) <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  <span class="keywordtype">void</span> operator()(</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;DataType&gt;</a>*&gt;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;          longitudinal_shift_minus_dt_conformal_metric_square,</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;Cache*&gt;</a> <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>,</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;      <a class="code" href="structXcts_1_1Tags_1_1LongitudinalShiftMinusDtConformalMetricSquare.html">Tags::LongitudinalShiftMinusDtConformalMetricSquare&lt;DataType&gt;</a> <span class="comment">/*meta*/</span>)</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;      <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;  <span class="keywordtype">void</span> operator()(</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;DataType&gt;</a>*&gt;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;          longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;Cache*&gt;</a> <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>,</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;      <a class="code" href="structXcts_1_1Tags_1_1LongitudinalShiftMinusDtConformalMetricOverLapseSquare.html">Tags::LongitudinalShiftMinusDtConformalMetricOverLapseSquare</a>&lt;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;          DataType&gt; <span class="comment">/*meta*/</span>) <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;  <span class="keywordtype">void</span> operator()(<a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;DataType&gt;</a>*&gt;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;                      shift_dot_deriv_extrinsic_curvature_trace,</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;                  <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;Cache*&gt;</a> <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>,</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;                  <a class="code" href="structXcts_1_1Tags_1_1ShiftDotDerivExtrinsicCurvatureTrace.html">Tags::ShiftDotDerivExtrinsicCurvatureTrace&lt;DataType&gt;</a> <span class="comment">/*meta*/</span>)</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;      <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;};</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;}  <span class="comment">// namespace Xcts::Solutions</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="astructFrame_1_1Inertial_html"><div class="ttname"><a href="structFrame_1_1Inertial.html">Frame::Inertial</a></div><div class="ttdef"><b>Definition:</b> IndexType.hpp:44</div></div>
+<div class="ttc" id="astructXcts_1_1Tags_1_1LapseTimesConformalFactor_html"><div class="ttname"><a href="structXcts_1_1Tags_1_1LapseTimesConformalFactor.html">Xcts::Tags::LapseTimesConformalFactor</a></div><div class="ttdoc">The product of lapse  and conformal factor .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:63</div></div>
+<div class="ttc" id="anamespaceXcts_1_1Solutions_html_a2cfa9b6670b46e7a99d869f34d6dc3ac"><div class="ttname"><a href="namespaceXcts_1_1Solutions.html#a2cfa9b6670b46e7a99d869f34d6dc3ac">Xcts::Solutions::common_tags</a></div><div class="ttdeci">tmpl::push_back&lt; AnalyticData::common_tags&lt; DataType &gt;, ::Tags::Flux&lt; Tags::ConformalFactor&lt; DataType &gt;, tmpl::size_t&lt; 3 &gt;, Frame::Inertial &gt;, ::Tags::Flux&lt; Tags::LapseTimesConformalFactor&lt; DataType &gt;, tmpl::size_t&lt; 3 &gt;, Frame::Inertial &gt;, Tags::LongitudinalShiftExcess&lt; DataType, 3, Frame::Inertial &gt;, gr::Tags::Shift&lt; 3, Frame::Inertial, DataType &gt;, Tags::LongitudinalShiftMinusDtConformalMetricSquare&lt; DataType &gt;, Tags::LongitudinalShiftMinusDtConformalMetricOverLapseSquare&lt; DataType &gt;, Tags::ShiftDotDerivExtrinsicCurvatureTrace&lt; DataType &gt; &gt; common_tags</div><div class="ttdoc">Tags for variables that solutions can share.</div><div class="ttdef"><b>Definition:</b> CommonVariables.hpp:29</div></div>
+<div class="ttc" id="astructXcts_1_1AnalyticData_1_1CommonVariables_html"><div class="ttname"><a href="structXcts_1_1AnalyticData_1_1CommonVariables.html">Xcts::AnalyticData::CommonVariables</a></div><div class="ttdoc">Implementations for variables that analytic-data classes can share.</div><div class="ttdef"><b>Definition:</b> CommonVariables.hpp:56</div></div>
+<div class="ttc" id="astructTags_1_1Flux_html"><div class="ttname"><a href="structTags_1_1Flux.html">Tags::Flux</a></div><div class="ttdoc">Prefix indicating a flux.</div><div class="ttdef"><b>Definition:</b> Prefixes.hpp:40</div></div>
+<div class="ttc" id="astructXcts_1_1Tags_1_1ConformalFactor_html"><div class="ttname"><a href="structXcts_1_1Tags_1_1ConformalFactor.html">Xcts::Tags::ConformalFactor</a></div><div class="ttdoc">The conformal factor  that rescales the spatial metric .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:21</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ga398bdce722c9ba655f479a7712f1a0e5"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ga398bdce722c9ba655f479a7712f1a0e5">domain::push_back</a></div><div class="ttdeci">CoordinateMap&lt; SourceFrame, TargetFrame, Maps..., NewMap &gt; push_back(CoordinateMap&lt; SourceFrame, TargetFrame, Maps... &gt; old_map, NewMap new_map) noexcept</div><div class="ttdoc">Creates a CoordinateMap by appending the new map to the end of the old maps.</div></div>
+<div class="ttc" id="astructXcts_1_1Tags_1_1LongitudinalShiftMinusDtConformalMetricOverLapseSquare_html"><div class="ttname"><a href="structXcts_1_1Tags_1_1LongitudinalShiftMinusDtConformalMetricOverLapseSquare.html">Xcts::Tags::LongitudinalShiftMinusDtConformalMetricOverLapseSquare</a></div><div class="ttdoc">The conformal longitudinal operator applied to the shift vector minus the time derivative of the conf...</div><div class="ttdef"><b>Definition:</b> Tags.hpp:181</div></div>
+<div class="ttc" id="astructXcts_1_1Solutions_1_1CommonVariables_html"><div class="ttname"><a href="structXcts_1_1Solutions_1_1CommonVariables.html">Xcts::Solutions::CommonVariables</a></div><div class="ttdoc">Implementations for variables that solutions can share.</div><div class="ttdef"><b>Definition:</b> CommonVariables.hpp:33</div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="astructgr_1_1Tags_1_1Shift_html"><div class="ttname"><a href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:48</div></div>
+<div class="ttc" id="agroup__GeneralRelativityGroup_html_gac067e03fcb04c8c6c45d9708539a56b0"><div class="ttname"><a href="group__GeneralRelativityGroup.html#gac067e03fcb04c8c6c45d9708539a56b0">gr::shift</a></div><div class="ttdeci">tnsr::I&lt; DataType, SpatialDim, Frame &gt; shift(const tnsr::aa&lt; DataType, SpatialDim, Frame &gt; &amp;spacetime_metric, const tnsr::II&lt; DataType, SpatialDim, Frame &gt; &amp;inverse_spatial_metric) noexcept</div><div class="ttdoc">Compute shift from spacetime metric and inverse spatial metric.</div></div>
+<div class="ttc" id="anamespaceActionTesting_html_af2cb56d7012b27cab5d118a9fa0783d2"><div class="ttname"><a href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">ActionTesting::cache</a></div><div class="ttdeci">Parallel::GlobalCache&lt; Metavariables &gt; &amp; cache(MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const ArrayIndex &amp;array_index) noexcept</div><div class="ttdoc">Returns the GlobalCache of Component with index array_index.</div><div class="ttdef"><b>Definition:</b> MockRuntimeSystemFreeFunctions.hpp:382</div></div>
+<div class="ttc" id="astructXcts_1_1Tags_1_1LongitudinalShiftExcess_html"><div class="ttname"><a href="structXcts_1_1Tags_1_1LongitudinalShiftExcess.html">Xcts::Tags::LongitudinalShiftExcess</a></div><div class="ttdoc">The conformal longitudinal operator applied to the shift excess .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:138</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga06ebcb38a1f13c246e53378b9e8959ce"><div class="ttname"><a href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a></div><div class="ttdeci">Tensor&lt; T, Symmetry&lt;&gt;, index_list&lt;&gt; &gt; Scalar</div><div class="ttdef"><b>Definition:</b> TypeAliases.hpp:21</div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="astructXcts_1_1Tags_1_1LongitudinalShiftMinusDtConformalMetricSquare_html"><div class="ttname"><a href="structXcts_1_1Tags_1_1LongitudinalShiftMinusDtConformalMetricSquare.html">Xcts::Tags::LongitudinalShiftMinusDtConformalMetricSquare</a></div><div class="ttdoc">The conformal longitudinal operator applied to the shift vector minus the time derivative of the conf...</div><div class="ttdef"><b>Definition:</b> Tags.hpp:169</div></div>
+<div class="ttc" id="aTensor_8hpp_html"><div class="ttname"><a href="Tensor_8hpp.html">Tensor.hpp</a></div></div>
+<div class="ttc" id="anamespaceXcts_1_1Solutions_html"><div class="ttname"><a href="namespaceXcts_1_1Solutions.html">Xcts::Solutions</a></div><div class="ttdoc">Analytic solutions of the XCTS equations.</div><div class="ttdef"><b>Definition:</b> AnalyticSolution.hpp:18</div></div>
+<div class="ttc" id="aPrefixes_8hpp_html"><div class="ttname"><a href="Prefixes_8hpp.html">Prefixes.hpp</a></div></div>
+<div class="ttc" id="astructXcts_1_1Tags_1_1ShiftDotDerivExtrinsicCurvatureTrace_html"><div class="ttname"><a href="structXcts_1_1Tags_1_1ShiftDotDerivExtrinsicCurvatureTrace.html">Xcts::Tags::ShiftDotDerivExtrinsicCurvatureTrace</a></div><div class="ttdoc">The shift vector contracted with the gradient of the trace of the extrinsic curvature: .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:194</div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

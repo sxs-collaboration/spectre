@@ -1,0 +1,288 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::CoordinateMaps::EquatorialCompression Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1CoordinateMaps.html">CoordinateMaps</a></li><li class="navelem"><a class="el" href="classdomain_1_1CoordinateMaps_1_1EquatorialCompression.html">EquatorialCompression</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classdomain_1_1CoordinateMaps_1_1EquatorialCompression-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::CoordinateMaps::EquatorialCompression Class Reference<div class="ingroups"><a class="el" href="group__CoordinateMapsGroup.html">Coordinate Maps</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Redistributes gridpoints on the sphere.  
+ <a href="classdomain_1_1CoordinateMaps_1_1EquatorialCompression.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="EquatorialCompression_8hpp_source.html">EquatorialCompression.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a8940a3864a3f9a2975220ccc53260894"><td class="memItemLeft" align="right" valign="top"><a id="a8940a3864a3f9a2975220ccc53260894"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>EquatorialCompression</b> (double aspect_ratio) noexcept</td></tr>
+<tr class="separator:a8940a3864a3f9a2975220ccc53260894"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a128f70cc2e5eb6a92fa6ed5aec5fed7b"><td class="memItemLeft" align="right" valign="top"><a id="a128f70cc2e5eb6a92fa6ed5aec5fed7b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>EquatorialCompression</b> (<a class="el" href="classdomain_1_1CoordinateMaps_1_1EquatorialCompression.html">EquatorialCompression</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a128f70cc2e5eb6a92fa6ed5aec5fed7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b6f32b6b21c64e90fcf1258873a2259"><td class="memItemLeft" align="right" valign="top"><a id="a0b6f32b6b21c64e90fcf1258873a2259"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>EquatorialCompression</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1EquatorialCompression.html">EquatorialCompression</a> &amp;)=default</td></tr>
+<tr class="separator:a0b6f32b6b21c64e90fcf1258873a2259"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29024409b07d4273a26795fb5e46dd8a"><td class="memItemLeft" align="right" valign="top"><a id="a29024409b07d4273a26795fb5e46dd8a"></a>
+<a class="el" href="classdomain_1_1CoordinateMaps_1_1EquatorialCompression.html">EquatorialCompression</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1EquatorialCompression.html">EquatorialCompression</a> &amp;)=default</td></tr>
+<tr class="separator:a29024409b07d4273a26795fb5e46dd8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeac4b20bedc7f24d1d2845076866e163"><td class="memItemLeft" align="right" valign="top"><a id="aeac4b20bedc7f24d1d2845076866e163"></a>
+<a class="el" href="classdomain_1_1CoordinateMaps_1_1EquatorialCompression.html">EquatorialCompression</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1CoordinateMaps_1_1EquatorialCompression.html">EquatorialCompression</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:aeac4b20bedc7f24d1d2845076866e163"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5886b8b7517033aab252f431222dbb55"><td class="memTemplParams" colspan="2"><a id="a5886b8b7517033aab252f431222dbb55"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a5886b8b7517033aab252f431222dbb55"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator()</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:a5886b8b7517033aab252f431222dbb55"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a79a9977d38c134c50f304b766f509235"><td class="memItemLeft" align="right" valign="top"><a id="a79a9977d38c134c50f304b766f509235"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMaps_1_1EquatorialCompression.html#a79a9977d38c134c50f304b766f509235">inverse</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;target_coords) const noexcept</td></tr>
+<tr class="memdesc:a79a9977d38c134c50f304b766f509235"><td class="mdescLeft">&#160;</td><td class="mdescRight">The inverse function is only callable with doubles because the inverse might fail if called for a point out of range, and it is unclear what should happen if the inverse were to succeed for some points in a <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> but fail for other points. <br /></td></tr>
+<tr class="separator:a79a9977d38c134c50f304b766f509235"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af91e61b2c964c11a25a58f9ce45b4a7a"><td class="memTemplParams" colspan="2"><a id="af91e61b2c964c11a25a58f9ce45b4a7a"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:af91e61b2c964c11a25a58f9ce45b4a7a"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:af91e61b2c964c11a25a58f9ce45b4a7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a521812eb93bc41f37e6591107c89256a"><td class="memTemplParams" colspan="2"><a id="a521812eb93bc41f37e6591107c89256a"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a521812eb93bc41f37e6591107c89256a"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>inv_jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:a521812eb93bc41f37e6591107c89256a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3fb721edb547a42b796ce9c3372802e"><td class="memItemLeft" align="right" valign="top"><a id="ac3fb721edb547a42b796ce9c3372802e"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:ac3fb721edb547a42b796ce9c3372802e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9fe48be82dfad4c1208252fe2c165e5a"><td class="memItemLeft" align="right" valign="top"><a id="a9fe48be82dfad4c1208252fe2c165e5a"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_identity</b> () const noexcept</td></tr>
+<tr class="separator:a9fe48be82dfad4c1208252fe2c165e5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aef6a30b9e2259dc166547b5f8ee6c0e8"><td class="memItemLeft" align="right" valign="top"><a id="aef6a30b9e2259dc166547b5f8ee6c0e8"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>dim</b> = 3</td></tr>
+<tr class="separator:aef6a30b9e2259dc166547b5f8ee6c0e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a3efd5cf2995b6b6f38a1018e0e5ad184"><td class="memItemLeft" align="right" valign="top"><a id="a3efd5cf2995b6b6f38a1018e0e5ad184"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1EquatorialCompression.html">EquatorialCompression</a> &amp;lhs, const <a class="el" href="classdomain_1_1CoordinateMaps_1_1EquatorialCompression.html">EquatorialCompression</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a3efd5cf2995b6b6f38a1018e0e5ad184"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Redistributes gridpoints on the sphere. </p>
+<div class="image">
+<img src="EquatorialCompression.png" alt=""/>
+<div class="caption">
+A sphere with an `aspect_ratio` of 3.</div></div>
+<h3>Details</h3>
+<p>A mapping from the sphere to itself which depends on a single parameter, the <code>aspect_ratio</code> \(\alpha\), which is the ratio of the horizontal length to the vertical height for a given point. This parameter name was chosen because points with \(\tan \theta = 1\) get mapped to points with \(\tan \theta&#39; = \alpha\). In general, gridpoints located at an angle \(\theta\) from the pole are mapped to a new angle \(\theta&#39;\) satisfying \(\tan \theta&#39; = \alpha \tan \theta\).</p>
+<p>For an <code>aspect_ratio</code> greater than one, the gridpoints are mapped towards the equator, leading to an equatorially compressed grid. For an <code>aspect_ratio</code> less than one, the gridpoints are mapped towards the poles. Note that the aspect ratio must be positive.</p>
+<p>We define the auxiliary variables \( r := \sqrt{x^2 + y^2 +z^2}\) and \( \rho := \sqrt{x^2 + y^2 + \alpha^{-2} z^2}\).</p>
+<p>The map corresponding to this transformation in cartesian coordinates is then given by:</p>
+<p class="formulaDsp">
+\[\vec{x}&#39;(x,y,z) = \frac{r}{\rho}\begin{bmatrix} x\\ y\\ \alpha^{-1} z\\ \end{bmatrix}\]
+</p>
+ </div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/CoordinateMaps/<a class="el" href="EquatorialCompression_8hpp_source.html">EquatorialCompression.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

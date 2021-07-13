@@ -1,0 +1,513 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - 39f3c2b725318dcf91749887b1e61f477736e132 - PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title"> SpECTRE Documentation Coverage Report</td></tr>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">PointwiseFunctions/AnalyticSolutions/RelativisticEuler</a> - FishboneMoncriefDisk.hpp</td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+             <td class="headerItem">Commit:</td>
+             <td class="headerValue"><a target="_blank" href="https://github.com/sxs-collaboration/spectre/commit/39f3c2b725318dcf91749887b1e61f477736e132">39f3c2b725318dcf91749887b1e61f477736e132</a></td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">9</td>
+            <td class="headerCovTableEntry">74</td>
+            <td class="headerCovTableEntryLo">12.2 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2021-07-13 03:19:40</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineNoCov">          0 : // Distributed under the MIT License.</span></a>
+<a name="2"><span class="lineNum">       2 </span>            : // See LICENSE.txt for details.</a>
+<a name="3"><span class="lineNum">       3 </span>            : </a>
+<a name="4"><span class="lineNum">       4 </span>            : #pragma once</a>
+<a name="5"><span class="lineNum">       5 </span>            : </a>
+<a name="6"><span class="lineNum">       6 </span>            : #include &lt;cstddef&gt;</a>
+<a name="7"><span class="lineNum">       7 </span>            : #include &lt;limits&gt;</a>
+<a name="8"><span class="lineNum">       8 </span>            : </a>
+<a name="9"><span class="lineNum">       9 </span>            : #include &quot;DataStructures/Tensor/TypeAliases.hpp&quot;</a>
+<a name="10"><span class="lineNum">      10 </span>            : #include &quot;Options/Options.hpp&quot;</a>
+<a name="11"><span class="lineNum">      11 </span>            : #include &quot;PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp&quot;</a>
+<a name="12"><span class="lineNum">      12 </span>            : #include &quot;PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp&quot;</a>
+<a name="13"><span class="lineNum">      13 </span>            : #include &quot;PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Solutions.hpp&quot;</a>
+<a name="14"><span class="lineNum">      14 </span>            : #include &quot;PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp&quot;  // IWYU pragma: keep</a>
+<a name="15"><span class="lineNum">      15 </span>            : #include &quot;PointwiseFunctions/Hydro/TagsDeclarations.hpp&quot;</a>
+<a name="16"><span class="lineNum">      16 </span>            : #include &quot;Utilities/ForceInline.hpp&quot;</a>
+<a name="17"><span class="lineNum">      17 </span>            : #include &quot;Utilities/Requires.hpp&quot;</a>
+<a name="18"><span class="lineNum">      18 </span>            : #include &quot;Utilities/TMPL.hpp&quot;</a>
+<a name="19"><span class="lineNum">      19 </span>            : #include &quot;Utilities/TaggedTuple.hpp&quot;</a>
+<a name="20"><span class="lineNum">      20 </span>            : </a>
+<a name="21"><span class="lineNum">      21 </span>            : /// \cond</a>
+<a name="22"><span class="lineNum">      22 </span>            : namespace PUP {</a>
+<a name="23"><span class="lineNum">      23 </span>            : class er;  // IWYU pragma: keep</a>
+<a name="24"><span class="lineNum">      24 </span>            : }  // namespace PUP</a>
+<a name="25"><span class="lineNum">      25 </span>            : /// \endcond</a>
+<a name="26"><span class="lineNum">      26 </span>            : </a>
+<a name="27"><span class="lineNum">      27 </span>            : // IWYU pragma: no_include &lt;pup.h&gt;</a>
+<a name="28"><span class="lineNum">      28 </span>            : </a>
+<a name="29"><span class="lineNum">      29 </span>            : namespace RelativisticEuler {</a>
+<a name="30"><span class="lineNum">      30 </span>            : namespace Solutions {</a>
+<a name="31"><span class="lineNum">      31 </span>            : </a>
+<a name="32"><span class="lineNum">      32 </span>            : /*!</a>
+<a name="33"><span class="lineNum">      33 </span>            :  * \brief Fluid disk orbiting a Kerr black hole</a>
+<a name="34"><span class="lineNum">      34 </span>            :  *</a>
+<a name="35"><span class="lineNum">      35 </span>            :  * The Fishbone-Moncrief solution to the 3D relativistic Euler system</a>
+<a name="36"><span class="lineNum">      36 </span>            :  * \cite Fishbone1976apj, representing the isentropic flow of a thick fluid disk</a>
+<a name="37"><span class="lineNum">      37 </span>            :  * orbiting a Kerr black hole. In Boyer-Lindquist coordinates</a>
+<a name="38"><span class="lineNum">      38 </span>            :  * \f$(t, r, \theta, \phi)\f$, the flow is assumed to be purely toroidal,</a>
+<a name="39"><span class="lineNum">      39 </span>            :  *</a>
+<a name="40"><span class="lineNum">      40 </span>            :  * \f{align*}</a>
+<a name="41"><span class="lineNum">      41 </span>            :  * u^\mu = (u^t, 0, 0, u^\phi),</a>
+<a name="42"><span class="lineNum">      42 </span>            :  * \f}</a>
+<a name="43"><span class="lineNum">      43 </span>            :  *</a>
+<a name="44"><span class="lineNum">      44 </span>            :  * where \f$u^\mu\f$ is the 4-velocity. Then, all the fluid quantities are</a>
+<a name="45"><span class="lineNum">      45 </span>            :  * assumed to share the same symmetries as those of the background spacetime,</a>
+<a name="46"><span class="lineNum">      46 </span>            :  * namely they are stationary (independent of \f$t\f$), and axially symmetric</a>
+<a name="47"><span class="lineNum">      47 </span>            :  * (independent of \f$\phi\f$). Note that \f$r\f$ and \f$\theta\f$ can also be</a>
+<a name="48"><span class="lineNum">      48 </span>            :  * interpreted as Kerr (a.k.a. &quot;spherical&quot; Kerr-Schild) coordinates</a>
+<a name="49"><span class="lineNum">      49 </span>            :  * (see gr::KerrSchildCoords), and that the symmetries of the equilibrium ensure</a>
+<a name="50"><span class="lineNum">      50 </span>            :  * that \f$u^\mu\f$ as defined above is also the 4-velocity in Kerr coordinates.</a>
+<a name="51"><span class="lineNum">      51 </span>            :  *</a>
+<a name="52"><span class="lineNum">      52 </span>            :  * Self-gravity is neglected, so that the fluid</a>
+<a name="53"><span class="lineNum">      53 </span>            :  * variables are determined as functions of the metric. Following the treatment</a>
+<a name="54"><span class="lineNum">      54 </span>            :  * by Kozlowski et al. \cite Kozlowski1978aa (but using signature +2)</a>
+<a name="55"><span class="lineNum">      55 </span>            :  * the solution is expressed in terms of the quantities</a>
+<a name="56"><span class="lineNum">      56 </span>            :  *</a>
+<a name="57"><span class="lineNum">      57 </span>            :  * \f{align*}</a>
+<a name="58"><span class="lineNum">      58 </span>            :  * \Omega &amp;= \dfrac{u^\phi}{u^t},\\</a>
+<a name="59"><span class="lineNum">      59 </span>            :  * W &amp;= W_\text{in} - \int_{p_\text{in}}^p\frac{dp}{e + p},</a>
+<a name="60"><span class="lineNum">      60 </span>            :  * \f}</a>
+<a name="61"><span class="lineNum">      61 </span>            :  *</a>
+<a name="62"><span class="lineNum">      62 </span>            :  * where \f$\Omega\f$ is the angular velocity, \f$p\f$ is the fluid pressure,</a>
+<a name="63"><span class="lineNum">      63 </span>            :  * \f$e\f$ is the energy density, and \f$W\f$ is an auxiliary quantity</a>
+<a name="64"><span class="lineNum">      64 </span>            :  * interpreted in the Newtonian limit as the total (gravitational + centrifugal)</a>
+<a name="65"><span class="lineNum">      65 </span>            :  * potential. \f$W_\text{in}\f$ and \f$p_\text{in}\f$ are the potential and</a>
+<a name="66"><span class="lineNum">      66 </span>            :  * the pressure at the radius of the inner edge, i.e. the closest edge to the</a>
+<a name="67"><span class="lineNum">      67 </span>            :  * black hole. Here we assume \f$p_\text{in} = 0.\f$ The solution to the Euler</a>
+<a name="68"><span class="lineNum">      68 </span>            :  * equation is then</a>
+<a name="69"><span class="lineNum">      69 </span>            :  *</a>
+<a name="70"><span class="lineNum">      70 </span>            :  * \f{align*}</a>
+<a name="71"><span class="lineNum">      71 </span>            :  * (u^t)^2 &amp;= \frac{A}{2\Delta\Sigma}\left(1 +</a>
+<a name="72"><span class="lineNum">      72 </span>            :  * \sqrt{1 + \frac{4l^2\Delta \Sigma^2}{A^2\sin^2\theta}}\right)\\</a>
+<a name="73"><span class="lineNum">      73 </span>            :  * \Omega &amp;= \frac{\Sigma}{A (u^t)^2}\frac{l}{\sin^2\theta} + \frac{2Mra}{A}\\</a>
+<a name="74"><span class="lineNum">      74 </span>            :  * u^\phi &amp;= \Omega u^t\\</a>
+<a name="75"><span class="lineNum">      75 </span>            :  * W &amp;= l\Omega - \ln u^t,</a>
+<a name="76"><span class="lineNum">      76 </span>            :  * \f}</a>
+<a name="77"><span class="lineNum">      77 </span>            :  *</a>
+<a name="78"><span class="lineNum">      78 </span>            :  * where</a>
+<a name="79"><span class="lineNum">      79 </span>            :  *</a>
+<a name="80"><span class="lineNum">      80 </span>            :  * \f{align*}</a>
+<a name="81"><span class="lineNum">      81 </span>            :  * \Sigma = r^2 + a^2\cos^2\theta\qquad</a>
+<a name="82"><span class="lineNum">      82 </span>            :  * \Delta = r^2 - 2Mr + a^2\qquad</a>
+<a name="83"><span class="lineNum">      83 </span>            :  * A = (r^2 + a^2)^2 - \Delta a^2 \sin^2\theta</a>
+<a name="84"><span class="lineNum">      84 </span>            :  * \f}</a>
+<a name="85"><span class="lineNum">      85 </span>            :  *</a>
+<a name="86"><span class="lineNum">      86 </span>            :  * and \f$l = u_\phi u^t\f$ is the so-called angular momentum per unit</a>
+<a name="87"><span class="lineNum">      87 </span>            :  * intertial mass, which is a parameter defining an</a>
+<a name="88"><span class="lineNum">      88 </span>            :  * individual disk. In deriving the solution, an integration constant has been</a>
+<a name="89"><span class="lineNum">      89 </span>            :  * chosen so that \f$ W\longrightarrow 0\f$ as \f$r\longrightarrow \infty\f$,</a>
+<a name="90"><span class="lineNum">      90 </span>            :  * in accordance with the Newtonian limit. Note that, from its definition,</a>
+<a name="91"><span class="lineNum">      91 </span>            :  * equipotential contours coincide with isobaric contours. Physically, the</a>
+<a name="92"><span class="lineNum">      92 </span>            :  * matter can fill each of the closed surfaces \f$W = \text{const}\f$, giving</a>
+<a name="93"><span class="lineNum">      93 </span>            :  * rise to an orbiting thick disk. For \f$W &gt; 0\f$, all equipotentials are open,</a>
+<a name="94"><span class="lineNum">      94 </span>            :  * whereas for \f$W &lt; 0\f$, some of them will be closed. Should a disk exist,</a>
+<a name="95"><span class="lineNum">      95 </span>            :  * the pressure reaches a maximum value on the equator at a coordinate radius</a>
+<a name="96"><span class="lineNum">      96 </span>            :  * \f$r_\text{max}\f$ that is related to the angular momentum per unit inertial</a>
+<a name="97"><span class="lineNum">      97 </span>            :  * mass via</a>
+<a name="98"><span class="lineNum">      98 </span>            :  *</a>
+<a name="99"><span class="lineNum">      99 </span>            :  * \f{align*}</a>
+<a name="100"><span class="lineNum">     100 </span>            :  * l = \dfrac{M^{1/2}(r_\text{max}^{3/2} + aM^{1/2})(a^2 - 2aM^{1/2}</a>
+<a name="101"><span class="lineNum">     101 </span>            :  * r_\text{max}^{1/2} + r_\text{max}^2)}{2aM^{1/2}r_\text{max}^{3/2} +</a>
+<a name="102"><span class="lineNum">     102 </span>            :  * (r_\text{max} - 3M)r_\text{max}^2}.</a>
+<a name="103"><span class="lineNum">     103 </span>            :  * \f}</a>
+<a name="104"><span class="lineNum">     104 </span>            :  *</a>
+<a name="105"><span class="lineNum">     105 </span>            :  * Once \f$W\f$ is determined, an equation of state is required in order to</a>
+<a name="106"><span class="lineNum">     106 </span>            :  * obtain the thermodynamic variables. If the flow is isentropic, the specific</a>
+<a name="107"><span class="lineNum">     107 </span>            :  * enthalpy can readily be obtained from the first and second laws of</a>
+<a name="108"><span class="lineNum">     108 </span>            :  * thermodynamics: one has</a>
+<a name="109"><span class="lineNum">     109 </span>            :  *</a>
+<a name="110"><span class="lineNum">     110 </span>            :  * \f{align*}</a>
+<a name="111"><span class="lineNum">     111 </span>            :  * \frac{dp}{e + p} = \frac{dh}{h}</a>
+<a name="112"><span class="lineNum">     112 </span>            :  * \f}</a>
+<a name="113"><span class="lineNum">     113 </span>            :  *</a>
+<a name="114"><span class="lineNum">     114 </span>            :  * so that</a>
+<a name="115"><span class="lineNum">     115 </span>            :  *</a>
+<a name="116"><span class="lineNum">     116 </span>            :  * \f{align*}</a>
+<a name="117"><span class="lineNum">     117 </span>            :  * h = h_\text{in}\exp(W_\text{in} - W),</a>
+<a name="118"><span class="lineNum">     118 </span>            :  * \f}</a>
+<a name="119"><span class="lineNum">     119 </span>            :  *</a>
+<a name="120"><span class="lineNum">     120 </span>            :  * and the pressure can be obtained from a thermodynamic relation of the form</a>
+<a name="121"><span class="lineNum">     121 </span>            :  * \f$h = h(p)\f$. Here we assume a polytropic relation</a>
+<a name="122"><span class="lineNum">     122 </span>            :  *</a>
+<a name="123"><span class="lineNum">     123 </span>            :  * \f{align*}</a>
+<a name="124"><span class="lineNum">     124 </span>            :  * p = K\rho^\gamma.</a>
+<a name="125"><span class="lineNum">     125 </span>            :  * \f}</a>
+<a name="126"><span class="lineNum">     126 </span>            :  *</a>
+<a name="127"><span class="lineNum">     127 </span>            :  * Once all the variables are known in Boyer-Lindquist (or Kerr) coordinates, it</a>
+<a name="128"><span class="lineNum">     128 </span>            :  * is straightforward to write them in Cartesian Kerr-Schild coordinates. The</a>
+<a name="129"><span class="lineNum">     129 </span>            :  * coordinate transformation in gr::KerrSchildCoords helps read the Jacobian</a>
+<a name="130"><span class="lineNum">     130 </span>            :  * matrix, which, applied to the azimuthal flow of the disk, gives</a>
+<a name="131"><span class="lineNum">     131 </span>            :  *</a>
+<a name="132"><span class="lineNum">     132 </span>            :  * \f{align*}</a>
+<a name="133"><span class="lineNum">     133 </span>            :  * u_\text{KS}^\mu = u^t(1, -y\Omega, x\Omega, 0),</a>
+<a name="134"><span class="lineNum">     134 </span>            :  * \f}</a>
+<a name="135"><span class="lineNum">     135 </span>            :  *</a>
+<a name="136"><span class="lineNum">     136 </span>            :  * where \f$u^t\f$ and \f$\Omega\f$ are now understood as functions of the</a>
+<a name="137"><span class="lineNum">     137 </span>            :  * Kerr-Schild coordinates. Finally, the spatial velocity can be readily</a>
+<a name="138"><span class="lineNum">     138 </span>            :  * obtained from its definition,</a>
+<a name="139"><span class="lineNum">     139 </span>            :  *</a>
+<a name="140"><span class="lineNum">     140 </span>            :  * \f{align*}</a>
+<a name="141"><span class="lineNum">     141 </span>            :  * \alpha v^i = \frac{u^i}{u^t} + \beta^i,</a>
+<a name="142"><span class="lineNum">     142 </span>            :  * \f}</a>
+<a name="143"><span class="lineNum">     143 </span>            :  *</a>
+<a name="144"><span class="lineNum">     144 </span>            :  * where \f$\alpha\f$ and \f$\beta^i\f$ are the lapse and the shift,</a>
+<a name="145"><span class="lineNum">     145 </span>            :  * respectively.</a>
+<a name="146"><span class="lineNum">     146 </span>            :  *</a>
+<a name="147"><span class="lineNum">     147 </span>            :  * \note Kozlowski et al. \cite Kozlowski1978aa denote</a>
+<a name="148"><span class="lineNum">     148 </span>            :  * \f$l_* = u_\phi u^t\f$ in order to</a>
+<a name="149"><span class="lineNum">     149 </span>            :  * distinguish this quantity from their own definition \f$l = - u_\phi/u_t\f$.</a>
+<a name="150"><span class="lineNum">     150 </span>            :  */</a>
+<a name="151"><span class="lineNum">     151 </span>            : class FishboneMoncriefDisk : public MarkAsAnalyticSolution,</a>
+<a name="152"><span class="lineNum">     152 </span><span class="lineCov">          1 :                              public AnalyticSolution&lt;3&gt; {</span></a>
+<a name="153"><span class="lineNum">     153 </span>            :  protected:</a>
+<a name="154"><span class="lineNum">     154 </span>            :   template &lt;typename DataType, bool NeedSpacetime&gt;</a>
+<a name="155"><span class="lineNum">     155 </span><span class="lineNoCov">          0 :   struct IntermediateVariables;</span></a>
+<a name="156"><span class="lineNum">     156 </span>            : </a>
+<a name="157"><span class="lineNum">     157 </span>            :  public:</a>
+<a name="158"><span class="lineNum">     158 </span><span class="lineNoCov">          0 :   using equation_of_state_type = EquationsOfState::PolytropicFluid&lt;true&gt;;</span></a>
+<a name="159"><span class="lineNum">     159 </span>            : </a>
+<a name="160"><span class="lineNum">     160 </span>            :   /// The mass of the black hole, \f$M\f$.</a>
+<a name="161"><span class="lineNum">     161 </span><span class="lineCov">          1 :   struct BhMass {</span></a>
+<a name="162"><span class="lineNum">     162 </span><span class="lineNoCov">          0 :     using type = double;</span></a>
+<a name="163"><span class="lineNum">     163 </span><span class="lineNoCov">          0 :     static constexpr Options::String help = {&quot;The mass of the black hole.&quot;};</span></a>
+<a name="164"><span class="lineNum">     164 </span><span class="lineNoCov">          0 :     static type lower_bound() noexcept { return 0.0; }</span></a>
+<a name="165"><span class="lineNum">     165 </span>            :   };</a>
+<a name="166"><span class="lineNum">     166 </span>            :   /// The dimensionless black hole spin, \f$\chi = a/M\f$.</a>
+<a name="167"><span class="lineNum">     167 </span><span class="lineCov">          1 :   struct BhDimlessSpin {</span></a>
+<a name="168"><span class="lineNum">     168 </span><span class="lineNoCov">          0 :     using type = double;</span></a>
+<a name="169"><span class="lineNum">     169 </span><span class="lineNoCov">          0 :     static constexpr Options::String help = {</span></a>
+<a name="170"><span class="lineNum">     170 </span>            :         &quot;The dimensionless black hole spin.&quot;};</a>
+<a name="171"><span class="lineNum">     171 </span><span class="lineNoCov">          0 :     static type lower_bound() { return 0.0; }</span></a>
+<a name="172"><span class="lineNum">     172 </span><span class="lineNoCov">          0 :     static type upper_bound() { return 1.0; }</span></a>
+<a name="173"><span class="lineNum">     173 </span>            :   };</a>
+<a name="174"><span class="lineNum">     174 </span>            :   /// The radial coordinate of the inner edge of the disk, in units of \f$M\f$.</a>
+<a name="175"><span class="lineNum">     175 </span><span class="lineCov">          1 :   struct InnerEdgeRadius {</span></a>
+<a name="176"><span class="lineNum">     176 </span><span class="lineNoCov">          0 :     using type = double;</span></a>
+<a name="177"><span class="lineNum">     177 </span><span class="lineNoCov">          0 :     static constexpr Options::String help = {</span></a>
+<a name="178"><span class="lineNum">     178 </span>            :         &quot;The radial coordinate of the inner edge of the disk.&quot;};</a>
+<a name="179"><span class="lineNum">     179 </span>            :   };</a>
+<a name="180"><span class="lineNum">     180 </span>            :   /// The radial coordinate of the maximum pressure, in units of \f$M\f$.</a>
+<a name="181"><span class="lineNum">     181 </span><span class="lineCov">          1 :   struct MaxPressureRadius {</span></a>
+<a name="182"><span class="lineNum">     182 </span><span class="lineNoCov">          0 :     using type = double;</span></a>
+<a name="183"><span class="lineNum">     183 </span><span class="lineNoCov">          0 :     static constexpr Options::String help = {</span></a>
+<a name="184"><span class="lineNum">     184 </span>            :         &quot;The radial coordinate of the maximum pressure.&quot;};</a>
+<a name="185"><span class="lineNum">     185 </span>            :   };</a>
+<a name="186"><span class="lineNum">     186 </span>            :   /// The polytropic constant of the fluid.</a>
+<a name="187"><span class="lineNum">     187 </span><span class="lineCov">          1 :   struct PolytropicConstant {</span></a>
+<a name="188"><span class="lineNum">     188 </span><span class="lineNoCov">          0 :     using type = double;</span></a>
+<a name="189"><span class="lineNum">     189 </span><span class="lineNoCov">          0 :     static constexpr Options::String help = {</span></a>
+<a name="190"><span class="lineNum">     190 </span>            :         &quot;The polytropic constant of the fluid.&quot;};</a>
+<a name="191"><span class="lineNum">     191 </span><span class="lineNoCov">          0 :     static type lower_bound() noexcept { return 0.; }</span></a>
+<a name="192"><span class="lineNum">     192 </span>            :   };</a>
+<a name="193"><span class="lineNum">     193 </span>            :   /// The polytropic exponent of the fluid.</a>
+<a name="194"><span class="lineNum">     194 </span><span class="lineCov">          1 :   struct PolytropicExponent {</span></a>
+<a name="195"><span class="lineNum">     195 </span><span class="lineNoCov">          0 :     using type = double;</span></a>
+<a name="196"><span class="lineNum">     196 </span><span class="lineNoCov">          0 :     static constexpr Options::String help = {</span></a>
+<a name="197"><span class="lineNum">     197 </span>            :         &quot;The polytropic exponent of the fluid.&quot;};</a>
+<a name="198"><span class="lineNum">     198 </span><span class="lineNoCov">          0 :     static type lower_bound() noexcept { return 1.; }</span></a>
+<a name="199"><span class="lineNum">     199 </span>            :   };</a>
+<a name="200"><span class="lineNum">     200 </span>            : </a>
+<a name="201"><span class="lineNum">     201 </span><span class="lineNoCov">          0 :   using options =</span></a>
+<a name="202"><span class="lineNum">     202 </span>            :       tmpl::list&lt;BhMass, BhDimlessSpin, InnerEdgeRadius, MaxPressureRadius,</a>
+<a name="203"><span class="lineNum">     203 </span>            :                  PolytropicConstant, PolytropicExponent&gt;;</a>
+<a name="204"><span class="lineNum">     204 </span><span class="lineNoCov">          0 :   static constexpr Options::String help = {</span></a>
+<a name="205"><span class="lineNum">     205 </span>            :       &quot;Fluid disk orbiting a Kerr black hole.&quot;};</a>
+<a name="206"><span class="lineNum">     206 </span>            : </a>
+<a name="207"><span class="lineNum">     207 </span><span class="lineNoCov">          0 :   FishboneMoncriefDisk() = default;</span></a>
+<a name="208"><span class="lineNum">     208 </span><span class="lineNoCov">          0 :   FishboneMoncriefDisk(const FishboneMoncriefDisk&amp; /*rhs*/) = delete;</span></a>
+<a name="209"><span class="lineNum">     209 </span><span class="lineNoCov">          0 :   FishboneMoncriefDisk&amp; operator=(const FishboneMoncriefDisk&amp; /*rhs*/) = delete;</span></a>
+<a name="210"><span class="lineNum">     210 </span><span class="lineNoCov">          0 :   FishboneMoncriefDisk(FishboneMoncriefDisk&amp;&amp; /*rhs*/) noexcept = default;</span></a>
+<a name="211"><span class="lineNum">     211 </span><span class="lineNoCov">          0 :   FishboneMoncriefDisk&amp; operator=(FishboneMoncriefDisk&amp;&amp; /*rhs*/) noexcept =</span></a>
+<a name="212"><span class="lineNum">     212 </span>            :       default;</a>
+<a name="213"><span class="lineNum">     213 </span><span class="lineNoCov">          0 :   ~FishboneMoncriefDisk() = default;</span></a>
+<a name="214"><span class="lineNum">     214 </span>            : </a>
+<a name="215"><span class="lineNum">     215 </span><span class="lineNoCov">          0 :   FishboneMoncriefDisk(double bh_mass, double bh_dimless_spin,</span></a>
+<a name="216"><span class="lineNum">     216 </span>            :                        double inner_edge_radius, double max_pressure_radius,</a>
+<a name="217"><span class="lineNum">     217 </span>            :                        double polytropic_constant,</a>
+<a name="218"><span class="lineNum">     218 </span>            :                        double polytropic_exponent) noexcept;</a>
+<a name="219"><span class="lineNum">     219 </span>            : </a>
+<a name="220"><span class="lineNum">     220 </span>            :   // Eventually, if we implement a gr::Solutions::BoyerLindquist</a>
+<a name="221"><span class="lineNum">     221 </span>            :   // black hole, the following two functions aren't needed, and the algebra</a>
+<a name="222"><span class="lineNum">     222 </span>            :   // of the three functions after can be simplified by using the corresponding</a>
+<a name="223"><span class="lineNum">     223 </span>            :   // lapse, shift, and spatial metric.</a>
+<a name="224"><span class="lineNum">     224 </span>            :   template &lt;typename DataType&gt;</a>
+<a name="225"><span class="lineNum">     225 </span><span class="lineNoCov">          0 :   DataType sigma(const DataType&amp; r_sqrd, const DataType&amp; sin_theta_sqrd) const</span></a>
+<a name="226"><span class="lineNum">     226 </span>            :       noexcept;</a>
+<a name="227"><span class="lineNum">     227 </span>            : </a>
+<a name="228"><span class="lineNum">     228 </span>            :   template &lt;typename DataType&gt;</a>
+<a name="229"><span class="lineNum">     229 </span><span class="lineNoCov">          0 :   DataType inv_ucase_a(const DataType&amp; r_sqrd, const DataType&amp; sin_theta_sqrd,</span></a>
+<a name="230"><span class="lineNum">     230 </span>            :                        const DataType&amp; delta) const noexcept;</a>
+<a name="231"><span class="lineNum">     231 </span>            : </a>
+<a name="232"><span class="lineNum">     232 </span>            :   template &lt;typename DataType&gt;</a>
+<a name="233"><span class="lineNum">     233 </span><span class="lineNoCov">          0 :   DataType four_velocity_t_sqrd(const DataType&amp; r_sqrd,</span></a>
+<a name="234"><span class="lineNum">     234 </span>            :                                 const DataType&amp; sin_theta_sqrd) const noexcept;</a>
+<a name="235"><span class="lineNum">     235 </span>            : </a>
+<a name="236"><span class="lineNum">     236 </span>            :   template &lt;typename DataType&gt;</a>
+<a name="237"><span class="lineNum">     237 </span><span class="lineNoCov">          0 :   DataType angular_velocity(const DataType&amp; r_sqrd,</span></a>
+<a name="238"><span class="lineNum">     238 </span>            :                             const DataType&amp; sin_theta_sqrd) const noexcept;</a>
+<a name="239"><span class="lineNum">     239 </span>            : </a>
+<a name="240"><span class="lineNum">     240 </span>            :   template &lt;typename DataType&gt;</a>
+<a name="241"><span class="lineNum">     241 </span><span class="lineNoCov">          0 :   DataType potential(const DataType&amp; r_sqrd,</span></a>
+<a name="242"><span class="lineNum">     242 </span>            :                      const DataType&amp; sin_theta_sqrd) const noexcept;</a>
+<a name="243"><span class="lineNum">     243 </span>            : </a>
+<a name="244"><span class="lineNum">     244 </span><span class="lineNoCov">          0 :   SPECTRE_ALWAYS_INLINE static size_t index_helper(</span></a>
+<a name="245"><span class="lineNum">     245 </span>            :       tmpl::no_such_type_ /*meta*/) noexcept {</a>
+<a name="246"><span class="lineNum">     246 </span>            :     return std::numeric_limits&lt;size_t&gt;::max();</a>
+<a name="247"><span class="lineNum">     247 </span>            :   }</a>
+<a name="248"><span class="lineNum">     248 </span>            :   template &lt;typename T&gt;</a>
+<a name="249"><span class="lineNum">     249 </span><span class="lineNoCov">          0 :   SPECTRE_ALWAYS_INLINE size_t index_helper(T /*meta*/) const noexcept {</span></a>
+<a name="250"><span class="lineNum">     250 </span>            :     return T::value;</a>
+<a name="251"><span class="lineNum">     251 </span>            :   }</a>
+<a name="252"><span class="lineNum">     252 </span>            : </a>
+<a name="253"><span class="lineNum">     253 </span>            :   /// @{</a>
+<a name="254"><span class="lineNum">     254 </span>            :   /// The fluid variables in Cartesian Kerr-Schild coordinates at `(x, t)`</a>
+<a name="255"><span class="lineNum">     255 </span>            :   ///</a>
+<a name="256"><span class="lineNum">     256 </span>            :   /// \note The functions are optimized for retrieving the hydro variables</a>
+<a name="257"><span class="lineNum">     257 </span>            :   /// before the metric variables.</a>
+<a name="258"><span class="lineNum">     258 </span>            :   template &lt;typename DataType, typename... Tags&gt;</a>
+<a name="259"><span class="lineNum">     259 </span><span class="lineCov">          1 :   tuples::TaggedTuple&lt;Tags...&gt; variables(</span></a>
+<a name="260"><span class="lineNum">     260 </span>            :       const tnsr::I&lt;DataType, 3&gt;&amp; x,</a>
+<a name="261"><span class="lineNum">     261 </span>            :       const double t,  // NOLINT(readability-avoid-const-params-in-decls)</a>
+<a name="262"><span class="lineNum">     262 </span>            :       tmpl::list&lt;Tags...&gt; /*meta*/) const noexcept {</a>
+<a name="263"><span class="lineNum">     263 </span>            :     // Can't store IntermediateVariables as member variable because we need to</a>
+<a name="264"><span class="lineNum">     264 </span>            :     // be threadsafe.</a>
+<a name="265"><span class="lineNum">     265 </span>            :     IntermediateVariables&lt;</a>
+<a name="266"><span class="lineNum">     266 </span>            :         DataType,</a>
+<a name="267"><span class="lineNum">     267 </span>            :         tmpl2::flat_any_v&lt;(</a>
+<a name="268"><span class="lineNum">     268 </span>            :             std::is_same_v&lt;Tags, hydro::Tags::SpatialVelocity&lt;DataType, 3&gt;&gt; or</a>
+<a name="269"><span class="lineNum">     269 </span>            :             std::is_same_v&lt;Tags, hydro::Tags::LorentzFactor&lt;DataType&gt;&gt; or</a>
+<a name="270"><span class="lineNum">     270 </span>            :             not tmpl::list_contains_v&lt;hydro::grmhd_tags&lt;DataType&gt;, Tags&gt;)...&gt;&gt;</a>
+<a name="271"><span class="lineNum">     271 </span>            :         vars(bh_spin_a_, background_spacetime_, x, t,</a>
+<a name="272"><span class="lineNum">     272 </span>            :              index_helper(</a>
+<a name="273"><span class="lineNum">     273 </span>            :                  tmpl::index_of&lt;tmpl::list&lt;Tags...&gt;,</a>
+<a name="274"><span class="lineNum">     274 </span>            :                                 hydro::Tags::SpatialVelocity&lt;DataType, 3&gt;&gt;{}),</a>
+<a name="275"><span class="lineNum">     275 </span>            :              index_helper(</a>
+<a name="276"><span class="lineNum">     276 </span>            :                  tmpl::index_of&lt;tmpl::list&lt;Tags...&gt;,</a>
+<a name="277"><span class="lineNum">     277 </span>            :                                 hydro::Tags::LorentzFactor&lt;DataType&gt;&gt;{}));</a>
+<a name="278"><span class="lineNum">     278 </span>            :     return {std::move(get&lt;Tags&gt;(</a>
+<a name="279"><span class="lineNum">     279 </span>            :         variables(x, tmpl::list&lt;Tags&gt;{}, vars,</a>
+<a name="280"><span class="lineNum">     280 </span>            :                   tmpl::index_of&lt;tmpl::list&lt;Tags...&gt;, Tags&gt;::value)))...};</a>
+<a name="281"><span class="lineNum">     281 </span>            :   }</a>
+<a name="282"><span class="lineNum">     282 </span>            : </a>
+<a name="283"><span class="lineNum">     283 </span>            :   template &lt;typename DataType, typename Tag&gt;</a>
+<a name="284"><span class="lineNum">     284 </span><span class="lineCov">          1 :   tuples::TaggedTuple&lt;Tag&gt; variables(const tnsr::I&lt;DataType, 3&gt;&amp; x,</span></a>
+<a name="285"><span class="lineNum">     285 </span>            :                                      const double t,  // NOLINT</a>
+<a name="286"><span class="lineNum">     286 </span>            :                                      tmpl::list&lt;Tag&gt; /*meta*/) const noexcept {</a>
+<a name="287"><span class="lineNum">     287 </span>            :     // Can't store IntermediateVariables as member variable because we need to</a>
+<a name="288"><span class="lineNum">     288 </span>            :     // be threadsafe.</a>
+<a name="289"><span class="lineNum">     289 </span>            :     IntermediateVariables&lt;</a>
+<a name="290"><span class="lineNum">     290 </span>            :         DataType,</a>
+<a name="291"><span class="lineNum">     291 </span>            :         std::is_same_v&lt;Tag, hydro::Tags::SpatialVelocity&lt;DataType, 3&gt;&gt; or</a>
+<a name="292"><span class="lineNum">     292 </span>            :             std::is_same_v&lt;Tag, hydro::Tags::LorentzFactor&lt;DataType&gt;&gt; or</a>
+<a name="293"><span class="lineNum">     293 </span>            :             not tmpl::list_contains_v&lt;hydro::grmhd_tags&lt;DataType&gt;, Tag&gt;&gt;</a>
+<a name="294"><span class="lineNum">     294 </span>            :         intermediate_vars(bh_spin_a_, background_spacetime_, x, t,</a>
+<a name="295"><span class="lineNum">     295 </span>            :                           std::numeric_limits&lt;size_t&gt;::max(),</a>
+<a name="296"><span class="lineNum">     296 </span>            :                           std::numeric_limits&lt;size_t&gt;::max());</a>
+<a name="297"><span class="lineNum">     297 </span>            :     return variables(x, tmpl::list&lt;Tag&gt;{}, intermediate_vars, 0);</a>
+<a name="298"><span class="lineNum">     298 </span>            :   }</a>
+<a name="299"><span class="lineNum">     299 </span>            :   /// @}</a>
+<a name="300"><span class="lineNum">     300 </span>            : </a>
+<a name="301"><span class="lineNum">     301 </span>            :   // clang-tidy: no runtime references</a>
+<a name="302"><span class="lineNum">     302 </span><span class="lineNoCov">          0 :   void pup(PUP::er&amp; /*p*/) noexcept;  //  NOLINT</span></a>
+<a name="303"><span class="lineNum">     303 </span>            : </a>
+<a name="304"><span class="lineNum">     304 </span><span class="lineNoCov">          0 :   const EquationsOfState::PolytropicFluid&lt;true&gt;&amp; equation_of_state() const</span></a>
+<a name="305"><span class="lineNum">     305 </span>            :       noexcept {</a>
+<a name="306"><span class="lineNum">     306 </span>            :     return equation_of_state_;</a>
+<a name="307"><span class="lineNum">     307 </span>            :   }</a>
+<a name="308"><span class="lineNum">     308 </span>            : </a>
+<a name="309"><span class="lineNum">     309 </span>            :  protected:</a>
+<a name="310"><span class="lineNum">     310 </span>            :   template &lt;typename DataType, bool NeedSpacetime&gt;</a>
+<a name="311"><span class="lineNum">     311 </span><span class="lineNoCov">          0 :   auto variables(const tnsr::I&lt;DataType, 3&gt;&amp; x,</span></a>
+<a name="312"><span class="lineNum">     312 </span>            :                  tmpl::list&lt;hydro::Tags::RestMassDensity&lt;DataType&gt;&gt; /*meta*/,</a>
+<a name="313"><span class="lineNum">     313 </span>            :                  const IntermediateVariables&lt;DataType, NeedSpacetime&gt;&amp; vars,</a>
+<a name="314"><span class="lineNum">     314 </span>            :                  size_t index) const noexcept</a>
+<a name="315"><span class="lineNum">     315 </span>            :       -&gt; tuples::TaggedTuple&lt;hydro::Tags::RestMassDensity&lt;DataType&gt;&gt;;</a>
+<a name="316"><span class="lineNum">     316 </span>            : </a>
+<a name="317"><span class="lineNum">     317 </span>            :   template &lt;typename DataType, bool NeedSpacetime&gt;</a>
+<a name="318"><span class="lineNum">     318 </span><span class="lineNoCov">          0 :   auto variables(const tnsr::I&lt;DataType, 3&gt;&amp; x,</span></a>
+<a name="319"><span class="lineNum">     319 </span>            :                  tmpl::list&lt;hydro::Tags::SpecificEnthalpy&lt;DataType&gt;&gt; /*meta*/,</a>
+<a name="320"><span class="lineNum">     320 </span>            :                  const IntermediateVariables&lt;DataType, NeedSpacetime&gt;&amp; vars,</a>
+<a name="321"><span class="lineNum">     321 </span>            :                  size_t index) const noexcept</a>
+<a name="322"><span class="lineNum">     322 </span>            :       -&gt; tuples::TaggedTuple&lt;hydro::Tags::SpecificEnthalpy&lt;DataType&gt;&gt;;</a>
+<a name="323"><span class="lineNum">     323 </span>            : </a>
+<a name="324"><span class="lineNum">     324 </span>            :   template &lt;typename DataType, bool NeedSpacetime&gt;</a>
+<a name="325"><span class="lineNum">     325 </span><span class="lineNoCov">          0 :   auto variables(const tnsr::I&lt;DataType, 3&gt;&amp; x,</span></a>
+<a name="326"><span class="lineNum">     326 </span>            :                  tmpl::list&lt;hydro::Tags::Pressure&lt;DataType&gt;&gt; /*meta*/,</a>
+<a name="327"><span class="lineNum">     327 </span>            :                  const IntermediateVariables&lt;DataType, NeedSpacetime&gt;&amp; vars,</a>
+<a name="328"><span class="lineNum">     328 </span>            :                  size_t index) const noexcept</a>
+<a name="329"><span class="lineNum">     329 </span>            :       -&gt; tuples::TaggedTuple&lt;hydro::Tags::Pressure&lt;DataType&gt;&gt;;</a>
+<a name="330"><span class="lineNum">     330 </span>            : </a>
+<a name="331"><span class="lineNum">     331 </span>            :   template &lt;typename DataType, bool NeedSpacetime&gt;</a>
+<a name="332"><span class="lineNum">     332 </span><span class="lineNoCov">          0 :   auto variables(</span></a>
+<a name="333"><span class="lineNum">     333 </span>            :       const tnsr::I&lt;DataType, 3&gt;&amp; x,</a>
+<a name="334"><span class="lineNum">     334 </span>            :       tmpl::list&lt;hydro::Tags::SpecificInternalEnergy&lt;DataType&gt;&gt; /*meta*/,</a>
+<a name="335"><span class="lineNum">     335 </span>            :       const IntermediateVariables&lt;DataType, NeedSpacetime&gt;&amp; vars,</a>
+<a name="336"><span class="lineNum">     336 </span>            :       size_t index) const noexcept</a>
+<a name="337"><span class="lineNum">     337 </span>            :       -&gt; tuples::TaggedTuple&lt;hydro::Tags::SpecificInternalEnergy&lt;DataType&gt;&gt;;</a>
+<a name="338"><span class="lineNum">     338 </span>            : </a>
+<a name="339"><span class="lineNum">     339 </span>            :   template &lt;typename DataType&gt;</a>
+<a name="340"><span class="lineNum">     340 </span><span class="lineNoCov">          0 :   auto variables(const tnsr::I&lt;DataType, 3&gt;&amp; x,</span></a>
+<a name="341"><span class="lineNum">     341 </span>            :                  tmpl::list&lt;hydro::Tags::SpatialVelocity&lt;DataType, 3&gt;&gt; /*meta*/,</a>
+<a name="342"><span class="lineNum">     342 </span>            :                  const IntermediateVariables&lt;DataType, true&gt;&amp; vars,</a>
+<a name="343"><span class="lineNum">     343 </span>            :                  size_t index) const noexcept</a>
+<a name="344"><span class="lineNum">     344 </span>            :       -&gt; tuples::TaggedTuple&lt;hydro::Tags::SpatialVelocity&lt;DataType, 3&gt;&gt;;</a>
+<a name="345"><span class="lineNum">     345 </span>            : </a>
+<a name="346"><span class="lineNum">     346 </span>            :   template &lt;typename DataType&gt;</a>
+<a name="347"><span class="lineNum">     347 </span><span class="lineNoCov">          0 :   auto variables(const tnsr::I&lt;DataType, 3&gt;&amp; x,</span></a>
+<a name="348"><span class="lineNum">     348 </span>            :                  tmpl::list&lt;hydro::Tags::LorentzFactor&lt;DataType&gt;&gt; /*meta*/,</a>
+<a name="349"><span class="lineNum">     349 </span>            :                  const IntermediateVariables&lt;DataType, true&gt;&amp; vars,</a>
+<a name="350"><span class="lineNum">     350 </span>            :                  size_t index) const noexcept</a>
+<a name="351"><span class="lineNum">     351 </span>            :       -&gt; tuples::TaggedTuple&lt;hydro::Tags::LorentzFactor&lt;DataType&gt;&gt;;</a>
+<a name="352"><span class="lineNum">     352 </span>            : </a>
+<a name="353"><span class="lineNum">     353 </span>            :   template &lt;typename DataType, bool NeedSpacetime&gt;</a>
+<a name="354"><span class="lineNum">     354 </span><span class="lineNoCov">          0 :   auto variables(const tnsr::I&lt;DataType, 3&gt;&amp; x,</span></a>
+<a name="355"><span class="lineNum">     355 </span>            :                  tmpl::list&lt;hydro::Tags::MagneticField&lt;DataType, 3&gt;&gt; /*meta*/,</a>
+<a name="356"><span class="lineNum">     356 </span>            :                  const IntermediateVariables&lt;DataType, NeedSpacetime&gt;&amp; vars,</a>
+<a name="357"><span class="lineNum">     357 </span>            :                  size_t index) const noexcept</a>
+<a name="358"><span class="lineNum">     358 </span>            :       -&gt; tuples::TaggedTuple&lt;hydro::Tags::MagneticField&lt;DataType, 3&gt;&gt;;</a>
+<a name="359"><span class="lineNum">     359 </span>            : </a>
+<a name="360"><span class="lineNum">     360 </span>            :   template &lt;typename DataType, bool NeedSpacetime&gt;</a>
+<a name="361"><span class="lineNum">     361 </span><span class="lineNoCov">          0 :   auto variables(</span></a>
+<a name="362"><span class="lineNum">     362 </span>            :       const tnsr::I&lt;DataType, 3&gt;&amp; x,</a>
+<a name="363"><span class="lineNum">     363 </span>            :       tmpl::list&lt;hydro::Tags::DivergenceCleaningField&lt;DataType&gt;&gt; /*meta*/,</a>
+<a name="364"><span class="lineNum">     364 </span>            :       const IntermediateVariables&lt;DataType, NeedSpacetime&gt;&amp; vars,</a>
+<a name="365"><span class="lineNum">     365 </span>            :       size_t index) const noexcept</a>
+<a name="366"><span class="lineNum">     366 </span>            :       -&gt; tuples::TaggedTuple&lt;hydro::Tags::DivergenceCleaningField&lt;DataType&gt;&gt;;</a>
+<a name="367"><span class="lineNum">     367 </span>            : </a>
+<a name="368"><span class="lineNum">     368 </span>            :   // Grab the metric variables</a>
+<a name="369"><span class="lineNum">     369 </span>            :   template &lt;typename DataType, typename Tag,</a>
+<a name="370"><span class="lineNum">     370 </span>            :             Requires&lt;not tmpl::list_contains_v&lt;hydro::grmhd_tags&lt;DataType&gt;,</a>
+<a name="371"><span class="lineNum">     371 </span>            :                                                Tag&gt;&gt; = nullptr&gt;</a>
+<a name="372"><span class="lineNum">     372 </span><span class="lineNoCov">          0 :   tuples::TaggedTuple&lt;Tag&gt; variables(</span></a>
+<a name="373"><span class="lineNum">     373 </span>            :       const tnsr::I&lt;DataType, 3&gt;&amp; /*x*/, tmpl::list&lt;Tag&gt; /*meta*/,</a>
+<a name="374"><span class="lineNum">     374 </span>            :       IntermediateVariables&lt;DataType, true&gt;&amp; vars, const size_t index) const</a>
+<a name="375"><span class="lineNum">     375 </span>            :       noexcept {</a>
+<a name="376"><span class="lineNum">     376 </span>            :     // The only hydro variables that use the GR solution are spatial velocity</a>
+<a name="377"><span class="lineNum">     377 </span>            :     // and Lorentz factor. If those have already been set (their index in the</a>
+<a name="378"><span class="lineNum">     378 </span>            :     // typelist is lower than our index) then we can safely std::move the GR</a>
+<a name="379"><span class="lineNum">     379 </span>            :     // solution out, assuming nobody gets the same variable twice (e.g. trying</a>
+<a name="380"><span class="lineNum">     380 </span>            :     // to retrieve the lapse twice from the solution in the same call to the</a>
+<a name="381"><span class="lineNum">     381 </span>            :     // function), but then TaggedTuple would explode horribly, so nothing to</a>
+<a name="382"><span class="lineNum">     382 </span>            :     // worry about.</a>
+<a name="383"><span class="lineNum">     383 </span>            :     // Analytic solutions are used in Dirichlet boundary conditions and thus are</a>
+<a name="384"><span class="lineNum">     384 </span>            :     // called quite frequently, making some optimization worthwhile.</a>
+<a name="385"><span class="lineNum">     385 </span>            :     if (index &gt; vars.spatial_velocity_index and</a>
+<a name="386"><span class="lineNum">     386 </span>            :         index &gt; vars.lorentz_factor_index) {</a>
+<a name="387"><span class="lineNum">     387 </span>            :       return {std::move(get&lt;Tag&gt;(vars.kerr_schild_soln))};</a>
+<a name="388"><span class="lineNum">     388 </span>            :     }</a>
+<a name="389"><span class="lineNum">     389 </span>            :     return {get&lt;Tag&gt;(vars.kerr_schild_soln)};</a>
+<a name="390"><span class="lineNum">     390 </span>            :   }</a>
+<a name="391"><span class="lineNum">     391 </span>            : </a>
+<a name="392"><span class="lineNum">     392 </span>            :   template &lt;typename DataType, bool NeedSpacetime, typename Func&gt;</a>
+<a name="393"><span class="lineNum">     393 </span><span class="lineNoCov">          0 :   void variables_impl(</span></a>
+<a name="394"><span class="lineNum">     394 </span>            :       const IntermediateVariables&lt;DataType, NeedSpacetime&gt;&amp; vars, Func f) const</a>
+<a name="395"><span class="lineNum">     395 </span>            :       noexcept;</a>
+<a name="396"><span class="lineNum">     396 </span>            : </a>
+<a name="397"><span class="lineNum">     397 </span>            :   // Intermediate variables needed to set several of the Fishbone-Moncrief</a>
+<a name="398"><span class="lineNum">     398 </span>            :   // solution's variables.</a>
+<a name="399"><span class="lineNum">     399 </span>            :   template &lt;typename DataType, bool NeedSpacetime&gt;</a>
+<a name="400"><span class="lineNum">     400 </span>            :   struct IntermediateVariables {</a>
+<a name="401"><span class="lineNum">     401 </span><span class="lineNoCov">          0 :     IntermediateVariables(double bh_spin_a,</span></a>
+<a name="402"><span class="lineNum">     402 </span>            :                           const gr::Solutions::KerrSchild&amp; background_spacetime,</a>
+<a name="403"><span class="lineNum">     403 </span>            :                           const tnsr::I&lt;DataType, 3&gt;&amp; x, double t,</a>
+<a name="404"><span class="lineNum">     404 </span>            :                           size_t in_spatial_velocity_index,</a>
+<a name="405"><span class="lineNum">     405 </span>            :                           size_t in_lorentz_factor_index) noexcept;</a>
+<a name="406"><span class="lineNum">     406 </span>            : </a>
+<a name="407"><span class="lineNum">     407 </span><span class="lineNoCov">          0 :     DataType r_squared{};</span></a>
+<a name="408"><span class="lineNum">     408 </span><span class="lineNoCov">          0 :     DataType sin_theta_squared{};</span></a>
+<a name="409"><span class="lineNum">     409 </span>            :     tuples::tagged_tuple_from_typelist&lt;</a>
+<a name="410"><span class="lineNum">     410 </span>            :         typename gr::Solutions::KerrSchild::tags&lt;DataType&gt;&gt;</a>
+<a name="411"><span class="lineNum">     411 </span><span class="lineNoCov">          0 :         kerr_schild_soln{};</span></a>
+<a name="412"><span class="lineNum">     412 </span><span class="lineNoCov">          0 :     size_t spatial_velocity_index;</span></a>
+<a name="413"><span class="lineNum">     413 </span><span class="lineNoCov">          0 :     size_t lorentz_factor_index;</span></a>
+<a name="414"><span class="lineNum">     414 </span>            :   };</a>
+<a name="415"><span class="lineNum">     415 </span>            : </a>
+<a name="416"><span class="lineNum">     416 </span><span class="lineNoCov">          0 :   friend bool operator==(const FishboneMoncriefDisk&amp; lhs,</span></a>
+<a name="417"><span class="lineNum">     417 </span>            :                          const FishboneMoncriefDisk&amp; rhs) noexcept;</a>
+<a name="418"><span class="lineNum">     418 </span>            : </a>
+<a name="419"><span class="lineNum">     419 </span><span class="lineNoCov">          0 :   double bh_mass_ = std::numeric_limits&lt;double&gt;::signaling_NaN();</span></a>
+<a name="420"><span class="lineNum">     420 </span><span class="lineNoCov">          0 :   double bh_spin_a_ = std::numeric_limits&lt;double&gt;::signaling_NaN();</span></a>
+<a name="421"><span class="lineNum">     421 </span><span class="lineNoCov">          0 :   double inner_edge_radius_ = std::numeric_limits&lt;double&gt;::signaling_NaN();</span></a>
+<a name="422"><span class="lineNum">     422 </span><span class="lineNoCov">          0 :   double max_pressure_radius_ = std::numeric_limits&lt;double&gt;::signaling_NaN();</span></a>
+<a name="423"><span class="lineNum">     423 </span><span class="lineNoCov">          0 :   double polytropic_constant_ = std::numeric_limits&lt;double&gt;::signaling_NaN();</span></a>
+<a name="424"><span class="lineNum">     424 </span><span class="lineNoCov">          0 :   double polytropic_exponent_ = std::numeric_limits&lt;double&gt;::signaling_NaN();</span></a>
+<a name="425"><span class="lineNum">     425 </span><span class="lineNoCov">          0 :   double angular_momentum_ = std::numeric_limits&lt;double&gt;::signaling_NaN();</span></a>
+<a name="426"><span class="lineNum">     426 </span><span class="lineNoCov">          0 :   EquationsOfState::PolytropicFluid&lt;true&gt; equation_of_state_{};</span></a>
+<a name="427"><span class="lineNum">     427 </span><span class="lineNoCov">          0 :   gr::Solutions::KerrSchild background_spacetime_{};</span></a>
+<a name="428"><span class="lineNum">     428 </span>            : };</a>
+<a name="429"><span class="lineNum">     429 </span>            : </a>
+<a name="430"><span class="lineNum">     430 </span><span class="lineNoCov">          0 : bool operator!=(const FishboneMoncriefDisk&amp; lhs,</span></a>
+<a name="431"><span class="lineNum">     431 </span>            :                 const FishboneMoncriefDisk&amp; rhs) noexcept;</a>
+<a name="432"><span class="lineNum">     432 </span>            : }  // namespace Solutions</a>
+<a name="433"><span class="lineNum">     433 </span>            : }  // namespace RelativisticEuler</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

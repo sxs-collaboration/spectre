@@ -1,0 +1,313 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Time/Time.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_ceb9d6494afcb83ad8bc9661b75bd633.html">Time</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">Time.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/functional.html">functional</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/iosfwd.html">iosfwd</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/limits.html">limits</a>&gt;</code><br />
+<code>#include &quot;<a class="el" href="Slab_8hpp_source.html">Time/Slab.hpp</a>&quot;</code><br />
+<code>#include &quot;Utilities/Rational.hpp&quot;</code><br />
+</div>
+<p><a href="Time_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTime.html">Time</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTime_1_1StructuralCompare.html">Time::StructuralCompare</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A comparison operator that compares Times structurally, i.e., just looking at the class members. This is only intended for use as the comparator in a map. The returned ordering does not match the time ordering and opposite sides of slab boundaries do not compare equal. It is, however, much faster to compute than the temporal ordering, so it is useful when an ordering is required, but the ordering does not have to be physically meaningful.  <a href="structTime_1_1StructuralCompare.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeDelta.html">TimeDelta</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ad1de6300a6350ef2339f84a359b710e8"><td class="memItemLeft" align="right" valign="top"><a id="ad1de6300a6350ef2339f84a359b710e8"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classTime.html">Time</a> &amp;a, const <a class="el" href="classTime.html">Time</a> &amp;b) noexcept</td></tr>
+<tr class="separator:ad1de6300a6350ef2339f84a359b710e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaabc010c129e2bacca5c8cb443e7c8d5"><td class="memItemLeft" align="right" valign="top"><a id="aaabc010c129e2bacca5c8cb443e7c8d5"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="classTime.html">Time</a> &amp;a, const <a class="el" href="classTime.html">Time</a> &amp;b) noexcept</td></tr>
+<tr class="separator:aaabc010c129e2bacca5c8cb443e7c8d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b9d6e472c5f6104bc8345fa84a0e671"><td class="memItemLeft" align="right" valign="top"><a id="a8b9d6e472c5f6104bc8345fa84a0e671"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;</b> (const <a class="el" href="classTime.html">Time</a> &amp;a, const <a class="el" href="classTime.html">Time</a> &amp;b) noexcept</td></tr>
+<tr class="separator:a8b9d6e472c5f6104bc8345fa84a0e671"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a367c665a29c0247a82c94cead20a88b8"><td class="memItemLeft" align="right" valign="top"><a id="a367c665a29c0247a82c94cead20a88b8"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&gt;</b> (const <a class="el" href="classTime.html">Time</a> &amp;a, const <a class="el" href="classTime.html">Time</a> &amp;b) noexcept</td></tr>
+<tr class="separator:a367c665a29c0247a82c94cead20a88b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc31af9055c43f4ef7c0eff7d981b555"><td class="memItemLeft" align="right" valign="top"><a id="adc31af9055c43f4ef7c0eff7d981b555"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;=</b> (const <a class="el" href="classTime.html">Time</a> &amp;a, const <a class="el" href="classTime.html">Time</a> &amp;b) noexcept</td></tr>
+<tr class="separator:adc31af9055c43f4ef7c0eff7d981b555"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e83e00625fabbb0b9679ec78971aa55"><td class="memItemLeft" align="right" valign="top"><a id="a9e83e00625fabbb0b9679ec78971aa55"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&gt;=</b> (const <a class="el" href="classTime.html">Time</a> &amp;a, const <a class="el" href="classTime.html">Time</a> &amp;b) noexcept</td></tr>
+<tr class="separator:a9e83e00625fabbb0b9679ec78971aa55"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ec408d9eb08f9153913866f9714a946"><td class="memItemLeft" align="right" valign="top"><a id="a3ec408d9eb08f9153913866f9714a946"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;a, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;b) noexcept</td></tr>
+<tr class="separator:a3ec408d9eb08f9153913866f9714a946"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab5664c235ab39d5dc2ec428e4e648f29"><td class="memItemLeft" align="right" valign="top"><a id="ab5664c235ab39d5dc2ec428e4e648f29"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;a, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;b) noexcept</td></tr>
+<tr class="separator:ab5664c235ab39d5dc2ec428e4e648f29"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17368b50722e1583532573942c4763e8"><td class="memItemLeft" align="right" valign="top"><a id="a17368b50722e1583532573942c4763e8"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;</b> (const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;a, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;b) noexcept</td></tr>
+<tr class="separator:a17368b50722e1583532573942c4763e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9860281e2416f177966bb28362f744eb"><td class="memItemLeft" align="right" valign="top"><a id="a9860281e2416f177966bb28362f744eb"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&gt;</b> (const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;a, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;b) noexcept</td></tr>
+<tr class="separator:a9860281e2416f177966bb28362f744eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adae5d577533efc06798e74197509fc82"><td class="memItemLeft" align="right" valign="top"><a id="adae5d577533efc06798e74197509fc82"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;=</b> (const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;a, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;b) noexcept</td></tr>
+<tr class="separator:adae5d577533efc06798e74197509fc82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f426a3bcc683d8bcef1f9e6753af40d"><td class="memItemLeft" align="right" valign="top"><a id="a4f426a3bcc683d8bcef1f9e6753af40d"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&gt;=</b> (const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;a, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;b) noexcept</td></tr>
+<tr class="separator:a4f426a3bcc683d8bcef1f9e6753af40d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7a29176d8ffe4822421f2a00ec4e44d3"><td class="memItemLeft" align="right" valign="top"><a id="a7a29176d8ffe4822421f2a00ec4e44d3"></a>
+<a class="el" href="classTimeDelta.html">TimeDelta</a>&#160;</td><td class="memItemRight" valign="bottom"><b>operator-</b> (const <a class="el" href="classTime.html">Time</a> &amp;a, const <a class="el" href="classTime.html">Time</a> &amp;b) noexcept</td></tr>
+<tr class="separator:a7a29176d8ffe4822421f2a00ec4e44d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afde7a29b5c5632f7d2ecbbadd930ae08"><td class="memItemLeft" align="right" valign="top"><a id="afde7a29b5c5632f7d2ecbbadd930ae08"></a>
+<a class="el" href="classTime.html">Time</a>&#160;</td><td class="memItemRight" valign="bottom"><b>operator+</b> (<a class="el" href="classTime.html">Time</a> a, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;b) noexcept</td></tr>
+<tr class="separator:afde7a29b5c5632f7d2ecbbadd930ae08"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1e44b886366740da630c5fc8de3a1bf"><td class="memItemLeft" align="right" valign="top"><a id="ac1e44b886366740da630c5fc8de3a1bf"></a>
+<a class="el" href="classTime.html">Time</a>&#160;</td><td class="memItemRight" valign="bottom"><b>operator+</b> (const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;a, <a class="el" href="classTime.html">Time</a> b) noexcept</td></tr>
+<tr class="separator:ac1e44b886366740da630c5fc8de3a1bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0bde0f4d5a92c9b44ea9eee1e80f9f6e"><td class="memItemLeft" align="right" valign="top"><a id="a0bde0f4d5a92c9b44ea9eee1e80f9f6e"></a>
+<a class="el" href="classTime.html">Time</a>&#160;</td><td class="memItemRight" valign="bottom"><b>operator-</b> (<a class="el" href="classTime.html">Time</a> a, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;b) noexcept</td></tr>
+<tr class="separator:a0bde0f4d5a92c9b44ea9eee1e80f9f6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1acff71737f6bfd897070948cc5e1fc"><td class="memItemLeft" align="right" valign="top"><a id="aa1acff71737f6bfd897070948cc5e1fc"></a>
+<a class="el" href="classTimeDelta.html">TimeDelta</a>&#160;</td><td class="memItemRight" valign="bottom"><b>operator+</b> (<a class="el" href="classTimeDelta.html">TimeDelta</a> a, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;b) noexcept</td></tr>
+<tr class="separator:aa1acff71737f6bfd897070948cc5e1fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aefc36a439e8fdccbb76c43237f83a5d4"><td class="memItemLeft" align="right" valign="top"><a id="aefc36a439e8fdccbb76c43237f83a5d4"></a>
+<a class="el" href="classTimeDelta.html">TimeDelta</a>&#160;</td><td class="memItemRight" valign="bottom"><b>operator-</b> (<a class="el" href="classTimeDelta.html">TimeDelta</a> a, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;b) noexcept</td></tr>
+<tr class="separator:aefc36a439e8fdccbb76c43237f83a5d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a182c8584f01e3523584dea53771af58d"><td class="memItemLeft" align="right" valign="top"><a id="a182c8584f01e3523584dea53771af58d"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>operator/</b> (const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;a, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;b) noexcept</td></tr>
+<tr class="separator:a182c8584f01e3523584dea53771af58d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa78790cebd64e580f30ec07cc65a1ec5"><td class="memItemLeft" align="right" valign="top"><a id="aa78790cebd64e580f30ec07cc65a1ec5"></a>
+<a class="el" href="classTimeDelta.html">TimeDelta</a>&#160;</td><td class="memItemRight" valign="bottom"><b>operator*</b> (<a class="el" href="classTimeDelta.html">TimeDelta</a> a, const <a class="el" href="classRational.html">TimeDelta::rational_t</a> &amp;b) noexcept</td></tr>
+<tr class="separator:aa78790cebd64e580f30ec07cc65a1ec5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ecea060c062bc1497ef701e1a98c65a"><td class="memItemLeft" align="right" valign="top"><a id="a3ecea060c062bc1497ef701e1a98c65a"></a>
+<a class="el" href="classTimeDelta.html">TimeDelta</a>&#160;</td><td class="memItemRight" valign="bottom"><b>operator*</b> (const <a class="el" href="classRational.html">TimeDelta::rational_t</a> &amp;a, <a class="el" href="classTimeDelta.html">TimeDelta</a> b) noexcept</td></tr>
+<tr class="separator:a3ecea060c062bc1497ef701e1a98c65a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6582c26158e4d1f6866222c68bf1e459"><td class="memItemLeft" align="right" valign="top"><a id="a6582c26158e4d1f6866222c68bf1e459"></a>
+<a class="el" href="classTimeDelta.html">TimeDelta</a>&#160;</td><td class="memItemRight" valign="bottom"><b>operator/</b> (<a class="el" href="classTimeDelta.html">TimeDelta</a> a, const <a class="el" href="classRational.html">TimeDelta::rational_t</a> &amp;b) noexcept</td></tr>
+<tr class="separator:a6582c26158e4d1f6866222c68bf1e459"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9966d93187199cf0d28b08f2b5345a4"><td class="memItemLeft" align="right" valign="top"><a id="ac9966d93187199cf0d28b08f2b5345a4"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;&lt;</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const <a class="el" href="classTime.html">Time</a> &amp;t) noexcept</td></tr>
+<tr class="separator:ac9966d93187199cf0d28b08f2b5345a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ad04345970afd2b807f82ca6406bbcd"><td class="memItemLeft" align="right" valign="top"><a id="a9ad04345970afd2b807f82ca6406bbcd"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>hash_value</b> (const <a class="el" href="classTime.html">Time</a> &amp;t) noexcept</td></tr>
+<tr class="separator:a9ad04345970afd2b807f82ca6406bbcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa8b465a9e264d8b89344b3fd7ef75709"><td class="memItemLeft" align="right" valign="top"><a id="aa8b465a9e264d8b89344b3fd7ef75709"></a>
+<a class="el" href="classTimeDelta.html">TimeDelta</a>&#160;</td><td class="memItemRight" valign="bottom"><b>abs</b> (<a class="el" href="classTimeDelta.html">TimeDelta</a> t) noexcept</td></tr>
+<tr class="separator:aa8b465a9e264d8b89344b3fd7ef75709"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3618e2c423694fd0b78d49d44a4f4200"><td class="memItemLeft" align="right" valign="top"><a id="a3618e2c423694fd0b78d49d44a4f4200"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;&lt;</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;dt) noexcept</td></tr>
+<tr class="separator:a3618e2c423694fd0b78d49d44a4f4200"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Defines <a class="el" href="classTime.html">Time</a> and <a class="el" href="classTimeDelta.html">TimeDelta</a> </p>
+</div></div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

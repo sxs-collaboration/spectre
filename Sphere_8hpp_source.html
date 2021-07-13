@@ -1,0 +1,405 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Domain/Creators/Sphere.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_2b2489ccd21aa27a14d4bfff471515cd.html">Domain</a></li><li class="navelem"><a class="el" href="dir_4d15c8eb7629c2a52ef4b16f2c6fedb5.html">Creators</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">Sphere.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/array.html">array</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160; </div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;Domain/BoundaryConditions/BoundaryCondition.hpp&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DomainCreator_8hpp.html">Domain/Creators/DomainCreator.hpp</a>&quot;</span>  <span class="comment">// IWYU pragma: keep</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Domain_8hpp.html">Domain/Domain.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Options_8hpp.html">Options/Options.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160; </div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment">// IWYU wants to include things we definitely don&#39;t need...</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment">// IWYU pragma: no_include &lt;memory&gt; // Needed in cpp file</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment">// IWYU pragma: no_include &lt;pup.h&gt;  // Not needed</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160; </div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment">// IWYU pragma: no_include &quot;DataStructures/Tensor/Tensor.hpp&quot; // Not needed</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment"></span><span class="keyword">namespace </span>domain {</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="keyword">namespace </span>CoordinateMaps {</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="keyword">class </span>Affine;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="keyword">class </span>EquatorialCompression;</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="keyword">class </span>Equiangular;</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="keyword">class </span>Identity;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Map1, <span class="keyword">typename</span> Map2&gt;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="keyword">class </span>ProductOf2Maps;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Map1, <span class="keyword">typename</span> Map2, <span class="keyword">typename</span> Map3&gt;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="keyword">class </span>ProductOf3Maps;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="keyword">class </span>Wedge;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;}  <span class="comment">// namespace CoordinateMaps</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> SourceFrame, <span class="keyword">typename</span> TargetFrame, <span class="keyword">typename</span>... Maps&gt;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="keyword">class </span>CoordinateMap;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;}  <span class="comment">// namespace domain</span><span class="comment"></span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="keyword">namespace </span>domain {</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="keyword">namespace </span>creators {<span class="comment"></span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment">/// Create a 3D Domain in the shape of a sphere consisting of six wedges</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment">/// and a central cube. For an image showing how the wedges are aligned in</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment">/// this Domain, see the documentation for Shell.</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno"><a class="line" href="classdomain_1_1creators_1_1Sphere.html">   50</a></span>&#160;<span class="comment"></span><span class="keyword">class </span><a class="code" href="classdomain_1_1creators_1_1Sphere.html">Sphere</a> : <span class="keyword">public</span> <a class="code" href="classDomainCreator.html">DomainCreator</a>&lt;3&gt; {</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;  <span class="keyword">using</span> maps_list = tmpl::list&lt;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;      <a class="code" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt;<a class="code" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="code" href="structFrame_1_1Inertial.html">Frame::Inertial</a>,</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;                            <a class="code" href="classdomain_1_1CoordinateMaps_1_1ProductOf3Maps.html">CoordinateMaps::ProductOf3Maps</a>&lt;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;                                <a class="code" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a>, <a class="code" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a>,</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;                                <a class="code" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a>&gt;&gt;,</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;      <a class="code" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;          <a class="code" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="code" href="structFrame_1_1Inertial.html">Frame::Inertial</a>,</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;          <a class="code" href="classdomain_1_1CoordinateMaps_1_1ProductOf3Maps.html">CoordinateMaps::ProductOf3Maps</a>&lt;<a class="code" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">CoordinateMaps::Equiangular</a>,</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;                                         <a class="code" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">CoordinateMaps::Equiangular</a>,</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;                                         <a class="code" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">CoordinateMaps::Equiangular</a>&gt;&gt;,</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;      <a class="code" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;          <a class="code" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="code" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="code" href="classdomain_1_1CoordinateMaps_1_1Wedge.html">CoordinateMaps::Wedge&lt;3&gt;</a>,</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;          <a class="code" href="classdomain_1_1CoordinateMaps_1_1EquatorialCompression.html">CoordinateMaps::EquatorialCompression</a>,</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;          <a class="code" href="classdomain_1_1CoordinateMaps_1_1ProductOf2Maps.html">CoordinateMaps::ProductOf2Maps</a>&lt;<a class="code" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a>,</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;                                         <a class="code" href="classdomain_1_1CoordinateMaps_1_1Identity.html">CoordinateMaps::Identity&lt;2&gt;</a>&gt;&gt;&gt;;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
+<div class="line"><a name="l00068"></a><span class="lineno"><a class="line" href="structdomain_1_1creators_1_1Sphere_1_1InnerRadius.html">   68</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structdomain_1_1creators_1_1Sphere_1_1InnerRadius.html">InnerRadius</a> {</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="keyword">using</span> type = double;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        <span class="stringliteral">&quot;Radius of the sphere circumscribing the inner cube.&quot;</span>};</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;  };</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160; </div>
+<div class="line"><a name="l00074"></a><span class="lineno"><a class="line" href="structdomain_1_1creators_1_1Sphere_1_1OuterRadius.html">   74</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structdomain_1_1creators_1_1Sphere_1_1OuterRadius.html">OuterRadius</a> {</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="keyword">using</span> type = double;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {<span class="stringliteral">&quot;Radius of the Sphere.&quot;</span>};</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;  };</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160; </div>
+<div class="line"><a name="l00079"></a><span class="lineno"><a class="line" href="structdomain_1_1creators_1_1Sphere_1_1InitialRefinement.html">   79</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structdomain_1_1creators_1_1Sphere_1_1InitialRefinement.html">InitialRefinement</a> {</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keyword">using</span> type = size_t;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        <span class="stringliteral">&quot;Initial refinement level in each dimension.&quot;</span>};</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;  };</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160; </div>
+<div class="line"><a name="l00085"></a><span class="lineno"><a class="line" href="structdomain_1_1creators_1_1Sphere_1_1InitialGridPoints.html">   85</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structdomain_1_1creators_1_1Sphere_1_1InitialGridPoints.html">InitialGridPoints</a> {</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <span class="keyword">using</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">type</a> = <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;size_t, 2&gt;</a>;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        <span class="stringliteral">&quot;Initial number of grid points in [r,angular].&quot;</span>};</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;  };</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
+<div class="line"><a name="l00091"></a><span class="lineno"><a class="line" href="structdomain_1_1creators_1_1Sphere_1_1UseEquiangularMap.html">   91</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structdomain_1_1creators_1_1Sphere_1_1UseEquiangularMap.html">UseEquiangularMap</a> {</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    <span class="keyword">using</span> type = bool;</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;        <span class="stringliteral">&quot;Use equiangular instead of equidistant coordinates.&quot;</span>};</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;  };</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160; </div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> BoundaryConditionsBase&gt;</div>
+<div class="line"><a name="l00098"></a><span class="lineno"><a class="line" href="structdomain_1_1creators_1_1Sphere_1_1BoundaryCondition.html">   98</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structdomain_1_1creators_1_1Sphere_1_1BoundaryCondition.html">BoundaryCondition</a> {</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> <span class="stringliteral">&quot;BoundaryCondition&quot;</span>; }</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help =</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;        <span class="stringliteral">&quot;Options for the boundary conditions.&quot;</span>;</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="keyword">using</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">type</a> = <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;BoundaryConditionsBase&gt;</a>;</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;  };</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160; </div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;  <span class="keyword">using</span> basic_options = tmpl::list&lt;<a class="code" href="structdomain_1_1creators_1_1Sphere_1_1InnerRadius.html">InnerRadius</a>, <a class="code" href="structdomain_1_1creators_1_1Sphere_1_1OuterRadius.html">OuterRadius</a>, <a class="code" href="structdomain_1_1creators_1_1Sphere_1_1InitialRefinement.html">InitialRefinement</a>,</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;                                   <a class="code" href="structdomain_1_1creators_1_1Sphere_1_1InitialGridPoints.html">InitialGridPoints</a>, <a class="code" href="structdomain_1_1creators_1_1Sphere_1_1UseEquiangularMap.html">UseEquiangularMap</a>&gt;;</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160; </div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Metavariables&gt;</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;  <span class="keyword">using</span> options = tmpl::conditional_t&lt;</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;      domain::BoundaryConditions::has_boundary_conditions_base_v&lt;</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;          <span class="keyword">typename</span> Metavariables::system&gt;,</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;      <a class="code" href="group__ComputationalDomainGroup.html#ga398bdce722c9ba655f479a7712f1a0e5">tmpl::push_back</a>&lt;</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;          basic_options,</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;          <a class="code" href="structdomain_1_1creators_1_1Sphere_1_1BoundaryCondition.html">BoundaryCondition</a>&lt;</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;              <a class="code" href="namespacedomain_1_1BoundaryConditions.html#afd88b7d4030a22e226b734dd65e6990b">domain::BoundaryConditions::get_boundary_conditions_base</a>&lt;</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;                  <span class="keyword">typename</span> Metavariables::system&gt;&gt;&gt;,</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;      basic_options&gt;;</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160; </div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help{</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;      <span class="stringliteral">&quot;Creates a 3D Sphere with seven Blocks.\n&quot;</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;      <span class="stringliteral">&quot;Only one refinement level for all dimensions is currently supported.\n&quot;</span></div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;      <span class="stringliteral">&quot;The number of gridpoints in the radial direction can be set\n&quot;</span></div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;      <span class="stringliteral">&quot;independently of the number of gridpoints in the angular directions.\n&quot;</span></div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;      <span class="stringliteral">&quot;The number of gridpoints along the dimensions of the cube is equal\n&quot;</span></div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;      <span class="stringliteral">&quot;to the number of gridpoints along the angular dimensions of the &quot;</span></div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;      <span class="stringliteral">&quot;wedges.\n&quot;</span></div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;      <span class="stringliteral">&quot;Equiangular coordinates give better gridpoint spacings in the angular\n&quot;</span></div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;      <span class="stringliteral">&quot;directions, while equidistant coordinates give better gridpoint\n&quot;</span></div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;      <span class="stringliteral">&quot;spacings in the center block.&quot;</span>};</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160; </div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;  <a class="code" href="classdomain_1_1creators_1_1Sphere.html">Sphere</a>(<span class="keyword">typename</span> InnerRadius::type inner_radius,</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;         <span class="keyword">typename</span> OuterRadius::type outer_radius,</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;         <span class="keyword">typename</span> InitialRefinement::type initial_refinement,</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;         <span class="keyword">typename</span> InitialGridPoints::type initial_number_of_grid_points,</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;         <span class="keyword">typename</span> UseEquiangularMap::type use_equiangular_map,</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;         <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;domain::BoundaryConditions::BoundaryCondition&gt;</a></div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;             boundary_condition = <span class="keyword">nullptr</span>,</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;         <span class="keyword">const</span> <a class="code" href="structOptions_1_1Context.html">Options::Context</a>&amp; context = {});</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160; </div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;  Sphere() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;  Sphere(<span class="keyword">const</span> Sphere&amp;) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;  Sphere(Sphere&amp;&amp;) noexcept = default;</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;  Sphere&amp; operator=(const Sphere&amp;) = delete;</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;  Sphere&amp; operator=(Sphere&amp;&amp;) noexcept = default;</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;  ~Sphere() noexcept override = default;</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160; </div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;  <a class="code" href="classDomain.html">Domain</a>&lt;3&gt; create_domain() const noexcept override;</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160; </div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;  std::vector&lt;std::array&lt;<span class="keywordtype">size_t</span>, 3&gt;&gt; initial_extents() const noexcept override;</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160; </div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;  std::vector&lt;std::array&lt;<span class="keywordtype">size_t</span>, 3&gt;&gt; initial_refinement_levels() const</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;      noexcept override;</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160; </div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160; private:</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;  typename InnerRadius::type inner_radius_{};</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;  <span class="keyword">typename</span> OuterRadius::type outer_radius_{};</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;  <span class="keyword">typename</span> InitialRefinement::type initial_refinement_{};</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;  <span class="keyword">typename</span> InitialGridPoints::type initial_number_of_grid_points_{};</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;  <span class="keyword">typename</span> UseEquiangularMap::type use_equiangular_map_ = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;domain::BoundaryConditions::BoundaryCondition&gt;</a></div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;      boundary_condition_;</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;};</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;}  <span class="comment">// namespace creators</span></div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;}  <span class="comment">// namespace domain</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="aclassdomain_1_1CoordinateMaps_1_1ProductOf3Maps_html"><div class="ttname"><a href="classdomain_1_1CoordinateMaps_1_1ProductOf3Maps.html">domain::CoordinateMaps::ProductOf3Maps</a></div><div class="ttdoc">Product of three one-dimensional CoordinateMaps.</div><div class="ttdef"><b>Definition:</b> ProductMaps.hpp:90</div></div>
+<div class="ttc" id="anamespacedomain_1_1BoundaryConditions_html_afd88b7d4030a22e226b734dd65e6990b"><div class="ttname"><a href="namespacedomain_1_1BoundaryConditions.html#afd88b7d4030a22e226b734dd65e6990b">domain::BoundaryConditions::get_boundary_conditions_base</a></div><div class="ttdeci">typename detail::get_boundary_conditions_base&lt; T &gt;::type get_boundary_conditions_base</div><div class="ttdoc">Returns T::boundary_condition_base or a placeholder class.</div><div class="ttdef"><b>Definition:</b> GetBoundaryConditionsBase.hpp:33</div></div>
+<div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
+<div class="ttc" id="astructFrame_1_1Inertial_html"><div class="ttname"><a href="structFrame_1_1Inertial.html">Frame::Inertial</a></div><div class="ttdef"><b>Definition:</b> IndexType.hpp:44</div></div>
+<div class="ttc" id="aOptions_8hpp_html"><div class="ttname"><a href="Options_8hpp.html">Options.hpp</a></div></div>
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a></div></div>
+<div class="ttc" id="aDomain_8hpp_html"><div class="ttname"><a href="Domain_8hpp.html">Domain.hpp</a></div></div>
+<div class="ttc" id="aclassdomain_1_1CoordinateMaps_1_1ProductOf2Maps_html"><div class="ttname"><a href="classdomain_1_1CoordinateMaps_1_1ProductOf2Maps.html">domain::CoordinateMaps::ProductOf2Maps</a></div><div class="ttdoc">Product of two codimension=0 CoordinateMaps.</div><div class="ttdef"><b>Definition:</b> ProductMaps.hpp:35</div></div>
+<div class="ttc" id="aclassdomain_1_1CoordinateMaps_1_1Equiangular_html"><div class="ttname"><a href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">domain::CoordinateMaps::Equiangular</a></div><div class="ttdoc">Non-linear map from .</div><div class="ttdef"><b>Definition:</b> Equiangular.hpp:53</div></div>
+<div class="ttc" id="astructOptions_1_1Context_html"><div class="ttname"><a href="structOptions_1_1Context.html">Options::Context</a></div><div class="ttdef"><b>Definition:</b> Options.hpp:41</div></div>
+<div class="ttc" id="astructdomain_1_1creators_1_1Sphere_1_1OuterRadius_html"><div class="ttname"><a href="structdomain_1_1creators_1_1Sphere_1_1OuterRadius.html">domain::creators::Sphere::OuterRadius</a></div><div class="ttdef"><b>Definition:</b> Sphere.hpp:74</div></div>
+<div class="ttc" id="aclassdomain_1_1CoordinateMaps_1_1Affine_html"><div class="ttname"><a href="classdomain_1_1CoordinateMaps_1_1Affine.html">domain::CoordinateMaps::Affine</a></div><div class="ttdoc">Affine map from .</div><div class="ttdef"><b>Definition:</b> Affine.hpp:37</div></div>
+<div class="ttc" id="aclassdomain_1_1CoordinateMaps_1_1EquatorialCompression_html"><div class="ttname"><a href="classdomain_1_1CoordinateMaps_1_1EquatorialCompression.html">domain::CoordinateMaps::EquatorialCompression</a></div><div class="ttdoc">Redistributes gridpoints on the sphere.</div><div class="ttdef"><b>Definition:</b> EquatorialCompression.hpp:56</div></div>
+<div class="ttc" id="astructdomain_1_1creators_1_1Sphere_1_1InitialRefinement_html"><div class="ttname"><a href="structdomain_1_1creators_1_1Sphere_1_1InitialRefinement.html">domain::creators::Sphere::InitialRefinement</a></div><div class="ttdef"><b>Definition:</b> Sphere.hpp:79</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ga398bdce722c9ba655f479a7712f1a0e5"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ga398bdce722c9ba655f479a7712f1a0e5">domain::push_back</a></div><div class="ttdeci">CoordinateMap&lt; SourceFrame, TargetFrame, Maps..., NewMap &gt; push_back(CoordinateMap&lt; SourceFrame, TargetFrame, Maps... &gt; old_map, NewMap new_map) noexcept</div><div class="ttdoc">Creates a CoordinateMap by appending the new map to the end of the old maps.</div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/array.html">array</a></div></div>
+<div class="ttc" id="aclassDomain_html"><div class="ttname"><a href="classDomain.html">Domain</a></div><div class="ttdoc">A wrapper around a vector of Blocks that represent the computational domain.</div><div class="ttdef"><b>Definition:</b> Domain.hpp:40</div></div>
+<div class="ttc" id="amemory_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a></div></div>
+<div class="ttc" id="aclassDomainCreator_html"><div class="ttname"><a href="classDomainCreator.html">DomainCreator</a></div><div class="ttdoc">Base class for creating Domains from an option string.</div><div class="ttdef"><b>Definition:</b> DomainCreator.hpp:32</div></div>
+<div class="ttc" id="aclassdomain_1_1CoordinateMaps_1_1Identity_html"><div class="ttname"><a href="classdomain_1_1CoordinateMaps_1_1Identity.html">domain::CoordinateMaps::Identity</a></div><div class="ttdef"><b>Definition:</b> Identity.hpp:28</div></div>
+<div class="ttc" id="aclassdomain_1_1creators_1_1Sphere_html"><div class="ttname"><a href="classdomain_1_1creators_1_1Sphere.html">domain::creators::Sphere</a></div><div class="ttdoc">Create a 3D Domain in the shape of a sphere consisting of six wedges and a central cube....</div><div class="ttdef"><b>Definition:</b> Sphere.hpp:50</div></div>
+<div class="ttc" id="anamespaceOptions_html_aa61c7f41f21afa7646811456f673be89"><div class="ttname"><a href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a></div><div class="ttdeci">const char *const String</div><div class="ttdoc">The string used in option structs.</div><div class="ttdef"><b>Definition:</b> Options.hpp:32</div></div>
+<div class="ttc" id="astructFrame_1_1Logical_html"><div class="ttname"><a href="structFrame_1_1Logical.html">Frame::Logical</a></div><div class="ttdef"><b>Definition:</b> IndexType.hpp:42</div></div>
+<div class="ttc" id="astructdomain_1_1creators_1_1Sphere_1_1InnerRadius_html"><div class="ttname"><a href="structdomain_1_1creators_1_1Sphere_1_1InnerRadius.html">domain::creators::Sphere::InnerRadius</a></div><div class="ttdef"><b>Definition:</b> Sphere.hpp:68</div></div>
+<div class="ttc" id="aDomainCreator_8hpp_html"><div class="ttname"><a href="DomainCreator_8hpp.html">DomainCreator.hpp</a></div></div>
+<div class="ttc" id="astructdomain_1_1creators_1_1Sphere_1_1InitialGridPoints_html"><div class="ttname"><a href="structdomain_1_1creators_1_1Sphere_1_1InitialGridPoints.html">domain::creators::Sphere::InitialGridPoints</a></div><div class="ttdef"><b>Definition:</b> Sphere.hpp:85</div></div>
+<div class="ttc" id="aunique_ptr_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="astructdomain_1_1creators_1_1Sphere_1_1UseEquiangularMap_html"><div class="ttname"><a href="structdomain_1_1creators_1_1Sphere_1_1UseEquiangularMap.html">domain::creators::Sphere::UseEquiangularMap</a></div><div class="ttdef"><b>Definition:</b> Sphere.hpp:91</div></div>
+<div class="ttc" id="astructdomain_1_1creators_1_1Sphere_1_1BoundaryCondition_html"><div class="ttname"><a href="structdomain_1_1creators_1_1Sphere_1_1BoundaryCondition.html">domain::creators::Sphere::BoundaryCondition</a></div><div class="ttdef"><b>Definition:</b> Sphere.hpp:98</div></div>
+<div class="ttc" id="aclassdomain_1_1CoordinateMaps_1_1Wedge_html"><div class="ttname"><a href="classdomain_1_1CoordinateMaps_1_1Wedge.html">domain::CoordinateMaps::Wedge</a></div><div class="ttdoc">Map from a square or cube to a wedge.</div><div class="ttdef"><b>Definition:</b> Wedge.hpp:255</div></div>
+<div class="ttc" id="aclassdomain_1_1CoordinateMap_html"><div class="ttname"><a href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a></div><div class="ttdoc">A coordinate map or composition of coordinate maps.</div><div class="ttdef"><b>Definition:</b> CoordinateMap.hpp:240</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

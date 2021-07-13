@@ -1,0 +1,258 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - 39f3c2b725318dcf91749887b1e61f477736e132 - ParallelAlgorithms/LinearSolver/Schwarz/Schwarz.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title"> SpECTRE Documentation Coverage Report</td></tr>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">ParallelAlgorithms/LinearSolver/Schwarz</a> - Schwarz.hpp</td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+             <td class="headerItem">Commit:</td>
+             <td class="headerValue"><a target="_blank" href="https://github.com/sxs-collaboration/spectre/commit/39f3c2b725318dcf91749887b1e61f477736e132">39f3c2b725318dcf91749887b1e61f477736e132</a></td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">12</td>
+            <td class="headerCovTableEntryLo">8.3 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2021-07-13 03:19:40</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineNoCov">          0 : // Distributed under the MIT License.</span></a>
+<a name="2"><span class="lineNum">       2 </span>            : // See LICENSE.txt for details.</a>
+<a name="3"><span class="lineNum">       3 </span>            : </a>
+<a name="4"><span class="lineNum">       4 </span>            : #pragma once</a>
+<a name="5"><span class="lineNum">       5 </span>            : </a>
+<a name="6"><span class="lineNum">       6 </span>            : #include &quot;IO/Observer/Helpers.hpp&quot;</a>
+<a name="7"><span class="lineNum">       7 </span>            : #include &quot;ParallelAlgorithms/LinearSolver/AsynchronousSolvers/ElementActions.hpp&quot;</a>
+<a name="8"><span class="lineNum">       8 </span>            : #include &quot;ParallelAlgorithms/LinearSolver/Schwarz/ElementActions.hpp&quot;</a>
+<a name="9"><span class="lineNum">       9 </span>            : #include &quot;Utilities/ProtocolHelpers.hpp&quot;</a>
+<a name="10"><span class="lineNum">      10 </span>            : #include &quot;Utilities/TMPL.hpp&quot;</a>
+<a name="11"><span class="lineNum">      11 </span>            : </a>
+<a name="12"><span class="lineNum">      12 </span>            : /// Items related to the %Schwarz linear solver</a>
+<a name="13"><span class="lineNum">      13 </span>            : ///</a>
+<a name="14"><span class="lineNum">      14 </span>            : /// \see `LinearSolver::Schwarz::Schwarz`</a>
+<a name="15"><span class="lineNum">      15 </span>            : namespace LinearSolver::Schwarz {</a>
+<a name="16"><span class="lineNum">      16 </span>            : </a>
+<a name="17"><span class="lineNum">      17 </span>            : /*!</a>
+<a name="18"><span class="lineNum">      18 </span>            :  * \ingroup LinearSolverGroup</a>
+<a name="19"><span class="lineNum">      19 </span>            :  * \brief An additive Schwarz subdomain solver for linear systems of equations</a>
+<a name="20"><span class="lineNum">      20 </span>            :  * \f$Ax=b\f$.</a>
+<a name="21"><span class="lineNum">      21 </span>            :  *</a>
+<a name="22"><span class="lineNum">      22 </span>            :  * This Schwarz-type linear solver works by solving many sub-problems in</a>
+<a name="23"><span class="lineNum">      23 </span>            :  * parallel and combining their solutions as a weighted sum to converge towards</a>
+<a name="24"><span class="lineNum">      24 </span>            :  * the global solution. Each sub-problem is the restriction of the global</a>
+<a name="25"><span class="lineNum">      25 </span>            :  * problem to an element-centered subdomain, which consists of a central element</a>
+<a name="26"><span class="lineNum">      26 </span>            :  * and an overlap region with its neighbors. The decomposition into independent</a>
+<a name="27"><span class="lineNum">      27 </span>            :  * sub-problems makes this linear solver very parallelizable, avoiding global</a>
+<a name="28"><span class="lineNum">      28 </span>            :  * synchronization points altogether. It is commonly used as a preconditioner to</a>
+<a name="29"><span class="lineNum">      29 </span>            :  * Krylov-type solvers such as `LinearSolver::gmres::Gmres` or</a>
+<a name="30"><span class="lineNum">      30 </span>            :  * `LinearSolver::cg::ConjugateGradient`, or as the &quot;smoother&quot; for a Multigrid</a>
+<a name="31"><span class="lineNum">      31 </span>            :  * solver (which may in turn precondition a Krylov-type solver).</a>
+<a name="32"><span class="lineNum">      32 </span>            :  *</a>
+<a name="33"><span class="lineNum">      33 </span>            :  * This linear solver relies on an implementation of the global linear operator</a>
+<a name="34"><span class="lineNum">      34 </span>            :  * \f$A(x)\f$ and its restriction to a subdomain \f$A_{ss}(x)\f$. Each step of</a>
+<a name="35"><span class="lineNum">      35 </span>            :  * the algorithm expects that \f$A(x)\f$ is computed and stored in the DataBox</a>
+<a name="36"><span class="lineNum">      36 </span>            :  * as `db::add_tag_prefix&lt;LinearSolver::Tags::OperatorAppliedTo, operand_tag&gt;`.</a>
+<a name="37"><span class="lineNum">      37 </span>            :  * To perform a solve, add the `solve` action list to an array parallel</a>
+<a name="38"><span class="lineNum">      38 </span>            :  * component. Pass the actions that compute \f$A(x)\f$, as well as any further</a>
+<a name="39"><span class="lineNum">      39 </span>            :  * actions you wish to run in each step of the algorithm, as the first template</a>
+<a name="40"><span class="lineNum">      40 </span>            :  * parameter to `solve`. If you add the `solve` action list multiple times, use</a>
+<a name="41"><span class="lineNum">      41 </span>            :  * the second template parameter to label each solve with a different type.</a>
+<a name="42"><span class="lineNum">      42 </span>            :  * Pass the subdomain operator as the `SubdomainOperator` template parameter to</a>
+<a name="43"><span class="lineNum">      43 </span>            :  * this class (not to the `solve` action list template). See the paragraph below</a>
+<a name="44"><span class="lineNum">      44 </span>            :  * for information on implementing a subdomain operator.</a>
+<a name="45"><span class="lineNum">      45 </span>            :  *</a>
+<a name="46"><span class="lineNum">      46 </span>            :  * \par Subdomain geometry:</a>
+<a name="47"><span class="lineNum">      47 </span>            :  * The image below gives an overview of the structure of an element-centered</a>
+<a name="48"><span class="lineNum">      48 </span>            :  * subdomain:</a>
+<a name="49"><span class="lineNum">      49 </span>            :  *</a>
+<a name="50"><span class="lineNum">      50 </span>            :  * \image html subdomain_structure.svg &quot;Fig. 1: An element-centered subdomain&quot; width=600px</a>
+<a name="51"><span class="lineNum">      51 </span>            :  *</a>
+<a name="52"><span class="lineNum">      52 </span>            :  * Fig. 1 shows part of a 2-dimensional computational domain. The domain is</a>
+<a name="53"><span class="lineNum">      53 </span>            :  * composed of elements (light gray) that each carry a Legendre-Gauss-Lobatto</a>
+<a name="54"><span class="lineNum">      54 </span>            :  * mesh of grid points (black dots). The diagonally shaded region to the left</a>
+<a name="55"><span class="lineNum">      55 </span>            :  * illustrates an external domain boundary. The lines between neighboring</a>
+<a name="56"><span class="lineNum">      56 </span>            :  * element faces illustrate mortar meshes, which are relevant when implementing</a>
+<a name="57"><span class="lineNum">      57 </span>            :  * a subdomain operator in a DG context but play no role in the Schwarz</a>
+<a name="58"><span class="lineNum">      58 </span>            :  * algorithm. The dashed line gives an example of an element-centered subdomain</a>
+<a name="59"><span class="lineNum">      59 </span>            :  * with a maximum of 2 grid points of overlap into neighboring elements. For</a>
+<a name="60"><span class="lineNum">      60 </span>            :  * details on how the number of overlap points is chosen see</a>
+<a name="61"><span class="lineNum">      61 </span>            :  * `LinearSolver::Schwarz::overlap_extent`. Note that the subdomain does not</a>
+<a name="62"><span class="lineNum">      62 </span>            :  * extend into corner- or edge-neighbors, which is different to both</a>
+<a name="63"><span class="lineNum">      63 </span>            :  * \cite Stiller2016a and \cite Vincent2019qpd. The reason we don't include</a>
+<a name="64"><span class="lineNum">      64 </span>            :  * such diagonal couplings is that in a DG context information only propagates</a>
+<a name="65"><span class="lineNum">      65 </span>            :  * across faces, as noted in \cite Stiller2016a. By eliminating the corner-</a>
+<a name="66"><span class="lineNum">      66 </span>            :  * and edge-neighbors we significantly reduce the complexity of the subdomain</a>
+<a name="67"><span class="lineNum">      67 </span>            :  * geometry and potentially also the communication costs. However, the</a>
+<a name="68"><span class="lineNum">      68 </span>            :  * advantages and disadvantages of this choice have yet to be carefully</a>
+<a name="69"><span class="lineNum">      69 </span>            :  * evaluated.</a>
+<a name="70"><span class="lineNum">      70 </span>            :  *</a>
+<a name="71"><span class="lineNum">      71 </span>            :  * \par Subdomain operator:</a>
+<a name="72"><span class="lineNum">      72 </span>            :  * The Schwarz subdomain solver relies on a restriction of the global linear</a>
+<a name="73"><span class="lineNum">      73 </span>            :  * problem \f$Ax=b\f$ to the subdomains. The subdomain operator</a>
+<a name="74"><span class="lineNum">      74 </span>            :  * \f$A_{ss}=R_s A R_s^T\f$, where \f$R_s\f$ is the restriction operator,</a>
+<a name="75"><span class="lineNum">      75 </span>            :  * essentially assumes that its operand is zero everywhere but within the</a>
+<a name="76"><span class="lineNum">      76 </span>            :  * subdomain (see Section 3.1 in \cite Stiller2016a). Therefore it can be</a>
+<a name="77"><span class="lineNum">      77 </span>            :  * evaluated entirely on an element-centered subdomain with no need to</a>
+<a name="78"><span class="lineNum">      78 </span>            :  * communicate with neighbors within each subdomain-operator application, as</a>
+<a name="79"><span class="lineNum">      79 </span>            :  * opposed to the global linear operator that typically requires</a>
+<a name="80"><span class="lineNum">      80 </span>            :  * nearest-neighbor communications. See</a>
+<a name="81"><span class="lineNum">      81 </span>            :  * `LinearSolver::Schwarz::SubdomainOperator` for details on how to</a>
+<a name="82"><span class="lineNum">      82 </span>            :  * implement a subdomain operator for your problem.</a>
+<a name="83"><span class="lineNum">      83 </span>            :  *</a>
+<a name="84"><span class="lineNum">      84 </span>            :  * \par Algorithm overview:</a>
+<a name="85"><span class="lineNum">      85 </span>            :  * In each iteration, the Schwarz algorithm computes the residual \f$r=b-Ax\f$,</a>
+<a name="86"><span class="lineNum">      86 </span>            :  * restricts it to all subdomains as \f$r_s=R_s r\f$ and communicates data on</a>
+<a name="87"><span class="lineNum">      87 </span>            :  * overlap regions with neighboring elements. Once an element has received all</a>
+<a name="88"><span class="lineNum">      88 </span>            :  * data on its subdomain it solves the sub-problem \f$A_{ss}\delta x_s=r_s\f$</a>
+<a name="89"><span class="lineNum">      89 </span>            :  * for the correction \f$\delta x_s\f$, where \f$\delta x_s\f$ and \f$r_s\f$</a>
+<a name="90"><span class="lineNum">      90 </span>            :  * have data only on the points of the subdomain and \f$A_{ss}\f$ is the</a>
+<a name="91"><span class="lineNum">      91 </span>            :  * subdomain operator. Since all elements perform such a subdomain-solve, we end</a>
+<a name="92"><span class="lineNum">      92 </span>            :  * up with a subdomain solution \f$\delta x_s\f$ on every subdomain, and the</a>
+<a name="93"><span class="lineNum">      93 </span>            :  * solutions overlap. Therefore, the algorithm communicates subdomain solutions</a>
+<a name="94"><span class="lineNum">      94 </span>            :  * on overlap regions with neighboring elements and adds them to the solution</a>
+<a name="95"><span class="lineNum">      95 </span>            :  * field \f$x\f$ as a weighted sum.</a>
+<a name="96"><span class="lineNum">      96 </span>            :  *</a>
+<a name="97"><span class="lineNum">      97 </span>            :  * \par Applying the global linear operator:</a>
+<a name="98"><span class="lineNum">      98 </span>            :  * In order to compute the residual \f$r=b-Ax\f$ that will be restricted to the</a>
+<a name="99"><span class="lineNum">      99 </span>            :  * subdomains to serve as source for the subdomain solves, we must apply the</a>
+<a name="100"><span class="lineNum">     100 </span>            :  * global linear operator \f$A\f$ to the solution field \f$x\f$ once per Schwarz</a>
+<a name="101"><span class="lineNum">     101 </span>            :  * iteration. The global linear operator typically introduces nearest-neighbor</a>
+<a name="102"><span class="lineNum">     102 </span>            :  * couplings between elements but no global synchronization point (as opposed to</a>
+<a name="103"><span class="lineNum">     103 </span>            :  * Krylov-type solvers such as `LinearSolver::gmres::Gmres` that require global</a>
+<a name="104"><span class="lineNum">     104 </span>            :  * inner products in each iteration). The algorithm assumes that the action list</a>
+<a name="105"><span class="lineNum">     105 </span>            :  * passed to `solve` applies the global linear operator, as described above.</a>
+<a name="106"><span class="lineNum">     106 </span>            :  *</a>
+<a name="107"><span class="lineNum">     107 </span>            :  * \par Subdomain solves:</a>
+<a name="108"><span class="lineNum">     108 </span>            :  * Each subdomain solve is local to an element, since the data on the subdomain</a>
+<a name="109"><span class="lineNum">     109 </span>            :  * has been made available through communication with the neighboring elements.</a>
+<a name="110"><span class="lineNum">     110 </span>            :  * We can now use any means to solve the subdomain problem that's appropriate</a>
+<a name="111"><span class="lineNum">     111 </span>            :  * for the subdomain operator \f$A_{ss}\f$. For example, if the subdomain</a>
+<a name="112"><span class="lineNum">     112 </span>            :  * operator was available as an explicit matrix we could invert it directly.</a>
+<a name="113"><span class="lineNum">     113 </span>            :  * Since it is typically a matrix-free operator a common approach to solve the</a>
+<a name="114"><span class="lineNum">     114 </span>            :  * subdomain problem is by means of an iterative Krylov-type method, such as</a>
+<a name="115"><span class="lineNum">     115 </span>            :  * GMRES or Conjugate Gradient, ideally with an appropriate preconditioner (yes,</a>
+<a name="116"><span class="lineNum">     116 </span>            :  * this would be preconditioned Krylov-methods solving the subdomains of the</a>
+<a name="117"><span class="lineNum">     117 </span>            :  * Schwarz solver, which might in turn precondition a global Krylov-solver -</a>
+<a name="118"><span class="lineNum">     118 </span>            :  * it's preconditioners all the way down). Currently, we use</a>
+<a name="119"><span class="lineNum">     119 </span>            :  * `LinearSolver::Serial::Gmres` to solve subdomains. It supports</a>
+<a name="120"><span class="lineNum">     120 </span>            :  * preconditioning, and adding useful subdomain preconditioners will be the</a>
+<a name="121"><span class="lineNum">     121 </span>            :  * subject of future work. Note that the choice of subdomain solver (and, by</a>
+<a name="122"><span class="lineNum">     122 </span>            :  * extension, the choice of subdomain preconditioner) affects only the</a>
+<a name="123"><span class="lineNum">     123 </span>            :  * _performance_ of the Schwarz solver, not its convergence or parallelization</a>
+<a name="124"><span class="lineNum">     124 </span>            :  * properties (assuming the subdomain solutions it produces are sufficiently</a>
+<a name="125"><span class="lineNum">     125 </span>            :  * precise).</a>
+<a name="126"><span class="lineNum">     126 </span>            :  *</a>
+<a name="127"><span class="lineNum">     127 </span>            :  * \par Weighting:</a>
+<a name="128"><span class="lineNum">     128 </span>            :  * Once the subdomain solutions \f$\delta x_s\f$ have been found they must be</a>
+<a name="129"><span class="lineNum">     129 </span>            :  * combined where they have multiple values, i.e. on overlap regions of the</a>
+<a name="130"><span class="lineNum">     130 </span>            :  * subdomains. We use an additive approach where we combine the subdomain</a>
+<a name="131"><span class="lineNum">     131 </span>            :  * solutions as a weighted sum, which has the advantage over &quot;multiplicative&quot;</a>
+<a name="132"><span class="lineNum">     132 </span>            :  * Schwarz methods that the subdomains decouple and can be solved in parallel.</a>
+<a name="133"><span class="lineNum">     133 </span>            :  * See `LinearSolver::Schwarz::element_weight` and Section 3.1 of</a>
+<a name="134"><span class="lineNum">     134 </span>            :  * \cite Stiller2016a for details. Note that we must account for the missing</a>
+<a name="135"><span class="lineNum">     135 </span>            :  * corner- and edge-neighbors when constructing the weights. See</a>
+<a name="136"><span class="lineNum">     136 </span>            :  * `LinearSolver::Schwarz::intruding_weight` for a discussion.</a>
+<a name="137"><span class="lineNum">     137 </span>            :  *</a>
+<a name="138"><span class="lineNum">     138 </span>            :  * \par Possible improvements:</a>
+<a name="139"><span class="lineNum">     139 </span>            :  * - Specify the number of overlap points as a fraction of the element width</a>
+<a name="140"><span class="lineNum">     140 </span>            :  * instead of a fixed number. This was shown in \cite Stiller2016b to achieve</a>
+<a name="141"><span class="lineNum">     141 </span>            :  * scale-independent convergence at the cost of increasing subdomain sizes.</a>
+<a name="142"><span class="lineNum">     142 </span>            :  * - Subdomain preconditioning (see paragraph on subdomain solves above)</a>
+<a name="143"><span class="lineNum">     143 </span>            :  */</a>
+<a name="144"><span class="lineNum">     144 </span>            : template &lt;typename FieldsTag, typename OptionsGroup, typename SubdomainOperator,</a>
+<a name="145"><span class="lineNum">     145 </span>            :           typename SourceTag =</a>
+<a name="146"><span class="lineNum">     146 </span>            :               db::add_tag_prefix&lt;::Tags::FixedSource, FieldsTag&gt;&gt;</a>
+<a name="147"><span class="lineNum">     147 </span><span class="lineCov">          1 : struct Schwarz {</span></a>
+<a name="148"><span class="lineNum">     148 </span><span class="lineNoCov">          0 :   using operand_tag = FieldsTag;</span></a>
+<a name="149"><span class="lineNum">     149 </span><span class="lineNoCov">          0 :   using fields_tag = FieldsTag;</span></a>
+<a name="150"><span class="lineNum">     150 </span><span class="lineNoCov">          0 :   using source_tag = SourceTag;</span></a>
+<a name="151"><span class="lineNum">     151 </span><span class="lineNoCov">          0 :   using options_group = OptionsGroup;</span></a>
+<a name="152"><span class="lineNum">     152 </span>            : </a>
+<a name="153"><span class="lineNum">     153 </span><span class="lineNoCov">          0 :   using component_list = tmpl::list&lt;&gt;;</span></a>
+<a name="154"><span class="lineNum">     154 </span><span class="lineNoCov">          0 :   using observed_reduction_data_tags = observers::make_reduction_data_tags&lt;</span></a>
+<a name="155"><span class="lineNum">     155 </span>            :       tmpl::list&lt;async_solvers::reduction_data, detail::reduction_data&gt;&gt;;</a>
+<a name="156"><span class="lineNum">     156 </span><span class="lineNoCov">          0 :   using subdomain_solver =</span></a>
+<a name="157"><span class="lineNum">     157 </span>            :       detail::subdomain_solver&lt;FieldsTag, SubdomainOperator&gt;;</a>
+<a name="158"><span class="lineNum">     158 </span>            : </a>
+<a name="159"><span class="lineNum">     159 </span><span class="lineNoCov">          0 :   using initialize_element = tmpl::list&lt;</span></a>
+<a name="160"><span class="lineNum">     160 </span>            :       async_solvers::InitializeElement&lt;FieldsTag, OptionsGroup, SourceTag&gt;,</a>
+<a name="161"><span class="lineNum">     161 </span>            :       detail::InitializeElement&lt;FieldsTag, OptionsGroup, SubdomainOperator&gt;&gt;;</a>
+<a name="162"><span class="lineNum">     162 </span>            : </a>
+<a name="163"><span class="lineNum">     163 </span><span class="lineNoCov">          0 :   using register_element = tmpl::list&lt;</span></a>
+<a name="164"><span class="lineNum">     164 </span>            :       async_solvers::RegisterElement&lt;FieldsTag, OptionsGroup, SourceTag&gt;,</a>
+<a name="165"><span class="lineNum">     165 </span>            :       detail::RegisterElement&lt;FieldsTag, OptionsGroup, SourceTag&gt;&gt;;</a>
+<a name="166"><span class="lineNum">     166 </span>            : </a>
+<a name="167"><span class="lineNum">     167 </span>            :   template &lt;typename ApplyOperatorActions, typename Label = OptionsGroup&gt;</a>
+<a name="168"><span class="lineNum">     168 </span><span class="lineNoCov">          0 :   using solve = tmpl::list&lt;</span></a>
+<a name="169"><span class="lineNum">     169 </span>            :       async_solvers::PrepareSolve&lt;FieldsTag, OptionsGroup, SourceTag, Label&gt;,</a>
+<a name="170"><span class="lineNum">     170 </span>            :       detail::SendOverlapData&lt;FieldsTag, OptionsGroup, SubdomainOperator&gt;,</a>
+<a name="171"><span class="lineNum">     171 </span>            :       detail::SolveSubdomain&lt;FieldsTag, OptionsGroup, SubdomainOperator&gt;,</a>
+<a name="172"><span class="lineNum">     172 </span>            :       detail::ReceiveOverlapSolution&lt;FieldsTag, OptionsGroup,</a>
+<a name="173"><span class="lineNum">     173 </span>            :                                      SubdomainOperator&gt;,</a>
+<a name="174"><span class="lineNum">     174 </span>            :       ApplyOperatorActions,</a>
+<a name="175"><span class="lineNum">     175 </span>            :       async_solvers::CompleteStep&lt;FieldsTag, OptionsGroup, SourceTag, Label&gt;&gt;;</a>
+<a name="176"><span class="lineNum">     176 </span>            : };</a>
+<a name="177"><span class="lineNum">     177 </span>            : </a>
+<a name="178"><span class="lineNum">     178 </span>            : }  // namespace LinearSolver::Schwarz</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

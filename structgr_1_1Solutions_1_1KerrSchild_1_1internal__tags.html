@@ -1,0 +1,302 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: gr::Solutions::KerrSchild::internal_tags Struct Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacegr.html">gr</a></li><li class="navelem"><a class="el" href="namespacegr_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">KerrSchild</a></li><li class="navelem"><a class="el" href="structgr_1_1Solutions_1_1KerrSchild_1_1internal__tags.html">internal_tags</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="structgr_1_1Solutions_1_1KerrSchild_1_1internal__tags-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">gr::Solutions::KerrSchild::internal_tags Struct Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:aad04bf7b4dc09d16b5b60bf6761c6048"><td class="memTemplParams" colspan="2"><a id="aad04bf7b4dc09d16b5b60bf6761c6048"></a>
+template&lt;typename DataType , typename Frame  = ::Frame::Inertial&gt; </td></tr>
+<tr class="memitem:aad04bf7b4dc09d16b5b60bf6761c6048"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>x_minus_center</b> = ::<a class="el" href="group__PeoGroup.html#ga111ad3cf830a13269ce6816d188ff0f0">Tags::TempI</a>&lt; 0, 3, Frame, DataType &gt;</td></tr>
+<tr class="separator:aad04bf7b4dc09d16b5b60bf6761c6048"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2837de239c440328d340ce0c28dc9b57"><td class="memTemplParams" colspan="2"><a id="a2837de239c440328d340ce0c28dc9b57"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a2837de239c440328d340ce0c28dc9b57"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>a_dot_x</b> = ::<a class="el" href="group__PeoGroup.html#gad37486b3abf10556ab0487bf2189da5d">Tags::TempScalar</a>&lt; 1, DataType &gt;</td></tr>
+<tr class="separator:a2837de239c440328d340ce0c28dc9b57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed45c4c1a689a24848a71c4f4fb6ae98"><td class="memTemplParams" colspan="2"><a id="aed45c4c1a689a24848a71c4f4fb6ae98"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:aed45c4c1a689a24848a71c4f4fb6ae98"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>a_dot_x_squared</b> = ::<a class="el" href="group__PeoGroup.html#gad37486b3abf10556ab0487bf2189da5d">Tags::TempScalar</a>&lt; 2, DataType &gt;</td></tr>
+<tr class="separator:aed45c4c1a689a24848a71c4f4fb6ae98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc02e35dfcf863ecf9ef3f9f4c7dd92b"><td class="memTemplParams" colspan="2"><a id="afc02e35dfcf863ecf9ef3f9f4c7dd92b"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:afc02e35dfcf863ecf9ef3f9f4c7dd92b"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>half_xsq_minus_asq</b> = ::<a class="el" href="group__PeoGroup.html#gad37486b3abf10556ab0487bf2189da5d">Tags::TempScalar</a>&lt; 3, DataType &gt;</td></tr>
+<tr class="separator:afc02e35dfcf863ecf9ef3f9f4c7dd92b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad97ed587fd5d0b9da9d5a995480fa8dd"><td class="memTemplParams" colspan="2"><a id="ad97ed587fd5d0b9da9d5a995480fa8dd"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:ad97ed587fd5d0b9da9d5a995480fa8dd"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>r_squared</b> = ::<a class="el" href="group__PeoGroup.html#gad37486b3abf10556ab0487bf2189da5d">Tags::TempScalar</a>&lt; 4, DataType &gt;</td></tr>
+<tr class="separator:ad97ed587fd5d0b9da9d5a995480fa8dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7bd64057633d3f7f5ac81eeaa8b9a7c9"><td class="memTemplParams" colspan="2"><a id="a7bd64057633d3f7f5ac81eeaa8b9a7c9"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a7bd64057633d3f7f5ac81eeaa8b9a7c9"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>r</b> = ::<a class="el" href="group__PeoGroup.html#gad37486b3abf10556ab0487bf2189da5d">Tags::TempScalar</a>&lt; 5, DataType &gt;</td></tr>
+<tr class="separator:a7bd64057633d3f7f5ac81eeaa8b9a7c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0fc6d0afa079579075eb1a22d8c8c66b"><td class="memTemplParams" colspan="2"><a id="a0fc6d0afa079579075eb1a22d8c8c66b"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a0fc6d0afa079579075eb1a22d8c8c66b"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>a_dot_x_over_rsquared</b> = ::<a class="el" href="group__PeoGroup.html#gad37486b3abf10556ab0487bf2189da5d">Tags::TempScalar</a>&lt; 6, DataType &gt;</td></tr>
+<tr class="separator:a0fc6d0afa079579075eb1a22d8c8c66b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0dd56be402680a5bc4a7f8c25bd8362a"><td class="memTemplParams" colspan="2"><a id="a0dd56be402680a5bc4a7f8c25bd8362a"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a0dd56be402680a5bc4a7f8c25bd8362a"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>deriv_log_r_denom</b> = ::<a class="el" href="group__PeoGroup.html#gad37486b3abf10556ab0487bf2189da5d">Tags::TempScalar</a>&lt; 7, DataType &gt;</td></tr>
+<tr class="separator:a0dd56be402680a5bc4a7f8c25bd8362a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac203b2318aec59f8dd318a4844328682"><td class="memTemplParams" colspan="2"><a id="ac203b2318aec59f8dd318a4844328682"></a>
+template&lt;typename DataType , typename Frame  = ::Frame::Inertial&gt; </td></tr>
+<tr class="memitem:ac203b2318aec59f8dd318a4844328682"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>deriv_log_r</b> = ::<a class="el" href="group__PeoGroup.html#gabd18612ca2a92e3a2c83a66d9e2b0f2b">Tags::Tempi</a>&lt; 8, 3, Frame, DataType &gt;</td></tr>
+<tr class="separator:ac203b2318aec59f8dd318a4844328682"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa00458df0b39591330b7df5853624b86"><td class="memTemplParams" colspan="2"><a id="aa00458df0b39591330b7df5853624b86"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:aa00458df0b39591330b7df5853624b86"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>H_denom</b> = ::<a class="el" href="group__PeoGroup.html#gad37486b3abf10556ab0487bf2189da5d">Tags::TempScalar</a>&lt; 9, DataType &gt;</td></tr>
+<tr class="separator:aa00458df0b39591330b7df5853624b86"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a41731978ba97a6a693a9077b39c0dfbf"><td class="memTemplParams" colspan="2"><a id="a41731978ba97a6a693a9077b39c0dfbf"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a41731978ba97a6a693a9077b39c0dfbf"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>H</b> = ::<a class="el" href="group__PeoGroup.html#gad37486b3abf10556ab0487bf2189da5d">Tags::TempScalar</a>&lt; 10, DataType &gt;</td></tr>
+<tr class="separator:a41731978ba97a6a693a9077b39c0dfbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ec43af0c7d9dcfd5105281dc0ed09fc"><td class="memTemplParams" colspan="2"><a id="a6ec43af0c7d9dcfd5105281dc0ed09fc"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a6ec43af0c7d9dcfd5105281dc0ed09fc"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>deriv_H_temp1</b> = ::<a class="el" href="group__PeoGroup.html#gad37486b3abf10556ab0487bf2189da5d">Tags::TempScalar</a>&lt; 11, DataType &gt;</td></tr>
+<tr class="separator:a6ec43af0c7d9dcfd5105281dc0ed09fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6fb2bd2ac73868a74ec27f4e3d1f3b60"><td class="memTemplParams" colspan="2"><a id="a6fb2bd2ac73868a74ec27f4e3d1f3b60"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a6fb2bd2ac73868a74ec27f4e3d1f3b60"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>deriv_H_temp2</b> = ::<a class="el" href="group__PeoGroup.html#gad37486b3abf10556ab0487bf2189da5d">Tags::TempScalar</a>&lt; 12, DataType &gt;</td></tr>
+<tr class="separator:a6fb2bd2ac73868a74ec27f4e3d1f3b60"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac130345538626db0495642e29a4b9a23"><td class="memTemplParams" colspan="2"><a id="ac130345538626db0495642e29a4b9a23"></a>
+template&lt;typename DataType , typename Frame  = ::Frame::Inertial&gt; </td></tr>
+<tr class="memitem:ac130345538626db0495642e29a4b9a23"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>deriv_H</b> = ::<a class="el" href="group__PeoGroup.html#gabd18612ca2a92e3a2c83a66d9e2b0f2b">Tags::Tempi</a>&lt; 13, 3, Frame, DataType &gt;</td></tr>
+<tr class="separator:ac130345538626db0495642e29a4b9a23"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe2c6c6b81472a9cc7aec2c2fe6a7151"><td class="memTemplParams" colspan="2"><a id="afe2c6c6b81472a9cc7aec2c2fe6a7151"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:afe2c6c6b81472a9cc7aec2c2fe6a7151"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>denom</b> = ::<a class="el" href="group__PeoGroup.html#gad37486b3abf10556ab0487bf2189da5d">Tags::TempScalar</a>&lt; 14, DataType &gt;</td></tr>
+<tr class="separator:afe2c6c6b81472a9cc7aec2c2fe6a7151"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6239316a8ae2a6a401bfbaa655f8004d"><td class="memTemplParams" colspan="2"><a id="a6239316a8ae2a6a401bfbaa655f8004d"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a6239316a8ae2a6a401bfbaa655f8004d"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>a_dot_x_over_r</b> = ::<a class="el" href="group__PeoGroup.html#gad37486b3abf10556ab0487bf2189da5d">Tags::TempScalar</a>&lt; 15, DataType &gt;</td></tr>
+<tr class="separator:a6239316a8ae2a6a401bfbaa655f8004d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3fd656f8bbb0e7e879ee61f24187765a"><td class="memTemplParams" colspan="2"><a id="a3fd656f8bbb0e7e879ee61f24187765a"></a>
+template&lt;typename DataType , typename Frame  = ::Frame::Inertial&gt; </td></tr>
+<tr class="memitem:a3fd656f8bbb0e7e879ee61f24187765a"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>null_form</b> = ::<a class="el" href="group__PeoGroup.html#gabd18612ca2a92e3a2c83a66d9e2b0f2b">Tags::Tempi</a>&lt; 16, 3, Frame, DataType &gt;</td></tr>
+<tr class="separator:a3fd656f8bbb0e7e879ee61f24187765a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab34f2d3da20eaa2b7dc4017b324560e9"><td class="memTemplParams" colspan="2"><a id="ab34f2d3da20eaa2b7dc4017b324560e9"></a>
+template&lt;typename DataType , typename Frame  = ::Frame::Inertial&gt; </td></tr>
+<tr class="memitem:ab34f2d3da20eaa2b7dc4017b324560e9"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>deriv_null_form</b> = ::<a class="el" href="group__PeoGroup.html#gadafd9a7ea7edb0a8b9c561d465571705">Tags::Tempij</a>&lt; 17, 3, Frame, DataType &gt;</td></tr>
+<tr class="separator:ab34f2d3da20eaa2b7dc4017b324560e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2ac7e1b83ce4519b2659f228404b50d2"><td class="memTemplParams" colspan="2"><a id="a2ac7e1b83ce4519b2659f228404b50d2"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a2ac7e1b83ce4519b2659f228404b50d2"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>lapse_squared</b> = ::<a class="el" href="group__PeoGroup.html#gad37486b3abf10556ab0487bf2189da5d">Tags::TempScalar</a>&lt; 18, DataType &gt;</td></tr>
+<tr class="separator:a2ac7e1b83ce4519b2659f228404b50d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2ff10cd351eb55caf9e4498853dc1e99"><td class="memTemplParams" colspan="2"><a id="a2ff10cd351eb55caf9e4498853dc1e99"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a2ff10cd351eb55caf9e4498853dc1e99"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>deriv_lapse_multiplier</b> = ::<a class="el" href="group__PeoGroup.html#gad37486b3abf10556ab0487bf2189da5d">Tags::TempScalar</a>&lt; 19, DataType &gt;</td></tr>
+<tr class="separator:a2ff10cd351eb55caf9e4498853dc1e99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a930d355e464570b3291738186dbada31"><td class="memTemplParams" colspan="2"><a id="a930d355e464570b3291738186dbada31"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a930d355e464570b3291738186dbada31"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>shift_multiplier</b> = ::<a class="el" href="group__PeoGroup.html#gad37486b3abf10556ab0487bf2189da5d">Tags::TempScalar</a>&lt; 20, DataType &gt;</td></tr>
+<tr class="separator:a930d355e464570b3291738186dbada31"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticSolutions/GeneralRelativity/<a class="el" href="KerrSchild_8hpp_source.html">KerrSchild.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

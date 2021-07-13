@@ -1,0 +1,344 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::CoordinateMaps::TimeDependent::SphericalCompression&lt; InteriorMap &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1CoordinateMaps.html">CoordinateMaps</a></li><li class="navelem"><a class="el" href="namespacedomain_1_1CoordinateMaps_1_1TimeDependent.html">TimeDependent</a></li><li class="navelem"><a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1SphericalCompression.html">SphericalCompression</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1SphericalCompression-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::CoordinateMaps::TimeDependent::SphericalCompression&lt; InteriorMap &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__CoordMapsTimeDependentGroup.html">Coordinate Maps, Time-dependent</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Time-dependent compression of a finite 3D spherical volume.  
+ <a href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1SphericalCompression.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="CoordinateMaps_2TimeDependent_2SphericalCompression_8hpp_source.html">SphericalCompression.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ac63162b9a9c101898426864df2747cc7"><td class="memItemLeft" align="right" valign="top"><a id="ac63162b9a9c101898426864df2747cc7"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SphericalCompression</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> function_of_time_name, double min_radius, double max_radius, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;center) noexcept</td></tr>
+<tr class="separator:ac63162b9a9c101898426864df2747cc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae633952bb4563a171ab21fcd2a2ecc10"><td class="memTemplParams" colspan="2"><a id="ae633952bb4563a171ab21fcd2a2ecc10"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ae633952bb4563a171ab21fcd2a2ecc10"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator()</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords, double time, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time) const noexcept</td></tr>
+<tr class="separator:ae633952bb4563a171ab21fcd2a2ecc10"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add18d60ea9631311328040a56ff6b24e"><td class="memItemLeft" align="right" valign="top"><a id="add18d60ea9631311328040a56ff6b24e"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1SphericalCompression.html#add18d60ea9631311328040a56ff6b24e">inverse</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;target_coords, double time, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time) const noexcept</td></tr>
+<tr class="memdesc:add18d60ea9631311328040a56ff6b24e"><td class="mdescLeft">&#160;</td><td class="mdescRight">The inverse function is only callable with doubles because the inverse might fail if called for a point out of range, and it is unclear what should happen if the inverse were to succeed for some points in a <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> but fail for other points. <br /></td></tr>
+<tr class="separator:add18d60ea9631311328040a56ff6b24e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad38b47efb678a820f519fdc73a57f1e3"><td class="memTemplParams" colspan="2"><a id="ad38b47efb678a820f519fdc73a57f1e3"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ad38b47efb678a820f519fdc73a57f1e3"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>frame_velocity</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords, double time, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time) const noexcept</td></tr>
+<tr class="separator:ad38b47efb678a820f519fdc73a57f1e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a08d1045c0449e7180533c1d5e0aebe6b"><td class="memTemplParams" colspan="2"><a id="a08d1045c0449e7180533c1d5e0aebe6b"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a08d1045c0449e7180533c1d5e0aebe6b"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords, double time, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time) const noexcept</td></tr>
+<tr class="separator:a08d1045c0449e7180533c1d5e0aebe6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adcbecbaa1c84f40498ab50066b173242"><td class="memTemplParams" colspan="2"><a id="adcbecbaa1c84f40498ab50066b173242"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:adcbecbaa1c84f40498ab50066b173242"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>inv_jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords, double time, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time) const noexcept</td></tr>
+<tr class="separator:adcbecbaa1c84f40498ab50066b173242"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d0763ff157982215d345145ad54fb66"><td class="memItemLeft" align="right" valign="top"><a id="a0d0763ff157982215d345145ad54fb66"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a0d0763ff157982215d345145ad54fb66"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a08322542926a8074834b1b436b9896ef"><td class="memItemLeft" align="right" valign="top"><a id="a08322542926a8074834b1b436b9896ef"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_identity</b> () noexcept</td></tr>
+<tr class="separator:a08322542926a8074834b1b436b9896ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a32b9f22338b947fa88ee0ea36ea251b3"><td class="memItemLeft" align="right" valign="top"><a id="a32b9f22338b947fa88ee0ea36ea251b3"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>dim</b> = 3</td></tr>
+<tr class="separator:a32b9f22338b947fa88ee0ea36ea251b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:aad1ba8b10fbdcead4ad3b06f98dcb55b"><td class="memItemLeft" align="right" valign="top"><a id="aad1ba8b10fbdcead4ad3b06f98dcb55b"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1SphericalCompression.html">SphericalCompression</a> &amp;lhs, const <a class="el" href="classdomain_1_1CoordinateMaps_1_1TimeDependent_1_1SphericalCompression.html">SphericalCompression</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:aad1ba8b10fbdcead4ad3b06f98dcb55b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;bool InteriorMap&gt;<br />
+class domain::CoordinateMaps::TimeDependent::SphericalCompression&lt; InteriorMap &gt;</h3>
+
+<p>Time-dependent compression of a finite 3D spherical volume. </p>
+<h3>Details</h3>
+<p>Let \(\xi^i\) be the unmapped coordinates, and let \(\rho\) be the Euclidean radius corresponding to these coordinates with respect to some center \(C^i\). The transformation implemented by this map is equivalent to the following transformation: at each point, the mapped coordinates are the same as the unmapped coordinates, except in a spherical region \(\rho \leq \rho_{\rm max}\), where instead coordinates are mapped using a compression that is spherically symmetric about the center \(C^i\). The amount of compression decreases linearly from a maximum at \(\rho = \rho_{\rm min}\) to zero at \(\rho = \rho_{\rm max}\). A scalar <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html" title="Base class for FunctionsOfTime.">domain::FunctionsOfTime::FunctionOfTime</a> \(\lambda_{00}(t)\) controls the amount of compression.</p>
+<p>The mapped coordinates are a continuous function of the unmapped coordinates, but the Jacobians are not continuous at \(\rho_{\rm min}\) and \(\rho_{\rm max}\). Therefore, \(\rho_{\rm min}\) and \(\rho_{\rm max}\) should both be surfaces corresponding to block boundaries. Therefore, this class implements the transformation described above as follows: the if the template parameter <code>InteriorMap</code> is true, the map is the one appropriate for \(\rho &lt; \rho_{\rm min}\), while if <code>InteriorMap</code> is false, the map is the one appropriate for \(\rho_{\rm min} \leq \rho \leq \rho_{\rm max}\). To use this map, add it to the blocks where the transformation is not the identity, using the appropriate template parameter, depending on which region the block is in.</p>
+<dl class="section note"><dt>Note</dt><dd>Currently, this map only performs a compression. A generalization of this map could also change the region's shape as well as its size, by including more terms than the spherically symmetric term included here.</dd></dl>
+<h3><a class="anchor" id="autotoc_md71"></a>
+Mapped coordinates</h3>
+<p>The mapped coordinates \(x^i\) are related to the unmapped coordinates \(\xi^i\) as follows: </p><p class="formulaDsp">
+\begin{align} x^i &amp;= \left\{\begin{array}{ll}\xi^i - \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \frac{\rho^i}{\rho_{\rm min}}, &amp; \rho &lt; \rho_{\rm min}, \\ \xi^i - \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \frac{\rho_{\rm max} / \rho - 1}{\rho_{\rm max} - \rho_{\rm min}} \rho^i, &amp; \rho_{\rm min} \leq \rho \leq \rho_{\rm max}, \\ \xi^i, &amp; \rho_{\rm max} &lt; \rho,\end{array}\right. \end{align}
+</p>
+<p> where \(\rho^i = \xi^i - C^i\) is the Euclidean radial position vector in the unmapped coordinates with respect to the center \(C^i\), \(\rho = \sqrt{\delta_{kl}\left(\xi^k - C^l\right)\left(\xi^l - C^l\right)}\) is the Euclidean magnitude of \(\rho^i\), and \(\rho_j = \delta_{ij} \rho^i\).</p>
+<h3><a class="anchor" id="autotoc_md72"></a>
+Frame velocity</h3>
+<p>The frame velocity \(v^i \equiv dx^i/dt\) is then </p><p class="formulaDsp">
+\begin{align} v^i &amp;= \left\{\begin{array}{ll} - \frac{\lambda_{00}^\prime(t)}{\sqrt{4\pi}} \frac{\rho^i}{\rho_{\rm min}}, &amp; \rho &lt; \rho_{\rm min}, \\ - \frac{\lambda_{00}^\prime(t)}{\sqrt{4\pi}} \frac{\rho_{\rm max} / \rho - 1}{\rho_{\rm max} - \rho_{\rm min}} \rho^i, &amp; \rho_{\rm min} \leq \rho \leq \rho_{\rm max}, \\ 0, &amp; \rho_{\rm max} &lt; \rho,\end{array}\right. \end{align}
+</p>
+<p> where \(\lambda_{00}^\prime(t) \equiv d\lambda_{00}/dt\).</p>
+<h3><a class="anchor" id="autotoc_md73"></a>
+Jacobian</h3>
+<p>Differentiating the equations for \(x^i\) gives the Jacobian \(\partial x^i / \partial \xi^j\). Using the result </p><p class="formulaDsp">
+\begin{align} \frac{\partial \rho^i}{\partial \xi^j} &amp;= \frac{\partial}{\partial \xi^j} \left(\xi^i - C^i\right) = \frac{\partial \xi^i}{\partial \xi^j} = \delta^i_{j} \end{align}
+</p>
+<p> and taking the derivatives yields </p><p class="formulaDsp">
+\begin{align} \frac{\partial x^i}{\partial \xi^j} &amp;= \left\{\begin{array}{ll} \delta^i_j \left(1 - \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \frac{1}{\rho_{\rm min}}\right), &amp; \rho &lt; \rho_{\rm min},\\ \delta^i_j \left(1 - \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \frac{\rho_{\rm max} / \rho - 1}{\rho_{\rm max} - \rho_{\rm min}}\right) - \rho^i \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \frac{\partial}{\partial \xi^j}\left( \frac{\rho_{\rm max} / \rho - 1}{\rho_{\rm max} - \rho_{\rm min}}\right), &amp; \rho_{\rm min} \leq \rho &lt; \rho_{\rm max},\\ \delta^i_j, &amp; \rho_{\rm max} &lt; \rho.\end{array}\right. \end{align}
+</p>
+<p> Inserting </p><p class="formulaDsp">
+\begin{align} \frac{\partial}{\partial \xi^j}\left( \frac{\rho_{\rm max} / \rho - 1}{\rho_{\rm max} - \rho_{\rm min}}\right) &amp;= \frac{\rho_{\rm max}}{\rho_{\rm max} - \rho_{\rm min}} \frac{\partial}{\partial \xi^j}\left(\frac{1}{\rho}\right) = - \frac{\rho_{\rm max}}{\rho_{\rm max} - \rho_{\rm min}} \frac{1}{\rho^2} \frac{\partial \rho}{\partial \xi^j} \end{align}
+</p>
+<p> and </p><p class="formulaDsp">
+\begin{align} \frac{\partial \rho}{\partial \xi^j} &amp;= \frac{\rho_j}{\rho}. \end{align}
+</p>
+<p> into the Jacobian yields </p><p class="formulaDsp">
+\begin{align} \frac{\partial x^i}{\partial \xi^j} &amp;= \left\{\begin{array}{ll} \delta^i_j \left(1 - \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \frac{1}{\rho_{\rm min}}\right), &amp; \rho &lt; \rho_{\rm min},\\ \delta^i_j \left(1 - \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \frac{\rho_{\rm max} / \rho - 1}{\rho_{\rm max} - \rho_{\rm min}}\right) + \rho^i \rho_j \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \frac{\rho_{\rm max}}{\rho_{\rm max} - \rho_{\rm min}}\frac{1}{\rho^3}, &amp; \rho_{\rm min} \leq \rho &lt; \rho_{\rm max},\\ \delta^i_j, &amp; \rho_{\rm max} &lt; \rho.\end{array}\right. \end{align}
+</p>
+<h3><a class="anchor" id="autotoc_md74"></a>
+Inverse Jacobian</h3>
+<p>This map finds the inverse Jacobian by first finding the Jacobian and then numerically inverting it.</p>
+<h3><a class="anchor" id="autotoc_md75"></a>
+Inverse map</h3>
+<p>For \(\lambda_{00}(t)\) that satisfy </p><p class="formulaDsp">
+\begin{align} \rho_{\rm min} - \rho_{\rm max} &lt; \lambda_{00}(t) / \sqrt{4\pi} &lt; \rho_{\rm min}, \end{align}
+</p>
+<p> the map will be invertible and nonsingular. For simplicity, here we enforce this condition, even though perhaps the map might be generalized to handle cases that are still invertible but violate this condition. This avoids the need to specially handle the cases \(\lambda_{00}(t) / \sqrt{4\pi} = \rho_{\rm min} - \rho_{\rm max}\) and \(\lambda_{00}(t) / \sqrt{4\pi} = \rho_{\rm min}\), both of which yield a singular map, and it also avoids cases where the map behaves in undesirable ways (such as a larger \(\lambda_{00}(t)\) leading to an expansion and a coordinate inversion instead of a compression).</p>
+<p>After requiring the above inequality to be satisfied, however, the inverse mapping can be derived as follows. Let \(r^i \equiv x^i - C^i\). In terms of \(r^i\), the map is </p><p class="formulaDsp">
+\begin{align} r^i &amp;= \left\{\begin{array}{ll}\rho^i \left(1 - \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \frac{1}{\rho_{\rm min}}\right), &amp; \rho &lt; \rho_{\rm min}, \\ \rho^i\left(1 - \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \frac{\rho_{\rm max} / \rho - 1}{\rho_{\rm max} - \rho_{\rm min}}\right), &amp; \rho_{\rm min} \leq \rho \leq \rho_{\rm max}, \\ \rho^i, &amp; \rho_{\rm max} &lt; \rho.\end{array}\right. \end{align}
+</p>
+<p>Taking the Euclidean magnitude of both sides and simplifying yields </p><p class="formulaDsp">
+\begin{align} \frac{r}{\rho} &amp;= \left\{\begin{array}{ll} 1 - \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \frac{1}{\rho_{\rm min}}, &amp; \rho &lt; \rho_{\rm min}, \\ 1 - \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \frac{\rho_{\rm max}/\rho - 1}{\rho_{\rm max} - \rho_{\rm min}}, &amp; \rho_{\rm min} \leq \rho \leq \rho_{\rm max}, \\ 1, &amp; \rho_{\rm max} &lt; \rho,\end{array}\right. \end{align}
+</p>
+<p> which implies </p><p class="formulaDsp">
+\begin{align} r^i = \rho^i \frac{r}{\rho} \Rightarrow \rho^i = r^i \frac{\rho}{r}. \end{align}
+</p>
+<p>Inserting \(\rho_{\rm min}\) or \(\rho_{\rm max}\) then gives the corresponding bounds in the mapped coordinates: </p><p class="formulaDsp">
+\begin{align} r_{\rm min} &amp;= \rho_{\rm min} - \frac{\lambda_{00}(t)}{\sqrt{4\pi}},\\ r_{\rm max} &amp;= \rho_{\rm max}. \end{align}
+</p>
+<p>In the regime \(\rho_{\rm min} \leq \rho &lt; \rho_{\rm max}\), rearranging yields a linear relationship between \(\rho\) and \(r\), which can then be solved for \(\rho(r)\): </p><p class="formulaDsp">
+\begin{align} r &amp;= \rho - \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \frac{\rho_{\rm max} - \rho}{\rho_{\rm max} - \rho_{\rm min}}\\ \Rightarrow r &amp;= \rho \left(1 + \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \frac{1}{\rho_{\rm max} - \rho_{\rm min}}\right) - \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \frac{\rho_{\rm max}}{\rho_{\rm max} - \rho_{\rm min}}. \end{align}
+</p>
+<p> Solving this linear equation for \(\rho\) yields </p><p class="formulaDsp">
+\begin{align} \rho &amp;= \left(r+\frac{\lambda_{00}(t)}{\sqrt{4\pi}}\frac{\rho_{\rm max}}{\rho_{\rm max}-\rho_{\rm min}}\right) \left(1 + \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \frac{1}{\rho_{\rm max} - \rho_{\rm min}}\right)^{-1}. \end{align}
+</p>
+<p>Inserting the expressions for \(\rho\) into the equation </p><p class="formulaDsp">
+\begin{align} \rho^i = r^i \frac{\rho}{r} \end{align}
+</p>
+<p> then gives </p><p class="formulaDsp">
+\begin{align} \rho^i &amp;= \left\{\begin{array}{ll} r^i\left(1 - \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \frac{1}{\rho_{\rm min}}\right)^{-1}, &amp; r &lt; \rho_{\rm min} - \frac{\lambda_{00}(t)}{\sqrt{4\pi}},\\ r^i \left(1+\frac{1}{r}\frac{\lambda_{00}(t)}{\sqrt{4\pi}}\frac{\rho_{\rm max}}{\rho_{\rm max}-\rho_{\rm min}}\right)\left(1 + \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \frac{1}{\rho_{\rm max} - \rho_{\rm min}}\right)^{-1}, &amp; \rho_{\rm min} - \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \leq r \leq \rho_{\rm max},\\ r^i, &amp; \rho_{\rm max} &lt; r.\end{array}\right. \end{align}
+</p>
+<p> Finally, inserting \(\rho^i = \xi^i - C^i\) yields the inverse map: </p><p class="formulaDsp">
+\begin{align} \xi^i &amp;= \left\{\begin{array}{ll} r^i\left(1 - \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \frac{1}{\rho_{\rm min}}\right)^{-1} + C^i, &amp; r &lt; \rho_{\rm min} - \frac{\lambda_{00}(t)}{\sqrt{4\pi}},\\ r^i \left(1+\frac{1}{r}\frac{\lambda_{00}(t)}{\sqrt{4\pi}}\frac{\rho_{\rm max}}{\rho_{\rm max}-\rho_{\rm min}}\right)\left(1 + \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \frac{1}{\rho_{\rm max} - \rho_{\rm min}}\right)^{-1} + C^i, &amp; \rho_{\rm min} - \frac{\lambda_{00}(t)}{\sqrt{4\pi}} \leq r \leq \rho_{\rm max},\\ r^i + C^i = x^i, &amp; \rho_{\rm max} &lt; r.\end{array}\right. \end{align}
+</p>
+ </div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/CoordinateMaps/TimeDependent/<a class="el" href="CoordinateMaps_2TimeDependent_2SphericalCompression_8hpp_source.html">SphericalCompression.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

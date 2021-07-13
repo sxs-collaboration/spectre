@@ -1,0 +1,703 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: evolution::dg Namespace Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceevolution.html">evolution</a></li><li class="navelem"><a class="el" href="namespaceevolution_1_1dg.html">dg</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
+  <div class="headertitle">
+<div class="title">evolution::dg Namespace Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Functionality for evolving hyperbolic partial differential equations using the discontinuous Galerkin method.  
+<a href="namespaceevolution_1_1dg.html#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceevolution_1_1dg_1_1Actions"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceevolution_1_1dg_1_1Actions.html">Actions</a></td></tr>
+<tr class="memdesc:namespaceevolution_1_1dg_1_1Actions"><td class="mdescLeft">&#160;</td><td class="mdescRight">Actions for using the discontinuous Galerkin to evolve hyperbolic partial differential equations. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceevolution_1_1dg_1_1Initialization"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceevolution_1_1dg_1_1Initialization.html">Initialization</a></td></tr>
+<tr class="memdesc:namespaceevolution_1_1dg_1_1Initialization"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functionality for initializing the discontinuous Galerkin to evolve hyperbolic partial differential equations. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceevolution_1_1dg_1_1subcell"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceevolution_1_1dg_1_1subcell.html">subcell</a></td></tr>
+<tr class="memdesc:namespaceevolution_1_1dg_1_1subcell"><td class="mdescLeft">&#160;</td><td class="mdescRight">Implementation of a generic finite volume/conservative finite difference subcell limiter. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceevolution_1_1dg_1_1Tags"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceevolution_1_1dg_1_1Tags.html">Tags</a></td></tr>
+<tr class="memdesc:namespaceevolution_1_1dg_1_1Tags"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tags used for DG evolution scheme. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structevolution_1_1dg_1_1ConservativeDuDt.html">ConservativeDuDt</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate \(\partial u/\partial t\) for a conservative system.  <a href="structevolution_1_1dg_1_1ConservativeDuDt.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classevolution_1_1dg_1_1MortarData.html">MortarData</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Data on the mortar used to compute the boundary correction for the DG scheme.  <a href="classevolution_1_1dg_1_1MortarData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structevolution_1_1dg_1_1using__subcell.html">using_subcell</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">If <code>Metavars</code> has a <code>SubcellOptions</code> member struct and <code>SubcellOptions::subcell_enabled</code> is <code>true</code> then inherits from <code><a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a></code>, otherwise inherits from <code><a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::false_type</a></code>.  <a href="structevolution_1_1dg_1_1using__subcell.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a8fb5cb1752c2bcaa22265dac16c14cae"><td class="memTemplParams" colspan="2">template&lt;size_t Dim, typename DtTagsList &gt; </td></tr>
+<tr class="memitem:a8fb5cb1752c2bcaa22265dac16c14cae"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceevolution_1_1dg.html#a8fb5cb1752c2bcaa22265dac16c14cae">interpolate_dt_terms_gauss_points</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; DtTagsList &gt; * &gt; dt_vars, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;volume_mesh, const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; &amp;direction, const Variables&lt; DtTagsList &gt; &amp;dt_corrections) noexcept</td></tr>
+<tr class="memdesc:a8fb5cb1752c2bcaa22265dac16c14cae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interpolate the Bjorhus/time derivative corrections to the volume time derivatives in the specified direction.  <a href="namespaceevolution_1_1dg.html#a8fb5cb1752c2bcaa22265dac16c14cae">More...</a><br /></td></tr>
+<tr class="separator:a8fb5cb1752c2bcaa22265dac16c14cae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a79b97574b39a5083b309a0ee96683f29"><td class="memTemplParams" colspan="2">template&lt;size_t Dim, typename DtTagsList , typename BoundaryCorrectionTagsList &gt; </td></tr>
+<tr class="memitem:a79b97574b39a5083b309a0ee96683f29"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceevolution_1_1dg.html#a79b97574b39a5083b309a0ee96683f29">lift_boundary_terms_gauss_points</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; DtTagsList &gt; * &gt; dt_vars, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;volume_det_inv_jacobian, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;volume_mesh, const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; &amp;direction, const Variables&lt; BoundaryCorrectionTagsList &gt; &amp;boundary_corrections, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;magnitude_of_face_normal, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;face_det_jacobian) noexcept</td></tr>
+<tr class="memdesc:a79b97574b39a5083b309a0ee96683f29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lift the boundary corrections to the volume time derivatives in the specified direction.  <a href="namespaceevolution_1_1dg.html#a79b97574b39a5083b309a0ee96683f29">More...</a><br /></td></tr>
+<tr class="separator:a79b97574b39a5083b309a0ee96683f29"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae9abe34e309e33f6ca7717dfb6760574"><td class="memTemplParams" colspan="2">template&lt;size_t Dim, typename DtTagsList , typename BoundaryCorrectionTagsList &gt; </td></tr>
+<tr class="memitem:ae9abe34e309e33f6ca7717dfb6760574"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceevolution_1_1dg.html#ae9abe34e309e33f6ca7717dfb6760574">lift_boundary_terms_gauss_points</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; DtTagsList &gt; * &gt; dt_vars, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;volume_det_inv_jacobian, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;volume_mesh, const size_t dimension, const Variables&lt; BoundaryCorrectionTagsList &gt; &amp;upper_boundary_corrections, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;upper_magnitude_of_face_normal, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;upper_face_det_jacobian, const Variables&lt; BoundaryCorrectionTagsList &gt; &amp;lower_boundary_corrections, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;lower_magnitude_of_face_normal, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;lower_face_det_jacobian) noexcept</td></tr>
+<tr class="memdesc:ae9abe34e309e33f6ca7717dfb6760574"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lift both the upper and lower (in logical coordinates) boundary corrections to the volume time derivatives in the specified logical dimension.  <a href="namespaceevolution_1_1dg.html#ae9abe34e309e33f6ca7717dfb6760574">More...</a><br /></td></tr>
+<tr class="separator:ae9abe34e309e33f6ca7717dfb6760574"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a136a7f6515c0fa410a0222544402f3ae"><td class="memTemplParams" colspan="2"><a id="a136a7f6515c0fa410a0222544402f3ae"></a>
+template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:a136a7f6515c0fa410a0222544402f3ae"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="classevolution_1_1dg_1_1MortarData.html">MortarData</a>&lt; Dim &gt; &amp;lhs, const <a class="el" href="classevolution_1_1dg_1_1MortarData.html">MortarData</a>&lt; Dim &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a136a7f6515c0fa410a0222544402f3ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0f7eba4c53d1d60fc6bb7d45a9a3696f"><td class="memTemplParams" colspan="2">template&lt;typename VolumeVarsTagsList , typename FaceVarsTagsList , size_t Dim&gt; </td></tr>
+<tr class="memitem:a0f7eba4c53d1d60fc6bb7d45a9a3696f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceevolution_1_1dg.html#a0f7eba4c53d1d60fc6bb7d45a9a3696f">project_contiguous_data_to_boundary</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; FaceVarsTagsList &gt; * &gt; face_fields, const Variables&lt; VolumeVarsTagsList &gt; &amp;volume_fields, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;volume_mesh, const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; &amp;direction) noexcept</td></tr>
+<tr class="memdesc:a0f7eba4c53d1d60fc6bb7d45a9a3696f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Projects a <code>Variables</code> of volume data to a contiguous subset of a boundary <code>Variables</code>  <a href="namespaceevolution_1_1dg.html#a0f7eba4c53d1d60fc6bb7d45a9a3696f">More...</a><br /></td></tr>
+<tr class="separator:a0f7eba4c53d1d60fc6bb7d45a9a3696f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8fc3d0ff50b3045efe95571114b3fab6"><td class="memTemplParams" colspan="2">template&lt;typename TagsToProjectList , typename VolumeVarsTagsList , typename FaceVarsTagsList , size_t Dim&gt; </td></tr>
+<tr class="memitem:a8fc3d0ff50b3045efe95571114b3fab6"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceevolution_1_1dg.html#a8fc3d0ff50b3045efe95571114b3fab6">project_tensors_to_boundary</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; FaceVarsTagsList &gt; * &gt; face_fields, const Variables&lt; VolumeVarsTagsList &gt; &amp;volume_fields, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;volume_mesh, const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; &amp;direction) noexcept</td></tr>
+<tr class="memdesc:a8fc3d0ff50b3045efe95571114b3fab6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Projects a subset of the tensors in the <code>volume_fields</code> onto the face.  <a href="namespaceevolution_1_1dg.html#a8fc3d0ff50b3045efe95571114b3fab6">More...</a><br /></td></tr>
+<tr class="separator:a8fc3d0ff50b3045efe95571114b3fab6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a93e0c903330a60f70d743560465c626f"><td class="memTemplParams" colspan="2">template&lt;typename Symm , typename IndexList , size_t Dim&gt; </td></tr>
+<tr class="memitem:a93e0c903330a60f70d743560465c626f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceevolution_1_1dg.html#a93e0c903330a60f70d743560465c626f">project_tensor_to_boundary</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Tensor&lt; <a class="el" href="classDataVector.html">DataVector</a>, Symm, IndexList &gt; * &gt; face_field, const Tensor&lt; <a class="el" href="classDataVector.html">DataVector</a>, Symm, IndexList &gt; &amp;volume_field, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;volume_mesh, const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; &amp;direction) noexcept</td></tr>
+<tr class="memdesc:a93e0c903330a60f70d743560465c626f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Projects a tensor to the face.  <a href="namespaceevolution_1_1dg.html#a93e0c903330a60f70d743560465c626f">More...</a><br /></td></tr>
+<tr class="separator:a93e0c903330a60f70d743560465c626f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a1158e5740f0b58509a78f79f5380342e"><td class="memTemplParams" colspan="2">template&lt;typename Metavars &gt; </td></tr>
+<tr class="memitem:a1158e5740f0b58509a78f79f5380342e"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceevolution_1_1dg.html#a1158e5740f0b58509a78f79f5380342e">using_subcell_v</a> = <a class="el" href="structevolution_1_1dg_1_1using__subcell.html">using_subcell</a>&lt;Metavars&gt;::value</td></tr>
+<tr class="memdesc:a1158e5740f0b58509a78f79f5380342e"><td class="mdescLeft">&#160;</td><td class="mdescRight">If <code>Metavars</code> has a <code>SubcellOptions</code> member struct and <code>SubcellOptions::subcell_enabled</code> is <code>true</code> then is <code>true</code>, otherwise <code>false</code>.  <a href="namespaceevolution_1_1dg.html#a1158e5740f0b58509a78f79f5380342e">More...</a><br /></td></tr>
+<tr class="separator:a1158e5740f0b58509a78f79f5380342e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Functionality for evolving hyperbolic partial differential equations using the discontinuous Galerkin method. </p>
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="a8fb5cb1752c2bcaa22265dac16c14cae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8fb5cb1752c2bcaa22265dac16c14cae">&#9670;&nbsp;</a></span>interpolate_dt_terms_gauss_points()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim, typename DtTagsList &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void evolution::dg::interpolate_dt_terms_gauss_points </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; DtTagsList &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>dt_vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>direction</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variables&lt; DtTagsList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>dt_corrections</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Interpolate the Bjorhus/time derivative corrections to the volume time derivatives in the specified direction. </p>
+<p>The general interpolation term (for the \(+\xi\)-dimension) is:</p>
+<p class="formulaDsp">
+\begin{align*} \partial_t u_{\alpha\breve{\imath}\breve{\jmath}\breve{k}}=\cdots +\ell^{\mathrm{Gauss-Lobatto}}_{N} \left(\xi_{\breve{\imath}}^{\mathrm{Gauss}}\right) \partial_t u^{\mathrm{BC}}_{\alpha\breve{\jmath}\breve{k}}, \end{align*}
+</p>
+<p>where \(\breve{\imath}\), \(\breve{\jmath}\), and \(\breve{k}\) are indices in the logical \(\xi\), \(\eta\), and \(\zeta\) dimensions. \(\partial_t u^{\mathrm{BC}}\) is the time derivative correction, and the function <a class="el" href="namespaceSpectral.html#a2f84590b99b233f1956d6561560727f3" title="Interpolates values from the boundary into the volume, which is needed when applying time derivative ...">Spectral::boundary_interpolation_term()</a> is used to compute and cache the terms from the lifting terms. </p>
+
+</div>
+</div>
+<a id="a79b97574b39a5083b309a0ee96683f29"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a79b97574b39a5083b309a0ee96683f29">&#9670;&nbsp;</a></span>lift_boundary_terms_gauss_points() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim, typename DtTagsList , typename BoundaryCorrectionTagsList &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void evolution::dg::lift_boundary_terms_gauss_points </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; DtTagsList &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>dt_vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_det_inv_jacobian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>direction</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variables&lt; BoundaryCorrectionTagsList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>boundary_corrections</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>magnitude_of_face_normal</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>face_det_jacobian</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Lift the boundary corrections to the volume time derivatives in the specified direction. </p>
+<p>The general lifting term (for the \(\xi\)-dimension) is:</p>
+<p class="formulaDsp">
+\begin{align*} \partial_t u_{\alpha\breve{\imath}\breve{\jmath}\breve{k}}=\cdots -\frac{\ell_{\breve{\imath}}\left(\xi=1\right)} {w_{\breve{\imath}}J_{\breve{\imath}\breve{\jmath}\breve{k}}} \left[J\sqrt{ \frac{\partial\xi}{\partial x^i} \gamma^{ij} \frac{\partial\xi}{\partial x^j}} \left(G_{\alpha} + D_{\alpha}\right) \right]_{\breve{\jmath}\breve{k}}\left(\xi=1\right), \end{align*}
+</p>
+<p>where \(\breve{\imath}\), \(\breve{\jmath}\), and \(\breve{k}\) are indices in the logical \(\xi\), \(\eta\), and \(\zeta\) dimensions. The \(G+D\) terms correspond to the <code>boundary_corrections</code> function argument, and the function <a class="el" href="namespaceSpectral.html#ad7fa735467cd61826e3513790369ffac" title="Terms used during the lifting portion of a discontinuous Galerkin scheme when using Gauss points.">Spectral::boundary_lifting_term()</a> is used to compute and cache the terms from the lifting terms \(\ell_{\breve{\imath}}(\xi=\pm1)/w_{\breve{\imath}}\).</p>
+<dl class="section note"><dt>Note</dt><dd>that normal vectors are pointing out of the element. </dd></dl>
+
+</div>
+</div>
+<a id="ae9abe34e309e33f6ca7717dfb6760574"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae9abe34e309e33f6ca7717dfb6760574">&#9670;&nbsp;</a></span>lift_boundary_terms_gauss_points() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim, typename DtTagsList , typename BoundaryCorrectionTagsList &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void evolution::dg::lift_boundary_terms_gauss_points </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; DtTagsList &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>dt_vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_det_inv_jacobian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>dimension</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variables&lt; BoundaryCorrectionTagsList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>upper_boundary_corrections</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>upper_magnitude_of_face_normal</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>upper_face_det_jacobian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variables&lt; BoundaryCorrectionTagsList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>lower_boundary_corrections</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>lower_magnitude_of_face_normal</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>lower_face_det_jacobian</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Lift both the upper and lower (in logical coordinates) boundary corrections to the volume time derivatives in the specified logical dimension. </p>
+<p>The upper and lower boundary corrections in the logical <code>dimension</code> are lifted together in order to reduce the amount of striding through data that is needed and to improve cache-friendliness.</p>
+<p>The general lifting term (for the \(\xi\)-dimension) is:</p>
+<p class="formulaDsp">
+\begin{align*} \partial_t u_{\alpha\breve{\imath}\breve{\jmath}\breve{k}}=\cdots -\frac{\ell_{\breve{\imath}}\left(\xi=1\right)} {w_{\breve{\imath}}J_{\breve{\imath}\breve{\jmath}\breve{k}}} \left[J\sqrt{ \frac{\partial\xi}{\partial x^i} \gamma^{ij} \frac{\partial\xi}{\partial x^j}} \left(G_{\alpha} + D_{\alpha}\right) \right]_{\breve{\jmath}\breve{k}}\left(\xi=1\right) - \frac{\ell_{\breve{\imath}}\left(\xi=-1\right)} {w_{\breve{\imath}}J_{\breve{\imath}\breve{\jmath}\breve{k}}} \left[J\sqrt{ \frac{\partial\xi}{\partial x^i} \gamma^{ij} \frac{\partial\xi}{\partial x^j}} \left(G_{\alpha} + D_{\alpha}\right) \right]_{\breve{\jmath}\breve{k}}\left(\xi=-1\right), \end{align*}
+</p>
+<p>where \(\breve{\imath}\), \(\breve{\jmath}\), and \(\breve{k}\) are indices in the logical \(\xi\), \(\eta\), and \(\zeta\) dimensions. The \(G+D\) terms correspond to the <code>upper_boundary_corrections</code> and <code>lower_boundary_corrections</code> function arguments, and the function <a class="el" href="namespaceSpectral.html#ad7fa735467cd61826e3513790369ffac" title="Terms used during the lifting portion of a discontinuous Galerkin scheme when using Gauss points.">Spectral::boundary_lifting_term()</a> is used to compute and cache the terms from the lifting terms \(\ell_{\breve{\imath}}(\xi=\pm1)/w_{\breve{\imath}}\).</p>
+<dl class="section note"><dt>Note</dt><dd>that normal vectors are pointing out of the element and therefore both terms have the same sign. </dd></dl>
+
+</div>
+</div>
+<a id="a0f7eba4c53d1d60fc6bb7d45a9a3696f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0f7eba4c53d1d60fc6bb7d45a9a3696f">&#9670;&nbsp;</a></span>project_contiguous_data_to_boundary()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename VolumeVarsTagsList , typename FaceVarsTagsList , size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void evolution::dg::project_contiguous_data_to_boundary </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; FaceVarsTagsList &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>face_fields</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variables&lt; VolumeVarsTagsList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_fields</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>direction</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Projects a <code>Variables</code> of volume data to a contiguous subset of a boundary <code>Variables</code> </p>
+<p>The <code>volume_fields</code> are all projected into the <code>face_fields</code> in the direction <code>direction</code>. The tags in <code>VolumeVarsTagsList</code> must be a contiguous subset of the tags in <code>FaceVarsTagsList</code>. That is, <code>FaceVarsTagsList</code> must be equivalent to <code>tmpl::append&lt;Before, VolumeVarsTagsList, After&gt;</code> where <code>Before</code> and <code>After</code> are <code>tmpl::list</code>s of arbitrary size. This is because the projection is applied on all of the tensor components of the volume variables and is written into contiguous memory on the boundary.</p>
+<p>In general, this function will be used for projecting all the evolved variables or all the volume fluxes to the faces. The function <code><a class="el" href="namespaceevolution_1_1dg.html#a8fc3d0ff50b3045efe95571114b3fab6" title="Projects a subset of the tensors in the volume_fields onto the face.">evolution::dg::project_tensors_to_boundary()</a></code> should be used for projecting individual tensors to the face.</p>
+<dl class="section note"><dt>Note</dt><dd>This function works for both Gauss and Gauss-Lobatto uniform meshes. </dd></dl>
+
+</div>
+</div>
+<a id="a93e0c903330a60f70d743560465c626f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a93e0c903330a60f70d743560465c626f">&#9670;&nbsp;</a></span>project_tensor_to_boundary()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Symm , typename IndexList , size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void evolution::dg::project_tensor_to_boundary </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Tensor&lt; <a class="el" href="classDataVector.html">DataVector</a>, Symm, IndexList &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>face_field</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; <a class="el" href="classDataVector.html">DataVector</a>, Symm, IndexList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_field</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>direction</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Projects a tensor to the face. </p>
+<dl class="section note"><dt>Note</dt><dd>This function works for both Gauss and Gauss-Lobatto uniform meshes. </dd></dl>
+
+</div>
+</div>
+<a id="a8fc3d0ff50b3045efe95571114b3fab6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8fc3d0ff50b3045efe95571114b3fab6">&#9670;&nbsp;</a></span>project_tensors_to_boundary()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename TagsToProjectList , typename VolumeVarsTagsList , typename FaceVarsTagsList , size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void evolution::dg::project_tensors_to_boundary </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; FaceVarsTagsList &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>face_fields</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variables&lt; VolumeVarsTagsList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_fields</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>direction</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Projects a subset of the tensors in the <code>volume_fields</code> onto the face. </p>
+<p>The tensors to project are listed in the <code>TagsToProjectList</code>.</p>
+<dl class="section note"><dt>Note</dt><dd>This function works for both Gauss and Gauss-Lobatto uniform meshes. </dd></dl>
+
+</div>
+</div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a id="a1158e5740f0b58509a78f79f5380342e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1158e5740f0b58509a78f79f5380342e">&#9670;&nbsp;</a></span>using_subcell_v</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Metavars &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool evolution::dg::using_subcell_v = <a class="el" href="structevolution_1_1dg_1_1using__subcell.html">using_subcell</a>&lt;Metavars&gt;::value</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>If <code>Metavars</code> has a <code>SubcellOptions</code> member struct and <code>SubcellOptions::subcell_enabled</code> is <code>true</code> then is <code>true</code>, otherwise <code>false</code>. </p>
+<dl class="section note"><dt>Note</dt><dd>This check is intentionally not inside the <code>DgSubcell</code> library so that executables that do not use subcell do not need to link against it. </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

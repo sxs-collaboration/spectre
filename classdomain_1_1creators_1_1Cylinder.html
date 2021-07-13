@@ -1,0 +1,380 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::creators::Cylinder Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1creators.html">creators</a></li><li class="navelem"><a class="el" href="classdomain_1_1creators_1_1Cylinder.html">Cylinder</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classdomain_1_1creators_1_1Cylinder-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::creators::Cylinder Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Create a 3D <a class="el" href="classDomain.html" title="A wrapper around a vector of Blocks that represent the computational domain.">Domain</a> in the shape of a cylinder where the cross-section is a square surrounded by four two-dimensional wedges (see <code>Wedge</code>).  
+ <a href="classdomain_1_1creators_1_1Cylinder.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Cylinder_8hpp_source.html">Cylinder.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1BoundaryConditions.html">BoundaryConditions</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1HeightPartitioning.html">HeightPartitioning</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1InitialGridPoints.html">InitialGridPoints</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1InitialRefinement.html">InitialRefinement</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1InnerRadius.html">InnerRadius</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1IsPeriodicInZ.html">IsPeriodicInZ</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1LowerBound.html">LowerBound</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1LowerBoundaryCondition.html">LowerBoundaryCondition</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1MantleBoundaryCondition.html">MantleBoundaryCondition</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1OuterRadius.html">OuterRadius</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1RadialDistribution.html">RadialDistribution</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1RadialPartitioning.html">RadialPartitioning</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1UpperBound.html">UpperBound</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1UpperBoundaryCondition.html">UpperBoundaryCondition</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1UseEquiangularMap.html">UseEquiangularMap</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ab8d5d2e5edffb920357e54802bfdccdf"><td class="memItemLeft" align="right" valign="top"><a id="ab8d5d2e5edffb920357e54802bfdccdf"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>maps_list</b> = tmpl::list&lt; <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1ProductOf3Maps.html">CoordinateMaps::ProductOf3Maps</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a> &gt; &gt;, <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1ProductOf3Maps.html">CoordinateMaps::ProductOf3Maps</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">CoordinateMaps::Equiangular</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">CoordinateMaps::Equiangular</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a> &gt; &gt;, <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1ProductOf2Maps.html">CoordinateMaps::ProductOf2Maps</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1Wedge.html">CoordinateMaps::Wedge</a>&lt; 2 &gt;, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a> &gt; &gt;&gt;</td></tr>
+<tr class="separator:ab8d5d2e5edffb920357e54802bfdccdf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a801ca26c8da4b338c00afeca0ebfeb36"><td class="memTemplParams" colspan="2"><a id="a801ca26c8da4b338c00afeca0ebfeb36"></a>
+template&lt;typename Metavariables &gt; </td></tr>
+<tr class="memitem:a801ca26c8da4b338c00afeca0ebfeb36"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>options</b> = tmpl::append&lt; tmpl::list&lt; <a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1InnerRadius.html">InnerRadius</a>, <a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1OuterRadius.html">OuterRadius</a>, <a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1LowerBound.html">LowerBound</a>, <a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1UpperBound.html">UpperBound</a> &gt;, tmpl::conditional_t&lt; domain::BoundaryConditions::has_boundary_conditions_base_v&lt; typename Metavariables::system &gt;, tmpl::list&lt; <a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1LowerBoundaryCondition.html">LowerBoundaryCondition</a>&lt; <a class="el" href="namespacedomain_1_1BoundaryConditions.html#afd88b7d4030a22e226b734dd65e6990b">domain::BoundaryConditions::get_boundary_conditions_base</a>&lt; typename Metavariables::system &gt; &gt;, <a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1UpperBoundaryCondition.html">UpperBoundaryCondition</a>&lt; <a class="el" href="namespacedomain_1_1BoundaryConditions.html#afd88b7d4030a22e226b734dd65e6990b">domain::BoundaryConditions::get_boundary_conditions_base</a>&lt; typename Metavariables::system &gt; &gt;, <a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1MantleBoundaryCondition.html">MantleBoundaryCondition</a>&lt; <a class="el" href="namespacedomain_1_1BoundaryConditions.html#afd88b7d4030a22e226b734dd65e6990b">domain::BoundaryConditions::get_boundary_conditions_base</a>&lt; typename Metavariables::system &gt; &gt;&gt;, tmpl::list&lt; <a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1IsPeriodicInZ.html">IsPeriodicInZ</a> &gt; &gt;, tmpl::list&lt; <a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1InitialRefinement.html">InitialRefinement</a>, <a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1InitialGridPoints.html">InitialGridPoints</a>, <a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1UseEquiangularMap.html">UseEquiangularMap</a>, <a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1RadialPartitioning.html">RadialPartitioning</a>, <a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1HeightPartitioning.html">HeightPartitioning</a>, <a class="el" href="structdomain_1_1creators_1_1Cylinder_1_1RadialDistribution.html">RadialDistribution</a> &gt; &gt;</td></tr>
+<tr class="separator:a801ca26c8da4b338c00afeca0ebfeb36"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a0e24b6bca89f931028e30e668b58331f"><td class="memItemLeft" align="right" valign="top"><a id="a0e24b6bca89f931028e30e668b58331f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Cylinder</b> (double inner_radius, double outer_radius, double lower_bound, double upper_bound, bool is_periodic_in_z, const typename <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/variant.html">InitialRefinement::type</a> &amp;initial_refinement, const typename <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/variant.html">InitialGridPoints::type</a> &amp;initial_number_of_grid_points, bool use_equiangular_map, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt; radial_partitioning={}, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt; height_partitioning={}, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="namespacedomain_1_1CoordinateMaps.html#af1d0db78c5b853bb6b4870b87cd91053">domain::CoordinateMaps::Distribution</a> &gt; radial_distribution={domain::CoordinateMaps::Distribution::Linear}, const <a class="el" href="structOptions_1_1Context.html">Options::Context</a> &amp;context={})</td></tr>
+<tr class="separator:a0e24b6bca89f931028e30e668b58331f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a16348efe06b696d3de4ec93602a7dcba"><td class="memItemLeft" align="right" valign="top"><a id="a16348efe06b696d3de4ec93602a7dcba"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Cylinder</b> (double inner_radius, double outer_radius, double lower_bound, double upper_bound, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a> &gt; lower_boundary_condition, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a> &gt; upper_boundary_condition, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a> &gt; mantle_boundary_condition, const typename <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/variant.html">InitialRefinement::type</a> &amp;initial_refinement, const typename <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/variant.html">InitialGridPoints::type</a> &amp;initial_number_of_grid_points, bool use_equiangular_map, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt; radial_partitioning={}, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt; height_partitioning={}, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="namespacedomain_1_1CoordinateMaps.html#af1d0db78c5b853bb6b4870b87cd91053">domain::CoordinateMaps::Distribution</a> &gt; radial_distribution={domain::CoordinateMaps::Distribution::Linear}, const <a class="el" href="structOptions_1_1Context.html">Options::Context</a> &amp;context={})</td></tr>
+<tr class="separator:a16348efe06b696d3de4ec93602a7dcba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25d065c006f64b159ed045af4aa3a98f"><td class="memItemLeft" align="right" valign="top"><a id="a25d065c006f64b159ed045af4aa3a98f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Cylinder</b> (const <a class="el" href="classdomain_1_1creators_1_1Cylinder.html">Cylinder</a> &amp;)=delete</td></tr>
+<tr class="separator:a25d065c006f64b159ed045af4aa3a98f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80083bd10318153d46c578d4f32a5c34"><td class="memItemLeft" align="right" valign="top"><a id="a80083bd10318153d46c578d4f32a5c34"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Cylinder</b> (<a class="el" href="classdomain_1_1creators_1_1Cylinder.html">Cylinder</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a80083bd10318153d46c578d4f32a5c34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d44e2d1c5586694b75e9f4448d8491d"><td class="memItemLeft" align="right" valign="top"><a id="a4d44e2d1c5586694b75e9f4448d8491d"></a>
+<a class="el" href="classdomain_1_1creators_1_1Cylinder.html">Cylinder</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1creators_1_1Cylinder.html">Cylinder</a> &amp;)=delete</td></tr>
+<tr class="separator:a4d44e2d1c5586694b75e9f4448d8491d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a02c42501060700c7ea1b8f11ba46ec04"><td class="memItemLeft" align="right" valign="top"><a id="a02c42501060700c7ea1b8f11ba46ec04"></a>
+<a class="el" href="classdomain_1_1creators_1_1Cylinder.html">Cylinder</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1creators_1_1Cylinder.html">Cylinder</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a02c42501060700c7ea1b8f11ba46ec04"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f096c3b3c0a912f163e2b1fe35b476d"><td class="memItemLeft" align="right" valign="top"><a id="a9f096c3b3c0a912f163e2b1fe35b476d"></a>
+<a class="el" href="classDomain.html">Domain</a>&lt; 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>create_domain</b> () const noexcept override</td></tr>
+<tr class="separator:a9f096c3b3c0a912f163e2b1fe35b476d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe9854908d7acf079f31434ef11cd5cf"><td class="memItemLeft" align="right" valign="top"><a id="afe9854908d7acf079f31434ef11cd5cf"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, 3 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>initial_extents</b> () const noexcept override</td></tr>
+<tr class="separator:afe9854908d7acf079f31434ef11cd5cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba0a12f26ffe2e0b9007957857a00045"><td class="memItemLeft" align="right" valign="top"><a id="aba0a12f26ffe2e0b9007957857a00045"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, 3 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>initial_refinement_levels</b> () const noexcept override</td></tr>
+<tr class="separator:aba0a12f26ffe2e0b9007957857a00045"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classDomainCreator"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classDomainCreator')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classDomainCreator.html">DomainCreator&lt; 3 &gt;</a></td></tr>
+<tr class="memitem:a7982cfa2ee131552ace2a80e372b7b1a inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a7982cfa2ee131552ace2a80e372b7b1a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>DomainCreator</b> (const <a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;)=delete</td></tr>
+<tr class="separator:a7982cfa2ee131552ace2a80e372b7b1a inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ceb4d3fea0600788dc3b4bc576ce0cb inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a5ceb4d3fea0600788dc3b4bc576ce0cb"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>DomainCreator</b> (<a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a5ceb4d3fea0600788dc3b4bc576ce0cb inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a7a8b3ba0da17d6418c0b8bcb9e58fe inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a6a7a8b3ba0da17d6418c0b8bcb9e58fe"></a>
+<a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;)=delete</td></tr>
+<tr class="separator:a6a7a8b3ba0da17d6418c0b8bcb9e58fe inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d42c312fdc02e83f685e0c6267f8192 inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a1d42c312fdc02e83f685e0c6267f8192"></a>
+<a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a1d42c312fdc02e83f685e0c6267f8192 inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a193c03e0686458565ff5ac7d58e9ae22 inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a193c03e0686458565ff5ac7d58e9ae22"></a>
+virtual <a class="el" href="classDomain.html">Domain</a>&lt; VolumeDim &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>create_domain</b> () const=0</td></tr>
+<tr class="separator:a193c03e0686458565ff5ac7d58e9ae22 inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b6216ea7714bfb455b771e4f08ae759 inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a1b6216ea7714bfb455b771e4f08ae759"></a>
+virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, VolumeDim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDomainCreator.html#a1b6216ea7714bfb455b771e4f08ae759">initial_extents</a> () const noexcept=0</td></tr>
+<tr class="memdesc:a1b6216ea7714bfb455b771e4f08ae759 inherit pub_methods_classDomainCreator"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain the initial grid extents of the <a class="el" href="classElement.html">Element</a>s in each block. <br /></td></tr>
+<tr class="separator:a1b6216ea7714bfb455b771e4f08ae759 inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b7ffedcf9f508874dde546b5418349f inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a2b7ffedcf9f508874dde546b5418349f"></a>
+virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, VolumeDim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDomainCreator.html#a2b7ffedcf9f508874dde546b5418349f">initial_refinement_levels</a> () const noexcept=0</td></tr>
+<tr class="memdesc:a2b7ffedcf9f508874dde546b5418349f inherit pub_methods_classDomainCreator"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain the initial refinement levels of the blocks. <br /></td></tr>
+<tr class="separator:a2b7ffedcf9f508874dde546b5418349f inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a686f011a0c4399253e62474e1549d8e7 inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a686f011a0c4399253e62474e1549d8e7"></a>
+virtual auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDomainCreator.html#a686f011a0c4399253e62474e1549d8e7">functions_of_time</a> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;</td></tr>
+<tr class="memdesc:a686f011a0c4399253e62474e1549d8e7 inherit pub_methods_classDomainCreator"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the functions of time used for moving meshes. <br /></td></tr>
+<tr class="separator:a686f011a0c4399253e62474e1549d8e7 inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aeb2122ef4ba69286b775da7def3e1973"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:aeb2122ef4ba69286b775da7def3e1973"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Create a 3D <a class="el" href="classDomain.html" title="A wrapper around a vector of Blocks that represent the computational domain.">Domain</a> in the shape of a cylinder where the cross-section is a square surrounded by four two-dimensional wedges (see <code>Wedge</code>). </p>
+<p>The outer shell can be split into sub-shells and the cylinder can be split into disks along its height. The block numbering starts at the inner square and goes counter-clockwise, starting with the eastern wedge (+x-direction), through consecutive shells, then repeats this pattern for all layers bottom to top.</p>
+<div class="image">
+<img src="Cylinder.png" alt=""/>
+<div class="caption">
+The Cylinder Domain.</div></div>
+ </div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="aeb2122ef4ba69286b775da7def3e1973"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeb2122ef4ba69286b775da7def3e1973">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> domain::creators::Cylinder::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      <span class="stringliteral">&quot;Creates a right circular Cylinder with a square prism surrounded by \n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;wedges. \n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;The cylinder can be partitioned radially into multiple cylindrical \n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;shells as well as partitioned along the cylinder&#39;s height into \n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;multiple disks. Including this partitioning, the number of Blocks is \n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;given by (1 + 4*(1+n_s)) * (1+n_z), where n_s is the \n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;length of RadialPartitioning and n_z the length of \n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;HeightPartitioning. The block numbering starts at the inner square \n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;and goes counter-clockwise, starting with the eastern wedge \n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;(+x-direction) through consecutive shells, then repeats this pattern \n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;for all layers bottom to top. The wedges are named as follows: \n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;  +x-direction: East \n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;  +y-direction: North \n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;  -x-direction: West \n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;  -y-direction: South \n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;The circularity of the wedge changes from 0 to 1 within the first \n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;shell.\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;Equiangular coordinates give better gridpoint spacings in the angular\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;direction, while equidistant coordinates give better gridpoint\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;spacings in the center block.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/Creators/<a class="el" href="Cylinder_8hpp_source.html">Cylinder.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,1146 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: tests/Unit/Helpers/DataStructures/VectorImplTestHelper.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_33df814919e476f9d56dccef9b24e276.html">tests</a></li><li class="navelem"><a class="el" href="dir_38113a4c235494bd05bb19f85d006940.html">Unit</a></li><li class="navelem"><a class="el" href="dir_b87ca7a475176b712f1482b79974072f.html">Helpers</a></li><li class="navelem"><a class="el" href="dir_860ea4fd035d69af0eadd63916cc8de7.html">DataStructures</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">VectorImplTestHelper.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/algorithm.html">algorithm</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/array.html">array</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/functional.html">functional</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/map.html">map</a>&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a>&gt;</span>  <span class="comment">// IWYU pragma: keep</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/random.html">random</a>&gt;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/tuple.html">tuple</a>&gt;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/variant.html">variant</a>&gt;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a>&gt;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160; </div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;DataStructures/VectorImpl.hpp&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Framework_2TestHelpers_8hpp.html">Framework/TestHelpers.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TestingFramework_8hpp.html">Framework/TestingFramework.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="MakeWithRandomValues_8hpp.html">Helpers/DataStructures/MakeWithRandomValues.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;Utilities/Algorithm.hpp&quot;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DereferenceWrapper_8hpp.html">Utilities/DereferenceWrapper.hpp</a>&quot;</span>  <span class="comment">// IWYU pragma: keep</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;Utilities/Math.hpp&quot;</span>  <span class="comment">// IWYU pragma: keep</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Requires_8hpp.html">Utilities/Requires.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Tuple_8hpp.html">Utilities/Tuple.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#include &quot;Utilities/TypeTraits.hpp&quot;</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#include &quot;Utilities/TypeTraits/GetFundamentalType.hpp&quot;</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#include &quot;Utilities/TypeTraits/IsComplexOfFundamental.hpp&quot;</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160; </div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="keyword">namespace </span>TestHelpers {</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="keyword">namespace </span><a class="code" href="classVectorImpl.html">VectorImpl</a> {</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment">/// \ingroup TestingFrameworkGroup</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment">/// \brief test construction and assignment of a `VectorType` with a `ValueType`</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> VectorType, <span class="keyword">typename</span> ValueType&gt;</div>
+<div class="line"><a name="l00039"></a><span class="lineno"><a class="line" href="group__TestingFrameworkGroup.html#ga8a1befa0bb8af437c081a992f7dc11e8">   39</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__TestingFrameworkGroup.html#ga8a1befa0bb8af437c081a992f7dc11e8">vector_test_construct_and_assign</a>(</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    tt::get_fundamental_type_t&lt;ValueType&gt; low =</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;        tt::get_fundamental_type_t&lt;ValueType&gt;{-100.0},</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    tt::get_fundamental_type_t&lt;ValueType&gt; high =</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        tt::get_fundamental_type_t&lt;ValueType&gt;{100.0}) noexcept {</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  <a class="code" href="group__TestingFrameworkGroup.html#gad7f766439113f958bf4f8ba0f53c4881">MAKE_GENERATOR</a>(gen);</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  <a class="code" href="classUniformCustomDistribution.html">UniformCustomDistribution&lt;tt::get_fundamental_type_t&lt;ValueType&gt;</a>&gt; dist{low,</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;                                                                        high};</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  <a class="code" href="classUniformCustomDistribution.html">UniformCustomDistribution&lt;size_t&gt;</a> sdist{2, 20};</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a> = sdist(gen);</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;  <span class="keyword">const</span> VectorType size_constructed{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>};</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;  CHECK(size_constructed.size() == size);</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> generated_value1 = make_with_random_values&lt;ValueType&gt;(</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;      <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;gen), <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;dist));</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160; </div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;  <span class="keyword">const</span> VectorType value_size_constructed{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>, generated_value1};</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;  CHECK(value_size_constructed.size() == size);</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;  <a class="code" href="namespacealg.html#af893873f65d38df2edd4999798524cdb">alg::for_each</a>(value_size_constructed, [</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    generated_value1, &amp;value_size_constructed</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;  ](<span class="keyword">typename</span> VectorType::value_type element) noexcept {</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    CAPTURE(value_size_constructed);</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    CHECK(element == generated_value1);</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;  });</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;  <span class="comment">// random generation must use `make_with_random_values`, because stored value</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;  <span class="comment">// in vector type might be a non-fundamental type.</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> generated_value2 = make_with_random_values&lt;ValueType&gt;(</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;      <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;gen), <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;dist));</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> generated_value3 = make_with_random_values&lt;ValueType&gt;(</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;      <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;gen), <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;dist));</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160; </div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;  VectorType initializer_list_constructed{</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;      {<span class="keyword">static_cast&lt;</span>typename VectorType::value_type<span class="keyword">&gt;</span>(generated_value2),</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;       <span class="keyword">static_cast&lt;</span>typename VectorType::value_type<span class="keyword">&gt;</span>(generated_value3)}};</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;  CHECK(initializer_list_constructed.size() == 2);</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;  CHECK(initializer_list_constructed.is_owning());</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;  CHECK(<a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(initializer_list_constructed, 0) == generated_value2);</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;  CHECK(<a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(initializer_list_constructed, 1) == generated_value3);</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; </div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;  <span class="comment">// check equality operators do not perform approximate comparison</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;  CHECK(SINGLE_ARG(</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;      initializer_list_constructed ==</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;      VectorType{</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;          {<span class="keyword">static_cast&lt;</span>typename VectorType::value_type<span class="keyword">&gt;</span>(generated_value2),</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;           <span class="keyword">static_cast&lt;</span>typename VectorType::value_type<span class="keyword">&gt;</span>(generated_value3)}}));</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;  CHECK_FALSE(SINGLE_ARG(</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;      initializer_list_constructed !=</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;      VectorType{</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;          {<span class="keyword">static_cast&lt;</span>typename VectorType::value_type<span class="keyword">&gt;</span>(generated_value2),</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;           <span class="keyword">static_cast&lt;</span>typename VectorType::value_type<span class="keyword">&gt;</span>(generated_value3)}}));</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;  <span class="keyword">const</span> VectorType close = (1.0 + 1.0e-14) * initializer_list_constructed;</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;  CHECK(initializer_list_constructed != close);</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;  CHECK_FALSE(initializer_list_constructed == close);</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;  <a class="code" href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">CHECK_ITERABLE_APPROX</a>(initializer_list_constructed, close);</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160; </div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;  CHECK(</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;      initializer_list_constructed !=</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;      (initializer_list_constructed + 1.0e-11 * initializer_list_constructed));</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;  CHECK_FALSE(</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;      initializer_list_constructed ==</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;      (initializer_list_constructed + 1.0e-11 * initializer_list_constructed));</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;  CHECK(initializer_list_constructed !=</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;        <span class="keyword">static_cast&lt;</span>typename VectorType::value_type<span class="keyword">&gt;</span>(generated_value2));</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;  CHECK(<span class="keyword">static_cast&lt;</span>typename VectorType::value_type<span class="keyword">&gt;</span>(generated_value2) !=</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;        initializer_list_constructed);</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;  CHECK_FALSE(initializer_list_constructed ==</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;              <span class="keyword">static_cast&lt;</span>typename VectorType::value_type<span class="keyword">&gt;</span>(generated_value2));</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;  CHECK_FALSE(<span class="keyword">static_cast&lt;</span>typename VectorType::value_type<span class="keyword">&gt;</span>(generated_value2) ==</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;              initializer_list_constructed);</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160; </div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;  CHECK(</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;      (initializer_list_constructed - 1.0e-11 * initializer_list_constructed) !=</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;      (initializer_list_constructed + 1.0e-11 * initializer_list_constructed));</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;  CHECK_FALSE(</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;      (initializer_list_constructed - 1.0e-11 * initializer_list_constructed) ==</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;      (initializer_list_constructed + 1.0e-11 * initializer_list_constructed));</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160; </div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;  <span class="comment">// NOLINTNEXTLINE(modernize-avoid-c-arrays)</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;  <span class="keyword">typename</span> VectorType::value_type raw_ptr[2] = {generated_value2,</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;                                                generated_value3};</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;  <span class="keyword">const</span> VectorType pointer_size_constructed{</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;      <span class="keyword">static_cast&lt;</span>typename VectorType::value_type*<span class="keyword">&gt;</span>(raw_ptr), 2};</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;  CHECK(initializer_list_constructed == pointer_size_constructed);</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;  CHECK_FALSE(initializer_list_constructed != pointer_size_constructed);</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160; </div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;  <a class="code" href="Framework_2TestHelpers_8hpp.html#a6a606665331765067f231cf230f7b1ca">test_copy_semantics</a>(initializer_list_constructed);</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;  <span class="keyword">auto</span> initializer_list_constructed_copy = initializer_list_constructed;</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;  CHECK(initializer_list_constructed_copy.is_owning());</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;  CHECK(initializer_list_constructed_copy == pointer_size_constructed);</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;  <a class="code" href="Framework_2TestHelpers_8hpp.html#aaddd14aaf8ff9752cb1e8f13dcba0ef3">test_move_semantics</a>(std::move(initializer_list_constructed),</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;                      initializer_list_constructed_copy);</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160; </div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;  VectorType move_assignment_initialized;</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;  move_assignment_initialized = std::move(initializer_list_constructed_copy);</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;  CHECK(move_assignment_initialized.is_owning());</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160; </div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;  VectorType move_constructed{std::move(move_assignment_initialized)};</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;  CHECK(move_constructed.is_owning());</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;  CHECK(move_constructed == pointer_size_constructed);</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160; </div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;  <span class="comment">// clang-tidy has performance complaints, and we&#39;re checking functionality</span></div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;  <span class="keyword">const</span> VectorType copy_constructed{move_constructed};  <span class="comment">// NOLINT</span></div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;  CHECK(copy_constructed.is_owning());</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;  CHECK(copy_constructed == pointer_size_constructed);</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160; </div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;  <span class="comment">// check the destructive resize utility</span></div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;  <span class="keyword">const</span> VectorType destructive_resize_check_copy = move_constructed;</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;  move_constructed.destructive_resize(move_constructed.size());</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;  CHECK(move_constructed == destructive_resize_check_copy);</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;  move_constructed.destructive_resize(move_constructed.size() + 1);</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;  CHECK(move_constructed != destructive_resize_check_copy);</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;  CHECK(move_constructed.size() == destructive_resize_check_copy.size() + 1);</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;}</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;<span class="comment">/// \ingroup TestingFrameworkGroup</span></div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;<span class="comment">/// \brief test the serialization of a `VectorType` constructed with a</span></div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;<span class="comment">/// `ValueType`</span></div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> VectorType, <span class="keyword">typename</span> ValueType&gt;</div>
+<div class="line"><a name="l00159"></a><span class="lineno"><a class="line" href="group__TestingFrameworkGroup.html#ga1107a6a611543b70cc5f895b835a367e">  159</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__TestingFrameworkGroup.html#ga1107a6a611543b70cc5f895b835a367e">vector_test_serialize</a>(tt::get_fundamental_type_t&lt;ValueType&gt; low =</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;                               tt::get_fundamental_type_t&lt;ValueType&gt;{-100.0},</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;                           tt::get_fundamental_type_t&lt;ValueType&gt; high =</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;                               tt::get_fundamental_type_t&lt;ValueType&gt;{</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;                                   100.0}) noexcept {</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;  <a class="code" href="group__TestingFrameworkGroup.html#gad7f766439113f958bf4f8ba0f53c4881">MAKE_GENERATOR</a>(gen);</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;  <a class="code" href="classUniformCustomDistribution.html">UniformCustomDistribution&lt;tt::get_fundamental_type_t&lt;ValueType&gt;</a>&gt; dist{low,</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;                                                                        high};</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;  <a class="code" href="classUniformCustomDistribution.html">UniformCustomDistribution&lt;size_t&gt;</a> sdist{2, 20};</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160; </div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;  <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a> = sdist(gen);</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;  VectorType vector_test{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>};</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;  VectorType vector_control{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>};</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;  VectorType vector_ref;</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> start_value = make_with_random_values&lt;ValueType&gt;(</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;      <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;gen), <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;dist));</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> value_difference = make_with_random_values&lt;ValueType&gt;(</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;      <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;gen), <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;dist));</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;  <span class="comment">// generate_series is used to generate a pair of equivalent, but independently</span></div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;  <span class="comment">// constructed, data sets to fill the vectors with.</span></div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;  ValueType current_value = start_value;</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> generate_series = [&amp;current_value, value_difference ]() noexcept {</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;    <span class="keywordflow">return</span> current_value += value_difference;</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;  };</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;  std::generate(vector_test.begin(), vector_test.end(), generate_series);</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;  current_value = start_value;</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;  std::generate(vector_control.begin(), vector_control.end(), generate_series);</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;  <span class="comment">// checks the vectors have been constructed as expected</span></div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;  CHECK(vector_control == vector_test);</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;  CHECK(vector_test.is_owning());</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;  CHECK(vector_control.is_owning());</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;  <span class="keyword">const</span> VectorType serialized_vector_test =</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;      <a class="code" href="group__TestingFrameworkGroup.html#ga2895e57f4cacd63d2549655bb29bba7b">serialize_and_deserialize</a>(vector_test);</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;  <span class="comment">// check that the vector is unaltered by serialize_and_deserialize</span></div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;  CHECK(vector_control == vector_test);</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;  CHECK(serialized_vector_test == vector_control);</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;  CHECK(serialized_vector_test.is_owning());</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;  CHECK(serialized_vector_test.data() != vector_test.data());</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;  CHECK(vector_test.is_owning());</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;}</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;<span class="comment">/// \ingroup TestingFrameworkGroup</span></div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;<span class="comment">/// \brief test the construction and move of a reference `VectorType`</span></div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;<span class="comment">/// constructed with a `ValueType`</span></div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> VectorType, <span class="keyword">typename</span> ValueType&gt;</div>
+<div class="line"><a name="l00204"></a><span class="lineno"><a class="line" href="group__TestingFrameworkGroup.html#ga2b21aa8a8ec3ed4756193ec01a04d105">  204</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__TestingFrameworkGroup.html#ga2b21aa8a8ec3ed4756193ec01a04d105">vector_test_ref</a>(tt::get_fundamental_type_t&lt;ValueType&gt; low =</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;                         tt::get_fundamental_type_t&lt;ValueType&gt;{-100.0},</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;                     tt::get_fundamental_type_t&lt;ValueType&gt; high =</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;                         tt::get_fundamental_type_t&lt;ValueType&gt;{</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;                             100.0}) noexcept {</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;  <a class="code" href="group__TestingFrameworkGroup.html#gad7f766439113f958bf4f8ba0f53c4881">MAKE_GENERATOR</a>(gen);</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;  <a class="code" href="classUniformCustomDistribution.html">UniformCustomDistribution&lt;tt::get_fundamental_type_t&lt;ValueType&gt;</a>&gt; dist{low,</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;                                                                        high};</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;  <a class="code" href="classUniformCustomDistribution.html">UniformCustomDistribution&lt;size_t&gt;</a> sdist{2, 20};</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160; </div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;  <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a> = sdist(gen);</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;  <span class="keyword">auto</span> original_vector = make_with_random_values&lt;VectorType&gt;(</div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;      <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;gen), <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;dist), VectorType{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>});</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160; </div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;  {</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;    INFO(<span class="stringliteral">&quot;Check construction, copy, move, and ownership of reference vectors&quot;</span>)</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;    VectorType ref_vector;</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;    ref_vector.set_data_ref(&amp;original_vector);</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;    CHECK_FALSE(ref_vector.is_owning());</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;    CHECK(original_vector.is_owning());</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;    CHECK(ref_vector.data() == original_vector.data());</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160; </div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;    const VectorType data_check{original_vector};</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;    CHECK(ref_vector.size() == size);</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;    CHECK(ref_vector == data_check);</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;    <a class="code" href="Framework_2TestHelpers_8hpp.html#a6a606665331765067f231cf230f7b1ca">test_copy_semantics</a>(ref_vector);</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160; </div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;    VectorType ref_vector_copy;</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;    ref_vector_copy.set_data_ref(&amp;ref_vector);</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;    <a class="code" href="Framework_2TestHelpers_8hpp.html#aaddd14aaf8ff9752cb1e8f13dcba0ef3">test_move_semantics</a>(std::move(ref_vector), ref_vector_copy);</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;    VectorType move_assignment_initialized;</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;    move_assignment_initialized = std::move(ref_vector_copy);</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;    CHECK(not move_assignment_initialized.is_owning());</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;    <span class="keyword">const</span> VectorType move_constructed{std::move(move_assignment_initialized)};</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;    CHECK(not move_constructed.is_owning());</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;    <span class="comment">// check the ability to make a const view</span></div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;    <span class="keyword">const</span> VectorType const_view;</div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;    <a class="code" href="group__DataStructuresGroup.html#gad3e9dbf822156ded56a56203bfde2076">make_const_view</a>(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;const_view), move_constructed, 1, size - 1);</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;    CHECK(const_view.size() == size - 1);</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;    CHECK(const_view.data() == move_constructed.data() + 1);</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;  }</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;  {</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;    INFO(<span class="stringliteral">&quot;Check move acts appropriately on both source and target refs&quot;</span>)</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;    VectorType ref_original_vector;</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;    ref_original_vector.set_data_ref(&amp;original_vector);</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;    auto generated_vector = <a class="code" href="group__TestingFrameworkGroup.html#ga7f98af1ba7b65811cf35536db6259f88">make_with_random_values</a>&lt;VectorType&gt;(</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;        <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;gen), <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;dist), VectorType{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>});</div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;    <span class="keyword">const</span> VectorType generated_vector_copy = generated_vector;</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;    ref_original_vector = std::move(generated_vector);</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;    <span class="comment">// clang-tidy : Intentionally testing use after move</span></div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;    CHECK(original_vector != generated_vector);  <span class="comment">// NOLINT</span></div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;    CHECK(original_vector == generated_vector_copy);</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;<span class="comment">// Intentionally testing self-move</span></div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;<span class="preprocessor">#ifdef __clang__</span></div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;<span class="preprocessor">#pragma GCC diagnostic push</span></div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;<span class="preprocessor">#pragma GCC diagnostic ignored &quot;-Wself-move&quot;</span></div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;<span class="preprocessor">#endif  // defined(__clang__)</span></div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;    ref_original_vector = std::move(ref_original_vector);</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;<span class="preprocessor">#ifdef __clang__</span></div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;<span class="preprocessor">#pragma GCC diagnostic pop</span></div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;<span class="preprocessor">#endif  // defined(__clang__)</span></div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;    CHECK(original_vector == generated_vector_copy);</div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;    <span class="comment">// clang-tidy: false positive, used after it was moved</span></div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;    <span class="keyword">const</span> VectorType data_check_vector = ref_original_vector;  <span class="comment">// NOLINT</span></div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;    CHECK(data_check_vector == generated_vector_copy);</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;  }</div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;  {</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;    INFO(<span class="stringliteral">&quot;Check math affects both data vectors which share a ref&quot;</span>)</div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;    const auto generated_value1 = <a class="code" href="group__TestingFrameworkGroup.html#ga7f98af1ba7b65811cf35536db6259f88">make_with_random_values</a>&lt;ValueType&gt;(</div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;        <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;gen), <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;dist));</div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;    const auto generated_value2 = <a class="code" href="group__TestingFrameworkGroup.html#ga7f98af1ba7b65811cf35536db6259f88">make_with_random_values</a>&lt;ValueType&gt;(</div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;        <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;gen), <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;dist));</div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;    const auto sum_generated_values = generated_value1 + generated_value2;</div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;    VectorType sharing_vector{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>, generated_value1};</div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;    VectorType owning_vector{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>, generated_value2};</div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;    sharing_vector.set_data_ref(&amp;owning_vector);</div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;    sharing_vector = sharing_vector + generated_value1;</div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;    <a class="code" href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">CHECK_ITERABLE_APPROX</a>(owning_vector,</div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;                          (VectorType{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>, sum_generated_values}));</div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;    <a class="code" href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">CHECK_ITERABLE_APPROX</a>(sharing_vector,</div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;                          (VectorType{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>, sum_generated_values}));</div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;  }</div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;}</div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160; </div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;<span class="keyword">enum</span> RefSizeErrorTestKind { Copy, ExpressionAssign, Move };</div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;<span class="comment">/// \ingroup TestingFrameworkGroup</span></div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;<span class="comment">/// \brief Test that assigning to a non-owning `VectorType` of the wrong size</span></div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;<span class="comment">/// appropriately generates an error.</span></div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;<span class="comment">/// \details a calling function should be an `ASSERTION_TEST()` and check for</span></div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;<span class="comment">/// the string &quot;Must copy into same size&quot;.</span></div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;<span class="comment">/// Three types of tests are provided and one must be provided as the first</span></div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;<span class="comment">/// function argument:</span></div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;<span class="comment">/// - `RefSizeErrorTestKind::Copy`: Checks that copy-assigning to a non-owning</span></div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;<span class="comment">/// `VectorType` from a `VectorType` with the wrong size generates an error.</span></div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;<span class="comment">/// - `RefSizeErrorTestKind::ExpressionAssign`: Checks that assigning to a</span></div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;<span class="comment">/// non-owning `VectorType` from an expression with alias `ResultType` of</span></div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;<span class="comment">/// `VectorType` with the wrong size generates an error</span></div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;<span class="comment">/// - `RefSizeErrorTestKind::Move`: Checks that move-assigning to a non-owning</span></div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;<span class="comment">/// `VectorType` from a `VectorType` with the wrong size generates an error.</span></div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> VectorType,</div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;          <span class="keyword">typename</span> ValueType = <span class="keyword">typename</span> VectorType::ElementType&gt;</div>
+<div class="line"><a name="l00307"></a><span class="lineno"><a class="line" href="group__TestingFrameworkGroup.html#gabc8106fbcf642235c3a21b28835e8041">  307</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__TestingFrameworkGroup.html#gabc8106fbcf642235c3a21b28835e8041">vector_ref_test_size_error</a>(</div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;    RefSizeErrorTestKind test_kind,</div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;    tt::get_fundamental_type_t&lt;ValueType&gt; low =</div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;        tt::get_fundamental_type_t&lt;ValueType&gt;{-100.0},</div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;    tt::get_fundamental_type_t&lt;ValueType&gt; high =</div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;        tt::get_fundamental_type_t&lt;ValueType&gt;{100.0}) noexcept {</div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;  <a class="code" href="group__TestingFrameworkGroup.html#gad7f766439113f958bf4f8ba0f53c4881">MAKE_GENERATOR</a>(gen);</div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;  <a class="code" href="classUniformCustomDistribution.html">UniformCustomDistribution&lt;tt::get_fundamental_type_t&lt;ValueType&gt;</a>&gt; dist{low,</div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;                                                                        high};</div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;  <a class="code" href="classUniformCustomDistribution.html">UniformCustomDistribution&lt;size_t&gt;</a> sdist{2, 20};</div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160; </div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;  <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a> = sdist(gen);</div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;  <span class="keyword">auto</span> generated_vector = make_with_random_values&lt;VectorType&gt;(</div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;      <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;gen), <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;dist), VectorType{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>});</div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;  VectorType ref_generated_vector;</div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;  ref_generated_vector.set_data_ref(&amp;generated_vector);</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> larger_generated_vector = make_with_random_values&lt;VectorType&gt;(</div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;      <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;gen), <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;dist), VectorType{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a> + 1});</div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;  <span class="comment">// each of the following options should error, the reference should have</span></div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;  <span class="comment">// received the wrong size</span></div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;  <span class="keywordflow">if</span> (test_kind == RefSizeErrorTestKind::Copy) {</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;    ref_generated_vector = larger_generated_vector;</div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;  }</div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;  <span class="keywordflow">if</span> (test_kind == RefSizeErrorTestKind::ExpressionAssign) {</div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;    ref_generated_vector = (larger_generated_vector + larger_generated_vector);</div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;  }</div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;  <span class="keywordflow">if</span> (test_kind == RefSizeErrorTestKind::Move) {</div>
+<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;    ref_generated_vector = std::move(larger_generated_vector);</div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;  }</div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;}</div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;<span class="comment">/// \ingroup TestingFrameworkGroup</span></div>
+<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;<span class="comment">/// \brief tests a small sample of math functions after a move of a</span></div>
+<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;<span class="comment">/// `VectorType` initialized with `ValueType`</span></div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> VectorType, <span class="keyword">typename</span> ValueType&gt;</div>
+<div class="line"><a name="l00342"></a><span class="lineno"><a class="line" href="group__TestingFrameworkGroup.html#ga1c92dd364b5c10deb51c67a29b1f0749">  342</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__TestingFrameworkGroup.html#ga1c92dd364b5c10deb51c67a29b1f0749">vector_test_math_after_move</a>(</div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;    tt::get_fundamental_type_t&lt;ValueType&gt; low =</div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;        tt::get_fundamental_type_t&lt;ValueType&gt;{-100.0},</div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;    tt::get_fundamental_type_t&lt;ValueType&gt; high =</div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;        tt::get_fundamental_type_t&lt;ValueType&gt;{100.0}) noexcept {</div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;  <a class="code" href="group__TestingFrameworkGroup.html#gad7f766439113f958bf4f8ba0f53c4881">MAKE_GENERATOR</a>(gen);</div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;  <a class="code" href="classUniformCustomDistribution.html">UniformCustomDistribution&lt;tt::get_fundamental_type_t&lt;ValueType&gt;</a>&gt; dist{low,</div>
+<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;                                                                        high};</div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;  <a class="code" href="classUniformCustomDistribution.html">UniformCustomDistribution&lt;size_t&gt;</a> sdist{2, 20};</div>
+<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160; </div>
+<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;  <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a> = sdist(gen);</div>
+<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> generated_value1 = make_with_random_values&lt;ValueType&gt;(</div>
+<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;      <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;gen), <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;dist));</div>
+<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> generated_value2 = make_with_random_values&lt;ValueType&gt;(</div>
+<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;      <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;gen), <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;dist));</div>
+<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> sum_generated_values = generated_value1 + generated_value2;</div>
+<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> difference_generated_values = generated_value1 - generated_value2;</div>
+<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160; </div>
+<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;  <span class="keyword">const</span> VectorType vector_math_lhs{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>, generated_value1};</div>
+<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;  <span class="keyword">const</span> VectorType vector_math_rhs{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>, generated_value2};</div>
+<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;  {</div>
+<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;    INFO(<span class="stringliteral">&quot;Check move assignment and use after move&quot;</span>);</div>
+<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;    <span class="keyword">auto</span> from_vector = make_with_random_values&lt;VectorType&gt;(</div>
+<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;        <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;gen), <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;dist), VectorType{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>});</div>
+<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;    VectorType to_vector{};</div>
+<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;    to_vector = std::move(from_vector);</div>
+<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;    to_vector = vector_math_lhs + vector_math_rhs;</div>
+<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;    <a class="code" href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">CHECK_ITERABLE_APPROX</a>(to_vector, (VectorType{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>, sum_generated_values}));</div>
+<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;    <span class="comment">// clang-tidy: use after move (intentional here)</span></div>
+<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;    CHECK(from_vector.size() == 0);  <span class="comment">// NOLINT</span></div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;    CHECK(from_vector.is_owning());</div>
+<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;    from_vector = vector_math_lhs - vector_math_rhs;</div>
+<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;    <a class="code" href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">CHECK_ITERABLE_APPROX</a>(from_vector,</div>
+<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;                          (VectorType{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>, difference_generated_values}));</div>
+<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;    <a class="code" href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">CHECK_ITERABLE_APPROX</a>(to_vector, (VectorType{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>, sum_generated_values}));</div>
+<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;  }</div>
+<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;  {</div>
+<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;    INFO(<span class="stringliteral">&quot;Check move assignment and value of target&quot;</span>)</div>
+<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;    auto from_value = <a class="code" href="group__TestingFrameworkGroup.html#ga7f98af1ba7b65811cf35536db6259f88">make_with_random_values</a>&lt;ValueType&gt;(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;gen),</div>
+<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;                                                         <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;dist));</div>
+<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;    VectorType from_vector{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>, from_value};</div>
+<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;    VectorType to_vector{};</div>
+<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;    to_vector = std::move(from_vector);</div>
+<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;    from_vector = vector_math_lhs + vector_math_rhs;</div>
+<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;    <a class="code" href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">CHECK_ITERABLE_APPROX</a>(to_vector, (VectorType{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>, from_value}));</div>
+<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;    <a class="code" href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">CHECK_ITERABLE_APPROX</a>(from_vector,</div>
+<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;                          (VectorType{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>, sum_generated_values}));</div>
+<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;  }</div>
+<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;  {</div>
+<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;    INFO(<span class="stringliteral">&quot;Check move constructor and use after move&quot;</span>)</div>
+<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;    auto from_vector = <a class="code" href="group__TestingFrameworkGroup.html#ga7f98af1ba7b65811cf35536db6259f88">make_with_random_values</a>&lt;VectorType&gt;(</div>
+<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;        <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;gen), <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;dist), VectorType{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>});</div>
+<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;    VectorType to_vector{std::move(from_vector)};</div>
+<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;    to_vector = vector_math_lhs + vector_math_rhs;</div>
+<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;    CHECK(to_vector.size() == size);</div>
+<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;    <a class="code" href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">CHECK_ITERABLE_APPROX</a>(to_vector, (VectorType{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>, sum_generated_values}));</div>
+<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;    <span class="comment">// clang-tidy: use after move (intentional here)</span></div>
+<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;    CHECK(from_vector.size() == 0);  <span class="comment">// NOLINT</span></div>
+<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;    CHECK(from_vector.is_owning());</div>
+<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;    from_vector = vector_math_lhs - vector_math_rhs;</div>
+<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;    <a class="code" href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">CHECK_ITERABLE_APPROX</a>(from_vector,</div>
+<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;                          (VectorType{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>, difference_generated_values}));</div>
+<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;    <a class="code" href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">CHECK_ITERABLE_APPROX</a>(to_vector, (VectorType{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>, sum_generated_values}));</div>
+<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;  }</div>
+<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160; </div>
+<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;  {</div>
+<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;    INFO(<span class="stringliteral">&quot;Check move constructor and value of target&quot;</span>)</div>
+<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;    auto from_value = <a class="code" href="group__TestingFrameworkGroup.html#ga7f98af1ba7b65811cf35536db6259f88">make_with_random_values</a>&lt;ValueType&gt;(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;gen),</div>
+<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;                                                         <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;dist));</div>
+<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;    VectorType from_vector{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>, from_value};</div>
+<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;    <span class="keyword">const</span> VectorType to_vector{std::move(from_vector)};</div>
+<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;    from_vector = vector_math_lhs + vector_math_rhs;</div>
+<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;    <a class="code" href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">CHECK_ITERABLE_APPROX</a>(to_vector, (VectorType{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>, from_value}));</div>
+<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;    <a class="code" href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">CHECK_ITERABLE_APPROX</a>(from_vector,</div>
+<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;                          (VectorType{<a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>, sum_generated_values}));</div>
+<div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;  }</div>
+<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;}</div>
+<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;<span class="comment">/// \ingroup TestingFrameworkGroup</span></div>
+<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;<span class="comment">/// \brief Type alias to be more expressive with distribution bounds in vector</span></div>
+<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;<span class="comment">/// tests which call the generic math test below</span></div>
+<div class="line"><a name="l00423"></a><span class="lineno"><a class="line" href="group__TestingFrameworkGroup.html#ga9983e020a1f6541d517aab417fb8ed41">  423</a></span>&#160;<span class="comment"></span><span class="keyword">using</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">Bound</a> = <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;double, 2&gt;</a>;</div>
+<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;<span class="comment">/// \ingroup TestingFrameworkGroup</span></div>
+<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;<span class="comment">/// \brief the set of test types that may be used for the math operations</span></div>
+<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;<span class="comment">/// \details Three types of test are provided:</span></div>
+<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;<span class="comment">/// - `Normal` is used to indicate those tests which should be performed over</span></div>
+<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;<span class="comment">///   all combinations of the supplied vector type(s) and their value</span></div>
+<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;<span class="comment">///   types. This is useful for e.g. `+`.</span></div>
+<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;<span class="comment">/// - `Strict` is used to indicate those tests which should be performed over</span></div>
+<div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160;<span class="comment">///   only sets of the vector type and compared to the same operation of the set</span></div>
+<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160;<span class="comment">///   of its value type. This is useful for e.g. `atan2`, which cannot take a</span></div>
+<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;<span class="comment">///   `DataVector` and a double as arguments.</span></div>
+<div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160;<span class="comment">/// - `Inplace` is used to indicate those tests which should be performed</span></div>
+<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;<span class="comment">///   maintaining the type of the left-hand side of the operator and not</span></div>
+<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160;<span class="comment">///   including it in the combinations. Inplace operators such as `+=` have a</span></div>
+<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;<span class="comment">///   more restrictive condition on the type of the left hand side than do</span></div>
+<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;<span class="comment">///   simply `+`. (e.g. `double + complex&lt;double&gt;` compiles, but</span></div>
+<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;<span class="comment">///   `double += complex&lt;double&gt;` does not)</span></div>
+<div class="line"><a name="l00444"></a><span class="lineno">  444</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160;<span class="comment">/// - `GivenOrderOfArgumentsOnly` is used to indicate that the arguments given</span></div>
+<div class="line"><a name="l00446"></a><span class="lineno">  446</span>&#160;<span class="comment">///   should not be taken in any combination apart from the given combination.</span></div>
+<div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160;<span class="comment">///   This should be used for highly restrictive operations which are only</span></div>
+<div class="line"><a name="l00448"></a><span class="lineno">  448</span>&#160;<span class="comment">///   supported for certain type combinations.</span></div>
+<div class="line"><a name="l00449"></a><span class="lineno"><a class="line" href="group__TestingFrameworkGroup.html#ga921a5dbf5f1704e2051d1daf593d0d90">  449</a></span>&#160;<span class="comment"></span><span class="keyword">enum</span> <a class="code" href="group__TestingFrameworkGroup.html#ga921a5dbf5f1704e2051d1daf593d0d90">TestKind</a> { Normal, Strict, Inplace, GivenOrderOfArgumentsOnly };</div>
+<div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160; </div>
+<div class="line"><a name="l00451"></a><span class="lineno">  451</span>&#160;<span class="keyword">namespace </span>detail {</div>
+<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160; </div>
+<div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160;<span class="comment">// to choose between possible reference wrappers for the math tests.</span></div>
+<div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160;<span class="keyword">enum class</span> UseRefWrap { Cref, None, Ref };</div>
+<div class="line"><a name="l00455"></a><span class="lineno">  455</span>&#160; </div>
+<div class="line"><a name="l00456"></a><span class="lineno">  456</span>&#160;<span class="comment">// used so that the `std::variant` items below can have a consistent interface</span></div>
+<div class="line"><a name="l00457"></a><span class="lineno">  457</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00458"></a><span class="lineno">  458</span>&#160;<span class="keyword">struct </span>ValueWrapper {</div>
+<div class="line"><a name="l00459"></a><span class="lineno">  459</span>&#160;  <span class="keyword">explicit</span> ValueWrapper(T value) noexcept : value_{value} {}</div>
+<div class="line"><a name="l00460"></a><span class="lineno">  460</span>&#160; </div>
+<div class="line"><a name="l00461"></a><span class="lineno">  461</span>&#160;  constexpr T <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>() const noexcept { <span class="keywordflow">return</span> value_; }</div>
+<div class="line"><a name="l00462"></a><span class="lineno">  462</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00463"></a><span class="lineno">  463</span>&#160;  T value_;</div>
+<div class="line"><a name="l00464"></a><span class="lineno">  464</span>&#160;};</div>
+<div class="line"><a name="l00465"></a><span class="lineno">  465</span>&#160; </div>
+<div class="line"><a name="l00466"></a><span class="lineno">  466</span>&#160;<span class="comment">// Wrap is used to wrap values in a std::reference_wrapper using std::cref and</span></div>
+<div class="line"><a name="l00467"></a><span class="lineno">  467</span>&#160;<span class="comment">// std::ref, or to not wrap at all. This is done to verify that all math</span></div>
+<div class="line"><a name="l00468"></a><span class="lineno">  468</span>&#160;<span class="comment">// operations work transparently with a `std::reference_wrapper` too.</span></div>
+<div class="line"><a name="l00469"></a><span class="lineno">  469</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
+<div class="line"><a name="l00470"></a><span class="lineno">  470</span>&#160;<a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/variant.html">std::variant&lt;ValueWrapper&lt;T&gt;</a>, <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/functional/reference_wrapper.html">std::reference_wrapper&lt;T&gt;</a>,</div>
+<div class="line"><a name="l00471"></a><span class="lineno">  471</span>&#160;             <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/functional/reference_wrapper.html">std::reference_wrapper&lt;const T&gt;</a>&gt;</div>
+<div class="line"><a name="l00472"></a><span class="lineno">  472</span>&#160;wrap(UseRefWrap wrapper, T&amp; t) noexcept {</div>
+<div class="line"><a name="l00473"></a><span class="lineno">  473</span>&#160;  <span class="keywordflow">if</span>(wrapper == UseRefWrap::Cref) {</div>
+<div class="line"><a name="l00474"></a><span class="lineno">  474</span>&#160;    <span class="keywordflow">return</span> std::cref(t);</div>
+<div class="line"><a name="l00475"></a><span class="lineno">  475</span>&#160;  } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (wrapper == UseRefWrap::Ref) {</div>
+<div class="line"><a name="l00476"></a><span class="lineno">  476</span>&#160;    <span class="keywordflow">return</span> std::ref(t);</div>
+<div class="line"><a name="l00477"></a><span class="lineno">  477</span>&#160;  } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00478"></a><span class="lineno">  478</span>&#160;    <span class="keywordflow">return</span> ValueWrapper&lt;T&gt;(t);</div>
+<div class="line"><a name="l00479"></a><span class="lineno">  479</span>&#160;  }</div>
+<div class="line"><a name="l00480"></a><span class="lineno">  480</span>&#160;}</div>
+<div class="line"><a name="l00481"></a><span class="lineno">  481</span>&#160; </div>
+<div class="line"><a name="l00482"></a><span class="lineno">  482</span>&#160;constexpr <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;UseRefWrap, 2&gt;</a> NonConstWrapperList{UseRefWrap::None,</div>
+<div class="line"><a name="l00483"></a><span class="lineno">  483</span>&#160;                                                        UseRefWrap::Ref};</div>
+<div class="line"><a name="l00484"></a><span class="lineno">  484</span>&#160; </div>
+<div class="line"><a name="l00485"></a><span class="lineno">  485</span>&#160;constexpr <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;UseRefWrap, 3&gt;</a> WrapperList{</div>
+<div class="line"><a name="l00486"></a><span class="lineno">  486</span>&#160;    UseRefWrap::None, UseRefWrap::Ref, UseRefWrap::Cref};</div>
+<div class="line"><a name="l00487"></a><span class="lineno">  487</span>&#160; </div>
+<div class="line"><a name="l00488"></a><span class="lineno">  488</span>&#160;<span class="comment">// struct used for determining the full number of elements in a vector, array of</span></div>
+<div class="line"><a name="l00489"></a><span class="lineno">  489</span>&#160;<span class="comment">// vectors. Designed for use with `test_element_wise_function`</span></div>
+<div class="line"><a name="l00490"></a><span class="lineno">  490</span>&#160;<span class="keyword">struct </span>VectorOrArraySize {</div>
+<div class="line"><a name="l00491"></a><span class="lineno">  491</span>&#160;  <span class="comment">// array of vectors version, assumes all vectors in the array are the same</span></div>
+<div class="line"><a name="l00492"></a><span class="lineno">  492</span>&#160;  <span class="comment">// size, as will be the case for the relevant test helpers in this detail</span></div>
+<div class="line"><a name="l00493"></a><span class="lineno">  493</span>&#160;  <span class="comment">// namespace</span></div>
+<div class="line"><a name="l00494"></a><span class="lineno">  494</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keywordtype">size_t</span> S&gt;</div>
+<div class="line"><a name="l00495"></a><span class="lineno">  495</span>&#160;  <span class="keywordtype">size_t</span> operator()(<span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;T, S&gt;</a>&amp; container) <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00496"></a><span class="lineno">  496</span>&#160;    <span class="keywordflow">return</span> S * VectorOrArraySize{}(container[0]);</div>
+<div class="line"><a name="l00497"></a><span class="lineno">  497</span>&#160;  }</div>
+<div class="line"><a name="l00498"></a><span class="lineno">  498</span>&#160;  <span class="comment">// vector version</span></div>
+<div class="line"><a name="l00499"></a><span class="lineno">  499</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T,</div>
+<div class="line"><a name="l00500"></a><span class="lineno">  500</span>&#160;            <a class="code" href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires&lt;std::is_arithmetic_v&lt;typename T::ElementType&gt;</a> or</div>
+<div class="line"><a name="l00501"></a><span class="lineno">  501</span>&#160;                     tt::is_complex_of_fundamental_v&lt;typename T::ElementType&gt;&gt; =</div>
+<div class="line"><a name="l00502"></a><span class="lineno">  502</span>&#160;                <span class="keyword">nullptr</span>&gt;</div>
+<div class="line"><a name="l00503"></a><span class="lineno">  503</span>&#160;  <span class="keywordtype">size_t</span> operator()(<span class="keyword">const</span> T&amp; container) <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00504"></a><span class="lineno">  504</span>&#160;    <span class="keywordflow">return</span> container.size();</div>
+<div class="line"><a name="l00505"></a><span class="lineno">  505</span>&#160;  }</div>
+<div class="line"><a name="l00506"></a><span class="lineno">  506</span>&#160;};</div>
+<div class="line"><a name="l00507"></a><span class="lineno">  507</span>&#160; </div>
+<div class="line"><a name="l00508"></a><span class="lineno">  508</span>&#160;<span class="comment">// struct used for obtaining an indexed value in a vector, array of vectors.</span></div>
+<div class="line"><a name="l00509"></a><span class="lineno">  509</span>&#160;<span class="comment">// Designed for use with `test_element_wise_function`</span></div>
+<div class="line"><a name="l00510"></a><span class="lineno">  510</span>&#160;<span class="keyword">struct </span>VectorOrArrayAt {</div>
+<div class="line"><a name="l00511"></a><span class="lineno">  511</span>&#160;  <span class="comment">// array of vectors version</span></div>
+<div class="line"><a name="l00512"></a><span class="lineno">  512</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keywordtype">size_t</span> S&gt;</div>
+<div class="line"><a name="l00513"></a><span class="lineno">  513</span>&#160;  decltype(<span class="keyword">auto</span>) operator()(std::array&lt;T, S&gt;&amp; container,</div>
+<div class="line"><a name="l00514"></a><span class="lineno">  514</span>&#160;                            <span class="keywordtype">size_t</span> index) noexcept {</div>
+<div class="line"><a name="l00515"></a><span class="lineno">  515</span>&#160;    <span class="keywordflow">return</span> VectorOrArrayAt{}(<a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(container, index % S), index / S);</div>
+<div class="line"><a name="l00516"></a><span class="lineno">  516</span>&#160;  }</div>
+<div class="line"><a name="l00517"></a><span class="lineno">  517</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keywordtype">size_t</span> S&gt;</div>
+<div class="line"><a name="l00518"></a><span class="lineno">  518</span>&#160;  decltype(<span class="keyword">auto</span>) operator()(const std::array&lt;T, S&gt;&amp; container,</div>
+<div class="line"><a name="l00519"></a><span class="lineno">  519</span>&#160;                            <span class="keywordtype">size_t</span> index) noexcept {</div>
+<div class="line"><a name="l00520"></a><span class="lineno">  520</span>&#160;    <span class="keywordflow">return</span> VectorOrArrayAt{}(<a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(container, index % S), index / S);</div>
+<div class="line"><a name="l00521"></a><span class="lineno">  521</span>&#160;  }</div>
+<div class="line"><a name="l00522"></a><span class="lineno">  522</span>&#160;  <span class="comment">// vector version</span></div>
+<div class="line"><a name="l00523"></a><span class="lineno">  523</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T,</div>
+<div class="line"><a name="l00524"></a><span class="lineno">  524</span>&#160;            <a class="code" href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires&lt;std::is_arithmetic_v&lt;typename T::ElementType&gt;</a> or</div>
+<div class="line"><a name="l00525"></a><span class="lineno">  525</span>&#160;                     tt::is_complex_of_fundamental_v&lt;typename T::ElementType&gt;&gt; =</div>
+<div class="line"><a name="l00526"></a><span class="lineno">  526</span>&#160;                <span class="keyword">nullptr</span>&gt;</div>
+<div class="line"><a name="l00527"></a><span class="lineno">  527</span>&#160;  decltype(<span class="keyword">auto</span>) operator()(T&amp; container, <span class="keywordtype">size_t</span> index) noexcept {</div>
+<div class="line"><a name="l00528"></a><span class="lineno">  528</span>&#160;    <span class="keywordflow">return</span> container.at(index);</div>
+<div class="line"><a name="l00529"></a><span class="lineno">  529</span>&#160;  }</div>
+<div class="line"><a name="l00530"></a><span class="lineno">  530</span>&#160;};</div>
+<div class="line"><a name="l00531"></a><span class="lineno">  531</span>&#160; </div>
+<div class="line"><a name="l00532"></a><span class="lineno">  532</span>&#160;<span class="comment">// given an explicit template parameter pack `Wraps`, wrap the elements of</span></div>
+<div class="line"><a name="l00533"></a><span class="lineno">  533</span>&#160;<span class="comment">// `operand`, passed by pointer, element-by-element, and return the</span></div>
+<div class="line"><a name="l00534"></a><span class="lineno">  534</span>&#160;<span class="comment">// resulting tuple of wrapped elements.</span></div>
+<div class="line"><a name="l00535"></a><span class="lineno">  535</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Operands, <span class="keywordtype">size_t</span>... Is&gt;</div>
+<div class="line"><a name="l00536"></a><span class="lineno">  536</span>&#160;<span class="keyword">auto</span> wrap_tuple(<a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;Operands...&gt;</a>&amp; operand_values,</div>
+<div class="line"><a name="l00537"></a><span class="lineno">  537</span>&#160;                <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;UseRefWrap, <span class="keyword">sizeof</span>...(Is)&gt;&amp; wraps,</div>
+<div class="line"><a name="l00538"></a><span class="lineno">  538</span>&#160;                <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::index_sequence&lt;Is...&gt;</a> <span class="comment">/*meta*/</span>) noexcept {</div>
+<div class="line"><a name="l00539"></a><span class="lineno">  539</span>&#160;  <span class="keywordflow">return</span> std::make_tuple(wrap(wraps[Is], get&lt;Is&gt;(operand_values))...);</div>
+<div class="line"><a name="l00540"></a><span class="lineno">  540</span>&#160;}</div>
+<div class="line"><a name="l00541"></a><span class="lineno">  541</span>&#160; </div>
+<div class="line"><a name="l00542"></a><span class="lineno">  542</span>&#160;<span class="comment">// CHECK forwarding for parameter pack expansion. Return value also required for</span></div>
+<div class="line"><a name="l00543"></a><span class="lineno">  543</span>&#160;<span class="comment">// easy parameter pack use.</span></div>
+<div class="line"><a name="l00544"></a><span class="lineno">  544</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">int</span> call_check_approx(<span class="keyword">const</span> <span class="keywordtype">double</span> a, <span class="keyword">const</span> <span class="keywordtype">double</span> b,</div>
+<div class="line"><a name="l00545"></a><span class="lineno">  545</span>&#160;                             Approx custom_approx) noexcept {</div>
+<div class="line"><a name="l00546"></a><span class="lineno">  546</span>&#160;  CHECK(custom_approx(a) == b);</div>
+<div class="line"><a name="l00547"></a><span class="lineno">  547</span>&#160;  <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00548"></a><span class="lineno">  548</span>&#160;}</div>
+<div class="line"><a name="l00549"></a><span class="lineno">  549</span>&#160; </div>
+<div class="line"><a name="l00550"></a><span class="lineno">  550</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">int</span> call_check_approx(<span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex&lt;double&gt;</a> a,</div>
+<div class="line"><a name="l00551"></a><span class="lineno">  551</span>&#160;                             <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex&lt;double&gt;</a> b,</div>
+<div class="line"><a name="l00552"></a><span class="lineno">  552</span>&#160;                             Approx custom_approx) noexcept {</div>
+<div class="line"><a name="l00553"></a><span class="lineno">  553</span>&#160;  CHECK(custom_approx(real(a)) == real(b));</div>
+<div class="line"><a name="l00554"></a><span class="lineno">  554</span>&#160;  CHECK(custom_approx(imag(a)) == imag(b));</div>
+<div class="line"><a name="l00555"></a><span class="lineno">  555</span>&#160;  <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00556"></a><span class="lineno">  556</span>&#160;}</div>
+<div class="line"><a name="l00557"></a><span class="lineno">  557</span>&#160; </div>
+<div class="line"><a name="l00558"></a><span class="lineno">  558</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Function, <span class="keywordtype">size_t</span>... Is&gt;</div>
+<div class="line"><a name="l00559"></a><span class="lineno">  559</span>&#160;<span class="keyword">class </span>CheckWrappedOperandsVisitor {</div>
+<div class="line"><a name="l00560"></a><span class="lineno">  560</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00561"></a><span class="lineno">  561</span>&#160;  <span class="keyword">explicit</span> CheckWrappedOperandsVisitor(<span class="keyword">const</span> Function <span class="keyword">function</span>)</div>
+<div class="line"><a name="l00562"></a><span class="lineno">  562</span>&#160;      : function_{<span class="keyword">function</span>} {}</div>
+<div class="line"><a name="l00563"></a><span class="lineno">  563</span>&#160; </div>
+<div class="line"><a name="l00564"></a><span class="lineno">  564</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span>... WrappedOperands&gt;</div>
+<div class="line"><a name="l00565"></a><span class="lineno">  565</span>&#160;  <span class="keywordtype">void</span> operator()(WrappedOperands... operands) noexcept {</div>
+<div class="line"><a name="l00566"></a><span class="lineno">  566</span>&#160;    call_impl(operands.get()...);</div>
+<div class="line"><a name="l00567"></a><span class="lineno">  567</span>&#160;  }</div>
+<div class="line"><a name="l00568"></a><span class="lineno">  568</span>&#160; </div>
+<div class="line"><a name="l00569"></a><span class="lineno">  569</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00570"></a><span class="lineno">  570</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span>... WrappedOperands&gt;</div>
+<div class="line"><a name="l00571"></a><span class="lineno">  571</span>&#160;  <span class="keywordtype">void</span> call_impl(WrappedOperands... operands) noexcept {</div>
+<div class="line"><a name="l00572"></a><span class="lineno">  572</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">size_t</span> size_value =</div>
+<div class="line"><a name="l00573"></a><span class="lineno">  573</span>&#160;        std::max({<a class="code" href="group__UtilitiesGroup.html#ga48f1ae622586a451d95b26daaac2378e">get_size</a>(operands, VectorOrArraySize{})...});</div>
+<div class="line"><a name="l00574"></a><span class="lineno">  574</span>&#160;    <a class="code" href="group__UtilitiesGroup.html#ga91227dc4aa14972b7b2e7070719d061b">tuple_fold</a>(std::make_tuple(operands...), [&amp;size_value](</div>
+<div class="line"><a name="l00575"></a><span class="lineno">  575</span>&#160;                                                 <span class="keyword">const</span> <span class="keyword">auto</span> x) noexcept {</div>
+<div class="line"><a name="l00576"></a><span class="lineno">  576</span>&#160;      if (not(get_size(x, VectorOrArraySize{}) == size_value or</div>
+<div class="line"><a name="l00577"></a><span class="lineno">  577</span>&#160;              <a class="code" href="group__UtilitiesGroup.html#ga48f1ae622586a451d95b26daaac2378e">get_size</a>(x, VectorOrArraySize{}) == 1)) {</div>
+<div class="line"><a name="l00578"></a><span class="lineno">  578</span>&#160;        <a class="code" href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a>(</div>
+<div class="line"><a name="l00579"></a><span class="lineno">  579</span>&#160;            <span class="stringliteral">&quot;inconsistent sized arguments passed &quot;</span></div>
+<div class="line"><a name="l00580"></a><span class="lineno">  580</span>&#160;            <span class="stringliteral">&quot;to CheckWrappedOperandsVisitor&quot;</span>);</div>
+<div class="line"><a name="l00581"></a><span class="lineno">  581</span>&#160;      }</div>
+<div class="line"><a name="l00582"></a><span class="lineno">  582</span>&#160;    });</div>
+<div class="line"><a name="l00583"></a><span class="lineno">  583</span>&#160; </div>
+<div class="line"><a name="l00584"></a><span class="lineno">  584</span>&#160;    <span class="keyword">auto</span> original_arguments = std::make_tuple(operands...);</div>
+<div class="line"><a name="l00585"></a><span class="lineno">  585</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> result = function_(operands...);</div>
+<div class="line"><a name="l00586"></a><span class="lineno">  586</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; size_value; ++i) {</div>
+<div class="line"><a name="l00587"></a><span class="lineno">  587</span>&#160;      <span class="comment">// the arguments which modify their arguments must be passed lvalues</span></div>
+<div class="line"><a name="l00588"></a><span class="lineno">  588</span>&#160;      <span class="keyword">auto</span> element_of_arguments = std::make_tuple(<a class="code" href="group__UtilitiesGroup.html#gab0084c31ad1370a7305ac159837d3384">get_element</a>(</div>
+<div class="line"><a name="l00589"></a><span class="lineno">  589</span>&#160;          std::get&lt;Is&gt;(original_arguments), i, VectorOrArrayAt{})...);</div>
+<div class="line"><a name="l00590"></a><span class="lineno">  590</span>&#160;      call_check_approx(<a class="code" href="group__UtilitiesGroup.html#gab0084c31ad1370a7305ac159837d3384">get_element</a>(result, i, VectorOrArrayAt{}),</div>
+<div class="line"><a name="l00591"></a><span class="lineno">  591</span>&#160;                        function_(std::get&lt;Is&gt;(element_of_arguments)...),</div>
+<div class="line"><a name="l00592"></a><span class="lineno">  592</span>&#160;                        approx);</div>
+<div class="line"><a name="l00593"></a><span class="lineno">  593</span>&#160;      <span class="comment">// ensure that the final state of the arguments matches</span></div>
+<div class="line"><a name="l00594"></a><span class="lineno">  594</span>&#160;      <a class="code" href="group__UtilitiesGroup.html#ga45da409b9b03a4ad18e76036ab5a853c">expand_pack</a>(call_check_approx(<a class="code" href="group__UtilitiesGroup.html#gab0084c31ad1370a7305ac159837d3384">get_element</a>(operands, i, VectorOrArrayAt{}),</div>
+<div class="line"><a name="l00595"></a><span class="lineno">  595</span>&#160;                                    std::get&lt;Is&gt;(element_of_arguments),</div>
+<div class="line"><a name="l00596"></a><span class="lineno">  596</span>&#160;                                    approx)...);</div>
+<div class="line"><a name="l00597"></a><span class="lineno">  597</span>&#160;    }</div>
+<div class="line"><a name="l00598"></a><span class="lineno">  598</span>&#160;  }</div>
+<div class="line"><a name="l00599"></a><span class="lineno">  599</span>&#160; </div>
+<div class="line"><a name="l00600"></a><span class="lineno">  600</span>&#160;  Function function_;</div>
+<div class="line"><a name="l00601"></a><span class="lineno">  601</span>&#160;};</div>
+<div class="line"><a name="l00602"></a><span class="lineno">  602</span>&#160; </div>
+<div class="line"><a name="l00603"></a><span class="lineno">  603</span>&#160;<span class="comment">// given the set of types of operands to test (`Operands`), and a set of</span></div>
+<div class="line"><a name="l00604"></a><span class="lineno">  604</span>&#160;<span class="comment">// reference wrappers (`Wraps`), make each operand with random values according</span></div>
+<div class="line"><a name="l00605"></a><span class="lineno">  605</span>&#160;<span class="comment">// to the bound from `Bound`. Then, call</span></div>
+<div class="line"><a name="l00606"></a><span class="lineno">  606</span>&#160;<span class="comment">// `CheckWrappedOperandsVisitor` to test the element wise `function`.</span></div>
+<div class="line"><a name="l00607"></a><span class="lineno">  607</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Function, <span class="keyword">typename</span>... Bounds, <span class="keyword">typename</span>... Operands,</div>
+<div class="line"><a name="l00608"></a><span class="lineno">  608</span>&#160;          <span class="keywordtype">size_t</span>... Is&gt;</div>
+<div class="line"><a name="l00609"></a><span class="lineno">  609</span>&#160;<span class="keywordtype">void</span> test_function_on_vector_operands(</div>
+<div class="line"><a name="l00610"></a><span class="lineno">  610</span>&#160;    <span class="keyword">const</span> Function&amp; <span class="keyword">function</span>, <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;Bounds...&gt;</a>&amp; bounds,</div>
+<div class="line"><a name="l00611"></a><span class="lineno">  611</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;UseRefWrap, <span class="keyword">sizeof</span>...(Is)&gt;&amp; wraps,</div>
+<div class="line"><a name="l00612"></a><span class="lineno">  612</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;Operands...&gt;</a>&amp; <span class="comment">/*operands*/</span>,</div>
+<div class="line"><a name="l00613"></a><span class="lineno">  613</span>&#160;    <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::index_sequence&lt;Is...&gt;</a> <span class="comment">/*meta*/</span>) noexcept {</div>
+<div class="line"><a name="l00614"></a><span class="lineno">  614</span>&#160;  <a class="code" href="group__TestingFrameworkGroup.html#gad7f766439113f958bf4f8ba0f53c4881">MAKE_GENERATOR</a>(generator);</div>
+<div class="line"><a name="l00615"></a><span class="lineno">  615</span>&#160;  <a class="code" href="classUniformCustomDistribution.html">UniformCustomDistribution&lt;size_t&gt;</a> size_distribution{2, 5};</div>
+<div class="line"><a name="l00616"></a><span class="lineno">  616</span>&#160;  <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a> = size_distribution(generator);</div>
+<div class="line"><a name="l00617"></a><span class="lineno">  617</span>&#160;  <span class="comment">// using each distribution, generate a value for the appropriate operand type</span></div>
+<div class="line"><a name="l00618"></a><span class="lineno">  618</span>&#160;  <span class="comment">// and put it in a tuple.</span></div>
+<div class="line"><a name="l00619"></a><span class="lineno">  619</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;std::decay_t&lt;Operands&gt;</a>...&gt; operand_values{</div>
+<div class="line"><a name="l00620"></a><span class="lineno">  620</span>&#160;      make_with_random_values&lt;Operands&gt;(</div>
+<div class="line"><a name="l00621"></a><span class="lineno">  621</span>&#160;          <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;generator),</div>
+<div class="line"><a name="l00622"></a><span class="lineno">  622</span>&#160;          <a class="code" href="classUniformCustomDistribution.html">UniformCustomDistribution</a>&lt;</div>
+<div class="line"><a name="l00623"></a><span class="lineno">  623</span>&#160;              tt::get_fundamental_type_t&lt;get_vector_element_type_t&lt;Operands&gt;&gt;&gt;{</div>
+<div class="line"><a name="l00624"></a><span class="lineno">  624</span>&#160;              std::get&lt;Is&gt;(bounds)},</div>
+<div class="line"><a name="l00625"></a><span class="lineno">  625</span>&#160;          <a class="codeRef" href="http://en.cppreference.com/w/cpp/iterator/size.html">size</a>)...};</div>
+<div class="line"><a name="l00626"></a><span class="lineno">  626</span>&#160;  <span class="comment">// wrap the tuple of random values according to the passed in `wraps` -- these</span></div>
+<div class="line"><a name="l00627"></a><span class="lineno">  627</span>&#160;  <span class="comment">// will end up being a tuple of std::variant, that we need to choose between</span></div>
+<div class="line"><a name="l00628"></a><span class="lineno">  628</span>&#160;  <span class="comment">// using compile-time logic</span></div>
+<div class="line"><a name="l00629"></a><span class="lineno">  629</span>&#160;  <span class="keyword">auto</span> wrapped_operands = wrap_tuple(</div>
+<div class="line"><a name="l00630"></a><span class="lineno">  630</span>&#160;      operand_values, wraps, <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::make_index_sequence</a>&lt;<span class="keyword">sizeof</span>...(Bounds)&gt;{});</div>
+<div class="line"><a name="l00631"></a><span class="lineno">  631</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> visitor_helper = [&amp;<span class="keyword">function</span>](<span class="keyword">auto</span>... operands) noexcept {</div>
+<div class="line"><a name="l00632"></a><span class="lineno">  632</span>&#160;    CheckWrappedOperandsVisitor&lt;Function, Is...&gt; visitor{<span class="keyword">function</span>};</div>
+<div class="line"><a name="l00633"></a><span class="lineno">  633</span>&#160;    std::visit(visitor, operands...);</div>
+<div class="line"><a name="l00634"></a><span class="lineno">  634</span>&#160;  };</div>
+<div class="line"><a name="l00635"></a><span class="lineno">  635</span>&#160;  std::apply(visitor_helper, wrapped_operands);</div>
+<div class="line"><a name="l00636"></a><span class="lineno">  636</span>&#160;}</div>
+<div class="line"><a name="l00637"></a><span class="lineno">  637</span>&#160; </div>
+<div class="line"><a name="l00638"></a><span class="lineno">  638</span>&#160;<span class="comment">// Set of structs for choosing between execution paths when assembling the</span></div>
+<div class="line"><a name="l00639"></a><span class="lineno">  639</span>&#160;<span class="comment">// argument list for the math testing utility</span></div>
+<div class="line"><a name="l00640"></a><span class="lineno">  640</span>&#160;<span class="keyword">namespace </span>TestFunctionsWithVectorArgumentsChoices {</div>
+<div class="line"><a name="l00641"></a><span class="lineno">  641</span>&#160;<span class="keyword">struct </span>FirstInplace {};</div>
+<div class="line"><a name="l00642"></a><span class="lineno">  642</span>&#160;<span class="keyword">struct </span>Continuing {};</div>
+<div class="line"><a name="l00643"></a><span class="lineno">  643</span>&#160;<span class="keyword">struct </span>Done {};</div>
+<div class="line"><a name="l00644"></a><span class="lineno">  644</span>&#160;<span class="keyword">struct </span>GivenOrderOfArgumentsOnly {};</div>
+<div class="line"><a name="l00645"></a><span class="lineno">  645</span>&#160;}  <span class="comment">// namespace TestFunctionsWithVectorArgumentsChoices</span></div>
+<div class="line"><a name="l00646"></a><span class="lineno">  646</span>&#160; </div>
+<div class="line"><a name="l00647"></a><span class="lineno">  647</span>&#160;<span class="comment">// helper struct implementation for choosing the next branch for assembling the</span></div>
+<div class="line"><a name="l00648"></a><span class="lineno">  648</span>&#160;<span class="comment">// argument list for the math testing utility. This is done to use pattern</span></div>
+<div class="line"><a name="l00649"></a><span class="lineno">  649</span>&#160;<span class="comment">// matching instead of SFINAE.</span></div>
+<div class="line"><a name="l00650"></a><span class="lineno">  650</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">bool</span> IsDone, <span class="keywordtype">bool</span> IsFirstAssignment, <span class="keywordtype">bool</span> GivenOrderOfArgumentsOnly&gt;</div>
+<div class="line"><a name="l00651"></a><span class="lineno">  651</span>&#160;<span class="keyword">struct </span>next_choice_for_test_functions_recursion_impl;</div>
+<div class="line"><a name="l00652"></a><span class="lineno">  652</span>&#160; </div>
+<div class="line"><a name="l00653"></a><span class="lineno">  653</span>&#160;<span class="comment">// if the size of the vector list is the same as the size of the distribution</span></div>
+<div class="line"><a name="l00654"></a><span class="lineno">  654</span>&#160;<span class="comment">// bound list, then assembly is done</span></div>
+<div class="line"><a name="l00655"></a><span class="lineno">  655</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">bool</span> IsFirstAssignment, <span class="keywordtype">bool</span> GivenOrderOfArgumentsOnly&gt;</div>
+<div class="line"><a name="l00656"></a><span class="lineno">  656</span>&#160;<span class="keyword">struct </span>next_choice_for_test_functions_recursion_impl&lt;</div>
+<div class="line"><a name="l00657"></a><span class="lineno">  657</span>&#160;    true, IsFirstAssignment, GivenOrderOfArgumentsOnly&gt; {</div>
+<div class="line"><a name="l00658"></a><span class="lineno">  658</span>&#160;  <span class="keyword">using</span> type = TestFunctionsWithVectorArgumentsChoices::Done;</div>
+<div class="line"><a name="l00659"></a><span class="lineno">  659</span>&#160;};</div>
+<div class="line"><a name="l00660"></a><span class="lineno">  660</span>&#160; </div>
+<div class="line"><a name="l00661"></a><span class="lineno">  661</span>&#160;<span class="comment">// if we are assembling the first argument and the test type is Inplace, then</span></div>
+<div class="line"><a name="l00662"></a><span class="lineno">  662</span>&#160;<span class="comment">// treat it separately</span></div>
+<div class="line"><a name="l00663"></a><span class="lineno">  663</span>&#160;<span class="keyword">template</span> &lt;&gt;</div>
+<div class="line"><a name="l00664"></a><span class="lineno">  664</span>&#160;<span class="keyword">struct </span>next_choice_for_test_functions_recursion_impl&lt;false, true, false&gt; {</div>
+<div class="line"><a name="l00665"></a><span class="lineno">  665</span>&#160;  <span class="keyword">using</span> type = TestFunctionsWithVectorArgumentsChoices::FirstInplace;</div>
+<div class="line"><a name="l00666"></a><span class="lineno">  666</span>&#160;};</div>
+<div class="line"><a name="l00667"></a><span class="lineno">  667</span>&#160; </div>
+<div class="line"><a name="l00668"></a><span class="lineno">  668</span>&#160;<span class="comment">// otherwise, continue assembling as ordinary</span></div>
+<div class="line"><a name="l00669"></a><span class="lineno">  669</span>&#160;<span class="keyword">template</span> &lt;&gt;</div>
+<div class="line"><a name="l00670"></a><span class="lineno">  670</span>&#160;<span class="keyword">struct </span>next_choice_for_test_functions_recursion_impl&lt;false, false, false&gt; {</div>
+<div class="line"><a name="l00671"></a><span class="lineno">  671</span>&#160;  <span class="keyword">using</span> type = TestFunctionsWithVectorArgumentsChoices::Continuing;</div>
+<div class="line"><a name="l00672"></a><span class="lineno">  672</span>&#160;};</div>
+<div class="line"><a name="l00673"></a><span class="lineno">  673</span>&#160; </div>
+<div class="line"><a name="l00674"></a><span class="lineno">  674</span>&#160;<span class="comment">// if using mode GivenOrderOfArgumentsOnly, follow a distinct exection path with</span></div>
+<div class="line"><a name="l00675"></a><span class="lineno">  675</span>&#160;<span class="comment">// only the wraps assembled in combinations</span></div>
+<div class="line"><a name="l00676"></a><span class="lineno">  676</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">bool</span> IsFirstAssignment&gt;</div>
+<div class="line"><a name="l00677"></a><span class="lineno">  677</span>&#160;<span class="keyword">struct </span>next_choice_for_test_functions_recursion_impl&lt;false, IsFirstAssignment,</div>
+<div class="line"><a name="l00678"></a><span class="lineno">  678</span>&#160;                                                     true&gt; {</div>
+<div class="line"><a name="l00679"></a><span class="lineno">  679</span>&#160;  <span class="keyword">using</span> type =</div>
+<div class="line"><a name="l00680"></a><span class="lineno">  680</span>&#160;      TestFunctionsWithVectorArgumentsChoices::GivenOrderOfArgumentsOnly;</div>
+<div class="line"><a name="l00681"></a><span class="lineno">  681</span>&#160;};</div>
+<div class="line"><a name="l00682"></a><span class="lineno">  682</span>&#160; </div>
+<div class="line"><a name="l00683"></a><span class="lineno">  683</span>&#160;<span class="comment">// helper function for easily determining the next branch of the call operator</span></div>
+<div class="line"><a name="l00684"></a><span class="lineno">  684</span>&#160;<span class="comment">// for TestFunctionsWithVectorArgumentsImpl</span></div>
+<div class="line"><a name="l00685"></a><span class="lineno">  685</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> NumberOfOperands, <span class="keyword">typename</span> BoundList, TestKind Test&gt;</div>
+<div class="line"><a name="l00686"></a><span class="lineno">  686</span>&#160;<span class="keyword">using</span> next_choice_for_test_functions_recursion =</div>
+<div class="line"><a name="l00687"></a><span class="lineno">  687</span>&#160;    <span class="keyword">typename</span> next_choice_for_test_functions_recursion_impl&lt;</div>
+<div class="line"><a name="l00688"></a><span class="lineno">  688</span>&#160;        NumberOfOperands == tmpl::size&lt;BoundList&gt;::value,</div>
+<div class="line"><a name="l00689"></a><span class="lineno">  689</span>&#160;        NumberOfOperands == 0 and Test == TestKind::Inplace,</div>
+<div class="line"><a name="l00690"></a><span class="lineno">  690</span>&#160;        Test == TestKind::GivenOrderOfArgumentsOnly&gt;::type;</div>
+<div class="line"><a name="l00691"></a><span class="lineno">  691</span>&#160; </div>
+<div class="line"><a name="l00692"></a><span class="lineno">  692</span>&#160;<span class="comment">// functions to recursively assemble the arguments and wrappers for</span></div>
+<div class="line"><a name="l00693"></a><span class="lineno">  693</span>&#160;<span class="comment">// calling the operator tester `test_function_on_vector_operands`.</span></div>
+<div class="line"><a name="l00694"></a><span class="lineno">  694</span>&#160;<span class="comment">//</span></div>
+<div class="line"><a name="l00695"></a><span class="lineno">  695</span>&#160;<span class="comment">// `UniqueTypeList` is a tmpl::list which stores the set of unique types to</span></div>
+<div class="line"><a name="l00696"></a><span class="lineno">  696</span>&#160;<span class="comment">// test the functions with.</span></div>
+<div class="line"><a name="l00697"></a><span class="lineno">  697</span>&#160;<span class="comment">//</span></div>
+<div class="line"><a name="l00698"></a><span class="lineno">  698</span>&#160;<span class="comment">// `FirstOperand` is the first operand type, used when the Test is</span></div>
+<div class="line"><a name="l00699"></a><span class="lineno">  699</span>&#160;<span class="comment">// `TestKind::Inplace`, as inplace operators have specific demands on the</span></div>
+<div class="line"><a name="l00700"></a><span class="lineno">  700</span>&#160;<span class="comment">// first operand.</span></div>
+<div class="line"><a name="l00701"></a><span class="lineno">  701</span>&#160; </div>
+<div class="line"><a name="l00702"></a><span class="lineno">  702</span>&#160;<span class="comment">// base case: the correct number of operand types has been obtained in</span></div>
+<div class="line"><a name="l00703"></a><span class="lineno">  703</span>&#160;<span class="comment">// `Operands`, so this calls the test function with the function, bounds,</span></div>
+<div class="line"><a name="l00704"></a><span class="lineno">  704</span>&#160;<span class="comment">// reference wrap, and operand type information.</span></div>
+<div class="line"><a name="l00705"></a><span class="lineno">  705</span>&#160;<span class="keyword">template</span> &lt;<a class="code" href="group__TestingFrameworkGroup.html#ga921a5dbf5f1704e2051d1daf593d0d90">TestKind</a> Test, <span class="keyword">typename</span> UniqueTypeList, <span class="keyword">typename</span> FirstOperand,</div>
+<div class="line"><a name="l00706"></a><span class="lineno">  706</span>&#160;          <span class="keyword">typename</span>... Operands, <span class="keyword">typename</span> Function, <span class="keyword">typename</span>... DistBounds&gt;</div>
+<div class="line"><a name="l00707"></a><span class="lineno">  707</span>&#160;<span class="keywordtype">void</span> assemble_test_function_arguments_and_execute_tests(</div>
+<div class="line"><a name="l00708"></a><span class="lineno">  708</span>&#160;    <span class="keyword">const</span> Function&amp; <span class="keyword">function</span>, <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;DistBounds...&gt;</a>&amp; bounds,</div>
+<div class="line"><a name="l00709"></a><span class="lineno">  709</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;UseRefWrap, <span class="keyword">sizeof</span>...(Operands)&gt;&amp; wraps,</div>
+<div class="line"><a name="l00710"></a><span class="lineno">  710</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;Operands...&gt;</a> operands,</div>
+<div class="line"><a name="l00711"></a><span class="lineno">  711</span>&#160;    TestFunctionsWithVectorArgumentsChoices::Done <span class="comment">/*meta*/</span>) noexcept {</div>
+<div class="line"><a name="l00712"></a><span class="lineno">  712</span>&#160;  test_function_on_vector_operands(</div>
+<div class="line"><a name="l00713"></a><span class="lineno">  713</span>&#160;      <span class="keyword">function</span>, bounds, wraps, operands,</div>
+<div class="line"><a name="l00714"></a><span class="lineno">  714</span>&#160;      <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::make_index_sequence</a>&lt;<span class="keyword">sizeof</span>...(DistBounds)&gt;{});</div>
+<div class="line"><a name="l00715"></a><span class="lineno">  715</span>&#160;}</div>
+<div class="line"><a name="l00716"></a><span class="lineno">  716</span>&#160; </div>
+<div class="line"><a name="l00717"></a><span class="lineno">  717</span>&#160;<span class="comment">// general case: add an additional reference wrapper identification type from</span></div>
+<div class="line"><a name="l00718"></a><span class="lineno">  718</span>&#160;<span class="comment">// `WrapperList` to `wraps`, and an additional type from `UniqueTypeList`</span></div>
+<div class="line"><a name="l00719"></a><span class="lineno">  719</span>&#160;<span class="comment">// to `operands`, and recurse on each option.</span></div>
+<div class="line"><a name="l00720"></a><span class="lineno">  720</span>&#160;<span class="keyword">template</span> &lt;<a class="code" href="group__TestingFrameworkGroup.html#ga921a5dbf5f1704e2051d1daf593d0d90">TestKind</a> Test, <span class="keyword">typename</span> UniqueTypeList, <span class="keyword">typename</span> FirstOperand,</div>
+<div class="line"><a name="l00721"></a><span class="lineno">  721</span>&#160;          <span class="keyword">typename</span>... Operands, <span class="keyword">typename</span> Function, <span class="keyword">typename</span>... DistBounds&gt;</div>
+<div class="line"><a name="l00722"></a><span class="lineno">  722</span>&#160;<span class="keywordtype">void</span> assemble_test_function_arguments_and_execute_tests(</div>
+<div class="line"><a name="l00723"></a><span class="lineno">  723</span>&#160;    <span class="keyword">const</span> Function&amp; <span class="keyword">function</span>, <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;DistBounds...&gt;</a>&amp; bounds,</div>
+<div class="line"><a name="l00724"></a><span class="lineno">  724</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;UseRefWrap, <span class="keyword">sizeof</span>...(Operands)&gt;&amp; wraps,</div>
+<div class="line"><a name="l00725"></a><span class="lineno">  725</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;Operands...&gt;</a>&amp;&amp; operands,</div>
+<div class="line"><a name="l00726"></a><span class="lineno">  726</span>&#160;    TestFunctionsWithVectorArgumentsChoices::Continuing</div>
+<div class="line"><a name="l00727"></a><span class="lineno">  727</span>&#160;    <span class="comment">/*meta*/</span>) noexcept {</div>
+<div class="line"><a name="l00728"></a><span class="lineno">  728</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; WrapperList.size(); ++i) {</div>
+<div class="line"><a name="l00729"></a><span class="lineno">  729</span>&#160;    tmpl::for_each&lt;UniqueTypeList&gt;([&amp;<span class="keyword">function</span>, &amp;bounds, &amp;wraps, &amp;operands,</div>
+<div class="line"><a name="l00730"></a><span class="lineno">  730</span>&#160;                                    &amp;i](<span class="keyword">const</span> <span class="keyword">auto</span> y) noexcept {</div>
+<div class="line"><a name="l00731"></a><span class="lineno">  731</span>&#160;      <span class="keyword">using</span> next_vector = <span class="keyword">typename</span> decltype(y)::type;</div>
+<div class="line"><a name="l00732"></a><span class="lineno">  732</span>&#160;      <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;UseRefWrap, <span class="keyword">sizeof</span>...(Operands) + 1_st&gt; new_wraps;</div>
+<div class="line"><a name="l00733"></a><span class="lineno">  733</span>&#160;      <span class="keywordflow">for</span>(<span class="keywordtype">size_t</span> j = 0; j &lt; <span class="keyword">sizeof</span>...(Operands); ++j) {</div>
+<div class="line"><a name="l00734"></a><span class="lineno">  734</span>&#160;        new_wraps[j] = wraps[j];</div>
+<div class="line"><a name="l00735"></a><span class="lineno">  735</span>&#160;      }</div>
+<div class="line"><a name="l00736"></a><span class="lineno">  736</span>&#160;      new_wraps[new_wraps.size() - 1] = WrapperList[i];</div>
+<div class="line"><a name="l00737"></a><span class="lineno">  737</span>&#160;      assemble_test_function_arguments_and_execute_tests&lt;Test, UniqueTypeList,</div>
+<div class="line"><a name="l00738"></a><span class="lineno">  738</span>&#160;                                                         FirstOperand&gt;(</div>
+<div class="line"><a name="l00739"></a><span class="lineno">  739</span>&#160;          <span class="keyword">function</span>, bounds, new_wraps,</div>
+<div class="line"><a name="l00740"></a><span class="lineno">  740</span>&#160;          std::tuple_cat(operands, <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;next_vector&gt;</a>{}),</div>
+<div class="line"><a name="l00741"></a><span class="lineno">  741</span>&#160;          detail::next_choice_for_test_functions_recursion&lt;</div>
+<div class="line"><a name="l00742"></a><span class="lineno">  742</span>&#160;              <span class="keyword">sizeof</span>...(Operands) + 1_st, tmpl::list&lt;DistBounds...&gt;, Test&gt;{});</div>
+<div class="line"><a name="l00743"></a><span class="lineno">  743</span>&#160;    });</div>
+<div class="line"><a name="l00744"></a><span class="lineno">  744</span>&#160;  }</div>
+<div class="line"><a name="l00745"></a><span class="lineno">  745</span>&#160;}</div>
+<div class="line"><a name="l00746"></a><span class="lineno">  746</span>&#160; </div>
+<div class="line"><a name="l00747"></a><span class="lineno">  747</span>&#160;<span class="comment">// case of first operand and inplace test: the left hand operand for inplace</span></div>
+<div class="line"><a name="l00748"></a><span class="lineno">  748</span>&#160;<span class="comment">// tests cannot be const, so the reference wrapper must be chosen</span></div>
+<div class="line"><a name="l00749"></a><span class="lineno">  749</span>&#160;<span class="comment">// accordingly. Also, the left hand size type is fixed to be FirstOperand.</span></div>
+<div class="line"><a name="l00750"></a><span class="lineno">  750</span>&#160;<span class="keyword">template</span> &lt;<a class="code" href="group__TestingFrameworkGroup.html#ga921a5dbf5f1704e2051d1daf593d0d90">TestKind</a> Test, <span class="keyword">typename</span> UniqueTypeList, <span class="keyword">typename</span> FirstOperand,</div>
+<div class="line"><a name="l00751"></a><span class="lineno">  751</span>&#160;          <span class="keyword">typename</span>... Operands, <span class="keyword">typename</span> Function, <span class="keyword">typename</span>... DistBounds&gt;</div>
+<div class="line"><a name="l00752"></a><span class="lineno">  752</span>&#160;<span class="keywordtype">void</span> assemble_test_function_arguments_and_execute_tests(</div>
+<div class="line"><a name="l00753"></a><span class="lineno">  753</span>&#160;    <span class="keyword">const</span> Function&amp; <span class="keyword">function</span>, <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;DistBounds...&gt;</a>&amp; bounds,</div>
+<div class="line"><a name="l00754"></a><span class="lineno">  754</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;UseRefWrap, 0&gt;</a>&amp; <span class="comment">/*wraps*/</span>,</div>
+<div class="line"><a name="l00755"></a><span class="lineno">  755</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;Operands...&gt;</a>&amp;&amp; <span class="comment">/*operands*/</span>,</div>
+<div class="line"><a name="l00756"></a><span class="lineno">  756</span>&#160;    TestFunctionsWithVectorArgumentsChoices::FirstInplace <span class="comment">/*meta*/</span>) noexcept {</div>
+<div class="line"><a name="l00757"></a><span class="lineno">  757</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; NonConstWrapperList.size(); ++i) {</div>
+<div class="line"><a name="l00758"></a><span class="lineno">  758</span>&#160;    assemble_test_function_arguments_and_execute_tests&lt;Test, UniqueTypeList,</div>
+<div class="line"><a name="l00759"></a><span class="lineno">  759</span>&#160;                                                       FirstOperand&gt;(</div>
+<div class="line"><a name="l00760"></a><span class="lineno">  760</span>&#160;        <span class="keyword">function</span>, bounds, <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;UseRefWrap, 1&gt;</a>{{NonConstWrapperList[i]}},</div>
+<div class="line"><a name="l00761"></a><span class="lineno">  761</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;FirstOperand&gt;</a>{},</div>
+<div class="line"><a name="l00762"></a><span class="lineno">  762</span>&#160;        detail::next_choice_for_test_functions_recursion&lt;</div>
+<div class="line"><a name="l00763"></a><span class="lineno">  763</span>&#160;            1_st, tmpl::list&lt;DistBounds...&gt;, Test&gt;{});</div>
+<div class="line"><a name="l00764"></a><span class="lineno">  764</span>&#160;  }</div>
+<div class="line"><a name="l00765"></a><span class="lineno">  765</span>&#160;}</div>
+<div class="line"><a name="l00766"></a><span class="lineno">  766</span>&#160; </div>
+<div class="line"><a name="l00767"></a><span class="lineno">  767</span>&#160;<span class="comment">// case of TestKind of NoArgumentsCombinations: The Operands are already</span></div>
+<div class="line"><a name="l00768"></a><span class="lineno">  768</span>&#160;<span class="comment">// assembled, we just need to loop through the wrap possibilities.</span></div>
+<div class="line"><a name="l00769"></a><span class="lineno">  769</span>&#160;<span class="keyword">template</span> &lt;<a class="code" href="group__TestingFrameworkGroup.html#ga921a5dbf5f1704e2051d1daf593d0d90">TestKind</a> Test, <span class="keyword">typename</span> UniqueTypeList, <span class="keyword">typename</span> FirstOperand,</div>
+<div class="line"><a name="l00770"></a><span class="lineno">  770</span>&#160;          <span class="keyword">typename</span>... Operands, <span class="keyword">typename</span> Function, <span class="keyword">typename</span>... DistBounds,</div>
+<div class="line"><a name="l00771"></a><span class="lineno">  771</span>&#160;          <span class="keywordtype">size_t</span> NumberOfWraps&gt;</div>
+<div class="line"><a name="l00772"></a><span class="lineno">  772</span>&#160;<span class="keywordtype">void</span> assemble_test_function_arguments_and_execute_tests(</div>
+<div class="line"><a name="l00773"></a><span class="lineno">  773</span>&#160;    <span class="keyword">const</span> Function&amp; <span class="keyword">function</span>, <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;DistBounds...&gt;</a>&amp; bounds,</div>
+<div class="line"><a name="l00774"></a><span class="lineno">  774</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;UseRefWrap, NumberOfWraps&gt;</a>&amp; wraps,</div>
+<div class="line"><a name="l00775"></a><span class="lineno">  775</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;Operands...&gt;</a>&amp; operands,</div>
+<div class="line"><a name="l00776"></a><span class="lineno">  776</span>&#160;    TestFunctionsWithVectorArgumentsChoices::</div>
+<div class="line"><a name="l00777"></a><span class="lineno">  777</span>&#160;        GivenOrderOfArgumentsOnly <span class="comment">/*meta*/</span>) noexcept {</div>
+<div class="line"><a name="l00778"></a><span class="lineno">  778</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; NonConstWrapperList.size(); ++i) {</div>
+<div class="line"><a name="l00779"></a><span class="lineno">  779</span>&#160;    <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;UseRefWrap, NumberOfWraps + 1&gt;</a> new_wraps;</div>
+<div class="line"><a name="l00780"></a><span class="lineno">  780</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> j = 0; j &lt; NumberOfWraps; ++j) {</div>
+<div class="line"><a name="l00781"></a><span class="lineno">  781</span>&#160;      new_wraps[j] = wraps[j];</div>
+<div class="line"><a name="l00782"></a><span class="lineno">  782</span>&#160;    }</div>
+<div class="line"><a name="l00783"></a><span class="lineno">  783</span>&#160;    new_wraps[new_wraps.size() - 1] = NonConstWrapperList[i];</div>
+<div class="line"><a name="l00784"></a><span class="lineno">  784</span>&#160; </div>
+<div class="line"><a name="l00785"></a><span class="lineno">  785</span>&#160;    assemble_test_function_arguments_and_execute_tests&lt;Test, UniqueTypeList,</div>
+<div class="line"><a name="l00786"></a><span class="lineno">  786</span>&#160;                                                       FirstOperand&gt;(</div>
+<div class="line"><a name="l00787"></a><span class="lineno">  787</span>&#160;        <span class="keyword">function</span>, bounds, new_wraps, operands,</div>
+<div class="line"><a name="l00788"></a><span class="lineno">  788</span>&#160;        detail::next_choice_for_test_functions_recursion&lt;</div>
+<div class="line"><a name="l00789"></a><span class="lineno">  789</span>&#160;            NumberOfWraps + 1_st, tmpl::list&lt;DistBounds...&gt;, Test&gt;{});</div>
+<div class="line"><a name="l00790"></a><span class="lineno">  790</span>&#160;  }</div>
+<div class="line"><a name="l00791"></a><span class="lineno">  791</span>&#160;}</div>
+<div class="line"><a name="l00792"></a><span class="lineno">  792</span>&#160; </div>
+<div class="line"><a name="l00793"></a><span class="lineno">  793</span>&#160;<span class="comment">// dispatch function for the individual tuples of functions and bounds for their</span></div>
+<div class="line"><a name="l00794"></a><span class="lineno">  794</span>&#160;<span class="comment">// respective distributions. This processes the requested set of vector types to</span></div>
+<div class="line"><a name="l00795"></a><span class="lineno">  795</span>&#160;<span class="comment">// test and passes the resulting request to the recursive argument assembly</span></div>
+<div class="line"><a name="l00796"></a><span class="lineno">  796</span>&#160;<span class="comment">// function assemble_test_function_arguments_and_execute_tests above</span></div>
+<div class="line"><a name="l00797"></a><span class="lineno">  797</span>&#160;<span class="keyword">template</span> &lt;<a class="code" href="group__TestingFrameworkGroup.html#ga921a5dbf5f1704e2051d1daf593d0d90">TestKind</a> Test, <span class="keyword">typename</span> VectorType0, <span class="keyword">typename</span>... VectorTypes,</div>
+<div class="line"><a name="l00798"></a><span class="lineno">  798</span>&#160;          <span class="keyword">typename</span> Function, <span class="keyword">typename</span>... DistBounds&gt;</div>
+<div class="line"><a name="l00799"></a><span class="lineno">  799</span>&#160;<span class="keywordtype">void</span> test_function_with_vector_arguments_impl(</div>
+<div class="line"><a name="l00800"></a><span class="lineno">  800</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt;Function, <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;DistBounds...&gt;</a>&gt;&amp;</div>
+<div class="line"><a name="l00801"></a><span class="lineno">  801</span>&#160;        function_and_argument_bounds) noexcept {</div>
+<div class="line"><a name="l00802"></a><span class="lineno">  802</span>&#160;  <span class="comment">// The unique set of possible operands</span></div>
+<div class="line"><a name="l00803"></a><span class="lineno">  803</span>&#160;  <span class="keyword">using</span> operand_type_list = tmpl::conditional_t&lt;</div>
+<div class="line"><a name="l00804"></a><span class="lineno">  804</span>&#160;      Test == TestKind::Strict,</div>
+<div class="line"><a name="l00805"></a><span class="lineno">  805</span>&#160;      <span class="comment">// if strict, the operand choices are just the vector types passed in</span></div>
+<div class="line"><a name="l00806"></a><span class="lineno">  806</span>&#160;      tmpl::remove_duplicates&lt;tmpl::list&lt;VectorType0, VectorTypes...&gt;&gt;,</div>
+<div class="line"><a name="l00807"></a><span class="lineno">  807</span>&#160;      <span class="comment">// else, the operand choices include both the vectors and their element</span></div>
+<div class="line"><a name="l00808"></a><span class="lineno">  808</span>&#160;      <span class="comment">// types</span></div>
+<div class="line"><a name="l00809"></a><span class="lineno">  809</span>&#160;      tmpl::remove_duplicates&lt;tmpl::list&lt;</div>
+<div class="line"><a name="l00810"></a><span class="lineno">  810</span>&#160;          VectorType0, VectorTypes..., get_vector_element_type_t&lt;VectorType0&gt;,</div>
+<div class="line"><a name="l00811"></a><span class="lineno">  811</span>&#160;          get_vector_element_type_t&lt;VectorTypes&gt;...&gt;&gt;&gt;;</div>
+<div class="line"><a name="l00812"></a><span class="lineno">  812</span>&#160; </div>
+<div class="line"><a name="l00813"></a><span class="lineno">  813</span>&#160;  <span class="keyword">using</span> starting_operands =</div>
+<div class="line"><a name="l00814"></a><span class="lineno">  814</span>&#160;      tmpl::conditional_t&lt;Test == TestKind::GivenOrderOfArgumentsOnly,</div>
+<div class="line"><a name="l00815"></a><span class="lineno">  815</span>&#160;                          <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt;VectorType0, VectorTypes...&gt;,</div>
+<div class="line"><a name="l00816"></a><span class="lineno">  816</span>&#160;                          <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;&gt;</a>&gt;;</div>
+<div class="line"><a name="l00817"></a><span class="lineno">  817</span>&#160;  assemble_test_function_arguments_and_execute_tests&lt;Test, operand_type_list,</div>
+<div class="line"><a name="l00818"></a><span class="lineno">  818</span>&#160;                                                     VectorType0&gt;(</div>
+<div class="line"><a name="l00819"></a><span class="lineno">  819</span>&#160;      get&lt;0&gt;(function_and_argument_bounds) <span class="comment">/*function*/</span>,</div>
+<div class="line"><a name="l00820"></a><span class="lineno">  820</span>&#160;      get&lt;1&gt;(function_and_argument_bounds) <span class="comment">/*tuple of bounds*/</span>,</div>
+<div class="line"><a name="l00821"></a><span class="lineno">  821</span>&#160;      <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;UseRefWrap, 0&gt;</a>{}, starting_operands{},</div>
+<div class="line"><a name="l00822"></a><span class="lineno">  822</span>&#160;      next_choice_for_test_functions_recursion&lt;0_st, tmpl::list&lt;DistBounds...&gt;,</div>
+<div class="line"><a name="l00823"></a><span class="lineno">  823</span>&#160;                                               Test&gt;{});</div>
+<div class="line"><a name="l00824"></a><span class="lineno">  824</span>&#160;}</div>
+<div class="line"><a name="l00825"></a><span class="lineno">  825</span>&#160;}  <span class="comment">// namespace detail</span></div>
+<div class="line"><a name="l00826"></a><span class="lineno">  826</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00827"></a><span class="lineno">  827</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00828"></a><span class="lineno">  828</span>&#160;<span class="comment"> * \ingroup TestingFrameworkGroup</span></div>
+<div class="line"><a name="l00829"></a><span class="lineno">  829</span>&#160;<span class="comment"> * \brief General entry function for testing arbitrary math functions</span></div>
+<div class="line"><a name="l00830"></a><span class="lineno">  830</span>&#160;<span class="comment"> * on vector types</span></div>
+<div class="line"><a name="l00831"></a><span class="lineno">  831</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00832"></a><span class="lineno">  832</span>&#160;<span class="comment"> * \details This utility tests all combinations of the operator on the type</span></div>
+<div class="line"><a name="l00833"></a><span class="lineno">  833</span>&#160;<span class="comment"> * arguments, and all combinations of reference or constant reference wrappers</span></div>
+<div class="line"><a name="l00834"></a><span class="lineno">  834</span>&#160;<span class="comment"> * on all arguments. In certain test cases (see below), it also tests using the</span></div>
+<div class="line"><a name="l00835"></a><span class="lineno">  835</span>&#160;<span class="comment"> * vector type&#39;s `value_type`s in the operators as well (e.g. `DataVector +</span></div>
+<div class="line"><a name="l00836"></a><span class="lineno">  836</span>&#160;<span class="comment"> * double`). This is very useful for quickly generating a lot of tests, but the</span></div>
+<div class="line"><a name="l00837"></a><span class="lineno">  837</span>&#160;<span class="comment"> * number of tests scales exponentially in the number of arguments. Therefore,</span></div>
+<div class="line"><a name="l00838"></a><span class="lineno">  838</span>&#160;<span class="comment"> * functions with many arguments can be time-consuming to</span></div>
+<div class="line"><a name="l00839"></a><span class="lineno">  839</span>&#160;<span class="comment"> * run. 4-or-more-argument functions should be used only if completely necessary</span></div>
+<div class="line"><a name="l00840"></a><span class="lineno">  840</span>&#160;<span class="comment"> * and with caution. Any number of vector types may be specified, and tests are</span></div>
+<div class="line"><a name="l00841"></a><span class="lineno">  841</span>&#160;<span class="comment"> * run on all unique combinations of the provided. For instance, if only one</span></div>
+<div class="line"><a name="l00842"></a><span class="lineno">  842</span>&#160;<span class="comment"> * type is provided, the tests will be run only on combinations of that single</span></div>
+<div class="line"><a name="l00843"></a><span class="lineno">  843</span>&#160;<span class="comment"> * type and its `value_type`.</span></div>
+<div class="line"><a name="l00844"></a><span class="lineno">  844</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00845"></a><span class="lineno">  845</span>&#160;<span class="comment"> * \param tuple_of_functions_and_argument_bounds A tuple of tuples, in which</span></div>
+<div class="line"><a name="l00846"></a><span class="lineno">  846</span>&#160;<span class="comment"> *  the inner tuple contains first a function object followed by a tuple of</span></div>
+<div class="line"><a name="l00847"></a><span class="lineno">  847</span>&#160;<span class="comment"> *  2-element arrays equal to the number of arguments, which represent the</span></div>
+<div class="line"><a name="l00848"></a><span class="lineno">  848</span>&#160;<span class="comment"> *  bounds for the random generation of the respective arguments. This system</span></div>
+<div class="line"><a name="l00849"></a><span class="lineno">  849</span>&#160;<span class="comment"> *  is provided for robust testing of operators like `/`, where the left-hand</span></div>
+<div class="line"><a name="l00850"></a><span class="lineno">  850</span>&#160;<span class="comment"> *  side has a different valid set of values than the right-hand-side.</span></div>
+<div class="line"><a name="l00851"></a><span class="lineno">  851</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00852"></a><span class="lineno">  852</span>&#160;<span class="comment"> * \tparam Test from the `TestKind` enum, determines whether the tests will</span></div>
+<div class="line"><a name="l00853"></a><span class="lineno">  853</span>&#160;<span class="comment"> *  be:</span></div>
+<div class="line"><a name="l00854"></a><span class="lineno">  854</span>&#160;<span class="comment"> *  - `TestKind::Normal`: executed on all combinations of arguments and value</span></div>
+<div class="line"><a name="l00855"></a><span class="lineno">  855</span>&#160;<span class="comment"> *    types</span></div>
+<div class="line"><a name="l00856"></a><span class="lineno">  856</span>&#160;<span class="comment"> *  - `TestKind::Strict`: executed on all combinations of arguments, for only</span></div>
+<div class="line"><a name="l00857"></a><span class="lineno">  857</span>&#160;<span class="comment"> *    the vector types</span></div>
+<div class="line"><a name="l00858"></a><span class="lineno">  858</span>&#160;<span class="comment"> *  - `TestKind::Inplace`: executed on all combinations of arguments after the</span></div>
+<div class="line"><a name="l00859"></a><span class="lineno">  859</span>&#160;<span class="comment"> *    first, so first is always the &#39;left hand side&#39; of the operator. In this</span></div>
+<div class="line"><a name="l00860"></a><span class="lineno">  860</span>&#160;<span class="comment"> *    case, at least two `VectorTypes` must be specified, where the first is</span></div>
+<div class="line"><a name="l00861"></a><span class="lineno">  861</span>&#160;<span class="comment"> *    used only for the left-hand side.</span></div>
+<div class="line"><a name="l00862"></a><span class="lineno">  862</span>&#160;<span class="comment"> *  - `TestKind::GivenOrderOfArgumentsOnly`: executed on only the combination of</span></div>
+<div class="line"><a name="l00863"></a><span class="lineno">  863</span>&#160;<span class="comment"> *    arguments provided, in the order provided. In this case, the number of</span></div>
+<div class="line"><a name="l00864"></a><span class="lineno">  864</span>&#160;<span class="comment"> *    provided types in `typename VectorType0, typename... VectorTypes` must</span></div>
+<div class="line"><a name="l00865"></a><span class="lineno">  865</span>&#160;<span class="comment"> *    precisely match the number of arguments taken by the function.</span></div>
+<div class="line"><a name="l00866"></a><span class="lineno">  866</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00867"></a><span class="lineno">  867</span>&#160;<span class="comment"> * \tparam VectorType0 The first vector type for which combinations are</span></div>
+<div class="line"><a name="l00868"></a><span class="lineno">  868</span>&#160;<span class="comment"> *  tested. The first is accepted as a separate template argument for</span></div>
+<div class="line"><a name="l00869"></a><span class="lineno">  869</span>&#160;<span class="comment"> *  appropriately handling `Inplace` tests.</span></div>
+<div class="line"><a name="l00870"></a><span class="lineno">  870</span>&#160;<span class="comment"> * \tparam VectorTypes The remaining types for which combinations are tested.</span></div>
+<div class="line"><a name="l00871"></a><span class="lineno">  871</span>&#160;<span class="comment"> *  Any number of types may be passed in, and the test will check the</span></div>
+<div class="line"><a name="l00872"></a><span class="lineno">  872</span>&#160;<span class="comment"> *  appropriate combinations of the vector types and (depending on the `Test`)</span></div>
+<div class="line"><a name="l00873"></a><span class="lineno">  873</span>&#160;<span class="comment"> *  the respective `value_type`s.</span></div>
+<div class="line"><a name="l00874"></a><span class="lineno">  874</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00875"></a><span class="lineno">  875</span>&#160;<span class="keyword">template</span> &lt;<a class="code" href="group__TestingFrameworkGroup.html#ga921a5dbf5f1704e2051d1daf593d0d90">TestKind</a> Test, <span class="keyword">typename</span> VectorType0, <span class="keyword">typename</span>... VectorTypes,</div>
+<div class="line"><a name="l00876"></a><span class="lineno">  876</span>&#160;          <span class="keyword">typename</span>... FunctionsAndArgumentBounds&gt;</div>
+<div class="line"><a name="l00877"></a><span class="lineno"><a class="line" href="group__TestingFrameworkGroup.html#ga990527392f1401e09d2d9799b1a663a7">  877</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__TestingFrameworkGroup.html#ga990527392f1401e09d2d9799b1a663a7">test_functions_with_vector_arguments</a>(</div>
+<div class="line"><a name="l00878"></a><span class="lineno">  878</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;FunctionsAndArgumentBounds...&gt;</a>&amp;</div>
+<div class="line"><a name="l00879"></a><span class="lineno">  879</span>&#160;        tuple_of_functions_and_argument_bounds) noexcept {</div>
+<div class="line"><a name="l00880"></a><span class="lineno">  880</span>&#160;  <a class="code" href="group__UtilitiesGroup.html#ga91227dc4aa14972b7b2e7070719d061b">tuple_fold</a>(</div>
+<div class="line"><a name="l00881"></a><span class="lineno">  881</span>&#160;      tuple_of_functions_and_argument_bounds,</div>
+<div class="line"><a name="l00882"></a><span class="lineno">  882</span>&#160;      [](<span class="keyword">const</span> <span class="keyword">auto</span>&amp; function_and_argument_bounds) noexcept {</div>
+<div class="line"><a name="l00883"></a><span class="lineno">  883</span>&#160;        detail::test_function_with_vector_arguments_impl&lt;Test, VectorType0,</div>
+<div class="line"><a name="l00884"></a><span class="lineno">  884</span>&#160;                                                         VectorTypes...&gt;(</div>
+<div class="line"><a name="l00885"></a><span class="lineno">  885</span>&#160;            function_and_argument_bounds);</div>
+<div class="line"><a name="l00886"></a><span class="lineno">  886</span>&#160;      });</div>
+<div class="line"><a name="l00887"></a><span class="lineno">  887</span>&#160;}</div>
+<div class="line"><a name="l00888"></a><span class="lineno">  888</span>&#160;}  <span class="comment">// namespace VectorImpl</span></div>
+<div class="line"><a name="l00889"></a><span class="lineno">  889</span>&#160;}  <span class="comment">// namespace TestHelpers</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga45da409b9b03a4ad18e76036ab5a853c"><div class="ttname"><a href="group__UtilitiesGroup.html#ga45da409b9b03a4ad18e76036ab5a853c">expand_pack</a></div><div class="ttdeci">constexpr void expand_pack(Ts &amp;&amp;...) noexcept</div><div class="ttdoc">Allows zero-cost unordered expansion of a parameter.</div><div class="ttdef"><b>Definition:</b> TMPL.hpp:549</div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga818f101f2f8bd824a3bc7c2c2361c560"><div class="ttname"><a href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a></div><div class="ttdeci">constexpr T &amp; at(std::array&lt; T, N &gt; &amp;arr, Size index)</div><div class="ttdoc">Retrieve a entry from a container, with checks in Debug mode that the index being retrieved is valid.</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:125</div></div>
+<div class="ttc" id="autility_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a></div></div>
+<div class="ttc" id="afunctional_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/functional.html">functional</a></div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_ga1c92dd364b5c10deb51c67a29b1f0749"><div class="ttname"><a href="group__TestingFrameworkGroup.html#ga1c92dd364b5c10deb51c67a29b1f0749">TestHelpers::VectorImpl::vector_test_math_after_move</a></div><div class="ttdeci">void vector_test_math_after_move(tt::get_fundamental_type_t&lt; ValueType &gt; low=tt::get_fundamental_type_t&lt; ValueType &gt;{-100.0}, tt::get_fundamental_type_t&lt; ValueType &gt; high=tt::get_fundamental_type_t&lt; ValueType &gt;{100.0}) noexcept</div><div class="ttdoc">tests a small sample of math functions after a move of a VectorType initialized with ValueType</div><div class="ttdef"><b>Definition:</b> VectorImplTestHelper.hpp:342</div></div>
+<div class="ttc" id="ainteger_sequence_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::index_sequence</a></div></div>
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a></div></div>
+<div class="ttc" id="asize_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/iterator/size.html">std::size</a></div><div class="ttdeci">T size(T... args)</div></div>
+<div class="ttc" id="aTestingFramework_8hpp_html"><div class="ttname"><a href="TestingFramework_8hpp.html">TestingFramework.hpp</a></div></div>
+<div class="ttc" id="arandom_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/random.html">random</a></div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_gabc8106fbcf642235c3a21b28835e8041"><div class="ttname"><a href="group__TestingFrameworkGroup.html#gabc8106fbcf642235c3a21b28835e8041">TestHelpers::VectorImpl::vector_ref_test_size_error</a></div><div class="ttdeci">void vector_ref_test_size_error(RefSizeErrorTestKind test_kind, tt::get_fundamental_type_t&lt; ValueType &gt; low=tt::get_fundamental_type_t&lt; ValueType &gt;{-100.0}, tt::get_fundamental_type_t&lt; ValueType &gt; high=tt::get_fundamental_type_t&lt; ValueType &gt;{100.0}) noexcept</div><div class="ttdoc">Test that assigning to a non-owning VectorType of the wrong size appropriately generates an error.</div><div class="ttdef"><b>Definition:</b> VectorImplTestHelper.hpp:307</div></div>
+<div class="ttc" id="aMakeWithRandomValues_8hpp_html"><div class="ttname"><a href="MakeWithRandomValues_8hpp.html">MakeWithRandomValues.hpp</a></div></div>
+<div class="ttc" id="atuple_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/tuple.html">tuple</a></div></div>
+<div class="ttc" id="agroup__DataBoxGroup_html_gae08744824ea7df89224f128b2080c5b1"><div class="ttname"><a href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">db::get</a></div><div class="ttdeci">const auto &amp; get(const DataBox&lt; TagList &gt; &amp;box) noexcept</div><div class="ttdoc">Retrieve the item with tag Tag from the DataBox.</div><div class="ttdef"><b>Definition:</b> DataBox.hpp:791</div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_ga1107a6a611543b70cc5f895b835a367e"><div class="ttname"><a href="group__TestingFrameworkGroup.html#ga1107a6a611543b70cc5f895b835a367e">TestHelpers::VectorImpl::vector_test_serialize</a></div><div class="ttdeci">void vector_test_serialize(tt::get_fundamental_type_t&lt; ValueType &gt; low=tt::get_fundamental_type_t&lt; ValueType &gt;{-100.0}, tt::get_fundamental_type_t&lt; ValueType &gt; high=tt::get_fundamental_type_t&lt; ValueType &gt;{ 100.0}) noexcept</div><div class="ttdoc">test the serialization of a VectorType constructed with a ValueType</div><div class="ttdef"><b>Definition:</b> VectorImplTestHelper.hpp:159</div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga91227dc4aa14972b7b2e7070719d061b"><div class="ttname"><a href="group__UtilitiesGroup.html#ga91227dc4aa14972b7b2e7070719d061b">tuple_fold</a></div><div class="ttdeci">constexpr void tuple_fold(const std::tuple&lt; Elements... &gt; &amp;tuple, N_aryOp &amp;&amp;op, Args &amp;&amp;... args) noexcept(noexcept(tuple_impl_detail::tuple_fold_impl&lt; ReverseIteration &gt;(tuple, std::forward&lt; N_aryOp &gt;(op), std::make_index_sequence&lt; sizeof...(Elements)&gt;{}, args...)))</div><div class="ttdoc">Perform a fold over a std::tuple.</div><div class="ttdef"><b>Definition:</b> Tuple.hpp:112</div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_ga6ce5d669c94418f197e4c55c53e64a64"><div class="ttname"><a href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">CHECK_ITERABLE_APPROX</a></div><div class="ttdeci">#define CHECK_ITERABLE_APPROX(a, b)</div><div class="ttdoc">A wrapper around Catch's CHECK macro that checks approximate equality of entries in iterable containe...</div><div class="ttdef"><b>Definition:</b> TestingFramework.hpp:122</div></div>
+<div class="ttc" id="aFramework_2TestHelpers_8hpp_html_aaddd14aaf8ff9752cb1e8f13dcba0ef3"><div class="ttname"><a href="Framework_2TestHelpers_8hpp.html#aaddd14aaf8ff9752cb1e8f13dcba0ef3">test_move_semantics</a></div><div class="ttdeci">void test_move_semantics(T &amp;&amp;a, const T &amp;comparison, Args &amp;&amp;... args)</div><div class="ttdoc">Test for move semantics assuming operator== is implemented correctly.</div><div class="ttdef"><b>Definition:</b> TestHelpers.hpp:125</div></div>
+<div class="ttc" id="aalgorithm_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/algorithm.html">algorithm</a></div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga48f1ae622586a451d95b26daaac2378e"><div class="ttname"><a href="group__UtilitiesGroup.html#ga48f1ae622586a451d95b26daaac2378e">get_size</a></div><div class="ttdeci">decltype(auto) get_size(const T &amp;t, SizeFunction size=GetContainerSize{}) noexcept</div><div class="ttdoc">Retrieve the size of t if t.size() is a valid expression, otherwise if T is fundamental or a std::com...</div><div class="ttdef"><b>Definition:</b> ContainerHelpers.hpp:145</div></div>
+<div class="ttc" id="aFramework_2TestHelpers_8hpp_html_a6a606665331765067f231cf230f7b1ca"><div class="ttname"><a href="Framework_2TestHelpers_8hpp.html#a6a606665331765067f231cf230f7b1ca">test_copy_semantics</a></div><div class="ttdeci">void test_copy_semantics(const T &amp;a)</div><div class="ttdoc">Test for copy semantics assuming operator== is implement correctly.</div><div class="ttdef"><b>Definition:</b> TestHelpers.hpp:96</div></div>
+<div class="ttc" id="aFramework_2TestHelpers_8hpp_html"><div class="ttname"><a href="Framework_2TestHelpers_8hpp.html">TestHelpers.hpp</a></div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_ga1d27028c1827976007fe9d29ad3a2f66"><div class="ttname"><a href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a></div><div class="ttdeci">#define ERROR(m)</div><div class="ttdoc">prints an error message to the standard error stream and aborts the program.</div><div class="ttdef"><b>Definition:</b> Error.hpp:37</div></div>
+<div class="ttc" id="areference_wrapper_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/functional/reference_wrapper.html">std::reference_wrapper</a></div></div>
+<div class="ttc" id="aclassUniformCustomDistribution_html"><div class="ttname"><a href="classUniformCustomDistribution.html">UniformCustomDistribution</a></div><div class="ttdoc">A uniform distribution function object which redirects appropriately to either the std::uniform_int_d...</div><div class="ttdef"><b>Definition:</b> MakeWithRandomValues.hpp:119</div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/array.html">array</a></div></div>
+<div class="ttc" id="aTuple_8hpp_html"><div class="ttname"><a href="Tuple_8hpp.html">Tuple.hpp</a></div></div>
+<div class="ttc" id="amap_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/map.html">map</a></div></div>
+<div class="ttc" id="anamespacealg_html_af893873f65d38df2edd4999798524cdb"><div class="ttname"><a href="namespacealg.html#af893873f65d38df2edd4999798524cdb">alg::for_each</a></div><div class="ttdeci">decltype(auto) for_each(const Container &amp;c, UnaryFunction &amp;&amp;f)</div><div class="ttdoc">Convenience wrapper around std::for_each, returns the result of std::for_each(begin(c),...</div><div class="ttdef"><b>Definition:</b> Algorithm.hpp:291</div></div>
+<div class="ttc" id="amemory_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a></div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_ga2895e57f4cacd63d2549655bb29bba7b"><div class="ttname"><a href="group__TestingFrameworkGroup.html#ga2895e57f4cacd63d2549655bb29bba7b">serialize_and_deserialize</a></div><div class="ttdeci">T serialize_and_deserialize(const T &amp;t)</div><div class="ttdoc">Serializes and deserializes an object t of type T</div><div class="ttdef"><b>Definition:</b> TestHelpers.hpp:45</div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_gad7f766439113f958bf4f8ba0f53c4881"><div class="ttname"><a href="group__TestingFrameworkGroup.html#gad7f766439113f958bf4f8ba0f53c4881">MAKE_GENERATOR</a></div><div class="ttdeci">#define MAKE_GENERATOR(...)</div><div class="ttdoc">MAKE_GENERATOR(NAME [, SEED]) declares a variable of name NAME containing a generator of type std::mt...</div><div class="ttdef"><b>Definition:</b> TestHelpers.hpp:433</div></div>
+<div class="ttc" id="aDereferenceWrapper_8hpp_html"><div class="ttname"><a href="DereferenceWrapper_8hpp.html">DereferenceWrapper.hpp</a></div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_ga2b21aa8a8ec3ed4756193ec01a04d105"><div class="ttname"><a href="group__TestingFrameworkGroup.html#ga2b21aa8a8ec3ed4756193ec01a04d105">TestHelpers::VectorImpl::vector_test_ref</a></div><div class="ttdeci">void vector_test_ref(tt::get_fundamental_type_t&lt; ValueType &gt; low=tt::get_fundamental_type_t&lt; ValueType &gt;{-100.0}, tt::get_fundamental_type_t&lt; ValueType &gt; high=tt::get_fundamental_type_t&lt; ValueType &gt;{ 100.0}) noexcept</div><div class="ttdoc">test the construction and move of a reference VectorType constructed with a ValueType</div><div class="ttdef"><b>Definition:</b> VectorImplTestHelper.hpp:204</div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_ga8a1befa0bb8af437c081a992f7dc11e8"><div class="ttname"><a href="group__TestingFrameworkGroup.html#ga8a1befa0bb8af437c081a992f7dc11e8">TestHelpers::VectorImpl::vector_test_construct_and_assign</a></div><div class="ttdeci">void vector_test_construct_and_assign(tt::get_fundamental_type_t&lt; ValueType &gt; low=tt::get_fundamental_type_t&lt; ValueType &gt;{-100.0}, tt::get_fundamental_type_t&lt; ValueType &gt; high=tt::get_fundamental_type_t&lt; ValueType &gt;{100.0}) noexcept</div><div class="ttdoc">test construction and assignment of a VectorType with a ValueType</div><div class="ttdef"><b>Definition:</b> VectorImplTestHelper.hpp:39</div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_ga7f98af1ba7b65811cf35536db6259f88"><div class="ttname"><a href="group__TestingFrameworkGroup.html#ga7f98af1ba7b65811cf35536db6259f88">make_with_random_values</a></div><div class="ttdeci">ReturnType make_with_random_values(const gsl::not_null&lt; UniformRandomBitGenerator * &gt; generator, const gsl::not_null&lt; RandomNumberDistribution * &gt; distribution, const T &amp;used_for_size) noexcept</div><div class="ttdoc">Make a data structure and fill it with random values.</div><div class="ttdef"><b>Definition:</b> MakeWithRandomValues.hpp:185</div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="aRequires_8hpp_html"><div class="ttname"><a href="Requires_8hpp.html">Requires.hpp</a></div></div>
+<div class="ttc" id="aclassVectorImpl_html"><div class="ttname"><a href="classVectorImpl.html">VectorImpl</a></div><div class="ttdoc">Base class template for various DataVector and related types.</div><div class="ttdef"><b>Definition:</b> VectorImpl.hpp:77</div></div>
+<div class="ttc" id="acomplex_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex&lt; double &gt;</a></div></div>
+<div class="ttc" id="aGsl_8hpp_html_a649c6961f9146205c203e45d58fd0c4c"><div class="ttname"><a href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a></div><div class="ttdeci">gsl::not_null&lt; T * &gt; make_not_null(T *ptr) noexcept</div><div class="ttdoc">Construct a not_null from a pointer. Often this will be done as an implicit conversion,...</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:880</div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga084d535585c18d4e80f8ec6052d341a3"><div class="ttname"><a href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a></div><div class="ttdeci">typename Requires_detail::requires_impl&lt; B &gt;::template_error_type_failed_to_meet_requirements_on_template_parameters Requires</div><div class="ttdoc">Express requirements on the template parameters of a function or class, replaces std::enable_if_t</div><div class="ttdef"><b>Definition:</b> Requires.hpp:67</div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_gab0084c31ad1370a7305ac159837d3384"><div class="ttname"><a href="group__UtilitiesGroup.html#gab0084c31ad1370a7305ac159837d3384">get_element</a></div><div class="ttdeci">decltype(auto) get_element(T &amp;t, const size_t i, SubscriptFunction at=GetContainerElement{}) noexcept</div><div class="ttdoc">Returns the ith element if T has a subscript operator, otherwise if T is fundamental or a std::comple...</div><div class="ttdef"><b>Definition:</b> ContainerHelpers.hpp:117</div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_ga921a5dbf5f1704e2051d1daf593d0d90"><div class="ttname"><a href="group__TestingFrameworkGroup.html#ga921a5dbf5f1704e2051d1daf593d0d90">TestHelpers::VectorImpl::TestKind</a></div><div class="ttdeci">TestKind</div><div class="ttdoc">the set of test types that may be used for the math operations</div><div class="ttdef"><b>Definition:</b> VectorImplTestHelper.hpp:449</div></div>
+<div class="ttc" id="agroup__DataStructuresGroup_html_gad3e9dbf822156ded56a56203bfde2076"><div class="ttname"><a href="group__DataStructuresGroup.html#gad3e9dbf822156ded56a56203bfde2076">make_const_view</a></div><div class="ttdeci">void make_const_view(const gsl::not_null&lt; const SpinWeightedType * &gt; view, const SpinWeightedType &amp;spin_weighted, const size_t offset, const size_t extent) noexcept</div><div class="ttdef"><b>Definition:</b> SpinWeighted.hpp:544</div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_ga990527392f1401e09d2d9799b1a663a7"><div class="ttname"><a href="group__TestingFrameworkGroup.html#ga990527392f1401e09d2d9799b1a663a7">TestHelpers::VectorImpl::test_functions_with_vector_arguments</a></div><div class="ttdeci">void test_functions_with_vector_arguments(const std::tuple&lt; FunctionsAndArgumentBounds... &gt; &amp;tuple_of_functions_and_argument_bounds) noexcept</div><div class="ttdoc">General entry function for testing arbitrary math functions on vector types.</div><div class="ttdef"><b>Definition:</b> VectorImplTestHelper.hpp:877</div></div>
+<div class="ttc" id="avariant_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/variant.html">variant</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

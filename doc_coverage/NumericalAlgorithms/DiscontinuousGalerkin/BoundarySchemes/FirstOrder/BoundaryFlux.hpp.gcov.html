@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - 39f3c2b725318dcf91749887b1e61f477736e132 - NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/BoundaryFlux.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title"> SpECTRE Documentation Coverage Report</td></tr>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../index.html">top level</a> - <a href="index.html">NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder</a> - BoundaryFlux.hpp</td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+             <td class="headerItem">Commit:</td>
+             <td class="headerValue"><a target="_blank" href="https://github.com/sxs-collaboration/spectre/commit/39f3c2b725318dcf91749887b1e61f477736e132">39f3c2b725318dcf91749887b1e61f477736e132</a></td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntryLo">50.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2021-07-13 03:19:40</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineNoCov">          0 : // Distributed under the MIT License.</span></a>
+<a name="2"><span class="lineNum">       2 </span>            : // See LICENSE.txt for details.</a>
+<a name="3"><span class="lineNum">       3 </span>            : </a>
+<a name="4"><span class="lineNum">       4 </span>            : #pragma once</a>
+<a name="5"><span class="lineNum">       5 </span>            : </a>
+<a name="6"><span class="lineNum">       6 </span>            : #include &lt;algorithm&gt;</a>
+<a name="7"><span class="lineNum">       7 </span>            : #include &lt;array&gt;</a>
+<a name="8"><span class="lineNum">       8 </span>            : #include &lt;cstddef&gt;</a>
+<a name="9"><span class="lineNum">       9 </span>            : </a>
+<a name="10"><span class="lineNum">      10 </span>            : #include &quot;DataStructures/DataBox/PrefixHelpers.hpp&quot;</a>
+<a name="11"><span class="lineNum">      11 </span>            : #include &quot;DataStructures/DataBox/Prefixes.hpp&quot;</a>
+<a name="12"><span class="lineNum">      12 </span>            : #include &quot;DataStructures/Tensor/Tensor.hpp&quot;</a>
+<a name="13"><span class="lineNum">      13 </span>            : #include &quot;DataStructures/Variables.hpp&quot;</a>
+<a name="14"><span class="lineNum">      14 </span>            : #include &quot;NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/BoundaryData.hpp&quot;</a>
+<a name="15"><span class="lineNum">      15 </span>            : #include &quot;NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp&quot;</a>
+<a name="16"><span class="lineNum">      16 </span>            : #include &quot;NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp&quot;</a>
+<a name="17"><span class="lineNum">      17 </span>            : #include &quot;NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/NumericalFluxHelpers.hpp&quot;</a>
+<a name="18"><span class="lineNum">      18 </span>            : #include &quot;NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp&quot;</a>
+<a name="19"><span class="lineNum">      19 </span>            : #include &quot;NumericalAlgorithms/Spectral/Mesh.hpp&quot;</a>
+<a name="20"><span class="lineNum">      20 </span>            : #include &quot;NumericalAlgorithms/Spectral/Projection.hpp&quot;</a>
+<a name="21"><span class="lineNum">      21 </span>            : #include &quot;NumericalAlgorithms/Spectral/Spectral.hpp&quot;</a>
+<a name="22"><span class="lineNum">      22 </span>            : #include &quot;Utilities/ProtocolHelpers.hpp&quot;</a>
+<a name="23"><span class="lineNum">      23 </span>            : #include &quot;Utilities/Requires.hpp&quot;</a>
+<a name="24"><span class="lineNum">      24 </span>            : #include &quot;Utilities/TMPL.hpp&quot;</a>
+<a name="25"><span class="lineNum">      25 </span>            : </a>
+<a name="26"><span class="lineNum">      26 </span>            : namespace dg {</a>
+<a name="27"><span class="lineNum">      27 </span>            : /// Functionality related to the first-order DG scheme.</a>
+<a name="28"><span class="lineNum">      28 </span>            : namespace FirstOrderScheme {</a>
+<a name="29"><span class="lineNum">      29 </span>            : </a>
+<a name="30"><span class="lineNum">      30 </span>            : /*!</a>
+<a name="31"><span class="lineNum">      31 </span>            :  * \brief Compute the boundary flux contribution and lift it to the volume.</a>
+<a name="32"><span class="lineNum">      32 </span>            :  *</a>
+<a name="33"><span class="lineNum">      33 </span>            :  * This computes the numerical flux minus the flux dotted into the interface</a>
+<a name="34"><span class="lineNum">      34 </span>            :  * normal, projects the result to the face mesh if necessary, and then lifts it</a>
+<a name="35"><span class="lineNum">      35 </span>            :  * to the volume (still presented only on the face mesh as all other points are</a>
+<a name="36"><span class="lineNum">      36 </span>            :  * zero).</a>
+<a name="37"><span class="lineNum">      37 </span>            :  *</a>
+<a name="38"><span class="lineNum">      38 </span>            :  * Projection must happen after the numerical flux calculation so that the</a>
+<a name="39"><span class="lineNum">      39 </span>            :  * elements on either side of the mortar calculate the same result.  Projection</a>
+<a name="40"><span class="lineNum">      40 </span>            :  * must happen before flux lifting because we want the factor of the magnitude</a>
+<a name="41"><span class="lineNum">      41 </span>            :  * of the unit normal added during the lift to cancel the Jacobian factor in</a>
+<a name="42"><span class="lineNum">      42 </span>            :  * integrals to preserve conservation; this only happens if the two operations</a>
+<a name="43"><span class="lineNum">      43 </span>            :  * are done on the same grid.</a>
+<a name="44"><span class="lineNum">      44 </span>            :  */</a>
+<a name="45"><span class="lineNum">      45 </span>            : template &lt;size_t FaceDim, typename NumericalFluxType, typename AllFieldsTags,</a>
+<a name="46"><span class="lineNum">      46 </span>            :           typename AllExtraDataTags,</a>
+<a name="47"><span class="lineNum">      47 </span>            :           Requires&lt;tt::conforms_to_v&lt;NumericalFluxType,</a>
+<a name="48"><span class="lineNum">      48 </span>            :                                      dg::protocols::NumericalFlux&gt;&gt; = nullptr&gt;</a>
+<a name="49"><span class="lineNum">      49 </span><span class="lineCov">          1 : Variables&lt;typename NumericalFluxType::variables_tags&gt; boundary_flux(</span></a>
+<a name="50"><span class="lineNum">      50 </span>            :     const dg::SimpleBoundaryData&lt;AllFieldsTags, AllExtraDataTags&gt;&amp;</a>
+<a name="51"><span class="lineNum">      51 </span>            :         local_boundary_data,</a>
+<a name="52"><span class="lineNum">      52 </span>            :     const dg::SimpleBoundaryData&lt;AllFieldsTags, AllExtraDataTags&gt;&amp;</a>
+<a name="53"><span class="lineNum">      53 </span>            :         remote_boundary_data,</a>
+<a name="54"><span class="lineNum">      54 </span>            :     const NumericalFluxType&amp; numerical_flux_computer,</a>
+<a name="55"><span class="lineNum">      55 </span>            :     const Scalar&lt;DataVector&gt;&amp; magnitude_of_face_normal,</a>
+<a name="56"><span class="lineNum">      56 </span>            :     const size_t extent_perpendicular_to_boundary,</a>
+<a name="57"><span class="lineNum">      57 </span>            :     const Mesh&lt;FaceDim&gt;&amp; face_mesh, const Mesh&lt;FaceDim&gt;&amp; mortar_mesh,</a>
+<a name="58"><span class="lineNum">      58 </span>            :     const MortarSize&lt;FaceDim&gt;&amp; mortar_size) noexcept {</a>
+<a name="59"><span class="lineNum">      59 </span>            :   using variables_tags = typename NumericalFluxType::variables_tags;</a>
+<a name="60"><span class="lineNum">      60 </span>            : </a>
+<a name="61"><span class="lineNum">      61 </span>            :   // Compute the Tags::NormalDotNumericalFlux from local and remote data</a>
+<a name="62"><span class="lineNum">      62 </span>            :   Variables&lt;db::wrap_tags_in&lt;::Tags::NormalDotNumericalFlux, variables_tags&gt;&gt;</a>
+<a name="63"><span class="lineNum">      63 </span>            :       normal_dot_numerical_fluxes{mortar_mesh.number_of_grid_points()};</a>
+<a name="64"><span class="lineNum">      64 </span>            :   dg::NumericalFluxes::normal_dot_numerical_fluxes(</a>
+<a name="65"><span class="lineNum">      65 </span>            :       make_not_null(&amp;normal_dot_numerical_fluxes), numerical_flux_computer,</a>
+<a name="66"><span class="lineNum">      66 </span>            :       local_boundary_data, remote_boundary_data);</a>
+<a name="67"><span class="lineNum">      67 </span>            : </a>
+<a name="68"><span class="lineNum">      68 </span>            :   // Subtract the local Tags::NormalDotFlux</a>
+<a name="69"><span class="lineNum">      69 </span>            :   tmpl::for_each&lt;variables_tags&gt;([&amp;normal_dot_numerical_fluxes,</a>
+<a name="70"><span class="lineNum">      70 </span>            :                                   &amp;local_boundary_data](</a>
+<a name="71"><span class="lineNum">      71 </span>            :                                      const auto tag_v) noexcept {</a>
+<a name="72"><span class="lineNum">      72 </span>            :     using tag = tmpl::type_from&lt;decltype(tag_v)&gt;;</a>
+<a name="73"><span class="lineNum">      73 </span>            :     auto&amp; numerical_flux =</a>
+<a name="74"><span class="lineNum">      74 </span>            :         get&lt;::Tags::NormalDotNumericalFlux&lt;tag&gt;&gt;(normal_dot_numerical_fluxes);</a>
+<a name="75"><span class="lineNum">      75 </span>            :     const auto&amp; local_flux =</a>
+<a name="76"><span class="lineNum">      76 </span>            :         get&lt;::Tags::NormalDotFlux&lt;tag&gt;&gt;(local_boundary_data.field_data);</a>
+<a name="77"><span class="lineNum">      77 </span>            :     for (size_t i = 0; i &lt; numerical_flux.size(); ++i) {</a>
+<a name="78"><span class="lineNum">      78 </span>            :       numerical_flux[i] -= local_flux[i];</a>
+<a name="79"><span class="lineNum">      79 </span>            :     }</a>
+<a name="80"><span class="lineNum">      80 </span>            :   });</a>
+<a name="81"><span class="lineNum">      81 </span>            : </a>
+<a name="82"><span class="lineNum">      82 </span>            :   // Project from the mortar back to the face if needed</a>
+<a name="83"><span class="lineNum">      83 </span>            :   auto projected_fluxes =</a>
+<a name="84"><span class="lineNum">      84 </span>            :       Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)</a>
+<a name="85"><span class="lineNum">      85 </span>            :           ? project_from_mortar(normal_dot_numerical_fluxes, face_mesh,</a>
+<a name="86"><span class="lineNum">      86 </span>            :                                 mortar_mesh, mortar_size)</a>
+<a name="87"><span class="lineNum">      87 </span>            :           : std::move(normal_dot_numerical_fluxes);</a>
+<a name="88"><span class="lineNum">      88 </span>            : </a>
+<a name="89"><span class="lineNum">      89 </span>            :   // Lift flux to the volume. We still only need to provide it on the face</a>
+<a name="90"><span class="lineNum">      90 </span>            :   // because it is zero everywhere else.</a>
+<a name="91"><span class="lineNum">      91 </span>            :   return lift_flux(std::move(projected_fluxes),</a>
+<a name="92"><span class="lineNum">      92 </span>            :                    extent_perpendicular_to_boundary, magnitude_of_face_normal);</a>
+<a name="93"><span class="lineNum">      93 </span>            : }</a>
+<a name="94"><span class="lineNum">      94 </span>            : </a>
+<a name="95"><span class="lineNum">      95 </span>            : }  // namespace FirstOrderScheme</a>
+<a name="96"><span class="lineNum">      96 </span>            : }  // namespace dg</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

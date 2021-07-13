@@ -1,0 +1,251 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Cce::CalculateScriPlusValue&lt; Tags::ScriPlus&lt; Tags::Strain &gt; &gt; Struct Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceCce.html">Cce</a></li><li class="navelem"><a class="el" href="structCce_1_1CalculateScriPlusValue_3_01Tags_1_1ScriPlus_3_01Tags_1_1Strain_01_4_01_4.html">CalculateScriPlusValue&lt; Tags::ScriPlus&lt; Tags::Strain &gt; &gt;</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="structCce_1_1CalculateScriPlusValue_3_01Tags_1_1ScriPlus_3_01Tags_1_1Strain_01_4_01_4-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Cce::CalculateScriPlusValue&lt; Tags::ScriPlus&lt; Tags::Strain &gt; &gt; Struct Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Computes the leading part of the strain \(h\) near \(\mathcal I^+\).  
+ <a href="structCce_1_1CalculateScriPlusValue_3_01Tags_1_1ScriPlus_3_01Tags_1_1Strain_01_4_01_4.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ScriPlusValues_8hpp_source.html">ScriPlusValues.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ae290e3bf2a25f0fd62d7e017196dc637"><td class="memItemLeft" align="right" valign="top"><a id="ae290e3bf2a25f0fd62d7e017196dc637"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_tags</b> = tmpl::list&lt; <a class="el" href="structCce_1_1Tags_1_1ScriPlus.html">Tags::ScriPlus</a>&lt; <a class="el" href="structCce_1_1Tags_1_1Strain.html">Tags::Strain</a> &gt; &gt;</td></tr>
+<tr class="separator:ae290e3bf2a25f0fd62d7e017196dc637"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2139e1a88fe2d07949705352eda64fec"><td class="memItemLeft" align="right" valign="top"><a id="a2139e1a88fe2d07949705352eda64fec"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>tensor_argument_tags</b> = tmpl::list&lt; <a class="el" href="structCce_1_1Tags_1_1Dy.html">Tags::Dy</a>&lt; <a class="el" href="structCce_1_1Tags_1_1BondiJ.html">Tags::BondiJ</a> &gt;, <a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt; <a class="el" href="structCce_1_1Tags_1_1ComplexInertialRetardedTime.html">Tags::ComplexInertialRetardedTime</a>, <a class="el" href="structSpectral_1_1Swsh_1_1Tags_1_1EthEth.html">Spectral::Swsh::Tags::EthEth</a> &gt;, <a class="el" href="structCce_1_1Tags_1_1EvolutionGaugeBoundaryValue.html">Tags::EvolutionGaugeBoundaryValue</a>&lt; <a class="el" href="structCce_1_1Tags_1_1BondiR.html">Tags::BondiR</a> &gt; &gt;</td></tr>
+<tr class="separator:a2139e1a88fe2d07949705352eda64fec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48388015869af26ab8210018cbf7fa03"><td class="memItemLeft" align="right" valign="top"><a id="a48388015869af26ab8210018cbf7fa03"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::push_back&lt; tensor_argument_tags, <a class="el" href="structCce_1_1Tags_1_1LMax.html">Tags::LMax</a>, <a class="el" href="structCce_1_1Tags_1_1NumberOfRadialPoints.html">Tags::NumberOfRadialPoints</a> &gt;</td></tr>
+<tr class="separator:a48388015869af26ab8210018cbf7fa03"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:af5061f9b4e6e2062d140c59b68603d37"><td class="memItemLeft" align="right" valign="top"><a id="af5061f9b4e6e2062d140c59b68603d37"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>apply</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, -2 &gt;&gt; * &gt; strain, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, 2 &gt;&gt; &amp;dy_bondi_j, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, 2 &gt;&gt; &amp;eth_eth_retarded_time, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="structSpinWeighted.html">SpinWeighted</a>&lt; <a class="el" href="classComplexDataVector.html">ComplexDataVector</a>, 0 &gt;&gt; &amp;boundary_r, size_t l_max, size_t number_of_radial_points) noexcept</td></tr>
+<tr class="separator:af5061f9b4e6e2062d140c59b68603d37"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Computes the leading part of the strain \(h\) near \(\mathcal I^+\). </p>
+<h3>Details</h3>
+<p>The value \(h\) scales asymptotically as \(r^{-1}\), and has the form (in the coordinates used for regularity preserving CCE)</p>
+<p class="formulaDsp">
+\begin{align*} h = \bar J^{(1)} + \bar \eth \bar \eth u^{(0)}, \end{align*}
+</p>
+<p>where \(u^{(0)}\) is the asymptotically inertial retarded time, and \(A^{(n)}\) is the \(1/r^n\) part of \(A\) evaluated at \(\mathcal I^+\), so for any quantity \(A\),</p>
+<p class="formulaDsp">
+\begin{align*} A^{(1)} = (- 2 R \partial_y A)|_{y = 1}, \end{align*}
+</p>
+<p>where the expansion is determined by the conversion between Bondi and numerical radii \(r = 2 R / (1 - y)\). </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/Systems/Cce/<a class="el" href="ScriPlusValues_8hpp_source.html">ScriPlusValues.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

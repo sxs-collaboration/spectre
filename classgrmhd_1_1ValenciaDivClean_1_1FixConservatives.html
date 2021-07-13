@@ -1,0 +1,351 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: grmhd::ValenciaDivClean::FixConservatives Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacegrmhd.html">grmhd</a></li><li class="navelem"><a class="el" href="namespacegrmhd_1_1ValenciaDivClean.html">ValenciaDivClean</a></li><li class="navelem"><a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1FixConservatives.html">FixConservatives</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classgrmhd_1_1ValenciaDivClean_1_1FixConservatives-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">grmhd::ValenciaDivClean::FixConservatives Class Reference<div class="ingroups"><a class="el" href="group__VariableFixingGroup.html">Variable Fixing</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Fix conservative variables using method developed by Foucart.  
+ <a href="classgrmhd_1_1ValenciaDivClean_1_1FixConservatives.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="GrMhd_2ValenciaDivClean_2FixConservatives_8hpp_source.html">FixConservatives.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1FixConservatives_1_1CutoffD.html">CutoffD</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cutoff below which \(D = \rho W\) is set to <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1FixConservatives_1_1MinimumValueOfD.html" title="Minimum value of rest-mass density times lorentz factor.">MinimumValueOfD</a>.  <a href="structgrmhd_1_1ValenciaDivClean_1_1FixConservatives_1_1CutoffD.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1FixConservatives_1_1MinimumValueOfD.html">MinimumValueOfD</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Minimum value of rest-mass density times lorentz factor.  <a href="structgrmhd_1_1ValenciaDivClean_1_1FixConservatives_1_1MinimumValueOfD.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1FixConservatives_1_1SafetyFactorForB.html">SafetyFactorForB</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Safety factor \(\epsilon_B\).  <a href="structgrmhd_1_1ValenciaDivClean_1_1FixConservatives_1_1SafetyFactorForB.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1FixConservatives_1_1SafetyFactorForS.html">SafetyFactorForS</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Safety factor \(\epsilon_S\).  <a href="structgrmhd_1_1ValenciaDivClean_1_1FixConservatives_1_1SafetyFactorForS.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a43db6e8d0f84c9332b3669a1581dbb53"><td class="memItemLeft" align="right" valign="top"><a id="a43db6e8d0f84c9332b3669a1581dbb53"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1FixConservatives_1_1MinimumValueOfD.html">MinimumValueOfD</a>, <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1FixConservatives_1_1CutoffD.html">CutoffD</a>, <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1FixConservatives_1_1SafetyFactorForB.html">SafetyFactorForB</a>, <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1FixConservatives_1_1SafetyFactorForS.html">SafetyFactorForS</a> &gt;</td></tr>
+<tr class="separator:a43db6e8d0f84c9332b3669a1581dbb53"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0f67828be194a35d24c09152b90fc8cb"><td class="memItemLeft" align="right" valign="top"><a id="a0f67828be194a35d24c09152b90fc8cb"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_tags</b> = tmpl::list&lt; <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1Tags_1_1TildeD.html">grmhd::ValenciaDivClean::Tags::TildeD</a>, <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1Tags_1_1TildeTau.html">grmhd::ValenciaDivClean::Tags::TildeTau</a>, <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1Tags_1_1TildeS.html">grmhd::ValenciaDivClean::Tags::TildeS</a>&lt;&gt; &gt;</td></tr>
+<tr class="separator:a0f67828be194a35d24c09152b90fc8cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ca55a60d8e0275d52f0f56cb1e6e0c8"><td class="memItemLeft" align="right" valign="top"><a id="a4ca55a60d8e0275d52f0f56cb1e6e0c8"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt; <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1Tags_1_1TildeB.html">grmhd::ValenciaDivClean::Tags::TildeB</a>&lt;&gt;, <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3 &gt;, <a class="el" href="structgr_1_1Tags_1_1InverseSpatialMetric.html">gr::Tags::InverseSpatialMetric</a>&lt; 3 &gt;, <a class="el" href="structgr_1_1Tags_1_1SqrtDetSpatialMetric.html">gr::Tags::SqrtDetSpatialMetric</a>&lt;&gt; &gt;</td></tr>
+<tr class="separator:a4ca55a60d8e0275d52f0f56cb1e6e0c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a7f13d3ae0072af3ec2e27bec41ae1b2f"><td class="memItemLeft" align="right" valign="top"><a id="a7f13d3ae0072af3ec2e27bec41ae1b2f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FixConservatives</b> (double minimum_rest_mass_density_times_lorentz_factor, double rest_mass_density_times_lorentz_factor_cutoff, double safety_factor_for_magnetic_field, double safety_factor_for_momentum_density, const <a class="el" href="structOptions_1_1Context.html">Options::Context</a> &amp;context={})</td></tr>
+<tr class="separator:a7f13d3ae0072af3ec2e27bec41ae1b2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aedf5eb4e208414caec0d3bbf7ab4010b"><td class="memItemLeft" align="right" valign="top"><a id="aedf5eb4e208414caec0d3bbf7ab4010b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FixConservatives</b> (const <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1FixConservatives.html">FixConservatives</a> &amp;)=default</td></tr>
+<tr class="separator:aedf5eb4e208414caec0d3bbf7ab4010b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac28deab78e1c5640028f9989fd7d004b"><td class="memItemLeft" align="right" valign="top"><a id="ac28deab78e1c5640028f9989fd7d004b"></a>
+<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1FixConservatives.html">FixConservatives</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1FixConservatives.html">FixConservatives</a> &amp;)=default</td></tr>
+<tr class="separator:ac28deab78e1c5640028f9989fd7d004b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1813cf787fd7ba5c76bfce502fd2212"><td class="memItemLeft" align="right" valign="top"><a id="af1813cf787fd7ba5c76bfce502fd2212"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FixConservatives</b> (<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1FixConservatives.html">FixConservatives</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:af1813cf787fd7ba5c76bfce502fd2212"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8e93aaea067b0e41892d0195b10f539"><td class="memItemLeft" align="right" valign="top"><a id="ac8e93aaea067b0e41892d0195b10f539"></a>
+<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1FixConservatives.html">FixConservatives</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1FixConservatives.html">FixConservatives</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:ac8e93aaea067b0e41892d0195b10f539"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af501c71a1d299d885daaca53d73294b0"><td class="memItemLeft" align="right" valign="top"><a id="af501c71a1d299d885daaca53d73294b0"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:af501c71a1d299d885daaca53d73294b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a46f1b1b3c1596e3c8585293685e03f14"><td class="memItemLeft" align="right" valign="top"><a id="a46f1b1b3c1596e3c8585293685e03f14"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1FixConservatives.html#a46f1b1b3c1596e3c8585293685e03f14">operator()</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; tilde_d, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; tilde_tau, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; tilde_s, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;tilde_b, const tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;spatial_metric, const tnsr::II&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;inv_spatial_metric, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;sqrt_det_spatial_metric) const noexcept</td></tr>
+<tr class="memdesc:a46f1b1b3c1596e3c8585293685e03f14"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>true</code> if any variables were fixed. <br /></td></tr>
+<tr class="separator:a46f1b1b3c1596e3c8585293685e03f14"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a1796b5ed51e851e51869194175e2f589"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a1796b5ed51e851e51869194175e2f589"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a3c8508456967a59509a4a70ced609c88"><td class="memItemLeft" align="right" valign="top"><a id="a3c8508456967a59509a4a70ced609c88"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1FixConservatives.html">FixConservatives</a> &amp;lhs, const <a class="el" href="classgrmhd_1_1ValenciaDivClean_1_1FixConservatives.html">FixConservatives</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a3c8508456967a59509a4a70ced609c88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Fix conservative variables using method developed by Foucart. </p>
+<p>Adjusts the conservative variables as follows:</p><ul>
+<li>Changes \({\tilde D}\), the generalized mass-energy density, such that \(D\), the product of the rest mass density \(\rho\) and the Lorentz factor \(W\), is set to value of the option <code><a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1FixConservatives_1_1MinimumValueOfD.html" title="Minimum value of rest-mass density times lorentz factor.">MinimumValueOfD</a></code>, whenever \(D\) is below the value of the option <code><a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1FixConservatives_1_1CutoffD.html" title="Cutoff below which  is set to MinimumValueOfD.">CutoffD</a></code>.</li>
+<li>Increases \({\tilde \tau}\), the generalized internal energy density, such that \({\tilde B}^2 \leq 2 \sqrt{\gamma} (1 - \epsilon_B) {\tilde \tau}\), where \({\tilde B}^i\) is the generalized magnetic field, \(\gamma\) is the determinant of the spatial metric, and \(\epsilon_B\) is the option <code><a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1FixConservatives_1_1SafetyFactorForB.html" title="Safety factor .">SafetyFactorForB</a></code>.</li>
+<li>Decreases \({\tilde S}_i\), the generalized momentum density, such that \({\tilde S}^2 \leq (1 - \epsilon_S) {\tilde S}^2_{max}\), where \(\epsilon_S\) is the option <code><a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1FixConservatives_1_1SafetyFactorForS.html" title="Safety factor .">SafetyFactorForS</a></code>, and \({\tilde S}^2_{max}\) is a complicated function of the conservative variables which can only be found through root finding. There are sufficient conditions for a set of conservative variables to satisfy the inequality, which can be used to avoid root finding at most points.</li>
+</ul>
+<dl class="section note"><dt>Note</dt><dd>The routine currently assumes the minimum specific enthalpy is one.</dd></dl>
+<p>For more details see Appendix B from the <a href="https://ecommons.cornell.edu/handle/1813/30652">thesis of Francois Foucart</a></p>
+<p>You can plot the function whose root we are finding using:</p>
+<div class="fragment"><div class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</div>
+<div class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</div>
+<div class="line"> </div>
+<div class="line">upper_bound = 1.000119047987896748e+00</div>
+<div class="line">lower_bound = 1.000000000000000000e+00</div>
+<div class="line">s_tilde_squared = 5.513009056734747750e-30</div>
+<div class="line">d_tilde = 1.131468709980503465e-12</div>
+<div class="line">sqrt_det_g: 1.131468709980503418e+00</div>
+<div class="line">tau_tilde = 1.346990732914080573e-16</div>
+<div class="line">b_tilde_squared = 3.048155733848927391e-16</div>
+<div class="line">b_squared_over_d = 2.380959757934347320e-04</div>
+<div class="line">tau_over_d = 1.190479878968363843e-04</div>
+<div class="line">normalized_s_dot_b = -9.999999082462245337e-01</div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">def </span>function_of_w(lorentz_factor):</div>
+<div class="line">    <span class="keywordflow">return</span> ((lorentz_factor + b_squared_over_d - tau_over_d - 1.0) *</div>
+<div class="line">            (lorentz_factor**2 + b_squared_over_d * normalized_s_dot_b**2 *</div>
+<div class="line">             (b_squared_over_d + 2.0 * lorentz_factor)) -</div>
+<div class="line">            0.5 * b_squared_over_d -</div>
+<div class="line">            0.5 * b_squared_over_d * normalized_s_dot_b**2 *</div>
+<div class="line">            (lorentz_factor**2 - 1.0 +</div>
+<div class="line">             2.0 * lorentz_factor * b_squared_over_d + b_squared_over_d**2))</div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line">lorentz_factor = np.linspace(lower_bound, upper_bound, num=10000)</div>
+<div class="line"> </div>
+<div class="line">plt.plot(lorentz_factor, function_of_w(lorentz_factor))</div>
+<div class="line">plt.show()</div>
+</div><!-- fragment --> </div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a1796b5ed51e851e51869194175e2f589"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1796b5ed51e851e51869194175e2f589">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> grmhd::ValenciaDivClean::FixConservatives::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Variable fixing used in Foucart&#39;s thesis.\n&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/Systems/GrMhd/ValenciaDivClean/<a class="el" href="GrMhd_2ValenciaDivClean_2FixConservatives_8hpp_source.html">FixConservatives.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

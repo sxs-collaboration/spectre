@@ -1,0 +1,350 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Domain&lt; VolumeDim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classDomain-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Domain&lt; VolumeDim &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__ComputationalDomainGroup.html">Computational Domain</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A wrapper around a vector of Blocks that represent the computational domain.  
+ <a href="classDomain.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Domain_8hpp_source.html">Domain.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a690a14cc4a433c921752278e6a8f1a78"><td class="memItemLeft" align="right" valign="top"><a id="a690a14cc4a433c921752278e6a8f1a78"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Domain</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="classBlock.html">Block</a>&lt; VolumeDim &gt;&gt; blocks) noexcept</td></tr>
+<tr class="separator:a690a14cc4a433c921752278e6a8f1a78"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab49f8c30dd203718bce79d3b604f3bf1"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDomain.html#ab49f8c30dd203718bce79d3b604f3bf1">Domain</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, VolumeDim &gt;&gt;&gt; maps, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="classDirectionMap.html">DirectionMap</a>&lt; VolumeDim, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a> &gt;&gt;&gt; boundary_conditions={}) noexcept</td></tr>
+<tr class="separator:ab49f8c30dd203718bce79d3b604f3bf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab08ca1b8a6ee646d9fb3e0aa3dda2be0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDomain.html#ab08ca1b8a6ee646d9fb3e0aa3dda2be0">Domain</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, VolumeDim &gt;&gt;&gt; maps, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, <a class="el" href="group__ConstantExpressionsGroup.html#ga6c01ded3973bb4b9973e5381c32c0807">two_to_the</a>(VolumeDim)&gt;&gt; &amp;corners_of_all_blocks, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="structPairOfFaces.html">PairOfFaces</a> &gt; &amp;identifications={}, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="classDirectionMap.html">DirectionMap</a>&lt; VolumeDim, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a> &gt;&gt;&gt; boundary_conditions={}) noexcept</td></tr>
+<tr class="separator:ab08ca1b8a6ee646d9fb3e0aa3dda2be0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c78cbddee5a5f62a98cea9a238bc001"><td class="memItemLeft" align="right" valign="top"><a id="a7c78cbddee5a5f62a98cea9a238bc001"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Domain</b> (const <a class="el" href="classDomain.html">Domain</a> &amp;)=delete</td></tr>
+<tr class="separator:a7c78cbddee5a5f62a98cea9a238bc001"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ec6aacf7384ee3f30061465cd0b8125"><td class="memItemLeft" align="right" valign="top"><a id="a9ec6aacf7384ee3f30061465cd0b8125"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Domain</b> (<a class="el" href="classDomain.html">Domain</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a9ec6aacf7384ee3f30061465cd0b8125"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa8ebf9f8c047fc68b2943dcdcbeaf873"><td class="memItemLeft" align="right" valign="top"><a id="aa8ebf9f8c047fc68b2943dcdcbeaf873"></a>
+<a class="el" href="classDomain.html">Domain</a>&lt; VolumeDim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classDomain.html">Domain</a>&lt; VolumeDim &gt; &amp;)=delete</td></tr>
+<tr class="separator:aa8ebf9f8c047fc68b2943dcdcbeaf873"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af8742aaa0f8a585d539cec82dda42504"><td class="memItemLeft" align="right" valign="top"><a id="af8742aaa0f8a585d539cec82dda42504"></a>
+<a class="el" href="classDomain.html">Domain</a>&lt; VolumeDim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classDomain.html">Domain</a>&lt; VolumeDim &gt; &amp;&amp;)=default</td></tr>
+<tr class="separator:af8742aaa0f8a585d539cec82dda42504"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76ca72b18468e13fe212b45a3c56c7af"><td class="memItemLeft" align="right" valign="top"><a id="a76ca72b18468e13fe212b45a3c56c7af"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>inject_time_dependent_map_for_block</b> (size_t block_id, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, VolumeDim &gt;&gt; moving_mesh_inertial_map) noexcept</td></tr>
+<tr class="separator:a76ca72b18468e13fe212b45a3c56c7af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d057c72a4a1b97f27b64b5f6c47d9cf"><td class="memItemLeft" align="right" valign="top"><a id="a5d057c72a4a1b97f27b64b5f6c47d9cf"></a>
+const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="classBlock.html">Block</a>&lt; VolumeDim &gt; &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>blocks</b> () const noexcept</td></tr>
+<tr class="separator:a5d057c72a4a1b97f27b64b5f6c47d9cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81237c9bbc3ca987e74a3688f749a5b9"><td class="memItemLeft" align="right" valign="top"><a id="a81237c9bbc3ca987e74a3688f749a5b9"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a81237c9bbc3ca987e74a3688f749a5b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t VolumeDim&gt;<br />
+class Domain&lt; VolumeDim &gt;</h3>
+
+<p>A wrapper around a vector of Blocks that represent the computational domain. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="ab49f8c30dd203718bce79d3b604f3bf1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab49f8c30dd203718bce79d3b604f3bf1">&#9670;&nbsp;</a></span>Domain() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t VolumeDim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classDomain.html">Domain</a>&lt; VolumeDim &gt;::<a class="el" href="classDomain.html">Domain</a> </td>
+          <td>(</td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, VolumeDim &gt;&gt;&gt;&#160;</td>
+          <td class="paramname"><em>maps</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="classDirectionMap.html">DirectionMap</a>&lt; VolumeDim, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a> &gt;&gt;&gt;&#160;</td>
+          <td class="paramname"><em>boundary_conditions</em> = <code>{}</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">explicit</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Create a <a class="el" href="classDomain.html" title="A wrapper around a vector of Blocks that represent the computational domain.">Domain</a> using CoordinateMaps to encode the Orientations. This constructor does not support periodic boundary conditions.</p>
+<h3>Details</h3>
+<p>A constructor that does not require the user to provide a corner numbering scheme. Constructs a global corner numbering for each pair of abutting Blocks from their maps alone. The numbering is used to set up the corresponding Orientation, and then is discarded; the next pair of blocks uses a new global corner numbering, and so on, until all pairs of abutting Blocks have had their Orientations determined. For more information on setting up domains, see the <a class="el" href="tutorial_domain_creation.html">domain creation tutorial</a>.</p>
+<p>Can specify either one set of boundary conditions for each <a class="el" href="classBlock.html">Block</a> or no boundary conditions at all. </p>
+
+</div>
+</div>
+<a id="ab08ca1b8a6ee646d9fb3e0aa3dda2be0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab08ca1b8a6ee646d9fb3e0aa3dda2be0">&#9670;&nbsp;</a></span>Domain() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t VolumeDim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classDomain.html">Domain</a>&lt; VolumeDim &gt;::<a class="el" href="classDomain.html">Domain</a> </td>
+          <td>(</td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, VolumeDim &gt;&gt;&gt;&#160;</td>
+          <td class="paramname"><em>maps</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, <a class="el" href="group__ConstantExpressionsGroup.html#ga6c01ded3973bb4b9973e5381c32c0807">two_to_the</a>(VolumeDim)&gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>corners_of_all_blocks</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="structPairOfFaces.html">PairOfFaces</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>identifications</em> = <code>{}</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="classDirectionMap.html">DirectionMap</a>&lt; VolumeDim, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a> &gt;&gt;&gt;&#160;</td>
+          <td class="paramname"><em>boundary_conditions</em> = <code>{}</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Create a <a class="el" href="classDomain.html" title="A wrapper around a vector of Blocks that represent the computational domain.">Domain</a> using a corner numbering scheme to encode the Orientations, with an optional parameter that encodes periodic boundary conditions.</p>
+<h3>Details</h3>
+<p>Each element of <code>corners_of_all_blocks</code> contains the corner numbering of that block's corners according to the global corner number scheme. The details of the corner numbering scheme are described in the <a class="el" href="tutorial_orientations.html">tutorial</a>. <code>identifications</code> is for imposing periodic boundary conditions on the domain. To identify faces, <code>identifications</code> should contain the <a class="el" href="structPairOfFaces.html">PairOfFaces</a> containing the corners of each pair of faces that you wish to identify with one another. For more information on setting up domains, see the <a class="el" href="tutorial_domain_creation.html">domain creation tutorial</a>.</p>
+<p><em>Requires:</em> <code>maps.size() == corners_of_all_blocks.size()</code>, and <code>identifications.size()</code> is even.</p>
+<p>Can specify either one set of boundary conditions for each <a class="el" href="classBlock.html">Block</a> or no boundary conditions at all. </p>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/<a class="el" href="Domain_8hpp_source.html">Domain.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

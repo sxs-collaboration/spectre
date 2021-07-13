@@ -1,0 +1,388 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Elasticity::ConstitutiveRelations::IsotropicHomogeneous&lt; Dim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceElasticity.html">Elasticity</a></li><li class="navelem"><a class="el" href="namespaceElasticity_1_1ConstitutiveRelations.html">ConstitutiveRelations</a></li><li class="navelem"><a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html">IsotropicHomogeneous</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Elasticity::ConstitutiveRelations::IsotropicHomogeneous&lt; Dim &gt; Class Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>An isotropic and homogeneous material.  
+ <a href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="IsotropicHomogeneous_8hpp_source.html">IsotropicHomogeneous.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous_1_1BulkModulus.html">BulkModulus</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous_1_1ShearModulus.html">ShearModulus</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a6238f82d811099d13c5ca0ec4f170de1"><td class="memItemLeft" align="right" valign="top"><a id="a6238f82d811099d13c5ca0ec4f170de1"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous_1_1BulkModulus.html">BulkModulus</a>, <a class="el" href="structElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous_1_1ShearModulus.html">ShearModulus</a> &gt;</td></tr>
+<tr class="separator:a6238f82d811099d13c5ca0ec4f170de1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation.html">Elasticity::ConstitutiveRelations::ConstitutiveRelation&lt; Dim &gt;</a></td></tr>
+<tr class="memitem:aa85242692195846a53f078bcf2db89a6 inherit pub_types_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation"><td class="memItemLeft" align="right" valign="top"><a id="aa85242692195846a53f078bcf2db89a6"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::list&lt; <a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1CubicCrystal.html">CubicCrystal</a>, <a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html">IsotropicHomogeneous</a>&lt; Dim &gt; &gt;</td></tr>
+<tr class="separator:aa85242692195846a53f078bcf2db89a6 inherit pub_types_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ae620e1bfe60aa62ff49c33086f81d69a"><td class="memItemLeft" align="right" valign="top"><a id="ae620e1bfe60aa62ff49c33086f81d69a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>IsotropicHomogeneous</b> (const <a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html">IsotropicHomogeneous</a> &amp;)=default</td></tr>
+<tr class="separator:ae620e1bfe60aa62ff49c33086f81d69a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca977bb5d2a742c1d9c24ce16059f437"><td class="memItemLeft" align="right" valign="top"><a id="aca977bb5d2a742c1d9c24ce16059f437"></a>
+<a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html">IsotropicHomogeneous</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html">IsotropicHomogeneous</a> &amp;)=default</td></tr>
+<tr class="separator:aca977bb5d2a742c1d9c24ce16059f437"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa61f9ef865744a9f67a7057932b8d0de"><td class="memItemLeft" align="right" valign="top"><a id="aa61f9ef865744a9f67a7057932b8d0de"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>IsotropicHomogeneous</b> (<a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html">IsotropicHomogeneous</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:aa61f9ef865744a9f67a7057932b8d0de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab42a38d9209dff6ff2c4873d6b98a0a7"><td class="memItemLeft" align="right" valign="top"><a id="ab42a38d9209dff6ff2c4873d6b98a0a7"></a>
+<a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html">IsotropicHomogeneous</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html">IsotropicHomogeneous</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:ab42a38d9209dff6ff2c4873d6b98a0a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a845a0b0971b07bf02d2acadfa7e529a3"><td class="memItemLeft" align="right" valign="top"><a id="a845a0b0971b07bf02d2acadfa7e529a3"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>IsotropicHomogeneous</b> (double <a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html#a8a039501f3acfae5996bc558f3bc408e">bulk_modulus</a>, double <a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html#ab0bdeabeed1526ee87482eacf8a65214">shear_modulus</a>) noexcept</td></tr>
+<tr class="separator:a845a0b0971b07bf02d2acadfa7e529a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad5d57736fd3faf27a2e537e2e0105bec"><td class="memItemLeft" align="right" valign="top"><a id="ad5d57736fd3faf27a2e537e2e0105bec"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html#ad5d57736fd3faf27a2e537e2e0105bec">stress</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::II&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; stress, const tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;<a class="el" href="namespaceElasticity.html#aab79291d11b2199c03936ef9a760d988">strain</a>, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;x) const noexcept override</td></tr>
+<tr class="memdesc:ad5d57736fd3faf27a2e537e2e0105bec"><td class="mdescLeft">&#160;</td><td class="mdescRight">The constitutive relation that characterizes the elastic properties of a material. <br /></td></tr>
+<tr class="separator:ad5d57736fd3faf27a2e537e2e0105bec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a039501f3acfae5996bc558f3bc408e"><td class="memItemLeft" align="right" valign="top"><a id="a8a039501f3acfae5996bc558f3bc408e"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html#a8a039501f3acfae5996bc558f3bc408e">bulk_modulus</a> () const noexcept</td></tr>
+<tr class="memdesc:a8a039501f3acfae5996bc558f3bc408e"><td class="mdescLeft">&#160;</td><td class="mdescRight">The bulk modulus (or incompressibility) \(K\). <br /></td></tr>
+<tr class="separator:a8a039501f3acfae5996bc558f3bc408e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab0bdeabeed1526ee87482eacf8a65214"><td class="memItemLeft" align="right" valign="top"><a id="ab0bdeabeed1526ee87482eacf8a65214"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html#ab0bdeabeed1526ee87482eacf8a65214">shear_modulus</a> () const noexcept</td></tr>
+<tr class="memdesc:ab0bdeabeed1526ee87482eacf8a65214"><td class="mdescLeft">&#160;</td><td class="mdescRight">The shear modulus (or rigidity) \(\mu\). <br /></td></tr>
+<tr class="separator:ab0bdeabeed1526ee87482eacf8a65214"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af77959e97f49fd3c18fcdb73ace31c68"><td class="memItemLeft" align="right" valign="top"><a id="af77959e97f49fd3c18fcdb73ace31c68"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html#af77959e97f49fd3c18fcdb73ace31c68">lame_parameter</a> () const noexcept</td></tr>
+<tr class="memdesc:af77959e97f49fd3c18fcdb73ace31c68"><td class="mdescLeft">&#160;</td><td class="mdescRight">The Lamé parameter \(\lambda\). <br /></td></tr>
+<tr class="separator:af77959e97f49fd3c18fcdb73ace31c68"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a935b64323f3e2f518386ae8c56adbdb9"><td class="memItemLeft" align="right" valign="top"><a id="a935b64323f3e2f518386ae8c56adbdb9"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html#a935b64323f3e2f518386ae8c56adbdb9">youngs_modulus</a> () const noexcept</td></tr>
+<tr class="memdesc:a935b64323f3e2f518386ae8c56adbdb9"><td class="mdescLeft">&#160;</td><td class="mdescRight">The Young's modulus \(E\). <br /></td></tr>
+<tr class="separator:a935b64323f3e2f518386ae8c56adbdb9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6b03dc2bb4f0c15a51fea3fdd0ba4d7d"><td class="memItemLeft" align="right" valign="top"><a id="a6b03dc2bb4f0c15a51fea3fdd0ba4d7d"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html#a6b03dc2bb4f0c15a51fea3fdd0ba4d7d">poisson_ratio</a> () const noexcept</td></tr>
+<tr class="memdesc:a6b03dc2bb4f0c15a51fea3fdd0ba4d7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">The <a class="el" href="namespacePoisson.html" title="Items related to solving a Poisson equation .">Poisson</a> ratio \(\nu\). <br /></td></tr>
+<tr class="separator:a6b03dc2bb4f0c15a51fea3fdd0ba4d7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a46dee9238343f49705a528cbf55a1901"><td class="memItemLeft" align="right" valign="top"><a id="a46dee9238343f49705a528cbf55a1901"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;) noexcept override</td></tr>
+<tr class="separator:a46dee9238343f49705a528cbf55a1901"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ad48c71eecb69c54946b416377fe5f5"><td class="memItemLeft" align="right" valign="top"><a id="a7ad48c71eecb69c54946b416377fe5f5"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>IsotropicHomogeneous</b> (CkMigrateMessage *) noexcept</td></tr>
+<tr class="separator:a7ad48c71eecb69c54946b416377fe5f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51153275a7419bd780c7fc13a6621fc5"><td class="memItemLeft" align="right" valign="top"><a id="a51153275a7419bd780c7fc13a6621fc5"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_base_template</b> (SINGLE_ARG(<a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation.html">ConstitutiveRelation</a>&lt; Dim &gt;), <a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html">IsotropicHomogeneous</a>)</td></tr>
+<tr class="separator:a51153275a7419bd780c7fc13a6621fc5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation.html">Elasticity::ConstitutiveRelations::ConstitutiveRelation&lt; Dim &gt;</a></td></tr>
+<tr class="memitem:a1ddbaa2b36f93931430e2a0867e2cb10 inherit pub_methods_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation"><td class="memItemLeft" align="right" valign="top"><a id="a1ddbaa2b36f93931430e2a0867e2cb10"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ConstitutiveRelation</b> (const <a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation.html">ConstitutiveRelation</a> &amp;)=default</td></tr>
+<tr class="separator:a1ddbaa2b36f93931430e2a0867e2cb10 inherit pub_methods_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab95df686572b8487a6b440abc56606a8 inherit pub_methods_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation"><td class="memItemLeft" align="right" valign="top"><a id="ab95df686572b8487a6b440abc56606a8"></a>
+<a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation.html">ConstitutiveRelation</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation.html">ConstitutiveRelation</a> &amp;)=default</td></tr>
+<tr class="separator:ab95df686572b8487a6b440abc56606a8 inherit pub_methods_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6024f0569b325483ae0ef48d8de1c4ac inherit pub_methods_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation"><td class="memItemLeft" align="right" valign="top"><a id="a6024f0569b325483ae0ef48d8de1c4ac"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ConstitutiveRelation</b> (<a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation.html">ConstitutiveRelation</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a6024f0569b325483ae0ef48d8de1c4ac inherit pub_methods_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a55e231e5019268f5457098ae1ccc8a42 inherit pub_methods_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation"><td class="memItemLeft" align="right" valign="top"><a id="a55e231e5019268f5457098ae1ccc8a42"></a>
+<a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation.html">ConstitutiveRelation</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation.html">ConstitutiveRelation</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a55e231e5019268f5457098ae1ccc8a42 inherit pub_methods_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a86b806b1c34454c5cbe596df656a5d79 inherit pub_methods_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation"><td class="memItemLeft" align="right" valign="top"><a id="a86b806b1c34454c5cbe596df656a5d79"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_abstract</b> (<a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation.html">ConstitutiveRelation</a>)</td></tr>
+<tr class="separator:a86b806b1c34454c5cbe596df656a5d79 inherit pub_methods_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd89bd48590ffa365cbed9746f81944d inherit pub_methods_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation"><td class="memItemLeft" align="right" valign="top"><a id="abd89bd48590ffa365cbed9746f81944d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation.html#abd89bd48590ffa365cbed9746f81944d">stress</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::IJ&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; stress, const tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;<a class="el" href="namespaceElasticity.html#aab79291d11b2199c03936ef9a760d988">strain</a>, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;x) const noexcept</td></tr>
+<tr class="memdesc:abd89bd48590ffa365cbed9746f81944d inherit pub_methods_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation"><td class="mdescLeft">&#160;</td><td class="mdescRight">The constitutive relation that characterizes the elastic properties of a material. <br /></td></tr>
+<tr class="separator:abd89bd48590ffa365cbed9746f81944d inherit pub_methods_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a7fdacee8a20b12339fc9fdc8a5b9973e"><td class="memItemLeft" align="right" valign="top"><a id="a7fdacee8a20b12339fc9fdc8a5b9973e"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = Dim</td></tr>
+<tr class="separator:a7fdacee8a20b12339fc9fdc8a5b9973e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a483b1b63f29843a9755d1ab878fa8afe"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a483b1b63f29843a9755d1ab878fa8afe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_static_attribs_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation')"><img src="closed.png" alt="-"/>&#160;Static Public Attributes inherited from <a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation.html">Elasticity::ConstitutiveRelations::ConstitutiveRelation&lt; Dim &gt;</a></td></tr>
+<tr class="memitem:a4b3bd7c8fba826dc2affeb097779311e inherit pub_static_attribs_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation"><td class="memItemLeft" align="right" valign="top"><a id="a4b3bd7c8fba826dc2affeb097779311e"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = Dim</td></tr>
+<tr class="separator:a4b3bd7c8fba826dc2affeb097779311e inherit pub_static_attribs_classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+class Elasticity::ConstitutiveRelations::IsotropicHomogeneous&lt; Dim &gt;</h3>
+
+<p>An isotropic and homogeneous material. </p>
+<h3>Details</h3>
+<p>For an isotropic and homogeneous material the linear constitutive relation \(T^{ij}=-Y^{ijkl}S_{kl}\) reduces to</p>
+<p class="formulaDsp">
+\[ Y^{ijkl} = \lambda \delta^{ij}\delta^{kl} + \mu \left(\delta^{ik}\delta^{jl} + \delta^{il}\delta^{jk}\right) \\ \implies \quad T^{ij} = -\lambda \mathrm{Tr}(S) \delta^{ij} - 2\mu S^{ij} \]
+</p>
+<p>with the <em>Lamé parameter</em> \(\lambda\) and the <em>shear modulus</em> (or <em>rigidity</em>) \(\mu\). In the parametrization chosen in this implementation we use the <em>bulk modulus</em> (or <em>incompressibility</em>)</p>
+<p class="formulaDsp">
+\[ K=\lambda + \frac{2}{3}\mu \]
+</p>
+<p>instead of the Lamé parameter. In this parametrization the stress-strain relation</p>
+<p class="formulaDsp">
+\[ T^{ij} = -K \mathrm{Tr}(S) \delta^{ij} - 2\mu\left(S^{ij} - \frac{1}{3}\mathrm{Tr}(S)\delta^{ij}\right) \]
+</p>
+<p>decomposes into a scalar and a traceless part (Eq. 11.18 in <a class="el" href="citelist.html#CITEREF_ThorneBlandford2017">[103]</a>). Parameters also often used in this context are the <em>Young's modulus</em></p>
+<p class="formulaDsp">
+\[ E=\frac{9K\mu}{3K+\mu}=\frac{\mu(3\lambda+2\mu)}{\lambda+\mu} \]
+</p>
+<p>and the <em><a class="el" href="namespacePoisson.html" title="Items related to solving a Poisson equation .">Poisson</a> ratio</em></p>
+<p class="formulaDsp">
+\[ \nu=\frac{3K-2\mu}{2(3K+\mu)}=\frac{\lambda}{2(\lambda+\mu)}\text{.} \]
+</p>
+<p>Inversely, these relations read:</p>
+<p class="formulaDsp">
+\[ K =\frac{E}{3(1-2\nu)}, \quad \lambda =\frac{E\nu}{(1+\nu)(1-2\nu)}, \quad \mu =\frac{E}{2(1+\nu)} \]
+</p>
+<p><b>In two dimensions</b> this implementation reduces to the plane-stress approximation. We assume that all stresses apply in the plane of the computational domain, which corresponds to scenarios of in-plane stretching and shearing of thin slabs of material. Since orthogonal stresses vanish as \(T^{i3}=0=T^{3i}\) we find \(\mathrm{Tr}(S)=\frac{2\mu}{\lambda + 2\mu}\mathrm{Tr}^{(2)}(S)\), where \(\mathrm{Tr}^{(2)}\) denotes that the trace only applies to the two dimensions within the plane. The constitutive relation thus reduces to</p>
+<p class="formulaDsp">
+\begin{align} T^{ij}=&amp;-\frac{2\lambda\mu}{\lambda + 2\mu}\mathrm{Tr}^{(2)}(S)\delta^{ij} - 2\mu S^{ij} \\ =&amp;-\frac{E\nu}{1-\nu^2}\mathrm{Tr}^{(2)}(S)\delta^{ij} - \frac{E}{1+\nu}S^{ij} \end{align}
+</p>
+<p>which is non-zero only in the directions of the plane. Since the stresses are also assumed to be constant along the thickness of the plane \(\partial_3T^{ij}=0\) the elasticity problem \(-\partial_i T^{ij}=F^j\) reduces to two dimensions. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a483b1b63f29843a9755d1ab878fa8afe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a483b1b63f29843a9755d1ab878fa8afe">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html">Elasticity::ConstitutiveRelations::IsotropicHomogeneous</a>&lt; Dim &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;A constitutive relation that describes an isotropic, homogeneous &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;material in terms of two elastic moduli. These bulk and shear moduli &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;indicate the material&#39;s resistance to volume and shape changes, &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;respectively. Both are measured in units of stress, typically Pascals.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/Elasticity/ConstitutiveRelations/<a class="el" href="IsotropicHomogeneous_8hpp_source.html">IsotropicHomogeneous.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

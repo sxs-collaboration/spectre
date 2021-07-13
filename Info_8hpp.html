@@ -1,0 +1,270 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Parallel/Info.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_f1a490c609eea752f5cd0b5c139209b7.html">Parallel</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">Info.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><a href="Info_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceParallel"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceParallel.html">Parallel</a></td></tr>
+<tr class="memdesc:namespaceParallel"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functionality for parallelization. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga7784b669df07fce82ccaea3a4d8a4ea5"><td class="memTemplParams" colspan="2">
+template&lt;typename DistribObject &gt; </td></tr>
+<tr class="memitem:ga7784b669df07fce82ccaea3a4d8a4ea5"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ParallelGroup.html#ga7784b669df07fce82ccaea3a4d8a4ea5">Parallel::number_of_procs</a> (const DistribObject &amp;distributed_object) noexcept</td></tr>
+<tr class="memdesc:ga7784b669df07fce82ccaea3a4d8a4ea5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of processing elements. <br /></td></tr>
+<tr class="separator:ga7784b669df07fce82ccaea3a4d8a4ea5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga357897973586a5f1b56333acdf09d00f"><td class="memTemplParams" colspan="2">
+template&lt;typename DistribObject &gt; </td></tr>
+<tr class="memitem:ga357897973586a5f1b56333acdf09d00f"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ParallelGroup.html#ga357897973586a5f1b56333acdf09d00f">Parallel::my_proc</a> (const DistribObject &amp;distributed_object) noexcept</td></tr>
+<tr class="memdesc:ga357897973586a5f1b56333acdf09d00f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Index of my processing element. <br /></td></tr>
+<tr class="separator:ga357897973586a5f1b56333acdf09d00f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac16038552fab80e008c9789d7c63ec37"><td class="memTemplParams" colspan="2">
+template&lt;typename DistribObject &gt; </td></tr>
+<tr class="memitem:gac16038552fab80e008c9789d7c63ec37"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ParallelGroup.html#gac16038552fab80e008c9789d7c63ec37">Parallel::number_of_nodes</a> (const DistribObject &amp;distributed_object) noexcept</td></tr>
+<tr class="memdesc:gac16038552fab80e008c9789d7c63ec37"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of nodes. <br /></td></tr>
+<tr class="separator:gac16038552fab80e008c9789d7c63ec37"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga94abef85fb91d5d39148ffcc7b7a4e2a"><td class="memTemplParams" colspan="2">
+template&lt;typename DistribObject &gt; </td></tr>
+<tr class="memitem:ga94abef85fb91d5d39148ffcc7b7a4e2a"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ParallelGroup.html#ga94abef85fb91d5d39148ffcc7b7a4e2a">Parallel::my_node</a> (const DistribObject &amp;distributed_object) noexcept</td></tr>
+<tr class="memdesc:ga94abef85fb91d5d39148ffcc7b7a4e2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Index of my node. <br /></td></tr>
+<tr class="separator:ga94abef85fb91d5d39148ffcc7b7a4e2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga542b529abe8193f0080694fc67d14b9a"><td class="memTemplParams" colspan="2">
+template&lt;typename DistribObject &gt; </td></tr>
+<tr class="memitem:ga542b529abe8193f0080694fc67d14b9a"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ParallelGroup.html#ga542b529abe8193f0080694fc67d14b9a">Parallel::procs_on_node</a> (const int node_index, const DistribObject &amp;distributed_object) noexcept</td></tr>
+<tr class="memdesc:ga542b529abe8193f0080694fc67d14b9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of processing elements on the given node. <br /></td></tr>
+<tr class="separator:ga542b529abe8193f0080694fc67d14b9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad22be9ec2dfae2fd77b390913da41707"><td class="memTemplParams" colspan="2">
+template&lt;typename DistribObject &gt; </td></tr>
+<tr class="memitem:gad22be9ec2dfae2fd77b390913da41707"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ParallelGroup.html#gad22be9ec2dfae2fd77b390913da41707">Parallel::my_local_rank</a> (const DistribObject &amp;distributed_object) noexcept</td></tr>
+<tr class="memdesc:gad22be9ec2dfae2fd77b390913da41707"><td class="mdescLeft">&#160;</td><td class="mdescRight">The local index of my processing element on my node. This is in the interval 0, ..., procs_on_node(my_node()) - 1. <br /></td></tr>
+<tr class="separator:gad22be9ec2dfae2fd77b390913da41707"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab14e3bb8fd7f7c86cf08cfe760092aa6"><td class="memTemplParams" colspan="2">
+template&lt;typename DistribObject &gt; </td></tr>
+<tr class="memitem:gab14e3bb8fd7f7c86cf08cfe760092aa6"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ParallelGroup.html#gab14e3bb8fd7f7c86cf08cfe760092aa6">Parallel::first_proc_on_node</a> (const int node_index, const DistribObject &amp;distributed_object) noexcept</td></tr>
+<tr class="memdesc:gab14e3bb8fd7f7c86cf08cfe760092aa6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Index of first processing element on the given node. <br /></td></tr>
+<tr class="separator:gab14e3bb8fd7f7c86cf08cfe760092aa6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga03356d6784beb1a635c843b5c49eefd5"><td class="memTemplParams" colspan="2">
+template&lt;typename DistribObject &gt; </td></tr>
+<tr class="memitem:ga03356d6784beb1a635c843b5c49eefd5"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ParallelGroup.html#ga03356d6784beb1a635c843b5c49eefd5">Parallel::node_of</a> (const int proc_index, const DistribObject &amp;distributed_object) noexcept</td></tr>
+<tr class="memdesc:ga03356d6784beb1a635c843b5c49eefd5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Index of the node for the given processing element. <br /></td></tr>
+<tr class="separator:ga03356d6784beb1a635c843b5c49eefd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadbd776710a10ef63cd12775fa131b389"><td class="memTemplParams" colspan="2">
+template&lt;typename DistribObject &gt; </td></tr>
+<tr class="memitem:gadbd776710a10ef63cd12775fa131b389"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ParallelGroup.html#gadbd776710a10ef63cd12775fa131b389">Parallel::local_rank_of</a> (const int proc_index, const DistribObject &amp;distributed_object) noexcept</td></tr>
+<tr class="memdesc:gadbd776710a10ef63cd12775fa131b389"><td class="mdescLeft">&#160;</td><td class="mdescRight">The local index for the given processing element on its node. <br /></td></tr>
+<tr class="separator:gadbd776710a10ef63cd12775fa131b389"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Defines functions that provide low-level system information such as number of nodes and processors, in a way that they are mockable in <a class="el" href="namespaceActionTesting.html" title="Structures used for mocking the parallel components framework in order to test actions.">ActionTesting</a>. </p>
+</div></div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

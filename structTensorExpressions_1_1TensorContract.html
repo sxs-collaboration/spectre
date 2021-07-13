@@ -1,0 +1,420 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: TensorExpressions::TensorContract&lt; FirstContractedIndexPos, SecondContractedIndexPos, T, X, Symm, IndexList, ArgsList &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceTensorExpressions.html">TensorExpressions</a></li><li class="navelem"><a class="el" href="structTensorExpressions_1_1TensorContract.html">TensorContract</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structTensorExpressions_1_1TensorContract-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">TensorExpressions::TensorContract&lt; FirstContractedIndexPos, SecondContractedIndexPos, T, X, Symm, IndexList, ArgsList &gt; Struct Template Reference<div class="ingroups"><a class="el" href="group__TensorExpressionsGroup.html">Tensor Expressions</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTensorExpressions_1_1TensorContract_1_1ComputeContraction.html">ComputeContraction</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper struct for computing the contraction of one pair of indices.  <a href="structTensorExpressions_1_1TensorContract_1_1ComputeContraction.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTensorExpressions_1_1TensorContract_1_1ComputeContraction_3_01tmpl_1_1list_3_01Uncontracte552f91ac8cf217892d64d47e2fc3a657.html">ComputeContraction&lt; tmpl::list&lt; UncontractedLhsTensorIndices... &gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:aa60ec2299747daed7b29357c3ebecb33"><td class="memItemLeft" align="right" valign="top"><a id="aa60ec2299747daed7b29357c3ebecb33"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>first_contracted_index</b> = tmpl::at_c&lt; IndexList, FirstContractedIndexPos &gt;</td></tr>
+<tr class="separator:aa60ec2299747daed7b29357c3ebecb33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80b10cd1e8967dbb63747f45f13d6935"><td class="memItemLeft" align="right" valign="top"><a id="a80b10cd1e8967dbb63747f45f13d6935"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>second_contracted_index</b> = tmpl::at_c&lt; IndexList, SecondContractedIndexPos &gt;</td></tr>
+<tr class="separator:a80b10cd1e8967dbb63747f45f13d6935"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae1616ecbd6a90b12a31c724e8a9de226"><td class="memItemLeft" align="right" valign="top"><a id="ae1616ecbd6a90b12a31c724e8a9de226"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>new_type</b> = typename detail::ContractedType&lt; FirstContractedIndexPos, SecondContractedIndexPos, T, X, Symm, IndexList, ArgsList &gt;::type</td></tr>
+<tr class="separator:ae1616ecbd6a90b12a31c724e8a9de226"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad6ead635bff59580949231e52d183772"><td class="memItemLeft" align="right" valign="top"><a id="ad6ead635bff59580949231e52d183772"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>type</b> = X</td></tr>
+<tr class="separator:ad6ead635bff59580949231e52d183772"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e5b4d0c5f14f222a46a3125576fa7b8"><td class="memItemLeft" align="right" valign="top"><a id="a6e5b4d0c5f14f222a46a3125576fa7b8"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>symmetry</b> = typename new_type::symmetry</td></tr>
+<tr class="separator:a6e5b4d0c5f14f222a46a3125576fa7b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9cf3195171248329a021e6c9a8e0c159"><td class="memItemLeft" align="right" valign="top"><a id="a9cf3195171248329a021e6c9a8e0c159"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>index_list</b> = typename new_type::index_list</td></tr>
+<tr class="separator:a9cf3195171248329a021e6c9a8e0c159"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad2b0d1b6a499db27b2cf7e7c80a2a7ea"><td class="memItemLeft" align="right" valign="top"><a id="ad2b0d1b6a499db27b2cf7e7c80a2a7ea"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>args_list</b> = typename new_type::args_list</td></tr>
+<tr class="separator:ad2b0d1b6a499db27b2cf7e7c80a2a7ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a634f0aea6a14a26f6d67241afd24c2f7"><td class="memTemplParams" colspan="2"><a id="a634f0aea6a14a26f6d67241afd24c2f7"></a>
+template&lt;typename... LhsIndices&gt; </td></tr>
+<tr class="memitem:a634f0aea6a14a26f6d67241afd24c2f7"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>get_uncontracted_lhs_tensorindex_list_helper</b> = tmpl::append&lt; tmpl::front&lt; tmpl::split_at&lt; tmpl::list&lt; LhsIndices... &gt;, tmpl::size_t&lt; FirstContractedIndexPos &gt; &gt;&gt;, tmpl::list&lt; tmpl::at_c&lt; ArgsList, FirstContractedIndexPos &gt; &gt;, tmpl::back&lt; tmpl::split_at&lt; tmpl::list&lt; LhsIndices... &gt;, tmpl::size_t&lt; FirstContractedIndexPos &gt; &gt;&gt; &gt;</td></tr>
+<tr class="separator:a634f0aea6a14a26f6d67241afd24c2f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75af0487a2bcaca829d7a66271aed8a1"><td class="memTemplParams" colspan="2">template&lt;typename... LhsIndices&gt; </td></tr>
+<tr class="memitem:a75af0487a2bcaca829d7a66271aed8a1"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structTensorExpressions_1_1TensorContract.html#a75af0487a2bcaca829d7a66271aed8a1">get_uncontracted_lhs_tensorindex_list</a> = tmpl::append&lt; tmpl::front&lt; tmpl::split_at&lt; get_uncontracted_lhs_tensorindex_list_helper&lt; LhsIndices... &gt;, tmpl::size_t&lt; SecondContractedIndexPos &gt; &gt;&gt;, tmpl::list&lt; tmpl::at_c&lt; ArgsList, SecondContractedIndexPos &gt; &gt;, tmpl::back&lt; tmpl::split_at&lt; get_uncontracted_lhs_tensorindex_list_helper&lt; LhsIndices... &gt;, tmpl::size_t&lt; SecondContractedIndexPos &gt; &gt;&gt; &gt;</td></tr>
+<tr class="memdesc:a75af0487a2bcaca829d7a66271aed8a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs the uncontracted LHS's list of TensorIndexs by inserting the pair of indices being contracted into the list of contracted LHS TensorIndexs.  <a href="structTensorExpressions_1_1TensorContract.html#a75af0487a2bcaca829d7a66271aed8a1">More...</a><br /></td></tr>
+<tr class="separator:a75af0487a2bcaca829d7a66271aed8a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a60e78f45b1e6beafbc34451cad9452d2"><td class="memItemLeft" align="right" valign="top"><a id="a60e78f45b1e6beafbc34451cad9452d2"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TensorContract</b> (const TensorExpression&lt; T, X, Symm, IndexList, ArgsList &gt; &amp;t)</td></tr>
+<tr class="separator:a60e78f45b1e6beafbc34451cad9452d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a906ebefd411d506595591244e60a8d03"><td class="memTemplParams" colspan="2">template&lt;typename... ContractedLhsIndices&gt; </td></tr>
+<tr class="memitem:a906ebefd411d506595591244e60a8d03"><td class="memTemplItemLeft" align="right" valign="top">decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structTensorExpressions_1_1TensorContract.html#a906ebefd411d506595591244e60a8d03">get</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, num_tensor_indices &gt; &amp;contracted_lhs_multi_index) const</td></tr>
+<tr class="memdesc:a906ebefd411d506595591244e60a8d03"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the value of the component of the contracted LHS tensor at a given multi-index.  <a href="structTensorExpressions_1_1TensorContract.html#a906ebefd411d506595591244e60a8d03">More...</a><br /></td></tr>
+<tr class="separator:a906ebefd411d506595591244e60a8d03"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:afef7af7cc4a31c149f3919d68153cfeb"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, num_uncontracted_tensor_indices &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTensorExpressions_1_1TensorContract.html#afef7af7cc4a31c149f3919d68153cfeb">get_first_uncontracted_lhs_multi_index_to_sum</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, num_tensor_indices &gt; &amp;contracted_lhs_multi_index) noexcept</td></tr>
+<tr class="memdesc:afef7af7cc4a31c149f3919d68153cfeb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the multi-index of the first uncontracted LHS component to be summed to compute a given contracted LHS component.  <a href="structTensorExpressions_1_1TensorContract.html#afef7af7cc4a31c149f3919d68153cfeb">More...</a><br /></td></tr>
+<tr class="separator:afef7af7cc4a31c149f3919d68153cfeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a00c309c06ed7bce764ca978a88da8b4d"><td class="memItemLeft" align="right" valign="top"><a id="a00c309c06ed7bce764ca978a88da8b4d"></a>
+static constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><b>num_tensor_indices</b> = tmpl::size&lt;index_list&gt;::value</td></tr>
+<tr class="separator:a00c309c06ed7bce764ca978a88da8b4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62df3a7948968480e30dbbc4846bb250"><td class="memItemLeft" align="right" valign="top">static constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><b>num_uncontracted_tensor_indices</b></td></tr>
+<tr class="separator:a62df3a7948968480e30dbbc4846bb250"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">Member Typedef Documentation</h2>
+<a id="a75af0487a2bcaca829d7a66271aed8a1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a75af0487a2bcaca829d7a66271aed8a1">&#9670;&nbsp;</a></span>get_uncontracted_lhs_tensorindex_list</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t FirstContractedIndexPos, size_t SecondContractedIndexPos, typename T , typename X , typename Symm , typename IndexList , typename ArgsList &gt; </div>
+<div class="memtemplate">
+template&lt;typename... LhsIndices&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="structTensorExpressions_1_1TensorContract.html">TensorExpressions::TensorContract</a>&lt; FirstContractedIndexPos, SecondContractedIndexPos, T, X, Symm, IndexList, ArgsList &gt;::<a class="el" href="structTensorExpressions_1_1TensorContract.html#a75af0487a2bcaca829d7a66271aed8a1">get_uncontracted_lhs_tensorindex_list</a> =  tmpl::append&lt; tmpl::front&lt;tmpl::split_at&lt; get_uncontracted_lhs_tensorindex_list_helper&lt;LhsIndices...&gt;, tmpl::size_t&lt;SecondContractedIndexPos&gt; &gt;&gt;, tmpl::list&lt;tmpl::at_c&lt;ArgsList, SecondContractedIndexPos&gt; &gt;, tmpl::back&lt;tmpl::split_at&lt; get_uncontracted_lhs_tensorindex_list_helper&lt;LhsIndices...&gt;, tmpl::size_t&lt;SecondContractedIndexPos&gt; &gt;&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Constructs the uncontracted LHS's list of TensorIndexs by inserting the pair of indices being contracted into the list of contracted LHS TensorIndexs. </p>
+<p>Example: Let <code>ti_a_t</code> denote the type of <code>ti_a</code>, and apply the same convention for other generic indices. If we contract RHS tensor \(R^{a}{}_{bac}\) to LHS tensor \(L_{cb}\), the RHS list of generic indices (<code>ArgsList</code>) is <code>tmpl::list&lt;ti_A_t, ti_b_t, ti_a_t, ti_c_t&gt;</code> and the LHS generic indices (<code>LhsIndices</code>) are <code>ti_c_t, ti_b_t</code>. <code>ti_A_t</code> and <code>ti_a_t</code> are inserted into <code>LhsIndices</code> at their positions from the RHS, which yields: <code>tmpl::list&lt;ti_A_t, ti_c_t, ti_a_t, ti_b_t&gt;</code>. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a906ebefd411d506595591244e60a8d03"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a906ebefd411d506595591244e60a8d03">&#9670;&nbsp;</a></span>get()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t FirstContractedIndexPos, size_t SecondContractedIndexPos, typename T , typename X , typename Symm , typename IndexList , typename ArgsList &gt; </div>
+<div class="memtemplate">
+template&lt;typename... ContractedLhsIndices&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">decltype(auto) <a class="el" href="structTensorExpressions_1_1TensorContract.html">TensorExpressions::TensorContract</a>&lt; FirstContractedIndexPos, SecondContractedIndexPos, T, X, Symm, IndexList, ArgsList &gt;::get </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, num_tensor_indices &gt; &amp;&#160;</td>
+          <td class="paramname"><em>contracted_lhs_multi_index</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return the value of the component of the contracted LHS tensor at a given multi-index. </p>
+<h3>Details</h3>
+<p>Given a RHS tensor to be contracted, the uncontracted LHS represents the uncontracted RHS tensor arranged with the LHS's generic index order. The contracted LHS represents the result of contracting this uncontracted LHS. For example, if we have RHS tensor \(R^{a}{}_{abc}\) and we want to contract it to the LHS tensor \(L_{cb}\), then \(L_{cb}\) represents the contracted LHS, while \(L^{a}{}_{acb}\) represents the uncontracted LHS. Note that the relative ordering of the LHS generic indices \(c\) and \(b\) in the contracted LHS is preserved in the uncontracted LHS.</p>
+<p>To compute a contraction, we need to get all the uncontracted LHS components to sum. In the example above, this means that in order to compute \(L_{cb}\) for some \(c\) and \(b\), we need to sum the components \(L^{a}{}_{acb}\) for all values of \(a\). This function first constructs the list of generic indices (TensorIndexs) of the uncontracted LHS, then uses helper functions to compute and return the contracted LHS component by summing the necessary uncontracted LHS components.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">ContractedLhsIndices</td><td>the TensorIndexs of the contracted LHS tensor </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">contracted_lhs_multi_index</td><td>the multi-index of the contracted LHS tensor component to retrieve </td></tr>
+  </table>
+  </dd>
+</dl>
+<p><em>Returns:</em> the value of the component at <code>contracted_lhs_multi_index</code> in the contracted LHS tensor </p>
+
+</div>
+</div>
+<a id="afef7af7cc4a31c149f3919d68153cfeb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afef7af7cc4a31c149f3919d68153cfeb">&#9670;&nbsp;</a></span>get_first_uncontracted_lhs_multi_index_to_sum()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t FirstContractedIndexPos, size_t SecondContractedIndexPos, typename T , typename X , typename Symm , typename IndexList , typename ArgsList &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, num_uncontracted_tensor_indices&gt; <a class="el" href="structTensorExpressions_1_1TensorContract.html">TensorExpressions::TensorContract</a>&lt; FirstContractedIndexPos, SecondContractedIndexPos, T, X, Symm, IndexList, ArgsList &gt;::get_first_uncontracted_lhs_multi_index_to_sum </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, num_tensor_indices &gt; &amp;&#160;</td>
+          <td class="paramname"><em>contracted_lhs_multi_index</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return the multi-index of the first uncontracted LHS component to be summed to compute a given contracted LHS component. </p>
+<h3>Details</h3>
+<p>Returns the multi-index that results from taking the <code>contracted_lhs_multi_index</code> and inserting <code>0</code> at the two positions of the pair of indices to contract.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">contracted_lhs_multi_index</td><td>the multi-index of a contracted LHS component to be computed </td></tr>
+  </table>
+  </dd>
+</dl>
+<p><em>Returns:</em> the multi-index of the first uncontracted LHS component to be summed to compute the contracted LHS component at <code>contracted_lhs_multi_index</code> </p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="a62df3a7948968480e30dbbc4846bb250"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a62df3a7948968480e30dbbc4846bb250">&#9670;&nbsp;</a></span>num_uncontracted_tensor_indices</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t FirstContractedIndexPos, size_t SecondContractedIndexPos, typename T , typename X , typename Symm , typename IndexList , typename ArgsList &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr auto <a class="el" href="structTensorExpressions_1_1TensorContract.html">TensorExpressions::TensorContract</a>&lt; FirstContractedIndexPos, SecondContractedIndexPos, T, X, Symm, IndexList, ArgsList &gt;::num_uncontracted_tensor_indices</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      tmpl::size&lt;Symm&gt;::value</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/DataStructures/Tensor/Expressions/<a class="el" href="Contract_8hpp_source.html">Contract.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

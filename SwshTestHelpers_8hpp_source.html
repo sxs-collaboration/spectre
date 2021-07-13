@@ -1,0 +1,418 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: tests/Unit/Helpers/NumericalAlgorithms/Spectral/SwshTestHelpers.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_33df814919e476f9d56dccef9b24e276.html">tests</a></li><li class="navelem"><a class="el" href="dir_38113a4c235494bd05bb19f85d006940.html">Unit</a></li><li class="navelem"><a class="el" href="dir_b87ca7a475176b712f1482b79974072f.html">Helpers</a></li><li class="navelem"><a class="el" href="dir_9359b178215eefc55318e775a18128c3.html">NumericalAlgorithms</a></li><li class="navelem"><a class="el" href="dir_9232a135a26cd35138b441da42be3e90.html">Spectral</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">SwshTestHelpers.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cmath.html">cmath</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/complex.html">complex</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;sharp_cxx.h&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160; </div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;DataStructures/ComplexModalVector.hpp&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataVector.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="MakeWithRandomValues_8hpp.html">Helpers/DataStructures/MakeWithRandomValues.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Spectral/ComplexDataView.hpp&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Spectral/SwshCoefficients.hpp&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Spectral/SwshCollocation.hpp&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Spectral/SwshTags.hpp&quot;</span>  <span class="comment">// IWYU pragma: keep</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment"></span><span class="keyword">class </span><a class="code" href="classComplexDataVector.html">ComplexDataVector</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceSpectral.html">Spectral</a> {</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="keyword">namespace </span>Swsh {</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="keyword">namespace </span>TestHelpers {</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160; </div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment">// returns the factorial of the argument as a double so that an approximate</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment">// value can be given for larger input quantities. Note that the spin-weighted</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment">// harmonic function requires a factorial of l + m, so harmonics above l~12</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment">// would be untestable if the factorial only returned size_t&#39;s.</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keywordtype">double</span> <a class="code" href="group__ConstantExpressionsGroup.html#gac8147ed2396495e9c9a2d80508587590">factorial</a>(<span class="keywordtype">size_t</span> arg) noexcept;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment">// Note that the methods for computing the spin-weighted spherical harmonics and</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment">// their derivatives below are both 1) poorly optimized (they use many</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment">// computations per grid point evaluated) and 2) not terribly accurate (the</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment">// analytic expressions require evaluation of ratios of factorials, losing</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="comment">// numerical precision rapidly). However, they are comparatively easy to</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment">// manually check for correctness, which is critical to offer a reliable measure</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment">// of the spin-weighted transforms.</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160; </div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment">// Analytic form for the spin-weighted spherical harmonic function, for testing</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment">// purposes. The formula is from [Goldberg</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment">// et. al.](https://aip.scitation.org/doi/10.1063/1.1705135)</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<a class="codeRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex&lt;double&gt;</a> spin_weighted_spherical_harmonic(<span class="keywordtype">int</span> s, <span class="keywordtype">int</span> l, <span class="keywordtype">int</span> m,</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;                                                      <span class="keywordtype">double</span> theta,</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;                                                      <span class="keywordtype">double</span> <a class="code" href="group__GeneralRelativityGroup.html#gaecccadb6658f3735cfb7344c780abd97">phi</a>) noexcept;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment">// Returns the value of the spin-weighted derivative `DerivativeKind` of the</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment">// spherical harmonic basis function \f${}_s Y_{l m}\f$ at angular location</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment">// (`theta`, `phi`) using the recurrence identities for spin-weighted</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment">// derivatives.</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> DerivativeKind&gt;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<a class="codeRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex&lt;double&gt;</a> derivative_of_spin_weighted_spherical_harmonic(</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="keywordtype">int</span> s, <span class="keywordtype">int</span> l, <span class="keywordtype">int</span> m, <span class="keywordtype">double</span> theta, <span class="keywordtype">double</span> <a class="code" href="group__GeneralRelativityGroup.html#gaecccadb6658f3735cfb7344c780abd97">phi</a>) noexcept;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment">// Performs the generation of spin-weighted coefficients into a supplied</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment">// ComplexModalVector `to_fill`, passed by pointer. The resulting random</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment">// coefficients must then be adjusted in two ways:</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment">// - The modes l &lt; |s| are always zero, so must have zero coefficient to be</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment">//   compatible with tests</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment">// - Modes with m=0 obey reality conditions, so must also be adjusted</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">// The libsharp coefficient representation is not currently presented as an</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment">// interface in SpECTRE. However, to help maintain the Swsh library, further</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment">// notes on the coefficient representation can be found in the comments for the</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment">// `Coefficients` class in `SwshCoefficients.hpp`.</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">int</span> Spin, <span class="keyword">typename</span> Distribution, <span class="keyword">typename</span> Generator&gt;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="keywordtype">void</span> generate_swsh_modes(<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;ComplexModalVector*&gt;</a> to_fill,</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;                         <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;Generator*&gt;</a> generator,</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;                         <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;Distribution*&gt;</a> distribution,</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;                         <span class="keyword">const</span> <span class="keywordtype">size_t</span> number_of_radial_points,</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;                         <span class="keyword">const</span> <span class="keywordtype">size_t</span> l_max) noexcept {</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;  <a class="code" href="group__TestingFrameworkGroup.html#ga689b0334217eafa70595ece948ebbbf7">fill_with_random_values</a>(to_fill, generator, distribution);</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;  <span class="keyword">auto</span>* spherical_harmonic_lm =</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;      <a class="code" href="group__SwshGroup.html#ga783b5d9a370eba729f4ceae04f17d17d">cached_coefficients_metadata</a>(l_max).get_sharp_alm_info();</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; number_of_radial_points; i++) {</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="comment">// adjust the m = 0 modes for the reality conditions in libsharp</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> l = 0; l &lt; l_max + 1; l++) {</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;      (*to_fill)[l + i * <a class="code" href="group__SwshGroup.html#ga6f1ab67b3715a5adaea8414b5c7dcbfa">size_of_libsharp_coefficient_vector</a>(l_max)] = real(</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;          (*to_fill)[l + i * <a class="code" href="group__SwshGroup.html#ga6f1ab67b3715a5adaea8414b5c7dcbfa">size_of_libsharp_coefficient_vector</a>(l_max) / 2]);</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;      (*to_fill)[l +</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;                 (2 * i + 1) * <a class="code" href="group__SwshGroup.html#ga6f1ab67b3715a5adaea8414b5c7dcbfa">size_of_libsharp_coefficient_vector</a>(l_max) / 2] =</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;          imag((*to_fill)[l + (2 * i + 1) *</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;                                  <a class="code" href="group__SwshGroup.html#ga6f1ab67b3715a5adaea8414b5c7dcbfa">size_of_libsharp_coefficient_vector</a>(l_max) /</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;                                  2]);</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    }</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> m = 0; m &lt; static_cast&lt;size_t&gt;(spherical_harmonic_lm-&gt;nm);</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;         ++m) {</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;      <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> l = m; l &lt;= l_max; ++l) {</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        <span class="comment">// clang-tidy do not use pointer arithmetic</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        <span class="comment">// pointer arithmetic here is unavoidable as we are interacting with</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        <span class="comment">// the libsharp structures</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;        <span class="keyword">const</span> <span class="keyword">auto</span> m_start =</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;            <span class="keyword">static_cast&lt;</span><span class="keywordtype">size_t</span><span class="keyword">&gt;</span>(spherical_harmonic_lm-&gt;mvstart[m]);  <span class="comment">// NOLINT</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;        <span class="keyword">const</span> <span class="keyword">auto</span> l_stride =</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;            <span class="keyword">static_cast&lt;</span><span class="keywordtype">size_t</span><span class="keyword">&gt;</span>(spherical_harmonic_lm-&gt;stride);</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        <span class="comment">// modes for l &lt; |s| are zero</span></div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        <span class="keywordflow">if</span> (<span class="keyword">static_cast&lt;</span><span class="keywordtype">int</span><span class="keyword">&gt;</span>(l) &lt; abs(Spin)) {</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;          (*to_fill)[m_start + l * l_stride +</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;                     i * <a class="code" href="group__SwshGroup.html#ga6f1ab67b3715a5adaea8414b5c7dcbfa">size_of_libsharp_coefficient_vector</a>(l_max)] = 0.0;</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;          (*to_fill)[m_start + l * l_stride +</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;                     (2 * i + 1) * <a class="code" href="group__SwshGroup.html#ga6f1ab67b3715a5adaea8414b5c7dcbfa">size_of_libsharp_coefficient_vector</a>(l_max) /</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;                         2] = 0.0;</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;        }</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;      }</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    }</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;  }</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;}</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160; </div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="comment">// Computes a set of collocation points from a set of spin-weighted spherical</span></div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="comment">// harmonic coefficients. This function takes care of the nastiness associated</span></div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="comment">// with appropriately iterating over the sharp representation of coefficients</span></div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="comment">// and storing the result computed from the input `basis_function` evaluated</span></div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="comment">// with arguments (size_t s, size_t l, size_t m, double theta, double phi),</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment">// which is compatible with the above `spin_weighted_spherical_harmonic`</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="comment">// and `derivative_of_spin_weighted_spherical_harmonic` functions.</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="comment">// This function does not have easy test verification, but acts as an</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="comment">// independent computation of the spherical harmonic collocation values, so the</span></div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="comment">// agreement (from `Test_SwshTransformJob.cpp`) with the libsharp transform</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="comment">// lends credibility to both methods.</span></div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">int</span> Spin, <a class="code" href="namespaceSpectral_1_1Swsh.html#ab1fa85ae53abba64a770e7e806bf12f6">ComplexRepresentation</a> Representation,</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;          <span class="keyword">typename</span> BasisFunction&gt;</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;<span class="keywordtype">void</span> swsh_collocation_from_coefficients_and_basis_func(</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;ComplexDataVector*&gt;</a> collocation_data,</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    <span class="keyword">const</span> <a class="code" href="classComplexModalVector.html">ComplexModalVector</a>&amp; coefficient_data, <span class="keyword">const</span> <span class="keywordtype">size_t</span> l_max,</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">size_t</span> number_of_radial_points,</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    <span class="keyword">const</span> BasisFunction basis_function) noexcept {</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;  <span class="keyword">auto</span>&amp; spherical_harmonic_collocation =</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;      cached_collocation_metadata&lt;Representation&gt;(l_max);</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;  <span class="keyword">auto</span>* spherical_harmonic_lm =</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;      <a class="code" href="group__SwshGroup.html#ga783b5d9a370eba729f4ceae04f17d17d">cached_coefficients_metadata</a>(l_max).get_sharp_alm_info();</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160; </div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;  *collocation_data = 0.0;</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; number_of_radial_points; ++i) {</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;    <span class="keywordflow">for</span> (<span class="keyword">auto</span> j : spherical_harmonic_collocation) {</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;      <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> m = 0; m &lt; static_cast&lt;size_t&gt;(spherical_harmonic_lm-&gt;nm);</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;           ++m) {</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;        <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> l = m; l &lt;= l_max; ++l) {</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;          <span class="comment">// clang-tidy do not use pointer arithmetic</span></div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;          <span class="comment">// pointer arithmetic here is unavoidable as we are interacting with</span></div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;          <span class="comment">// the libsharp structures</span></div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;          <span class="keyword">const</span> <span class="keyword">auto</span> m_start =</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;              <span class="keyword">static_cast&lt;</span><span class="keywordtype">size_t</span><span class="keyword">&gt;</span>(spherical_harmonic_lm-&gt;mvstart[m]);  <span class="comment">// NOLINT</span></div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;          <span class="keyword">const</span> <span class="keyword">auto</span> l_stride =</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;              <span class="keyword">static_cast&lt;</span><span class="keywordtype">size_t</span><span class="keyword">&gt;</span>(spherical_harmonic_lm-&gt;stride);</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;          <span class="comment">// see the documentation associated with Swsh::TransformJob in</span></div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;          <span class="comment">// SwshTransformJob.hpp for a detailed explanation of the libsharp</span></div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;          <span class="comment">// collocation representation, and why there must be four steps with</span></div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;          <span class="comment">// sign transformations.</span></div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;          (*collocation_data)[j.offset +</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;                              i * spherical_harmonic_collocation.size()] +=</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;              <a class="code" href="group__SwshGroup.html#ga3dd752fced32fd47a2ad3a29a42dbc82">sharp_swsh_sign</a>(Spin, m, <span class="keyword">true</span>) *</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;              coefficient_data[m_start + l * l_stride +</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;                               i * <a class="code" href="group__SwshGroup.html#ga6f1ab67b3715a5adaea8414b5c7dcbfa">size_of_libsharp_coefficient_vector</a>(l_max)] *</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;              basis_function(Spin, l, m, j.theta, j.phi);</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160; </div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;          <span class="keywordflow">if</span> (m != 0) {</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;            (*collocation_data)[j.offset +</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;                                i * spherical_harmonic_collocation.size()] +=</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;                <a class="code" href="group__SwshGroup.html#ga3dd752fced32fd47a2ad3a29a42dbc82">sharp_swsh_sign</a>(Spin, -m, <span class="keyword">true</span>) *</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;                conj(coefficient_data[m_start + l * l_stride +</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;                                      i * <a class="code" href="group__SwshGroup.html#ga6f1ab67b3715a5adaea8414b5c7dcbfa">size_of_libsharp_coefficient_vector</a>(</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;                                              l_max)]) *</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;                basis_function(Spin, l, -m, j.theta, j.phi);</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;          }</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;          (*collocation_data)[j.offset +</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;                              i * spherical_harmonic_collocation.size()] +=</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;              <a class="code" href="group__SwshGroup.html#ga3dd752fced32fd47a2ad3a29a42dbc82">sharp_swsh_sign</a>(Spin, m, <span class="keyword">false</span>) * <a class="codeRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex&lt;double&gt;</a>(0.0, 1.0) *</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;              coefficient_data[m_start + l * l_stride +</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;                               (2 * i + 1) *</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;                                   <a class="code" href="group__SwshGroup.html#ga6f1ab67b3715a5adaea8414b5c7dcbfa">size_of_libsharp_coefficient_vector</a>(l_max) /</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;                                   2] *</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;              basis_function(Spin, l, m, j.theta, j.phi);</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;          <span class="keywordflow">if</span> (m != 0) {</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;            (*collocation_data)[j.offset +</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;                                i * spherical_harmonic_collocation.size()] +=</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;                <a class="code" href="group__SwshGroup.html#ga3dd752fced32fd47a2ad3a29a42dbc82">sharp_swsh_sign</a>(Spin, -m, <span class="keyword">false</span>) *</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;                <a class="codeRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex&lt;double&gt;</a>(0.0, 1.0) *</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;                conj(coefficient_data[m_start + l * l_stride +</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;                                      (2 * i + 1) *</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;                                          <a class="code" href="group__SwshGroup.html#ga6f1ab67b3715a5adaea8414b5c7dcbfa">size_of_libsharp_coefficient_vector</a>(</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;                                              l_max) /</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;                                          2]) *</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;                basis_function(Spin, l, -m, j.theta, j.phi);</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;          }</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;        }</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;      }</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;    }</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;  }</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;}</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;}  <span class="comment">// namespace TestHelpers</span></div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;}  <span class="comment">// namespace Swsh</span></div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;}  <span class="comment">// namespace Spectral</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="anamespaceSpectral_1_1Swsh_html_ab1fa85ae53abba64a770e7e806bf12f6"><div class="ttname"><a href="namespaceSpectral_1_1Swsh.html#ab1fa85ae53abba64a770e7e806bf12f6">Spectral::Swsh::ComplexRepresentation</a></div><div class="ttdeci">ComplexRepresentation</div><div class="ttdoc">A set of labels for the possible representations of complex numbers for the ComplexDataView and the c...</div><div class="ttdef"><b>Definition:</b> ComplexDataView.hpp:57</div></div>
+<div class="ttc" id="agroup__ConstantExpressionsGroup_html_gac8147ed2396495e9c9a2d80508587590"><div class="ttname"><a href="group__ConstantExpressionsGroup.html#gac8147ed2396495e9c9a2d80508587590">factorial</a></div><div class="ttdeci">constexpr uint64_t factorial(const uint64_t n) noexcept</div><div class="ttdoc">Compute the factorial of .</div><div class="ttdef"><b>Definition:</b> ConstantExpressions.hpp:89</div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_ga689b0334217eafa70595ece948ebbbf7"><div class="ttname"><a href="group__TestingFrameworkGroup.html#ga689b0334217eafa70595ece948ebbbf7">fill_with_random_values</a></div><div class="ttdeci">void fill_with_random_values(const gsl::not_null&lt; T * &gt; data, const gsl::not_null&lt; UniformRandomBitGenerator * &gt; generator, const gsl::not_null&lt; RandomNumberDistribution * &gt; distribution) noexcept</div><div class="ttdoc">Fill an existing data structure with random values.</div><div class="ttdef"><b>Definition:</b> MakeWithRandomValues.hpp:165</div></div>
+<div class="ttc" id="aMakeWithRandomValues_8hpp_html"><div class="ttname"><a href="MakeWithRandomValues_8hpp.html">MakeWithRandomValues.hpp</a></div></div>
+<div class="ttc" id="agroup__SwshGroup_html_ga6f1ab67b3715a5adaea8414b5c7dcbfa"><div class="ttname"><a href="group__SwshGroup.html#ga6f1ab67b3715a5adaea8414b5c7dcbfa">Spectral::Swsh::size_of_libsharp_coefficient_vector</a></div><div class="ttdeci">constexpr size_t size_of_libsharp_coefficient_vector(const size_t l_max) noexcept</div><div class="ttdoc">Convenience function for determining the number of spin-weighted spherical harmonics coefficients tha...</div><div class="ttdef"><b>Definition:</b> SwshCoefficients.hpp:33</div></div>
+<div class="ttc" id="acmath_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cmath.html">cmath</a></div></div>
+<div class="ttc" id="agroup__SwshGroup_html_ga3dd752fced32fd47a2ad3a29a42dbc82"><div class="ttname"><a href="group__SwshGroup.html#ga3dd752fced32fd47a2ad3a29a42dbc82">Spectral::Swsh::sharp_swsh_sign</a></div><div class="ttdeci">constexpr double sharp_swsh_sign(const int spin_weight, const int m, const bool real) noexcept</div><div class="ttdoc">Compute the sign change between the libsharp convention and the set of spin-weighted spherical harmon...</div><div class="ttdef"><b>Definition:</b> SwshCoefficients.hpp:112</div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="agroup__SwshGroup_html_ga783b5d9a370eba729f4ceae04f17d17d"><div class="ttname"><a href="group__SwshGroup.html#ga783b5d9a370eba729f4ceae04f17d17d">Spectral::Swsh::cached_coefficients_metadata</a></div><div class="ttdeci">const CoefficientsMetadata &amp; cached_coefficients_metadata(size_t l_max) noexcept</div><div class="ttdoc">Generation function for obtaining a CoefficientsMetadata object which is computed by the libsharp cal...</div></div>
+<div class="ttc" id="agroup__GeneralRelativityGroup_html_gaecccadb6658f3735cfb7344c780abd97"><div class="ttname"><a href="group__GeneralRelativityGroup.html#gaecccadb6658f3735cfb7344c780abd97">GeneralizedHarmonic::phi</a></div><div class="ttdeci">void phi(gsl::not_null&lt; tnsr::iaa&lt; DataType, SpatialDim, Frame &gt; * &gt; phi, const Scalar&lt; DataType &gt; &amp;lapse, const tnsr::i&lt; DataType, SpatialDim, Frame &gt; &amp;deriv_lapse, const tnsr::I&lt; DataType, SpatialDim, Frame &gt; &amp;shift, const tnsr::iJ&lt; DataType, SpatialDim, Frame &gt; &amp;deriv_shift, const tnsr::ii&lt; DataType, SpatialDim, Frame &gt; &amp;spatial_metric, const tnsr::ijj&lt; DataType, SpatialDim, Frame &gt; &amp;deriv_spatial_metric) noexcept</div><div class="ttdoc">Computes the auxiliary variable  used by the generalized harmonic formulation of Einstein's equations...</div></div>
+<div class="ttc" id="aclassComplexModalVector_html"><div class="ttname"><a href="classComplexModalVector.html">ComplexModalVector</a></div><div class="ttdoc">A class for storing complex spectral coefficients on a spectral grid.</div><div class="ttdef"><b>Definition:</b> ComplexModalVector.hpp:40</div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="acomplex_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/complex.html">complex</a></div></div>
+<div class="ttc" id="aclassComplexDataVector_html"><div class="ttname"><a href="classComplexDataVector.html">ComplexDataVector</a></div><div class="ttdoc">Stores a collection of complex function values.</div><div class="ttdef"><b>Definition:</b> ComplexDataVector.hpp:53</div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<div class="ttc" id="anamespaceSpectral_html"><div class="ttname"><a href="namespaceSpectral.html">Spectral</a></div><div class="ttdoc">Functionality associated with a particular choice of basis functions and quadrature for spectral oper...</div><div class="ttdef"><b>Definition:</b> ComplexDataView.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

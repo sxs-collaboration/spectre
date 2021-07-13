@@ -1,0 +1,306 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Elliptic/BoundaryConditions/ApplyBoundaryCondition.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_102e4bda8d511a2139aab1e5fe5a004e.html">Elliptic</a></li><li class="navelem"><a class="el" href="dir_a18fcbd7e4f066944dd215ef8246e398.html">BoundaryConditions</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">ApplyBoundaryCondition.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160; </div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataBox_8hpp.html">DataStructures/DataBox/DataBox.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Direction_8hpp.html">Domain/Structure/Direction.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Domain_2Tags_8hpp.html">Domain/Tags.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;Domain/Tags/Faces.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;Elliptic/BoundaryConditions/BoundaryCondition.hpp&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ApplyAt_8hpp.html">Elliptic/Utilities/ApplyAt.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;Utilities/FakeVirtual.hpp&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160; </div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceelliptic.html">elliptic</a> {<span class="comment"></span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment"> * \brief Apply the `boundary_condition` to the `fields_and_fluxes` with</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment"> * arguments from interface tags in the DataBox.</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment"> * This functions assumes the arguments for the `boundary_condition` are stored</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment"> * in the DataBox in tags `domain::Tags::Faces&lt;Dim, Tag&gt;`.</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment"> * This may turn out not to be the most efficient setup, so code that</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment"> * uses the boundary conditions doesn&#39;t have to use this function but can</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment"> * procure the arguments differently. For example, future optimizations may</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment"> * involve storing a subset of arguments that don&#39;t change during an elliptic</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment"> * solve in direction-maps in the DataBox, and slicing other arguments to the</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment"> * interface every time the boundary conditions are applied.</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment"> * The `ArgsTransform` template parameter can be used to transform the set of</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment"> * argument tags for the boundary conditions further. It must be compatible with</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment"> * `tmpl::transform`. For example, it may wrap the tags in another prefix. Set</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment"> * it to `void` (default) to apply no transformation.</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">bool</span> Linearized, <span class="keyword">typename</span> ArgsTransform = void, <span class="keywordtype">size_t</span> Dim,</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;          <span class="keyword">typename</span> Registrars, <span class="keyword">typename</span> DbTagsList, <span class="keyword">typename</span> MapKeys,</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;          <span class="keyword">typename</span>... FieldsAndFluxes&gt;</div>
+<div class="line"><a name="l00041"></a><span class="lineno"><a class="line" href="namespaceelliptic.html#ab33c1c9f2ecca9129224259a4ae29c8b">   41</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="namespaceelliptic.html#ab33c1c9f2ecca9129224259a4ae29c8b">apply_boundary_condition</a>(</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="keyword">const</span> <a class="code" href="classelliptic_1_1BoundaryConditions_1_1BoundaryCondition.html">elliptic::BoundaryConditions::BoundaryCondition&lt;Dim, Registrars&gt;</a>&amp;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        boundary_condition,</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keyword">const</span> db::DataBox&lt;DbTagsList&gt;&amp; box, <span class="keyword">const</span> MapKeys&amp; map_keys_to_direction,</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;FieldsAndFluxes*&gt;</a>... fields_and_fluxes) noexcept {</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;  <a class="code" href="group__UtilitiesGroup.html#gaa46b024995f6a5d70ed31882a9a0bcab">call_with_dynamic_type</a>&lt;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;      void, <span class="keyword">typename</span> <a class="code" href="classelliptic_1_1BoundaryConditions_1_1BoundaryCondition.html">elliptic::BoundaryConditions::BoundaryCondition</a>&lt;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;                Dim, Registrars&gt;::creatable_classes&gt;(</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;      &amp;boundary_condition,</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;      [&amp;map_keys_to_direction, &amp;box,</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;       &amp;fields_and_fluxes...](<span class="keyword">const</span> <span class="keyword">auto</span>* <span class="keyword">const</span> derived) noexcept {</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        <span class="keyword">using</span> Derived = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/decay.html">std::decay_t</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/types/remove_pointer.html">std::remove_pointer_t</a>&lt;decltype(derived)&gt;&gt;;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        <span class="keyword">using</span> volume_tags =</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;            tmpl::conditional_t&lt;Linearized,</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;                                <span class="keyword">typename</span> Derived::volume_tags_linearized,</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;                                <span class="keyword">typename</span> Derived::volume_tags&gt;;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        <span class="keyword">using</span> argument_tags = domain::make_faces_tags&lt;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;            Dim,</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;            tmpl::conditional_t&lt;Linearized,</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;                                <span class="keyword">typename</span> Derived::argument_tags_linearized,</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;                                <span class="keyword">typename</span> Derived::argument_tags&gt;,</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;            volume_tags&gt;;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        <span class="keyword">using</span> argument_tags_transformed =</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;            tmpl::conditional_t&lt;std::is_same_v&lt;ArgsTransform, void&gt;,</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;                                argument_tags,</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;                                tmpl::transform&lt;argument_tags, ArgsTransform&gt;&gt;;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        <span class="keyword">using</span> volume_tags_transformed =</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;            tmpl::conditional_t&lt;std::is_same_v&lt;ArgsTransform, void&gt;,</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;                                volume_tags,</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;                                tmpl::transform&lt;volume_tags, ArgsTransform&gt;&gt;;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        elliptic::util::apply_at&lt;argument_tags_transformed,</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;                                 volume_tags_transformed&gt;(</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;            [&amp;derived, &amp;fields_and_fluxes...](<span class="keyword">const</span> <span class="keyword">auto</span>&amp;... args) noexcept {</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;              <span class="keywordflow">if</span> constexpr (Linearized) {</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;                derived-&gt;apply_linearized(fields_and_fluxes..., args...);</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;              } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;                derived-&gt;apply(fields_and_fluxes..., args...);</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;              }</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;            },</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;            box, map_keys_to_direction);</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;      });</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;}</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;}  <span class="comment">// namespace elliptic</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="aDomain_2Tags_8hpp_html"><div class="ttname"><a href="Domain_2Tags_8hpp.html">Tags.hpp</a></div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_gaa46b024995f6a5d70ed31882a9a0bcab"><div class="ttname"><a href="group__UtilitiesGroup.html#gaa46b024995f6a5d70ed31882a9a0bcab">call_with_dynamic_type</a></div><div class="ttdeci">Result call_with_dynamic_type(Base *const obj, Callable &amp;&amp;f) noexcept</div><div class="ttdoc">Call a functor with the derived type of a base class pointer.</div><div class="ttdef"><b>Definition:</b> FakeVirtual.hpp:103</div></div>
+<div class="ttc" id="aDataBox_8hpp_html"><div class="ttname"><a href="DataBox_8hpp.html">DataBox.hpp</a></div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="aclasselliptic_1_1BoundaryConditions_1_1BoundaryCondition_html"><div class="ttname"><a href="classelliptic_1_1BoundaryConditions_1_1BoundaryCondition.html">elliptic::BoundaryConditions::BoundaryCondition</a></div><div class="ttdoc">Base class for boundary conditions for elliptic systems.</div><div class="ttdef"><b>Definition:</b> BoundaryCondition.hpp:91</div></div>
+<div class="ttc" id="adecay_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/decay.html">std::decay_t</a></div></div>
+<div class="ttc" id="aApplyAt_8hpp_html"><div class="ttname"><a href="ApplyAt_8hpp.html">ApplyAt.hpp</a></div></div>
+<div class="ttc" id="aremove_pointer_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/remove_pointer.html">std::remove_pointer_t</a></div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="anamespaceelliptic_html"><div class="ttname"><a href="namespaceelliptic.html">elliptic</a></div><div class="ttdoc">Functionality related to solving elliptic partial differential equations.</div><div class="ttdef"><b>Definition:</b> InitializeAnalyticSolution.hpp:29</div></div>
+<div class="ttc" id="aDirection_8hpp_html"><div class="ttname"><a href="Direction_8hpp.html">Direction.hpp</a></div></div>
+<div class="ttc" id="anamespaceelliptic_html_ab33c1c9f2ecca9129224259a4ae29c8b"><div class="ttname"><a href="namespaceelliptic.html#ab33c1c9f2ecca9129224259a4ae29c8b">elliptic::apply_boundary_condition</a></div><div class="ttdeci">void apply_boundary_condition(const elliptic::BoundaryConditions::BoundaryCondition&lt; Dim, Registrars &gt; &amp;boundary_condition, const db::DataBox&lt; DbTagsList &gt; &amp;box, const MapKeys &amp;map_keys_to_direction, const gsl::not_null&lt; FieldsAndFluxes * &gt;... fields_and_fluxes) noexcept</div><div class="ttdoc">Apply the boundary_condition to the fields_and_fluxes with arguments from interface tags in the DataB...</div><div class="ttdef"><b>Definition:</b> ApplyBoundaryCondition.hpp:41</div></div>
+<div class="ttc" id="atype_traits_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a></div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

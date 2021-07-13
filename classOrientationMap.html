@@ -1,0 +1,327 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: OrientationMap&lt; VolumeDim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classOrientationMap-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">OrientationMap&lt; VolumeDim &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__ComputationalDomainGroup.html">Computational Domain</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of the host.  
+ <a href="classOrientationMap.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="OrientationMap_8hpp_source.html">OrientationMap.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a9050266eb6e6a901ded390773f9387e5"><td class="memItemLeft" align="right" valign="top"><a id="a9050266eb6e6a901ded390773f9387e5"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOrientationMap.html#a9050266eb6e6a901ded390773f9387e5">OrientationMap</a> () noexcept</td></tr>
+<tr class="memdesc:a9050266eb6e6a901ded390773f9387e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">The default orientation is the identity map on directions. The bool <code>is_aligned_</code> is correspondingly set to <code>true</code>. <br /></td></tr>
+<tr class="separator:a9050266eb6e6a901ded390773f9387e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac027a46398ad34372048c4846732f6e7"><td class="memItemLeft" align="right" valign="top"><a id="ac027a46398ad34372048c4846732f6e7"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>OrientationMap</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;, VolumeDim &gt; mapped_directions) noexcept</td></tr>
+<tr class="separator:ac027a46398ad34372048c4846732f6e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ada47cdc3849fee92076bc88cc3c24c43"><td class="memItemLeft" align="right" valign="top"><a id="ada47cdc3849fee92076bc88cc3c24c43"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>OrientationMap</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;, VolumeDim &gt; &amp;directions_in_host, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;, VolumeDim &gt; &amp;directions_in_neighbor) noexcept</td></tr>
+<tr class="separator:ada47cdc3849fee92076bc88cc3c24c43"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8506f7fa9cdabd7fe325bfc01c3c1996"><td class="memItemLeft" align="right" valign="top"><a id="a8506f7fa9cdabd7fe325bfc01c3c1996"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>OrientationMap</b> (const <a class="el" href="classOrientationMap.html">OrientationMap</a> &amp;)=default</td></tr>
+<tr class="separator:a8506f7fa9cdabd7fe325bfc01c3c1996"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d1e1573a2f78633c146e81f3501a792"><td class="memItemLeft" align="right" valign="top"><a id="a0d1e1573a2f78633c146e81f3501a792"></a>
+<a class="el" href="classOrientationMap.html">OrientationMap</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classOrientationMap.html">OrientationMap</a> &amp;)=default</td></tr>
+<tr class="separator:a0d1e1573a2f78633c146e81f3501a792"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a968b51d533d83551cc07ad6394748188"><td class="memItemLeft" align="right" valign="top"><a id="a968b51d533d83551cc07ad6394748188"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>OrientationMap</b> (<a class="el" href="classOrientationMap.html">OrientationMap</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a968b51d533d83551cc07ad6394748188"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7286c3dab63fdece371d6a338dfa5b9a"><td class="memItemLeft" align="right" valign="top"><a id="a7286c3dab63fdece371d6a338dfa5b9a"></a>
+<a class="el" href="classOrientationMap.html">OrientationMap</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classOrientationMap.html">OrientationMap</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a7286c3dab63fdece371d6a338dfa5b9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6756ac0e515f815d21eac6511ff27fb6"><td class="memItemLeft" align="right" valign="top"><a id="a6756ac0e515f815d21eac6511ff27fb6"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOrientationMap.html#a6756ac0e515f815d21eac6511ff27fb6">is_aligned</a> () const noexcept</td></tr>
+<tr class="memdesc:a6756ac0e515f815d21eac6511ff27fb6"><td class="mdescLeft">&#160;</td><td class="mdescRight">True when mapped(Direction) == <a class="el" href="classDirection.html">Direction</a>. <br /></td></tr>
+<tr class="separator:a6756ac0e515f815d21eac6511ff27fb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81ce82438a477c2d9ac332eeafcc9e5e"><td class="memItemLeft" align="right" valign="top"><a id="a81ce82438a477c2d9ac332eeafcc9e5e"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOrientationMap.html#a81ce82438a477c2d9ac332eeafcc9e5e">operator()</a> (const size_t dim) const noexcept</td></tr>
+<tr class="memdesc:a81ce82438a477c2d9ac332eeafcc9e5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">The corresponding dimension in the neighbor. <br /></td></tr>
+<tr class="separator:a81ce82438a477c2d9ac332eeafcc9e5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21438807f7c77850f9886fc5f65aae05"><td class="memItemLeft" align="right" valign="top"><a id="a21438807f7c77850f9886fc5f65aae05"></a>
+<a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOrientationMap.html#a21438807f7c77850f9886fc5f65aae05">operator()</a> (const <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt; &amp;direction) const noexcept</td></tr>
+<tr class="memdesc:a21438807f7c77850f9886fc5f65aae05"><td class="mdescLeft">&#160;</td><td class="mdescRight">The corresponding direction in the neighbor. <br /></td></tr>
+<tr class="separator:a21438807f7c77850f9886fc5f65aae05"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9aada5f60ff3863f4a72b0fcd428daa"><td class="memItemLeft" align="right" valign="top"><a id="ab9aada5f60ff3863f4a72b0fcd428daa"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classSegmentId.html">SegmentId</a>, VolumeDim &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOrientationMap.html#ab9aada5f60ff3863f4a72b0fcd428daa">operator()</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classSegmentId.html">SegmentId</a>, VolumeDim &gt; &amp;segmentIds) const noexcept</td></tr>
+<tr class="memdesc:ab9aada5f60ff3863f4a72b0fcd428daa"><td class="mdescLeft">&#160;</td><td class="mdescRight">The corresponding SegmentIds in the neighbor. <br /></td></tr>
+<tr class="separator:ab9aada5f60ff3863f4a72b0fcd428daa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81723355d6963f62e3e0bea08658ad09"><td class="memItemLeft" align="right" valign="top"><a id="a81723355d6963f62e3e0bea08658ad09"></a>
+<a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOrientationMap.html#a81723355d6963f62e3e0bea08658ad09">operator()</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim &gt; &amp;mesh) const noexcept</td></tr>
+<tr class="memdesc:a81723355d6963f62e3e0bea08658ad09"><td class="mdescLeft">&#160;</td><td class="mdescRight">The corresponding <a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a> in the neighbor. <br /></td></tr>
+<tr class="separator:a81723355d6963f62e3e0bea08658ad09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a135d3e4e05239b920fe6e549fc7e3b91"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a135d3e4e05239b920fe6e549fc7e3b91"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, VolumeDim &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classOrientationMap.html#a135d3e4e05239b920fe6e549fc7e3b91">permute_from_neighbor</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, VolumeDim &gt; &amp;array_in_neighbor) const noexcept</td></tr>
+<tr class="memdesc:a135d3e4e05239b920fe6e549fc7e3b91"><td class="mdescLeft">&#160;</td><td class="mdescRight">An array whose elements are permuted such that <code>result[d] = array_in_neighbor[this-&gt;operator()(d)]</code>  <a href="classOrientationMap.html#a135d3e4e05239b920fe6e549fc7e3b91">More...</a><br /></td></tr>
+<tr class="separator:a135d3e4e05239b920fe6e549fc7e3b91"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91c977b71618d412ece7f1043c9d266b"><td class="memItemLeft" align="right" valign="top"><a id="a91c977b71618d412ece7f1043c9d266b"></a>
+<a class="el" href="classOrientationMap.html">OrientationMap</a>&lt; VolumeDim &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOrientationMap.html#a91c977b71618d412ece7f1043c9d266b">inverse_map</a> () const noexcept</td></tr>
+<tr class="memdesc:a91c977b71618d412ece7f1043c9d266b"><td class="mdescLeft">&#160;</td><td class="mdescRight">The corresponding Orientation of the host in the frame of the neighbor. <br /></td></tr>
+<tr class="separator:a91c977b71618d412ece7f1043c9d266b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a14f12e464a6c37f1f89d6b9ee065c7ac"><td class="memItemLeft" align="right" valign="top"><a id="a14f12e464a6c37f1f89d6b9ee065c7ac"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOrientationMap.html#a14f12e464a6c37f1f89d6b9ee065c7ac">pup</a> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="memdesc:a14f12e464a6c37f1f89d6b9ee065c7ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialization for Charm++. <br /></td></tr>
+<tr class="separator:a14f12e464a6c37f1f89d6b9ee065c7ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a001e24751dabf1d170e0cb346cf7b768"><td class="memItemLeft" align="right" valign="top"><a id="a001e24751dabf1d170e0cb346cf7b768"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classOrientationMap.html">OrientationMap</a> &amp;lhs, const <a class="el" href="classOrientationMap.html">OrientationMap</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a001e24751dabf1d170e0cb346cf7b768"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t VolumeDim&gt;<br />
+class OrientationMap&lt; VolumeDim &gt;</h3>
+
+<p>A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of the host. </p>
+<h3>Usage</h3>
+<p>Given a <code>size_t dimension</code>, a <code><a class="el" href="classDirection.html">Direction</a></code>, or a <code><a class="el" href="classSegmentId.html" title="A SegmentId labels a segment of the interval [-1,1] and is used to identify the bounds of an Element ...">SegmentId</a></code> of the host, an <code><a class="el" href="classOrientationMap.html" title="A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of th...">OrientationMap</a></code> will give the corresponding value in the neighbor. </p><dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">VolumeDim</td><td>the dimension of the blocks.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>See the <a class="el" href="tutorial_orientations.html">tutorial</a> for information on how OrientationMaps are used and constructed. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a135d3e4e05239b920fe6e549fc7e3b91"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a135d3e4e05239b920fe6e549fc7e3b91">&#9670;&nbsp;</a></span>permute_from_neighbor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t VolumeDim&gt; </div>
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, VolumeDim &gt; <a class="el" href="classOrientationMap.html">OrientationMap</a>&lt; VolumeDim &gt;::permute_from_neighbor </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>array_in_neighbor</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>An array whose elements are permuted such that <code>result[d] = array_in_neighbor[this-&gt;operator()(d)]</code> </p>
+<dl class="section note"><dt>Note</dt><dd>the permutation depends only on how the dimension is mapped and ignores the side of the mapped direction. </dd></dl>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/Structure/<a class="el" href="OrientationMap_8hpp_source.html">OrientationMap.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

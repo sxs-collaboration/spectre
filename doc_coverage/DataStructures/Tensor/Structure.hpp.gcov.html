@@ -1,0 +1,655 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - 39f3c2b725318dcf91749887b1e61f477736e132 - DataStructures/Tensor/Structure.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title"> SpECTRE Documentation Coverage Report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">DataStructures/Tensor</a> - Structure.hpp</td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+             <td class="headerItem">Commit:</td>
+             <td class="headerValue"><a target="_blank" href="https://github.com/sxs-collaboration/spectre/commit/39f3c2b725318dcf91749887b1e61f477736e132">39f3c2b725318dcf91749887b1e61f477736e132</a></td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2021-07-13 03:19:40</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineCov">          1 : // Distributed under the MIT License.</span></a>
+<a name="2"><span class="lineNum">       2 </span>            : // See LICENSE.txt for details.</a>
+<a name="3"><span class="lineNum">       3 </span>            : </a>
+<a name="4"><span class="lineNum">       4 </span>            : /// \file</a>
+<a name="5"><span class="lineNum">       5 </span>            : /// Defines class TensorStructure&lt;Symmetry, Indices...&gt;</a>
+<a name="6"><span class="lineNum">       6 </span>            : </a>
+<a name="7"><span class="lineNum">       7 </span>            : #pragma once</a>
+<a name="8"><span class="lineNum">       8 </span>            : </a>
+<a name="9"><span class="lineNum">       9 </span>            : #include &lt;array&gt;</a>
+<a name="10"><span class="lineNum">      10 </span>            : #include &lt;limits&gt;</a>
+<a name="11"><span class="lineNum">      11 </span>            : </a>
+<a name="12"><span class="lineNum">      12 </span>            : #include &quot;DataStructures/Tensor/IndexType.hpp&quot;</a>
+<a name="13"><span class="lineNum">      13 </span>            : #include &quot;DataStructures/Tensor/Metafunctions.hpp&quot;</a>
+<a name="14"><span class="lineNum">      14 </span>            : #include &quot;DataStructures/Tensor/Symmetry.hpp&quot;</a>
+<a name="15"><span class="lineNum">      15 </span>            : #include &quot;Utilities/Array.hpp&quot;  // IWYU pragma: export</a>
+<a name="16"><span class="lineNum">      16 </span>            : #include &quot;Utilities/ConstantExpressions.hpp&quot;</a>
+<a name="17"><span class="lineNum">      17 </span>            : #include &quot;Utilities/ErrorHandling/Assert.hpp&quot;</a>
+<a name="18"><span class="lineNum">      18 </span>            : #include &quot;Utilities/ForceInline.hpp&quot;</a>
+<a name="19"><span class="lineNum">      19 </span>            : #include &quot;Utilities/Gsl.hpp&quot;</a>
+<a name="20"><span class="lineNum">      20 </span>            : #include &quot;Utilities/MakeArray.hpp&quot;</a>
+<a name="21"><span class="lineNum">      21 </span>            : #include &quot;Utilities/Requires.hpp&quot;</a>
+<a name="22"><span class="lineNum">      22 </span>            : #include &quot;Utilities/TMPL.hpp&quot;</a>
+<a name="23"><span class="lineNum">      23 </span>            : </a>
+<a name="24"><span class="lineNum">      24 </span>            : namespace Tensor_detail {</a>
+<a name="25"><span class="lineNum">      25 </span>            : template &lt;size_t Size&gt;</a>
+<a name="26"><span class="lineNum">      26 </span>            : constexpr size_t number_of_independent_components(</a>
+<a name="27"><span class="lineNum">      27 </span>            :     const std::array&lt;int, Size&gt;&amp; symm,</a>
+<a name="28"><span class="lineNum">      28 </span>            :     const std::array&lt;size_t, Size&gt;&amp; dims) noexcept {</a>
+<a name="29"><span class="lineNum">      29 </span>            :   if constexpr (Size == 0) {</a>
+<a name="30"><span class="lineNum">      30 </span>            :     (void)symm;</a>
+<a name="31"><span class="lineNum">      31 </span>            :     (void)dims;</a>
+<a name="32"><span class="lineNum">      32 </span>            : </a>
+<a name="33"><span class="lineNum">      33 </span>            :     return 1;</a>
+<a name="34"><span class="lineNum">      34 </span>            :   } else if constexpr (Size == 1) {</a>
+<a name="35"><span class="lineNum">      35 </span>            :     (void)symm;</a>
+<a name="36"><span class="lineNum">      36 </span>            : </a>
+<a name="37"><span class="lineNum">      37 </span>            :     return dims[0];</a>
+<a name="38"><span class="lineNum">      38 </span>            :   } else {</a>
+<a name="39"><span class="lineNum">      39 </span>            :     size_t max_element = 0;</a>
+<a name="40"><span class="lineNum">      40 </span>            :     for (size_t i = 0; i &lt; Size; ++i) {</a>
+<a name="41"><span class="lineNum">      41 </span>            :       // clang-tidy: internals of assert(), don't need gsl::at in constexpr</a>
+<a name="42"><span class="lineNum">      42 </span>            :       // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay,cppcoreguidelines-pro-bounds-constant-array-index)</a>
+<a name="43"><span class="lineNum">      43 </span>            :       assert(symm[i] &gt; 0);</a>
+<a name="44"><span class="lineNum">      44 </span>            :       // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)</a>
+<a name="45"><span class="lineNum">      45 </span>            :       max_element = std::max(static_cast&lt;size_t&gt;(ce_abs(symm[i])), max_element);</a>
+<a name="46"><span class="lineNum">      46 </span>            :     }</a>
+<a name="47"><span class="lineNum">      47 </span>            :     assert(max_element &gt; 0);  // NOLINT</a>
+<a name="48"><span class="lineNum">      48 </span>            :     size_t total_independent_components = 1;</a>
+<a name="49"><span class="lineNum">      49 </span>            :     for (size_t symm_index = 1; symm_index &lt;= max_element; ++symm_index) {</a>
+<a name="50"><span class="lineNum">      50 </span>            :       size_t number_of_indices_with_symm = 0;</a>
+<a name="51"><span class="lineNum">      51 </span>            :       size_t dim_of_index = 0;</a>
+<a name="52"><span class="lineNum">      52 </span>            :       for (size_t i = 0; i &lt; Size; ++i) {</a>
+<a name="53"><span class="lineNum">      53 </span>            :         if (static_cast&lt;size_t&gt;(symm[i]) == symm_index) {  // NOLINT</a>
+<a name="54"><span class="lineNum">      54 </span>            :           ++number_of_indices_with_symm;</a>
+<a name="55"><span class="lineNum">      55 </span>            :           dim_of_index = dims[i];  // NOLINT</a>
+<a name="56"><span class="lineNum">      56 </span>            :         }</a>
+<a name="57"><span class="lineNum">      57 </span>            :       }</a>
+<a name="58"><span class="lineNum">      58 </span>            :       assert(dim_of_index &gt; 0);                 // NOLINT</a>
+<a name="59"><span class="lineNum">      59 </span>            :       assert(number_of_indices_with_symm &gt; 0);  // NOLINT</a>
+<a name="60"><span class="lineNum">      60 </span>            :       if (dim_of_index - 1 &gt; number_of_indices_with_symm) {</a>
+<a name="61"><span class="lineNum">      61 </span>            :         total_independent_components *=</a>
+<a name="62"><span class="lineNum">      62 </span>            :             falling_factorial(dim_of_index + number_of_indices_with_symm - 1,</a>
+<a name="63"><span class="lineNum">      63 </span>            :                               number_of_indices_with_symm) /</a>
+<a name="64"><span class="lineNum">      64 </span>            :             factorial(number_of_indices_with_symm);</a>
+<a name="65"><span class="lineNum">      65 </span>            :       } else {</a>
+<a name="66"><span class="lineNum">      66 </span>            :         total_independent_components *=</a>
+<a name="67"><span class="lineNum">      67 </span>            :             falling_factorial(dim_of_index + number_of_indices_with_symm - 1,</a>
+<a name="68"><span class="lineNum">      68 </span>            :                               dim_of_index - 1) /</a>
+<a name="69"><span class="lineNum">      69 </span>            :             factorial(dim_of_index - 1);</a>
+<a name="70"><span class="lineNum">      70 </span>            :       }</a>
+<a name="71"><span class="lineNum">      71 </span>            :     }</a>
+<a name="72"><span class="lineNum">      72 </span>            :     return total_independent_components;</a>
+<a name="73"><span class="lineNum">      73 </span>            :   }</a>
+<a name="74"><span class="lineNum">      74 </span>            : }</a>
+<a name="75"><span class="lineNum">      75 </span>            : </a>
+<a name="76"><span class="lineNum">      76 </span>            : template &lt;size_t Size&gt;</a>
+<a name="77"><span class="lineNum">      77 </span>            : constexpr size_t number_of_components(</a>
+<a name="78"><span class="lineNum">      78 </span>            :     const std::array&lt;size_t, Size&gt;&amp; dims) noexcept {</a>
+<a name="79"><span class="lineNum">      79 </span>            :   size_t number = 1;</a>
+<a name="80"><span class="lineNum">      80 </span>            :   for (size_t i = 0; i &lt; Size; ++i) {</a>
+<a name="81"><span class="lineNum">      81 </span>            :     // clang-tidy: use gsl::at</a>
+<a name="82"><span class="lineNum">      82 </span>            :     number *= dims[i];  // NOLINT</a>
+<a name="83"><span class="lineNum">      83 </span>            :   }</a>
+<a name="84"><span class="lineNum">      84 </span>            :   return number;</a>
+<a name="85"><span class="lineNum">      85 </span>            : }</a>
+<a name="86"><span class="lineNum">      86 </span>            : </a>
+<a name="87"><span class="lineNum">      87 </span>            : template &lt;typename T, typename S, size_t Size&gt;</a>
+<a name="88"><span class="lineNum">      88 </span>            : constexpr void increment_tensor_index(cpp20::array&lt;T, Size&gt;&amp; tensor_index,</a>
+<a name="89"><span class="lineNum">      89 </span>            :                                       const cpp20::array&lt;S, Size&gt;&amp; dims) {</a>
+<a name="90"><span class="lineNum">      90 </span>            :   for (size_t i = 0; i &lt; Size; ++i) {</a>
+<a name="91"><span class="lineNum">      91 </span>            :     if (++tensor_index[i] &lt; static_cast&lt;T&gt;(dims[i])) {</a>
+<a name="92"><span class="lineNum">      92 </span>            :       return;</a>
+<a name="93"><span class="lineNum">      93 </span>            :     }</a>
+<a name="94"><span class="lineNum">      94 </span>            :     tensor_index[i] = 0;</a>
+<a name="95"><span class="lineNum">      95 </span>            :   }</a>
+<a name="96"><span class="lineNum">      96 </span>            : }</a>
+<a name="97"><span class="lineNum">      97 </span>            : </a>
+<a name="98"><span class="lineNum">      98 </span>            : // index_to_swap_with takes the last two arguments as opposed to just one of</a>
+<a name="99"><span class="lineNum">      99 </span>            : // them so that when the max constexpr steps is reached on clang it is reached</a>
+<a name="100"><span class="lineNum">     100 </span>            : // in this function rather than in array.</a>
+<a name="101"><span class="lineNum">     101 </span>            : template &lt;size_t Rank&gt;</a>
+<a name="102"><span class="lineNum">     102 </span>            : constexpr size_t index_to_swap_with(</a>
+<a name="103"><span class="lineNum">     103 </span>            :     const cpp20::array&lt;size_t, Rank&gt;&amp; tensor_index,</a>
+<a name="104"><span class="lineNum">     104 </span>            :     const cpp20::array&lt;int, Rank&gt;&amp; sym, size_t index_to_swap_with,</a>
+<a name="105"><span class="lineNum">     105 </span>            :     const size_t current_index) noexcept {</a>
+<a name="106"><span class="lineNum">     106 </span>            :   // If you encounter infinite loop compilation errors here you are</a>
+<a name="107"><span class="lineNum">     107 </span>            :   // constructing very large Tensor's. If you are sure Tensor is</a>
+<a name="108"><span class="lineNum">     108 </span>            :   // the correct data structure you can extend the compiler limit</a>
+<a name="109"><span class="lineNum">     109 </span>            :   // by passing the flag -fconstexpr-steps=&lt;SOME LARGER VALUE&gt;</a>
+<a name="110"><span class="lineNum">     110 </span>            :   while (true) {  // See source code comment on line above this one for fix</a>
+<a name="111"><span class="lineNum">     111 </span>            :     if (Rank == index_to_swap_with) {</a>
+<a name="112"><span class="lineNum">     112 </span>            :       return current_index;</a>
+<a name="113"><span class="lineNum">     113 </span>            :     } else if (tensor_index[current_index] &lt;</a>
+<a name="114"><span class="lineNum">     114 </span>            :                    tensor_index[index_to_swap_with] and</a>
+<a name="115"><span class="lineNum">     115 </span>            :                sym[current_index] == sym[index_to_swap_with]) {</a>
+<a name="116"><span class="lineNum">     116 </span>            :       return index_to_swap_with;</a>
+<a name="117"><span class="lineNum">     117 </span>            :     }</a>
+<a name="118"><span class="lineNum">     118 </span>            :     index_to_swap_with++;</a>
+<a name="119"><span class="lineNum">     119 </span>            :   }</a>
+<a name="120"><span class="lineNum">     120 </span>            : }</a>
+<a name="121"><span class="lineNum">     121 </span>            : </a>
+<a name="122"><span class="lineNum">     122 </span>            : template &lt;size_t Size, size_t SymmSize&gt;</a>
+<a name="123"><span class="lineNum">     123 </span>            : constexpr cpp20::array&lt;size_t, Size&gt; canonicalize_tensor_index(</a>
+<a name="124"><span class="lineNum">     124 </span>            :     cpp20::array&lt;size_t, Size&gt; tensor_index,</a>
+<a name="125"><span class="lineNum">     125 </span>            :     const cpp20::array&lt;int, SymmSize&gt;&amp; symm) noexcept {</a>
+<a name="126"><span class="lineNum">     126 </span>            :   for (size_t i = 0; i &lt; Size; ++i) {</a>
+<a name="127"><span class="lineNum">     127 </span>            :     const size_t temp = tensor_index[i];</a>
+<a name="128"><span class="lineNum">     128 </span>            :     const size_t swap = index_to_swap_with(tensor_index, symm, i, i);</a>
+<a name="129"><span class="lineNum">     129 </span>            :     tensor_index[i] = tensor_index[swap];</a>
+<a name="130"><span class="lineNum">     130 </span>            :     tensor_index[swap] = temp;</a>
+<a name="131"><span class="lineNum">     131 </span>            :   }</a>
+<a name="132"><span class="lineNum">     132 </span>            :   return tensor_index;</a>
+<a name="133"><span class="lineNum">     133 </span>            : }</a>
+<a name="134"><span class="lineNum">     134 </span>            : </a>
+<a name="135"><span class="lineNum">     135 </span>            : template &lt;size_t Rank&gt;</a>
+<a name="136"><span class="lineNum">     136 </span>            : constexpr size_t compute_collapsed_index(</a>
+<a name="137"><span class="lineNum">     137 </span>            :     const cpp20::array&lt;size_t, Rank&gt;&amp; tensor_index,</a>
+<a name="138"><span class="lineNum">     138 </span>            :     const cpp20::array&lt;size_t, Rank&gt; dims) noexcept {</a>
+<a name="139"><span class="lineNum">     139 </span>            :   size_t collapsed_index = 0;</a>
+<a name="140"><span class="lineNum">     140 </span>            :   for (size_t i = Rank - 1; i &lt; Rank; --i) {</a>
+<a name="141"><span class="lineNum">     141 </span>            :     collapsed_index = tensor_index[i] + dims[i] * collapsed_index;</a>
+<a name="142"><span class="lineNum">     142 </span>            :   }</a>
+<a name="143"><span class="lineNum">     143 </span>            :   return collapsed_index;</a>
+<a name="144"><span class="lineNum">     144 </span>            : }</a>
+<a name="145"><span class="lineNum">     145 </span>            : </a>
+<a name="146"><span class="lineNum">     146 </span>            : /// \brief Computes a mapping from a collapsed_index to its storage_index</a>
+<a name="147"><span class="lineNum">     147 </span>            : ///</a>
+<a name="148"><span class="lineNum">     148 </span>            : /// \details</a>
+<a name="149"><span class="lineNum">     149 </span>            : /// Because each collapsed_index corresponds to a unique tensor_index, this map</a>
+<a name="150"><span class="lineNum">     150 </span>            : /// also effectively relates each unique tensor_index to its storage_index.</a>
+<a name="151"><span class="lineNum">     151 </span>            : /// While each index of the returned map corresponds to a unique tensor_index,</a>
+<a name="152"><span class="lineNum">     152 </span>            : /// the element stored at each index is a storage_index that may or may not be</a>
+<a name="153"><span class="lineNum">     153 </span>            : /// unique. If symmetries are present, this map will not be 1-1, as</a>
+<a name="154"><span class="lineNum">     154 </span>            : /// collapsed_indices that correspond to tensor_indices with the same canonical</a>
+<a name="155"><span class="lineNum">     155 </span>            : /// form will map to the same storage_index. Provided that any tensor_index is</a>
+<a name="156"><span class="lineNum">     156 </span>            : /// first converted to its corresponding collapsed_index, this map can be used</a>
+<a name="157"><span class="lineNum">     157 </span>            : /// to retrieve the storage_index of that tensor_index, canonicalized or not.</a>
+<a name="158"><span class="lineNum">     158 </span>            : ///</a>
+<a name="159"><span class="lineNum">     159 </span>            : /// \tparam Symm the Symmetry of the tensor</a>
+<a name="160"><span class="lineNum">     160 </span>            : /// \tparam NumberOfComponents the total number of components in the tensor</a>
+<a name="161"><span class="lineNum">     161 </span>            : /// \param index_dimensions the dimensions of the tensor's indices</a>
+<a name="162"><span class="lineNum">     162 </span>            : /// \return a mapping from a collapsed_index to its storage_index</a>
+<a name="163"><span class="lineNum">     163 </span>            : template &lt;typename Symm, size_t NumberOfComponents&gt;</a>
+<a name="164"><span class="lineNum">     164 </span>            : constexpr auto compute_collapsed_to_storage(</a>
+<a name="165"><span class="lineNum">     165 </span>            :     const cpp20::array&lt;size_t, tmpl::size&lt;Symm&gt;::value&gt;&amp;</a>
+<a name="166"><span class="lineNum">     166 </span>            :         index_dimensions) noexcept {</a>
+<a name="167"><span class="lineNum">     167 </span>            :   if constexpr (tmpl::size&lt;Symm&gt;::value != 0) {</a>
+<a name="168"><span class="lineNum">     168 </span>            :     cpp20::array&lt;size_t, NumberOfComponents&gt; collapsed_to_storage{};</a>
+<a name="169"><span class="lineNum">     169 </span>            :     auto tensor_index =</a>
+<a name="170"><span class="lineNum">     170 </span>            :         convert_to_cpp20_array(make_array&lt;tmpl::size&lt;Symm&gt;::value&gt;(size_t{0}));</a>
+<a name="171"><span class="lineNum">     171 </span>            :     size_t count{0};</a>
+<a name="172"><span class="lineNum">     172 </span>            :     for (auto&amp; current_storage_index : collapsed_to_storage) {</a>
+<a name="173"><span class="lineNum">     173 </span>            :       // Compute canonical tensor_index, which, for symmetric get_tensor_index</a>
+<a name="174"><span class="lineNum">     174 </span>            :       // is in decreasing numerical order, e.g. (3,2) rather than (2,3).</a>
+<a name="175"><span class="lineNum">     175 </span>            :       const auto canonical_tensor_index = canonicalize_tensor_index(</a>
+<a name="176"><span class="lineNum">     176 </span>            :           tensor_index, make_cpp20_array_from_list&lt;Symm&gt;());</a>
+<a name="177"><span class="lineNum">     177 </span>            :       // If the tensor_index was already in the canonical form, then it must be</a>
+<a name="178"><span class="lineNum">     178 </span>            :       // a new unique entry  and we add it to collapsed_to_storage_ as a new</a>
+<a name="179"><span class="lineNum">     179 </span>            :       // integer, thus increasing the size_. Else, the StorageIndex has already</a>
+<a name="180"><span class="lineNum">     180 </span>            :       // been determined so we look it up in the existing collapsed_to_storage</a>
+<a name="181"><span class="lineNum">     181 </span>            :       // table.</a>
+<a name="182"><span class="lineNum">     182 </span>            :       if (tensor_index == canonical_tensor_index) {</a>
+<a name="183"><span class="lineNum">     183 </span>            :         current_storage_index = count;</a>
+<a name="184"><span class="lineNum">     184 </span>            :         ++count;</a>
+<a name="185"><span class="lineNum">     185 </span>            :       } else {</a>
+<a name="186"><span class="lineNum">     186 </span>            :         current_storage_index = collapsed_to_storage[compute_collapsed_index(</a>
+<a name="187"><span class="lineNum">     187 </span>            :             canonical_tensor_index, index_dimensions)];</a>
+<a name="188"><span class="lineNum">     188 </span>            :       }</a>
+<a name="189"><span class="lineNum">     189 </span>            :       // Move to the next tensor_index.</a>
+<a name="190"><span class="lineNum">     190 </span>            :       increment_tensor_index(tensor_index, index_dimensions);</a>
+<a name="191"><span class="lineNum">     191 </span>            :     }</a>
+<a name="192"><span class="lineNum">     192 </span>            :     return collapsed_to_storage;</a>
+<a name="193"><span class="lineNum">     193 </span>            :   } else {</a>
+<a name="194"><span class="lineNum">     194 </span>            :     (void)index_dimensions;</a>
+<a name="195"><span class="lineNum">     195 </span>            : </a>
+<a name="196"><span class="lineNum">     196 </span>            :     return cpp20::array&lt;size_t, 1&gt;{{0}};</a>
+<a name="197"><span class="lineNum">     197 </span>            :   }</a>
+<a name="198"><span class="lineNum">     198 </span>            : }</a>
+<a name="199"><span class="lineNum">     199 </span>            : </a>
+<a name="200"><span class="lineNum">     200 </span>            : /// \brief Computes a 1-1 mapping from a storage_index to its canonical</a>
+<a name="201"><span class="lineNum">     201 </span>            : /// tensor_index</a>
+<a name="202"><span class="lineNum">     202 </span>            : ///</a>
+<a name="203"><span class="lineNum">     203 </span>            : /// \details</a>
+<a name="204"><span class="lineNum">     204 </span>            : /// When symmetries are present, not all unique tensor_indices can be retrieved</a>
+<a name="205"><span class="lineNum">     205 </span>            : /// from this map, as some tensor_indices will share the same canonical form.</a>
+<a name="206"><span class="lineNum">     206 </span>            : /// Otherwise, if no symmetries are present, each unique tensor_index is already</a>
+<a name="207"><span class="lineNum">     207 </span>            : /// in the canonical form, and one that is not shared by another tensor_index,</a>
+<a name="208"><span class="lineNum">     208 </span>            : /// so this would equivalently mean a 1-1 mapping from a storage_index to a</a>
+<a name="209"><span class="lineNum">     209 </span>            : /// tensor_index. This means that when no symmetries are present, all unique</a>
+<a name="210"><span class="lineNum">     210 </span>            : /// tensor_indices of a tensor can be retrieved from this map.</a>
+<a name="211"><span class="lineNum">     211 </span>            : ///</a>
+<a name="212"><span class="lineNum">     212 </span>            : /// \tparam Symm the Symmetry of the tensor</a>
+<a name="213"><span class="lineNum">     213 </span>            : /// \tparam NumIndComps the number of independent components in the tensor, i.e.</a>
+<a name="214"><span class="lineNum">     214 </span>            : /// components equivalent due to symmetry counted only once</a>
+<a name="215"><span class="lineNum">     215 </span>            : /// \tparam NumComps the total number of components in the tensor</a>
+<a name="216"><span class="lineNum">     216 </span>            : /// \param collapsed_to_storage a mapping from a collapsed_index to its</a>
+<a name="217"><span class="lineNum">     217 </span>            : /// storage_index, which is only 1-1 if there are no symmetries</a>
+<a name="218"><span class="lineNum">     218 </span>            : /// \param index_dimensions the dimensions of the tensor's indices</a>
+<a name="219"><span class="lineNum">     219 </span>            : /// \return a 1-1 mapping from a storage_index to its canonical tensor_index</a>
+<a name="220"><span class="lineNum">     220 </span>            : template &lt;typename Symm, size_t NumIndComps, size_t NumComps&gt;</a>
+<a name="221"><span class="lineNum">     221 </span>            : constexpr auto compute_storage_to_tensor(</a>
+<a name="222"><span class="lineNum">     222 </span>            :     const cpp20::array&lt;size_t, NumComps&gt;&amp; collapsed_to_storage,</a>
+<a name="223"><span class="lineNum">     223 </span>            :     const cpp20::array&lt;size_t, tmpl::size&lt;Symm&gt;::value&gt;&amp;</a>
+<a name="224"><span class="lineNum">     224 </span>            :         index_dimensions) noexcept {</a>
+<a name="225"><span class="lineNum">     225 </span>            :   if constexpr (tmpl::size&lt;Symm&gt;::value &gt; 0) {</a>
+<a name="226"><span class="lineNum">     226 </span>            :     constexpr size_t rank = tmpl::size&lt;Symm&gt;::value;</a>
+<a name="227"><span class="lineNum">     227 </span>            :     cpp20::array&lt;cpp20::array&lt;size_t, rank&gt;, NumIndComps&gt; storage_to_tensor{};</a>
+<a name="228"><span class="lineNum">     228 </span>            :     cpp20::array&lt;size_t, rank&gt; tensor_index =</a>
+<a name="229"><span class="lineNum">     229 </span>            :         convert_to_cpp20_array(make_array&lt;rank&gt;(size_t{0}));</a>
+<a name="230"><span class="lineNum">     230 </span>            :     for (const auto&amp; current_storage_index : collapsed_to_storage) {</a>
+<a name="231"><span class="lineNum">     231 </span>            :       storage_to_tensor[current_storage_index] = canonicalize_tensor_index(</a>
+<a name="232"><span class="lineNum">     232 </span>            :           tensor_index, make_cpp20_array_from_list&lt;Symm&gt;());</a>
+<a name="233"><span class="lineNum">     233 </span>            :       increment_tensor_index(tensor_index, index_dimensions);</a>
+<a name="234"><span class="lineNum">     234 </span>            :     }</a>
+<a name="235"><span class="lineNum">     235 </span>            :     return storage_to_tensor;</a>
+<a name="236"><span class="lineNum">     236 </span>            :   } else {</a>
+<a name="237"><span class="lineNum">     237 </span>            :     (void)collapsed_to_storage;</a>
+<a name="238"><span class="lineNum">     238 </span>            :     (void)index_dimensions;</a>
+<a name="239"><span class="lineNum">     239 </span>            : </a>
+<a name="240"><span class="lineNum">     240 </span>            :     return cpp20::array&lt;cpp20::array&lt;size_t, 1&gt;, 1&gt;{</a>
+<a name="241"><span class="lineNum">     241 </span>            :         {cpp20::array&lt;size_t, 1&gt;{{0}}}};</a>
+<a name="242"><span class="lineNum">     242 </span>            :   }</a>
+<a name="243"><span class="lineNum">     243 </span>            : }</a>
+<a name="244"><span class="lineNum">     244 </span>            : </a>
+<a name="245"><span class="lineNum">     245 </span>            : template &lt;size_t NumIndComps, typename T, size_t NumComps&gt;</a>
+<a name="246"><span class="lineNum">     246 </span>            : constexpr cpp20::array&lt;size_t, NumIndComps&gt; compute_multiplicity(</a>
+<a name="247"><span class="lineNum">     247 </span>            :     const cpp20::array&lt;T, NumComps&gt;&amp; collapsed_to_storage) {</a>
+<a name="248"><span class="lineNum">     248 </span>            :   cpp20::array&lt;size_t, NumIndComps&gt; multiplicity =</a>
+<a name="249"><span class="lineNum">     249 </span>            :       convert_to_cpp20_array(make_array&lt;NumIndComps&gt;(size_t{0}));</a>
+<a name="250"><span class="lineNum">     250 </span>            :   for (const auto&amp; current_storage_index : collapsed_to_storage) {</a>
+<a name="251"><span class="lineNum">     251 </span>            :     ++multiplicity[current_storage_index];</a>
+<a name="252"><span class="lineNum">     252 </span>            :   }</a>
+<a name="253"><span class="lineNum">     253 </span>            :   return multiplicity;</a>
+<a name="254"><span class="lineNum">     254 </span>            : }</a>
+<a name="255"><span class="lineNum">     255 </span>            : </a>
+<a name="256"><span class="lineNum">     256 </span>            : template &lt;size_t NumIndices&gt;</a>
+<a name="257"><span class="lineNum">     257 </span>            : struct ComponentNameImpl {</a>
+<a name="258"><span class="lineNum">     258 </span>            :   template &lt;typename Structure, typename T&gt;</a>
+<a name="259"><span class="lineNum">     259 </span>            :   static std::string apply(</a>
+<a name="260"><span class="lineNum">     260 </span>            :       const std::array&lt;T, NumIndices&gt;&amp; tensor_index,</a>
+<a name="261"><span class="lineNum">     261 </span>            :       const std::array&lt;std::string, NumIndices&gt;&amp; axis_labels) {</a>
+<a name="262"><span class="lineNum">     262 </span>            :     const size_t storage_index = Structure::get_storage_index(tensor_index);</a>
+<a name="263"><span class="lineNum">     263 </span>            :     std::array&lt;std::string, Structure::rank()&gt; labels = axis_labels;</a>
+<a name="264"><span class="lineNum">     264 </span>            :     constexpr auto index_dim = Structure::dims();</a>
+<a name="265"><span class="lineNum">     265 </span>            :     for (size_t i = 0; i &lt; Structure::rank(); ++i) {</a>
+<a name="266"><span class="lineNum">     266 </span>            :       if (gsl::at(labels, i).length() == 0) {</a>
+<a name="267"><span class="lineNum">     267 </span>            :         if (gsl::at(Structure::index_types(), i) == IndexType::Spacetime) {</a>
+<a name="268"><span class="lineNum">     268 </span>            :           switch (gsl::at(index_dim, i)) {</a>
+<a name="269"><span class="lineNum">     269 </span>            :             case 2:</a>
+<a name="270"><span class="lineNum">     270 </span>            :               gsl::at(labels, i) = &quot;tx&quot;;</a>
+<a name="271"><span class="lineNum">     271 </span>            :               break;</a>
+<a name="272"><span class="lineNum">     272 </span>            :             case 3:</a>
+<a name="273"><span class="lineNum">     273 </span>            :               gsl::at(labels, i) = &quot;txy&quot;;</a>
+<a name="274"><span class="lineNum">     274 </span>            :               break;</a>
+<a name="275"><span class="lineNum">     275 </span>            :             case 4:</a>
+<a name="276"><span class="lineNum">     276 </span>            :               gsl::at(labels, i) = &quot;txyz&quot;;</a>
+<a name="277"><span class="lineNum">     277 </span>            :               break;</a>
+<a name="278"><span class="lineNum">     278 </span>            :             default:</a>
+<a name="279"><span class="lineNum">     279 </span>            :               ERROR(&quot;Tensor dim[&quot;</a>
+<a name="280"><span class="lineNum">     280 </span>            :                     &lt;&lt; i</a>
+<a name="281"><span class="lineNum">     281 </span>            :                     &lt;&lt; &quot;] must be 1,2,3, or 4 for default axis_labels. &quot;</a>
+<a name="282"><span class="lineNum">     282 </span>            :                        &quot;Either pass a string or extend the function.&quot;);</a>
+<a name="283"><span class="lineNum">     283 </span>            :           }</a>
+<a name="284"><span class="lineNum">     284 </span>            :         } else {</a>
+<a name="285"><span class="lineNum">     285 </span>            :           switch (gsl::at(index_dim, i)) {</a>
+<a name="286"><span class="lineNum">     286 </span>            :             case 1:</a>
+<a name="287"><span class="lineNum">     287 </span>            :               gsl::at(labels, i) = &quot;x&quot;;</a>
+<a name="288"><span class="lineNum">     288 </span>            :               break;</a>
+<a name="289"><span class="lineNum">     289 </span>            :             case 2:</a>
+<a name="290"><span class="lineNum">     290 </span>            :               gsl::at(labels, i) = &quot;xy&quot;;</a>
+<a name="291"><span class="lineNum">     291 </span>            :               break;</a>
+<a name="292"><span class="lineNum">     292 </span>            :             case 3:</a>
+<a name="293"><span class="lineNum">     293 </span>            :               gsl::at(labels, i) = &quot;xyz&quot;;</a>
+<a name="294"><span class="lineNum">     294 </span>            :               break;</a>
+<a name="295"><span class="lineNum">     295 </span>            :             default:</a>
+<a name="296"><span class="lineNum">     296 </span>            :               ERROR(&quot;Tensor dim[&quot;</a>
+<a name="297"><span class="lineNum">     297 </span>            :                     &lt;&lt; i</a>
+<a name="298"><span class="lineNum">     298 </span>            :                     &lt;&lt; &quot;] must be 1,2, or 3 for default axis_labels. &quot;</a>
+<a name="299"><span class="lineNum">     299 </span>            :                        &quot;Either pass a string or extend the function.&quot;);</a>
+<a name="300"><span class="lineNum">     300 </span>            :           }</a>
+<a name="301"><span class="lineNum">     301 </span>            :         }</a>
+<a name="302"><span class="lineNum">     302 </span>            :       } else {</a>
+<a name="303"><span class="lineNum">     303 </span>            :         if (gsl::at(axis_labels, i).length() != gsl::at(index_dim, i)) {</a>
+<a name="304"><span class="lineNum">     304 </span>            :           ERROR(&quot;Dimension mismatch: Tensor has dim = &quot;</a>
+<a name="305"><span class="lineNum">     305 </span>            :                 &lt;&lt; gsl::at(index_dim, i) &lt;&lt; &quot;, but you specified &quot;</a>
+<a name="306"><span class="lineNum">     306 </span>            :                 &lt;&lt; gsl::at(axis_labels, i).length() &lt;&lt; &quot; different labels in &quot;</a>
+<a name="307"><span class="lineNum">     307 </span>            :                 &lt;&lt; gsl::at(axis_labels, i));</a>
+<a name="308"><span class="lineNum">     308 </span>            :         }</a>
+<a name="309"><span class="lineNum">     309 </span>            :       }</a>
+<a name="310"><span class="lineNum">     310 </span>            :     }</a>
+<a name="311"><span class="lineNum">     311 </span>            :     // Create string labeling get_tensor_index</a>
+<a name="312"><span class="lineNum">     312 </span>            :     std::stringstream ss;</a>
+<a name="313"><span class="lineNum">     313 </span>            :     const auto canonical_tensor_index =</a>
+<a name="314"><span class="lineNum">     314 </span>            :         Structure::get_canonical_tensor_index(storage_index);</a>
+<a name="315"><span class="lineNum">     315 </span>            :     for (size_t r = 0; r &lt; Structure::rank(); ++r) {</a>
+<a name="316"><span class="lineNum">     316 </span>            :       ss &lt;&lt; gsl::at(labels, r)[gsl::at(canonical_tensor_index, r)];</a>
+<a name="317"><span class="lineNum">     317 </span>            :     }</a>
+<a name="318"><span class="lineNum">     318 </span>            :     return ss.str();</a>
+<a name="319"><span class="lineNum">     319 </span>            :   }</a>
+<a name="320"><span class="lineNum">     320 </span>            : };</a>
+<a name="321"><span class="lineNum">     321 </span>            : </a>
+<a name="322"><span class="lineNum">     322 </span>            : template &lt;&gt;</a>
+<a name="323"><span class="lineNum">     323 </span>            : struct ComponentNameImpl&lt;0&gt; {</a>
+<a name="324"><span class="lineNum">     324 </span>            :   template &lt;typename Structure, typename T&gt;</a>
+<a name="325"><span class="lineNum">     325 </span>            :   static std::string apply(const std::array&lt;T, 0&gt;&amp; /*tensor_index*/,</a>
+<a name="326"><span class="lineNum">     326 </span>            :                            const std::array&lt;std::string, 0&gt;&amp; /*axis_labels*/) {</a>
+<a name="327"><span class="lineNum">     327 </span>            :     return &quot;Scalar&quot;;</a>
+<a name="328"><span class="lineNum">     328 </span>            :   }</a>
+<a name="329"><span class="lineNum">     329 </span>            : };</a>
+<a name="330"><span class="lineNum">     330 </span>            : </a>
+<a name="331"><span class="lineNum">     331 </span>            : /// \ingroup TensorGroup</a>
+<a name="332"><span class="lineNum">     332 </span>            : /// A lookup table between each tensor_index and storage_index</a>
+<a name="333"><span class="lineNum">     333 </span>            : ///</a>
+<a name="334"><span class="lineNum">     334 </span>            : /// 1. tensor_index: (a, b, c,...). There are Dim^rank tensor_index's</a>
+<a name="335"><span class="lineNum">     335 </span>            : /// 2. collapsed_index: a + Dim * (b + Dim * (c + ...)), there are Dim^rank</a>
+<a name="336"><span class="lineNum">     336 </span>            : ///                     unique collapsed indices and there is a 1-1 map between</a>
+<a name="337"><span class="lineNum">     337 </span>            : ///                     a tensor_index and a collapsed_index.</a>
+<a name="338"><span class="lineNum">     338 </span>            : /// 3. storage_index: index into the storage vector of the Tensor. This depends</a>
+<a name="339"><span class="lineNum">     339 </span>            : ///                   on symmetries of the tensor, rank, and dimensionality. If</a>
+<a name="340"><span class="lineNum">     340 </span>            : ///                   the Tensor has symmetries, tensor_indices that are</a>
+<a name="341"><span class="lineNum">     341 </span>            : ///                   equivalent due to symmetry will have the same</a>
+<a name="342"><span class="lineNum">     342 </span>            : ///                   storage_index and canonical form. This means that the</a>
+<a name="343"><span class="lineNum">     343 </span>            : ///                   mapping between tensor_indices and storage_indices is 1-1</a>
+<a name="344"><span class="lineNum">     344 </span>            : ///                   only if no symmetries are present, but there is a 1-1</a>
+<a name="345"><span class="lineNum">     345 </span>            : ///                   mapping between canonical tensor_indices and</a>
+<a name="346"><span class="lineNum">     346 </span>            : ///                   storage_indices, regardless of symmetry.</a>
+<a name="347"><span class="lineNum">     347 </span>            : /// \tparam Symm the symmetry of the Tensor</a>
+<a name="348"><span class="lineNum">     348 </span>            : /// \tparam Indices list of tensor_index's giving the dimensionality and frame</a>
+<a name="349"><span class="lineNum">     349 </span>            : /// of the index</a>
+<a name="350"><span class="lineNum">     350 </span>            : template &lt;typename Symm, typename... Indices&gt;</a>
+<a name="351"><span class="lineNum">     351 </span>            : struct Structure {</a>
+<a name="352"><span class="lineNum">     352 </span>            :   static_assert(</a>
+<a name="353"><span class="lineNum">     353 </span>            :       TensorMetafunctions::check_index_symmetry_v&lt;Symm, Indices...&gt;,</a>
+<a name="354"><span class="lineNum">     354 </span>            :       &quot;Cannot construct a Tensor with a symmetric pair that are not the same.&quot;);</a>
+<a name="355"><span class="lineNum">     355 </span>            :   static_assert(tmpl::size&lt;Symm&gt;::value == sizeof...(Indices),</a>
+<a name="356"><span class="lineNum">     356 </span>            :                 &quot;The number of indices in Symmetry do not match the number of &quot;</a>
+<a name="357"><span class="lineNum">     357 </span>            :                 &quot;indices given to the Structure.&quot;);</a>
+<a name="358"><span class="lineNum">     358 </span>            :   static_assert(</a>
+<a name="359"><span class="lineNum">     359 </span>            :       tmpl2::flat_all_v&lt;tt::is_tensor_index_type&lt;Indices&gt;::value...&gt;,</a>
+<a name="360"><span class="lineNum">     360 </span>            :       &quot;All Indices passed to Structure must be of type TensorIndexType.&quot;);</a>
+<a name="361"><span class="lineNum">     361 </span>            : </a>
+<a name="362"><span class="lineNum">     362 </span>            :   using index_list = tmpl::list&lt;Indices...&gt;;</a>
+<a name="363"><span class="lineNum">     363 </span>            : </a>
+<a name="364"><span class="lineNum">     364 </span>            :   SPECTRE_ALWAYS_INLINE static constexpr size_t rank() noexcept {</a>
+<a name="365"><span class="lineNum">     365 </span>            :     return sizeof...(Indices);</a>
+<a name="366"><span class="lineNum">     366 </span>            :   }</a>
+<a name="367"><span class="lineNum">     367 </span>            : </a>
+<a name="368"><span class="lineNum">     368 </span>            :   SPECTRE_ALWAYS_INLINE static constexpr size_t size() noexcept {</a>
+<a name="369"><span class="lineNum">     369 </span>            :     constexpr auto number_of_independent_components =</a>
+<a name="370"><span class="lineNum">     370 </span>            :         ::Tensor_detail::number_of_independent_components(</a>
+<a name="371"><span class="lineNum">     371 </span>            :             make_array_from_list&lt;</a>
+<a name="372"><span class="lineNum">     372 </span>            :                 tmpl::conditional_t&lt;sizeof...(Indices) != 0, Symm, int&gt;&gt;(),</a>
+<a name="373"><span class="lineNum">     373 </span>            :             make_array_from_list&lt;tmpl::conditional_t&lt;sizeof...(Indices) != 0,</a>
+<a name="374"><span class="lineNum">     374 </span>            :                                                      index_list, size_t&gt;&gt;());</a>
+<a name="375"><span class="lineNum">     375 </span>            :     return number_of_independent_components;</a>
+<a name="376"><span class="lineNum">     376 </span>            :   }</a>
+<a name="377"><span class="lineNum">     377 </span>            : </a>
+<a name="378"><span class="lineNum">     378 </span>            :   SPECTRE_ALWAYS_INLINE static constexpr size_t</a>
+<a name="379"><span class="lineNum">     379 </span>            :   number_of_components() noexcept {</a>
+<a name="380"><span class="lineNum">     380 </span>            :     constexpr auto number_of_components = ::Tensor_detail::number_of_components(</a>
+<a name="381"><span class="lineNum">     381 </span>            :         make_array_from_list&lt;tmpl::conditional_t&lt;sizeof...(Indices) != 0,</a>
+<a name="382"><span class="lineNum">     382 </span>            :                                                  index_list, size_t&gt;&gt;());</a>
+<a name="383"><span class="lineNum">     383 </span>            :     return number_of_components;</a>
+<a name="384"><span class="lineNum">     384 </span>            :   }</a>
+<a name="385"><span class="lineNum">     385 </span>            : </a>
+<a name="386"><span class="lineNum">     386 </span>            :   /// A mapping between each collapsed_index and its storage_index. See</a>
+<a name="387"><span class="lineNum">     387 </span>            :   /// \ref compute_collapsed_to_storage for details.</a>
+<a name="388"><span class="lineNum">     388 </span>            :   static constexpr auto collapsed_to_storage_ =</a>
+<a name="389"><span class="lineNum">     389 </span>            :       compute_collapsed_to_storage&lt;Symm, number_of_components()&gt;(</a>
+<a name="390"><span class="lineNum">     390 </span>            :           make_cpp20_array_from_list&lt;tmpl::conditional_t&lt;</a>
+<a name="391"><span class="lineNum">     391 </span>            :               sizeof...(Indices) == 0, size_t, index_list&gt;&gt;());</a>
+<a name="392"><span class="lineNum">     392 </span>            :   /// A 1-1 mapping between each storage_index and its canonical tensor_index.</a>
+<a name="393"><span class="lineNum">     393 </span>            :   /// See \ref compute_storage_to_tensor for details.</a>
+<a name="394"><span class="lineNum">     394 </span>            :   static constexpr auto storage_to_tensor_ = compute_storage_to_tensor&lt;Symm,</a>
+<a name="395"><span class="lineNum">     395 </span>            :                                                                        size()&gt;(</a>
+<a name="396"><span class="lineNum">     396 </span>            :       collapsed_to_storage_,</a>
+<a name="397"><span class="lineNum">     397 </span>            :       make_cpp20_array_from_list&lt;</a>
+<a name="398"><span class="lineNum">     398 </span>            :           tmpl::conditional_t&lt;sizeof...(Indices) == 0, size_t, index_list&gt;&gt;());</a>
+<a name="399"><span class="lineNum">     399 </span>            :   static constexpr auto multiplicity_ =</a>
+<a name="400"><span class="lineNum">     400 </span>            :       compute_multiplicity&lt;size()&gt;(collapsed_to_storage_);</a>
+<a name="401"><span class="lineNum">     401 </span>            : </a>
+<a name="402"><span class="lineNum">     402 </span>            :   // Retrieves the dimensionality of the I'th index</a>
+<a name="403"><span class="lineNum">     403 </span>            :   template &lt;int I&gt;</a>
+<a name="404"><span class="lineNum">     404 </span>            :   SPECTRE_ALWAYS_INLINE static constexpr size_t dim() noexcept {</a>
+<a name="405"><span class="lineNum">     405 </span>            :     static_assert(sizeof...(Indices),</a>
+<a name="406"><span class="lineNum">     406 </span>            :                   &quot;A scalar does not have any indices from which you can &quot;</a>
+<a name="407"><span class="lineNum">     407 </span>            :                   &quot;retrieve the dimensionality.&quot;);</a>
+<a name="408"><span class="lineNum">     408 </span>            :     return tmpl::at&lt;index_list, tmpl::int32_t&lt;I&gt;&gt;::value;</a>
+<a name="409"><span class="lineNum">     409 </span>            :   }</a>
+<a name="410"><span class="lineNum">     410 </span>            : </a>
+<a name="411"><span class="lineNum">     411 </span>            :   SPECTRE_ALWAYS_INLINE static constexpr std::array&lt;size_t, sizeof...(Indices)&gt;</a>
+<a name="412"><span class="lineNum">     412 </span>            :   dims() noexcept {</a>
+<a name="413"><span class="lineNum">     413 </span>            :     constexpr auto dims = make_array_from_list&lt;</a>
+<a name="414"><span class="lineNum">     414 </span>            :         tmpl::conditional_t&lt;sizeof...(Indices) != 0, index_list, size_t&gt;&gt;();</a>
+<a name="415"><span class="lineNum">     415 </span>            :     return dims;</a>
+<a name="416"><span class="lineNum">     416 </span>            :   }</a>
+<a name="417"><span class="lineNum">     417 </span>            : </a>
+<a name="418"><span class="lineNum">     418 </span>            :   SPECTRE_ALWAYS_INLINE static constexpr std::array&lt;int, sizeof...(Indices)&gt;</a>
+<a name="419"><span class="lineNum">     419 </span>            :   symmetries() noexcept {</a>
+<a name="420"><span class="lineNum">     420 </span>            :     return make_array_from_list&lt;</a>
+<a name="421"><span class="lineNum">     421 </span>            :         tmpl::conditional_t&lt;0 != sizeof...(Indices), Symm, int&gt;&gt;();</a>
+<a name="422"><span class="lineNum">     422 </span>            :   }</a>
+<a name="423"><span class="lineNum">     423 </span>            : </a>
+<a name="424"><span class="lineNum">     424 </span>            :   SPECTRE_ALWAYS_INLINE static constexpr std::array&lt;IndexType,</a>
+<a name="425"><span class="lineNum">     425 </span>            :                                                     sizeof...(Indices)&gt;</a>
+<a name="426"><span class="lineNum">     426 </span>            :   index_types() noexcept {</a>
+<a name="427"><span class="lineNum">     427 </span>            :     return std::array&lt;IndexType, sizeof...(Indices)&gt;{{Indices::index_type...}};</a>
+<a name="428"><span class="lineNum">     428 </span>            :   }</a>
+<a name="429"><span class="lineNum">     429 </span>            : </a>
+<a name="430"><span class="lineNum">     430 </span>            :   /// Return array of the valence of each index</a>
+<a name="431"><span class="lineNum">     431 </span>            :   SPECTRE_ALWAYS_INLINE static constexpr std::array&lt;UpLo, sizeof...(Indices)&gt;</a>
+<a name="432"><span class="lineNum">     432 </span>            :   index_valences() noexcept {</a>
+<a name="433"><span class="lineNum">     433 </span>            :     return std::array&lt;UpLo, sizeof...(Indices)&gt;{{Indices::ul...}};</a>
+<a name="434"><span class="lineNum">     434 </span>            :   }</a>
+<a name="435"><span class="lineNum">     435 </span>            : </a>
+<a name="436"><span class="lineNum">     436 </span>            :   /// Return array of the frame of each index</a>
+<a name="437"><span class="lineNum">     437 </span>            :   SPECTRE_ALWAYS_INLINE static constexpr auto index_frames() noexcept {</a>
+<a name="438"><span class="lineNum">     438 </span>            :     return std::tuple&lt;typename Indices::Frame...&gt;{};</a>
+<a name="439"><span class="lineNum">     439 </span>            :   }</a>
+<a name="440"><span class="lineNum">     440 </span>            : </a>
+<a name="441"><span class="lineNum">     441 </span>            :   /// \brief Get the canonical tensor_index array of a storage_index</a>
+<a name="442"><span class="lineNum">     442 </span>            :   ///</a>
+<a name="443"><span class="lineNum">     443 </span>            :   /// \details</a>
+<a name="444"><span class="lineNum">     444 </span>            :   /// For a symmetric tensor \f$T_{(ab)}\f$ with an associated symmetry list</a>
+<a name="445"><span class="lineNum">     445 </span>            :   /// `Symmetry&lt;1, 1&gt;`, this will return, e.g. `{{3, 2}}` rather than `{{2, 3}}`</a>
+<a name="446"><span class="lineNum">     446 </span>            :   /// for that particular index. Note that the canonical ordering is</a>
+<a name="447"><span class="lineNum">     447 </span>            :   /// implementation-defined.</a>
+<a name="448"><span class="lineNum">     448 </span>            :   ///</a>
+<a name="449"><span class="lineNum">     449 </span>            :   /// As `storage_to_tensor_` is a computed 1-1 mapping between a storage_index</a>
+<a name="450"><span class="lineNum">     450 </span>            :   /// and canonical tensor_index, we simply retrieve the canonical tensor_index</a>
+<a name="451"><span class="lineNum">     451 </span>            :   /// from this map.</a>
+<a name="452"><span class="lineNum">     452 </span>            :   ///</a>
+<a name="453"><span class="lineNum">     453 </span>            :   /// \param storage_index the storage_index of which to get the canonical</a>
+<a name="454"><span class="lineNum">     454 </span>            :   /// tensor_index</a>
+<a name="455"><span class="lineNum">     455 </span>            :   /// \return the canonical tensor_index array of a storage_index</a>
+<a name="456"><span class="lineNum">     456 </span>            :   template &lt;size_t Rank = sizeof...(Indices)&gt;</a>
+<a name="457"><span class="lineNum">     457 </span>            :   SPECTRE_ALWAYS_INLINE static constexpr std::array&lt;size_t, Rank&gt;</a>
+<a name="458"><span class="lineNum">     458 </span>            :   get_canonical_tensor_index(const size_t storage_index) noexcept {</a>
+<a name="459"><span class="lineNum">     459 </span>            :     if constexpr (Rank != 0) {</a>
+<a name="460"><span class="lineNum">     460 </span>            :       constexpr auto storage_to_tensor = storage_to_tensor_;</a>
+<a name="461"><span class="lineNum">     461 </span>            :       return gsl::at(storage_to_tensor, storage_index);</a>
+<a name="462"><span class="lineNum">     462 </span>            :     } else {</a>
+<a name="463"><span class="lineNum">     463 </span>            :       (void)storage_index;</a>
+<a name="464"><span class="lineNum">     464 </span>            : </a>
+<a name="465"><span class="lineNum">     465 </span>            :       return std::array&lt;size_t, 0&gt;{};</a>
+<a name="466"><span class="lineNum">     466 </span>            :     }</a>
+<a name="467"><span class="lineNum">     467 </span>            :   }</a>
+<a name="468"><span class="lineNum">     468 </span>            : </a>
+<a name="469"><span class="lineNum">     469 </span>            :   /// \brief Get the storage_index of a tensor_index</a>
+<a name="470"><span class="lineNum">     470 </span>            :   ///</a>
+<a name="471"><span class="lineNum">     471 </span>            :   /// \details</a>
+<a name="472"><span class="lineNum">     472 </span>            :   /// This first computes the collapsed_index of the given tensor_index (this is</a>
+<a name="473"><span class="lineNum">     473 </span>            :   /// a 1-1 mapping), then retrieves the storage_index from</a>
+<a name="474"><span class="lineNum">     474 </span>            :   /// collapsed_to_storage_.</a>
+<a name="475"><span class="lineNum">     475 </span>            :   ///</a>
+<a name="476"><span class="lineNum">     476 </span>            :   /// \param args comma separated list of the tensor_index of which to get the</a>
+<a name="477"><span class="lineNum">     477 </span>            :   /// storage_index</a>
+<a name="478"><span class="lineNum">     478 </span>            :   /// \return the storage_index of a tensor_index</a>
+<a name="479"><span class="lineNum">     479 </span>            :   template &lt;typename... N&gt;</a>
+<a name="480"><span class="lineNum">     480 </span>            :   SPECTRE_ALWAYS_INLINE static constexpr std::size_t get_storage_index(</a>
+<a name="481"><span class="lineNum">     481 </span>            :       const N... args) noexcept {</a>
+<a name="482"><span class="lineNum">     482 </span>            :     static_assert(sizeof...(Indices) == sizeof...(N),</a>
+<a name="483"><span class="lineNum">     483 </span>            :                   &quot;the number arguments must be equal to rank_&quot;);</a>
+<a name="484"><span class="lineNum">     484 </span>            :     constexpr auto collapsed_to_storage = collapsed_to_storage_;</a>
+<a name="485"><span class="lineNum">     485 </span>            :     return gsl::at(</a>
+<a name="486"><span class="lineNum">     486 </span>            :         collapsed_to_storage,</a>
+<a name="487"><span class="lineNum">     487 </span>            :         compute_collapsed_index(</a>
+<a name="488"><span class="lineNum">     488 </span>            :             cpp20::array&lt;size_t, sizeof...(N)&gt;{{static_cast&lt;size_t&gt;(args)...}},</a>
+<a name="489"><span class="lineNum">     489 </span>            :             make_cpp20_array_from_list&lt;tmpl::conditional_t&lt;</a>
+<a name="490"><span class="lineNum">     490 </span>            :                 0 != sizeof...(Indices), index_list, size_t&gt;&gt;()));</a>
+<a name="491"><span class="lineNum">     491 </span>            :   }</a>
+<a name="492"><span class="lineNum">     492 </span>            : </a>
+<a name="493"><span class="lineNum">     493 </span>            :   /// \brief Get the storage_index of a tensor_index</a>
+<a name="494"><span class="lineNum">     494 </span>            :   ///</a>
+<a name="495"><span class="lineNum">     495 </span>            :   /// \details</a>
+<a name="496"><span class="lineNum">     496 </span>            :   /// This first computes the collapsed_index of the given tensor_index (this is</a>
+<a name="497"><span class="lineNum">     497 </span>            :   /// a 1-1 mapping), then retrieves the storage_index from</a>
+<a name="498"><span class="lineNum">     498 </span>            :   /// collapsed_to_storage_.</a>
+<a name="499"><span class="lineNum">     499 </span>            :   ///</a>
+<a name="500"><span class="lineNum">     500 </span>            :   /// \param tensor_index the tensor_index of which to get the storage_index</a>
+<a name="501"><span class="lineNum">     501 </span>            :   /// \return the storage_index of a tensor_index</a>
+<a name="502"><span class="lineNum">     502 </span>            :   template &lt;typename I&gt;</a>
+<a name="503"><span class="lineNum">     503 </span>            :   SPECTRE_ALWAYS_INLINE static constexpr std::size_t get_storage_index(</a>
+<a name="504"><span class="lineNum">     504 </span>            :       const std::array&lt;I, sizeof...(Indices)&gt;&amp; tensor_index) noexcept {</a>
+<a name="505"><span class="lineNum">     505 </span>            :     constexpr auto collapsed_to_storage = collapsed_to_storage_;</a>
+<a name="506"><span class="lineNum">     506 </span>            :     return gsl::at(collapsed_to_storage,</a>
+<a name="507"><span class="lineNum">     507 </span>            :                    compute_collapsed_index(</a>
+<a name="508"><span class="lineNum">     508 </span>            :                        convert_to_cpp20_array(tensor_index),</a>
+<a name="509"><span class="lineNum">     509 </span>            :                        make_cpp20_array_from_list&lt;tmpl::conditional_t&lt;</a>
+<a name="510"><span class="lineNum">     510 </span>            :                            0 != sizeof...(Indices), index_list, size_t&gt;&gt;()));</a>
+<a name="511"><span class="lineNum">     511 </span>            :   }</a>
+<a name="512"><span class="lineNum">     512 </span>            : </a>
+<a name="513"><span class="lineNum">     513 </span>            :   /// \brief Get the storage_index of a tensor_index</a>
+<a name="514"><span class="lineNum">     514 </span>            :   ///</a>
+<a name="515"><span class="lineNum">     515 </span>            :   /// \details</a>
+<a name="516"><span class="lineNum">     516 </span>            :   /// This first computes the collapsed_index of the given tensor_index (this is</a>
+<a name="517"><span class="lineNum">     517 </span>            :   /// a 1-1 mapping), then retrieves the storage_index from</a>
+<a name="518"><span class="lineNum">     518 </span>            :   /// collapsed_to_storage_.</a>
+<a name="519"><span class="lineNum">     519 </span>            :   ///</a>
+<a name="520"><span class="lineNum">     520 </span>            :   /// \tparam N the comma separated list of the tensor_index of which to get the</a>
+<a name="521"><span class="lineNum">     521 </span>            :   /// storage_index</a>
+<a name="522"><span class="lineNum">     522 </span>            :   /// \return the storage_index of a tensor_index</a>
+<a name="523"><span class="lineNum">     523 </span>            :   template &lt;int... N, Requires&lt;(sizeof...(N) &gt; 0)&gt; = nullptr&gt;</a>
+<a name="524"><span class="lineNum">     524 </span>            :   SPECTRE_ALWAYS_INLINE static constexpr std::size_t</a>
+<a name="525"><span class="lineNum">     525 </span>            :   get_storage_index() noexcept {</a>
+<a name="526"><span class="lineNum">     526 </span>            :     static_assert(sizeof...(Indices) == sizeof...(N),</a>
+<a name="527"><span class="lineNum">     527 </span>            :                   &quot;the number arguments must be equal to rank_&quot;);</a>
+<a name="528"><span class="lineNum">     528 </span>            :     constexpr std::size_t storage_index =</a>
+<a name="529"><span class="lineNum">     529 </span>            :         collapsed_to_storage_[compute_collapsed_index(</a>
+<a name="530"><span class="lineNum">     530 </span>            :             cpp20::array&lt;size_t, sizeof...(N)&gt;{{N...}},</a>
+<a name="531"><span class="lineNum">     531 </span>            :             make_cpp20_array_from_list&lt;index_list&gt;())];</a>
+<a name="532"><span class="lineNum">     532 </span>            :     return storage_index;</a>
+<a name="533"><span class="lineNum">     533 </span>            :   }</a>
+<a name="534"><span class="lineNum">     534 </span>            : </a>
+<a name="535"><span class="lineNum">     535 </span>            :   /// Get the multiplicity of the storage_index</a>
+<a name="536"><span class="lineNum">     536 </span>            :   /// \param storage_index the storage_index of which to get the multiplicity</a>
+<a name="537"><span class="lineNum">     537 </span>            :   SPECTRE_ALWAYS_INLINE static constexpr size_t multiplicity(</a>
+<a name="538"><span class="lineNum">     538 </span>            :       const size_t storage_index) noexcept {</a>
+<a name="539"><span class="lineNum">     539 </span>            :     constexpr auto multiplicity = multiplicity_;</a>
+<a name="540"><span class="lineNum">     540 </span>            :     return gsl::at(multiplicity, storage_index);</a>
+<a name="541"><span class="lineNum">     541 </span>            :   }</a>
+<a name="542"><span class="lineNum">     542 </span>            : </a>
+<a name="543"><span class="lineNum">     543 </span>            :   /// Get the array of collapsed index to storage_index</a>
+<a name="544"><span class="lineNum">     544 </span>            :   SPECTRE_ALWAYS_INLINE static constexpr std::array&lt;size_t,</a>
+<a name="545"><span class="lineNum">     545 </span>            :                                                     number_of_components()&gt;</a>
+<a name="546"><span class="lineNum">     546 </span>            :   collapsed_to_storage() noexcept {</a>
+<a name="547"><span class="lineNum">     547 </span>            :     constexpr auto collapsed_to_storage = collapsed_to_storage_;</a>
+<a name="548"><span class="lineNum">     548 </span>            :     return collapsed_to_storage;</a>
+<a name="549"><span class="lineNum">     549 </span>            :   }</a>
+<a name="550"><span class="lineNum">     550 </span>            : </a>
+<a name="551"><span class="lineNum">     551 </span>            :   /// Get the storage_index for the specified collapsed index</a>
+<a name="552"><span class="lineNum">     552 </span>            :   SPECTRE_ALWAYS_INLINE static constexpr int collapsed_to_storage(</a>
+<a name="553"><span class="lineNum">     553 </span>            :       const size_t i) noexcept {</a>
+<a name="554"><span class="lineNum">     554 </span>            :     constexpr auto collapsed_to_storage = collapsed_to_storage_;</a>
+<a name="555"><span class="lineNum">     555 </span>            :     return gsl::at(collapsed_to_storage, i);</a>
+<a name="556"><span class="lineNum">     556 </span>            :   }</a>
+<a name="557"><span class="lineNum">     557 </span>            : </a>
+<a name="558"><span class="lineNum">     558 </span>            :   /// Get the array of tensor_index's corresponding to the storage_index's.</a>
+<a name="559"><span class="lineNum">     559 </span>            :   SPECTRE_ALWAYS_INLINE static constexpr const cpp20::array&lt;</a>
+<a name="560"><span class="lineNum">     560 </span>            :       cpp20::array&lt;size_t, sizeof...(Indices) == 0 ? 1 : sizeof...(Indices)&gt;,</a>
+<a name="561"><span class="lineNum">     561 </span>            :       size()&gt;</a>
+<a name="562"><span class="lineNum">     562 </span>            :   storage_to_tensor_index() noexcept {</a>
+<a name="563"><span class="lineNum">     563 </span>            :     constexpr auto storage_to_tensor = storage_to_tensor_;</a>
+<a name="564"><span class="lineNum">     564 </span>            :     return storage_to_tensor;</a>
+<a name="565"><span class="lineNum">     565 </span>            :   }</a>
+<a name="566"><span class="lineNum">     566 </span>            : </a>
+<a name="567"><span class="lineNum">     567 </span>            :   template &lt;typename T&gt;</a>
+<a name="568"><span class="lineNum">     568 </span>            :   SPECTRE_ALWAYS_INLINE static std::string component_name(</a>
+<a name="569"><span class="lineNum">     569 </span>            :       const std::array&lt;T, rank()&gt;&amp; tensor_index,</a>
+<a name="570"><span class="lineNum">     570 </span>            :       const std::array&lt;std::string, rank()&gt;&amp; axis_labels) {</a>
+<a name="571"><span class="lineNum">     571 </span>            :     return ComponentNameImpl&lt;sizeof...(Indices)&gt;::template apply&lt;Structure&gt;(</a>
+<a name="572"><span class="lineNum">     572 </span>            :         tensor_index, axis_labels);</a>
+<a name="573"><span class="lineNum">     573 </span>            :   }</a>
+<a name="574"><span class="lineNum">     574 </span>            : };</a>
+<a name="575"><span class="lineNum">     575 </span>            : }  // namespace Tensor_detail</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

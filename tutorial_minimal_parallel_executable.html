@@ -1,0 +1,386 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: The minimal SpECTRE executable</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">The minimal SpECTRE executable </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><p>This tutorial will illustrate what is needed to compile the minimal SpECTRE executable that will simply print some useful information about the executable and then exit.</p>
+<p>Specifically, this tutorial will introduce:</p><ul>
+<li><code>add_spectre_parallel_executable</code>, a CMake function that will add a build target for a SpECTRE executable</li>
+<li>A user-provided <code>Metavariables</code>, a C++ struct that is used to specify the metaprogram that is converted into a C++ executable.</li>
+<li>how to build a SpECTRE executable</li>
+<li>how to run a SpECTRE executable</li>
+<li>useful information that can be extracted from all SpECTRE executables</li>
+<li><code>Main</code>, the main parallel component that acts as the main function of a C++ executable.</li>
+</ul>
+<p>In this tutorial, <code>SPECTRE_ROOT</code> refers to the directory in which SpECTRE was cloned, and <code>SPECTRE_BUILD_DIR</code> refers to the directory in which you built SpECTRE.</p>
+<h2><a class="anchor" id="autotoc_md171"></a>
+Creating a build target for a parallel executable</h2>
+<p>The first step is to select (or create) a directory (within <code>SPECTRE_ROOT/src</code>) that will hold the files from which the executable will be created. For this tutorial we created the directory <code>ParallelTutorial</code> in <code>src/Executables/Examples</code>. If you create a new directory for the executable, you will need to edit the <code>CMakeLists.txt</code> file in its parent directory and add (replacing <code>ParallelTutorial</code> with the appropriate directory name)</p>
+<div class="fragment"><div class="line">add_subdirectory(ParallelTutorial)</div>
+</div><!-- fragment --><p> The second step is to edit (or create) the <code>CMakeLists.txt</code> file in the executable directory and add a call to <code>add_spectre_parallel_executable</code> such as:</p>
+<div class="fragment"><div class="line">set(LIBS_TO_LINK</div>
+<div class="line">  <a class="code" href="classInformer.html">Informer</a></div>
+<div class="line">  <a class="code" href="namespaceOptions.html">Options</a></div>
+<div class="line">  Utilities</div>
+<div class="line">  )</div>
+<div class="line"> </div>
+<div class="line">add_spectre_parallel_executable(</div>
+<div class="line">  MinimalExample</div>
+<div class="line">  MinimalExecutable</div>
+<div class="line">  Executables/Examples/ParallelTutorial</div>
+<div class="line">  Metavariables</div>
+<div class="line">  <span class="stringliteral">&quot;${LIBS_TO_LINK}&quot;</span></div>
+<div class="line">  )</div>
+</div><!-- fragment --><p> The (SpECTRE defined) <code>CMake</code> function <code>add_spectre_executable</code> takes five arguments:</p>
+<ul>
+<li>The name of the executable (in the given example <code>MinimalExample</code>) that will be created, which will also be the name of the corresponding build target.</li>
+<li>The base name (in the given example <code>MinimalExecutable</code>) of the two user-provided files that declare (<code><a class="el" href="MinimalExecutableFwd_8hpp_source.html">MinimalExecutableFwd.hpp</a></code>) and define (<code><a class="el" href="MinimalExecutable_8hpp_source.html">MinimalExecutable.hpp</a></code>) a C++ struct (or struct template) that will describe the metaprogram that is converted into a C++ executable. We will refer to this struct (template) as the metavariables struct (template), and the files declaring and defining the metavariables struct (template) as the metavariables files.</li>
+<li>The path relative to <code>SPECTRE_ROOT/src</code> to the directory holding the metavariables files (in the given example <code>Executables/Examples/ParallelTutorial</code>)</li>
+<li>The specific metavariables struct (in the given example <code>Metavariables</code>) that will be used to create the executable. This is either the name of the metavariables struct in the metavariables files, or a specific instantiation of the metavariables struct template in the metavariables files.</li>
+<li>A list of SpECTRE libraries that the executable will be linked against (in the given example the <code>CMake</code> list <code>LIBS_TO_LINK</code> where <code>Informer</code> and <code>Utilities</code> are two SpECTRE libraries)</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md172"></a>
+Writing the metavariables files</h2>
+<p>The header files from which an executable is generated must declare and define a metavariables struct that can be thought of as a compile-time input file that defines what the executable will do.</p>
+<p>The first metavariables file (<code><a class="el" href="MinimalExecutableFwd_8hpp_source.html">MinimalExecutableFwd.hpp</a></code>) is simply a forward declaration of the metavariables struct:</p>
+<div class="fragment"><div class="line"><span class="preprocessor">#pragma once</span></div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">struct </span>Metavariables;</div>
+</div><!-- fragment --><p> (Note that <code>#pragma once</code> tells the compiler to only include the file once per compilation, and the <code>/// \cond</code> and <code>/// \endcond</code> around the code tells doxygen not to generate documentation from the wrapped region)</p>
+<p>The second metavariables file (<code><a class="el" href="MinimalExecutable_8hpp_source.html">MinimalExecutable.hpp</a></code>) holds the definition of the metavariables struct.</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>Metavariables {</div>
+<div class="line">  <span class="keyword">using</span> component_list = tmpl::list&lt;&gt;;</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">enum class</span> Phase { Initialization, Exit };</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Tags&gt;</div>
+<div class="line">  <span class="keyword">static</span> Phase determine_next_phase(</div>
+<div class="line">      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;</div>
+<div class="line">          <a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;Tags...&gt;</a>*&gt; <span class="comment">/*phase_change_decision_data*/</span>,</div>
+<div class="line">      <span class="keyword">const</span> Phase&amp; <span class="comment">/*current_phase*/</span>,</div>
+<div class="line">      <span class="keyword">const</span> Parallel::CProxy_GlobalCache&lt;</div>
+<div class="line">          Metavariables&gt;&amp; <span class="comment">/*cache_proxy*/</span>) noexcept {</div>
+<div class="line">    <span class="keywordflow">return</span> Phase::Exit;</div>
+<div class="line">  }</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help{<span class="stringliteral">&quot;A minimal executable&quot;</span>};</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> The metavariables struct must define an enum class <code>Phase</code> with the phases of the executable (which must include <code>Initialization</code> and <code>Exit</code>), and a static function <code>determine_next_phase</code>. In this example, no additional phases are defined, and the executable will execute the <code>Initialization</code> phase followed by the <code>Exit</code> phase. (<code>Parallel::CProxy_GlobalCache</code> is an unused proxy to the <code>GlobalCache</code> that is explained below)</p>
+<p>The metavariables struct must define a type alias <code>component_list</code> that is a <code>tmpl::list</code> (a typelist defined in <code><a class="el" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a></code>) of the parallel components used by the executable. In this example no parallel components are used.</p>
+<p>The metavariables struct must define <code>help</code>, a <code>static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89" title="The string used in option structs.">Options::String</a></code> that will be printed as part of the help message of the executable. (<code><a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89" title="The string used in option structs.">Options::String</a></code> is defined in <code><a class="el" href="Options_8hpp.html">Options/Options.hpp</a></code>.)</p>
+<p>In addition to defining the metavaribles struct, the metavariables file must define the two vectors of functions <code>charm_init_node_funcs</code> and <code>charm_init_proc_funcs</code></p>
+<div class="fragment"><div class="line"><span class="keyword">static</span> <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;void (*)()&gt; charm_init_node_funcs{};</div>
+<div class="line"><span class="keyword">static</span> <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;void (*)()&gt; charm_init_proc_funcs{};</div>
+</div><!-- fragment --><p> that are executed at startup by Charm++ on each node and processing element (PE) the executable runs on. In this example, the vectors are empty.</p>
+<h2><a class="anchor" id="autotoc_md173"></a>
+Building a SpECTRE executable</h2>
+<p>Let <code>$EXECUTABLE</code> be the name of the executable (the first argument passed to the <code>add_spectre_executable</code> <code>CMake</code> function, so in this example <code>MinimalExample</code>). Then the executable can be built by running the following command in <code>$SPECTRE_BUILD_DIR</code>:</p>
+<div class="fragment"><div class="line">make $EXECUTABLE</div>
+</div><!-- fragment --><p>which will produce the executable of the same name in <code>$SPECTRE_BUILD_DIR/bin</code>.</p>
+<h2><a class="anchor" id="autotoc_md174"></a>
+Running a SpECTRE executable</h2>
+<p>To run a SpECTRE executable, run the command:</p>
+<div class="fragment"><div class="line">./$SPECTRE_BUILD_DIR/bin/$EXECUTABLE  &lt;options&gt;</div>
+</div><!-- fragment --><p>where <code>&lt;options&gt;</code> must include any required command-line options. In the simple example for this tutorial, no command-line options are required.</p>
+<p>On a laptop, we get the following output:</p>
+<div class="fragment"><div class="line">Charm++: standalone mode (not using charmrun)</div>
+<div class="line">Charm++&gt; Running in Multicore mode:  1 threads</div>
+<div class="line">Converse/Charm++ Commit ID: v6.8.0-0-ga36028edb</div>
+<div class="line">CharmLB&gt; Load balancer assumes all CPUs are same.</div>
+<div class="line">Charm++&gt; Running on 1 unique compute nodes (4-way SMP).</div>
+<div class="line">Charm++&gt; cpu topology info is gathered in 0.000 seconds.</div>
+<div class="line"> </div>
+<div class="line">Executing &#39;some_path/MinimalExample&#39; using 1 processors.</div>
+<div class="line">Date and time at startup: Fri Oct 25 15:03:05 2019</div>
+<div class="line"> </div>
+<div class="line">SpECTRE Build Information:</div>
+<div class="line">Version:                      0.0.0</div>
+<div class="line">Compiled on host:             kosh-3.local</div>
+<div class="line">Compiled in directory:        some_path/build</div>
+<div class="line">Source directory is:          some_path/parallel_tutorial</div>
+<div class="line">Compiled on git branch:       feature/parallel_tutorial</div>
+<div class="line">Compiled with git hash:       1f4ab20cbda9ae8072a17df69de9731c43687468</div>
+<div class="line">Linked on:                    Fri Oct 25 13:26:06 2019</div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line">Done!</div>
+<div class="line">Wall time in seconds: 0.004185</div>
+<div class="line">Date and time at completion: Fri Oct 25 15:03:05 2019</div>
+<div class="line"> </div>
+<div class="line">[Partition 0][Node 0] End of program</div>
+</div><!-- fragment --><p>which includes information that will be printed by every SpECTRE executable on startup and exit. First, there is information provided by <code>Charm++</code> that will depend upon how <code>Charm++</code> was built. Next you will see information provided by SpECTRE which includes:</p>
+<ul>
+<li>the name of the executable</li>
+<li>how many processes the executable was run on</li>
+<li>the date and time at startup</li>
+<li>the version of SpECTRE that was used to compile the executable</li>
+<li>where the executable was compiled</li>
+<li>which git branch and hash was used to compile the executable</li>
+<li>when the executable was linked</li>
+</ul>
+<p>On exit, the executable will print that it is <code>Done!</code>, followed by how the long the executable took to run as timed by the <code>Charm++</code> wall-clock timer, and the date and time at completion, followed by any information the <code>Charm++</code> provides upon exiting the program.</p>
+<h2><a class="anchor" id="autotoc_md175"></a>
+Extracting useful information from a SpECTRE executable</h2>
+<p>Every SpECTRE executable comes with a set of command-line options that can be used to obtain useful information about the executable (and for executables expecting an input file, whether or not the input file can be parsed successfully).</p>
+<h3><a class="anchor" id="autotoc_md176"></a>
+Getting a list of available options</h3>
+<p>To get a list of available options for a SpECTRE executable, run either of the following commands:</p>
+<div class="fragment"><div class="line">./$SPECTRE_BUILD_DIR/bin/$EXECUTABLE  --help</div>
+<div class="line">./$SPECTRE_BUILD_DIR/bin/$EXECUTABLE  -h</div>
+</div><!-- fragment --><p>In the middle of the <code>Charm++</code> startup information will now appear a long list of <code>Charm++</code> related command-line options which we will ignore for this tutorial. After the SpECTRE startup information, there is now a list of available command-line options:</p>
+<div class="fragment"><div class="line">-h [ --help ]             Describe program options</div>
+<div class="line">--check-options           Check input file options</div>
+<div class="line">--dump-source-tree-as arg If specified, then a gzip archive of the source</div>
+<div class="line">                          tree is dumped with the specified name. The archive</div>
+<div class="line">                          can be expanded using &#39;tar -xzf ARCHIVE.tar.gz&#39;</div>
+<div class="line">--dump-paths              Dump the PATH, CPATH, LD_LIBRARY_PATH,</div>
+<div class="line">                          LIBRARY_PATH, and CMAKE_PREFIX_PATH at compile</div>
+<div class="line">                          time.</div>
+<div class="line">--dump-environment        Dump the result of printenv at compile time.</div>
+<div class="line">--dump-library-versions   Dump the contents of SpECTRE&#39;s LibraryVersions.txt</div>
+<div class="line">--dump-only               Exit after dumping requested information.</div>
+</div><!-- fragment --><p>which we will describe in detail below. This is followed by a description of the expected input-file options, which in this example will simply print the <code>help</code> string from the metavariables struct, and the statement that there are no options expected:</p>
+<div class="fragment"><div class="line">==== Description of expected options:</div>
+<div class="line">A minimal executable</div>
+<div class="line"> </div>
+<div class="line">&lt;No options&gt;</div>
+</div><!-- fragment --><p>We will cover input file options in a future tutorial.</p>
+<h3><a class="anchor" id="autotoc_md177"></a>
+Checking options</h3>
+<p>As the minimal executable in this tutorial expects no input-file options, running the command:</p>
+<div class="fragment"><div class="line">./$SPECTRE_BUILD_DIR/bin/$EXECUTABLE  --check-options</div>
+</div><!-- fragment --><p>will print out <code>No options to check!</code> and exit the program. See a future tutorial for an example of checking input-file options.</p>
+<h3><a class="anchor" id="autotoc_md178"></a>
+Dumping the source tree</h3>
+<p>In order to aid in reproducibility, all SpECTRE executables contain a copy of <code>$SPECTRE_ROOT</code>. To obtain the source tree as an archive file, run the command:</p>
+<div class="fragment"><div class="line">./$SPECTRE_BUILD_DIR/bin/$EXECUTABLE  --dump-source-tree-as SpECTRE</div>
+</div><!-- fragment --><p>which will produce the archive file <code>SpECTRE.tar.gz</code> which can be expanded with the command:</p>
+<div class="fragment"><div class="line">tar -xzf SpECTRE.tar.gz</div>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md179"></a>
+Dumping other information about a SpECTRE executable</h3>
+<p>In addition to dumping the entire source tree there are the following options:</p>
+<ul>
+<li><code>--dump-paths</code> will print out various paths from when the executable was compiled</li>
+<li><code>--dump-environment</code> will print the results of <code>printenv</code> (i.e. all of the environment variables) from when the executable was compiled</li>
+<li><code>--dump-library-versions</code> will print the contents of SpECTRE's <code>LibraryVersions.txt</code> which will contain the versions of libraries that SpECTRE linked against, as well as various <code>CMake</code> variables</li>
+</ul>
+<p>Also note that the option <code>--dump-only</code> can be used to have the SpECTRE executable terminate immediately after dumping the information.</p>
+<h2><a class="anchor" id="autotoc_md180"></a>
+Behind the scenes:  the main parallel component</h2>
+<p>Every Charm++ executable needs a mainchare. All SpECTRE executables use <code>Main</code> (found in <code><a class="el" href="Main_8hpp.html">src/Parallel/Main.hpp</a></code>) as the mainchare. When a SpECTRE executable is run, the constructor of <code>Main</code> that is executed takes the command line options as an argument (as type <code>CkArgMsg*</code>). This constructor performs the following operations:</p>
+<ul>
+<li>Prints useful startup information</li>
+<li>Parses the command line options, performing any requested operations</li>
+<li>Parses the input file options, populating a tagged tuple with their values. (This is discussed in more detail in a future tutorial on input file options.)</li>
+<li>Creates the <code>GlobalCache</code> (a nodegroup chare) that holds objects created from input file options that are stored once per Charm++ node, as well as proxies to all other parallel components.</li>
+<li>Creates user-requested non-array parallel components, passing them the proxy to the <code>GlobalCache</code> as well as any items they request that can be created from input file options.</li>
+<li>Creates empty array user-requested parallel components</li>
+<li>Sends the complete list of parallel components to the <code>GlobalCache</code>.</li>
+</ul>
+<p>Once the list of parallel components is sent to the <code>GlobalCache</code> on each node, the <code>Main</code> member function <code>allocate_array_components_and_execute_initial_phase</code> will be executed. This will allocate the elements of the array parallel components by calling the <code>allocate_array</code> member function of each component. Then the <code>start_phase</code> member function is called on each component, which will execute the phase action list for the <code>Initialization</code> phase for each component. Charm++ will execute each phase until it detects that nothing is happening (quiescence detection). As this represents a global synchronization point, the number of phases should be minimized in order to exploit the power of SpECTRE. After each phase, the <code>execute_next_phase</code> member function of <code>Main</code> will be called. This member function first determines what the next phase is. If the next phase is <code>Exit</code>, then some useful information is printed and the program exits gracefully. Otherwise the <code>execute_next_phase</code> member function of each parallel component is called. </p>
+</div></div><!-- contents -->
+</div><!-- PageDoc -->
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a></div></div>
+<div class="ttc" id="anamespaceOptions_html"><div class="ttname"><a href="namespaceOptions.html">Options</a></div><div class="ttdoc">Utilities for parsing input files.</div><div class="ttdef"><b>Definition:</b> MinmodType.hpp:8</div></div>
+<div class="ttc" id="aclasstuples_1_1TaggedTuple_html"><div class="ttname"><a href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt; Tags... &gt;</a></div></div>
+<div class="ttc" id="aclassInformer_html"><div class="ttname"><a href="classInformer.html">Informer</a></div><div class="ttdef"><b>Definition:</b> Informer.hpp:15</div></div>
+<div class="ttc" id="anamespaceOptions_html_aa61c7f41f21afa7646811456f673be89"><div class="ttname"><a href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a></div><div class="ttdeci">const char *const String</div><div class="ttdoc">The string used in option structs.</div><div class="ttdef"><b>Definition:</b> Options.hpp:32</div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

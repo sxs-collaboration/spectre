@@ -1,0 +1,249 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Installation on Clusters</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">Installation on Clusters </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><p>The installation instructions are the same for most systems because we use shell scripts to set up the environment for each supercomputer. We describe the generic installation instructions once, and only note special instructions if necessary for the particular system. If you have already built SpECTRE and just want to load the modules, source the shell file for your system and run <code>spectre_load_modules</code>.</p>
+<dl class="section note"><dt>Note</dt><dd>Sample submit scripts for some systems are available in <code>support/SubmitScripts</code>.</dd></dl>
+<h1><a class="anchor" id="autotoc_md244"></a>
+General Instructions</h1>
+<ol type="1">
+<li>Run <code>export SPECTRE_HOME=/path/to/where/you/want/to/clone</code></li>
+<li>Clone SpECTRE using <code>git clone SPECTRE_URL $SPECTRE_HOME</code></li>
+<li>Run <code>cd $SPECTRE_HOME &amp;&amp; mkdir build &amp;&amp; cd build</code></li>
+<li>Run <code>. $SPECTRE_HOME/support/Environments/SYSTEM_TO_RUN_ON_gcc.sh</code>, where <code>SYSTEM_TO_RUN_ON</code> is replaced by the name of the system as described in the relevant section below.</li>
+<li>If you haven't already installed the dependencies, run <code>export SPECTRE_DEPS=/path/to/where/you/want/the/deps</code> Then run <code>spectre_setup_modules $SPECTRE_DEPS</code>. This will take a while to finish. Near the end the command will tell you how to make the modules available by providing a <code>module use</code> command. Make sure you are providing an absolute path to <code>spectre_setup_modules</code>.</li>
+<li>Run <code>module use $SPECTRE_DEPS/modules</code></li>
+<li>Run <code>spectre_run_cmake</code>, if you get module loading errors run <code>spectre_unload_modules</code> and try running <code>spectre_run_cmake</code> again. CMake should set up successfully.</li>
+<li>Build the targets you are interested in by running, e.g. <code>make -j4 test-executables</code></li>
+</ol>
+<h1><a class="anchor" id="autotoc_md245"></a>
+BlueWaters at the National Center for Supercomputing Applications</h1>
+<p>First run <code>module load bwpy &amp;&amp; bwpy-environ</code>, then follow the general instructions using <code>bluewaters</code> as the <code>SYSTEM_TO_RUN_ON</code>. Note that once the installation is completed, you will still need to run <code>module load bwpy &amp;&amp; bwpy-environ</code> in order to run SpECTRE. Also note that adding this command to your <code>.bashrc</code> may cause BlueWaters to hang; you must run this command from the command line.</p>
+<h3><a class="anchor" id="autotoc_md246"></a>
+Running tests on BlueWaters</h3>
+<p>You cannot just run <code>make test</code> or <code>ctest</code> on BlueWaters. To run the tests:</p><ol type="1">
+<li>Get an interactive node using, e.g. <code>qsub -q debug -I -l nodes=1:ppn=16:xe -l walltime=00:30:00</code> or see the <a href="https://bluewaters.ncsa.illinois.edu/interactive-jobs">BlueWaters documentation</a></li>
+<li>Setup the bwpy environment <code>module load bwpy &amp;&amp; bwpy-environ</code></li>
+<li>Run the <code>module use</code> command you did earlier</li>
+<li>Load the module using the <code>spectre_load_modules</code> command</li>
+<li>Run <div class="fragment"><div class="line">aprun -n1 -d1 -- bwpy-environ -- \</div>
+<div class="line">  $SPECTRE_HOME/build/bin/NonFailureTestsRunTests.sh</div>
+</div><!-- fragment --></li>
+</ol>
+<h1><a class="anchor" id="autotoc_md247"></a>
+Cedar, Graham, and Niagara at ComputeCanada</h1>
+<p>Use <code>compute_canada</code> as the <code>SYSTEM_TO_RUN_ON</code> in the general instructions.</p>
+<h1><a class="anchor" id="autotoc_md248"></a>
+Frontera at TACC</h1>
+<p>Follow the general instructions, using <code>frontera</code> for <code>SYSTEM_TO_RUN_ON</code>.</p>
+<h1><a class="anchor" id="autotoc_md249"></a>
+Wheeler at Caltech</h1>
+<p>Follow the general instructions using <code>wheeler</code> for <code>SYSTEM_TO_RUN_ON</code>, except you do not need to install any dependencies, so you can skip steps 5 and 6. You can optionally compile using LLVM/Clang by sourcing <code>wheeler_clang.sh</code> instead of <code>wheeler_gcc.sh</code></p>
+<h1><a class="anchor" id="autotoc_md250"></a>
+CaltechHPC at Caltech</h1>
+<p>Follow the general instructions, using <code>caltech_hpc</code> for <code>SYSTEM_TO_RUN_ON</code>. When you go to build, you will need to get an interactive node (login nodes limit the amount of memory accessible to individual users, to below the amount necessary to build SpECTRE). To ensure you get an entire node to build on, use the command: </p><div class="fragment"><div class="line">srun -t 02:00:00 -N 1 -c 32 --mem=192000 -A sxs -D . --pty /bin/bash</div>
+</div><!-- fragment --><p>being sure to re-source environment files once you get the interactive node shell.</p>
+<h1><a class="anchor" id="autotoc_md251"></a>
+Ocean at Fullerton</h1>
+<p>Follow the general instructions, using <code>ocean</code> for <code>SYSTEM_TO_RUN_ON</code>, you do not need to install any dependencies, so you can skip steps 5 and 6. </p>
+</div></div><!-- contents -->
+</div><!-- PageDoc -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,800 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: tt Namespace Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#var-members">Variables</a>  </div>
+  <div class="headertitle">
+<div class="title">tt Namespace Reference<div class="ingroups"><a class="el" href="group__TypeTraitsGroup.html">Type Traits</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1can__be__copy__constructed.html">can_be_copy_constructed</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if <code>T</code> is copy constructible.  <a href="structtt_1_1can__be__copy__constructed.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1ConformsTo.html">ConformsTo</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indicate a class conforms to the <code>Protocol</code>.  <a href="structtt_1_1ConformsTo.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1get__fundamental__type.html">get_fundamental_type</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extracts the fundamental type for a container.  <a href="structtt_1_1get__fundamental__type.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1has__equivalence.html">has_equivalence</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if type <code>T</code> has operator== defined.  <a href="structtt_1_1has__equivalence.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1has__inequivalence.html">has_inequivalence</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if type <code>T</code> has operator!= defined.  <a href="structtt_1_1has__inequivalence.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__a.html">is_a</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if type <code>T</code> is a template specialization of <code>U</code>  <a href="structtt_1_1is__a.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtt_1_1is__callable.html">is_callable</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if a type <code>T</code> is callable, i.e. <code>T(Args...)</code> is evaluable.  <a href="classtt_1_1is__callable.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__complex__of__fundamental.html">is_complex_of_fundamental</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines if a type <code>T</code> is a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a></code> of a fundamental type, is a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a></code> if so, and otherwise is a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::false_type</a></code>  <a href="structtt_1_1is__complex__of__fundamental.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__integer.html">is_integer</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if <code>I</code> is an integer type (non-bool, non-character), unlike <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_integral.html">std::is_integral</a>.  <a href="structtt_1_1is__integer.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__iterable.html">is_iterable</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if type T has a begin() and end() function.  <a href="structtt_1_1is__iterable.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__maplike.html">is_maplike</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if type <code>T</code> is like a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map</a> or std::unordored_map.  <a href="structtt_1_1is__maplike.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__std__array.html">is_std_array</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if type T is a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>.  <a href="structtt_1_1is__std__array.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__std__array__of__size.html">is_std_array_of_size</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if type T is a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a> of a given size.  <a href="structtt_1_1is__std__array__of__size.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__streamable.html">is_streamable</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if type <code>T</code> has operator&lt;&lt;(<code>S</code>, <code>T</code>) defined.  <a href="structtt_1_1is__streamable.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__tensor__index.html">is_tensor_index</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if a type <code>T</code> is a <a class="el" href="structTensorIndex.html" title="Represents the geeric indices in a TensorExpression.">TensorIndex</a> used in <a class="el" href="namespaceTensorExpressions.html">TensorExpressions</a>.  <a href="structtt_1_1is__tensor__index.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__tensor__index_3_01TensorIndex_3_01I_01_4_01_4.html">is_tensor_index&lt; TensorIndex&lt; I &gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__tensor__index__type.html">is_tensor_index_type</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1remove__cvref__wrap.html">remove_cvref_wrap</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/functional/reference_wrapper.html">std::reference_wrapper</a>, references, and cv qualifiers.  <a href="structtt_1_1remove__cvref__wrap.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1remove__reference__wrapper.html">remove_reference_wrapper</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the underlying type if the type is a <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/functional/reference_wrapper.html">std::reference_wrapper</a>, otherwise returns the type itself.  <a href="structtt_1_1remove__reference__wrapper.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:gad0d02ffbe3df2975350abdac14764a39"><td class="memTemplParams" colspan="2">template&lt;typename F &gt; </td></tr>
+<tr class="memitem:gad0d02ffbe3df2975350abdac14764a39"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TypeTraitsGroup.html#gad0d02ffbe3df2975350abdac14764a39">function_info</a> = detail::function_info_impl&lt; F &gt;</td></tr>
+<tr class="memdesc:gad0d02ffbe3df2975350abdac14764a39"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a struct that contains the return type, argument types, and the class type if the <code>F</code> is a non-static member function.  <a href="group__TypeTraitsGroup.html#gad0d02ffbe3df2975350abdac14764a39">More...</a><br /></td></tr>
+<tr class="separator:gad0d02ffbe3df2975350abdac14764a39"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a763f8e29128e0c07b0b83330a03fc8d6"><td class="memTemplParams" colspan="2"><a id="a763f8e29128e0c07b0b83330a03fc8d6"></a>
+template&lt;template&lt; typename... &gt; class U, typename T &gt; </td></tr>
+<tr class="memitem:a763f8e29128e0c07b0b83330a03fc8d6"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>is_a_lambda</b> = detail::wrapped_is_a&lt; detail::is_a_wrapper&lt; U &gt;, T &gt;</td></tr>
+<tr class="separator:a763f8e29128e0c07b0b83330a03fc8d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:abe1a534eadde5266362bd7ee1663dbf3"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:abe1a534eadde5266362bd7ee1663dbf3"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>is_complex_of_fundamental_v</b></td></tr>
+<tr class="separator:abe1a534eadde5266362bd7ee1663dbf3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7cb04134f248d9a9af7fd9d2cdbe9313"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga7cb04134f248d9a9af7fd9d2cdbe9313"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TypeTraitsGroup.html#ga7cb04134f248d9a9af7fd9d2cdbe9313">is_complex_or_fundamental_v</a></td></tr>
+<tr class="memdesc:ga7cb04134f248d9a9af7fd9d2cdbe9313"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluates to <code>true</code> if type <code>T</code> is a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a></code> of a fundamental type or if <code>T</code> is a fundamental type.  <a href="group__TypeTraitsGroup.html#ga7cb04134f248d9a9af7fd9d2cdbe9313">More...</a><br /></td></tr>
+<tr class="separator:ga7cb04134f248d9a9af7fd9d2cdbe9313"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga69cadf7e1af796b7b303137ffde2f8ad"><td class="memTemplParams" colspan="2">template&lt;typename ConformingType , typename Protocol &gt; </td></tr>
+<tr class="memitem:ga69cadf7e1af796b7b303137ffde2f8ad"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ProtocolsGroup.html#ga69cadf7e1af796b7b303137ffde2f8ad">conforms_to</a> = typename <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_convertible.html">std::is_convertible</a>&lt; ConformingType *, <a class="el" href="structtt_1_1ConformsTo.html">ConformsTo</a>&lt; Protocol &gt; * &gt;</td></tr>
+<tr class="memdesc:ga69cadf7e1af796b7b303137ffde2f8ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if the <code>ConformingType</code> conforms to the <code>Protocol</code>.  <a href="group__ProtocolsGroup.html#ga69cadf7e1af796b7b303137ffde2f8ad">More...</a><br /></td></tr>
+<tr class="separator:ga69cadf7e1af796b7b303137ffde2f8ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4660233574869d3b757e06ecf3ec83ca"><td class="memTemplParams" colspan="2">template&lt;typename ConformingType , typename Protocol &gt; </td></tr>
+<tr class="memitem:ga4660233574869d3b757e06ecf3ec83ca"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ProtocolsGroup.html#ga4660233574869d3b757e06ecf3ec83ca">conforms_to_v</a></td></tr>
+<tr class="memdesc:ga4660233574869d3b757e06ecf3ec83ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if the <code>ConformingType</code> conforms to the <code>Protocol</code>.  <a href="group__ProtocolsGroup.html#ga4660233574869d3b757e06ecf3ec83ca">More...</a><br /></td></tr>
+<tr class="separator:ga4660233574869d3b757e06ecf3ec83ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a16a8b41066b73e3c0de4eeb0c5e87317"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a16a8b41066b73e3c0de4eeb0c5e87317"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacett.html#a16a8b41066b73e3c0de4eeb0c5e87317">has_equivalence_t</a> = typename <a class="el" href="structtt_1_1has__equivalence.html">has_equivalence</a>&lt; T &gt;::type</td></tr>
+<tr class="separator:a16a8b41066b73e3c0de4eeb0c5e87317"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a748064ad3db0e62508620e3b3913d4c1"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a748064ad3db0e62508620e3b3913d4c1"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacett.html#a748064ad3db0e62508620e3b3913d4c1">has_equivalence_v</a> = <a class="el" href="structtt_1_1has__equivalence.html">has_equivalence</a>&lt;T&gt;::value</td></tr>
+<tr class="separator:a748064ad3db0e62508620e3b3913d4c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac28bf0e1a72eb99f6e0f4025435d13cd"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ac28bf0e1a72eb99f6e0f4025435d13cd"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacett.html#ac28bf0e1a72eb99f6e0f4025435d13cd">has_inequivalence_t</a> = typename <a class="el" href="structtt_1_1has__inequivalence.html">has_inequivalence</a>&lt; T &gt;::type</td></tr>
+<tr class="separator:ac28bf0e1a72eb99f6e0f4025435d13cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a542d7c9729521f7c23cc97f913a19dcb"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a542d7c9729521f7c23cc97f913a19dcb"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacett.html#a542d7c9729521f7c23cc97f913a19dcb">has_inequivalence_v</a> = <a class="el" href="structtt_1_1has__inequivalence.html">has_inequivalence</a>&lt;T&gt;::value</td></tr>
+<tr class="separator:a542d7c9729521f7c23cc97f913a19dcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9515d6a1524e46364e37baa1903a0cce"><td class="memTemplParams" colspan="2">template&lt;template&lt; typename... &gt; class U, typename... Args&gt; </td></tr>
+<tr class="memitem:a9515d6a1524e46364e37baa1903a0cce"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacett.html#a9515d6a1524e46364e37baa1903a0cce">is_a_t</a> = typename <a class="el" href="structtt_1_1is__a.html">is_a</a>&lt; U, Args... &gt;::type</td></tr>
+<tr class="separator:a9515d6a1524e46364e37baa1903a0cce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a49687f7a9a5e01a848db388e0f2e398f"><td class="memTemplParams" colspan="2">template&lt;template&lt; typename... &gt; class U, typename... Args&gt; </td></tr>
+<tr class="memitem:a49687f7a9a5e01a848db388e0f2e398f"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacett.html#a49687f7a9a5e01a848db388e0f2e398f">is_a_v</a> = <a class="el" href="structtt_1_1is__a.html">is_a</a>&lt;U, Args...&gt;::value</td></tr>
+<tr class="separator:a49687f7a9a5e01a848db388e0f2e398f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e7f5dce91a40ecabd6ee0b0b3f1444e"><td class="memTemplParams" colspan="2">template&lt;typename T , typename... Args&gt; </td></tr>
+<tr class="memitem:a6e7f5dce91a40ecabd6ee0b0b3f1444e"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacett.html#a6e7f5dce91a40ecabd6ee0b0b3f1444e">is_callable_t</a> = typename <a class="el" href="classtt_1_1is__callable.html">is_callable</a>&lt; T, Args... &gt;::type</td></tr>
+<tr class="separator:a6e7f5dce91a40ecabd6ee0b0b3f1444e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe70e3aeabdcf88496e0d8a2c2026913"><td class="memTemplParams" colspan="2">template&lt;typename T , typename... Args&gt; </td></tr>
+<tr class="memitem:afe70e3aeabdcf88496e0d8a2c2026913"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacett.html#afe70e3aeabdcf88496e0d8a2c2026913">is_callable_v</a> = <a class="el" href="classtt_1_1is__callable.html">is_callable</a>&lt;T, Args...&gt;::value</td></tr>
+<tr class="separator:afe70e3aeabdcf88496e0d8a2c2026913"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50dbdc0936a2bb38449082f40abfca3d"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a50dbdc0936a2bb38449082f40abfca3d"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacett.html#a50dbdc0936a2bb38449082f40abfca3d">is_iterable_t</a> = typename <a class="el" href="structtt_1_1is__iterable.html">is_iterable</a>&lt; T &gt;::type</td></tr>
+<tr class="separator:a50dbdc0936a2bb38449082f40abfca3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e2f1dd5f4019eba2f7073205a0a078b"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a3e2f1dd5f4019eba2f7073205a0a078b"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacett.html#a3e2f1dd5f4019eba2f7073205a0a078b">is_iterable_v</a> = <a class="el" href="structtt_1_1is__iterable.html">is_iterable</a>&lt;T&gt;::value</td></tr>
+<tr class="separator:a3e2f1dd5f4019eba2f7073205a0a078b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a79f828dbcc39b9b5e0c8746b3b853d96"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a79f828dbcc39b9b5e0c8746b3b853d96"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacett.html#a79f828dbcc39b9b5e0c8746b3b853d96">is_maplike_t</a> = typename <a class="el" href="structtt_1_1is__maplike.html">is_maplike</a>&lt; T &gt;::type</td></tr>
+<tr class="separator:a79f828dbcc39b9b5e0c8746b3b853d96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5eef4319422df2f03b2723891121c3be"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a5eef4319422df2f03b2723891121c3be"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacett.html#a5eef4319422df2f03b2723891121c3be">is_maplike_v</a> = <a class="el" href="structtt_1_1is__maplike.html">is_maplike</a>&lt;T&gt;::value</td></tr>
+<tr class="separator:a5eef4319422df2f03b2723891121c3be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb7aa0a733ac7b37f6d794809a594a2f"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:acb7aa0a733ac7b37f6d794809a594a2f"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacett.html#acb7aa0a733ac7b37f6d794809a594a2f">is_std_array_t</a> = typename <a class="el" href="structtt_1_1is__std__array.html">is_std_array</a>&lt; T &gt;::type</td></tr>
+<tr class="separator:acb7aa0a733ac7b37f6d794809a594a2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1fc0d9f8de5bbf102f7d70b5575639c"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:af1fc0d9f8de5bbf102f7d70b5575639c"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacett.html#af1fc0d9f8de5bbf102f7d70b5575639c">is_std_array_v</a> = <a class="el" href="structtt_1_1is__std__array.html">is_std_array</a>&lt;T&gt;::value</td></tr>
+<tr class="separator:af1fc0d9f8de5bbf102f7d70b5575639c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a864237db0d07c2d91f18777c983db045"><td class="memTemplParams" colspan="2">template&lt;size_t N, typename T &gt; </td></tr>
+<tr class="memitem:a864237db0d07c2d91f18777c983db045"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacett.html#a864237db0d07c2d91f18777c983db045">is_std_array_of_size_t</a> = typename <a class="el" href="structtt_1_1is__std__array__of__size.html">is_std_array_of_size</a>&lt; N, T &gt;::type</td></tr>
+<tr class="separator:a864237db0d07c2d91f18777c983db045"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d11c5e4339a68caace0037060457e3b"><td class="memTemplParams" colspan="2">template&lt;size_t N, typename T &gt; </td></tr>
+<tr class="memitem:a6d11c5e4339a68caace0037060457e3b"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacett.html#a6d11c5e4339a68caace0037060457e3b">is_std_array_of_size_v</a> = <a class="el" href="structtt_1_1is__std__array__of__size.html">is_std_array_of_size</a>&lt;N, T&gt;::value</td></tr>
+<tr class="separator:a6d11c5e4339a68caace0037060457e3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d7b9a1c3278c0d5e27cbea976ddba5e"><td class="memTemplParams" colspan="2">template&lt;typename S , typename T &gt; </td></tr>
+<tr class="memitem:a0d7b9a1c3278c0d5e27cbea976ddba5e"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacett.html#a0d7b9a1c3278c0d5e27cbea976ddba5e">is_streamable_t</a> = typename <a class="el" href="structtt_1_1is__streamable.html">is_streamable</a>&lt; S, T &gt;::type</td></tr>
+<tr class="separator:a0d7b9a1c3278c0d5e27cbea976ddba5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adea3691b212921c1ff6fd8be8a374ca3"><td class="memTemplParams" colspan="2">template&lt;typename S , typename T &gt; </td></tr>
+<tr class="memitem:adea3691b212921c1ff6fd8be8a374ca3"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacett.html#adea3691b212921c1ff6fd8be8a374ca3">is_streamable_v</a> = <a class="el" href="structtt_1_1is__streamable.html">is_streamable</a>&lt;S, T&gt;::value</td></tr>
+<tr class="separator:adea3691b212921c1ff6fd8be8a374ca3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A collection of useful type traits </p>
+</div><h2 class="groupheader">Typedef Documentation</h2>
+<a id="a16a8b41066b73e3c0de4eeb0c5e87317"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a16a8b41066b73e3c0de4eeb0c5e87317">&#9670;&nbsp;</a></span>has_equivalence_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespacett.html#a16a8b41066b73e3c0de4eeb0c5e87317">tt::has_equivalence_t</a> = typedef typename <a class="el" href="structtt_1_1has__equivalence.html">has_equivalence</a>&lt;T&gt;::type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structtt_1_1has__equivalence.html" title="Check if type T has operator== defined.">has_equivalence</a> </dd></dl>
+
+</div>
+</div>
+<a id="ac28bf0e1a72eb99f6e0f4025435d13cd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac28bf0e1a72eb99f6e0f4025435d13cd">&#9670;&nbsp;</a></span>has_inequivalence_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespacett.html#ac28bf0e1a72eb99f6e0f4025435d13cd">tt::has_inequivalence_t</a> = typedef typename <a class="el" href="structtt_1_1has__inequivalence.html">has_inequivalence</a>&lt;T&gt;::type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structtt_1_1has__inequivalence.html" title="Check if type T has operator!= defined.">has_inequivalence</a> </dd></dl>
+
+</div>
+</div>
+<a id="a9515d6a1524e46364e37baa1903a0cce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9515d6a1524e46364e37baa1903a0cce">&#9670;&nbsp;</a></span>is_a_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;template&lt; typename... &gt; class U, typename... Args&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespacett.html#a9515d6a1524e46364e37baa1903a0cce">tt::is_a_t</a> = typedef typename <a class="el" href="structtt_1_1is__a.html">is_a</a>&lt;U, Args...&gt;::type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structtt_1_1is__a.html" title="Check if type T is a template specialization of U">is_a</a> </dd></dl>
+
+</div>
+</div>
+<a id="a6e7f5dce91a40ecabd6ee0b0b3f1444e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6e7f5dce91a40ecabd6ee0b0b3f1444e">&#9670;&nbsp;</a></span>is_callable_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename... Args&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespacett.html#a6e7f5dce91a40ecabd6ee0b0b3f1444e">tt::is_callable_t</a> = typedef typename <a class="el" href="classtt_1_1is__callable.html">is_callable</a>&lt;T, Args...&gt;::type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classtt_1_1is__callable.html" title="Check if a type T is callable, i.e. T(Args...) is evaluable.">is_callable</a> </dd></dl>
+
+</div>
+</div>
+<a id="a50dbdc0936a2bb38449082f40abfca3d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a50dbdc0936a2bb38449082f40abfca3d">&#9670;&nbsp;</a></span>is_iterable_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespacett.html#a50dbdc0936a2bb38449082f40abfca3d">tt::is_iterable_t</a> = typedef typename <a class="el" href="structtt_1_1is__iterable.html">is_iterable</a>&lt;T&gt;::type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structtt_1_1is__iterable.html" title="Check if type T has a begin() and end() function.">is_iterable</a> </dd></dl>
+
+</div>
+</div>
+<a id="a79f828dbcc39b9b5e0c8746b3b853d96"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a79f828dbcc39b9b5e0c8746b3b853d96">&#9670;&nbsp;</a></span>is_maplike_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespacett.html#a79f828dbcc39b9b5e0c8746b3b853d96">tt::is_maplike_t</a> = typedef typename <a class="el" href="structtt_1_1is__maplike.html">is_maplike</a>&lt;T&gt;::type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structtt_1_1is__maplike.html" title="Check if type T is like a std::map or std::unordored_map.">is_maplike</a> </dd></dl>
+
+</div>
+</div>
+<a id="a864237db0d07c2d91f18777c983db045"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a864237db0d07c2d91f18777c983db045">&#9670;&nbsp;</a></span>is_std_array_of_size_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespacett.html#a864237db0d07c2d91f18777c983db045">tt::is_std_array_of_size_t</a> = typedef typename <a class="el" href="structtt_1_1is__std__array__of__size.html">is_std_array_of_size</a>&lt;N, T&gt;::type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structtt_1_1is__std__array__of__size.html" title="Check if type T is a std::array of a given size.">is_std_array_of_size</a> </dd></dl>
+
+</div>
+</div>
+<a id="acb7aa0a733ac7b37f6d794809a594a2f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acb7aa0a733ac7b37f6d794809a594a2f">&#9670;&nbsp;</a></span>is_std_array_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespacett.html#acb7aa0a733ac7b37f6d794809a594a2f">tt::is_std_array_t</a> = typedef typename <a class="el" href="structtt_1_1is__std__array.html">is_std_array</a>&lt;T&gt;::type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structtt_1_1is__std__array.html" title="Check if type T is a std::array.">is_std_array</a> </dd></dl>
+
+</div>
+</div>
+<a id="a0d7b9a1c3278c0d5e27cbea976ddba5e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d7b9a1c3278c0d5e27cbea976ddba5e">&#9670;&nbsp;</a></span>is_streamable_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename S , typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespacett.html#a0d7b9a1c3278c0d5e27cbea976ddba5e">tt::is_streamable_t</a> = typedef typename <a class="el" href="structtt_1_1is__streamable.html">is_streamable</a>&lt;S, T&gt;::type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structtt_1_1is__streamable.html" title="Check if type T has operator&lt;&lt;(S, T) defined.">is_streamable</a> </dd></dl>
+
+</div>
+</div>
+<a id="a88451218fc2b89d76da1260db9b0cb7b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a88451218fc2b89d76da1260db9b0cb7b">&#9670;&nbsp;</a></span>is_tensor_index_type_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespacett.html#a88451218fc2b89d76da1260db9b0cb7b">tt::is_tensor_index_type_t</a> = typedef typename <a class="el" href="structtt_1_1is__tensor__index__type.html">is_tensor_index_type</a>&lt;T&gt;::type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structtt_1_1is__tensor__index__type.html">is_tensor_index_type</a> </dd></dl>
+
+</div>
+</div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a id="a748064ad3db0e62508620e3b3913d4c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a748064ad3db0e62508620e3b3913d4c1">&#9670;&nbsp;</a></span>has_equivalence_v</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool tt::has_equivalence_v = <a class="el" href="structtt_1_1has__equivalence.html">has_equivalence</a>&lt;T&gt;::value</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structtt_1_1has__equivalence.html" title="Check if type T has operator== defined.">has_equivalence</a> </dd></dl>
+
+</div>
+</div>
+<a id="a542d7c9729521f7c23cc97f913a19dcb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a542d7c9729521f7c23cc97f913a19dcb">&#9670;&nbsp;</a></span>has_inequivalence_v</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool tt::has_inequivalence_v = <a class="el" href="structtt_1_1has__inequivalence.html">has_inequivalence</a>&lt;T&gt;::value</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structtt_1_1has__inequivalence.html" title="Check if type T has operator!= defined.">has_inequivalence</a> </dd></dl>
+
+</div>
+</div>
+<a id="a49687f7a9a5e01a848db388e0f2e398f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a49687f7a9a5e01a848db388e0f2e398f">&#9670;&nbsp;</a></span>is_a_v</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;template&lt; typename... &gt; class U, typename... Args&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool tt::is_a_v = <a class="el" href="structtt_1_1is__a.html">is_a</a>&lt;U, Args...&gt;::value</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structtt_1_1is__a.html" title="Check if type T is a template specialization of U">is_a</a> </dd></dl>
+
+</div>
+</div>
+<a id="afe70e3aeabdcf88496e0d8a2c2026913"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe70e3aeabdcf88496e0d8a2c2026913">&#9670;&nbsp;</a></span>is_callable_v</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename... Args&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool tt::is_callable_v = <a class="el" href="classtt_1_1is__callable.html">is_callable</a>&lt;T, Args...&gt;::value</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classtt_1_1is__callable.html" title="Check if a type T is callable, i.e. T(Args...) is evaluable.">is_callable</a> </dd></dl>
+
+</div>
+</div>
+<a id="abe1a534eadde5266362bd7ee1663dbf3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abe1a534eadde5266362bd7ee1663dbf3">&#9670;&nbsp;</a></span>is_complex_of_fundamental_v</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool tt::is_complex_of_fundamental_v</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">    is_complex_of_fundamental&lt;T&gt;::value</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a1199b80c0851bbf8b025c562054397ec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1199b80c0851bbf8b025c562054397ec">&#9670;&nbsp;</a></span>is_integer_v</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool tt::is_integer_v = <a class="el" href="structtt_1_1is__integer.html">is_integer</a>&lt;T&gt;::value</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structtt_1_1is__integer.html" title="Check if I is an integer type (non-bool, non-character), unlike std::is_integral.">is_integer</a> </dd></dl>
+
+</div>
+</div>
+<a id="a3e2f1dd5f4019eba2f7073205a0a078b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3e2f1dd5f4019eba2f7073205a0a078b">&#9670;&nbsp;</a></span>is_iterable_v</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool tt::is_iterable_v = <a class="el" href="structtt_1_1is__iterable.html">is_iterable</a>&lt;T&gt;::value</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structtt_1_1is__iterable.html" title="Check if type T has a begin() and end() function.">is_iterable</a> </dd></dl>
+
+</div>
+</div>
+<a id="a5eef4319422df2f03b2723891121c3be"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5eef4319422df2f03b2723891121c3be">&#9670;&nbsp;</a></span>is_maplike_v</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool tt::is_maplike_v = <a class="el" href="structtt_1_1is__maplike.html">is_maplike</a>&lt;T&gt;::value</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structtt_1_1is__maplike.html" title="Check if type T is like a std::map or std::unordored_map.">is_maplike</a> </dd></dl>
+
+</div>
+</div>
+<a id="a6d11c5e4339a68caace0037060457e3b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6d11c5e4339a68caace0037060457e3b">&#9670;&nbsp;</a></span>is_std_array_of_size_v</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool tt::is_std_array_of_size_v = <a class="el" href="structtt_1_1is__std__array__of__size.html">is_std_array_of_size</a>&lt;N, T&gt;::value</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structtt_1_1is__std__array__of__size.html" title="Check if type T is a std::array of a given size.">is_std_array_of_size</a> </dd></dl>
+
+</div>
+</div>
+<a id="af1fc0d9f8de5bbf102f7d70b5575639c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af1fc0d9f8de5bbf102f7d70b5575639c">&#9670;&nbsp;</a></span>is_std_array_v</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool tt::is_std_array_v = <a class="el" href="structtt_1_1is__std__array.html">is_std_array</a>&lt;T&gt;::value</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structtt_1_1is__std__array.html" title="Check if type T is a std::array.">is_std_array</a> </dd></dl>
+
+</div>
+</div>
+<a id="adea3691b212921c1ff6fd8be8a374ca3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adea3691b212921c1ff6fd8be8a374ca3">&#9670;&nbsp;</a></span>is_streamable_v</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename S , typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool tt::is_streamable_v = <a class="el" href="structtt_1_1is__streamable.html">is_streamable</a>&lt;S, T&gt;::value</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structtt_1_1is__streamable.html" title="Check if type T has operator&lt;&lt;(S, T) defined.">is_streamable</a> </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

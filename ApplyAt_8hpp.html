@@ -1,0 +1,584 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Elliptic/Utilities/ApplyAt.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_102e4bda8d511a2139aab1e5fe5a004e.html">Elliptic</a></li><li class="navelem"><a class="el" href="dir_5beb8bff16386013088de2292b3ddd68.html">Utilities</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a>  </div>
+  <div class="headertitle">
+<div class="title">ApplyAt.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/tuple.html">tuple</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</code><br />
+<code>#include &quot;<a class="el" href="DataBox_8hpp_source.html">DataStructures/DataBox/DataBox.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="ForceInline_8hpp_source.html">Utilities/ForceInline.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="Gsl_8hpp_source.html">Utilities/Gsl.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="TMPL_8hpp_source.html">Utilities/TMPL.hpp</a>&quot;</code><br />
+<code>#include &quot;Utilities/TaggedTuple.hpp&quot;</code><br />
+<code>#include &quot;<a class="el" href="TupleSlice_8hpp_source.html">Utilities/TupleSlice.hpp</a>&quot;</code><br />
+</div>
+<p><a href="ApplyAt_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceelliptic"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceelliptic.html">elliptic</a></td></tr>
+<tr class="memdesc:namespaceelliptic"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functionality related to solving elliptic partial differential equations. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a0b4a605daee11657c543f347cea3c5b2"><td class="memTemplParams" colspan="2">template&lt;typename ArgumentTags , typename PassthroughArgumentTags , typename... MapKeys, typename F , typename TaggedContainer , typename... Args&gt; </td></tr>
+<tr class="memitem:a0b4a605daee11657c543f347cea3c5b2"><td class="memTemplItemLeft" align="right" valign="top">decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="ApplyAt_8hpp.html#a0b4a605daee11657c543f347cea3c5b2">elliptic::util::apply_at</a> (F &amp;&amp;f, const TaggedContainer &amp;box, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; MapKeys... &gt; &amp;map_keys, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:a0b4a605daee11657c543f347cea3c5b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the invokable <code>f</code> with arguments from maps in the DataBox.  <a href="ApplyAt_8hpp.html#a0b4a605daee11657c543f347cea3c5b2">More...</a><br /></td></tr>
+<tr class="separator:a0b4a605daee11657c543f347cea3c5b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a728d36b9e776e6c3c6bfe256acf243e9"><td class="memTemplParams" colspan="2">template&lt;typename ArgumentTags , typename PassthroughArgumentTags , typename MapKey , typename F , typename TaggedContainer , typename... Args&gt; </td></tr>
+<tr class="memitem:a728d36b9e776e6c3c6bfe256acf243e9"><td class="memTemplItemLeft" align="right" valign="top">decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="ApplyAt_8hpp.html#a728d36b9e776e6c3c6bfe256acf243e9">elliptic::util::apply_at</a> (F &amp;&amp;f, const TaggedContainer &amp;box, const MapKey &amp;map_key, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:a728d36b9e776e6c3c6bfe256acf243e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the invokable <code>f</code> with arguments from maps in the DataBox.  <a href="ApplyAt_8hpp.html#a728d36b9e776e6c3c6bfe256acf243e9">More...</a><br /></td></tr>
+<tr class="separator:a728d36b9e776e6c3c6bfe256acf243e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ad6d82541218c8dd95a27b65845b7672a"><td class="memTemplParams" colspan="2">template&lt;typename MutateTags , typename ArgumentTags , typename PassthroughTags , typename F , typename TaggedContainer , typename... MapKeys, typename... Args&gt; </td></tr>
+<tr class="memitem:ad6d82541218c8dd95a27b65845b7672a"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="ApplyAt_8hpp.html#ad6d82541218c8dd95a27b65845b7672a">elliptic::util::mutate_apply_at</a> (F &amp;&amp;f, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; TaggedContainer * &gt; box, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; MapKeys... &gt; &amp;map_keys, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:ad6d82541218c8dd95a27b65845b7672a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the invokable <code>f</code> to mutate items in maps in the DataBox.  <a href="ApplyAt_8hpp.html#ad6d82541218c8dd95a27b65845b7672a">More...</a><br /></td></tr>
+<tr class="separator:ad6d82541218c8dd95a27b65845b7672a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90e943161abc159626b4e2d7dbfbc44a"><td class="memTemplParams" colspan="2">template&lt;typename MutateTags , typename ArgumentTags , typename PassthroughTags , typename F , typename TaggedContainer , typename MapKey , typename... Args&gt; </td></tr>
+<tr class="memitem:a90e943161abc159626b4e2d7dbfbc44a"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="ApplyAt_8hpp.html#a90e943161abc159626b4e2d7dbfbc44a">elliptic::util::mutate_apply_at</a> (F &amp;&amp;f, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; TaggedContainer * &gt; box, const MapKey &amp;map_key, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:a90e943161abc159626b4e2d7dbfbc44a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the invokable <code>f</code> to mutate items in maps in the DataBox.  <a href="ApplyAt_8hpp.html#a90e943161abc159626b4e2d7dbfbc44a">More...</a><br /></td></tr>
+<tr class="separator:a90e943161abc159626b4e2d7dbfbc44a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a0b4a605daee11657c543f347cea3c5b2"><td class="memTemplParams" colspan="2">template&lt;typename ArgumentTags , typename PassthroughArgumentTags , typename... MapKeys, typename F , typename TaggedContainer , typename... Args&gt; </td></tr>
+<tr class="memitem:a0b4a605daee11657c543f347cea3c5b2"><td class="memTemplItemLeft" align="right" valign="top">decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="ApplyAt_8hpp.html#a0b4a605daee11657c543f347cea3c5b2">elliptic::util::apply_at</a> (F &amp;&amp;f, const TaggedContainer &amp;box, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; MapKeys... &gt; &amp;map_keys, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:a0b4a605daee11657c543f347cea3c5b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the invokable <code>f</code> with arguments from maps in the DataBox.  <a href="ApplyAt_8hpp.html#a0b4a605daee11657c543f347cea3c5b2">More...</a><br /></td></tr>
+<tr class="separator:a0b4a605daee11657c543f347cea3c5b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a728d36b9e776e6c3c6bfe256acf243e9"><td class="memTemplParams" colspan="2">template&lt;typename ArgumentTags , typename PassthroughArgumentTags , typename MapKey , typename F , typename TaggedContainer , typename... Args&gt; </td></tr>
+<tr class="memitem:a728d36b9e776e6c3c6bfe256acf243e9"><td class="memTemplItemLeft" align="right" valign="top">decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="ApplyAt_8hpp.html#a728d36b9e776e6c3c6bfe256acf243e9">elliptic::util::apply_at</a> (F &amp;&amp;f, const TaggedContainer &amp;box, const MapKey &amp;map_key, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:a728d36b9e776e6c3c6bfe256acf243e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the invokable <code>f</code> with arguments from maps in the DataBox.  <a href="ApplyAt_8hpp.html#a728d36b9e776e6c3c6bfe256acf243e9">More...</a><br /></td></tr>
+<tr class="separator:a728d36b9e776e6c3c6bfe256acf243e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ad6d82541218c8dd95a27b65845b7672a"><td class="memTemplParams" colspan="2">template&lt;typename MutateTags , typename ArgumentTags , typename PassthroughTags , typename F , typename TaggedContainer , typename... MapKeys, typename... Args&gt; </td></tr>
+<tr class="memitem:ad6d82541218c8dd95a27b65845b7672a"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="ApplyAt_8hpp.html#ad6d82541218c8dd95a27b65845b7672a">elliptic::util::mutate_apply_at</a> (F &amp;&amp;f, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; TaggedContainer * &gt; box, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; MapKeys... &gt; &amp;map_keys, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:ad6d82541218c8dd95a27b65845b7672a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the invokable <code>f</code> to mutate items in maps in the DataBox.  <a href="ApplyAt_8hpp.html#ad6d82541218c8dd95a27b65845b7672a">More...</a><br /></td></tr>
+<tr class="separator:ad6d82541218c8dd95a27b65845b7672a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90e943161abc159626b4e2d7dbfbc44a"><td class="memTemplParams" colspan="2">template&lt;typename MutateTags , typename ArgumentTags , typename PassthroughTags , typename F , typename TaggedContainer , typename MapKey , typename... Args&gt; </td></tr>
+<tr class="memitem:a90e943161abc159626b4e2d7dbfbc44a"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="ApplyAt_8hpp.html#a90e943161abc159626b4e2d7dbfbc44a">elliptic::util::mutate_apply_at</a> (F &amp;&amp;f, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; TaggedContainer * &gt; box, const MapKey &amp;map_key, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:a90e943161abc159626b4e2d7dbfbc44a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the invokable <code>f</code> to mutate items in maps in the DataBox.  <a href="ApplyAt_8hpp.html#a90e943161abc159626b4e2d7dbfbc44a">More...</a><br /></td></tr>
+<tr class="separator:a90e943161abc159626b4e2d7dbfbc44a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Utilities to retrieve values from maps in tagged containers </p>
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="a728d36b9e776e6c3c6bfe256acf243e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a728d36b9e776e6c3c6bfe256acf243e9">&#9670;&nbsp;</a></span>apply_at() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename ArgumentTags , typename PassthroughArgumentTags , typename MapKey , typename F , typename TaggedContainer , typename... Args&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">decltype(auto) elliptic::util::apply_at </td>
+          <td>(</td>
+          <td class="paramtype">F &amp;&amp;&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const TaggedContainer &amp;&#160;</td>
+          <td class="paramname"><em>box</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const MapKey &amp;&#160;</td>
+          <td class="paramname"><em>map_key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Args &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Apply the invokable <code>f</code> with arguments from maps in the DataBox. </p>
+<p>Retrieves the <code>ArgumentTags</code> from the DataBox, evaluates them at the <code>map_key(s)</code> (by calling their <code>at</code> member function for every map key in turn) and calls the invokable <code>f</code> with the unmapped arguments. The tags in <code>PassthroughArgumentTags</code> are passed directly to <code>f</code> without unmapping them.</p>
+<p>For example, a DataBox may have these tags of which two are maps:</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>MapTag : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map&lt;int, std::string&gt;</a>;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">struct </span>NonMapTag : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = int;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">struct </span>NestedMapTag : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map&lt;int, std::unordered_map&lt;std::string, bool&gt;</a>&gt;;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">struct </span>DirectionMapTag : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = <a class="code" href="classDirectionMap.html">DirectionMap&lt;1, bool&gt;</a>;</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> You can use <code>apply_at</code> to evaluate a function at a particular key for these maps:</p>
+<div class="fragment"><div class="line">    apply_at&lt;tmpl::list&lt;MapTag, NonMapTag, NestedMapTag&gt;,</div>
+<div class="line">             tmpl::list&lt;NonMapTag&gt;&gt;(</div>
+<div class="line">        [](<span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&amp; arg1, <span class="keyword">const</span> <span class="keywordtype">int</span> arg0,</div>
+<div class="line">           <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map&lt;std::string, bool&gt;</a>&amp; arg2) {</div>
+<div class="line">          CHECK(arg0 == 1);</div>
+<div class="line">          CHECK(arg1 == <span class="stringliteral">&quot;A&quot;</span>);</div>
+<div class="line">          CHECK(arg2.at(<span class="stringliteral">&quot;key&quot;</span>) == <span class="keyword">true</span>);</div>
+<div class="line">        },</div>
+<div class="line">        box, 0);</div>
+</div><!-- fragment --> <dl class="section see"><dt>See also</dt><dd><a class="el" href="group__DataBoxGroup.html#ga1f0c81cb84017884c1099f2523f3d697" title="Apply the invokable f with argument Tags TagsList from DataBox box">db::apply</a> </dd></dl>
+
+</div>
+</div>
+<a id="a0b4a605daee11657c543f347cea3c5b2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b4a605daee11657c543f347cea3c5b2">&#9670;&nbsp;</a></span>apply_at() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename ArgumentTags , typename PassthroughArgumentTags , typename... MapKeys, typename F , typename TaggedContainer , typename... Args&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">decltype(auto) elliptic::util::apply_at </td>
+          <td>(</td>
+          <td class="paramtype">F &amp;&amp;&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const TaggedContainer &amp;&#160;</td>
+          <td class="paramname"><em>box</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; MapKeys... &gt; &amp;&#160;</td>
+          <td class="paramname"><em>map_keys</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Args &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Apply the invokable <code>f</code> with arguments from maps in the DataBox. </p>
+<p>Retrieves the <code>ArgumentTags</code> from the DataBox, evaluates them at the <code>map_key(s)</code> (by calling their <code>at</code> member function for every map key in turn) and calls the invokable <code>f</code> with the unmapped arguments. The tags in <code>PassthroughArgumentTags</code> are passed directly to <code>f</code> without unmapping them.</p>
+<p>For example, a DataBox may have these tags of which two are maps:</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>MapTag : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map&lt;int, std::string&gt;</a>;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">struct </span>NonMapTag : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = int;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">struct </span>NestedMapTag : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map&lt;int, std::unordered_map&lt;std::string, bool&gt;</a>&gt;;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">struct </span>DirectionMapTag : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = <a class="code" href="classDirectionMap.html">DirectionMap&lt;1, bool&gt;</a>;</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> You can use <code>apply_at</code> to evaluate a function at a particular key for these maps:</p>
+<div class="fragment"><div class="line">    apply_at&lt;tmpl::list&lt;MapTag, NonMapTag, NestedMapTag&gt;,</div>
+<div class="line">             tmpl::list&lt;NonMapTag&gt;&gt;(</div>
+<div class="line">        [](<span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&amp; arg1, <span class="keyword">const</span> <span class="keywordtype">int</span> arg0,</div>
+<div class="line">           <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map&lt;std::string, bool&gt;</a>&amp; arg2) {</div>
+<div class="line">          CHECK(arg0 == 1);</div>
+<div class="line">          CHECK(arg1 == <span class="stringliteral">&quot;A&quot;</span>);</div>
+<div class="line">          CHECK(arg2.at(<span class="stringliteral">&quot;key&quot;</span>) == <span class="keyword">true</span>);</div>
+<div class="line">        },</div>
+<div class="line">        box, 0);</div>
+</div><!-- fragment --> <dl class="section see"><dt>See also</dt><dd><a class="el" href="group__DataBoxGroup.html#ga1f0c81cb84017884c1099f2523f3d697" title="Apply the invokable f with argument Tags TagsList from DataBox box">db::apply</a> </dd></dl>
+
+</div>
+</div>
+<a id="a90e943161abc159626b4e2d7dbfbc44a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a90e943161abc159626b4e2d7dbfbc44a">&#9670;&nbsp;</a></span>mutate_apply_at() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename MutateTags , typename ArgumentTags , typename PassthroughTags , typename F , typename TaggedContainer , typename MapKey , typename... Args&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void elliptic::util::mutate_apply_at </td>
+          <td>(</td>
+          <td class="paramtype">F &amp;&amp;&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; TaggedContainer * &gt;&#160;</td>
+          <td class="paramname"><em>box</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const MapKey &amp;&#160;</td>
+          <td class="paramname"><em>map_key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Args &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Apply the invokable <code>f</code> to mutate items in maps in the DataBox. </p>
+<p>Retrieves the <code>MutateTags</code> and <code>ArgumentTags</code> from the DataBox, evaluates them at the <code>map_key(s)</code> (by calling their <code>at</code> member function for every map key in turn) and calls the invokable <code>f</code> with the unmapped arguments. The tags in <code>PassthroughTags</code> are passed directly to <code>f</code> without unmapping them.</p>
+<p>For example, a DataBox may have these tags of which two are maps:</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>MapTag : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map&lt;int, std::string&gt;</a>;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">struct </span>NonMapTag : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = int;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">struct </span>NestedMapTag : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map&lt;int, std::unordered_map&lt;std::string, bool&gt;</a>&gt;;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">struct </span>DirectionMapTag : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = <a class="code" href="classDirectionMap.html">DirectionMap&lt;1, bool&gt;</a>;</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> You can use <code>mutate_apply_at</code> to mutate items at a particular key for these maps:</p>
+<div class="fragment"><div class="line">    mutate_apply_at&lt;tmpl::list&lt;MapTag&gt;, tmpl::list&lt;NonMapTag, NestedMapTag&gt;,</div>
+<div class="line">                    tmpl::list&lt;NonMapTag&gt;&gt;(</div>
+<div class="line">        [](<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;std::string*&gt;</a> mutate_arg, <span class="keyword">const</span> <span class="keywordtype">int</span> arg0,</div>
+<div class="line">           <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map&lt;std::string, bool&gt;</a>&amp; arg2) {</div>
+<div class="line">          *mutate_arg = <span class="stringliteral">&quot;B&quot;</span>;</div>
+<div class="line">          CHECK(arg0 == 1);</div>
+<div class="line">          CHECK(arg2.at(<span class="stringliteral">&quot;key&quot;</span>) == <span class="keyword">true</span>);</div>
+<div class="line">        },</div>
+<div class="line">        <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;box), 0);</div>
+</div><!-- fragment --> <dl class="section see"><dt>See also</dt><dd><a class="el" href="group__DataBoxGroup.html#ga257e835a1b216b347b3e3eb429f97984" title="Apply the invokable f mutating items MutateTags and taking as additional arguments ArgumentTags and a...">db::mutate_apply</a> </dd></dl>
+
+</div>
+</div>
+<a id="ad6d82541218c8dd95a27b65845b7672a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad6d82541218c8dd95a27b65845b7672a">&#9670;&nbsp;</a></span>mutate_apply_at() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename MutateTags , typename ArgumentTags , typename PassthroughTags , typename F , typename TaggedContainer , typename... MapKeys, typename... Args&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void elliptic::util::mutate_apply_at </td>
+          <td>(</td>
+          <td class="paramtype">F &amp;&amp;&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; TaggedContainer * &gt;&#160;</td>
+          <td class="paramname"><em>box</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; MapKeys... &gt; &amp;&#160;</td>
+          <td class="paramname"><em>map_keys</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Args &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Apply the invokable <code>f</code> to mutate items in maps in the DataBox. </p>
+<p>Retrieves the <code>MutateTags</code> and <code>ArgumentTags</code> from the DataBox, evaluates them at the <code>map_key(s)</code> (by calling their <code>at</code> member function for every map key in turn) and calls the invokable <code>f</code> with the unmapped arguments. The tags in <code>PassthroughTags</code> are passed directly to <code>f</code> without unmapping them.</p>
+<p>For example, a DataBox may have these tags of which two are maps:</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>MapTag : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map&lt;int, std::string&gt;</a>;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">struct </span>NonMapTag : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = int;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">struct </span>NestedMapTag : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map&lt;int, std::unordered_map&lt;std::string, bool&gt;</a>&gt;;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">struct </span>DirectionMapTag : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = <a class="code" href="classDirectionMap.html">DirectionMap&lt;1, bool&gt;</a>;</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> You can use <code>mutate_apply_at</code> to mutate items at a particular key for these maps:</p>
+<div class="fragment"><div class="line">    mutate_apply_at&lt;tmpl::list&lt;MapTag&gt;, tmpl::list&lt;NonMapTag, NestedMapTag&gt;,</div>
+<div class="line">                    tmpl::list&lt;NonMapTag&gt;&gt;(</div>
+<div class="line">        [](<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;std::string*&gt;</a> mutate_arg, <span class="keyword">const</span> <span class="keywordtype">int</span> arg0,</div>
+<div class="line">           <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map&lt;std::string, bool&gt;</a>&amp; arg2) {</div>
+<div class="line">          *mutate_arg = <span class="stringliteral">&quot;B&quot;</span>;</div>
+<div class="line">          CHECK(arg0 == 1);</div>
+<div class="line">          CHECK(arg2.at(<span class="stringliteral">&quot;key&quot;</span>) == <span class="keyword">true</span>);</div>
+<div class="line">        },</div>
+<div class="line">        <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;box), 0);</div>
+</div><!-- fragment --> <dl class="section see"><dt>See also</dt><dd><a class="el" href="group__DataBoxGroup.html#ga257e835a1b216b347b3e3eb429f97984" title="Apply the invokable f mutating items MutateTags and taking as additional arguments ArgumentTags and a...">db::mutate_apply</a> </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
+<div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
+<div class="ttc" id="astructdb_1_1SimpleTag_html"><div class="ttname"><a href="structdb_1_1SimpleTag.html">db::SimpleTag</a></div><div class="ttdoc">Mark a struct as a simple tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:36</div></div>
+<div class="ttc" id="amap_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/map.html">std::map</a></div></div>
+<div class="ttc" id="aclassDirectionMap_html"><div class="ttname"><a href="classDirectionMap.html">DirectionMap</a></div><div class="ttdef"><b>Definition:</b> DirectionMap.hpp:15</div></div>
+<div class="ttc" id="aGsl_8hpp_html_a649c6961f9146205c203e45d58fd0c4c"><div class="ttname"><a href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a></div><div class="ttdeci">gsl::not_null&lt; T * &gt; make_not_null(T *ptr) noexcept</div><div class="ttdoc">Construct a not_null from a pointer. Often this will be done as an implicit conversion,...</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:880</div></div>
+<div class="ttc" id="aunordered_map_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a></div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,542 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: evolution::dg::Actions::ComputeTimeDerivative&lt; Metavariables &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceevolution.html">evolution</a></li><li class="navelem"><a class="el" href="namespaceevolution_1_1dg.html">dg</a></li><li class="navelem"><a class="el" href="namespaceevolution_1_1dg_1_1Actions.html">Actions</a></li><li class="navelem"><a class="el" href="structevolution_1_1dg_1_1Actions_1_1ComputeTimeDerivative.html">ComputeTimeDerivative</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="structevolution_1_1dg_1_1Actions_1_1ComputeTimeDerivative-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">evolution::dg::Actions::ComputeTimeDerivative&lt; Metavariables &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Computes the time derivative for a DG time step.  
+ <a href="structevolution_1_1dg_1_1Actions_1_1ComputeTimeDerivative.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DiscontinuousGalerkin_2Actions_2ComputeTimeDerivative_8hpp_source.html">ComputeTimeDerivative.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a9bc4969dbd2416e239d3e319d5d04aa9"><td class="memItemLeft" align="right" valign="top"><a id="a9bc4969dbd2416e239d3e319d5d04aa9"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>inbox_tags</b> = tmpl::list&lt; <a class="el" href="structevolution_1_1dg_1_1Tags_1_1BoundaryCorrectionAndGhostCellsInbox.html">evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox</a>&lt; Metavariables::volume_dim &gt; &gt;</td></tr>
+<tr class="separator:a9bc4969dbd2416e239d3e319d5d04aa9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18c97cdbdb5f3ac87dd6c006d3c4073a"><td class="memItemLeft" align="right" valign="top"><a id="a18c97cdbdb5f3ac87dd6c006d3c4073a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>const_global_cache_tags</b> = tmpl::append&lt; tmpl::list&lt; ::<a class="el" href="structdg_1_1Tags_1_1Formulation.html">dg::Tags::Formulation</a>, <a class="el" href="structevolution_1_1Tags_1_1BoundaryCorrection.html">evolution::Tags::BoundaryCorrection</a>&lt; typename Metavariables::system &gt; &gt;&gt;</td></tr>
+<tr class="separator:a18c97cdbdb5f3ac87dd6c006d3c4073a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a1d31753b447b0b589dad441fbb625be7"><td class="memTemplParams" colspan="2"><a id="a1d31753b447b0b589dad441fbb625be7"></a>
+template&lt;typename ParallelComponent , typename DbTagsList &gt; </td></tr>
+<tr class="memitem:a1d31753b447b0b589dad441fbb625be7"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>send_data_for_fluxes</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt; * &gt; cache, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; db::DataBox&lt; DbTagsList &gt; * &gt; box) noexcept</td></tr>
+<tr class="separator:a1d31753b447b0b589dad441fbb625be7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:abb10daf5fd6fa4a2f2057b62534e8c52"><td class="memTemplParams" colspan="2"><a id="abb10daf5fd6fa4a2f2057b62534e8c52"></a>
+template&lt;typename DbTagsList , typename... InboxTags, typename ArrayIndex , typename ActionList , typename ParallelComponent &gt; </td></tr>
+<tr class="memitem:abb10daf5fd6fa4a2f2057b62534e8c52"><td class="memTemplItemLeft" align="right" valign="top">static <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; db::DataBox&lt; DbTagsList &gt; &amp;&amp; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>apply</b> (db::DataBox&lt; DbTagsList &gt; &amp;box, <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; InboxTags... &gt; &amp;, <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt; &amp;cache, const ArrayIndex &amp;, ActionList, const ParallelComponent *) noexcept</td></tr>
+<tr class="separator:abb10daf5fd6fa4a2f2057b62534e8c52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename Metavariables&gt;<br />
+struct evolution::dg::Actions::ComputeTimeDerivative&lt; Metavariables &gt;</h3>
+
+<p>Computes the time derivative for a DG time step. </p>
+<p>Computes the volume fluxes, the divergence of the fluxes and all additional interior contributions to the time derivatives (both nonconservative products and source terms). The internal mortar data is also computed.</p>
+<p>The general first-order hyperbolic evolution equation solved for conservative systems is:</p>
+<p class="formulaDsp">
+\begin{align*} \frac{\partial u_\alpha}{\partial \hat{t}} + \partial_{i} \left(F^i_\alpha - v^i_g u_\alpha\right) = S_\alpha-u_\alpha\partial_i v^i_g, \end{align*}
+</p>
+<p>where \(F^i_{\alpha}\) are the fluxes when the mesh isn't moving, \(v^i_g\) is the velocity of the mesh, \(u_{\alpha}\) are the evolved variables, \(S_{\alpha}\) are the source terms, and \(\hat{t}\) is the time in the logical frame. For evolution equations that do not have any fluxes and only nonconservative products we evolve:</p>
+<p class="formulaDsp">
+\begin{align*} \frac{\partial u_\alpha}{\partial \hat{t}} +\left(B^i_{\alpha\beta}-v^i_g \delta_{\alpha\beta} \right)\partial_{i}u_\beta = S_\alpha. \end{align*}
+</p>
+<p>Finally, for equations with both conservative terms and nonconservative products we use:</p>
+<p class="formulaDsp">
+\begin{align*} \frac{\partial u_\alpha}{\partial \hat{t}} + \partial_{i} \left(F^i_\alpha - v^i_g u_\alpha\right) +B^i_{\alpha\beta}\partial_{i}u_\beta = S_\alpha-u_\alpha\partial_i v^i_g, \end{align*}
+</p>
+<p>where \(B^i_{\alpha\beta}\) is the matrix for the nonconservative products.</p>
+<h3><a class="anchor" id="autotoc_md80"></a>
+Volume Terms</h3>
+<p>The mesh velocity is added to the flux automatically if the mesh is moving. That is,</p>
+<p class="formulaDsp">
+\begin{align*} F^i_{\alpha}\to F^i_{\alpha}-v^i_{g} u_{\alpha} \end{align*}
+</p>
+<p>The source terms are also altered automatically by adding:</p>
+<p class="formulaDsp">
+\begin{align*} -u_\alpha \partial_i v^i_g, \end{align*}
+</p>
+<p>For systems with equations that only contain nonconservative products, the following mesh velocity is automatically added to the time derivative:</p>
+<p class="formulaDsp">
+\begin{align*} v^i_g \partial_i u_\alpha, \end{align*}
+</p>
+<dl class="section note"><dt>Note</dt><dd>The term is always added in the <code><a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a></code> frame, and the plus sign arises because we add it to the time derivative.</dd></dl>
+<p>Here are examples of the <code>TimeDerivative</code> struct used to compute the volume time derivative. This struct is what the type alias <code>System::compute_volume_time_derivative</code> points to. The time derivatives are as <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> first, then the temporary tags as <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code>, followed by the <code>argument_tags</code>. These type aliases are given by</p>
+<div class="fragment"><div class="line">  using temporary_tags = tmpl::list&lt;Var3Squared&gt;;</div>
+<div class="line">  using common_argument_tags = tmpl::list&lt;Var1, Var2&lt;Dim&gt;, Var3&gt;;</div>
+<div class="line">  using argument_tags =</div>
+<div class="line">      tmpl::conditional_t&lt;HasPrimitiveVars,</div>
+<div class="line">                          tmpl::push_back&lt;common_argument_tags, PrimVar1&gt;,</div>
+<div class="line">                          common_argument_tags&gt;;</div>
+</div><!-- fragment --><p> for the examples. For a conservative system without primitives the <code>apply</code> function would look like</p>
+<div class="fragment"><div class="line">  static void apply(</div>
+<div class="line">      // Time derivatives returned by reference. All the tags in the</div>
+<div class="line">      // variables_tag in the system struct.</div>
+<div class="line">      const gsl::not_null&lt;Scalar&lt;DataVector&gt;*&gt; dt_var1,</div>
+<div class="line">      const gsl::not_null&lt;tnsr::I&lt;DataVector, Dim, Frame::Inertial&gt;*&gt; dt_var2,</div>
+<div class="line"> </div>
+<div class="line">      // Fluxes returned by reference. Listed in the system struct as</div>
+<div class="line">      // flux_variables.</div>
+<div class="line">      const gsl::not_null&lt;tnsr::I&lt;DataVector, Dim, Frame::Inertial&gt;*&gt; flux_var1,</div>
+<div class="line">      const gsl::not_null&lt;tnsr::IJ&lt;DataVector, Dim, Frame::Inertial&gt;*&gt;</div>
+<div class="line">          flux_var2,</div>
+<div class="line"> </div>
+<div class="line">      // Temporaries returned by reference. Listed in temporary_tags above.</div>
+<div class="line">      const gsl::not_null&lt;Scalar&lt;DataVector&gt;*&gt; square_var3,</div>
+<div class="line"> </div>
+<div class="line">      // Arguments listed in argument_tags above</div>
+<div class="line">      const Scalar&lt;DataVector&gt;&amp; var1,</div>
+<div class="line">      const tnsr::I&lt;DataVector, Dim, Frame::Inertial&gt;&amp; var2,</div>
+<div class="line">      const Scalar&lt;DataVector&gt;&amp; var3) noexcept {</div>
+<div class="line">    get(*square_var3) = square(get(var3));</div>
+<div class="line"> </div>
+<div class="line">    // Set source terms</div>
+<div class="line">    get(*dt_var1) = get(*square_var3);</div>
+<div class="line">    for (size_t d = 0; d &lt; Dim; ++d) {</div>
+<div class="line">      dt_var2-&gt;get(d) = get(var3) * d;</div>
+<div class="line">    }</div>
+<div class="line"> </div>
+<div class="line">    // Set fluxes</div>
+<div class="line">    for (size_t i = 0; i &lt; Dim; ++i) {</div>
+<div class="line">      flux_var1-&gt;get(i) = square(get(var1)) * var2.get(i);</div>
+<div class="line">      for (size_t j = 0; j &lt; Dim; ++j) {</div>
+<div class="line">        flux_var2-&gt;get(i, j) = var2.get(i) * var2.get(j) * get(var1);</div>
+<div class="line">        if (i == j) {</div>
+<div class="line">          flux_var2-&gt;get(i, j) += cube(get(var1));</div>
+<div class="line">        }</div>
+<div class="line">      }</div>
+<div class="line">    }</div>
+<div class="line">  }</div>
+</div><!-- fragment --><p> For a nonconservative system it would be</p>
+<div class="fragment"><div class="line">  static void apply(</div>
+<div class="line">      // Time derivatives returned by reference. All the tags in the</div>
+<div class="line">      // variables_tag in the system struct.</div>
+<div class="line">      const gsl::not_null&lt;Scalar&lt;DataVector&gt;*&gt; dt_var1,</div>
+<div class="line">      const gsl::not_null&lt;tnsr::I&lt;DataVector, Dim, Frame::Inertial&gt;*&gt; dt_var2,</div>
+<div class="line"> </div>
+<div class="line">      // Temporaries returned by reference. Listed in temporary_tags above.</div>
+<div class="line">      const gsl::not_null&lt;Scalar&lt;DataVector&gt;*&gt; square_var3,</div>
+<div class="line"> </div>
+<div class="line">      // Partial derivative arguments. Listed in the system struct as</div>
+<div class="line">      // gradient_variables.</div>
+<div class="line">      const tnsr::i&lt;DataVector, Dim, Frame::Inertial&gt;&amp; d_var1,</div>
+<div class="line">      const tnsr::iJ&lt;DataVector, Dim, Frame::Inertial&gt;&amp; d_var2,</div>
+<div class="line"> </div>
+<div class="line">      // Arguments listed in argument_tags above</div>
+<div class="line">      const Scalar&lt;DataVector&gt;&amp; var1,</div>
+<div class="line">      const tnsr::I&lt;DataVector, Dim, Frame::Inertial&gt;&amp; var2,</div>
+<div class="line">      const Scalar&lt;DataVector&gt;&amp; var3) noexcept {</div>
+<div class="line">    get(*square_var3) = square(get(var3));</div>
+<div class="line"> </div>
+<div class="line">    // Set source terms and nonconservative products</div>
+<div class="line">    get(*dt_var1) = get(*square_var3);</div>
+<div class="line">    for (size_t d = 0; d &lt; Dim; ++d) {</div>
+<div class="line">      get(*dt_var1) -= var2.get(d) * d_var1.get(d);</div>
+<div class="line">      dt_var2-&gt;get(d) = get(var3) * d;</div>
+<div class="line">      for (size_t i = 0; i &lt; Dim; ++i) {</div>
+<div class="line">        dt_var2-&gt;get(d) -= get(var1) * var2.get(i) * d_var2.get(i, d);</div>
+<div class="line">      }</div>
+<div class="line">    }</div>
+<div class="line">  }</div>
+</div><!-- fragment --><p> And finally, for a mixed conservative-nonconservative system with primitive variables</p>
+<div class="fragment"><div class="line">  static void apply(</div>
+<div class="line">      const gsl::not_null&lt;Scalar&lt;DataVector&gt;*&gt; dt_var1,</div>
+<div class="line">      const gsl::not_null&lt;tnsr::I&lt;DataVector, Dim, Frame::Inertial&gt;*&gt; dt_var2,</div>
+<div class="line"> </div>
+<div class="line">      const gsl::not_null&lt;tnsr::IJ&lt;DataVector, Dim, Frame::Inertial&gt;*&gt;</div>
+<div class="line">          flux_var2,</div>
+<div class="line"> </div>
+<div class="line">      const gsl::not_null&lt;Scalar&lt;DataVector&gt;*&gt; square_var3,</div>
+<div class="line"> </div>
+<div class="line">      const tnsr::i&lt;DataVector, Dim, Frame::Inertial&gt;&amp; d_var1,</div>
+<div class="line"> </div>
+<div class="line">      const Scalar&lt;DataVector&gt;&amp; var1,</div>
+<div class="line">      const tnsr::I&lt;DataVector, Dim, Frame::Inertial&gt;&amp; var2,</div>
+<div class="line">      const Scalar&lt;DataVector&gt;&amp; var3,</div>
+<div class="line">      const Scalar&lt;DataVector&gt;&amp; prim_var1) noexcept {</div>
+<div class="line">    apply(dt_var1, dt_var2, flux_var2, square_var3, d_var1, var1, var2, var3);</div>
+<div class="line">    get(*dt_var1) += get(prim_var1);</div>
+<div class="line">  }</div>
+</div><!-- fragment --><p> Uses:</p><ul>
+<li>System:<ul>
+<li><code>variables_tag</code></li>
+<li><code>flux_variables</code></li>
+<li><code>gradient_variables</code></li>
+<li><code>compute_volume_time_derivative_terms</code></li>
+</ul>
+</li>
+<li>DataBox:<ul>
+<li>Items in <code>system::compute_volume_time_derivative_terms::argument_tags</code></li>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1MeshVelocity.html" title="The mesh velocity.">domain::Tags::MeshVelocity</a>&lt;Metavariables::volume_dim&gt;</code></li>
+<li><code>Metavariables::system::variables_tag</code></li>
+<li><code>Metavariables::system::flux_variables</code></li>
+<li><code>Metavariables::system::gradient_variables</code></li>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1DivMeshVelocity.html" title="The divergence of the mesh velocity.">domain::Tags::DivMeshVelocity</a></code></li>
+<li><code>DirectionsTag</code>,</li>
+<li>Required interface items for <code>Metavariables::system::normal_dot_fluxes</code></li>
+</ul>
+</li>
+</ul>
+<p>DataBox changes:</p><ul>
+<li>Adds: nothing</li>
+<li>Removes: nothing</li>
+<li>Modifies:<ul>
+<li><a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt;<a class="el" href="structTags_1_1Flux.html" title="Prefix indicating a flux.">Tags::Flux</a>, variables_tag, tmpl::size_t&lt;system::volume_dim&gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt;</li>
+<li><code><a class="el" href="structTags_1_1dt.html" title="Prefix indicating a time derivative.">Tags::dt</a>&lt;system::variable_tags&gt;</code></li>
+<li>Tags::Interface&lt; DirectionsTag, <a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix&lt;Tags::NormalDotFlux, variables_tag&gt;</a>&gt;</li>
+<li><code><a class="el" href="structTags_1_1Mortars.html">Tags::Mortars</a>&lt;typename BoundaryScheme::mortar_data_tag, VolumeDim&gt;</code></li>
+</ul>
+</li>
+</ul>
+<h3><a class="anchor" id="autotoc_md81"></a>
+Internal Boundary Terms</h3>
+<p>Internal boundary terms are computed from the <code>System::boundary_correction_base</code> type alias. This type alias must point to a base class with <code>creatable_classes</code>. Each concrete boundary correction must specify:</p>
+<ul>
+<li>type alias template <code>dg_package_field_tags</code>. These are what will be returned by <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> from the <code>dg_package_data</code> member function.</li>
+<li>type alias template <code>dg_package_temporary_tags</code>. These are temporary tags that are projected to the face and then passed to the <code>dg_package_data</code> function.</li>
+<li>type alias template <code>dg_package_primitive_tags</code>. These are the primitive variables (if any) that are projected to the face and then passed to <code>dg_package_data</code>.</li>
+<li>type alias template <code>dg_package_volume_tags</code>. These are tags that are not projected to the interface and are retrieved directly from the <code>DataBox</code>. The equation of state for hydrodynamics systems is an example of what would be a "volume tag".</li>
+</ul>
+<p>A <code>static constexpr bool need_normal_vector</code> must be specified. If <code>true</code> then the normal vector is computed from the normal covector. This is currently not implemented.</p>
+<p>The <code>dg_package_data</code> function takes as arguments <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> of the <code>dg_package_data_field_tags</code>, then the projected evolved variables, the projected fluxes, the projected temporaries, the projected primitives, the unit normal covector, mesh velocity, normal dotted into the mesh velocity, the <code>volume_tags</code>, and finally the <code><a class="el" href="group__DiscontinuousGalerkinGroup.html#ga102ad013b7e4298b4c14c52a39bcd8da" title="The DG formulation to use.">dg::Formulation</a></code>. The <code>dg_package_data</code> function must compute all ingredients for the boundary correction, including mesh-velocity-corrected characteristic speeds. However, the projected fluxes passed in are \(F^i - u v^i_g\) (the mesh velocity term is already included). The <code>dg_package_data</code> function must also return a <code>double</code> that is the maximum absolute characteristic speed over the entire face. This will be used for checking that the time step doesn't violate the CFL condition.</p>
+<p>Here is an example of the type aliases and <code>bool</code>:</p>
+<div class="fragment"><div class="line">  using dg_package_field_tags = tmpl::push_back&lt;</div>
+<div class="line">      tmpl::append&lt;db::wrap_tags_in&lt;::Tags::NormalDotFlux, variables_tags&gt;,</div>
+<div class="line">                   variables_tags&gt;,</div>
+<div class="line">      MaxAbsCharSpeed&gt;;</div>
+<div class="line">  using dg_package_data_temporary_tags = tmpl::list&lt;Var3Squared&gt;;</div>
+<div class="line">  using dg_package_data_primitive_tags =</div>
+<div class="line">      tmpl::conditional_t&lt;HasPrims, tmpl::list&lt;PrimVar1&gt;, tmpl::list&lt;&gt;&gt;;</div>
+<div class="line">  using dg_package_data_volume_tags =</div>
+<div class="line">      tmpl::conditional_t&lt;HasPrims, tmpl::list&lt;Tags::TimeStepId&gt;, tmpl::list&lt;&gt;&gt;;</div>
+</div><!-- fragment --><p> The normal vector requirement is:</p>
+<div class="fragment"><div class="line">  static constexpr bool need_normal_vector = false;</div>
+</div><!-- fragment --><p> For a conservative system with primitive variables and using the <code><a class="el" href="classTimeStepId.html">TimeStepId</a></code> as a volume tag the <code>dg_package_data</code> function looks like:</p>
+<div class="fragment"><div class="line">  double dg_package_data(</div>
+<div class="line">      const gsl::not_null&lt;Scalar&lt;DataVector&gt;*&gt; out_normal_dot_flux_var1,</div>
+<div class="line">      const gsl::not_null&lt;tnsr::I&lt;DataVector, Dim, Frame::Inertial&gt;*&gt;</div>
+<div class="line">          out_normal_dot_flux_var2,</div>
+<div class="line">      const gsl::not_null&lt;Scalar&lt;DataVector&gt;*&gt; out_var1,</div>
+<div class="line">      const gsl::not_null&lt;tnsr::I&lt;DataVector, Dim, Frame::Inertial&gt;*&gt; out_var2,</div>
+<div class="line">      const gsl::not_null&lt;Scalar&lt;DataVector&gt;*&gt; max_abs_char_speed,</div>
+<div class="line"> </div>
+<div class="line">      const Scalar&lt;DataVector&gt;&amp; var1,</div>
+<div class="line">      const tnsr::I&lt;DataVector, Dim, Frame::Inertial&gt;&amp; var2,</div>
+<div class="line"> </div>
+<div class="line">      const tnsr::I&lt;DataVector, Dim, Frame::Inertial&gt;&amp; flux_var1,</div>
+<div class="line">      const tnsr::IJ&lt;DataVector, Dim, Frame::Inertial&gt;&amp; flux_var2,</div>
+<div class="line"> </div>
+<div class="line">      const Scalar&lt;DataVector&gt;&amp; var3_squared,</div>
+<div class="line">      const Scalar&lt;DataVector&gt;&amp; prim_var1,</div>
+<div class="line"> </div>
+<div class="line">      const tnsr::i&lt;DataVector, Dim, Frame::Inertial&gt;&amp; normal_covector,</div>
+<div class="line">      const std::optional&lt;tnsr::I&lt;DataVector, Dim, Frame::Inertial&gt;&gt;&amp;</div>
+<div class="line">          mesh_velocity,</div>
+<div class="line">      const std::optional&lt;Scalar&lt;DataVector&gt;&gt;&amp; normal_dot_mesh_velocity,</div>
+<div class="line"> </div>
+<div class="line">      const TimeStepId&amp; time_step_id) const noexcept {</div>
+<div class="line">    dg_package_data(out_normal_dot_flux_var1, out_normal_dot_flux_var2,</div>
+<div class="line">                    out_var1, out_var2, max_abs_char_speed, var1, var2,</div>
+<div class="line">                    flux_var1, flux_var2, var3_squared, normal_covector,</div>
+<div class="line">                    mesh_velocity, normal_dot_mesh_velocity);</div>
+<div class="line">    get(*out_var1) += get(prim_var1) + time_step_id.step_time().value();</div>
+<div class="line">    return max(get(*max_abs_char_speed));</div>
+<div class="line">  }</div>
+</div><!-- fragment --><p> For a mixed conservative-nonconservative system with primitive variables and using the <code><a class="el" href="classTimeStepId.html">TimeStepId</a></code> as a volume tag the <code>dg_package_data</code> function looks like:</p>
+<div class="fragment"><div class="line">  double dg_package_data(</div>
+<div class="line">      const gsl::not_null&lt;Scalar&lt;DataVector&gt;*&gt; out_normal_dot_flux_var1,</div>
+<div class="line">      const gsl::not_null&lt;tnsr::I&lt;DataVector, Dim, Frame::Inertial&gt;*&gt;</div>
+<div class="line">          out_normal_dot_flux_var2,</div>
+<div class="line">      const gsl::not_null&lt;Scalar&lt;DataVector&gt;*&gt; out_var1,</div>
+<div class="line">      const gsl::not_null&lt;tnsr::I&lt;DataVector, Dim, Frame::Inertial&gt;*&gt; out_var2,</div>
+<div class="line">      const gsl::not_null&lt;Scalar&lt;DataVector&gt;*&gt; max_abs_char_speed,</div>
+<div class="line"> </div>
+<div class="line">      const Scalar&lt;DataVector&gt;&amp; var1,</div>
+<div class="line">      const tnsr::I&lt;DataVector, Dim, Frame::Inertial&gt;&amp; var2,</div>
+<div class="line"> </div>
+<div class="line">      const tnsr::IJ&lt;DataVector, Dim, Frame::Inertial&gt;&amp; flux_var2,</div>
+<div class="line"> </div>
+<div class="line">      const Scalar&lt;DataVector&gt;&amp; var3_squared,</div>
+<div class="line"> </div>
+<div class="line">      const Scalar&lt;DataVector&gt;&amp; prim_var1,</div>
+<div class="line"> </div>
+<div class="line">      const tnsr::i&lt;DataVector, Dim, Frame::Inertial&gt;&amp; normal_covector,</div>
+<div class="line">      const std::optional&lt;tnsr::I&lt;DataVector, Dim, Frame::Inertial&gt;&gt;&amp;</div>
+<div class="line">          mesh_velocity,</div>
+<div class="line">      const std::optional&lt;Scalar&lt;DataVector&gt;&gt;&amp; normal_dot_mesh_velocity,</div>
+<div class="line"> </div>
+<div class="line">      const TimeStepId&amp; time_step_id) const noexcept {</div>
+<div class="line">    dg_package_data(out_normal_dot_flux_var1, out_normal_dot_flux_var2,</div>
+<div class="line">                    out_var1, out_var2, max_abs_char_speed, var1, var2,</div>
+<div class="line">                    flux_var2, var3_squared, normal_covector, mesh_velocity,</div>
+<div class="line">                    normal_dot_mesh_velocity);</div>
+<div class="line">    get(*out_var1) += get(prim_var1) + time_step_id.step_time().value();</div>
+<div class="line">    return max(get(*max_abs_char_speed));</div>
+<div class="line">  }</div>
+</div><!-- fragment --><p> Uses:</p><ul>
+<li>System:<ul>
+<li><code>boundary_correction</code></li>
+<li><code>variables_tag</code></li>
+<li><code>flux_variables</code></li>
+<li><code>gradients_tags</code></li>
+<li><code>compute_volume_time_derivative</code></li>
+<li><code>has_primitive_and_conservative_vars</code></li>
+<li><code>primitive_variables_tag</code> if system has primitive variables</li>
+</ul>
+</li>
+<li>DataBox:<ul>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1Element.html">domain::Tags::Element</a>&lt;Dim&gt;</code></li>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1Mesh.html" title="The computational grid of the Element in the DataBox.">domain::Tags::Mesh</a>&lt;Dim&gt;</code></li>
+<li><code><a class="el" href="structevolution_1_1dg_1_1Tags_1_1MortarMesh.html" title="Mesh on the mortars, indexed by (Direction, ElementId) pairs.">evolution::dg::Tags::MortarMesh</a>&lt;Dim&gt;</code></li>
+<li><code><a class="el" href="structevolution_1_1dg_1_1Tags_1_1MortarSize.html" title="Size of a mortar, relative to the element face. That is, the part of the face that it covers.">evolution::dg::Tags::MortarSize</a>&lt;Dim&gt;</code></li>
+<li><code><a class="el" href="structevolution_1_1dg_1_1Tags_1_1MortarData.html" title="Data on mortars, indexed by (Direction, ElementId) pairs.">evolution::dg::Tags::MortarData</a>&lt;Dim&gt;</code></li>
+<li><code><a class="el" href="structTags_1_1TimeStepId.html" title="Tag for TimeStepId for the algorithm state.">Tags::TimeStepId</a></code></li>
+<li><div class="fragment"><div class="line"><a class="code" href="structdomain_1_1Tags_1_1Interface.html">domain::Tags::Interface&lt;domain::Tags::InternalDirections&lt;Dim&gt;</a>,</div>
+<div class="line">                                 <a class="code" href="structdomain_1_1Tags_1_1Mesh.html">domain::Tags::Mesh</a>&lt;Dim - 1&gt;&gt;</div>
+</div><!-- fragment --></li>
+<li><div class="fragment"><div class="line"><a class="code" href="structdomain_1_1Tags_1_1Interface.html">domain::Tags::Interface</a>&lt;</div>
+<div class="line">    <a class="code" href="structdomain_1_1Tags_1_1InternalDirections.html">domain::Tags::InternalDirections&lt;Dim&gt;</a>,</div>
+<div class="line">    <a class="code" href="structTags_1_1Normalized.html">::Tags::Normalized</a>&lt;</div>
+<div class="line">        <a class="code" href="structdomain_1_1Tags_1_1UnnormalizedFaceNormal.html">domain::Tags::UnnormalizedFaceNormal&lt;Dim, Frame::Inertial&gt;</a>&gt;&gt;</div>
+</div><!-- fragment --></li>
+<li><div class="fragment"><div class="line"><a class="code" href="structdomain_1_1Tags_1_1Interface.html">domain::Tags::Interface</a>&lt;</div>
+<div class="line">         <a class="code" href="structdomain_1_1Tags_1_1InternalDirections.html">domain::Tags::InternalDirections&lt;Dim&gt;</a>,</div>
+<div class="line">         <a class="code" href="structdomain_1_1Tags_1_1MeshVelocity.html">domain::Tags::MeshVelocity&lt;Dim, Frame::Inertial&gt;</a>&gt;</div>
+</div><!-- fragment --></li>
+<li><code>Metavariables::system::variables_tag</code></li>
+<li><code>Metavariables::system::flux_variables</code></li>
+<li><code>Metavariables::system::primitive_tags</code> if exists</li>
+<li><code>system::boundary_correction_base::dg_package_data_volume_tags</code></li>
+</ul>
+</li>
+</ul>
+<p>DataBox changes:</p><ul>
+<li>Adds: nothing</li>
+<li>Removes: nothing</li>
+<li>Modifies:<ul>
+<li><code><a class="el" href="structevolution_1_1dg_1_1Tags_1_1MortarData.html" title="Data on mortars, indexed by (Direction, ElementId) pairs.">evolution::dg::Tags::MortarData</a>&lt;Dim&gt;</code> </li>
+</ul>
+</li>
+</ul>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/DiscontinuousGalerkin/Actions/<a class="el" href="DiscontinuousGalerkin_2Actions_2ComputeTimeDerivative_8hpp_source.html">ComputeTimeDerivative.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="astructdomain_1_1Tags_1_1UnnormalizedFaceNormal_html"><div class="ttname"><a href="structdomain_1_1Tags_1_1UnnormalizedFaceNormal.html">domain::Tags::UnnormalizedFaceNormal</a></div><div class="ttdef"><b>Definition:</b> FaceNormal.hpp:112</div></div>
+<div class="ttc" id="astructdomain_1_1Tags_1_1MeshVelocity_html"><div class="ttname"><a href="structdomain_1_1Tags_1_1MeshVelocity.html">domain::Tags::MeshVelocity&lt; Dim, Frame::Inertial &gt;</a></div></div>
+<div class="ttc" id="astructdomain_1_1Tags_1_1Mesh_html"><div class="ttname"><a href="structdomain_1_1Tags_1_1Mesh.html">domain::Tags::Mesh</a></div><div class="ttdoc">The computational grid of the Element in the DataBox.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:107</div></div>
+<div class="ttc" id="astructTags_1_1Normalized_html"><div class="ttname"><a href="structTags_1_1Normalized.html">Tags::Normalized</a></div><div class="ttdef"><b>Definition:</b> Magnitude.hpp:137</div></div>
+<div class="ttc" id="astructdomain_1_1Tags_1_1Interface_html"><div class="ttname"><a href="structdomain_1_1Tags_1_1Interface.html">domain::Tags::Interface</a></div><div class="ttdoc">Tag which is either a SimpleTag for quantities on an interface, base tag to a compute item which acts...</div><div class="ttdef"><b>Definition:</b> Tags.hpp:367</div></div>
+<div class="ttc" id="astructdomain_1_1Tags_1_1InternalDirections_html"><div class="ttname"><a href="structdomain_1_1Tags_1_1InternalDirections.html">domain::Tags::InternalDirections</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:270</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

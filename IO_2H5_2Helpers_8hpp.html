@@ -1,0 +1,309 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/IO/H5/Helpers.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_acbfb0479bfd4f691b658bc7fe580c61.html">IO</a></li><li class="navelem"><a class="el" href="dir_c13bbe04723324f3e63d3683c1a6fb03.html">H5</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">Helpers.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/array.html">array</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</code><br />
+<code>#include &lt;hdf5.h&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a>&gt;</code><br />
+<code>#include &quot;<a class="el" href="Index_8hpp_source.html">DataStructures/Index.hpp</a>&quot;</code><br />
+</div>
+<p><a href="IO_2H5_2Helpers_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceh5"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceh5.html">h5</a></td></tr>
+<tr class="memdesc:namespaceh5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains functions and classes for manipulating HDF5 files. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga242addcfdcb4bb6bb407b8229c3ae4fa"><td class="memTemplParams" colspan="2">
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga242addcfdcb4bb6bb407b8229c3ae4fa"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga242addcfdcb4bb6bb407b8229c3ae4fa">h5::write_data</a> (hid_t group_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; T &gt; &amp;data, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; size_t &gt; &amp;extents, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;name=&quot;scalar&quot;) noexcept</td></tr>
+<tr class="memdesc:ga242addcfdcb4bb6bb407b8229c3ae4fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a> named <code>name</code> to the group <code>group_id</code> <br /></td></tr>
+<tr class="separator:ga242addcfdcb4bb6bb407b8229c3ae4fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7ed764517407c15e484bc2560e0042c0"><td class="memItemLeft" align="right" valign="top">
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga7ed764517407c15e484bc2560e0042c0">h5::write_data</a> (hid_t group_id, const <a class="el" href="classDataVector.html">DataVector</a> &amp;data, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;name) noexcept</td></tr>
+<tr class="memdesc:ga7ed764517407c15e484bc2560e0042c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> named <code>name</code> to the group <code>group_id</code> <br /></td></tr>
+<tr class="separator:ga7ed764517407c15e484bc2560e0042c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae590adc731e3c843635b0872efb5e338"><td class="memTemplParams" colspan="2">
+template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:gae590adc731e3c843635b0872efb5e338"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#gae590adc731e3c843635b0872efb5e338">h5::write_extents</a> (hid_t group_id, const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;extents, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;name=&quot;Extents&quot;)</td></tr>
+<tr class="memdesc:gae590adc731e3c843635b0872efb5e338"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write the extents as an attribute named <code>name</code> to the group <code>group_id</code>. <br /></td></tr>
+<tr class="separator:gae590adc731e3c843635b0872efb5e338"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga06bfc64583f9b971c0e5a1790ce34650"><td class="memTemplParams" colspan="2">
+template&lt;typename Type &gt; </td></tr>
+<tr class="memitem:ga06bfc64583f9b971c0e5a1790ce34650"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga06bfc64583f9b971c0e5a1790ce34650">h5::write_to_attribute</a> (hid_t location_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;name, const Type &amp;value) noexcept</td></tr>
+<tr class="memdesc:ga06bfc64583f9b971c0e5a1790ce34650"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a value of type <code>Type</code> to an HDF5 attribute named <code>name</code> <br /></td></tr>
+<tr class="separator:ga06bfc64583f9b971c0e5a1790ce34650"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga13fda031a703efcd0b8aa00f7fc26a8b"><td class="memTemplParams" colspan="2">
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga13fda031a703efcd0b8aa00f7fc26a8b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga13fda031a703efcd0b8aa00f7fc26a8b">h5::write_to_attribute</a> (hid_t group_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;name, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; T &gt; &amp;data) noexcept</td></tr>
+<tr class="memdesc:ga13fda031a703efcd0b8aa00f7fc26a8b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write the vector <code>data</code> to the attribute <code>attribute_name</code> in the group <code>group_id</code>. <br /></td></tr>
+<tr class="separator:ga13fda031a703efcd0b8aa00f7fc26a8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad472d5cc0229a4223d83c95b80498d82"><td class="memTemplParams" colspan="2">
+template&lt;typename Type &gt; </td></tr>
+<tr class="memitem:gad472d5cc0229a4223d83c95b80498d82"><td class="memTemplItemLeft" align="right" valign="top">Type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#gad472d5cc0229a4223d83c95b80498d82">h5::read_value_attribute</a> (hid_t location_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;name) noexcept</td></tr>
+<tr class="memdesc:gad472d5cc0229a4223d83c95b80498d82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a value of type <code>Type</code> from an HDF5 attribute named <code>name</code> <br /></td></tr>
+<tr class="separator:gad472d5cc0229a4223d83c95b80498d82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4f54874b9ff1dd8b47e0cd8521600707"><td class="memTemplParams" colspan="2">
+template&lt;typename Type &gt; </td></tr>
+<tr class="memitem:ga4f54874b9ff1dd8b47e0cd8521600707"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; Type &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga4f54874b9ff1dd8b47e0cd8521600707">h5::read_rank1_attribute</a> (hid_t group_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;name) noexcept</td></tr>
+<tr class="memdesc:ga4f54874b9ff1dd8b47e0cd8521600707"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read rank-1 of type <code>Type</code> from an HDF5 attribute named <code>name</code> <br /></td></tr>
+<tr class="separator:ga4f54874b9ff1dd8b47e0cd8521600707"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae0019ed4463e1ae246c881f908d4d7e0"><td class="memItemLeft" align="right" valign="top">
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#gae0019ed4463e1ae246c881f908d4d7e0">h5::get_attribute_names</a> (hid_t file_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;group_name)</td></tr>
+<tr class="memdesc:gae0019ed4463e1ae246c881f908d4d7e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the names of all the attributes in a group. <br /></td></tr>
+<tr class="separator:gae0019ed4463e1ae246c881f908d4d7e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga515b30f7457c26b344f3a5b3ec89a0b7"><td class="memItemLeft" align="right" valign="top">
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga515b30f7457c26b344f3a5b3ec89a0b7">h5::write_connectivity</a> (hid_t group_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; int &gt; &amp;connectivity) noexcept</td></tr>
+<tr class="memdesc:ga515b30f7457c26b344f3a5b3ec89a0b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write the connectivity into the group in the H5 file. <br /></td></tr>
+<tr class="separator:ga515b30f7457c26b344f3a5b3ec89a0b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf5f143cb730354ecd5675aa6536d5abd"><td class="memItemLeft" align="right" valign="top">
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#gaf5f143cb730354ecd5675aa6536d5abd">h5::get_group_names</a> (hid_t file_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;group_name) noexcept</td></tr>
+<tr class="memdesc:gaf5f143cb730354ecd5675aa6536d5abd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the names of all the groups and datasets in a group. <br /></td></tr>
+<tr class="separator:gaf5f143cb730354ecd5675aa6536d5abd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9aeb4b997862441df689e7315c6c5510"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga9aeb4b997862441df689e7315c6c5510">h5::contains_dataset_or_group</a> (hid_t id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;group_name, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;dataset_name) noexcept</td></tr>
+<tr class="memdesc:ga9aeb4b997862441df689e7315c6c5510"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if <code>name</code> is a dataset or group in the subgroup <code>group_name</code> of <code>id</code>.  <a href="group__HDF5Group.html#ga9aeb4b997862441df689e7315c6c5510">More...</a><br /></td></tr>
+<tr class="separator:ga9aeb4b997862441df689e7315c6c5510"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa7a07697b281b9f7f6488704cff02576"><td class="memItemLeft" align="right" valign="top">
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#gaa7a07697b281b9f7f6488704cff02576">h5::contains_attribute</a> (hid_t file_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;group_name, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;attribute_name)</td></tr>
+<tr class="memdesc:gaa7a07697b281b9f7f6488704cff02576"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if an attribute is in a group. <br /></td></tr>
+<tr class="separator:gaa7a07697b281b9f7f6488704cff02576"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga62dc64257367dd148150ef56c2bdb095"><td class="memItemLeft" align="right" valign="top">
+hid_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga62dc64257367dd148150ef56c2bdb095">h5::open_dataset</a> (hid_t group_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;dataset_name) noexcept</td></tr>
+<tr class="memdesc:ga62dc64257367dd148150ef56c2bdb095"><td class="mdescLeft">&#160;</td><td class="mdescRight">Open an HDF5 dataset. <br /></td></tr>
+<tr class="separator:ga62dc64257367dd148150ef56c2bdb095"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9485584e0722a0b2d64a0bde9bf2d08f"><td class="memItemLeft" align="right" valign="top">
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga9485584e0722a0b2d64a0bde9bf2d08f">h5::close_dataset</a> (hid_t dataset_id) noexcept</td></tr>
+<tr class="memdesc:ga9485584e0722a0b2d64a0bde9bf2d08f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close an HDF5 dataset. <br /></td></tr>
+<tr class="separator:ga9485584e0722a0b2d64a0bde9bf2d08f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga57429e80571d02bf81521d970d755344"><td class="memItemLeft" align="right" valign="top">
+hid_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga57429e80571d02bf81521d970d755344">h5::open_dataspace</a> (hid_t dataset_id) noexcept</td></tr>
+<tr class="memdesc:ga57429e80571d02bf81521d970d755344"><td class="mdescLeft">&#160;</td><td class="mdescRight">Open an HDF5 dataspace. <br /></td></tr>
+<tr class="separator:ga57429e80571d02bf81521d970d755344"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga40aac718020d9bfeec55c9301fead441"><td class="memItemLeft" align="right" valign="top">
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga40aac718020d9bfeec55c9301fead441">h5::close_dataspace</a> (hid_t dataspace_id) noexcept</td></tr>
+<tr class="memdesc:ga40aac718020d9bfeec55c9301fead441"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close an HDF5 dataspace. <br /></td></tr>
+<tr class="separator:ga40aac718020d9bfeec55c9301fead441"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad9fc06d8487fc0729e590ff9fdbba51f"><td class="memTemplParams" colspan="2">template&lt;size_t Rank, typename T &gt; </td></tr>
+<tr class="memitem:gad9fc06d8487fc0729e590ff9fdbba51f"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#gad9fc06d8487fc0729e590ff9fdbba51f">h5::read_data</a> (hid_t group_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;dataset_name) noexcept</td></tr>
+<tr class="memdesc:gad9fc06d8487fc0729e590ff9fdbba51f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read an array of rank 0-3 into an object.  <a href="group__HDF5Group.html#gad9fc06d8487fc0729e590ff9fdbba51f">More...</a><br /></td></tr>
+<tr class="separator:gad9fc06d8487fc0729e590ff9fdbba51f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf8423b2077a552d564a9cc2da79cc198"><td class="memTemplParams" colspan="2">
+template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:gaf8423b2077a552d564a9cc2da79cc198"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classIndex.html">Index</a>&lt; Dim &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#gaf8423b2077a552d564a9cc2da79cc198">h5::read_extents</a> (hid_t group_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;extents_name=&quot;Extents&quot;)</td></tr>
+<tr class="memdesc:gaf8423b2077a552d564a9cc2da79cc198"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the HDF5 attribute representing extents from a group. <br /></td></tr>
+<tr class="separator:gaf8423b2077a552d564a9cc2da79cc198"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Defines functions for <a class="el" href="namespaceh5.html" title="Contains functions and classes for manipulating HDF5 files.">h5</a> manipulations </p>
+</div></div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

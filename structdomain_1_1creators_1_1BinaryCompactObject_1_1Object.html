@@ -1,0 +1,314 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::creators::BinaryCompactObject::Object Struct Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1creators.html">creators</a></li><li class="navelem"><a class="el" href="classdomain_1_1creators_1_1BinaryCompactObject.html">BinaryCompactObject</a></li><li class="navelem"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object.html">Object</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::creators::BinaryCompactObject::Object Struct Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><a class="el" href="namespaceOptions.html" title="Utilities for parsing input files.">Options</a> for one of the two objects in the binary domain.  
+ <a href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="BinaryCompactObject_8hpp_source.html">BinaryCompactObject.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object_1_1AdditionToRadialRefinementLevel.html">AdditionToRadialRefinementLevel</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object_1_1ExciseInterior.html">ExciseInterior</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object_1_1InnerRadius.html">InnerRadius</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object_1_1Interior.html">Interior</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object_1_1OuterRadius.html">OuterRadius</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object_1_1UseLogarithmicMap.html">UseLogarithmicMap</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object_1_1XCoord.html">XCoord</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a7811f44e050d25d42e0ee7fe374b0016"><td class="memTemplParams" colspan="2"><a id="a7811f44e050d25d42e0ee7fe374b0016"></a>
+template&lt;typename Metavariables &gt; </td></tr>
+<tr class="memitem:a7811f44e050d25d42e0ee7fe374b0016"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object_1_1InnerRadius.html">InnerRadius</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object_1_1OuterRadius.html">OuterRadius</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object_1_1XCoord.html">XCoord</a>, tmpl::conditional_t&lt; domain::BoundaryConditions::has_boundary_conditions_base_v&lt; typename Metavariables::system &gt;, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object_1_1Interior.html">Interior</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object_1_1ExciseInterior.html">ExciseInterior</a> &gt;, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object_1_1UseLogarithmicMap.html">UseLogarithmicMap</a>, <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object_1_1AdditionToRadialRefinementLevel.html">AdditionToRadialRefinementLevel</a> &gt;</td></tr>
+<tr class="separator:a7811f44e050d25d42e0ee7fe374b0016"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ac822582874ae3d2b758e35a4c8da9fcf"><td class="memItemLeft" align="right" valign="top"><a id="ac822582874ae3d2b758e35a4c8da9fcf"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Object</b> (double local_inner_radius, double local_outer_radius, double local_x_coord, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Excision.html">Excision</a> &gt; interior, bool local_use_logarithmic_map, size_t local_addition_to_radial_refinement_level) noexcept</td></tr>
+<tr class="separator:ac822582874ae3d2b758e35a4c8da9fcf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac82c2ddf62f80fbcb68a0a8dfaf876b"><td class="memItemLeft" align="right" valign="top"><a id="aac82c2ddf62f80fbcb68a0a8dfaf876b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Object</b> (double local_inner_radius, double local_outer_radius, double local_x_coord, bool local_excise_interior, bool local_use_logarithmic_map, size_t local_addition_to_radial_refinement_level) noexcept</td></tr>
+<tr class="separator:aac82c2ddf62f80fbcb68a0a8dfaf876b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae529a523c295b616905fe2268cbc4be9"><td class="memItemLeft" align="right" valign="top"><a id="ae529a523c295b616905fe2268cbc4be9"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1BinaryCompactObject_1_1Object.html#ae529a523c295b616905fe2268cbc4be9">is_excised</a> () const noexcept</td></tr>
+<tr class="memdesc:ae529a523c295b616905fe2268cbc4be9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether or not the object should be excised from the domain, leaving a spherical hole. When this is true, <code>inner_boundary_condition</code> is guaranteed to hold a value (though it might be a <code>nullptr</code> if we are not working with boundary conditions). <br /></td></tr>
+<tr class="separator:ae529a523c295b616905fe2268cbc4be9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:a5d03a149a446d8b668f5b62d85fcb213"><td class="memItemLeft" align="right" valign="top"><a id="a5d03a149a446d8b668f5b62d85fcb213"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>inner_radius</b></td></tr>
+<tr class="separator:a5d03a149a446d8b668f5b62d85fcb213"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24f21c1bb7b7896ee9161091dfeb7e75"><td class="memItemLeft" align="right" valign="top"><a id="a24f21c1bb7b7896ee9161091dfeb7e75"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>outer_radius</b></td></tr>
+<tr class="separator:a24f21c1bb7b7896ee9161091dfeb7e75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a036ad025f4031db81b608707124d3e18"><td class="memItemLeft" align="right" valign="top"><a id="a036ad025f4031db81b608707124d3e18"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>x_coord</b></td></tr>
+<tr class="separator:a036ad025f4031db81b608707124d3e18"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a22bbc5939fe9d12d54bc39dfc87b3be4"><td class="memItemLeft" align="right" valign="top"><a id="a22bbc5939fe9d12d54bc39dfc87b3be4"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>inner_boundary_condition</b></td></tr>
+<tr class="separator:a22bbc5939fe9d12d54bc39dfc87b3be4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0eaca4beef0348730d18617dce32889"><td class="memItemLeft" align="right" valign="top"><a id="aa0eaca4beef0348730d18617dce32889"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>use_logarithmic_map</b></td></tr>
+<tr class="separator:aa0eaca4beef0348730d18617dce32889"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf1bdae1ca6769aeafad07abbba5459a"><td class="memItemLeft" align="right" valign="top"><a id="aaf1bdae1ca6769aeafad07abbba5459a"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>addition_to_radial_refinement_level</b></td></tr>
+<tr class="separator:aaf1bdae1ca6769aeafad07abbba5459a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:ab440ecc966995ece3d3eeac74771004f"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:ab440ecc966995ece3d3eeac74771004f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p><a class="el" href="namespaceOptions.html" title="Utilities for parsing input files.">Options</a> for one of the two objects in the binary domain. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="ab440ecc966995ece3d3eeac74771004f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab440ecc966995ece3d3eeac74771004f">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> domain::creators::BinaryCompactObject::Object::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">        <span class="stringliteral">&quot;Options for an object in a binary domain.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Domain/Creators/<a class="el" href="BinaryCompactObject_8hpp_source.html">BinaryCompactObject.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

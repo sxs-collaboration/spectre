@@ -1,0 +1,242 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - 39f3c2b725318dcf91749887b1e61f477736e132 - /work/build/docs/xml/dev_guide_quick_start_docker_vscode.xml</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title"> SpECTRE Documentation Coverage Report</td></tr>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../index.html">top level</a> - <a href="index.html">work/build/docs/xml</a> - dev_guide_quick_start_docker_vscode.xml</td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+             <td class="headerItem">Commit:</td>
+             <td class="headerValue"><a target="_blank" href="https://github.com/sxs-collaboration/spectre/commit/39f3c2b725318dcf91749887b1e61f477736e132">39f3c2b725318dcf91749887b1e61f477736e132</a></td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2021-07-13 03:19:40</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineCov">          1 : &lt;?xml version='1.0' encoding='UTF-8' standalone='no'?&gt;</span></a>
+<a name="2"><span class="lineNum">       2 </span>            : &lt;doxygen xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:noNamespaceSchemaLocation=&quot;compound.xsd&quot; version=&quot;1.8.17&quot;&gt;</a>
+<a name="3"><span class="lineNum">       3 </span>            :   &lt;compounddef id=&quot;dev_guide_quick_start_docker_vscode&quot; kind=&quot;page&quot;&gt;</a>
+<a name="4"><span class="lineNum">       4 </span>            :     &lt;compoundname&gt;dev_guide_quick_start_docker_vscode&lt;/compoundname&gt;</a>
+<a name="5"><span class="lineNum">       5 </span>            :     &lt;title&gt;Code development quick-start with Docker and Visual Studio Code&lt;/title&gt;</a>
+<a name="6"><span class="lineNum">       6 </span>            :     &lt;briefdescription&gt;</a>
+<a name="7"><span class="lineNum">       7 </span>            :     &lt;/briefdescription&gt;</a>
+<a name="8"><span class="lineNum">       8 </span>            :     &lt;detaileddescription&gt;</a>
+<a name="9"><span class="lineNum">       9 </span>            : &lt;para&gt;This page describes how to get started developing SpECTRE on Mac, Linux, or Windows using &lt;ulink url=&quot;https://docker.com&quot;&gt;Docker&lt;/ulink&gt; and the &lt;ulink url=&quot;https://code.visualstudio.com&quot;&gt;Visual Studio Code&lt;/ulink&gt; editor. This is a particularly quick way to get up and running with SpECTRE code development, though of course not the only way. If you prefer setting up your development environment differently, we suggest you read the &lt;ref refid=&quot;installation&quot; kindref=&quot;compound&quot;&gt;Installation&lt;/ref&gt; page. If you would like to jump right into a working development environment, read on!&lt;/para&gt;</a>
+<a name="10"><span class="lineNum">      10 </span>            : &lt;sect1 id=&quot;dev_guide_quick_start_docker_vscode_1autotoc_md196&quot;&gt;</a>
+<a name="11"><span class="lineNum">      11 </span>            : &lt;title&gt;Fork the SpECTRE repository on GitHub&lt;/title&gt;</a>
+<a name="12"><span class="lineNum">      12 </span>            : &lt;para&gt;The SpECTRE code lives on GitHub in the &lt;ulink url=&quot;https://github.com/sxs-collaboration/spectre&quot;&gt;sxs-collaboration/spectre&lt;/ulink&gt; repository. Developers work on their own copy (or &lt;ulink url=&quot;https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-forks&quot;&gt;&amp;quot;fork&amp;quot;&lt;/ulink&gt;) of the repository and contribute back to &lt;ulink url=&quot;https://github.com/sxs-collaboration/spectre&quot;&gt;sxs-collaboration/spectre&lt;/ulink&gt; through &lt;ulink url=&quot;https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests&quot;&gt;pull requests&lt;/ulink&gt;. Fork the repository to your own account:&lt;/para&gt;</a>
+<a name="13"><span class="lineNum">      13 </span>            : &lt;para&gt;&lt;itemizedlist&gt;</a>
+<a name="14"><span class="lineNum">      14 </span>            : &lt;listitem&gt;&lt;para&gt;&lt;ulink url=&quot;https://github.com/sxs-collaboration/spectre/fork&quot;&gt;Fork sxs-collaboration/spectre on GitHub&lt;/ulink&gt;&lt;/para&gt;</a>
+<a name="15"><span class="lineNum">      15 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="16"><span class="lineNum">      16 </span>            : &lt;/para&gt;</a>
+<a name="17"><span class="lineNum">      17 </span>            : &lt;/sect1&gt;</a>
+<a name="18"><span class="lineNum">      18 </span>            : &lt;sect1 id=&quot;dev_guide_quick_start_docker_vscode_1autotoc_md197&quot;&gt;</a>
+<a name="19"><span class="lineNum">      19 </span>            : &lt;title&gt;Clone the SpECTRE repository to your computer&lt;/title&gt;</a>
+<a name="20"><span class="lineNum">      20 </span>            : &lt;para&gt;To work on SpECTRE code you will need a local copy (or &amp;quot;clone&amp;quot;) of the repository on your computer. We use SSH to communicate with GitHub, so you need to set up your SSH keys first. Follow GitHub&amp;apos;s instructions to generate an SSH key and add it to your GitHub account:&lt;/para&gt;</a>
+<a name="21"><span class="lineNum">      21 </span>            : &lt;para&gt;&lt;itemizedlist&gt;</a>
+<a name="22"><span class="lineNum">      22 </span>            : &lt;listitem&gt;&lt;para&gt;&lt;ulink url=&quot;https://docs.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent&quot;&gt;Generating an SSH key and adding to to GitHub&lt;/ulink&gt;&lt;/para&gt;</a>
+<a name="23"><span class="lineNum">      23 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="24"><span class="lineNum">      24 </span>            : &lt;/para&gt;</a>
+<a name="25"><span class="lineNum">      25 </span>            : &lt;para&gt;Now you can download the repository via SSH. Navigate to &lt;bold&gt;your fork&lt;/bold&gt; of the SpECTRE repository (i.e. the repository at the URL &lt;ulink url=&quot;https://github.com/YOURNAME/spectre&quot;&gt;https://github.com/YOURNAME/spectre&lt;/ulink&gt;). Follow GitHub&amp;apos;s instructions to clone the repository to your computer, selecting the SSH option:&lt;/para&gt;</a>
+<a name="26"><span class="lineNum">      26 </span>            : &lt;para&gt;&lt;itemizedlist&gt;</a>
+<a name="27"><span class="lineNum">      27 </span>            : &lt;listitem&gt;&lt;para&gt;&lt;ulink url=&quot;https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository&quot;&gt;Cloning a repository&lt;/ulink&gt;&lt;/para&gt;</a>
+<a name="28"><span class="lineNum">      28 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="29"><span class="lineNum">      29 </span>            : &lt;/para&gt;</a>
+<a name="30"><span class="lineNum">      30 </span>            : &lt;/sect1&gt;</a>
+<a name="31"><span class="lineNum">      31 </span>            : &lt;sect1 id=&quot;dev_guide_quick_start_docker_vscode_1autotoc_md198&quot;&gt;</a>
+<a name="32"><span class="lineNum">      32 </span>            : &lt;title&gt;Enable the development environment in the repository&lt;/title&gt;</a>
+<a name="33"><span class="lineNum">      33 </span>            : &lt;para&gt;The development environment is included in the repository, but not enabled by default. To enable it, copy or symlink the directory &lt;computeroutput&gt;support/DevEnvironments/.devcontainer&lt;/computeroutput&gt; to the repository root. This is easiest done with the command line. Navigate into the repository that you just cloned to your computer:&lt;/para&gt;</a>
+<a name="34"><span class="lineNum">      34 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;cd&lt;sp/&gt;spectre&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="35"><span class="lineNum">      35 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="36"><span class="lineNum">      36 </span>            : &lt;para&gt;Now symlink the development environment:&lt;/para&gt;</a>
+<a name="37"><span class="lineNum">      37 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;ln&lt;sp/&gt;-s&lt;sp/&gt;support/DevEnvironments/.devcontainer&lt;sp/&gt;.devcontainer&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="38"><span class="lineNum">      38 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="39"><span class="lineNum">      39 </span>            : &lt;/sect1&gt;</a>
+<a name="40"><span class="lineNum">      40 </span>            : &lt;sect1 id=&quot;dev_guide_quick_start_docker_vscode_1autotoc_md199&quot;&gt;</a>
+<a name="41"><span class="lineNum">      41 </span>            : &lt;title&gt;Install Docker&lt;/title&gt;</a>
+<a name="42"><span class="lineNum">      42 </span>            : &lt;para&gt;On your computer you will need Docker to run the containerized development environment. Install and start Docker:&lt;/para&gt;</a>
+<a name="43"><span class="lineNum">      43 </span>            : &lt;para&gt;&lt;itemizedlist&gt;</a>
+<a name="44"><span class="lineNum">      44 </span>            : &lt;listitem&gt;&lt;para&gt;&lt;ulink url=&quot;https://docs.docker.com/get-docker/&quot;&gt;Get Docker&lt;/ulink&gt;&lt;/para&gt;</a>
+<a name="45"><span class="lineNum">      45 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="46"><span class="lineNum">      46 </span>            : &lt;/para&gt;</a>
+<a name="47"><span class="lineNum">      47 </span>            : &lt;para&gt;If you&amp;apos;re new to Docker, you can read through Docker&amp;apos;s &lt;ulink url=&quot;https://docs.docker.com/get-started/&quot;&gt;Getting started&lt;/ulink&gt; documentation to learn about their basic concepts. We will use Docker to download and jump into a prebuilt development environment that has everything installed to compile and run SpECTRE.&lt;/para&gt;</a>
+<a name="48"><span class="lineNum">      48 </span>            : &lt;/sect1&gt;</a>
+<a name="49"><span class="lineNum">      49 </span>            : &lt;sect1 id=&quot;dev_guide_quick_start_docker_vscode_1autotoc_md200&quot;&gt;</a>
+<a name="50"><span class="lineNum">      50 </span>            : &lt;title&gt;Install Visual Studio Code&lt;/title&gt;</a>
+<a name="51"><span class="lineNum">      51 </span>            : &lt;para&gt;We will use the Visual Studio Code editor to jump into the containerized development environment, edit code, compile executables and run them. Download and install Visual Studio Code:&lt;/para&gt;</a>
+<a name="52"><span class="lineNum">      52 </span>            : &lt;para&gt;&lt;itemizedlist&gt;</a>
+<a name="53"><span class="lineNum">      53 </span>            : &lt;listitem&gt;&lt;para&gt;&lt;ulink url=&quot;https://code.visualstudio.com&quot;&gt;Get Visual Studio Code&lt;/ulink&gt;&lt;/para&gt;</a>
+<a name="54"><span class="lineNum">      54 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="55"><span class="lineNum">      55 </span>            : &lt;/para&gt;</a>
+<a name="56"><span class="lineNum">      56 </span>            : &lt;para&gt;Microsoft maintains &lt;ulink url=&quot;https://code.visualstudio.com/docs&quot;&gt;extensive documentation&lt;/ulink&gt; for Visual Studio Code that you can read to get started using the editor. We recommend you take a look through the &lt;ulink url=&quot;https://code.visualstudio.com/docs/getstarted/tips-and-tricks&quot;&gt;Tips and Tricks&lt;/ulink&gt; to get an idea of the editor&amp;apos;s features.&lt;/para&gt;</a>
+<a name="57"><span class="lineNum">      57 </span>            : &lt;/sect1&gt;</a>
+<a name="58"><span class="lineNum">      58 </span>            : &lt;sect1 id=&quot;dev_guide_quick_start_docker_vscode_1autotoc_md201&quot;&gt;</a>
+<a name="59"><span class="lineNum">      59 </span>            : &lt;title&gt;Install the &amp;quot;Remote - Containers&amp;quot; extension&lt;/title&gt;</a>
+<a name="60"><span class="lineNum">      60 </span>            : &lt;para&gt;Visual Studio Code&amp;apos;s &amp;quot;Remote - Containers&amp;quot; extension lets you run the editor in a Docker container. Install the extension:&lt;/para&gt;</a>
+<a name="61"><span class="lineNum">      61 </span>            : &lt;para&gt;&lt;itemizedlist&gt;</a>
+<a name="62"><span class="lineNum">      62 </span>            : &lt;listitem&gt;&lt;para&gt;&lt;ulink url=&quot;vscode:extension/ms-vscode-remote.remote-containers&quot;&gt;Install the &amp;quot;Remote - Containers&amp;quot; extension&lt;/ulink&gt;&lt;/para&gt;</a>
+<a name="63"><span class="lineNum">      63 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="64"><span class="lineNum">      64 </span>            : &lt;/para&gt;</a>
+<a name="65"><span class="lineNum">      65 </span>            : &lt;/sect1&gt;</a>
+<a name="66"><span class="lineNum">      66 </span>            : &lt;sect1 id=&quot;dev_guide_quick_start_docker_vscode_1autotoc_md202&quot;&gt;</a>
+<a name="67"><span class="lineNum">      67 </span>            : &lt;title&gt;Open the SpECTRE repository in Visual Studio Code&lt;/title&gt;</a>
+<a name="68"><span class="lineNum">      68 </span>            : &lt;para&gt;Now open the SpECTRE repository that you have cloned to your computer in Visual Studio Code. Depending on your operating system you can select &lt;computeroutput&gt;File &amp;gt; Open&lt;/computeroutput&gt;, type &lt;computeroutput&gt;Cmd+O&lt;/computeroutput&gt; (macOS) or &lt;computeroutput&gt;Ctrl+O&lt;/computeroutput&gt; (Linux or Windows), drag the repository folder onto the Visual Studio Code icon or any other means to open the folder in Visual Studio Code.&lt;/para&gt;</a>
+<a name="69"><span class="lineNum">      69 </span>            : &lt;para&gt;Now is also time to learn how to use the single most important tool in Visual Studio Code, the command palette. Try it now: Hit &lt;computeroutput&gt;Cmd+P&lt;/computeroutput&gt; (macOS) or &lt;computeroutput&gt;Ctrl+P&lt;/computeroutput&gt; (Linux or Windows) and start typing the name of any file, for example &lt;computeroutput&gt;QuickStart.md&lt;/computeroutput&gt;. Hit &lt;computeroutput&gt;Enter&lt;/computeroutput&gt; to open the file. This is how you can quickly open any file in the repository. Note that the search is fuzzy, so you can type any few letters in the path to the file. In addition to opening files, you can hit &lt;computeroutput&gt;Cmd+Shift+P&lt;/computeroutput&gt; (macOS) or &lt;computeroutput&gt;Ctrl+Shift+P&lt;/computeroutput&gt; (Linux or Windows) and type the name of any command that Visual Studio Code supports (or parts of it), for example &lt;computeroutput&gt;Preferences: Open User Settings&lt;/computeroutput&gt;.&lt;/para&gt;</a>
+<a name="70"><span class="lineNum">      70 </span>            : &lt;/sect1&gt;</a>
+<a name="71"><span class="lineNum">      71 </span>            : &lt;sect1 id=&quot;dev_guide_quick_start_docker_vscode_1autotoc_md203&quot;&gt;</a>
+<a name="72"><span class="lineNum">      72 </span>            : &lt;title&gt;Reopen the SpECTRE repository in the development container&lt;/title&gt;</a>
+<a name="73"><span class="lineNum">      73 </span>            : &lt;para&gt;Open the command palette by hitting &lt;computeroutput&gt;Cmd+Shift+P&lt;/computeroutput&gt; (macOS) or &lt;computeroutput&gt;Ctrl+Shift+P&lt;/computeroutput&gt; (Linux or Windows) and run the command &lt;computeroutput&gt;Remote-Containers: Reopen in container&lt;/computeroutput&gt; by starting to type a few letters of this command and then hitting &lt;computeroutput&gt;Enter&lt;/computeroutput&gt;.&lt;/para&gt;</a>
+<a name="74"><span class="lineNum">      74 </span>            : &lt;para&gt;Visual Studio Code will download and run the container and drop you into a fully configured environment where you can proceed to compile and run SpECTRE.&lt;/para&gt;</a>
+<a name="75"><span class="lineNum">      75 </span>            : &lt;para&gt;If you are interested to learn more about this feature works you can read through the &lt;ulink url=&quot;https://code.visualstudio.com/docs/remote/containers&quot;&gt;VS Code documentation on remote containers&lt;/ulink&gt; and inspect the &lt;computeroutput&gt;.devcontainer/devcontainer.json&lt;/computeroutput&gt; file that&amp;apos;s included in the SpECTRE repository.&lt;/para&gt;</a>
+<a name="76"><span class="lineNum">      76 </span>            : &lt;/sect1&gt;</a>
+<a name="77"><span class="lineNum">      77 </span>            : &lt;sect1 id=&quot;dev_guide_quick_start_docker_vscode_1autotoc_md204&quot;&gt;</a>
+<a name="78"><span class="lineNum">      78 </span>            : &lt;title&gt;Configure, compile and run SpECTRE&lt;/title&gt;</a>
+<a name="79"><span class="lineNum">      79 </span>            : &lt;para&gt;With Visual Studio Code running in the development container you can now configure, compile and run SpECTRE with no additional setup. Hit &lt;computeroutput&gt;Cmd+Shift+P&lt;/computeroutput&gt; (macOS) or &lt;computeroutput&gt;Ctrl+Shift+P&lt;/computeroutput&gt; (Linux or Windows) to open the command palette and run the command &lt;computeroutput&gt;CMake: Configure&lt;/computeroutput&gt;. It will set up a build directory. You can open Visual Studio Code&amp;apos;s &lt;ulink url=&quot;https://code.visualstudio.com/docs/editor/integrated-terminal&quot;&gt;integrated terminal&lt;/ulink&gt; with the keyboard shortcut &lt;computeroutput&gt;Ctrl+`&lt;/computeroutput&gt; and navigate to the newly created build directory to inspect it:&lt;/para&gt;</a>
+<a name="80"><span class="lineNum">      80 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;cd&lt;sp/&gt;build-Default-Debug&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="81"><span class="lineNum">      81 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="82"><span class="lineNum">      82 </span>            : &lt;para&gt;For compiling and running SpECTRE you can either use Visual Studio Code&amp;apos;s CMake integration by looking up further commands in the command palette, or use the terminal. We will be using the terminal from now on. Try compiling an executable, for example:&lt;/para&gt;</a>
+<a name="83"><span class="lineNum">      83 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;make&lt;sp/&gt;-j4&lt;sp/&gt;ExportCoordinates3D&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="84"><span class="lineNum">      84 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="85"><span class="lineNum">      85 </span>            : &lt;para&gt;Once the executable has compiled successfully you can try running it:&lt;/para&gt;</a>
+<a name="86"><span class="lineNum">      86 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;./bin/ExportCoordinates3D&lt;sp/&gt;\&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="87"><span class="lineNum">      87 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;--input-file&lt;sp/&gt;$SPECTRE_HOME/tests/InputFiles/ExportCoordinates/Input3D.yaml&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="88"><span class="lineNum">      88 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="89"><span class="lineNum">      89 </span>            : &lt;para&gt;This executable produced a volume data file that we can visualize in ParaView. Generate an XMF file from the volume data file that ParaView understands:&lt;/para&gt;</a>
+<a name="90"><span class="lineNum">      90 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;$SPECTRE_HOME/src/Visualization/Python/GenerateXdmf.py&lt;sp/&gt;\&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="91"><span class="lineNum">      91 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;--file-prefix&lt;sp/&gt;ExportCoordinates3DVolume&lt;sp/&gt;--subfile-name&lt;sp/&gt;element_data&lt;sp/&gt;\&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="92"><span class="lineNum">      92 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;--output&lt;sp/&gt;ExportCoordinates3DVolume&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="93"><span class="lineNum">      93 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="94"><span class="lineNum">      94 </span>            : &lt;para&gt;Since the build directory is shared with the host file system you can now open ParaView on your computer and load the generated XMF file as described in the &lt;ref refid=&quot;tutorial_visualization&quot; kindref=&quot;compound&quot;&gt;visualization tutorial&lt;/ref&gt;.&lt;/para&gt;</a>
+<a name="95"><span class="lineNum">      95 </span>            : &lt;/sect1&gt;</a>
+<a name="96"><span class="lineNum">      96 </span>            : &lt;sect1 id=&quot;dev_guide_quick_start_docker_vscode_1autotoc_md205&quot;&gt;</a>
+<a name="97"><span class="lineNum">      97 </span>            : &lt;title&gt;Edit and contribute code to SpECTRE with VS Code&lt;/title&gt;</a>
+<a name="98"><span class="lineNum">      98 </span>            : &lt;para&gt;You are now ready to code! The other &lt;ref refid=&quot;dev_guide&quot; kindref=&quot;compound&quot;&gt;dev guides&lt;/ref&gt; will teach you how to write SpECTRE code. Return to the &lt;ulink url=&quot;https://code.visualstudio.com/docs&quot;&gt;Visual Studio Code documentation&lt;/ulink&gt; to learn more about editing code with Visual Studio Code.&lt;/para&gt;</a>
+<a name="99"><span class="lineNum">      99 </span>            : &lt;para&gt;In particular, the Visual Studio Code documentation can teach you how to use Git to commit your code changes to your repository:&lt;/para&gt;</a>
+<a name="100"><span class="lineNum">     100 </span>            : &lt;para&gt;&lt;itemizedlist&gt;</a>
+<a name="101"><span class="lineNum">     101 </span>            : &lt;listitem&gt;&lt;para&gt;&lt;ulink url=&quot;https://code.visualstudio.com/docs/editor/versioncontrol#_git-support&quot;&gt;Git support in Visual Studio Code&lt;/ulink&gt;&lt;/para&gt;</a>
+<a name="102"><span class="lineNum">     102 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="103"><span class="lineNum">     103 </span>            : &lt;/para&gt;</a>
+<a name="104"><span class="lineNum">     104 </span>            : &lt;para&gt;SpECTRE code development follows a pull-request model. You can learn more about this process in our contributing guide:&lt;/para&gt;</a>
+<a name="105"><span class="lineNum">     105 </span>            : &lt;para&gt;&lt;itemizedlist&gt;</a>
+<a name="106"><span class="lineNum">     106 </span>            : &lt;listitem&gt;&lt;para&gt;&lt;ulink url=&quot;https://spectre-code.org/contributing_to_spectre.html#pull-requests&quot;&gt;Contributing to SpECTRE through pull requests&lt;/ulink&gt;&lt;/para&gt;</a>
+<a name="107"><span class="lineNum">     107 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="108"><span class="lineNum">     108 </span>            : &lt;/para&gt;</a>
+<a name="109"><span class="lineNum">     109 </span>            : &lt;para&gt;Visual Studio Code can also help you create and review pull requests:&lt;/para&gt;</a>
+<a name="110"><span class="lineNum">     110 </span>            : &lt;para&gt;&lt;itemizedlist&gt;</a>
+<a name="111"><span class="lineNum">     111 </span>            : &lt;listitem&gt;&lt;para&gt;&lt;ulink url=&quot;https://code.visualstudio.com/docs/editor/github#_pull-requests&quot;&gt;Working with pull requests in VS Code&lt;/ulink&gt;&lt;/para&gt;</a>
+<a name="112"><span class="lineNum">     112 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="113"><span class="lineNum">     113 </span>            : &lt;/para&gt;</a>
+<a name="114"><span class="lineNum">     114 </span>            : &lt;/sect1&gt;</a>
+<a name="115"><span class="lineNum">     115 </span>            : &lt;sect1 id=&quot;dev_guide_quick_start_docker_vscode_1autotoc_md206&quot;&gt;</a>
+<a name="116"><span class="lineNum">     116 </span>            : &lt;title&gt;Interactively debug a SpECTRE test with VS Code&lt;/title&gt;</a>
+<a name="117"><span class="lineNum">     117 </span>            : &lt;para&gt;To track down an issue with your code it can be very useful to interactively debug it. First, make sure you have written a test case where the issue occurs. If you have not written a test yet, this is a great time to do it. Refer to the &lt;ref refid=&quot;writing_unit_tests&quot; kindref=&quot;compound&quot;&gt;Writing Unit Tests&lt;/ref&gt; dev guide to learn how to write tests.&lt;/para&gt;</a>
+<a name="118"><span class="lineNum">     118 </span>            : &lt;para&gt;Now configure the &lt;computeroutput&gt;RunSingleTest&lt;/computeroutput&gt; executable to run your particular test so you don&amp;apos;t have to repeatedly compile the extensive &lt;computeroutput&gt;RunTests&lt;/computeroutput&gt; executable. Also refer to the &lt;ref refid=&quot;writing_unit_tests&quot; kindref=&quot;compound&quot;&gt;Writing Unit Tests&lt;/ref&gt; dev guide for this.&lt;/para&gt;</a>
+<a name="119"><span class="lineNum">     119 </span>            : &lt;para&gt;To launch the interactive debugger, hit &lt;computeroutput&gt;Cmd+Shift+P&lt;/computeroutput&gt; (macOS) or &lt;computeroutput&gt;Ctrl+Shift+P&lt;/computeroutput&gt; (Linux or Windows) to open the command palette, run the command &lt;computeroutput&gt;CMake: Set Debug Target&lt;/computeroutput&gt; and select &lt;computeroutput&gt;RunSingleTest&lt;/computeroutput&gt;. Then run the command &lt;computeroutput&gt;CMake: Debug&lt;/computeroutput&gt;. The test executable will compile, run and stop on any breakpoints. Follow the Visual Studio Code documentation to learn how to set breakpoints in your code and inspect the state of your variables:&lt;/para&gt;</a>
+<a name="120"><span class="lineNum">     120 </span>            : &lt;para&gt;&lt;itemizedlist&gt;</a>
+<a name="121"><span class="lineNum">     121 </span>            : &lt;listitem&gt;&lt;para&gt;&lt;ulink url=&quot;https://code.visualstudio.com/docs/editor/debugging#_debug-actions&quot;&gt;Debug actions in VS Code&lt;/ulink&gt;&lt;/para&gt;</a>
+<a name="122"><span class="lineNum">     122 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="123"><span class="lineNum">     123 </span>            : &lt;/para&gt;</a>
+<a name="124"><span class="lineNum">     124 </span>            : &lt;/sect1&gt;</a>
+<a name="125"><span class="lineNum">     125 </span>            : &lt;sect1 id=&quot;dev_guide_quick_start_docker_vscode_1autotoc_md207&quot;&gt;</a>
+<a name="126"><span class="lineNum">     126 </span>            : &lt;title&gt;Real-time collaboration with Live Share&lt;/title&gt;</a>
+<a name="127"><span class="lineNum">     127 </span>            : &lt;para&gt;You can use the &lt;ulink url=&quot;https://docs.microsoft.com/en-us/visualstudio/liveshare/&quot;&gt;Live Share&lt;/ulink&gt; extension to work together with others and edit code simultaneously. Live Share can be very useful to debug code together. Follow these instructions to share a link to your current Visual Studio Code workspace:&lt;/para&gt;</a>
+<a name="128"><span class="lineNum">     128 </span>            : &lt;para&gt;&lt;itemizedlist&gt;</a>
+<a name="129"><span class="lineNum">     129 </span>            : &lt;listitem&gt;&lt;para&gt;&lt;ulink url=&quot;https://docs.microsoft.com/en-us/visualstudio/liveshare/quickstart/share&quot;&gt;Live Share Quickstart: Share your first project&lt;/ulink&gt;&lt;/para&gt;</a>
+<a name="130"><span class="lineNum">     130 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="131"><span class="lineNum">     131 </span>            : &lt;/para&gt;</a>
+<a name="132"><span class="lineNum">     132 </span>            : &lt;/sect1&gt;</a>
+<a name="133"><span class="lineNum">     133 </span>            : &lt;sect1 id=&quot;dev_guide_quick_start_docker_vscode_1autotoc_md208&quot;&gt;</a>
+<a name="134"><span class="lineNum">     134 </span>            : &lt;title&gt;Tips and tricks&lt;/title&gt;</a>
+<a name="135"><span class="lineNum">     135 </span>            : &lt;para&gt;&lt;itemizedlist&gt;</a>
+<a name="136"><span class="lineNum">     136 </span>            : &lt;listitem&gt;&lt;para&gt;The &lt;ulink url=&quot;https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens&quot;&gt;&lt;bold&gt;GitLens extension&lt;/bold&gt;&lt;/ulink&gt; is very useful to browse your repository. Select the &amp;quot;Source Control&amp;quot; icon and explore the various panels.&lt;/para&gt;</a>
+<a name="137"><span class="lineNum">     137 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;When you build the &lt;bold&gt;documentation&lt;/bold&gt; (e.g. with &lt;computeroutput&gt;make doc&lt;/computeroutput&gt;), you can open it in a web server within VS Code:&lt;/para&gt;</a>
+<a name="138"><span class="lineNum">     138 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="139"><span class="lineNum">     139 </span>            : &lt;/para&gt;</a>
+<a name="140"><span class="lineNum">     140 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;python3&lt;sp/&gt;-m&lt;sp/&gt;http.server&lt;sp/&gt;-d&lt;sp/&gt;docs/html&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="141"><span class="lineNum">     141 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="142"><span class="lineNum">     142 </span>            : &lt;para&gt;The web server launches on port 8000 by default, which is being forwarded outside the container, so you can just open &lt;ulink url=&quot;http://127.0.0.1:8000&quot;&gt;http://127.0.0.1:8000&lt;/ulink&gt; in your browser to view the documentation.&lt;/para&gt;</a>
+<a name="143"><span class="lineNum">     143 </span>            : &lt;para&gt;&lt;itemizedlist&gt;</a>
+<a name="144"><span class="lineNum">     144 </span>            : &lt;listitem&gt;&lt;para&gt;Instead of working in the Docker container, you can use the &lt;ulink url=&quot;https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh&quot;&gt;Remote - SSH&lt;/ulink&gt; extension to &lt;bold&gt;work on a remote machine&lt;/bold&gt; such as your local supercomputing cluster. Ask the cluster administrators or users for suggestions concerning installing and running SpECTRE on the particular supercomputer.&lt;/para&gt;</a>
+<a name="145"><span class="lineNum">     145 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;You can work with &lt;bold&gt;Jupyter notebooks in Visual Studio Code&lt;/bold&gt;. First, install Jupyter and all other Python packages you want to work with in the container:&lt;/para&gt;</a>
+<a name="146"><span class="lineNum">     146 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="147"><span class="lineNum">     147 </span>            : &lt;/para&gt;</a>
+<a name="148"><span class="lineNum">     148 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;pip3&lt;sp/&gt;install&lt;sp/&gt;jupyter&lt;sp/&gt;matplotlib&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="149"><span class="lineNum">     149 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="150"><span class="lineNum">     150 </span>            : &lt;para&gt;Any &lt;computeroutput&gt;.ipynb&lt;/computeroutput&gt; notebook files you create or open will be displayed in VS Code&amp;apos;s notebook editor. This is very useful for quickly plotting data from SpECTRE runs or using SpECTRE&amp;apos;s Python bindings. Refer to the &lt;ulink url=&quot;https://code.visualstudio.com/docs/python/jupyter-support&quot;&gt;VS Code documentation on Jupyter support&lt;/ulink&gt; for more information.&lt;/para&gt;</a>
+<a name="151"><span class="lineNum">     151 </span>            : &lt;para&gt;&lt;itemizedlist&gt;</a>
+<a name="152"><span class="lineNum">     152 </span>            : &lt;listitem&gt;&lt;para&gt;Docker can quickly use up a lot of disk space. From time to time you can &amp;quot;prune&amp;quot; unneeded images and containers to reclaim disk space:&lt;itemizedlist&gt;</a>
+<a name="153"><span class="lineNum">     153 </span>            : &lt;listitem&gt;&lt;para&gt;&lt;ulink url=&quot;https://docs.docker.com/config/pruning/&quot;&gt;Prune unused Docker objects&lt;/ulink&gt;&lt;/para&gt;</a>
+<a name="154"><span class="lineNum">     154 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="155"><span class="lineNum">     155 </span>            : &lt;/para&gt;</a>
+<a name="156"><span class="lineNum">     156 </span>            : &lt;para&gt;When pruning containers, make sure no data is deleted that you care about! &lt;/para&gt;</a>
+<a name="157"><span class="lineNum">     157 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="158"><span class="lineNum">     158 </span>            : &lt;/para&gt;</a>
+<a name="159"><span class="lineNum">     159 </span>            : &lt;/sect1&gt;</a>
+<a name="160"><span class="lineNum">     160 </span>            :     &lt;/detaileddescription&gt;</a>
+<a name="161"><span class="lineNum">     161 </span>            :   &lt;/compounddef&gt;</a>
+<a name="162"><span class="lineNum">     162 </span>            : &lt;/doxygen&gt;</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

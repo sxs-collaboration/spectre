@@ -1,0 +1,283 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: evolution::dg::subcell::Actions::Initialize&lt; Dim, System, TciMutator &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceevolution.html">evolution</a></li><li class="navelem"><a class="el" href="namespaceevolution_1_1dg.html">dg</a></li><li class="navelem"><a class="el" href="namespaceevolution_1_1dg_1_1subcell.html">subcell</a></li><li class="navelem"><a class="el" href="namespaceevolution_1_1dg_1_1subcell_1_1Actions.html">Actions</a></li><li class="navelem"><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Actions_1_1Initialize.html">Initialize</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="structevolution_1_1dg_1_1subcell_1_1Actions_1_1Initialize-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">evolution::dg::subcell::Actions::Initialize&lt; Dim, System, TciMutator &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Actions_1_1Initialize.html" title="Initialize the subcell grid, and switch from DG to subcell if the DG solution is inadmissible.">Initialize</a> the subcell grid, and switch from DG to subcell if the DG solution is inadmissible.  
+ <a href="structevolution_1_1dg_1_1subcell_1_1Actions_1_1Initialize.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Evolution_2DgSubcell_2Actions_2Initialize_8hpp_source.html">Initialize.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a631947bbe8c019e254dc3085d26d7464"><td class="memItemLeft" align="right" valign="top"><a id="a631947bbe8c019e254dc3085d26d7464"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>const_global_cache_tags</b> = tmpl::list&lt; <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1SubcellOptions.html">Tags::SubcellOptions</a> &gt;</td></tr>
+<tr class="separator:a631947bbe8c019e254dc3085d26d7464"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac71f2e66b6189044fd2838800a98da95"><td class="memItemLeft" align="right" valign="top"><a id="ac71f2e66b6189044fd2838800a98da95"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>simple_tags</b> = tmpl::list&lt; <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Mesh.html">Tags::Mesh</a>&lt; Dim &gt;, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1ActiveGrid.html">Tags::ActiveGrid</a>, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1DidRollback.html">Tags::DidRollback</a>, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Inactive.html">Tags::Inactive</a>&lt; typename System::variables_tag &gt;, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1TciGridHistory.html">Tags::TciGridHistory</a>, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1NeighborDataForReconstructionAndRdmpTci.html">Tags::NeighborDataForReconstructionAndRdmpTci</a>&lt; Dim &gt;, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1fd_1_1Tags_1_1InverseJacobianLogicalToGrid.html">fd::Tags::InverseJacobianLogicalToGrid</a>&lt; Dim &gt;, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1fd_1_1Tags_1_1DetInverseJacobianLogicalToGrid.html">fd::Tags::DetInverseJacobianLogicalToGrid</a> &gt;</td></tr>
+<tr class="separator:ac71f2e66b6189044fd2838800a98da95"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f7d25c388b51843914b249bee6e10e6"><td class="memItemLeft" align="right" valign="top"><a id="a2f7d25c388b51843914b249bee6e10e6"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>compute_tags</b> = tmpl::list&lt; <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1LogicalCoordinatesCompute.html">Tags::LogicalCoordinatesCompute</a>&lt; Dim &gt;, ::<a class="el" href="structdomain_1_1Tags_1_1MappedCoordinates.html">domain::Tags::MappedCoordinates</a>&lt; ::<a class="el" href="structdomain_1_1Tags_1_1ElementMap.html">domain::Tags::ElementMap</a>&lt; Dim, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a> &gt;, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Coordinates.html">subcell::Tags::Coordinates</a>&lt; Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt;, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Coordinates.html">subcell::Tags::Coordinates</a> &gt;, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1TciStatusCompute.html">Tags::TciStatusCompute</a>&lt; Dim &gt; &gt;</td></tr>
+<tr class="separator:a2f7d25c388b51843914b249bee6e10e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a1cff1d975abf159bf137a8a3364e2f2c"><td class="memTemplParams" colspan="2"><a id="a1cff1d975abf159bf137a8a3364e2f2c"></a>
+template&lt;typename DbTagsList , typename... InboxTags, typename ArrayIndex , typename ActionList , typename ParallelComponent , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a1cff1d975abf159bf137a8a3364e2f2c"><td class="memTemplItemLeft" align="right" valign="top">static <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; db::DataBox&lt; DbTagsList &gt; &amp;&amp; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>apply</b> (db::DataBox&lt; DbTagsList &gt; &amp;box, const <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; InboxTags... &gt; &amp;inboxes, const <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt; &amp;cache, const ArrayIndex &amp;array_index, ActionList, const ParallelComponent *const) noexcept</td></tr>
+<tr class="separator:a1cff1d975abf159bf137a8a3364e2f2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim, typename System, typename TciMutator&gt;<br />
+struct evolution::dg::subcell::Actions::Initialize&lt; Dim, System, TciMutator &gt;</h3>
+
+<p><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Actions_1_1Initialize.html" title="Initialize the subcell grid, and switch from DG to subcell if the DG solution is inadmissible.">Initialize</a> the subcell grid, and switch from DG to subcell if the DG solution is inadmissible. </p>
+<p>Interior cells are marked as troubled if <code>subcell_options.always_use_subcells()</code> is <code>true</code> or if <code>Metavariables::SubcellOptions::DgInitialDataTci::apply</code> reports that the initial data is not well represented on the DG grid for that cell. Exterior cells are never marked as troubled, because subcell doesn't yet support boundary conditions.</p>
+<p>If the cell is troubled then <code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1ActiveGrid.html" title="The grid currently used for the DG-subcell evolution on the element.">Tags::ActiveGrid</a></code> is set to <code>subcell::ActiveGrid::Subcell</code>, the <code>System::variables_tag</code> become the variables on the subcell grid set by calling <code><a class="el" href="structevolution_1_1Initialization_1_1Actions_1_1SetVariables.html" title="Sets variables needed for evolution of hyperbolic systems.">evolution::Initialization::Actions::SetVariables</a></code>, <code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Inactive.html" title="Mark a tag as holding data for the inactive grid.">Tags::Inactive</a>&lt;System::variables_tag&gt;</code> become the (inadmissible) DG solution, and the <code><a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt;<a class="el" href="structTags_1_1dt.html" title="Prefix indicating a time derivative.">Tags::dt</a>, System::variables_tag&gt;</code> are resized to the subcell grid with an <code>ASSERT</code> requiring that they were previously set to the size of the DG grid (this is to reduce the likelihood of them being resized back to the DG grid later).</p>
+<h3>Details</h3>
+<p><code>Metavariables::SubcellOptions::DgInitialDataTci::apply</code> is called with the evolved variables on the DG grid, the projected evolved variables, the DG mesh, the initial RDMP parameters \(\delta_0\) and \(\epsilon\), and the Persson TCI parameter \(\alpha\). The apply function must return a <code>bool</code> that is <code>true</code> if the cell is troubled.</p>
+<p>GlobalCache:</p><ul>
+<li>Uses:<ul>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1SubcellOptions.html" title="System-agnostic options for DG-subcell.">subcell::Tags::SubcellOptions</a></code></li>
+</ul>
+</li>
+</ul>
+<p>DataBox:</p><ul>
+<li>Uses:<ul>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1Mesh.html" title="The computational grid of the Element in the DataBox.">domain::Tags::Mesh</a>&lt;Dim&gt;</code></li>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1Element.html">domain::Tags::Element</a>&lt;Dim&gt;</code></li>
+<li><code>System::variables_tag</code></li>
+</ul>
+</li>
+<li>Adds:<ul>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Mesh.html" title="The mesh on the subcells.">subcell::Tags::Mesh</a>&lt;Dim&gt;</code></li>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1ActiveGrid.html" title="The grid currently used for the DG-subcell evolution on the element.">subcell::Tags::ActiveGrid</a></code></li>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1DidRollback.html" title="Tag indicating whether we are retrying a step after a rollback of a failed DG step.">subcell::Tags::DidRollback</a></code></li>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Inactive.html" title="Mark a tag as holding data for the inactive grid.">subcell::Tags::Inactive</a>&lt;System::variables_tag&gt;</code></li>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1TciGridHistory.html" title="A record of which grid the TCI requested we use.">subcell::Tags::TciGridHistory</a></code></li>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1NeighborDataForReconstructionAndRdmpTci.html" title="The neighbor data for reconstruction and the RDMP troubled-cell indicator.">subcell::Tags::NeighborDataForReconstructionAndRdmpTci</a>&lt;Dim&gt;</code></li>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1fd_1_1Tags_1_1InverseJacobianLogicalToGrid.html" title="The inverse Jacobian from the logical frame to the grid frame at the cell centers.">subcell::fd::Tags::InverseJacobianLogicalToGrid</a>&lt;Dim&gt;</code></li>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1fd_1_1Tags_1_1DetInverseJacobianLogicalToGrid.html" title="The determinant of the inverse Jacobian from the logical frame to the grid frame at the cell centers.">subcell::fd::Tags::DetInverseJacobianLogicalToGrid</a></code></li>
+<li><code>subcell::Tags::LogicalCoordinates&lt;Dim&gt;</code></li>
+<li><code>subcell::Tags::Corodinates&lt;Dim, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>&gt;</code> (as compute tag)</li>
+<li><code><a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1TciStatusCompute.html" title="Computes the TCI status from the currently active grid and the TCI history.">subcell::Tags::TciStatusCompute</a>&lt;Dim&gt;</code></li>
+</ul>
+</li>
+<li>Removes: nothing</li>
+<li>Modifies:<ul>
+<li><code>System::variables_tag</code> if the cell is troubled</li>
+<li><code><a class="el" href="structTags_1_1dt.html" title="Prefix indicating a time derivative.">Tags::dt</a>&lt;System::variables_tag&gt;</code> if the cell is troubled </li>
+</ul>
+</li>
+</ul>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/DgSubcell/Actions/<a class="el" href="Evolution_2DgSubcell_2Actions_2Initialize_8hpp_source.html">Initialize.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

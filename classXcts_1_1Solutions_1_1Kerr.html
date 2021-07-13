@@ -1,0 +1,340 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Xcts::Solutions::Kerr&lt; Registrars &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceXcts.html">Xcts</a></li><li class="navelem"><a class="el" href="namespaceXcts_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="classXcts_1_1Solutions_1_1Kerr.html">Kerr</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classXcts_1_1Solutions_1_1Kerr-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Xcts::Solutions::Kerr&lt; Registrars &gt; Class Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><a class="el" href="classXcts_1_1Solutions_1_1Kerr.html" title="Kerr spacetime in general relativity.">Kerr</a> spacetime in general relativity.  
+ <a href="classXcts_1_1Solutions_1_1Kerr.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Kerr_8hpp_source.html">Kerr.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:aa8ca8976e47a8d68db53dda5630ef3b2"><td class="memItemLeft" align="right" valign="top"><a id="aa8ca8976e47a8d68db53dda5630ef3b2"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_template</b> (<a class="el" href="classXcts_1_1Solutions_1_1Kerr.html">Kerr</a>)</td></tr>
+<tr class="separator:aa8ca8976e47a8d68db53dda5630ef3b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0f6db3e5f80b158494537bee568d792"><td class="memTemplParams" colspan="2"><a id="aa0f6db3e5f80b158494537bee568d792"></a>
+template&lt;typename DataType , typename... RequestedTags&gt; </td></tr>
+<tr class="memitem:aa0f6db3e5f80b158494537bee568d792"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; RequestedTags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;x, tmpl::list&lt; RequestedTags... &gt;) const noexcept</td></tr>
+<tr class="separator:aa0f6db3e5f80b158494537bee568d792"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8998c85d09b1a12c3ea6870295ed5f4f"><td class="memTemplParams" colspan="2"><a id="a8998c85d09b1a12c3ea6870295ed5f4f"></a>
+template&lt;typename DataType , typename... RequestedTags&gt; </td></tr>
+<tr class="memitem:a8998c85d09b1a12c3ea6870295ed5f4f"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; RequestedTags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;x, const <a class="el" href="classMesh.html">Mesh</a>&lt; 3 &gt; &amp;mesh, const InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;inv_jacobian, tmpl::list&lt; RequestedTags... &gt;) const noexcept</td></tr>
+<tr class="separator:a8998c85d09b1a12c3ea6870295ed5f4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad2651e9c51bc374b58644e7d9d6393e5"><td class="memItemLeft" align="right" valign="top"><a id="ad2651e9c51bc374b58644e7d9d6393e5"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:ad2651e9c51bc374b58644e7d9d6393e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classXcts_1_1Solutions_1_1AnalyticSolution"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classXcts_1_1Solutions_1_1AnalyticSolution')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classXcts_1_1Solutions_1_1AnalyticSolution.html">Xcts::Solutions::AnalyticSolution&lt; tmpl::list&lt; Solutions::Registrars::Kerr &gt; &gt;</a></td></tr>
+<tr class="memitem:ad14eadd1f7a12fe6879c959679e3fa3b inherit pub_methods_classXcts_1_1Solutions_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="ad14eadd1f7a12fe6879c959679e3fa3b"></a>
+<a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; RequestedTags... &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;x, tmpl::list&lt; RequestedTags... &gt;) const noexcept</td></tr>
+<tr class="separator:ad14eadd1f7a12fe6879c959679e3fa3b inherit pub_methods_classXcts_1_1Solutions_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classAnalyticData"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classAnalyticData')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classAnalyticData.html">AnalyticData&lt; 3, tmpl::list&lt; Solutions::Registrars::Kerr &gt; &gt;</a></td></tr>
+<tr class="memitem:a87d911aea5f1bc2df7141525bd4dc44e inherit pub_methods_classAnalyticData"><td class="memItemLeft" align="right" valign="top"><a id="a87d911aea5f1bc2df7141525bd4dc44e"></a>
+<a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAnalyticData.html#a87d911aea5f1bc2df7141525bd4dc44e">variables</a> (const tnsr::I&lt; DataType, Dim &gt; &amp;x, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:a87d911aea5f1bc2df7141525bd4dc44e inherit pub_methods_classAnalyticData"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a collection of tensor fields at spatial coordinate(s) <code>x</code> <br /></td></tr>
+<tr class="separator:a87d911aea5f1bc2df7141525bd4dc44e inherit pub_methods_classAnalyticData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9db45292e221044e16f904951d6c9b0 inherit pub_methods_classAnalyticData"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAnalyticData.html#ad9db45292e221044e16f904951d6c9b0">variables</a> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;x, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh, const InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;inv_jacobian, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:ad9db45292e221044e16f904951d6c9b0 inherit pub_methods_classAnalyticData"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a collection of tensor fields at spatial coordinate(s) <code>x</code>  <a href="classAnalyticData.html#ad9db45292e221044e16f904951d6c9b0">More...</a><br /></td></tr>
+<tr class="separator:ad9db45292e221044e16f904951d6c9b0 inherit pub_methods_classAnalyticData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classgr_1_1Solutions_1_1KerrSchild')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">gr::Solutions::KerrSchild</a></td></tr>
+<tr class="memitem:afe280d0de83631b490f05c0afbf1e4cd inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memItemLeft" align="right" valign="top"><a id="afe280d0de83631b490f05c0afbf1e4cd"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>KerrSchild</b> (double mass, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">Spin::type</a> dimensionless_spin, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">Center::type</a> center, const <a class="el" href="structOptions_1_1Context.html">Options::Context</a> &amp;context={})</td></tr>
+<tr class="separator:afe280d0de83631b490f05c0afbf1e4cd inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c039f2addc64e2d28217ccb74512a95 inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memItemLeft" align="right" valign="top"><a id="a8c039f2addc64e2d28217ccb74512a95"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>KerrSchild</b> (CkMigrateMessage *) noexcept</td></tr>
+<tr class="separator:a8c039f2addc64e2d28217ccb74512a95 inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59c045e410112106b1188542b51ac84e inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memItemLeft" align="right" valign="top"><a id="a59c045e410112106b1188542b51ac84e"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>KerrSchild</b> (const <a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">KerrSchild</a> &amp;)=default</td></tr>
+<tr class="separator:a59c045e410112106b1188542b51ac84e inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9cbbe772982b49885e5b6f875cf470a0 inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memItemLeft" align="right" valign="top"><a id="a9cbbe772982b49885e5b6f875cf470a0"></a>
+<a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">KerrSchild</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">KerrSchild</a> &amp;)=default</td></tr>
+<tr class="separator:a9cbbe772982b49885e5b6f875cf470a0 inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1deefb4103d9e707056b4c06ab246841 inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memItemLeft" align="right" valign="top"><a id="a1deefb4103d9e707056b4c06ab246841"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>KerrSchild</b> (<a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">KerrSchild</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a1deefb4103d9e707056b4c06ab246841 inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6684ead4e2eeda90cf8c8ca94a7583e4 inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memItemLeft" align="right" valign="top"><a id="a6684ead4e2eeda90cf8c8ca94a7583e4"></a>
+<a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">KerrSchild</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">KerrSchild</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a6684ead4e2eeda90cf8c8ca94a7583e4 inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeecd94556fd093f81b2d445ce0faeee9 inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memTemplParams" colspan="2"><a id="aeecd94556fd093f81b2d445ce0faeee9"></a>
+template&lt;typename DataType , typename Frame , typename... Tags&gt; </td></tr>
+<tr class="memitem:aeecd94556fd093f81b2d445ce0faeee9 inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, volume_dim, Frame &gt; &amp;x, double, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="separator:aeecd94556fd093f81b2d445ce0faeee9 inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ba97ba71e3467218af3a4a6f8747d7f inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memItemLeft" align="right" valign="top"><a id="a9ba97ba71e3467218af3a4a6f8747d7f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a9ba97ba71e3467218af3a4a6f8747d7f inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b1c25140700b513ef1ce3d02c81f1db inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memItemLeft" align="right" valign="top"><a id="a8b1c25140700b513ef1ce3d02c81f1db"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>mass</b> () const noexcept</td></tr>
+<tr class="separator:a8b1c25140700b513ef1ce3d02c81f1db inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac0b9a424b6cc0f11900a4f88ad6e3091 inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memItemLeft" align="right" valign="top"><a id="ac0b9a424b6cc0f11900a4f88ad6e3091"></a>
+const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, volume_dim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>center</b> () const noexcept</td></tr>
+<tr class="separator:ac0b9a424b6cc0f11900a4f88ad6e3091 inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a609a30d421c3867217bd3046926e43c6 inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memItemLeft" align="right" valign="top"><a id="a609a30d421c3867217bd3046926e43c6"></a>
+const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, volume_dim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>dimensionless_spin</b> () const noexcept</td></tr>
+<tr class="separator:a609a30d421c3867217bd3046926e43c6 inherit pub_methods_classgr_1_1Solutions_1_1KerrSchild"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header pub_types_classXcts_1_1Solutions_1_1AnalyticSolution"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classXcts_1_1Solutions_1_1AnalyticSolution')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classXcts_1_1Solutions_1_1AnalyticSolution.html">Xcts::Solutions::AnalyticSolution&lt; tmpl::list&lt; Solutions::Registrars::Kerr &gt; &gt;</a></td></tr>
+<tr class="memitem:ac7367a5ec5857be91e44777820baf1a2 inherit pub_types_classXcts_1_1Solutions_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="ac7367a5ec5857be91e44777820baf1a2"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>registrars</b> = tmpl::list&lt; Solutions::Registrars::Kerr &gt;</td></tr>
+<tr class="separator:ac7367a5ec5857be91e44777820baf1a2 inherit pub_types_classXcts_1_1Solutions_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a225e7520f1497a6e1641f80dfb3d5654 inherit pub_types_classXcts_1_1Solutions_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="a225e7520f1497a6e1641f80dfb3d5654"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = <a class="el" href="namespaceRegistration.html#abfd9ae1266be994041d2cfaa4199eed2">Registration::registrants</a>&lt; registrars &gt;</td></tr>
+<tr class="separator:a225e7520f1497a6e1641f80dfb3d5654 inherit pub_types_classXcts_1_1Solutions_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classAnalyticData"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classAnalyticData')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classAnalyticData.html">AnalyticData&lt; 3, tmpl::list&lt; Solutions::Registrars::Kerr &gt; &gt;</a></td></tr>
+<tr class="memitem:aaeab66e58c7076cce1284d6fcf1f331e inherit pub_types_classAnalyticData"><td class="memItemLeft" align="right" valign="top"><a id="aaeab66e58c7076cce1284d6fcf1f331e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>registrars</b> = tmpl::list&lt; Solutions::Registrars::Kerr &gt;</td></tr>
+<tr class="separator:aaeab66e58c7076cce1284d6fcf1f331e inherit pub_types_classAnalyticData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2ae5b60f4c626ee81e52d86ce9d2384 inherit pub_types_classAnalyticData"><td class="memItemLeft" align="right" valign="top"><a id="ac2ae5b60f4c626ee81e52d86ce9d2384"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = <a class="el" href="namespaceRegistration.html#abfd9ae1266be994041d2cfaa4199eed2">Registration::registrants</a>&lt; registrars &gt;</td></tr>
+<tr class="separator:ac2ae5b60f4c626ee81e52d86ce9d2384 inherit pub_types_classAnalyticData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classgr_1_1Solutions_1_1KerrSchild"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classgr_1_1Solutions_1_1KerrSchild')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">gr::Solutions::KerrSchild</a></td></tr>
+<tr class="memitem:a39d4488889a588a1be2ce8f73202f9ce inherit pub_types_classgr_1_1Solutions_1_1KerrSchild"><td class="memItemLeft" align="right" valign="top"><a id="a39d4488889a588a1be2ce8f73202f9ce"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structgr_1_1Solutions_1_1KerrSchild_1_1Mass.html">Mass</a>, <a class="el" href="structgr_1_1Solutions_1_1KerrSchild_1_1Spin.html">Spin</a>, <a class="el" href="structgr_1_1Solutions_1_1KerrSchild_1_1Center.html">Center</a> &gt;</td></tr>
+<tr class="separator:a39d4488889a588a1be2ce8f73202f9ce inherit pub_types_classgr_1_1Solutions_1_1KerrSchild"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88e0b6e468fb93726e993b2f372c2ff4 inherit pub_types_classgr_1_1Solutions_1_1KerrSchild"><td class="memTemplParams" colspan="2"><a id="a88e0b6e468fb93726e993b2f372c2ff4"></a>
+template&lt;typename DataType , typename Frame  = ::Frame::Inertial&gt; </td></tr>
+<tr class="memitem:a88e0b6e468fb93726e993b2f372c2ff4 inherit pub_types_classgr_1_1Solutions_1_1KerrSchild"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>CachedBuffer</b> = <a class="el" href="classCachedTempBuffer.html">CachedTempBuffer</a>&lt; <a class="el" href="classgr_1_1Solutions_1_1KerrSchild_1_1IntermediateComputer.html">IntermediateComputer</a>&lt; DataType, Frame &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::x_minus_center</a>&lt; DataType, Frame &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::a_dot_x</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::a_dot_x_squared</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::half_xsq_minus_asq</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::r_squared</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::r</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::a_dot_x_over_rsquared</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_log_r_denom</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_log_r</a>&lt; DataType, Frame &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::H_denom</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::H</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_H_temp1</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_H_temp2</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_H</a>&lt; DataType, Frame &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::denom</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::a_dot_x_over_r</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::null_form</a>&lt; DataType, Frame &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_null_form</a>&lt; DataType, Frame &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::lapse_squared</a>&lt; DataType &gt;, <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::deriv_lapse_multiplier</a>&lt; DataType &gt;, <a class="el" href="structTags_1_1TempTensor.html">internal_tags::shift_multiplier</a>&lt; DataType &gt;, <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, Frame, DataType &gt;, <a class="el" href="structTags_1_1deriv.html">DerivShift</a>&lt; DataType, Frame &gt;, <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, Frame, DataType &gt;, <a class="el" href="structTags_1_1deriv.html">DerivSpatialMetric</a>&lt; DataType, Frame &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, Frame, DataType &gt; &gt;&gt;</td></tr>
+<tr class="separator:a88e0b6e468fb93726e993b2f372c2ff4 inherit pub_types_classgr_1_1Solutions_1_1KerrSchild"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_structgr_1_1AnalyticSolution"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structgr_1_1AnalyticSolution')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structgr_1_1AnalyticSolution.html">gr::AnalyticSolution&lt; 3_st &gt;</a></td></tr>
+<tr class="memitem:a01ebfa926cdac437de642a3d71291079 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="a01ebfa926cdac437de642a3d71291079"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>DerivLapse</b> = ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; DataType &gt;, tmpl::size_t&lt; volume_dim &gt;, Frame &gt;</td></tr>
+<tr class="separator:a01ebfa926cdac437de642a3d71291079 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f751afb8f2bbf566d6e94064a272c98 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="a5f751afb8f2bbf566d6e94064a272c98"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>DerivShift</b> = ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; volume_dim, Frame, DataType &gt;, tmpl::size_t&lt; volume_dim &gt;, Frame &gt;</td></tr>
+<tr class="separator:a5f751afb8f2bbf566d6e94064a272c98 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a134c9ecf2c5a4bc3f18fa10b1adcaaab inherit pub_types_structgr_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="a134c9ecf2c5a4bc3f18fa10b1adcaaab"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>DerivSpatialMetric</b> = ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; volume_dim, Frame, DataType &gt;, tmpl::size_t&lt; volume_dim &gt;, Frame &gt;</td></tr>
+<tr class="separator:a134c9ecf2c5a4bc3f18fa10b1adcaaab inherit pub_types_structgr_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b907b96b69eebd67298c9da7a913388 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="a4b907b96b69eebd67298c9da7a913388"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>tags</b> = tmpl::list&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; DataType &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; DataType &gt; &gt;, <a class="el" href="structTags_1_1deriv.html">DerivLapse</a>&lt; DataType, Frame &gt;, <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; volume_dim, Frame, DataType &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; volume_dim, Frame, DataType &gt; &gt;, <a class="el" href="structTags_1_1deriv.html">DerivShift</a>&lt; DataType, Frame &gt;, <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; volume_dim, Frame, DataType &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; volume_dim, Frame, DataType &gt; &gt;, <a class="el" href="structTags_1_1deriv.html">DerivSpatialMetric</a>&lt; DataType, Frame &gt;, <a class="el" href="structgr_1_1Tags_1_1SqrtDetSpatialMetric.html">gr::Tags::SqrtDetSpatialMetric</a>&lt; DataType &gt;, <a class="el" href="structgr_1_1Tags_1_1ExtrinsicCurvature.html">gr::Tags::ExtrinsicCurvature</a>&lt; volume_dim, Frame, DataType &gt;, <a class="el" href="structgr_1_1Tags_1_1InverseSpatialMetric.html">gr::Tags::InverseSpatialMetric</a>&lt; volume_dim, Frame, DataType &gt; &gt;</td></tr>
+<tr class="separator:a4b907b96b69eebd67298c9da7a913388 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_static_attribs_classAnalyticData"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_classAnalyticData')"><img src="closed.png" alt="-"/>&#160;Static Public Attributes inherited from <a class="el" href="classAnalyticData.html">AnalyticData&lt; 3, tmpl::list&lt; Solutions::Registrars::Kerr &gt; &gt;</a></td></tr>
+<tr class="memitem:adf176d57e0105ecfbd77f542a6c70473 inherit pub_static_attribs_classAnalyticData"><td class="memItemLeft" align="right" valign="top"><a id="adf176d57e0105ecfbd77f542a6c70473"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b></td></tr>
+<tr class="separator:adf176d57e0105ecfbd77f542a6c70473 inherit pub_static_attribs_classAnalyticData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_static_attribs_classgr_1_1Solutions_1_1KerrSchild"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_classgr_1_1Solutions_1_1KerrSchild')"><img src="closed.png" alt="-"/>&#160;Static Public Attributes inherited from <a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">gr::Solutions::KerrSchild</a></td></tr>
+<tr class="memitem:abc0a9ec85caebfc4d9bb8d7b3fdb213c inherit pub_static_attribs_classgr_1_1Solutions_1_1KerrSchild"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:abc0a9ec85caebfc4d9bb8d7b3fdb213c inherit pub_static_attribs_classgr_1_1Solutions_1_1KerrSchild"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_static_attribs_structgr_1_1AnalyticSolution"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_structgr_1_1AnalyticSolution')"><img src="closed.png" alt="-"/>&#160;Static Public Attributes inherited from <a class="el" href="structgr_1_1AnalyticSolution.html">gr::AnalyticSolution&lt; 3_st &gt;</a></td></tr>
+<tr class="memitem:ae5b357444661e278b8bbad8c96b6b666 inherit pub_static_attribs_structgr_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="ae5b357444661e278b8bbad8c96b6b666"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b></td></tr>
+<tr class="separator:ae5b357444661e278b8bbad8c96b6b666 inherit pub_static_attribs_structgr_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename Registrars = tmpl::list&lt;Solutions::Registrars::Kerr&gt;&gt;<br />
+class Xcts::Solutions::Kerr&lt; Registrars &gt;</h3>
+
+<p><a class="el" href="classXcts_1_1Solutions_1_1Kerr.html" title="Kerr spacetime in general relativity.">Kerr</a> spacetime in general relativity. </p>
+<p>This class implements the <a class="el" href="classXcts_1_1Solutions_1_1Kerr.html" title="Kerr spacetime in general relativity.">Kerr</a> solution to the XCTS equations. It is currently implemented in Kerr-Schild coordinates only and derives most quantities from the <code>gr::Solution::KerrSchild</code> class. It poses a non-conformally-flat problem to the XCTS equations.</p>
+<p>The conformal factor in this solution is set to \(\psi=1\), so the conformal background-metric is the spatial <a class="el" href="classXcts_1_1Solutions_1_1Kerr.html" title="Kerr spacetime in general relativity.">Kerr</a> metric. It is possible to choose a different \(\psi\) so the solution is non-trivial in this variable, though that is probably only useful for testing and currently not implemented. It should be noted, however, that the combination of \(\psi=1\) and apparent-horizon boundary conditions poses a hard problem to the nonlinear solver when starting at a flat initial guess. This is because the strongly-nonlinear boundary-conditions couple the variables in such a way that the solution is initially corrected away from \(\psi=1\) and is then unable to recover. A conformal-factor profile such as \(\psi=1 + \frac{M}{2r}\) (resembling isotropic coordinates) resolves this issue. In production solves this is not an issue because we choose a much better initial guess than flatness, such as a superposition of <a class="el" href="classXcts_1_1Solutions_1_1Kerr.html" title="Kerr spacetime in general relativity.">Kerr</a> solutions for black-hole binary initial data. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticSolutions/Xcts/<a class="el" href="Kerr_8hpp_source.html">Kerr.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,317 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Domain/Structure/Element.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_2b2489ccd21aa27a14d4bfff471515cd.html">Domain</a></li><li class="navelem"><a class="el" href="dir_58f7737764fa9dbbc3fd11f991267b84.html">Structure</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">Element.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<a href="Element_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment">/// \file</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment">/// Defines class Element.</span></div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160; </div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/iosfwd.html">iosfwd</a>&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/unordered_set.html">unordered_set</a>&gt;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160; </div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Direction_8hpp.html">Domain/Structure/Direction.hpp</a>&quot;</span>  <span class="comment">// IWYU pragma: keep</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;Domain/Structure/DirectionMap.hpp&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ElementId_8hpp.html">Domain/Structure/ElementId.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Neighbors_8hpp.html">Domain/Structure/Neighbors.hpp</a>&quot;</span>  <span class="comment">// IWYU pragma: keep</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment"></span><span class="keyword">namespace </span>PUP {</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="keyword">class </span>er;</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;}  <span class="comment">// namespace PUP</span><span class="comment"></span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment"></span><span class="comment"></span> </div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment">/// A spectral element with knowledge of its neighbors.</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment">/// \tparam VolumeDim the volume dimension.</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00029"></a><span class="lineno"><a class="line" href="classElement.html">   29</a></span>&#160;<span class="keyword">class </span><a class="code" href="classElement.html">Element</a> {</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  <span class="keyword">using</span> <a class="code" href="classDirectionMap.html">Neighbors_t</a> = <a class="code" href="classDirectionMap.html">DirectionMap&lt;VolumeDim, Neighbors&lt;VolumeDim&gt;</a>&gt;;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment">  /// Constructor</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment">  ///</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment">  /// \param id a unique identifier for the Element.</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment">  /// \param neighbors info about the Elements that share an interface</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment">  /// with this Element.</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="comment"></span>  <a class="code" href="classElement.html#a3e3cf6df9c183d9b6eedab5e81e33892">Element</a>(<a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a> <span class="keywordtype">id</span>, <a class="code" href="classDirectionMap.html">Neighbors_t</a> <a class="code" href="classElement.html#a18168468ffe41087756d0e8feb8d2daa">neighbors</a>) noexcept;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment">  /// Default needed for serialization</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment"></span>  <a class="code" href="classElement.html#a3e3cf6df9c183d9b6eedab5e81e33892">Element</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160; </div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;  ~<a class="code" href="classElement.html">Element</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  <a class="code" href="classElement.html#a3e3cf6df9c183d9b6eedab5e81e33892">Element</a>(<span class="keyword">const</span> <a class="code" href="classElement.html">Element&lt;VolumeDim&gt;</a>&amp; <span class="comment">/*rhs*/</span>) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  <a class="code" href="classElement.html#a3e3cf6df9c183d9b6eedab5e81e33892">Element</a>(<a class="code" href="classElement.html">Element&lt;VolumeDim&gt;</a>&amp;&amp; <span class="comment">/*rhs*/</span>) noexcept = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;  <a class="code" href="classElement.html">Element&lt;VolumeDim&gt;</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classElement.html">Element&lt;VolumeDim&gt;</a>&amp; <span class="comment">/*rhs*/</span>) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  <a class="code" href="classElement.html">Element&lt;VolumeDim&gt;</a>&amp; operator=(<a class="code" href="classElement.html">Element&lt;VolumeDim&gt;</a>&amp;&amp; <span class="comment">/*rhs*/</span>) noexcept =</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;      <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment">  /// The directions of the faces of the Element that are external boundaries.</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno"><a class="line" href="classElement.html#a78d391093c04252d4134270969def753">   51</a></span>&#160;<span class="comment"></span>  <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set&lt;Direction&lt;VolumeDim&gt;</a>&gt;&amp; <a class="code" href="classElement.html#a78d391093c04252d4134270969def753">external_boundaries</a>() const</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;      noexcept {</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keywordflow">return</span> external_boundaries_;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  }</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment">  /// The directions of the faces of the Element that are internal boundaries.</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno"><a class="line" href="classElement.html#afaf12a02a784feb503b69a88b902a3c2">   57</a></span>&#160;<span class="comment"></span>  <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set&lt;Direction&lt;VolumeDim&gt;</a>&gt;&amp; <a class="code" href="classElement.html#afaf12a02a784feb503b69a88b902a3c2">internal_boundaries</a>() const</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;      noexcept {</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="keywordflow">return</span> internal_boundaries_;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;  }</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment">  /// A unique ID for the Element.</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno"><a class="line" href="classElement.html#ab41975ae64bd6311a5f5e05ce2a5fd54">   63</a></span>&#160;<span class="comment"></span>  <span class="keyword">const</span> <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&amp; <a class="code" href="classElement.html#ab41975ae64bd6311a5f5e05ce2a5fd54">id</a>() const noexcept { <span class="keywordflow">return</span> id_; }</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment">  /// Information about the neighboring Elements.</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno"><a class="line" href="classElement.html#a18168468ffe41087756d0e8feb8d2daa">   66</a></span>&#160;<span class="comment"></span>  <span class="keyword">const</span> <a class="code" href="classDirectionMap.html">Neighbors_t</a>&amp; <a class="code" href="classElement.html#a18168468ffe41087756d0e8feb8d2daa">neighbors</a>() const noexcept { <span class="keywordflow">return</span> neighbors_; }</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment">  /// The number of neighbors this element has</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno"><a class="line" href="classElement.html#ad2a28e0ad4f32c2606d8f8b07928dec5">   69</a></span>&#160;<span class="comment"></span>  <span class="keywordtype">size_t</span> <a class="code" href="classElement.html#ad2a28e0ad4f32c2606d8f8b07928dec5">number_of_neighbors</a>() const noexcept { <span class="keywordflow">return</span> number_of_neighbors_; }</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; </div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;  <span class="comment">// clang-tidy: google-runtime-references</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;  <span class="keywordtype">void</span> pup(PUP::er&amp; p) noexcept;  <span class="comment">// NOLINT</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160; </div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;  <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a> id_{};</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;  Neighbors_t neighbors_{};</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;  <span class="keywordtype">size_t</span> number_of_neighbors_{};</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set&lt;Direction&lt;VolumeDim&gt;</a>&gt; external_boundaries_{};</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set&lt;Direction&lt;VolumeDim&gt;</a>&gt; internal_boundaries_{};</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;};</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<a class="codeRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a>&amp; operator&lt;&lt;(<a class="codeRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a>&amp; os,</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;                         <span class="keyword">const</span> <a class="code" href="classElement.html">Element&lt;VolumeDim&gt;</a>&amp; element) noexcept;</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="keywordtype">bool</span> operator==(<span class="keyword">const</span> <a class="code" href="classElement.html">Element&lt;VolumeDim&gt;</a>&amp; lhs,</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;                <span class="keyword">const</span> <a class="code" href="classElement.html">Element&lt;VolumeDim&gt;</a>&amp; rhs) noexcept;</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160; </div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="keywordtype">bool</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/rel_ops/operator_cmp.html">operator!=</a>(<span class="keyword">const</span> <a class="code" href="classElement.html">Element&lt;VolumeDim&gt;</a>&amp; lhs,</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;                <span class="keyword">const</span> <a class="code" href="classElement.html">Element&lt;VolumeDim&gt;</a>&amp; rhs) noexcept;</div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="aunordered_set_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/unordered_set.html">unordered_set</a></div></div>
+<div class="ttc" id="aoperator_cmp_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/rel_ops/operator_cmp.html">std::rel_ops::operator!=</a></div><div class="ttdeci">T operator!=(T... args)</div></div>
+<div class="ttc" id="aiosfwd_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/iosfwd.html">iosfwd</a></div></div>
+<div class="ttc" id="aclassElement_html_afaf12a02a784feb503b69a88b902a3c2"><div class="ttname"><a href="classElement.html#afaf12a02a784feb503b69a88b902a3c2">Element::internal_boundaries</a></div><div class="ttdeci">const std::unordered_set&lt; Direction&lt; VolumeDim &gt; &gt; &amp; internal_boundaries() const noexcept</div><div class="ttdoc">The directions of the faces of the Element that are internal boundaries.</div><div class="ttdef"><b>Definition:</b> Element.hpp:57</div></div>
+<div class="ttc" id="aclassElement_html"><div class="ttname"><a href="classElement.html">Element</a></div><div class="ttdef"><b>Definition:</b> Element.hpp:29</div></div>
+<div class="ttc" id="aclassElement_html_a3e3cf6df9c183d9b6eedab5e81e33892"><div class="ttname"><a href="classElement.html#a3e3cf6df9c183d9b6eedab5e81e33892">Element::Element</a></div><div class="ttdeci">Element()=default</div><div class="ttdoc">Default needed for serialization.</div></div>
+<div class="ttc" id="aclassElementId_html"><div class="ttname"><a href="classElementId.html">ElementId</a></div><div class="ttdoc">An ElementId uniquely labels an Element.</div><div class="ttdef"><b>Definition:</b> ElementId.hpp:51</div></div>
+<div class="ttc" id="aElementId_8hpp_html"><div class="ttname"><a href="ElementId_8hpp.html">ElementId.hpp</a></div></div>
+<div class="ttc" id="abasic_ostream_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a></div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="aNeighbors_8hpp_html"><div class="ttname"><a href="Neighbors_8hpp.html">Neighbors.hpp</a></div></div>
+<div class="ttc" id="aclassElement_html_ab41975ae64bd6311a5f5e05ce2a5fd54"><div class="ttname"><a href="classElement.html#ab41975ae64bd6311a5f5e05ce2a5fd54">Element::id</a></div><div class="ttdeci">const ElementId&lt; VolumeDim &gt; &amp; id() const noexcept</div><div class="ttdoc">A unique ID for the Element.</div><div class="ttdef"><b>Definition:</b> Element.hpp:63</div></div>
+<div class="ttc" id="aclassElement_html_a78d391093c04252d4134270969def753"><div class="ttname"><a href="classElement.html#a78d391093c04252d4134270969def753">Element::external_boundaries</a></div><div class="ttdeci">const std::unordered_set&lt; Direction&lt; VolumeDim &gt; &gt; &amp; external_boundaries() const noexcept</div><div class="ttdoc">The directions of the faces of the Element that are external boundaries.</div><div class="ttdef"><b>Definition:</b> Element.hpp:51</div></div>
+<div class="ttc" id="aclassDirectionMap_html"><div class="ttname"><a href="classDirectionMap.html">DirectionMap&lt; VolumeDim, Neighbors&lt; VolumeDim &gt; &gt;</a></div></div>
+<div class="ttc" id="aclassElement_html_ad2a28e0ad4f32c2606d8f8b07928dec5"><div class="ttname"><a href="classElement.html#ad2a28e0ad4f32c2606d8f8b07928dec5">Element::number_of_neighbors</a></div><div class="ttdeci">size_t number_of_neighbors() const noexcept</div><div class="ttdoc">The number of neighbors this element has.</div><div class="ttdef"><b>Definition:</b> Element.hpp:69</div></div>
+<div class="ttc" id="aDirection_8hpp_html"><div class="ttname"><a href="Direction_8hpp.html">Direction.hpp</a></div></div>
+<div class="ttc" id="aclassElement_html_a18168468ffe41087756d0e8feb8d2daa"><div class="ttname"><a href="classElement.html#a18168468ffe41087756d0e8feb8d2daa">Element::neighbors</a></div><div class="ttdeci">const Neighbors_t &amp; neighbors() const noexcept</div><div class="ttdoc">Information about the neighboring Elements.</div><div class="ttdef"><b>Definition:</b> Element.hpp:66</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

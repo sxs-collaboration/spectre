@@ -1,0 +1,329 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: intrp::BarycentricRationalSpanInterpolator Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceintrp.html">intrp</a></li><li class="navelem"><a class="el" href="classintrp_1_1BarycentricRationalSpanInterpolator.html">BarycentricRationalSpanInterpolator</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classintrp_1_1BarycentricRationalSpanInterpolator-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">intrp::BarycentricRationalSpanInterpolator Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Performs a barycentric interpolation with an order in a range fixed at construction; this class can be chosen via the options factory mechanism as a possible <code><a class="el" href="classintrp_1_1SpanInterpolator.html" title="Base class for interpolators so that the factory options mechanism can be used.">SpanInterpolator</a></code>.  
+ <a href="classintrp_1_1BarycentricRationalSpanInterpolator.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="BarycentricRationalSpanInterpolator_8hpp_source.html">BarycentricRationalSpanInterpolator.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1BarycentricRationalSpanInterpolator_1_1MaxOrder.html">MaxOrder</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structintrp_1_1BarycentricRationalSpanInterpolator_1_1MinOrder.html">MinOrder</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:aa187239c6eb8ffdbd924eeeaa687963a"><td class="memItemLeft" align="right" valign="top"><a id="aa187239c6eb8ffdbd924eeeaa687963a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structintrp_1_1BarycentricRationalSpanInterpolator_1_1MinOrder.html">MinOrder</a>, <a class="el" href="structintrp_1_1BarycentricRationalSpanInterpolator_1_1MaxOrder.html">MaxOrder</a> &gt;</td></tr>
+<tr class="separator:aa187239c6eb8ffdbd924eeeaa687963a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classintrp_1_1SpanInterpolator"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classintrp_1_1SpanInterpolator')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classintrp_1_1SpanInterpolator.html">intrp::SpanInterpolator</a></td></tr>
+<tr class="memitem:a82520298d659d1f6a8940b8820b631d7 inherit pub_types_classintrp_1_1SpanInterpolator"><td class="memItemLeft" align="right" valign="top"><a id="a82520298d659d1f6a8940b8820b631d7"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::list&lt; <a class="el" href="classintrp_1_1LinearSpanInterpolator.html">LinearSpanInterpolator</a>, <a class="el" href="classintrp_1_1CubicSpanInterpolator.html">CubicSpanInterpolator</a>, <a class="el" href="classintrp_1_1BarycentricRationalSpanInterpolator.html">BarycentricRationalSpanInterpolator</a> &gt;</td></tr>
+<tr class="separator:a82520298d659d1f6a8940b8820b631d7 inherit pub_types_classintrp_1_1SpanInterpolator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a3e064af014ac8e95d941ed05db9935de"><td class="memItemLeft" align="right" valign="top"><a id="a3e064af014ac8e95d941ed05db9935de"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BarycentricRationalSpanInterpolator</b> (CkMigrateMessage *) noexcept</td></tr>
+<tr class="separator:a3e064af014ac8e95d941ed05db9935de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e084e3c6ef7882c418da89a059d12d1"><td class="memItemLeft" align="right" valign="top"><a id="a9e084e3c6ef7882c418da89a059d12d1"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_template</b> (<a class="el" href="classintrp_1_1BarycentricRationalSpanInterpolator.html">BarycentricRationalSpanInterpolator</a>)</td></tr>
+<tr class="separator:a9e084e3c6ef7882c418da89a059d12d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6fdffbd9f6900c4c576f0388fed6094b"><td class="memItemLeft" align="right" valign="top"><a id="a6fdffbd9f6900c4c576f0388fed6094b"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:a6fdffbd9f6900c4c576f0388fed6094b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50453eefdd4f48355441350d775fe739"><td class="memItemLeft" align="right" valign="top"><a id="a50453eefdd4f48355441350d775fe739"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BarycentricRationalSpanInterpolator</b> (const <a class="el" href="classintrp_1_1BarycentricRationalSpanInterpolator.html">BarycentricRationalSpanInterpolator</a> &amp;) noexcept=default</td></tr>
+<tr class="separator:a50453eefdd4f48355441350d775fe739"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d3eac46c4d5c8448f19ec172304db99"><td class="memItemLeft" align="right" valign="top"><a id="a1d3eac46c4d5c8448f19ec172304db99"></a>
+<a class="el" href="classintrp_1_1BarycentricRationalSpanInterpolator.html">BarycentricRationalSpanInterpolator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classintrp_1_1BarycentricRationalSpanInterpolator.html">BarycentricRationalSpanInterpolator</a> &amp;) noexcept=default</td></tr>
+<tr class="separator:a1d3eac46c4d5c8448f19ec172304db99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab3c53684e3094cd39230fa6bfdbabc0c"><td class="memItemLeft" align="right" valign="top"><a id="ab3c53684e3094cd39230fa6bfdbabc0c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BarycentricRationalSpanInterpolator</b> (<a class="el" href="classintrp_1_1BarycentricRationalSpanInterpolator.html">BarycentricRationalSpanInterpolator</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:ab3c53684e3094cd39230fa6bfdbabc0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a87926edb5bfa0656040e86ff4adde8d8"><td class="memItemLeft" align="right" valign="top"><a id="a87926edb5bfa0656040e86ff4adde8d8"></a>
+<a class="el" href="classintrp_1_1BarycentricRationalSpanInterpolator.html">BarycentricRationalSpanInterpolator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classintrp_1_1BarycentricRationalSpanInterpolator.html">BarycentricRationalSpanInterpolator</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a87926edb5bfa0656040e86ff4adde8d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a93c2d26ea022cb4157359a8b75bda3a3"><td class="memItemLeft" align="right" valign="top"><a id="a93c2d26ea022cb4157359a8b75bda3a3"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BarycentricRationalSpanInterpolator</b> (size_t min_order, size_t max_order) noexcept</td></tr>
+<tr class="separator:a93c2d26ea022cb4157359a8b75bda3a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a466da189fcbf05a9a1052698bb066b8d"><td class="memItemLeft" align="right" valign="top"><a id="a466da189fcbf05a9a1052698bb066b8d"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classintrp_1_1SpanInterpolator.html">SpanInterpolator</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classintrp_1_1BarycentricRationalSpanInterpolator.html#a466da189fcbf05a9a1052698bb066b8d">get_clone</a> () const noexcept override</td></tr>
+<tr class="memdesc:a466da189fcbf05a9a1052698bb066b8d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Produce a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></code> that points to a copy of <code>*this</code>`. <br /></td></tr>
+<tr class="separator:a466da189fcbf05a9a1052698bb066b8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaef0010dfa5c951a0ab61c5f53a68033"><td class="memItemLeft" align="right" valign="top"><a id="aaef0010dfa5c951a0ab61c5f53a68033"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classintrp_1_1BarycentricRationalSpanInterpolator.html#aaef0010dfa5c951a0ab61c5f53a68033">interpolate</a> (const <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt; &amp;source_points, const <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt; &amp;values, double target_point) const noexcept override</td></tr>
+<tr class="memdesc:aaef0010dfa5c951a0ab61c5f53a68033"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the interpolation of function represented by <code>values</code> at <code>source_points</code> to the requested <code>target_point</code>, returning the interpolation result. <br /></td></tr>
+<tr class="separator:aaef0010dfa5c951a0ab61c5f53a68033"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67ad14555d4ac421f8f85686ebe58411"><td class="memItemLeft" align="right" valign="top"><a id="a67ad14555d4ac421f8f85686ebe58411"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classintrp_1_1BarycentricRationalSpanInterpolator.html#a67ad14555d4ac421f8f85686ebe58411">required_number_of_points_before_and_after</a> () const noexcept override</td></tr>
+<tr class="memdesc:a67ad14555d4ac421f8f85686ebe58411"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of domain points that should be both before and after the requested target point for best interpolation. For instance, for a linear interpolator, this function would return <code>1</code> to request that the target is between the two domain points passed to <code>source_points</code>. <br /></td></tr>
+<tr class="separator:a67ad14555d4ac421f8f85686ebe58411"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0fededadadfdf687fb72c8b6713d39e2"><td class="memItemLeft" align="right" valign="top"><a id="a0fededadadfdf687fb72c8b6713d39e2"></a>
+virtual double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classintrp_1_1BarycentricRationalSpanInterpolator.html#a0fededadadfdf687fb72c8b6713d39e2">interpolate</a> (const <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt; &amp;source_points, const <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt; &amp;values, double target_point) const noexcept=0</td></tr>
+<tr class="memdesc:a0fededadadfdf687fb72c8b6713d39e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the interpolation of function represented by <code>values</code> at <code>source_points</code> to the requested <code>target_point</code>, returning the interpolation result. <br /></td></tr>
+<tr class="separator:a0fededadadfdf687fb72c8b6713d39e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88a8e2802be55bf4e543efeb3074b702"><td class="memItemLeft" align="right" valign="top"><a id="a88a8e2802be55bf4e543efeb3074b702"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classintrp_1_1BarycentricRationalSpanInterpolator.html#a88a8e2802be55bf4e543efeb3074b702">interpolate</a> (const <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt; &amp;source_points, const <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const <a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt;&gt; &amp;values, double target_point) const noexcept</td></tr>
+<tr class="memdesc:a88a8e2802be55bf4e543efeb3074b702"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the interpolation of function represented by complex <code>values</code> at <code>source_points</code> to the requested <code>target_point</code>, returning the (complex) interpolation result. <br /></td></tr>
+<tr class="separator:a88a8e2802be55bf4e543efeb3074b702"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classintrp_1_1SpanInterpolator"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classintrp_1_1SpanInterpolator')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classintrp_1_1SpanInterpolator.html">intrp::SpanInterpolator</a></td></tr>
+<tr class="memitem:ac52df9386306c92c76207a82cd9a1e5d inherit pub_methods_classintrp_1_1SpanInterpolator"><td class="memItemLeft" align="right" valign="top"><a id="ac52df9386306c92c76207a82cd9a1e5d"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_abstract</b> (<a class="el" href="classintrp_1_1SpanInterpolator.html">SpanInterpolator</a>)</td></tr>
+<tr class="separator:ac52df9386306c92c76207a82cd9a1e5d inherit pub_methods_classintrp_1_1SpanInterpolator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88a8e2802be55bf4e543efeb3074b702 inherit pub_methods_classintrp_1_1SpanInterpolator"><td class="memItemLeft" align="right" valign="top"><a id="a88a8e2802be55bf4e543efeb3074b702"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classintrp_1_1SpanInterpolator.html#a88a8e2802be55bf4e543efeb3074b702">interpolate</a> (const <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt; &amp;source_points, const <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const <a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>&lt; double &gt;&gt; &amp;values, double target_point) const noexcept</td></tr>
+<tr class="memdesc:a88a8e2802be55bf4e543efeb3074b702 inherit pub_methods_classintrp_1_1SpanInterpolator"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform the interpolation of function represented by complex <code>values</code> at <code>source_points</code> to the requested <code>target_point</code>, returning the (complex) interpolation result. <br /></td></tr>
+<tr class="separator:a88a8e2802be55bf4e543efeb3074b702 inherit pub_methods_classintrp_1_1SpanInterpolator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aa51b15d4ceec2fab36e4ee00187cf293"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:aa51b15d4ceec2fab36e4ee00187cf293"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Performs a barycentric interpolation with an order in a range fixed at construction; this class can be chosen via the options factory mechanism as a possible <code><a class="el" href="classintrp_1_1SpanInterpolator.html" title="Base class for interpolators so that the factory options mechanism can be used.">SpanInterpolator</a></code>. </p>
+<h3>Details</h3>
+<p>This will call a barycentric interpolation on a fixed minimum length, so that buffers that adjust length based on <code>required_points_before_and_after()</code> can be forced to use an interpolator of a target order. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="aa51b15d4ceec2fab36e4ee00187cf293"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa51b15d4ceec2fab36e4ee00187cf293">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> intrp::BarycentricRationalSpanInterpolator::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Barycentric interpolator of option-defined maximum and minimum order.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/NumericalAlgorithms/Interpolation/<a class="el" href="BarycentricRationalSpanInterpolator_8hpp_source.html">BarycentricRationalSpanInterpolator.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

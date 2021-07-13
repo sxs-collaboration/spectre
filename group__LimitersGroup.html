@@ -1,0 +1,498 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Limiters</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">Limiters</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><a class="el" href="namespaceLimiters.html" title="Things relating to limiting.">Limiters</a> to control shocks and surfaces in the solution.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceLimiters"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLimiters.html">Limiters</a></td></tr>
+<tr class="memdesc:namespaceLimiters"><td class="mdescLeft">&#160;</td><td class="mdescRight">Things relating to limiting. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceLimiters_1_1Tci"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLimiters_1_1Tci.html">Limiters::Tci</a></td></tr>
+<tr class="memdesc:namespaceLimiters_1_1Tci"><td class="mdescLeft">&#160;</td><td class="mdescRight">Troubled Cell Indicators that identify when limiting is needed. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLimiters_1_1Krivodonova_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html">Limiters::Krivodonova&lt; VolumeDim, tmpl::list&lt; Tags... &gt; &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An implementation of the Krivodonova limiter.  <a href="classLimiters_1_1Krivodonova_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLimiters_1_1Tags_1_1LimiterCommunicationTag.html">Limiters::Tags::LimiterCommunicationTag&lt; Metavariables &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The inbox tag for limiter communication.  <a href="structLimiters_1_1Tags_1_1LimiterCommunicationTag.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLimiters_1_1Actions_1_1Limit.html">Limiters::Actions::Limit&lt; Metavariables &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive limiter data from neighbors, then apply limiter.  <a href="structLimiters_1_1Actions_1_1Limit.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLimiters_1_1Actions_1_1SendData.html">Limiters::Actions::SendData&lt; Metavariables &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send local data needed for limiting.  <a href="structLimiters_1_1Actions_1_1SendData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLimiters_1_1Minmod.html">Limiters::Minmod&lt; VolumeDim, TagsToLimit &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A minmod-based generalized slope limiter.  <a href="classLimiters_1_1Minmod.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLimiters_1_1Weno_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html">Limiters::Weno&lt; VolumeDim, tmpl::list&lt; Tags... &gt; &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A compact-stencil WENO limiter for DG.  <a href="classLimiters_1_1Weno_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNewtonianEuler_1_1Limiters_1_1Minmod.html">NewtonianEuler::Limiters::Minmod&lt; VolumeDim &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A minmod-based generalized slope limiter for the <a class="el" href="namespaceNewtonianEuler.html" title="Items related to evolving the Newtonian Euler system.">NewtonianEuler</a> system.  <a href="classNewtonianEuler_1_1Limiters_1_1Minmod.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:ga530a6d3e2a08bb4bd61090a8f9aadd35"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__LimitersGroup.html#ga530a6d3e2a08bb4bd61090a8f9aadd35">Limiters::MinmodType</a> { <b>LambdaPi1</b>, 
+<b>LambdaPiN</b>, 
+<b>Muscl</b>
+ }</td></tr>
+<tr class="memdesc:ga530a6d3e2a08bb4bd61090a8f9aadd35"><td class="mdescLeft">&#160;</td><td class="mdescRight">Possible types of the minmod slope limiter and/or troubled-cell indicator.  <a href="group__LimitersGroup.html#ga530a6d3e2a08bb4bd61090a8f9aadd35">More...</a><br /></td></tr>
+<tr class="separator:ga530a6d3e2a08bb4bd61090a8f9aadd35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9579591401477fc50611bf73b93c9841"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__LimitersGroup.html#ga9579591401477fc50611bf73b93c9841">Limiters::WenoType</a> { <b>Hweno</b>, 
+<b>SimpleWeno</b>
+ }</td></tr>
+<tr class="memdesc:ga9579591401477fc50611bf73b93c9841"><td class="mdescLeft">&#160;</td><td class="mdescRight">Possible types of the WENO limiter.  <a href="group__LimitersGroup.html#ga9579591401477fc50611bf73b93c9841">More...</a><br /></td></tr>
+<tr class="separator:ga9579591401477fc50611bf73b93c9841"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5dee5275014de613b69d5a8ec26e1fa6"><td class="memItemLeft" align="right" valign="top"><a id="ga5dee5275014de613b69d5a8ec26e1fa6"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__LimitersGroup.html#ga5dee5275014de613b69d5a8ec26e1fa6">NewtonianEuler::Limiters::FlattenerAction</a> { <b>NoOp</b> = 0, 
+<b>ScaledSolution</b> = 1, 
+<b>SetSolutionToMean</b> = 2
+ }</td></tr>
+<tr class="memdesc:ga5dee5275014de613b69d5a8ec26e1fa6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encodes the action taken by <code>flatten_solution</code> <br /></td></tr>
+<tr class="separator:ga5dee5275014de613b69d5a8ec26e1fa6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6aa7b87417527e19d280b0a190c3856d"><td class="memItemLeft" align="right" valign="top"><a id="ga6aa7b87417527e19d280b0a190c3856d"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__LimitersGroup.html#ga6aa7b87417527e19d280b0a190c3856d">NewtonianEuler::Limiters::VariablesToLimit</a> { <b>Conserved</b>, 
+<b>Characteristic</b>
+ }</td></tr>
+<tr class="memdesc:ga6aa7b87417527e19d280b0a190c3856d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type of <a class="el" href="namespaceNewtonianEuler.html" title="Items related to evolving the Newtonian Euler system.">NewtonianEuler</a> variables to apply limiter to. <br /></td></tr>
+<tr class="separator:ga6aa7b87417527e19d280b0a190c3856d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:gae60938e59363e24720c02652cd087fd0"><td class="memTemplParams" colspan="2">template&lt;size_t VolumeDim, size_t ThermodynamicDim&gt; </td></tr>
+<tr class="memitem:gae60938e59363e24720c02652cd087fd0"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="group__LimitersGroup.html#ga5dee5275014de613b69d5a8ec26e1fa6">FlattenerAction</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__LimitersGroup.html#gae60938e59363e24720c02652cd087fd0">NewtonianEuler::Limiters::flatten_solution</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; mass_density_cons, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim &gt; * &gt; momentum_density, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; energy_density, const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim &gt; &amp;mesh, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;det_logical_to_inertial_jacobian, const <a class="el" href="classEquationsOfState_1_1EquationOfState.html">EquationsOfState::EquationOfState</a>&lt; false, ThermodynamicDim &gt; &amp;equation_of_state) noexcept</td></tr>
+<tr class="memdesc:gae60938e59363e24720c02652cd087fd0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scale a <a class="el" href="namespaceNewtonianEuler.html" title="Items related to evolving the Newtonian Euler system.">NewtonianEuler</a> solution around its mean to remove pointwise positivity violations.  <a href="group__LimitersGroup.html#gae60938e59363e24720c02652cd087fd0">More...</a><br /></td></tr>
+<tr class="separator:gae60938e59363e24720c02652cd087fd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga013a9ed020d3fdaceaaecc2c7a7fb253"><td class="memTemplParams" colspan="2">template&lt;size_t VolumeDim, typename PackagedData &gt; </td></tr>
+<tr class="memitem:ga013a9ed020d3fdaceaaecc2c7a7fb253"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__LimitersGroup.html#ga013a9ed020d3fdaceaaecc2c7a7fb253">NewtonianEuler::Limiters::Tci::kxrcf_indicator</a> (const double kxrcf_constant, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;cons_mass_density, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim &gt; &amp;cons_momentum_density, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;cons_energy_density, const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim &gt; &amp;mesh, const <a class="el" href="classElement.html">Element</a>&lt; VolumeDim &gt; &amp;element, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, VolumeDim &gt; &amp;element_size, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;det_logical_to_inertial_jacobian, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;, tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim &gt;&gt; &amp;unnormalized_normals, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt;&gt;, PackagedData, boost::hash&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt;&gt;&gt;&gt; &amp;neighbor_data) noexcept</td></tr>
+<tr class="memdesc:ga013a9ed020d3fdaceaaecc2c7a7fb253"><td class="mdescLeft">&#160;</td><td class="mdescRight">Implements the troubled-cell indicator from Krivodonova et al, 2004.  <a href="group__LimitersGroup.html#ga013a9ed020d3fdaceaaecc2c7a7fb253">More...</a><br /></td></tr>
+<tr class="separator:ga013a9ed020d3fdaceaaecc2c7a7fb253"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p><a class="el" href="namespaceLimiters.html" title="Things relating to limiting.">Limiters</a> to control shocks and surfaces in the solution. </p>
+<h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="ga530a6d3e2a08bb4bd61090a8f9aadd35"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga530a6d3e2a08bb4bd61090a8f9aadd35">&#9670;&nbsp;</a></span>MinmodType</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="group__LimitersGroup.html#ga530a6d3e2a08bb4bd61090a8f9aadd35">Limiters::MinmodType</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Possible types of the minmod slope limiter and/or troubled-cell indicator. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classLimiters_1_1Minmod.html" title="A minmod-based generalized slope limiter.">Limiters::Minmod</a> for a description and reference. </dd></dl>
+
+</div>
+</div>
+<a id="ga9579591401477fc50611bf73b93c9841"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9579591401477fc50611bf73b93c9841">&#9670;&nbsp;</a></span>WenoType</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="group__LimitersGroup.html#ga9579591401477fc50611bf73b93c9841">Limiters::WenoType</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Possible types of the WENO limiter. </p>
+<dl class="section see"><dt>See also</dt><dd>Limiters::Weno for a description and references. </dd></dl>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="gae60938e59363e24720c02652cd087fd0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae60938e59363e24720c02652cd087fd0">&#9670;&nbsp;</a></span>flatten_solution()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t VolumeDim, size_t ThermodynamicDim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__LimitersGroup.html#ga5dee5275014de613b69d5a8ec26e1fa6">FlattenerAction</a> NewtonianEuler::Limiters::flatten_solution </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>mass_density_cons</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>momentum_density</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>energy_density</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>det_logical_to_inertial_jacobian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classEquationsOfState_1_1EquationOfState.html">EquationsOfState::EquationOfState</a>&lt; false, ThermodynamicDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>equation_of_state</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Scale a <a class="el" href="namespaceNewtonianEuler.html" title="Items related to evolving the Newtonian Euler system.">NewtonianEuler</a> solution around its mean to remove pointwise positivity violations. </p>
+<p>If the solution has points with negative density, scales the solution to make these points positive again. For each component \(u\) of the solution, the scaling takes the form \(u \to \bar{u} + \theta (u - \bar{u})\), where \(\bar{u}\) is the cell-average value of \(u\), and \(\theta\) is a factor less than 1, chosen to restore positive density. The cell averages in this implementation are computed in inertial coordinates, so the flattener is conservative even on deformed grids.</p>
+<p>A scaling of this form used to restore positivity is usually called a flattener (we use this name) or a bounds-preserving filter. Note that the scaling approach only works if the cell-averaged solution is itself physical, in other words, if the cell-averaged density is positive.</p>
+<p>After checking for (and correcting) negative densities, if the equation of state is two-dimensional, then the pressure is also checked for positivity. If negative pressures are found, each solution component is set to its mean (this is equivalent to \(\theta = 0\) in the scaling form above). In principle, a less aggressive scaling could be used, but solving for the correct \(\theta\) in this case is more involved. </p>
+
+</div>
+</div>
+<a id="ga013a9ed020d3fdaceaaecc2c7a7fb253"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga013a9ed020d3fdaceaaecc2c7a7fb253">&#9670;&nbsp;</a></span>kxrcf_indicator()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t VolumeDim, typename PackagedData &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool NewtonianEuler::Limiters::Tci::kxrcf_indicator </td>
+          <td>(</td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>kxrcf_constant</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>cons_mass_density</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>cons_momentum_density</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>cons_energy_density</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classElement.html">Element</a>&lt; VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>element</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, VolumeDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>element_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>det_logical_to_inertial_jacobian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;, tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>unnormalized_normals</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt;&gt;, PackagedData, boost::hash&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt;&gt;&gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>neighbor_data</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Implements the troubled-cell indicator from Krivodonova et al, 2004. </p>
+<p>The KXRCF (these are the author initials) TCI is described in <a class="el" href="citelist.html#CITEREF_Krivodonova2004">[66]</a>.</p>
+<p>In summary, this TCI uses the size of discontinuities between neighboring DG elements to determine the smoothness of the solution. This works because the discontinuities converge rapidly for smooth solutions, therefore a large discontinuity suggests a lack of smoothness and the need to apply a limiter.</p>
+<p>The reference sets the constant we call <code>kxrcf_constant</code> to 1. This should generally be a good threshold to use, though it might not be the optimal value (in balancing robustness vs accuracy) for any particular problem.</p>
+<p>This implementation</p><ul>
+<li>does not support h- or p-refinement; this is checked by assertion.</li>
+<li>chooses not to check external boundaries, because this adds complexity. However, by not checking external boundaries, the implementation may not be robust for problems that feed in shocks through boundary conditions. </li>
+</ul>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

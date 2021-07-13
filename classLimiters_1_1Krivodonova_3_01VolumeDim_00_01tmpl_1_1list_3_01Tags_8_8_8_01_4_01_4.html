@@ -1,0 +1,390 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Limiters::Krivodonova&lt; VolumeDim, tmpl::list&lt; Tags... &gt; &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceLimiters.html">Limiters</a></li><li class="navelem"><a class="el" href="classLimiters_1_1Krivodonova_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html">Krivodonova&lt; VolumeDim, tmpl::list&lt; Tags... &gt; &gt;</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classLimiters_1_1Krivodonova_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Limiters::Krivodonova&lt; VolumeDim, tmpl::list&lt; Tags... &gt; &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__LimitersGroup.html">Limiters</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>An implementation of the Krivodonova limiter.  
+ <a href="classLimiters_1_1Krivodonova_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Krivodonova_8hpp_source.html">Krivodonova.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLimiters_1_1Krivodonova_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1Alphas.html">Alphas</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The \(\alpha_i\) values in the Krivodonova algorithm.  <a href="structLimiters_1_1Krivodonova_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1Alphas.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLimiters_1_1Krivodonova_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1DisableForDebugging.html">DisableForDebugging</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn the limiter off.  <a href="structLimiters_1_1Krivodonova_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1DisableForDebugging.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLimiters_1_1Krivodonova_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1PackagedData.html">PackagedData</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a95300bc66617b97d1544a7b9016cf350"><td class="memItemLeft" align="right" valign="top"><a id="a95300bc66617b97d1544a7b9016cf350"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; Alphas, DisableForDebugging &gt;</td></tr>
+<tr class="separator:a95300bc66617b97d1544a7b9016cf350"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe844d8c0fe64223aa60c91c795b49c1"><td class="memItemLeft" align="right" valign="top"><a id="abe844d8c0fe64223aa60c91c795b49c1"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>package_argument_tags</b> = tmpl::list&lt; Tags..., <a class="el" href="structdomain_1_1Tags_1_1Mesh.html">domain::Tags::Mesh</a>&lt; VolumeDim &gt; &gt;</td></tr>
+<tr class="separator:abe844d8c0fe64223aa60c91c795b49c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84efdef187ed7dbde0791b2a2043cb7d"><td class="memItemLeft" align="right" valign="top"><a id="a84efdef187ed7dbde0791b2a2043cb7d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>limit_tags</b> = tmpl::list&lt; Tags... &gt;</td></tr>
+<tr class="separator:a84efdef187ed7dbde0791b2a2043cb7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3bccb08290c1b3d3a566f0842c778759"><td class="memItemLeft" align="right" valign="top"><a id="a3bccb08290c1b3d3a566f0842c778759"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>limit_argument_tags</b> = tmpl::list&lt; <a class="el" href="structdomain_1_1Tags_1_1Element.html">domain::Tags::Element</a>&lt; VolumeDim &gt;, <a class="el" href="structdomain_1_1Tags_1_1Mesh.html">domain::Tags::Mesh</a>&lt; VolumeDim &gt; &gt;</td></tr>
+<tr class="separator:a3bccb08290c1b3d3a566f0842c778759"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a77d622a56bb5210a2f723a1214a332cf"><td class="memItemLeft" align="right" valign="top"><a id="a77d622a56bb5210a2f723a1214a332cf"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Krivodonova</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, <a class="el" href="namespaceSpectral.html#ad3f83fd18f48d47423e1d5cf9d718a7a">Spectral::maximum_number_of_points</a>&lt; Spectral::Basis::Legendre &gt;&gt; alphas, bool disable_for_debugging=false, const <a class="el" href="structOptions_1_1Context.html">Options::Context</a> &amp;context={})</td></tr>
+<tr class="separator:a77d622a56bb5210a2f723a1214a332cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6cb1b9a4aee1df5b9aeb354c0fae700c"><td class="memItemLeft" align="right" valign="top"><a id="a6cb1b9a4aee1df5b9aeb354c0fae700c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Krivodonova</b> (const Krivodonova &amp;)=default</td></tr>
+<tr class="separator:a6cb1b9a4aee1df5b9aeb354c0fae700c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3f25e3a997c1ed46adae57ae2ecf018"><td class="memItemLeft" align="right" valign="top"><a id="af3f25e3a997c1ed46adae57ae2ecf018"></a>
+Krivodonova &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const Krivodonova &amp;)=default</td></tr>
+<tr class="separator:af3f25e3a997c1ed46adae57ae2ecf018"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2819751b97aba69a10f334bbacdb3484"><td class="memItemLeft" align="right" valign="top"><a id="a2819751b97aba69a10f334bbacdb3484"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Krivodonova</b> (Krivodonova &amp;&amp;)=default</td></tr>
+<tr class="separator:a2819751b97aba69a10f334bbacdb3484"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad2a0cf8c4e9843ca5f8e591a5d365cdc"><td class="memItemLeft" align="right" valign="top"><a id="ad2a0cf8c4e9843ca5f8e591a5d365cdc"></a>
+Krivodonova &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (Krivodonova &amp;&amp;)=default</td></tr>
+<tr class="separator:ad2a0cf8c4e9843ca5f8e591a5d365cdc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a476d16bba1e2fc9079fe6ca3f3715a40"><td class="memItemLeft" align="right" valign="top"><a id="a476d16bba1e2fc9079fe6ca3f3715a40"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a476d16bba1e2fc9079fe6ca3f3715a40"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64dc0df5ec21b04583e47392fb0e4c3c"><td class="memItemLeft" align="right" valign="top"><a id="a64dc0df5ec21b04583e47392fb0e4c3c"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const Krivodonova &amp;rhs) const noexcept</td></tr>
+<tr class="separator:a64dc0df5ec21b04583e47392fb0e4c3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab05ee4caa3c9193a908f844efb99849e"><td class="memItemLeft" align="right" valign="top"><a id="ab05ee4caa3c9193a908f844efb99849e"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLimiters_1_1Krivodonova_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html#ab05ee4caa3c9193a908f844efb99849e">package_data</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; PackagedData * &gt; packaged_data, const typename Tags::type &amp;... tensors, const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim &gt; &amp;mesh, const <a class="el" href="classOrientationMap.html">OrientationMap</a>&lt; VolumeDim &gt; &amp;orientation_map) const noexcept</td></tr>
+<tr class="memdesc:ab05ee4caa3c9193a908f844efb99849e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Package data for sending to neighbor elements. <br /></td></tr>
+<tr class="separator:ab05ee4caa3c9193a908f844efb99849e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4dce899594a15ea01e1538c18a2a026f"><td class="memItemLeft" align="right" valign="top"><a id="a4dce899594a15ea01e1538c18a2a026f"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/add_pointer.html">std::add_pointer_t</a>&lt; typename Tags::type &gt;&gt;... tensors, const <a class="el" href="classElement.html">Element</a>&lt; VolumeDim &gt; &amp;element, const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim &gt; &amp;mesh, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt;&gt;, PackagedData, boost::hash&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt;&gt;&gt;&gt; &amp;neighbor_data) const noexcept</td></tr>
+<tr class="separator:a4dce899594a15ea01e1538c18a2a026f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a562827e65b537664ad82f9a3753e61ce"><td class="memTemplParams" colspan="2"><a id="a562827e65b537664ad82f9a3753e61ce"></a>
+template&lt;typename Tag &gt; </td></tr>
+<tr class="memitem:a562827e65b537664ad82f9a3753e61ce"><td class="memTemplItemLeft" align="right" valign="top">char&#160;</td><td class="memTemplItemRight" valign="bottom"><b>limit_one_tensor</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; tmpl::list&lt;::<a class="el" href="structTags_1_1Modal.html">Tags::Modal</a>&lt; Tags &gt;... &gt;&gt; * &gt; coeffs_self, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; bool * &gt; limited_any_component, const <a class="el" href="classMesh.html">Mesh</a>&lt; 1 &gt; &amp;mesh, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; 1 &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; 1 &gt;&gt;, PackagedData, boost::hash&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; 1 &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; 1 &gt;&gt;&gt;&gt; &amp;neighbor_data) const noexcept</td></tr>
+<tr class="separator:a562827e65b537664ad82f9a3753e61ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac79e19ecb5cfe0c43a6e7e9a89f345df"><td class="memTemplParams" colspan="2"><a id="ac79e19ecb5cfe0c43a6e7e9a89f345df"></a>
+template&lt;typename Tag &gt; </td></tr>
+<tr class="memitem:ac79e19ecb5cfe0c43a6e7e9a89f345df"><td class="memTemplItemLeft" align="right" valign="top">char&#160;</td><td class="memTemplItemRight" valign="bottom"><b>limit_one_tensor</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; tmpl::list&lt;::<a class="el" href="structTags_1_1Modal.html">Tags::Modal</a>&lt; Tags &gt;... &gt;&gt; * &gt; coeffs_self, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; bool * &gt; limited_any_component, const <a class="el" href="classMesh.html">Mesh</a>&lt; 2 &gt; &amp;mesh, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; 2 &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; 2 &gt;&gt;, PackagedData, boost::hash&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; 2 &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; 2 &gt;&gt;&gt;&gt; &amp;neighbor_data) const noexcept</td></tr>
+<tr class="separator:ac79e19ecb5cfe0c43a6e7e9a89f345df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94d30dbc663404ae8e454ac0be6f1184"><td class="memTemplParams" colspan="2"><a id="a94d30dbc663404ae8e454ac0be6f1184"></a>
+template&lt;typename Tag &gt; </td></tr>
+<tr class="memitem:a94d30dbc663404ae8e454ac0be6f1184"><td class="memTemplItemLeft" align="right" valign="top">char&#160;</td><td class="memTemplItemRight" valign="bottom"><b>limit_one_tensor</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; tmpl::list&lt;::<a class="el" href="structTags_1_1Modal.html">Tags::Modal</a>&lt; Tags &gt;... &gt;&gt; * &gt; coeffs_self, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; bool * &gt; limited_any_component, const <a class="el" href="classMesh.html">Mesh</a>&lt; 3 &gt; &amp;mesh, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; 3 &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; 3 &gt;&gt;, PackagedData, boost::hash&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; 3 &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; 3 &gt;&gt;&gt;&gt; &amp;neighbor_data) const noexcept</td></tr>
+<tr class="separator:a94d30dbc663404ae8e454ac0be6f1184"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91017f1755ee70e85afd7672a5a1a8a4"><td class="memTemplParams" colspan="2"><a id="a91017f1755ee70e85afd7672a5a1a8a4"></a>
+template&lt;typename Tag , size_t Dim&gt; </td></tr>
+<tr class="memitem:a91017f1755ee70e85afd7672a5a1a8a4"><td class="memTemplItemLeft" align="right" valign="top">char&#160;</td><td class="memTemplItemRight" valign="bottom"><b>fill_variables_tag_with_spectral_coeffs</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; tmpl::list&lt;::<a class="el" href="structTags_1_1Modal.html">Tags::Modal</a>&lt; Tags &gt;... &gt;&gt; * &gt; modal_coeffs, const typename Tag::type &amp;nodal_tensor, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh) const noexcept</td></tr>
+<tr class="separator:a91017f1755ee70e85afd7672a5a1a8a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:adc0bc9de9c518fe3f78575a59732b733"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:adc0bc9de9c518fe3f78575a59732b733"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t VolumeDim, typename... Tags&gt;<br />
+class Limiters::Krivodonova&lt; VolumeDim, tmpl::list&lt; Tags... &gt; &gt;</h3>
+
+<p>An implementation of the Krivodonova limiter. </p>
+<p>The limiter is described in <a class="el" href="citelist.html#CITEREF_Krivodonova2007">[67]</a>. The Krivodonova limiter works by limiting the highest derivatives/modal coefficients using an aggressive minmod approach, decreasing in derivative/modal coefficient order until no more limiting is necessary. In 3d, the function being limited is expanded as:</p>
+<p class="formulaDsp">
+\begin{align} u^{l,m,n}=\sum_{i,j,k=0,0,0}^{N_i,N_j,N_k}c^{l,m,n}_{i,j,k} P_{i}(\xi)P_{j}(\eta)P_{k}(\zeta) \end{align}
+</p>
+<p>where \(\left\{\xi, \eta, \zeta\right\}\) are the logical coordinates, \(P_{i}\) are the Legendre polynomials, the superscript \(\{l,m,n\}\) represents the element indexed by \(l,m,n\), and \(N_i,N_j\) and \(N_k\) are the number of collocation points minus one in the \(\xi,\eta,\) and \(\zeta\) direction, respectively. The coefficients are limited according to:</p>
+<p class="formulaDsp">
+\begin{align} \tilde{c}^{l,m,n}_{i,j,k}=\mathrm{minmod} &amp;\left(c_{i,j,k}^{l,m,n}, \alpha_i\left(c^{l+1,m,n}_{i-1,j,k}-c^{l,m,n}_{i-1,j,k}\right), \alpha_i\left(c^{l,m,n}_{i-1,j,k}-c^{l-1,m,n}_{i-1,j,k}\right), \right.\notag \\ &amp;\;\;\;\; \alpha_j\left(c^{l,m+1,n}_{i,j-1,k}-c^{l,m,n}_{i,j-1,k}\right), \alpha_j\left(c^{l,m,n}_{i,j-1,k}-c^{l,m-1,n}_{i,j-1,k}\right), \notag \\ &amp;\;\;\;\;\left. \alpha_k\left(c^{l,m,n+1}_{i,j,k-1}-c^{l,m,n}_{i,j,k-1}\right), \alpha_k\left(c^{l,m,n}_{i,j,k-1}-c^{l,m,n-1}_{i,j,k-1}\right) \right), \label{eq:krivodonova 3d minmod} \end{align}
+</p>
+<p>where \(\mathrm{minmod}\) is the minmod function defined as</p>
+<p class="formulaDsp">
+\begin{align} \mathrm{minmod}(a,b,c,\ldots)= \left\{ \begin{array}{ll} \mathrm{sgn}(a)\min(\lvert a\rvert, \lvert b\rvert, \lvert c\rvert, \ldots) &amp; \mathrm{if} \; \mathrm{sgn}(a)=\mathrm{sgn}(b)=\mathrm{sgn}(c)=\mathrm{sgn}(\ldots) \\ 0 &amp; \mathrm{otherwise} \end{array}\right. \end{align}
+</p>
+<p>Krivodonova <a class="el" href="citelist.html#CITEREF_Krivodonova2007">[67]</a> requires \(\alpha_i\) to be in the range</p>
+<p class="formulaDsp">
+\begin{align*} \frac{1}{2(2i-1)}\le \alpha_i \le 1 \end{align*}
+</p>
+<p>where the lower bound comes from finite differencing the coefficients between neighbor elements when using Legendre polynomials (see <a class="el" href="citelist.html#CITEREF_Krivodonova2007">[67]</a> for details). Note that we normalize our Legendre polynomials by \(P_i(1) = 1\); this is the normalization <a class="el" href="citelist.html#CITEREF_Krivodonova2007">[67]</a> uses in 1D, (but not in 2D), which is why our bounds on \(\alpha_i\) match Eq. 14 of <a class="el" href="citelist.html#CITEREF_Krivodonova2007">[67]</a> (but not Eq. 23). We relax the lower bound:</p>
+<p class="formulaDsp">
+\begin{align*} 0 \le \alpha_i \le 1 \end{align*}
+</p>
+<p>to allow different basis functions (e.g. Chebyshev polynomials) and to allow the limiter to be more dissipative if necessary. The same \(\alpha_i\)s are used in all dimensions.</p>
+<dl class="section note"><dt>Note</dt><dd>The only place where the specific choice of 1d basis comes in is the lower bound for the \(\alpha_i\)s, and so in general the limiter can be applied to any 1d or tensor product of 1d basis functions.</dd></dl>
+<p>The limiting procedure must be applied from the highest derivatives to the lowest, i.e. the highest coefficients to the lowest. Let us consider a 3d element with \(N+1\) coefficients in each dimension and denote the coefficients as \(c_{i,j,k}\). Then the limiting procedure starts at \(c_{N,N,N}\), followed by \(c_{N,N,N-1}\), \(c_{N,N-1,N}\), and \(c_{N-1,N,N}\). A detailed example is given below. Limiting is stopped if all symmetric pairs of coefficients are left unchanged, i.e. \(c_{i,j,k}=\tilde{c}_{i,j,k}\). By all symmetric coefficients we mean that, for example, \(c_{N-i,N-j,N-k}\), \(c_{N-j,N-i,N-k}\), \(c_{N-k,N-j,N-i}\), \(c_{N-j,N-k,N-i}\), \(c_{N-i,N-k,N-j}\), and \(c_{N-k,N-i,N-j}\) are not limited. As a concrete example, consider a 3d element with 3 collocation points per dimension. Each limited coefficient is defined as (though only computed if needed):</p>
+<p class="formulaDsp">
+\begin{align*} \tilde{c}^{l,m,n}_{2,2,2}=\mathrm{minmod} &amp;\left(c_{2,2,2}^{l,m,n}, \alpha_2\left(c^{l+1,m,n}_{1,2,2}-c^{l,m,n}_{1,2,2}\right), \alpha_2\left(c^{l,m,n}_{1,2,2}-c^{l-1,m,n}_{1,2,2}\right), \right.\\ &amp;\;\;\;\; \alpha_2\left(c^{l,m+1,n}_{2,1,2}-c^{l,m,n}_{2,1,2}\right), \alpha_2\left(c^{l,m,n}_{2,1,2}-c^{l,m-1,n}_{2,1,2}\right),\\ &amp;\;\;\;\;\left. \alpha_2\left(c^{l,m,n+1}_{2,2,1}-c^{l,m,n}_{2,2,1}\right), \alpha_2\left(c^{l,m,n}_{2,2,1}-c^{l,m,n-1}_{2,2,1}\right) \right),\\ \tilde{c}^{l,m,n}_{2,2,1}=\mathrm{minmod} &amp;\left(c_{2,2,1}^{l,m,n}, \alpha_2\left(c^{l+1,m,n}_{1,2,1}-c^{l,m,n}_{1,2,1}\right), \alpha_2\left(c^{l,m,n}_{1,2,1}-c^{l-1,m,n}_{1,2,1}\right), \right.\\ &amp;\;\;\;\; \alpha_2\left(c^{l,m+1,n}_{2,1,1}-c^{l,m,n}_{2,1,1}\right), \alpha_2\left(c^{l,m,n}_{2,1,1}-c^{l,m-1,n}_{2,1,1}\right),\\ &amp;\;\;\;\;\left. \alpha_1\left(c^{l,m,n+1}_{2,2,0}-c^{l,m,n}_{2,2,0}\right), \alpha_1\left(c^{l,m,n}_{2,2,0}-c^{l,m,n-1}_{2,2,0}\right) \right),\\ \tilde{c}^{l,m,n}_{2,1,2}=\mathrm{minmod} &amp;\left(c_{2,1,2}^{l,m,n}, \alpha_2\left(c^{l+1,m,n}_{1,1,2}-c^{l,m,n}_{1,1,2}\right), \alpha_2\left(c^{l,m,n}_{1,1,2}-c^{l-1,m,n}_{1,1,2}\right), \right.\\ &amp;\;\;\;\; \alpha_1\left(c^{l,m+1,n}_{2,0,2}-c^{l,m,n}_{2,0,2}\right), \alpha_1\left(c^{l,m,n}_{2,0,2}-c^{l,m-1,n}_{2,0,2}\right),\\ &amp;\;\;\;\;\left. \alpha_2\left(c^{l,m,n+1}_{2,1,1}-c^{l,m,n}_{2,1,1}\right), \alpha_2\left(c^{l,m,n}_{2,1,1}-c^{l,m,n-1}_{2,1,1}\right) \right),\\ \tilde{c}^{l,m,n}_{1,2,2}=\mathrm{minmod} &amp;\left(c_{1,2,2}^{l,m,n}, \alpha_1\left(c^{l+1,m,n}_{0,2,2}-c^{l,m,n}_{0,2,2}\right), \alpha_1\left(c^{l,m,n}_{0,2,2}-c^{l-1,m,n}_{0,2,2}\right), \right.\\ &amp;\;\;\;\; \alpha_2\left(c^{l,m+1,n}_{1,1,2}-c^{l,m,n}_{1,1,2}\right), \alpha_2\left(c^{l,m,n}_{1,1,2}-c^{l,m-1,n}_{1,1,2}\right),\\ &amp;\;\;\;\;\left. \alpha_2\left(c^{l,m,n+1}_{1,2,1}-c^{l,m,n}_{1,2,1}\right), \alpha_2\left(c^{l,m,n}_{1,2,1}-c^{l,m,n-1}_{1,2,1}\right) \right),\\ \tilde{c}^{l,m,n}_{2,2,0}=\mathrm{minmod} &amp;\left(c_{2,2,0}^{l,m,n}, \alpha_2\left(c^{l+1,m,n}_{1,2,0}-c^{l,m,n}_{1,2,0}\right), \alpha_2\left(c^{l,m,n}_{1,2,0}-c^{l-1,m,n}_{1,2,0}\right), \right.\\ &amp;\;\;\;\;\left. \alpha_2\left(c^{l,m+1,n}_{2,1,0}-c^{l,m,n}_{2,1,0}\right), \alpha_2\left(c^{l,m,n}_{2,1,0}-c^{l,m-1,n}_{2,1,0}\right) \right),\\ \tilde{c}^{l,m,n}_{2,0,2}=\mathrm{minmod} &amp;\left(c_{2,0,2}^{l,m,n}, \alpha_2\left(c^{l+1,m,n}_{1,0,2}-c^{l,m,n}_{1,0,2}\right), \alpha_2\left(c^{l,m,n}_{1,0,2}-c^{l-1,m,n}_{1,0,2}\right), \right.\\ &amp;\;\;\;\;\left. \alpha_2\left(c^{l,m,n+1}_{2,0,1}-c^{l,m,n}_{2,0,1}\right), \alpha_2\left(c^{l,m,n}_{2,0,1}-c^{l,m,n-1}_{2,0,1}\right) \right),\\ \tilde{c}^{l,m,n}_{0,2,2}=\mathrm{minmod} &amp;\left(c_{0,2,2}^{l,m,n}, \alpha_2\left(c^{l,m+1,n}_{0,1,2}-c^{l,m,n}_{0,1,2}\right), \alpha_2\left(c^{l,m,n}_{0,1,2}-c^{l,m-1,n}_{0,1,2}\right), \right.\\ &amp;\;\;\;\;\left. \alpha_2\left(c^{l,m,n+1}_{0,2,1}-c^{l,m,n}_{0,2,1}\right), \alpha_2\left(c^{l,m,n}_{0,2,1}-c^{l,m,n-1}_{0,2,1}\right) \right),\\ \tilde{c}^{l,m,n}_{2,1,1}=\mathrm{minmod} &amp;\left(c_{2,1,1}^{l,m,n}, \alpha_2\left(c^{l+1,m,n}_{1,1,1}-c^{l,m,n}_{1,1,1}\right), \alpha_2\left(c^{l,m,n}_{1,1,1}-c^{l-1,m,n}_{1,1,1}\right), \right.\\ &amp;\;\;\;\; \alpha_1\left(c^{l,m+1,n}_{2,0,1}-c^{l,m,n}_{2,0,1}\right), \alpha_1\left(c^{l,m,n}_{2,0,1}-c^{l,m-1,n}_{2,0,1}\right),\\ &amp;\;\;\;\;\left. \alpha_1\left(c^{l,m,n+1}_{2,1,0}-c^{l,m,n}_{2,1,0}\right), \alpha_1\left(c^{l,m,n}_{2,1,0}-c^{l,m,n-1}_{2,1,0}\right) \right),\\ \tilde{c}^{l,m,n}_{1,2,1}=\mathrm{minmod} &amp;\left(c_{1,2,1}^{l,m,n}, \alpha_1\left(c^{l+1,m,n}_{0,2,1}-c^{l,m,n}_{0,2,1}\right), \alpha_1\left(c^{l,m,n}_{0,2,1}-c^{l-1,m,n}_{0,2,1}\right), \right.\\ &amp;\;\;\;\; \alpha_2\left(c^{l,m+1,n}_{1,1,1}-c^{l,m,n}_{1,1,1}\right), \alpha_2\left(c^{l,m,n}_{1,1,1}-c^{l,m-1,n}_{1,1,1}\right),\\ &amp;\;\;\;\;\left. \alpha_1\left(c^{l,m,n+1}_{1,2,0}-c^{l,m,n}_{1,2,0}\right), \alpha_1\left(c^{l,m,n}_{1,2,0}-c^{l,m,n-1}_{1,2,0}\right) \right),\\ \tilde{c}^{l,m,n}_{1,1,2}=\mathrm{minmod} &amp;\left(c_{1,1,2}^{l,m,n}, \alpha_1\left(c^{l+1,m,n}_{0,1,2}-c^{l,m,n}_{0,1,2}\right), \alpha_1\left(c^{l,m,n}_{0,1,2}-c^{l-1,m,n}_{0,1,2}\right), \right.\\ &amp;\;\;\;\; \alpha_1\left(c^{l,m+1,n}_{1,0,2}-c^{l,m,n}_{1,0,2}\right), \alpha_1\left(c^{l,m,n}_{1,0,2}-c^{l,m-1,n}_{1,0,2}\right),\\ &amp;\;\;\;\;\left. \alpha_2\left(c^{l,m,n+1}_{1,1,1}-c^{l,m,n}_{1,1,1}\right), \alpha_2\left(c^{l,m,n}_{1,1,1}-c^{l,m,n-1}_{1,1,1}\right) \right), \end{align*}
+</p>
+ <p class="formulaDsp">
+\begin{align*} \tilde{c}^{l,m,n}_{2,1,0}=\mathrm{minmod} &amp;\left(c_{2,1,0}^{l,m,n}, \alpha_2\left(c^{l+1,m,n}_{1,1,0}-c^{l,m,n}_{1,1,0}\right), \alpha_2\left(c^{l,m,n}_{1,1,0}-c^{l-1,m,n}_{1,1,0}\right), \right.\\ &amp;\;\;\;\;\left. \alpha_1\left(c^{l,m+1,n}_{2,0,0}-c^{l,m,n}_{2,0,0}\right), \alpha_1\left(c^{l,m,n}_{2,0,0}-c^{l,m-1,n}_{2,0,0}\right) \right),\\ \tilde{c}^{l,m,n}_{2,0,1}=\mathrm{minmod} &amp;\left(c_{2,0,1}^{l,m,n}, \alpha_2\left(c^{l+1,m,n}_{1,0,1}-c^{l,m,n}_{1,0,1}\right), \alpha_2\left(c^{l,m,n}_{1,0,1}-c^{l-1,m,n}_{1,0,1}\right), \right.\\ &amp;\;\;\;\;\left. \alpha_1\left(c^{l,m,n+1}_{2,0,0}-c^{l,m,n}_{2,0,0}\right), \alpha_1\left(c^{l,m,n}_{2,0,0}-c^{l,m,n-1}_{2,0,0}\right) \right),\\ \tilde{c}^{l,m,n}_{1,2,0}=\mathrm{minmod} &amp;\left(c_{1,2,0}^{l,m,n}, \alpha_1\left(c^{l+1,m,n}_{0,2,0}-c^{l,m,n}_{0,2,0}\right), \alpha_1\left(c^{l,m,n}_{0,2,0}-c^{l-1,m,n}_{0,2,0}\right), \right.\\ &amp;\;\;\;\;\left. \alpha_2\left(c^{l,m+1,n}_{1,1,0}-c^{l,m,n}_{1,1,0}\right), \alpha_2\left(c^{l,m,n}_{1,1,0}-c^{l,m-1,n}_{1,1,0}\right) \right),\\ \tilde{c}^{l,m,n}_{1,0,2}=\mathrm{minmod} &amp;\left(c_{1,0,2}^{l,m,n}, \alpha_1\left(c^{l+1,m,n}_{0,0,2}-c^{l,m,n}_{0,0,2}\right), \alpha_1\left(c^{l,m,n}_{0,0,2}-c^{l-1,m,n}_{0,0,2}\right), \right.\\ &amp;\;\;\;\;\left. \alpha_2\left(c^{l,m,n+1}_{1,0,1}-c^{l,m,n}_{1,0,1}\right), \alpha_2\left(c^{l,m,n}_{1,0,1}-c^{l,m,n-1}_{1,0,1}\right) \right),\\ \tilde{c}^{l,m,n}_{0,1,2}=\mathrm{minmod} &amp;\left(c_{0,1,2}^{l,m,n}, \alpha_1\left(c^{l,m+1,n}_{0,0,2}-c^{l,m,n}_{0,0,2}\right), \alpha_1\left(c^{l,m,n}_{0,0,2}-c^{l,m-1,n}_{0,0,2}\right), \right. \\ &amp;\;\;\;\;\left. \alpha_2\left(c^{l,m,n+1}_{0,1,1}-c^{l,m,n}_{0,1,1}\right), \alpha_2\left(c^{l,m,n}_{0,1,1}-c^{l,m,n-1}_{0,1,1}\right) \right),\\ \tilde{c}^{l,m,n}_{0,2,1}=\mathrm{minmod} &amp;\left(c_{0,2,1}^{l,m,n}, \alpha_2\left(c^{l,m+1,n}_{0,1,1}-c^{l,m,n}_{0,1,1}\right), \alpha_2\left(c^{l,m,n}_{0,1,1}-c^{l,m-1,n}_{0,1,1}\right), \right.\\ &amp;\;\;\;\;\left. \alpha_1\left(c^{l,m,n+1}_{0,2,0}-c^{l,m,n}_{0,2,0}\right), \alpha_1\left(c^{l,m,n}_{0,2,0}-c^{l,m,n-1}_{0,2,0}\right) \right), \end{align*}
+</p>
+ <p class="formulaDsp">
+\begin{align*} \tilde{c}^{l,m,n}_{2,0,0}=\mathrm{minmod} &amp;\left(c_{2,0,0}^{l,m,n}, \alpha_2\left(c^{l+1,m,n}_{1,0,0}-c^{l,m,n}_{1,0,0}\right), \alpha_2\left(c^{l,m,n}_{1,0,0}-c^{l-1,m,n}_{1,0,0}\right) \right),\\ \tilde{c}^{l,m,n}_{0,2,0}=\mathrm{minmod} &amp;\left(c_{0,2,0}^{l,m,n}, \alpha_2\left(c^{l,m+1,n}_{0,1,0}-c^{l,m,n}_{0,1,0}\right), \alpha_2\left(c^{l,m,n}_{0,1,0}-c^{l,m-1,n}_{0,1,0}\right) \right),\\ \tilde{c}^{l,m,n}_{0,0,2}=\mathrm{minmod} &amp;\left(c_{0,0,2}^{l,m,n}, \alpha_2\left(c^{l,m,n+1}_{0,0,1}-c^{l,m,n}_{0,0,1}\right), \alpha_2\left(c^{l,m,n}_{0,0,1}-c^{l,m,n-1}_{0,0,1}\right) \right),\\ \tilde{c}^{l,m,n}_{1,1,1}=\mathrm{minmod} &amp;\left(c_{1,1,1}^{l,m,n}, \alpha_1\left(c^{l+1,m,n}_{0,1,1}-c^{l,m,n}_{0,1,1}\right), \alpha_1\left(c^{l,m,n}_{0,1,1}-c^{l-1,m,n}_{0,1,1}\right), \right.\\ &amp;\;\;\;\; \alpha_1\left(c^{l,m+1,n}_{1,0,1}-c^{l,m,n}_{1,0,1}\right), \alpha_1\left(c^{l,m,n}_{1,0,1}-c^{l,m-1,n}_{1,0,1}\right),\\ &amp;\;\;\;\;\left. \alpha_1\left(c^{l,m,n+1}_{1,1,0}-c^{l,m,n}_{1,1,0}\right), \alpha_1\left(c^{l,m,n}_{1,1,0}-c^{l,m,n-1}_{1,1,0}\right) \right),\\ \tilde{c}^{l,m,n}_{1,1,0}=\mathrm{minmod} &amp;\left(c_{1,1,0}^{l,m,n}, \alpha_1\left(c^{l+1,m,n}_{0,1,0}-c^{l,m,n}_{0,1,0}\right), \alpha_1\left(c^{l,m,n}_{0,1,0}-c^{l-1,m,n}_{0,1,0}\right), \right.\\ &amp;\;\;\;\;\left. \alpha_1\left(c^{l,m+1,n}_{1,0,0}-c^{l,m,n}_{1,0,0}\right), \alpha_1\left(c^{l,m,n}_{1,0,0}-c^{l,m-1,n}_{1,0,0}\right), \right),\\ \tilde{c}^{l,m,n}_{1,0,1}=\mathrm{minmod} &amp;\left(c_{1,0,1}^{l,m,n}, \alpha_1\left(c^{l+1,m,n}_{0,0,1}-c^{l,m,n}_{0,0,1}\right), \alpha_1\left(c^{l,m,n}_{0,0,1}-c^{l-1,m,n}_{0,0,1}\right), \right.\\ &amp;\;\;\;\;\left. \alpha_1\left(c^{l,m,n+1}_{1,0,0}-c^{l,m,n}_{1,0,0}\right), \alpha_1\left(c^{l,m,n}_{1,0,0}-c^{l,m,n-1}_{1,0,0}\right) \right),\\ \tilde{c}^{l,m,n}_{0,1,1}=\mathrm{minmod} &amp;\left(c_{0,1,1}^{l,m,n}, \alpha_1\left(c^{l,m+1,n}_{0,0,1}-c^{l,m,n}_{0,0,1}\right), \alpha_1\left(c^{l,m,n}_{0,0,1}-c^{l,m-1,n}_{0,0,1}\right), \right.\\ &amp;\;\;\;\;\left. \alpha_1\left(c^{l,m,n+1}_{0,1,0}-c^{l,m,n}_{0,1,0}\right), \alpha_1\left(c^{l,m,n}_{0,1,0}-c^{l,m,n-1}_{0,1,0}\right) \right),\\ \tilde{c}^{l,m,n}_{1,0,0}=\mathrm{minmod} &amp;\left(c_{1,0,0}^{l,m,n}, \alpha_1\left(c^{l+1,m,n}_{0,0,0}-c^{l,m,n}_{0,0,0}\right), \alpha_1\left(c^{l,m,n}_{0,0,0}-c^{l-1,m,n}_{0,0,0}\right) \right),\\ \tilde{c}^{l,m,n}_{0,1,0}=\mathrm{minmod} &amp;\left(c_{0,1,0}^{l,m,n}, \alpha_1\left(c^{l,m+1,n}_{0,0,0}-c^{l,m,n}_{0,0,0}\right), \alpha_1\left(c^{l,m,n}_{0,0,0}-c^{l,m-1,n}_{0,0,0}\right) \right),\\ \tilde{c}^{l,m,n}_{0,0,1}=\mathrm{minmod} &amp;\left(c_{0,0,1}^{l,m,n}, \alpha_1\left(c^{l,m,n+1}_{0,0,0}-c^{l,m,n}_{0,0,0}\right), \alpha_1\left(c^{l,m,n}_{0,0,0}-c^{l,m,n-1}_{0,0,0}\right) \right), \end{align*}
+</p>
+<p>The algorithm to perform the limiting is as follows:</p>
+<ul>
+<li>limit \(c_{2,2,2}\) (i.e. \(c_{2,2,2}\leftarrow\tilde{c}_{2,2,2}\)), if not changed, stop</li>
+<li>limit \(c_{2,2,1}\), \(c_{2,1,2}\), and \(c_{1,2,2}\), if all not changed, stop</li>
+<li>limit \(c_{2,2,0}\), \(c_{2,0,2}\), and \(c_{0,2,2}\), if all not changed, stop</li>
+<li>limit \(c_{2,1,1}\), \(c_{1,2,1}\), and \(c_{1,1,2}\), if all not changed, stop</li>
+<li>limit \(c_{2,1,0}\), \(c_{2,0,1}\), \(c_{1,2,0}\), \(c_{1,0,2}\), \(c_{0,1,2}\), and \(c_{0,2,1}\), if all not changed, stop</li>
+<li>limit \(c_{2,0,0}\), \(c_{0,2,0}\), and \(c_{0,0,2}\), if all not changed, stop</li>
+<li>limit \(c_{1,1,1}\), if not changed, stop</li>
+<li>limit \(c_{1,1,0}\), \(c_{1,0,1}\), and \(c_{0,1,1}\), if all not changed, stop</li>
+<li>limit \(c_{1,0,0}\), \(c_{0,1,0}\), and \(c_{0,0,1}\), if all not changed, stop</li>
+</ul>
+<p>The 1d and 2d implementations are straightforward restrictions of the described algorithm.</p>
+<h4><a class="anchor" id="autotoc_md82"></a>
+Limitations:</h4>
+<ul>
+<li>We currently recompute the spectral coefficients for local use, after having computed these same coefficients for sending to the neighbors. We should be able to avoid this either by storing the coefficients in the DataBox or by allowing the limiters' <code>packaged_data</code> function to return an object to be passed as an additional argument to the <code>operator()</code> (still would need to be stored in the DataBox).</li>
+<li>We cannot handle the case where neighbors have more/fewer coefficients. In the case that the neighbor has more coefficients we could just ignore the higher coefficients. In the case that the neighbor has fewer coefficients we have a few choices.</li>
+<li>Having a different number of collocation points in different directions is not supported. However, it is straightforward to handle this case. The outermost loop should be in the direction with the most collocation points, while the inner most loop should be over the direction with the fewest collocation points. The highest to lowest coefficients can then be limited appropriately again.</li>
+<li>h-refinement is not supported, but there is one reasonably straightforward implementation that may work. In this case we would ignore refinement that is not in the direction of the neighbor, treating the element as simply having multiple neighbors in that direction. The only change would be accounting for different refinement in the direction of the neighor, which should be easy to add since the differences in coefficients in Eq. \(\ref{eq:krivodonova 3d minmod}\) will just be multiplied by non-unity factors. </li>
+</ul>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="adc0bc9de9c518fe3f78575a59732b733"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc0bc9de9c518fe3f78575a59732b733">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t VolumeDim, typename... Tags&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> Limiters::Krivodonova&lt; VolumeDim, tmpl::list&lt; Tags... &gt; &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;The hierarchical limiter of Krivodonova.\n\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;This limiter works by limiting the highest modal &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;coefficients/derivatives using an aggressive minmod approach, &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;decreasing in modal coefficient order until no more limiting is &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;necessary.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/DiscontinuousGalerkin/Limiters/<a class="el" href="Krivodonova_8hpp_source.html">Krivodonova.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

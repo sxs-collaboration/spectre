@@ -1,0 +1,322 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: LinearSolver::Schwarz::ElementCenteredSubdomainData&lt; Dim, TagsList &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceLinearSolver.html">LinearSolver</a></li><li class="navelem"><a class="el" href="namespaceLinearSolver_1_1Schwarz.html">Schwarz</a></li><li class="navelem"><a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">LinearSolver::Schwarz::ElementCenteredSubdomainData&lt; Dim, TagsList &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Data on an element-centered subdomain.  
+ <a href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ElementCenteredSubdomainData_8hpp_source.html">ElementCenteredSubdomainData.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a6082dddceb26bbfeb9506b6692458bc7"><td class="memItemLeft" align="right" valign="top"><a id="a6082dddceb26bbfeb9506b6692458bc7"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>ElementData</b> = Variables&lt; TagsList &gt;</td></tr>
+<tr class="separator:a6082dddceb26bbfeb9506b6692458bc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa569884697d6af120a7e7dd99ef40a4a"><td class="memItemLeft" align="right" valign="top"><a id="aa569884697d6af120a7e7dd99ef40a4a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>OverlapData</b> = ElementData</td></tr>
+<tr class="separator:aa569884697d6af120a7e7dd99ef40a4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ebf27428ce8b3cd7ab9c1cdb3e8bd6c"><td class="memItemLeft" align="right" valign="top"><a id="a8ebf27428ce8b3cd7ab9c1cdb3e8bd6c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>iterator</b> = <a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainDataIterator.html">ElementCenteredSubdomainDataIterator</a>&lt; false, Dim, TagsList &gt;</td></tr>
+<tr class="separator:a8ebf27428ce8b3cd7ab9c1cdb3e8bd6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c5a396750aebc0c5676cc2f01cbeb2d"><td class="memItemLeft" align="right" valign="top"><a id="a3c5a396750aebc0c5676cc2f01cbeb2d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>const_iterator</b> = <a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainDataIterator.html">ElementCenteredSubdomainDataIterator</a>&lt; true, Dim, TagsList &gt;</td></tr>
+<tr class="separator:a3c5a396750aebc0c5676cc2f01cbeb2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a856d86ad677251b250e8161e0171ef54"><td class="memItemLeft" align="right" valign="top"><a id="a856d86ad677251b250e8161e0171ef54"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ElementCenteredSubdomainData</b> (const <a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a> &amp;)=default</td></tr>
+<tr class="separator:a856d86ad677251b250e8161e0171ef54"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c4de85f2390d260901e811f028f55cf"><td class="memItemLeft" align="right" valign="top"><a id="a0c4de85f2390d260901e811f028f55cf"></a>
+<a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a> &amp;) noexcept=default</td></tr>
+<tr class="separator:a0c4de85f2390d260901e811f028f55cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a65e84cdc0e5df8b1c1de0eb29fcda5f3"><td class="memItemLeft" align="right" valign="top"><a id="a65e84cdc0e5df8b1c1de0eb29fcda5f3"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ElementCenteredSubdomainData</b> (<a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a65e84cdc0e5df8b1c1de0eb29fcda5f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a08053c4abf646a0ca9c98e04fd83b043"><td class="memItemLeft" align="right" valign="top"><a id="a08053c4abf646a0ca9c98e04fd83b043"></a>
+<a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a08053c4abf646a0ca9c98e04fd83b043"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a57a110a85ed7e45caefe32d8c8aed8bc"><td class="memItemLeft" align="right" valign="top"><a id="a57a110a85ed7e45caefe32d8c8aed8bc"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ElementCenteredSubdomainData</b> (const size_t element_num_points) noexcept</td></tr>
+<tr class="separator:a57a110a85ed7e45caefe32d8c8aed8bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0871795b6dd44d2059cefafcd969a507"><td class="memTemplParams" colspan="2"><a id="a0871795b6dd44d2059cefafcd969a507"></a>
+template&lt;typename UsedForSizeTagsList &gt; </td></tr>
+<tr class="memitem:a0871795b6dd44d2059cefafcd969a507"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>destructive_resize</b> (const <a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a>&lt; Dim, UsedForSizeTagsList &gt; &amp;used_for_size) noexcept</td></tr>
+<tr class="separator:a0871795b6dd44d2059cefafcd969a507"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7da9b217cb84e9a290ec4cba17bb2933"><td class="memItemLeft" align="right" valign="top"><a id="a7da9b217cb84e9a290ec4cba17bb2933"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ElementCenteredSubdomainData</b> (Variables&lt; TagsList &gt; local_element_data, <a class="el" href="namespaceLinearSolver_1_1Schwarz.html#a2f93b06273400d7ac4150c064502a047">OverlapMap</a>&lt; Dim, Variables&lt; TagsList &gt;&gt; local_overlap_data) noexcept</td></tr>
+<tr class="separator:a7da9b217cb84e9a290ec4cba17bb2933"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59650a1b559610b9ca419a6368424e9b"><td class="memItemLeft" align="right" valign="top"><a id="a59650a1b559610b9ca419a6368424e9b"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>size</b> () const noexcept</td></tr>
+<tr class="separator:a59650a1b559610b9ca419a6368424e9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac93c711f031a287769bacd72c826539a"><td class="memItemLeft" align="right" valign="top"><a id="ac93c711f031a287769bacd72c826539a"></a>
+<a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainDataIterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><b>begin</b> () noexcept</td></tr>
+<tr class="separator:ac93c711f031a287769bacd72c826539a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a10cc555660b7f2f83ec99d8ac831529d"><td class="memItemLeft" align="right" valign="top"><a id="a10cc555660b7f2f83ec99d8ac831529d"></a>
+<a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainDataIterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><b>end</b> () noexcept</td></tr>
+<tr class="separator:a10cc555660b7f2f83ec99d8ac831529d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a57883b610ce508994b4ea463d12bb19c"><td class="memItemLeft" align="right" valign="top"><a id="a57883b610ce508994b4ea463d12bb19c"></a>
+<a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainDataIterator.html">const_iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><b>begin</b> () const noexcept</td></tr>
+<tr class="separator:a57883b610ce508994b4ea463d12bb19c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e7be330a0888b408ad75fe34e381086"><td class="memItemLeft" align="right" valign="top"><a id="a4e7be330a0888b408ad75fe34e381086"></a>
+<a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainDataIterator.html">const_iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><b>end</b> () const noexcept</td></tr>
+<tr class="separator:a4e7be330a0888b408ad75fe34e381086"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9c56ea7b96483decb4b88f2ed1bec40b"><td class="memItemLeft" align="right" valign="top"><a id="a9c56ea7b96483decb4b88f2ed1bec40b"></a>
+<a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainDataIterator.html">const_iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><b>cbegin</b> () const noexcept</td></tr>
+<tr class="separator:a9c56ea7b96483decb4b88f2ed1bec40b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2cc0dd297d9c9ac1aa6f06e8ba0fad4"><td class="memItemLeft" align="right" valign="top"><a id="ae2cc0dd297d9c9ac1aa6f06e8ba0fad4"></a>
+<a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainDataIterator.html">const_iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><b>cend</b> () const noexcept</td></tr>
+<tr class="separator:ae2cc0dd297d9c9ac1aa6f06e8ba0fad4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1425fe25fd32e8f74dd8dfa4f41d8683"><td class="memItemLeft" align="right" valign="top"><a id="a1425fe25fd32e8f74dd8dfa4f41d8683"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a1425fe25fd32e8f74dd8dfa4f41d8683"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a309341a76b6d90dedc103ef22ef1e7c8"><td class="memTemplParams" colspan="2"><a id="a309341a76b6d90dedc103ef22ef1e7c8"></a>
+template&lt;typename RhsTagsList &gt; </td></tr>
+<tr class="memitem:a309341a76b6d90dedc103ef22ef1e7c8"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator+=</b> (const <a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a>&lt; Dim, RhsTagsList &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a309341a76b6d90dedc103ef22ef1e7c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ad73b909bcbae99113982b88e724ee8"><td class="memTemplParams" colspan="2"><a id="a9ad73b909bcbae99113982b88e724ee8"></a>
+template&lt;typename RhsTagsList &gt; </td></tr>
+<tr class="memitem:a9ad73b909bcbae99113982b88e724ee8"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator-=</b> (const <a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a>&lt; Dim, RhsTagsList &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a9ad73b909bcbae99113982b88e724ee8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a683a0d13075f99ac6d698b27f88ca2c3"><td class="memItemLeft" align="right" valign="top"><a id="a683a0d13075f99ac6d698b27f88ca2c3"></a>
+<a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator*=</b> (const double scalar) noexcept</td></tr>
+<tr class="separator:a683a0d13075f99ac6d698b27f88ca2c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d03bb162a8c6709a11b5eec59b96dd8"><td class="memItemLeft" align="right" valign="top"><a id="a9d03bb162a8c6709a11b5eec59b96dd8"></a>
+<a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator/=</b> (const double scalar) noexcept</td></tr>
+<tr class="separator:a9d03bb162a8c6709a11b5eec59b96dd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:acd9d1a9e5b4fd1366e02d5acf5a20a2d"><td class="memItemLeft" align="right" valign="top"><a id="acd9d1a9e5b4fd1366e02d5acf5a20a2d"></a>
+ElementData&#160;</td><td class="memItemRight" valign="bottom"><b>element_data</b> {}</td></tr>
+<tr class="separator:acd9d1a9e5b4fd1366e02d5acf5a20a2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a76211dcf2cb7c9a83e6144515287d9"><td class="memItemLeft" align="right" valign="top"><a id="a0a76211dcf2cb7c9a83e6144515287d9"></a>
+<a class="el" href="namespaceLinearSolver_1_1Schwarz.html#a2f93b06273400d7ac4150c064502a047">OverlapMap</a>&lt; Dim, OverlapData &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>overlap_data</b> {}</td></tr>
+<tr class="separator:a0a76211dcf2cb7c9a83e6144515287d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a1b038ff82a94cd238551b2071e36933f"><td class="memItemLeft" align="right" valign="top"><a id="a1b038ff82a94cd238551b2071e36933f"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = Dim</td></tr>
+<tr class="separator:a1b038ff82a94cd238551b2071e36933f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim, typename TagsList&gt;<br />
+struct LinearSolver::Schwarz::ElementCenteredSubdomainData&lt; Dim, TagsList &gt;</h3>
+
+<p>Data on an element-centered subdomain. </p>
+<p>An element-centered subdomain consists of a central element and overlap regions with all neighboring elements. This class holds data on such a subdomain. It supports vector space operations (addition and scalar multiplication) and an inner product, which allows the use of this data type with linear solvers (see e.g. <code><a class="el" href="classLinearSolver_1_1Serial_1_1Gmres.html" title="A serial GMRES iterative solver for nonsymmetric linear systems of equations.">LinearSolver::Serial::Gmres</a></code>). </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/ParallelAlgorithms/LinearSolver/Schwarz/<a class="el" href="ElementCenteredSubdomainData_8hpp_source.html">ElementCenteredSubdomainData.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

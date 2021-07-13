@@ -1,0 +1,250 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: RadiationTransport::M1Grey::ComputeSources&lt; NeutrinoSpecies &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceRadiationTransport.html">RadiationTransport</a></li><li class="navelem"><a class="el" href="namespaceRadiationTransport_1_1M1Grey.html">M1Grey</a></li><li class="navelem"><a class="el" href="structRadiationTransport_1_1M1Grey_1_1ComputeSources.html">ComputeSources</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="structRadiationTransport_1_1M1Grey_1_1ComputeSources-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">RadiationTransport::M1Grey::ComputeSources&lt; NeutrinoSpecies &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Compute the curvature source terms for the flux-balanced grey M1 radiation transport.  
+ <a href="structRadiationTransport_1_1M1Grey_1_1ComputeSources.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="RadiationTransport_2M1Grey_2Sources_8hpp_source.html">Sources.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a658407ef1eb6da61b4e64b035f3e1216"><td class="memItemLeft" align="right" valign="top"><a id="a658407ef1eb6da61b4e64b035f3e1216"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_tags</b> = tmpl::list&lt; ::<a class="el" href="structTags_1_1Source.html">Tags::Source</a>&lt; <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeE.html">Tags::TildeE</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt; &gt;..., ::<a class="el" href="structTags_1_1Source.html">Tags::Source</a>&lt; <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeS.html">Tags::TildeS</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt; &gt;... &gt;</td></tr>
+<tr class="separator:a658407ef1eb6da61b4e64b035f3e1216"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa11134d6e94cb5f52c218ab6766d7452"><td class="memItemLeft" align="right" valign="top"><a id="aa11134d6e94cb5f52c218ab6766d7452"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt; <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeE.html">Tags::TildeE</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;..., <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeS.html">Tags::TildeS</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;..., <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeP.html">Tags::TildeP</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;..., <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1M1HydroCouplingNormal.html">Tags::M1HydroCouplingNormal</a>&lt; NeutrinoSpecies &gt;..., <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1M1HydroCouplingSpatial.html">Tags::M1HydroCouplingSpatial</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;..., <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt;&gt;, ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, tmpl::size_t&lt; 3 &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, tmpl::size_t&lt; 3 &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, tmpl::size_t&lt; 3 &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1InverseSpatialMetric.html">gr::Tags::InverseSpatialMetric</a>&lt; 3 &gt;, <a class="el" href="structgr_1_1Tags_1_1ExtrinsicCurvature.html">gr::Tags::ExtrinsicCurvature</a>&lt; 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;</td></tr>
+<tr class="separator:aa11134d6e94cb5f52c218ab6766d7452"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a2d389a49f30cf8fffc7dfe7298326bbf"><td class="memItemLeft" align="right" valign="top"><a id="a2d389a49f30cf8fffc7dfe7298326bbf"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>apply</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeE.html">Tags::TildeE</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type * &gt;... sources_tilde_e, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeS.html">Tags::TildeS</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type * &gt;... sources_tilde_s, const typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeE.html">Tags::TildeE</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type &amp;... tilde_e, const typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeS.html">Tags::TildeS</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type &amp;... tilde_s, const typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeP.html">Tags::TildeP</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type &amp;... tilde_p, const typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1M1HydroCouplingNormal.html">Tags::M1HydroCouplingNormal</a>&lt; NeutrinoSpecies &gt;::type &amp;... source_n, const typename <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1M1HydroCouplingSpatial.html">Tags::M1HydroCouplingSpatial</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;::type &amp;... source_i, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;lapse, const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;d_lapse, const tnsr::iJ&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;d_shift, const tnsr::ijj&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;d_spatial_metric, const tnsr::II&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;inv_spatial_metric, const tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;extrinsic_curvature) noexcept</td></tr>
+<tr class="separator:a2d389a49f30cf8fffc7dfe7298326bbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename... NeutrinoSpecies&gt;<br />
+struct RadiationTransport::M1Grey::ComputeSources&lt; NeutrinoSpecies &gt;</h3>
+
+<p>Compute the curvature source terms for the flux-balanced grey M1 radiation transport. </p>
+<p>A flux-balanced system has the generic form: </p><p class="formulaDsp">
+\[ \partial_t U_i + \partial_m F^m(U_i) = S(U_i) \]
+</p>
+<p>where \(F^a()\) denotes the flux of a conserved variable \(U_i\) and \(S()\) denotes the source term for the conserved variable.</p>
+<p>For the grey M1 formalism (neglecting coupling to the fluid): </p><p class="formulaDsp">
+\begin{align*} S({\tilde E}) &amp;= \alpha \tilde P^{ij} K_{ij} - \tilde S^i \partial_i \alpha,\\ S({\tilde S_i}) &amp;= -\tilde E \partial_i \alpha + \tilde S_k \partial_i \beta^k + \frac{1}{2} \alpha \tilde P^{jk} \partial_i \gamma_{jk}, \end{align*}
+</p>
+<p>where \({\tilde E}\), \({\tilde S_i}\), \({\tilde P}^{ij}\) are the densitized energy, momentum, and pressure tensor of the neutrinos/photons, \(K_{ij}\) is the extrinsic curvature, and \(\alpha\), \(\beta^i\), \(\gamma_{ij}\) are the lapse, shift and 3-metric.</p>
+<p>In the main function, we loop over all neutrino species, and then call the actual implementation of the curvature source terms. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/Systems/RadiationTransport/M1Grey/<a class="el" href="RadiationTransport_2M1Grey_2Sources_8hpp_source.html">Sources.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

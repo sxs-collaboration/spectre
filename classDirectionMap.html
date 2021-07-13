@@ -1,0 +1,375 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: DirectionMap&lt; Dim, T &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="classDirectionMap-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">DirectionMap&lt; Dim, T &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__DataStructuresGroup.html">Data Structures</a> &#124; <a class="el" href="group__ComputationalDomainGroup.html">Computational Domain</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DirectionMap_8hpp_source.html">DirectionMap.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a6aa262e29cd50e209ba8746e0bfb8779"><td class="memItemLeft" align="right" valign="top"><a id="a6aa262e29cd50e209ba8746e0bfb8779"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>base</b> = <a class="el" href="classFixedHashMap.html">FixedHashMap</a>&lt; 2 *Dim, <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt;, T, <a class="el" href="structDirectionHash.html">DirectionHash</a>&lt; Dim &gt; &gt;</td></tr>
+<tr class="separator:a6aa262e29cd50e209ba8746e0bfb8779"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classFixedHashMap"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classFixedHashMap')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classFixedHashMap.html">FixedHashMap&lt; 2 *Dim, Direction&lt; Dim &gt;, T, DirectionHash&lt; Dim &gt; &gt;</a></td></tr>
+<tr class="memitem:a48fa7c100d7091254b327443eaf0510f inherit pub_types_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a48fa7c100d7091254b327443eaf0510f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>key_type</b> = <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt;</td></tr>
+<tr class="separator:a48fa7c100d7091254b327443eaf0510f inherit pub_types_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a34c02f5774c81fcaa88531c370b97cae inherit pub_types_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a34c02f5774c81fcaa88531c370b97cae"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>mapped_type</b> = T</td></tr>
+<tr class="separator:a34c02f5774c81fcaa88531c370b97cae inherit pub_types_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a260ce4f87952a32f8aaa1b82b70363a1 inherit pub_types_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a260ce4f87952a32f8aaa1b82b70363a1"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>value_type</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; const <a class="el" href="classDirection.html">key_type</a>, mapped_type &gt;</td></tr>
+<tr class="separator:a260ce4f87952a32f8aaa1b82b70363a1 inherit pub_types_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a305ed4c766b3580adc7143445b4faa49 inherit pub_types_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a305ed4c766b3580adc7143445b4faa49"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>size_type</b> = size_t</td></tr>
+<tr class="separator:a305ed4c766b3580adc7143445b4faa49 inherit pub_types_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a662c7a17ddcd1cf9fd70292b4fd474d4 inherit pub_types_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a662c7a17ddcd1cf9fd70292b4fd474d4"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>difference_type</b> = ptrdiff_t</td></tr>
+<tr class="separator:a662c7a17ddcd1cf9fd70292b4fd474d4 inherit pub_types_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad52fa841a9ffdc02133fb8072e5879f7 inherit pub_types_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="ad52fa841a9ffdc02133fb8072e5879f7"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>hasher</b> = <a class="el" href="structDirectionHash.html">DirectionHash</a>&lt; Dim &gt;</td></tr>
+<tr class="separator:ad52fa841a9ffdc02133fb8072e5879f7 inherit pub_types_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2237cce743cda61f3132aa75215b76cc inherit pub_types_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a2237cce743cda61f3132aa75215b76cc"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>key_equal</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/functional/equal_to.html">std::equal_to</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; &gt;</td></tr>
+<tr class="separator:a2237cce743cda61f3132aa75215b76cc inherit pub_types_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa28775ca530a6243cc12dedd7516c3a4 inherit pub_types_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="aa28775ca530a6243cc12dedd7516c3a4"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>reference</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">value_type</a> &amp;</td></tr>
+<tr class="separator:aa28775ca530a6243cc12dedd7516c3a4 inherit pub_types_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a248f55097b4c3f32485add2edf08f7e5 inherit pub_types_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a248f55097b4c3f32485add2edf08f7e5"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>const_reference</b> = const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">value_type</a> &amp;</td></tr>
+<tr class="separator:a248f55097b4c3f32485add2edf08f7e5 inherit pub_types_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5914954b0e32ffa705a74b72d4fcba8e inherit pub_types_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a5914954b0e32ffa705a74b72d4fcba8e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>pointer</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">value_type</a> *</td></tr>
+<tr class="separator:a5914954b0e32ffa705a74b72d4fcba8e inherit pub_types_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc9c1f27078d63543e1e0110ea915f79 inherit pub_types_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="afc9c1f27078d63543e1e0110ea915f79"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>const_pointer</b> = const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">value_type</a> *</td></tr>
+<tr class="separator:afc9c1f27078d63543e1e0110ea915f79 inherit pub_types_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a96f6464e78e00f539aada0519905d93b inherit pub_types_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a96f6464e78e00f539aada0519905d93b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>iterator</b> = FixedHashMapIterator&lt; MaxSize, <a class="el" href="classDirection.html">key_type</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">value_type</a>, <a class="el" href="structDirectionHash.html">hasher</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/functional/equal_to.html">key_equal</a> &gt;</td></tr>
+<tr class="separator:a96f6464e78e00f539aada0519905d93b inherit pub_types_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e2599302b1a7d1b15cbd5e213954c05 inherit pub_types_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a9e2599302b1a7d1b15cbd5e213954c05"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>const_iterator</b> = FixedHashMapIterator&lt; MaxSize, <a class="el" href="classDirection.html">key_type</a>, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">value_type</a>, <a class="el" href="structDirectionHash.html">hasher</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/functional/equal_to.html">key_equal</a> &gt;</td></tr>
+<tr class="separator:a9e2599302b1a7d1b15cbd5e213954c05 inherit pub_types_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header pub_methods_classFixedHashMap"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classFixedHashMap')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classFixedHashMap.html">FixedHashMap&lt; 2 *Dim, Direction&lt; Dim &gt;, T, DirectionHash&lt; Dim &gt; &gt;</a></td></tr>
+<tr class="memitem:a1f2b76f814fe119c6f5ed82b4217ed4d inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a1f2b76f814fe119c6f5ed82b4217ed4d"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FixedHashMap</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/initializer_list.html">std::initializer_list</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">value_type</a> &gt; init) noexcept</td></tr>
+<tr class="separator:a1f2b76f814fe119c6f5ed82b4217ed4d inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae5d708e6ba9ac3067ed5b7f317362faa inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="ae5d708e6ba9ac3067ed5b7f317362faa"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FixedHashMap</b> (const <a class="el" href="classFixedHashMap.html">FixedHashMap</a> &amp;)=default</td></tr>
+<tr class="separator:ae5d708e6ba9ac3067ed5b7f317362faa inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aefed9c2c16f6e28ace656ab9fa5016b9 inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="aefed9c2c16f6e28ace656ab9fa5016b9"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FixedHashMap</b> (<a class="el" href="classFixedHashMap.html">FixedHashMap</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:aefed9c2c16f6e28ace656ab9fa5016b9 inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e7aacbafe01cc1ed2ce2d73bc0cd5ec inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a4e7aacbafe01cc1ed2ce2d73bc0cd5ec"></a>
+<a class="el" href="classFixedHashMap.html">FixedHashMap</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classFixedHashMap.html">FixedHashMap</a> &amp;other) noexcept(noexcept(<a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_copy_constructible.html">std::is_nothrow_copy_constructible</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">value_type</a> &gt;::value))</td></tr>
+<tr class="separator:a4e7aacbafe01cc1ed2ce2d73bc0cd5ec inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88c6936810236b832a6574ffd8766df4 inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a88c6936810236b832a6574ffd8766df4"></a>
+<a class="el" href="classFixedHashMap.html">FixedHashMap</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classFixedHashMap.html">FixedHashMap</a> &amp;&amp;other) noexcept</td></tr>
+<tr class="separator:a88c6936810236b832a6574ffd8766df4 inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc5d0736023fad75f7501ab79e271b33 inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="afc5d0736023fad75f7501ab79e271b33"></a>
+iterator&#160;</td><td class="memItemRight" valign="bottom"><b>begin</b> () noexcept</td></tr>
+<tr class="separator:afc5d0736023fad75f7501ab79e271b33 inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a775d39ec26e6d302faf8c2ecd4a47a1e inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a775d39ec26e6d302faf8c2ecd4a47a1e"></a>
+const_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>begin</b> () const noexcept</td></tr>
+<tr class="separator:a775d39ec26e6d302faf8c2ecd4a47a1e inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac22ddbf0322c8a88be4a0ac6bcca46cc inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="ac22ddbf0322c8a88be4a0ac6bcca46cc"></a>
+const_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>cbegin</b> () const noexcept</td></tr>
+<tr class="separator:ac22ddbf0322c8a88be4a0ac6bcca46cc inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a162008ca4f32b9139dccfe9367ea496b inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a162008ca4f32b9139dccfe9367ea496b"></a>
+iterator&#160;</td><td class="memItemRight" valign="bottom"><b>end</b> () noexcept</td></tr>
+<tr class="separator:a162008ca4f32b9139dccfe9367ea496b inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac899df6041c270cafd8eec8f89bbacbe inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="ac899df6041c270cafd8eec8f89bbacbe"></a>
+const_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>end</b> () const noexcept</td></tr>
+<tr class="separator:ac899df6041c270cafd8eec8f89bbacbe inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a268a29792276991712f6b68e5781decd inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a268a29792276991712f6b68e5781decd"></a>
+const_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>cend</b> () const noexcept</td></tr>
+<tr class="separator:a268a29792276991712f6b68e5781decd inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9297c9cddb4e06b31700499c34b5dba inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="ad9297c9cddb4e06b31700499c34b5dba"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>empty</b> () const noexcept</td></tr>
+<tr class="separator:ad9297c9cddb4e06b31700499c34b5dba inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c37f195333520e7b75cee263767e700 inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a4c37f195333520e7b75cee263767e700"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>size</b> () const noexcept</td></tr>
+<tr class="separator:a4c37f195333520e7b75cee263767e700 inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a05d1bb2248573d756f74880aa67852a7 inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a05d1bb2248573d756f74880aa67852a7"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>clear</b> () noexcept</td></tr>
+<tr class="separator:a05d1bb2248573d756f74880aa67852a7 inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2079f0fc12ac4118a707af8ae397e07d inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a2079f0fc12ac4118a707af8ae397e07d"></a>
+iterator&#160;</td><td class="memItemRight" valign="bottom"><b>erase</b> (const const_iterator &amp;pos) noexcept</td></tr>
+<tr class="separator:a2079f0fc12ac4118a707af8ae397e07d inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaad26bc65793dbba674f60f2ea591150 inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="aaad26bc65793dbba674f60f2ea591150"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>erase</b> (const <a class="el" href="classDirection.html">key_type</a> &amp;key) noexcept</td></tr>
+<tr class="separator:aaad26bc65793dbba674f60f2ea591150 inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab97b777406e3f5e3ee52ac8256f542d8 inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="ab97b777406e3f5e3ee52ac8256f542d8"></a>
+mapped_type &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>at</b> (const <a class="el" href="classDirection.html">key_type</a> &amp;key)</td></tr>
+<tr class="separator:ab97b777406e3f5e3ee52ac8256f542d8 inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab58adb7d0ac5ace0affe34d3ae469ab8 inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="ab58adb7d0ac5ace0affe34d3ae469ab8"></a>
+const mapped_type &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>at</b> (const <a class="el" href="classDirection.html">key_type</a> &amp;key) const</td></tr>
+<tr class="separator:ab58adb7d0ac5ace0affe34d3ae469ab8 inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69759d8bae12b02532a5a03ee4349f87 inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a69759d8bae12b02532a5a03ee4349f87"></a>
+mapped_type &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator[]</b> (const <a class="el" href="classDirection.html">key_type</a> &amp;key) noexcept</td></tr>
+<tr class="separator:a69759d8bae12b02532a5a03ee4349f87 inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c4f70a0a17f245d96a34ee53143fbf4 inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a5c4f70a0a17f245d96a34ee53143fbf4"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>count</b> (const <a class="el" href="classDirection.html">key_type</a> &amp;key) const noexcept</td></tr>
+<tr class="separator:a5c4f70a0a17f245d96a34ee53143fbf4 inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88c6ad80d7a2fdaac6a7d8bf58e1f06e inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a88c6ad80d7a2fdaac6a7d8bf58e1f06e"></a>
+iterator&#160;</td><td class="memItemRight" valign="bottom"><b>find</b> (const <a class="el" href="classDirection.html">key_type</a> &amp;key) noexcept</td></tr>
+<tr class="separator:a88c6ad80d7a2fdaac6a7d8bf58e1f06e inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77261db63544b558d54689487d29f464 inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a77261db63544b558d54689487d29f464"></a>
+const_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>find</b> (const <a class="el" href="classDirection.html">key_type</a> &amp;key) const noexcept</td></tr>
+<tr class="separator:a77261db63544b558d54689487d29f464 inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6152dc921343ea34b31a2b88b9d827b3 inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a6152dc921343ea34b31a2b88b9d827b3"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFixedHashMap.html#a6152dc921343ea34b31a2b88b9d827b3">contains</a> (const <a class="el" href="classDirection.html">key_type</a> &amp;key) const noexcept</td></tr>
+<tr class="memdesc:a6152dc921343ea34b31a2b88b9d827b3 inherit pub_methods_classFixedHashMap"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if <code>key</code> is in the map. <br /></td></tr>
+<tr class="separator:a6152dc921343ea34b31a2b88b9d827b3 inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae839b3d9b5ab8ec48e8dccc94337b582 inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="ae839b3d9b5ab8ec48e8dccc94337b582"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/functional/equal_to.html">key_equal</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFixedHashMap.html#ae839b3d9b5ab8ec48e8dccc94337b582">key_eq</a> () const noexcept</td></tr>
+<tr class="memdesc:ae839b3d9b5ab8ec48e8dccc94337b582 inherit pub_methods_classFixedHashMap"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get key equal function object. <br /></td></tr>
+<tr class="separator:ae839b3d9b5ab8ec48e8dccc94337b582 inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaec2ecda13d834766cff2154e248d542 inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="aaec2ecda13d834766cff2154e248d542"></a>
+<a class="el" href="structDirectionHash.html">hasher</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFixedHashMap.html#aaec2ecda13d834766cff2154e248d542">hash_function</a> () const noexcept</td></tr>
+<tr class="memdesc:aaec2ecda13d834766cff2154e248d542 inherit pub_methods_classFixedHashMap"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get hash function object. <br /></td></tr>
+<tr class="separator:aaec2ecda13d834766cff2154e248d542 inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64f000f63958ebffb9243f13ec83c2f9 inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a64f000f63958ebffb9243f13ec83c2f9"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a64f000f63958ebffb9243f13ec83c2f9 inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c739038f9f321ce2b41e614fe4f8fef inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a5c739038f9f321ce2b41e614fe4f8fef"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>insert_or_assign_impl</b> (<a class="el" href="classDirection.html">key_type</a> &amp;&amp;key, M &amp;&amp;obj) noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; iterator, bool &gt;</td></tr>
+<tr class="separator:a5c739038f9f321ce2b41e614fe4f8fef inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a125e7ca5a0f2ff08cab4031200f50cb4 inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a125e7ca5a0f2ff08cab4031200f50cb4"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>get_data_entry</b> (const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; &amp;key) noexcept -&gt; typename storage_type::iterator</td></tr>
+<tr class="separator:a125e7ca5a0f2ff08cab4031200f50cb4 inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89c73d8dab3c8875825ed4f7c1e66d5e inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a89c73d8dab3c8875825ed4f7c1e66d5e"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; iterator, bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFixedHashMap.html#a89c73d8dab3c8875825ed4f7c1e66d5e">insert</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">value_type</a> &amp;value) noexcept</td></tr>
+<tr class="memdesc:a89c73d8dab3c8875825ed4f7c1e66d5e inherit pub_methods_classFixedHashMap"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts the element if it does not exists. <br /></td></tr>
+<tr class="separator:a89c73d8dab3c8875825ed4f7c1e66d5e inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6bba179c635e9e7330b0d16fd5d88276 inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a6bba179c635e9e7330b0d16fd5d88276"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; iterator, bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>insert</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">value_type</a> &amp;&amp;value) noexcept</td></tr>
+<tr class="memdesc:a6bba179c635e9e7330b0d16fd5d88276 inherit pub_methods_classFixedHashMap"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts the element if it does not exists. <br /></td></tr>
+<tr class="separator:a6bba179c635e9e7330b0d16fd5d88276 inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84aa7fcb9a998fc51ee4640151f92098 inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a84aa7fcb9a998fc51ee4640151f92098"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; iterator, bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>emplace</b> (Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:a84aa7fcb9a998fc51ee4640151f92098 inherit pub_methods_classFixedHashMap"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts the element if it does not exists. <br /></td></tr>
+<tr class="separator:a84aa7fcb9a998fc51ee4640151f92098 inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe624f6b87abc7c343e22ee16da4d627 inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="abe624f6b87abc7c343e22ee16da4d627"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; iterator, bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFixedHashMap.html#abe624f6b87abc7c343e22ee16da4d627">insert_or_assign</a> (const <a class="el" href="classDirection.html">key_type</a> &amp;key, M &amp;&amp;obj) noexcept</td></tr>
+<tr class="memdesc:abe624f6b87abc7c343e22ee16da4d627 inherit pub_methods_classFixedHashMap"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts the element if it does not exists, otherwise assigns to it the new value. <br /></td></tr>
+<tr class="separator:abe624f6b87abc7c343e22ee16da4d627 inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24293c97ba0d732eb9088a585af1c2b3 inherit pub_methods_classFixedHashMap"><td class="memItemLeft" align="right" valign="top"><a id="a24293c97ba0d732eb9088a585af1c2b3"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; iterator, bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>insert_or_assign</b> (<a class="el" href="classDirection.html">key_type</a> &amp;&amp;key, M &amp;&amp;obj) noexcept</td></tr>
+<tr class="memdesc:a24293c97ba0d732eb9088a585af1c2b3 inherit pub_methods_classFixedHashMap"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts the element if it does not exists, otherwise assigns to it the new value. <br /></td></tr>
+<tr class="separator:a24293c97ba0d732eb9088a585af1c2b3 inherit pub_methods_classFixedHashMap"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim, typename T&gt;<br />
+class DirectionMap&lt; Dim, T &gt;</h3>
+
+<p>An optimized map with <a class="el" href="classDirection.html">Direction</a> keys </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/Structure/<a class="el" href="DirectionMap_8hpp_source.html">DirectionMap.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

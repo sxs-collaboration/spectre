@@ -1,0 +1,443 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: TimeSteppers::AdamsBashforthN Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceTimeSteppers.html">TimeSteppers</a></li><li class="navelem"><a class="el" href="classTimeSteppers_1_1AdamsBashforthN.html">AdamsBashforthN</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classTimeSteppers_1_1AdamsBashforthN-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">TimeSteppers::AdamsBashforthN Class Reference<div class="ingroups"><a class="el" href="group__TimeSteppersGroup.html">Time Steppers</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><code>#include &lt;<a class="el" href="AdamsBashforthN_8hpp_source.html">AdamsBashforthN.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTimeSteppers_1_1AdamsBashforthN_1_1Order.html">Order</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a49af59d79edc426ac8790284e2016a36"><td class="memItemLeft" align="right" valign="top"><a id="a49af59d79edc426ac8790284e2016a36"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structTimeSteppers_1_1AdamsBashforthN_1_1Order.html">Order</a> &gt;</td></tr>
+<tr class="separator:a49af59d79edc426ac8790284e2016a36"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affd3b8ae1f20c8bbd32383c033d2590b"><td class="memTemplParams" colspan="2"><a id="affd3b8ae1f20c8bbd32383c033d2590b"></a>
+template&lt;typename LocalVars , typename RemoteVars , typename Coupling &gt; </td></tr>
+<tr class="memitem:affd3b8ae1f20c8bbd32383c033d2590b"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>BoundaryHistoryType</b> = <a class="el" href="classTimeSteppers_1_1BoundaryHistory.html">BoundaryHistory</a>&lt; LocalVars, RemoteVars, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/result_of.html">std::result_of_t</a>&lt; const Coupling &amp;(LocalVars, RemoteVars)&gt; &gt;</td></tr>
+<tr class="separator:affd3b8ae1f20c8bbd32383c033d2590b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a68e77b81c69341171e9ebc4de382c889"><td class="memItemLeft" align="right" valign="top"><a id="a68e77b81c69341171e9ebc4de382c889"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>AdamsBashforthN</b> (size_t order) noexcept</td></tr>
+<tr class="separator:a68e77b81c69341171e9ebc4de382c889"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84e7fb5435d7b4b78fe81f08fb6ea1c0"><td class="memItemLeft" align="right" valign="top"><a id="a84e7fb5435d7b4b78fe81f08fb6ea1c0"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>AdamsBashforthN</b> (const <a class="el" href="classTimeSteppers_1_1AdamsBashforthN.html">AdamsBashforthN</a> &amp;) noexcept=default</td></tr>
+<tr class="separator:a84e7fb5435d7b4b78fe81f08fb6ea1c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a859d1245eb3abad140b95078076ce06a"><td class="memItemLeft" align="right" valign="top"><a id="a859d1245eb3abad140b95078076ce06a"></a>
+<a class="el" href="classTimeSteppers_1_1AdamsBashforthN.html">AdamsBashforthN</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classTimeSteppers_1_1AdamsBashforthN.html">AdamsBashforthN</a> &amp;) noexcept=default</td></tr>
+<tr class="separator:a859d1245eb3abad140b95078076ce06a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a56dc89c39a6578e1231d6bb2fc0f8671"><td class="memItemLeft" align="right" valign="top"><a id="a56dc89c39a6578e1231d6bb2fc0f8671"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>AdamsBashforthN</b> (<a class="el" href="classTimeSteppers_1_1AdamsBashforthN.html">AdamsBashforthN</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a56dc89c39a6578e1231d6bb2fc0f8671"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a37accb612f725604629e091a997653"><td class="memItemLeft" align="right" valign="top"><a id="a8a37accb612f725604629e091a997653"></a>
+<a class="el" href="classTimeSteppers_1_1AdamsBashforthN.html">AdamsBashforthN</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classTimeSteppers_1_1AdamsBashforthN.html">AdamsBashforthN</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a8a37accb612f725604629e091a997653"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72295798545b217d192d4bc809379040"><td class="memTemplParams" colspan="2"><a id="a72295798545b217d192d4bc809379040"></a>
+template&lt;typename Vars , typename DerivVars &gt; </td></tr>
+<tr class="memitem:a72295798545b217d192d4bc809379040"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>update_u</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Vars * &gt; u, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classTimeSteppers_1_1History.html">History</a>&lt; Vars, DerivVars &gt; * &gt; history, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;time_step) const noexcept</td></tr>
+<tr class="separator:a72295798545b217d192d4bc809379040"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c4840b03faefe79aa9b2daa8b0a9036"><td class="memTemplParams" colspan="2"><a id="a3c4840b03faefe79aa9b2daa8b0a9036"></a>
+template&lt;typename Vars , typename ErrVars , typename DerivVars &gt; </td></tr>
+<tr class="memitem:a3c4840b03faefe79aa9b2daa8b0a9036"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>update_u</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Vars * &gt; u, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; ErrVars * &gt; u_error, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classTimeSteppers_1_1History.html">History</a>&lt; Vars, DerivVars &gt; * &gt; history, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;time_step) const noexcept</td></tr>
+<tr class="separator:a3c4840b03faefe79aa9b2daa8b0a9036"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6d98cde09e04b186be14c2b68f986a6"><td class="memTemplParams" colspan="2"><a id="ab6d98cde09e04b186be14c2b68f986a6"></a>
+template&lt;typename Vars , typename DerivVars &gt; </td></tr>
+<tr class="memitem:ab6d98cde09e04b186be14c2b68f986a6"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>dense_update_u</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Vars * &gt; u, const <a class="el" href="classTimeSteppers_1_1History.html">History</a>&lt; Vars, DerivVars &gt; &amp;history, double time) const noexcept</td></tr>
+<tr class="separator:ab6d98cde09e04b186be14c2b68f986a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1fa0a3447ed27d9176412ee89bf972e9"><td class="memTemplParams" colspan="2">template&lt;typename LocalVars , typename RemoteVars , typename Coupling &gt; </td></tr>
+<tr class="memitem:a1fa0a3447ed27d9176412ee89bf972e9"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/types/result_of.html">std::result_of_t</a>&lt; const Coupling &amp;(LocalVars, RemoteVars)&gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTimeSteppers_1_1AdamsBashforthN.html#a1fa0a3447ed27d9176412ee89bf972e9">compute_boundary_delta</a> (const Coupling &amp;coupling, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classTimeSteppers_1_1BoundaryHistory.html">BoundaryHistoryType</a>&lt; LocalVars, RemoteVars, Coupling &gt; * &gt; history, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;time_step) const noexcept</td></tr>
+<tr class="separator:a1fa0a3447ed27d9176412ee89bf972e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abbecac4a11a66b8f01cff7109a24bb6e"><td class="memTemplParams" colspan="2"><a id="abbecac4a11a66b8f01cff7109a24bb6e"></a>
+template&lt;typename LocalVars , typename RemoteVars , typename Coupling &gt; </td></tr>
+<tr class="memitem:abbecac4a11a66b8f01cff7109a24bb6e"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/types/result_of.html">std::result_of_t</a>&lt; const Coupling &amp;(LocalVars, RemoteVars)&gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>boundary_dense_output</b> (const Coupling &amp;coupling, const <a class="el" href="classTimeSteppers_1_1BoundaryHistory.html">BoundaryHistoryType</a>&lt; LocalVars, RemoteVars, Coupling &gt; &amp;history, double time) const noexcept</td></tr>
+<tr class="separator:abbecac4a11a66b8f01cff7109a24bb6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acf892d63526f43d102110b1ae1998e98"><td class="memItemLeft" align="right" valign="top"><a id="acf892d63526f43d102110b1ae1998e98"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>order</b> () const noexcept override</td></tr>
+<tr class="separator:acf892d63526f43d102110b1ae1998e98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a37d97646418823cc666dc9871fddaf79"><td class="memItemLeft" align="right" valign="top"><a id="a37d97646418823cc666dc9871fddaf79"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>error_estimate_order</b> () const noexcept override</td></tr>
+<tr class="separator:a37d97646418823cc666dc9871fddaf79"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7abc131033f9f4d4978084930d769834"><td class="memItemLeft" align="right" valign="top"><a id="a7abc131033f9f4d4978084930d769834"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>number_of_past_steps</b> () const noexcept override</td></tr>
+<tr class="separator:a7abc131033f9f4d4978084930d769834"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af71097416f06b566c9a7650c52391055"><td class="memItemLeft" align="right" valign="top"><a id="af71097416f06b566c9a7650c52391055"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>stable_step</b> () const noexcept override</td></tr>
+<tr class="separator:af71097416f06b566c9a7650c52391055"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a0b00e13487f9bf38a3f3dd57853385"><td class="memItemLeft" align="right" valign="top"><a id="a9a0b00e13487f9bf38a3f3dd57853385"></a>
+<a class="el" href="classTimeStepId.html">TimeStepId</a>&#160;</td><td class="memItemRight" valign="bottom"><b>next_time_id</b> (const <a class="el" href="classTimeStepId.html">TimeStepId</a> &amp;current_id, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;time_step) const noexcept override</td></tr>
+<tr class="separator:a9a0b00e13487f9bf38a3f3dd57853385"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d6e6c121163151dcb4f1a8d6b66af3a"><td class="memTemplParams" colspan="2"><a id="a0d6e6c121163151dcb4f1a8d6b66af3a"></a>
+template&lt;typename Vars , typename DerivVars &gt; </td></tr>
+<tr class="memitem:a0d6e6c121163151dcb4f1a8d6b66af3a"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>can_change_step_size</b> (const <a class="el" href="classTimeStepId.html">TimeStepId</a> &amp;time_id, const <a class="el" href="classTimeSteppers_1_1History.html">TimeSteppers::History</a>&lt; Vars, DerivVars &gt; &amp;history) const noexcept</td></tr>
+<tr class="separator:a0d6e6c121163151dcb4f1a8d6b66af3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a879806f37a1f87753946347c8cd79e7a"><td class="memItemLeft" align="right" valign="top"><a id="a879806f37a1f87753946347c8cd79e7a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_template</b> (<a class="el" href="classTimeSteppers_1_1AdamsBashforthN.html">AdamsBashforthN</a>)</td></tr>
+<tr class="separator:a879806f37a1f87753946347c8cd79e7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a612c92b5d01135dd3ad64de02e50c1bf"><td class="memItemLeft" align="right" valign="top"><a id="a612c92b5d01135dd3ad64de02e50c1bf"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>AdamsBashforthN</b> (CkMigrateMessage *) noexcept</td></tr>
+<tr class="separator:a612c92b5d01135dd3ad64de02e50c1bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a112956307bc795213d6f702af613ec79"><td class="memItemLeft" align="right" valign="top"><a id="a112956307bc795213d6f702af613ec79"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:a112956307bc795213d6f702af613ec79"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e40b40720f8149b9b215de2c492a056"><td class="memTemplParams" colspan="2"><a id="a4e40b40720f8149b9b215de2c492a056"></a>
+template&lt;typename Vars , typename DerivVars &gt; </td></tr>
+<tr class="memitem:a4e40b40720f8149b9b215de2c492a056"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>update_u</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Vars * &gt; u, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classTimeSteppers_1_1History.html">History</a>&lt; Vars, DerivVars &gt; * &gt; history, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;time_step) const noexcept</td></tr>
+<tr class="separator:a4e40b40720f8149b9b215de2c492a056"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a214f9b6fe0ac41262524d822898e6bff"><td class="memTemplParams" colspan="2"><a id="a214f9b6fe0ac41262524d822898e6bff"></a>
+template&lt;typename Vars , typename ErrVars , typename DerivVars &gt; </td></tr>
+<tr class="memitem:a214f9b6fe0ac41262524d822898e6bff"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>update_u</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Vars * &gt; u, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; ErrVars * &gt; u_error, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classTimeSteppers_1_1History.html">History</a>&lt; Vars, DerivVars &gt; * &gt; history, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;time_step) const noexcept</td></tr>
+<tr class="separator:a214f9b6fe0ac41262524d822898e6bff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51748d8306bc8f924cb4d8b82fcb0e30"><td class="memTemplParams" colspan="2"><a id="a51748d8306bc8f924cb4d8b82fcb0e30"></a>
+template&lt;typename Vars , typename DerivVars &gt; </td></tr>
+<tr class="memitem:a51748d8306bc8f924cb4d8b82fcb0e30"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>dense_update_u</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Vars * &gt; u, const <a class="el" href="classTimeSteppers_1_1History.html">History</a>&lt; Vars, DerivVars &gt; &amp;history, const double time) const noexcept</td></tr>
+<tr class="separator:a51748d8306bc8f924cb4d8b82fcb0e30"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d0afa409d8eb55b2c24aa4f21382452"><td class="memTemplParams" colspan="2"><a id="a9d0afa409d8eb55b2c24aa4f21382452"></a>
+template&lt;typename UpdateVars , typename Vars , typename DerivVars , typename Delta &gt; </td></tr>
+<tr class="memitem:a9d0afa409d8eb55b2c24aa4f21382452"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>update_u_impl</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; UpdateVars * &gt; u, const <a class="el" href="classTimeSteppers_1_1History.html">History</a>&lt; Vars, DerivVars &gt; &amp;history, const Delta &amp;time_step, const size_t order) const noexcept</td></tr>
+<tr class="separator:a9d0afa409d8eb55b2c24aa4f21382452"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aec086d03fff600468fb1f8a78d44cdf8"><td class="memTemplParams" colspan="2"><a id="aec086d03fff600468fb1f8a78d44cdf8"></a>
+template&lt;typename LocalVars , typename RemoteVars , typename Coupling &gt; </td></tr>
+<tr class="memitem:aec086d03fff600468fb1f8a78d44cdf8"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/types/result_of.html">std::result_of_t</a>&lt; const Coupling &amp;(LocalVars, RemoteVars)&gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>compute_boundary_delta</b> (const Coupling &amp;coupling, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classTimeSteppers_1_1BoundaryHistory.html">BoundaryHistoryType</a>&lt; LocalVars, RemoteVars, Coupling &gt; * &gt; history, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;time_step) const noexcept</td></tr>
+<tr class="separator:aec086d03fff600468fb1f8a78d44cdf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aed194ba9f064de45b71920297ece776b"><td class="memItemLeft" align="right" valign="top"><a id="aed194ba9f064de45b71920297ece776b"></a>
+static constexpr const size_t&#160;</td><td class="memItemRight" valign="bottom"><b>maximum_order</b> = 8</td></tr>
+<tr class="separator:aed194ba9f064de45b71920297ece776b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae006e93fbc9c262d19cf4b54ac41ff63"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:ae006e93fbc9c262d19cf4b54ac41ff63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a4d81e917e6c8dafc307d0a1c5a7e9e36"><td class="memItemLeft" align="right" valign="top"><a id="a4d81e917e6c8dafc307d0a1c5a7e9e36"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classTimeSteppers_1_1AdamsBashforthN.html">AdamsBashforthN</a> &amp;lhs, const <a class="el" href="classTimeSteppers_1_1AdamsBashforthN.html">AdamsBashforthN</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a4d81e917e6c8dafc307d0a1c5a7e9e36"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>An Nth order Adams-Bashforth time stepper.</p>
+<p>The stable step size factors for different orders are given by:</p>
+<table class="doxtable">
+<tr>
+<th>Order  </th><th>CFL Factor   </th></tr>
+<tr>
+<td>1  </td><td>1   </td></tr>
+<tr>
+<td>2  </td><td>1 / 2   </td></tr>
+<tr>
+<td>3  </td><td>3 / 11   </td></tr>
+<tr>
+<td>4  </td><td>3 / 20   </td></tr>
+<tr>
+<td>5  </td><td>45 / 551   </td></tr>
+<tr>
+<td>6  </td><td>5 / 114   </td></tr>
+<tr>
+<td>7  </td><td>945 / 40663   </td></tr>
+<tr>
+<td>8  </td><td>945 / 77432   </td></tr>
+</table>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a1fa0a3447ed27d9176412ee89bf972e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1fa0a3447ed27d9176412ee89bf972e9">&#9670;&nbsp;</a></span>compute_boundary_delta()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename LocalVars , typename RemoteVars , typename Coupling &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/types/result_of.html">std::result_of_t</a>&lt;const Coupling&amp;(LocalVars, RemoteVars)&gt; TimeSteppers::AdamsBashforthN::compute_boundary_delta </td>
+          <td>(</td>
+          <td class="paramtype">const Coupling &amp;&#160;</td>
+          <td class="paramname"><em>coupling</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classTimeSteppers_1_1BoundaryHistory.html">BoundaryHistoryType</a>&lt; LocalVars, RemoteVars, Coupling &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>history</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;&#160;</td>
+          <td class="paramname"><em>time_step</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>An explanation of the computation being performed by this function: \(\newcommand\tL{t^L}\newcommand\tR{t^R}\newcommand\tU{\tilde{t}\!} \newcommand\mat{\mathbf}\)</p>
+<p>Suppose the local and remote sides of the interface are evaluated at times \(\ldots, \tL_{-1}, \tL_0, \tL_1, \ldots\) and \(\ldots, \tR_{-1}, \tR_0, \tR_1, \ldots\), respectively, with the starting location of the numbering arbitrary in each case. Let the step we wish to calculate the effect of be the step from \(\tL_{m_S}\) to \(\tL_{m_S+1}\). We call the sequence produced from the union of the local and remote time sequences \(\ldots, \tU_{-1}, \tU_0, \tU_1, \ldots\). For example, one possible sequence of times is: </p><p class="formulaDsp">
+\begin{equation} \begin{aligned} \text{Local side:} \\ \text{Union times:} \\ \text{Remote side:} \end{aligned} \cdots \begin{gathered} \, \\ \tU_1 \\ \tR_5 \end{gathered} \leftarrow \Delta \tU_1 \rightarrow \begin{gathered} \tL_4 \\ \tU_2 \\ \, \end{gathered} \leftarrow \Delta \tU_2 \rightarrow \begin{gathered} \, \\ \tU_3 \\ \tR_6 \end{gathered} \leftarrow \Delta \tU_3 \rightarrow \begin{gathered} \, \\ \tU_4 \\ \tR_7 \end{gathered} \leftarrow \Delta \tU_4 \rightarrow \begin{gathered} \tL_5 \\ \tU_5 \\ \, \end{gathered} \cdots \end{equation}
+</p>
+<p> We call the indices of the step's start and end times in the union time sequence \(n_S\) and \(n_E\), respectively. We define \(n^L_m\) to be the union-time index corresponding to \(\tL_m\) and \(m^L_n\) to be the index of the last local time not later than \(\tU_n\) and similarly for the remote side. So for the above example, \(n^L_4 = 2\) and \(m^R_2 = 5\), and if we wish to compute the step from \(\tL_4\) to \(\tL_5\) we would have \(m_S = 4\), \(n_S = 2\), and \(n_E = 5\).</p>
+<p>If we wish to evaluate the change over this step to \(k\)th order, we can write the change in the value as a linear combination of the values of the coupling between the elements at unequal times: </p><p class="formulaDsp">
+\begin{equation} \mat{F}_{m_S} = \mspace{-10mu} \sum_{q^L = m_S-(k-1)}^{m_S} \, \sum_{q^R = m^R_{n_S}-(k-1)}^{m^R_{n_E-1}} \mspace{-10mu} \mat{D}_{q^Lq^R} I_{q^Lq^R}, \end{equation}
+</p>
+<p> where \(\mat{D}_{q^Lq^R}\) is the coupling function evaluated between data from \(\tL_{q^L}\) and \(\tR_{q^R}\). The coefficients can be written as the sum of three terms, </p><p class="formulaDsp">
+\begin{equation} I_{q^Lq^R} = I^E_{q^Lq^R} + I^R_{q^Lq^R} + I^L_{q^Lq^R}, \end{equation}
+</p>
+<p> which can be interpreted as a contribution from equal-time evaluations and contributions related to the remote and local evaluation times. These are given by </p><p class="formulaDsp">
+\begin{align} I^E_{q^Lq^R} &amp;= \mspace{-10mu} \sum_{n=n_S}^{\min\left\{n_E, n^L+k\right\}-1} \mspace{-10mu} \tilde{\alpha}_{n,n-n^L} \Delta \tU_n &amp;&amp;\text{if $\tL_{q^L} = \tR_{q^R}$, otherwise 0} \\ I^R_{q^Lq^R} &amp;= \ell_{q^L - m_S + k}\!\left( \tU_{n^R}; \tL_{m_S - (k-1)}, \ldots, \tL_{m_S}\right) \mspace{-10mu} \sum_{n=\max\left\{n_S, n^R\right\}} ^{\min\left\{n_E, n^R+k\right\}-1} \mspace{-10mu} \tilde{\alpha}_{n,n-n^R} \Delta \tU_n &amp;&amp;\text{if $\tR_{q^R}$ is not in $\{\tL_{\vphantom{|}\cdots}\}$, otherwise 0} \\ I^L_{q^Lq^R} &amp;= \mspace{-10mu} \sum_{n=\max\left\{n_S, n^R\right\}} ^{\min\left\{n_E, n^L+k, n^R_{q^R+k}\right\}-1} \mspace{-10mu} \ell_{q^R - m^R_n + k}\!\left(\tU_{n^L}; \tR_{m^R_n - (k-1)}, \ldots, \tR_{m^R_n}\right) \tilde{\alpha}_{n,n-n^L} \Delta \tU_n &amp;&amp;\text{if $\tL_{q^L}$ is not in $\{\tR_{\vphantom{|}\cdots}\}$, otherwise 0,} \end{align}
+</p>
+<p> where for brevity we write \(n^L = n^L_{q^L}\) and \(n^R = n^R_{q^R}\), and where \(\ell_a(t; x_1, \ldots, x_k)\) a Lagrange interpolating polynomial and \(\tilde{\alpha}_{nj}\) is the \(j\)th coefficient for an Adams-Bashforth step over the union times from step \(n\) to step \(n+1\). </p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="ae006e93fbc9c262d19cf4b54ac41ff63"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae006e93fbc9c262d19cf4b54ac41ff63">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> TimeSteppers::AdamsBashforthN::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;An Adams-Bashforth Nth order time-stepper.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Time/TimeSteppers/<a class="el" href="AdamsBashforthN_8hpp_source.html">AdamsBashforthN.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

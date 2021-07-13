@@ -1,0 +1,1102 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__TensorGroup.html">Tensor</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Represents an object with multiple components.  
+ <a href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Tensor_8hpp_source.html">Tensor.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a68fd9d8aea622c86dbc4d3eebad42bd8"><td class="memItemLeft" align="right" valign="top"><a id="a68fd9d8aea622c86dbc4d3eebad42bd8"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a68fd9d8aea622c86dbc4d3eebad42bd8">storage_type</a> = <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; X, Tensor_detail::Structure&lt; Symm, Indices... &gt;::<a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a3a99d7fad33ad77656622fc6ae554634">size</a>()&gt;</td></tr>
+<tr class="memdesc:a68fd9d8aea622c86dbc4d3eebad42bd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">The type of the sequence that holds the data. <br /></td></tr>
+<tr class="separator:a68fd9d8aea622c86dbc4d3eebad42bd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad44f10dfd716688c0f3b48f018c60a18"><td class="memItemLeft" align="right" valign="top"><a id="ad44f10dfd716688c0f3b48f018c60a18"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#ad44f10dfd716688c0f3b48f018c60a18">type</a> = X</td></tr>
+<tr class="memdesc:ad44f10dfd716688c0f3b48f018c60a18"><td class="mdescLeft">&#160;</td><td class="mdescRight">The type that is stored by the Tensor. <br /></td></tr>
+<tr class="separator:ad44f10dfd716688c0f3b48f018c60a18"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9779532d1a343003c2d4bb3891d1351"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#af9779532d1a343003c2d4bb3891d1351">symmetry</a> = Symm</td></tr>
+<tr class="memdesc:af9779532d1a343003c2d4bb3891d1351"><td class="mdescLeft">&#160;</td><td class="mdescRight">Typelist of the symmetry of the Tensor.  <a href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#af9779532d1a343003c2d4bb3891d1351">More...</a><br /></td></tr>
+<tr class="separator:af9779532d1a343003c2d4bb3891d1351"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a598b6416e1162943fd42fd4434ce9ba9"><td class="memItemLeft" align="right" valign="top"><a id="a598b6416e1162943fd42fd4434ce9ba9"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a598b6416e1162943fd42fd4434ce9ba9">index_list</a> = tmpl::list&lt; Indices... &gt;</td></tr>
+<tr class="memdesc:a598b6416e1162943fd42fd4434ce9ba9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Typelist of the <a class="el" href="group__TensorGroup.html#ga05c512b755e913cdbddce8634bdb4fa6">TensorIndexType</a>'s that the Tensor has. <br /></td></tr>
+<tr class="separator:a598b6416e1162943fd42fd4434ce9ba9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b446ecc17a194cab3ad9d8a57009e6b"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a2b446ecc17a194cab3ad9d8a57009e6b">structure</a> = Tensor_detail::Structure&lt; Symm, Indices... &gt;</td></tr>
+<tr class="memdesc:a2b446ecc17a194cab3ad9d8a57009e6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">The Tensor_detail::Structure for the particular tensor index structure.  <a href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a2b446ecc17a194cab3ad9d8a57009e6b">More...</a><br /></td></tr>
+<tr class="separator:a2b446ecc17a194cab3ad9d8a57009e6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76d91bf76e5f3e1b41eb3ac1f833512b"><td class="memTemplParams" colspan="2"><a id="a76d91bf76e5f3e1b41eb3ac1f833512b"></a>
+template&lt;typename ArgsList &gt; </td></tr>
+<tr class="memitem:a76d91bf76e5f3e1b41eb3ac1f833512b"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a76d91bf76e5f3e1b41eb3ac1f833512b">TE</a> = <a class="el" href="structTensorExpressions_1_1TensorAsExpression.html">TensorExpressions::TensorAsExpression</a>&lt; Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;, ArgsList &gt;</td></tr>
+<tr class="memdesc:a76d91bf76e5f3e1b41eb3ac1f833512b"><td class="mdescLeft">&#160;</td><td class="mdescRight">The type of the TensorExpression that would represent this Tensor in a tensor expression. <br /></td></tr>
+<tr class="separator:a76d91bf76e5f3e1b41eb3ac1f833512b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1bbd8305e46900d1b9451bb01414d87"><td class="memItemLeft" align="right" valign="top"><a id="aa1bbd8305e46900d1b9451bb01414d87"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>value_type</b> = typename storage_type::value_type</td></tr>
+<tr class="separator:aa1bbd8305e46900d1b9451bb01414d87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6cc26f0946a9bd0af6ca73c769cfcb3c"><td class="memItemLeft" align="right" valign="top"><a id="a6cc26f0946a9bd0af6ca73c769cfcb3c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>reference</b> = typename storage_type::reference</td></tr>
+<tr class="separator:a6cc26f0946a9bd0af6ca73c769cfcb3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6fe06c64d3255ff34d33e12bf121e0d0"><td class="memItemLeft" align="right" valign="top"><a id="a6fe06c64d3255ff34d33e12bf121e0d0"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>const_reference</b> = typename storage_type::const_reference</td></tr>
+<tr class="separator:a6fe06c64d3255ff34d33e12bf121e0d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1caf7328eec4261bd4b551a1ff1c095e"><td class="memItemLeft" align="right" valign="top"><a id="a1caf7328eec4261bd4b551a1ff1c095e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>iterator</b> = typename storage_type::iterator</td></tr>
+<tr class="separator:a1caf7328eec4261bd4b551a1ff1c095e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a56fc11bfbc3ca471fbdbfcae2e9cf888"><td class="memItemLeft" align="right" valign="top"><a id="a56fc11bfbc3ca471fbdbfcae2e9cf888"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>const_iterator</b> = typename storage_type::const_iterator</td></tr>
+<tr class="separator:a56fc11bfbc3ca471fbdbfcae2e9cf888"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7cd90894a1cfb8580ecc044702affebf"><td class="memItemLeft" align="right" valign="top"><a id="a7cd90894a1cfb8580ecc044702affebf"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>pointer</b> = typename storage_type::pointer</td></tr>
+<tr class="separator:a7cd90894a1cfb8580ecc044702affebf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8cb098823d5f58c94dbc4c14257e333d"><td class="memItemLeft" align="right" valign="top"><a id="a8cb098823d5f58c94dbc4c14257e333d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>const_pointer</b> = typename storage_type::const_pointer</td></tr>
+<tr class="separator:a8cb098823d5f58c94dbc4c14257e333d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a534bad00aa2d077ac61ffb4b50797576"><td class="memItemLeft" align="right" valign="top"><a id="a534bad00aa2d077ac61ffb4b50797576"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>reverse_iterator</b> = typename storage_type::reverse_iterator</td></tr>
+<tr class="separator:a534bad00aa2d077ac61ffb4b50797576"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab369b9d0029fcf0a0cb370c22ef81998"><td class="memItemLeft" align="right" valign="top"><a id="ab369b9d0029fcf0a0cb370c22ef81998"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>const_reverse_iterator</b> = typename storage_type::const_reverse_iterator</td></tr>
+<tr class="separator:ab369b9d0029fcf0a0cb370c22ef81998"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ae1419d3604a3f15ad6871a9e9e7743d8"><td class="memItemLeft" align="right" valign="top"><a id="ae1419d3604a3f15ad6871a9e9e7743d8"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Tensor</b> (const Tensor &amp;)=default</td></tr>
+<tr class="separator:ae1419d3604a3f15ad6871a9e9e7743d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae29c6f196a03361cdc1e7b9d59f25f0e"><td class="memItemLeft" align="right" valign="top"><a id="ae29c6f196a03361cdc1e7b9d59f25f0e"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Tensor</b> (Tensor &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:ae29c6f196a03361cdc1e7b9d59f25f0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20874df7f27f9698bd941c2a9765a914"><td class="memItemLeft" align="right" valign="top"><a id="a20874df7f27f9698bd941c2a9765a914"></a>
+Tensor &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const Tensor &amp;)=default</td></tr>
+<tr class="separator:a20874df7f27f9698bd941c2a9765a914"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13616cf9967f2117958df0a6ff9ca1be"><td class="memItemLeft" align="right" valign="top"><a id="a13616cf9967f2117958df0a6ff9ca1be"></a>
+Tensor &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (Tensor &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a13616cf9967f2117958df0a6ff9ca1be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a3525a6a2c9e2f42d5aed2491940776"><td class="memTemplParams" colspan="2">template&lt;size_t NumberOfIndices = sizeof...(Indices), Requires&lt;(NumberOfIndices&lt;=1)&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a9a3525a6a2c9e2f42d5aed2491940776"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a9a3525a6a2c9e2f42d5aed2491940776">Tensor</a> (<a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a68fd9d8aea622c86dbc4d3eebad42bd8">storage_type</a> data) noexcept</td></tr>
+<tr class="memdesc:a9a3525a6a2c9e2f42d5aed2491940776"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a vector or scalar from an array.  <a href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a9a3525a6a2c9e2f42d5aed2491940776">More...</a><br /></td></tr>
+<tr class="separator:a9a3525a6a2c9e2f42d5aed2491940776"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a052c2a6aaf430df76b7cd42fb485f5f2"><td class="memTemplParams" colspan="2"><a id="a052c2a6aaf430df76b7cd42fb485f5f2"></a>
+template&lt;typename... Args, Requires&lt; not(std::disjunction_v&lt; std::is_same&lt; Tensor&lt; X, Symm, IndexList&lt; Indices... &gt;&gt;, std::decay_t&lt; Args &gt;&gt;... &gt; and sizeof...(Args)==1) and std::is_constructible_v&lt; X, Args... &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a052c2a6aaf430df76b7cd42fb485f5f2"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a052c2a6aaf430df76b7cd42fb485f5f2">Tensor</a> (Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:a052c2a6aaf430df76b7cd42fb485f5f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor that passes "args" to constructor of X and initializes each component to be the same. <br /></td></tr>
+<tr class="separator:a052c2a6aaf430df76b7cd42fb485f5f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afd5bbdcf41ece8fd93c4bed8d20f44fb"><td class="memItemLeft" align="right" valign="top"><a id="afd5bbdcf41ece8fd93c4bed8d20f44fb"></a>
+iterator&#160;</td><td class="memItemRight" valign="bottom"><b>begin</b> () noexcept</td></tr>
+<tr class="separator:afd5bbdcf41ece8fd93c4bed8d20f44fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5583efded3ac65135864253f2e52d2b1"><td class="memItemLeft" align="right" valign="top"><a id="a5583efded3ac65135864253f2e52d2b1"></a>
+const_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>begin</b> () const noexcept</td></tr>
+<tr class="separator:a5583efded3ac65135864253f2e52d2b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c7a8e1cd7e2361268891aa2d935d1ab"><td class="memItemLeft" align="right" valign="top"><a id="a2c7a8e1cd7e2361268891aa2d935d1ab"></a>
+const_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>cbegin</b> () const noexcept</td></tr>
+<tr class="separator:a2c7a8e1cd7e2361268891aa2d935d1ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63f5846e9642fd7e38607bc716fb2b9e"><td class="memItemLeft" align="right" valign="top"><a id="a63f5846e9642fd7e38607bc716fb2b9e"></a>
+iterator&#160;</td><td class="memItemRight" valign="bottom"><b>end</b> () noexcept</td></tr>
+<tr class="separator:a63f5846e9642fd7e38607bc716fb2b9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad6888e592aaf015265e9bdbb99d9ad33"><td class="memItemLeft" align="right" valign="top"><a id="ad6888e592aaf015265e9bdbb99d9ad33"></a>
+const_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>end</b> () const noexcept</td></tr>
+<tr class="separator:ad6888e592aaf015265e9bdbb99d9ad33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e31e0b26fc8e603dc0dae4b92e5a392"><td class="memItemLeft" align="right" valign="top"><a id="a5e31e0b26fc8e603dc0dae4b92e5a392"></a>
+const_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>cend</b> () const noexcept</td></tr>
+<tr class="separator:a5e31e0b26fc8e603dc0dae4b92e5a392"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a58a88e8476280e2a894d44b3a4139120"><td class="memItemLeft" align="right" valign="top"><a id="a58a88e8476280e2a894d44b3a4139120"></a>
+reverse_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>rbegin</b> () noexcept</td></tr>
+<tr class="separator:a58a88e8476280e2a894d44b3a4139120"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab04434648450ee1323ab52c9fd2d3b14"><td class="memItemLeft" align="right" valign="top"><a id="ab04434648450ee1323ab52c9fd2d3b14"></a>
+const_reverse_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>rbegin</b> () const noexcept</td></tr>
+<tr class="separator:ab04434648450ee1323ab52c9fd2d3b14"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2dc9faa0e6a92aff97c8e40ceba463e0"><td class="memItemLeft" align="right" valign="top"><a id="a2dc9faa0e6a92aff97c8e40ceba463e0"></a>
+const_reverse_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>crbegin</b> () const noexcept</td></tr>
+<tr class="separator:a2dc9faa0e6a92aff97c8e40ceba463e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f80571c256d4e03a55056b709529116"><td class="memItemLeft" align="right" valign="top"><a id="a9f80571c256d4e03a55056b709529116"></a>
+reverse_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>rend</b> () noexcept</td></tr>
+<tr class="separator:a9f80571c256d4e03a55056b709529116"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad7a0d3bd1923d60f8651bda642b2c43f"><td class="memItemLeft" align="right" valign="top"><a id="ad7a0d3bd1923d60f8651bda642b2c43f"></a>
+const_reverse_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>rend</b> () const noexcept</td></tr>
+<tr class="separator:ad7a0d3bd1923d60f8651bda642b2c43f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d56653bccde493a14f7eefc40799705"><td class="memItemLeft" align="right" valign="top"><a id="a6d56653bccde493a14f7eefc40799705"></a>
+const_reverse_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>crend</b> () const noexcept</td></tr>
+<tr class="separator:a6d56653bccde493a14f7eefc40799705"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae77064bf9f6703319086f9b62217c59a"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; X &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#ae77064bf9f6703319086f9b62217c59a">get_vector_of_data</a> () const noexcept</td></tr>
+<tr class="memdesc:ae77064bf9f6703319086f9b62217c59a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy tensor data into an <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;X&gt;</code> along with the component names into a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&gt;</code>  <a href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#ae77064bf9f6703319086f9b62217c59a">More...</a><br /></td></tr>
+<tr class="separator:ae77064bf9f6703319086f9b62217c59a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a05c65694f62f6a6cee962ae2cf485913"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a05c65694f62f6a6cee962ae2cf485913"><td class="memTemplItemLeft" align="right" valign="top">constexpr reference&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a05c65694f62f6a6cee962ae2cf485913">get</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, sizeof...(Indices)&gt; &amp;tensor_index) noexcept</td></tr>
+<tr class="memdesc:a05c65694f62f6a6cee962ae2cf485913"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get data entry using an array representing a tensor index.  <a href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a05c65694f62f6a6cee962ae2cf485913">More...</a><br /></td></tr>
+<tr class="separator:a05c65694f62f6a6cee962ae2cf485913"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a23bf0aa811b7fb86705242151ca0c8e4"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a23bf0aa811b7fb86705242151ca0c8e4"><td class="memTemplItemLeft" align="right" valign="top">constexpr const_reference&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a23bf0aa811b7fb86705242151ca0c8e4">get</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, sizeof...(Indices)&gt; &amp;tensor_index) const noexcept</td></tr>
+<tr class="memdesc:a23bf0aa811b7fb86705242151ca0c8e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get data entry using an array representing a tensor index.  <a href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a23bf0aa811b7fb86705242151ca0c8e4">More...</a><br /></td></tr>
+<tr class="separator:a23bf0aa811b7fb86705242151ca0c8e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a4576da9ba53c3a89da2e06944446a5b9"><td class="memTemplParams" colspan="2">template&lt;typename... N&gt; </td></tr>
+<tr class="memitem:a4576da9ba53c3a89da2e06944446a5b9"><td class="memTemplItemLeft" align="right" valign="top">constexpr reference&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a4576da9ba53c3a89da2e06944446a5b9">get</a> (N... n) noexcept</td></tr>
+<tr class="memdesc:a4576da9ba53c3a89da2e06944446a5b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get data entry using a list of integers representing a tensor index.  <a href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a4576da9ba53c3a89da2e06944446a5b9">More...</a><br /></td></tr>
+<tr class="separator:a4576da9ba53c3a89da2e06944446a5b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a4a3f1e0a04a79e876c7da49d1b1ff9"><td class="memTemplParams" colspan="2">template&lt;typename... N&gt; </td></tr>
+<tr class="memitem:a2a4a3f1e0a04a79e876c7da49d1b1ff9"><td class="memTemplItemLeft" align="right" valign="top">constexpr const_reference&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a2a4a3f1e0a04a79e876c7da49d1b1ff9">get</a> (N... n) const noexcept</td></tr>
+<tr class="memdesc:a2a4a3f1e0a04a79e876c7da49d1b1ff9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get data entry using a list of integers representing a tensor index.  <a href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a2a4a3f1e0a04a79e876c7da49d1b1ff9">More...</a><br /></td></tr>
+<tr class="separator:a2a4a3f1e0a04a79e876c7da49d1b1ff9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a126dcbf1dd532ece7ac8dbaf1a598831"><td class="memTemplParams" colspan="2"><a id="a126dcbf1dd532ece7ac8dbaf1a598831"></a>
+template&lt;typename... TensorIndices&gt; </td></tr>
+<tr class="memitem:a126dcbf1dd532ece7ac8dbaf1a598831"><td class="memTemplItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a126dcbf1dd532ece7ac8dbaf1a598831">operator()</a> (TensorIndices...) const noexcept</td></tr>
+<tr class="memdesc:a126dcbf1dd532ece7ac8dbaf1a598831"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a TensorExpression object with the index structure passed in. <br /></td></tr>
+<tr class="separator:a126dcbf1dd532ece7ac8dbaf1a598831"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:abb12dfb5dd106878f7e8332c49ff90e5"><td class="memItemLeft" align="right" valign="top"><a id="abb12dfb5dd106878f7e8332c49ff90e5"></a>
+constexpr reference&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#abb12dfb5dd106878f7e8332c49ff90e5">operator[]</a> (const size_t storage_index) noexcept</td></tr>
+<tr class="memdesc:abb12dfb5dd106878f7e8332c49ff90e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return i'th component of storage vector. <br /></td></tr>
+<tr class="separator:abb12dfb5dd106878f7e8332c49ff90e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa39134491f3f9ede0ccb9d6d811ceb83"><td class="memItemLeft" align="right" valign="top"><a id="aa39134491f3f9ede0ccb9d6d811ceb83"></a>
+constexpr const_reference&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aa39134491f3f9ede0ccb9d6d811ceb83">operator[]</a> (const size_t storage_index) const noexcept</td></tr>
+<tr class="memdesc:aa39134491f3f9ede0ccb9d6d811ceb83"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return i'th component of storage vector. <br /></td></tr>
+<tr class="separator:aa39134491f3f9ede0ccb9d6d811ceb83"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a3a99d7fad33ad77656622fc6ae554634"><td class="memItemLeft" align="right" valign="top">static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a3a99d7fad33ad77656622fc6ae554634">size</a> () noexcept</td></tr>
+<tr class="memdesc:a3a99d7fad33ad77656622fc6ae554634"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the number of independent components of the Tensor.  <a href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a3a99d7fad33ad77656622fc6ae554634">More...</a><br /></td></tr>
+<tr class="separator:a3a99d7fad33ad77656622fc6ae554634"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaea80e716b200eee1a0d2501a47a6a72"><td class="memItemLeft" align="right" valign="top">static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a> () noexcept</td></tr>
+<tr class="memdesc:aaea80e716b200eee1a0d2501a47a6a72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the rank of the Tensor.  <a href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">More...</a><br /></td></tr>
+<tr class="separator:aaea80e716b200eee1a0d2501a47a6a72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a6dc39ec4b201b047b4a4426818a06bee"><td class="memTemplParams" colspan="2"><a id="a6dc39ec4b201b047b4a4426818a06bee"></a>
+template&lt;typename... N&gt; </td></tr>
+<tr class="memitem:a6dc39ec4b201b047b4a4426818a06bee"><td class="memTemplItemLeft" align="right" valign="top">static constexpr size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a6dc39ec4b201b047b4a4426818a06bee">get_storage_index</a> (const N... args) noexcept</td></tr>
+<tr class="memdesc:a6dc39ec4b201b047b4a4426818a06bee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the storage index of the tensor index. Should only be used when optimizing code in which computing the storage index is a bottleneck. <br /></td></tr>
+<tr class="separator:a6dc39ec4b201b047b4a4426818a06bee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1276998763e8c066a1c0aa25f174105"><td class="memTemplParams" colspan="2"><a id="aa1276998763e8c066a1c0aa25f174105"></a>
+template&lt;typename I &gt; </td></tr>
+<tr class="memitem:aa1276998763e8c066a1c0aa25f174105"><td class="memTemplItemLeft" align="right" valign="top">static constexpr size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aa1276998763e8c066a1c0aa25f174105">get_storage_index</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; I, sizeof...(Indices)&gt; &amp;tensor_index) noexcept</td></tr>
+<tr class="memdesc:aa1276998763e8c066a1c0aa25f174105"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the storage index of the tensor index. Should only be used when optimizing code in which computing the storage index is a bottleneck. <br /></td></tr>
+<tr class="separator:aa1276998763e8c066a1c0aa25f174105"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:aa4a100ce633b686c0a07b9f558644fe4"><td class="memItemLeft" align="right" valign="top">static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aa4a100ce633b686c0a07b9f558644fe4">index_dim</a> (const size_t i) noexcept</td></tr>
+<tr class="memdesc:aa4a100ce633b686c0a07b9f558644fe4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get dimensionality of i'th tensor index.  <a href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aa4a100ce633b686c0a07b9f558644fe4">More...</a><br /></td></tr>
+<tr class="separator:aa4a100ce633b686c0a07b9f558644fe4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a6cf60b331c4229d3b42319d86d5f726a"><td class="memItemLeft" align="right" valign="top"><a id="a6cf60b331c4229d3b42319d86d5f726a"></a>
+static constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; int, sizeof...(Indices)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a6cf60b331c4229d3b42319d86d5f726a">symmetries</a> () noexcept</td></tr>
+<tr class="memdesc:a6cf60b331c4229d3b42319d86d5f726a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return an array corresponding to the <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9" title="Computes the canonical symmetry from the integers T">Symmetry</a> of the Tensor. <br /></td></tr>
+<tr class="separator:a6cf60b331c4229d3b42319d86d5f726a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a98f40605f3a0625b9f8fa74118e7a979"><td class="memItemLeft" align="right" valign="top"><a id="a98f40605f3a0625b9f8fa74118e7a979"></a>
+static constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="group__TensorGroup.html#ga875b107b929ff008a27078792ac0bc8e">IndexType</a>, sizeof...(Indices)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a98f40605f3a0625b9f8fa74118e7a979">index_types</a> () noexcept</td></tr>
+<tr class="memdesc:a98f40605f3a0625b9f8fa74118e7a979"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return array of the <a class="el" href="group__TensorGroup.html#ga875b107b929ff008a27078792ac0bc8e">IndexType</a>'s (spatial or spacetime) <br /></td></tr>
+<tr class="separator:a98f40605f3a0625b9f8fa74118e7a979"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a466903df83d7e1230f1aa921bb2c112a"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, sizeof...(Indices)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a466903df83d7e1230f1aa921bb2c112a">index_dims</a> () noexcept</td></tr>
+<tr class="memdesc:a466903df83d7e1230f1aa921bb2c112a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return array of dimensionality of each index.  <a href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a466903df83d7e1230f1aa921bb2c112a">More...</a><br /></td></tr>
+<tr class="separator:a466903df83d7e1230f1aa921bb2c112a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a47478ce3d263ab329cb1c23dc1d1af61"><td class="memItemLeft" align="right" valign="top"><a id="a47478ce3d263ab329cb1c23dc1d1af61"></a>
+static constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="group__TensorGroup.html#gaab1181edf2ab2b664b0f174223f08c28">UpLo</a>, sizeof...(Indices)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a47478ce3d263ab329cb1c23dc1d1af61">index_valences</a> () noexcept</td></tr>
+<tr class="memdesc:a47478ce3d263ab329cb1c23dc1d1af61"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return array of the valence of each index (<a class="el" href="group__TensorGroup.html#gaab1181edf2ab2b664b0f174223f08c28">UpLo</a>) <br /></td></tr>
+<tr class="separator:a47478ce3d263ab329cb1c23dc1d1af61"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:aa6531ebebbe786deacc7837016dd0d0c"><td class="memItemLeft" align="right" valign="top"><a id="aa6531ebebbe786deacc7837016dd0d0c"></a>
+static constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aa6531ebebbe786deacc7837016dd0d0c">index_frames</a> () noexcept</td></tr>
+<tr class="memdesc:aa6531ebebbe786deacc7837016dd0d0c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a> of the <a class="el" href="namespaceFrame.html">Frame</a> of each index. <br /></td></tr>
+<tr class="separator:aa6531ebebbe786deacc7837016dd0d0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ada6de83f8564671d0889c3523637b092"><td class="memTemplParams" colspan="2">template&lt;typename T  = int&gt; </td></tr>
+<tr class="memitem:ada6de83f8564671d0889c3523637b092"><td class="memTemplItemLeft" align="right" valign="top">static <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#ada6de83f8564671d0889c3523637b092">component_name</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, <a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a>()&gt; &amp;tensor_index=<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, <a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a>()&gt;{}, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a>()&gt; &amp;axis_labels=<a class="el" href="group__UtilitiesGroup.html#gaea51ad2c5ef8f8f99279545e1389d056">make_array</a>&lt; <a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a>()&gt;(<a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>(&quot;&quot;))) noexcept</td></tr>
+<tr class="memdesc:ada6de83f8564671d0889c3523637b092"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a tensor index, get the canonical label associated with the canonical <a class="el" href="group__TensorGroup.html#ga05c512b755e913cdbddce8634bdb4fa6">TensorIndexType</a>.  <a href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#ada6de83f8564671d0889c3523637b092">More...</a><br /></td></tr>
+<tr class="separator:ada6de83f8564671d0889c3523637b092"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a0efeae79741ff698f09b3a849f5477d2"><td class="memTemplParams" colspan="2">template&lt;typename IndexType  = int&gt; </td></tr>
+<tr class="memitem:a0efeae79741ff698f09b3a849f5477d2"><td class="memTemplItemLeft" align="right" valign="top">static <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a0efeae79741ff698f09b3a849f5477d2">component_suffix</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="group__TensorGroup.html#ga875b107b929ff008a27078792ac0bc8e">IndexType</a>, <a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a>()&gt; &amp;tensor_index=<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="group__TensorGroup.html#ga875b107b929ff008a27078792ac0bc8e">IndexType</a>, <a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a>()&gt;{}, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a>()&gt; &amp;axis_labels=<a class="el" href="group__UtilitiesGroup.html#gaea51ad2c5ef8f8f99279545e1389d056">make_array</a>&lt; <a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a>()&gt;(<a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>(&quot;&quot;))) noexcept</td></tr>
+<tr class="memdesc:a0efeae79741ff698f09b3a849f5477d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Suffix to append to the tensor name that indicates the component.  <a href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a0efeae79741ff698f09b3a849f5477d2">More...</a><br /></td></tr>
+<tr class="separator:a0efeae79741ff698f09b3a849f5477d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f5066d2591237979485a3ca99edc94c"><td class="memItemLeft" align="right" valign="top">static <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a5f5066d2591237979485a3ca99edc94c">component_suffix</a> (const size_t storage_index, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a>()&gt; &amp;axis_labels=<a class="el" href="group__UtilitiesGroup.html#gaea51ad2c5ef8f8f99279545e1389d056">make_array</a>&lt; <a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a>()&gt;(<a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>(&quot;&quot;))) noexcept</td></tr>
+<tr class="memdesc:a5f5066d2591237979485a3ca99edc94c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Suffix to append to the tensor name that indicates the component.  <a href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a5f5066d2591237979485a3ca99edc94c">More...</a><br /></td></tr>
+<tr class="separator:a5f5066d2591237979485a3ca99edc94c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a584d33d62d56b21b214d7da5ef6d1c34"><td class="memTemplParams" colspan="2"><a id="a584d33d62d56b21b214d7da5ef6d1c34"></a>
+template&lt;int... N, typename... Args&gt; </td></tr>
+<tr class="memitem:a584d33d62d56b21b214d7da5ef6d1c34"><td class="memTemplItemLeft" align="right" valign="top">constexpr friend Tensor&lt; Args... &gt;::reference&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a584d33d62d56b21b214d7da5ef6d1c34">get</a> (Tensor&lt; Args... &gt; &amp;t) noexcept</td></tr>
+<tr class="memdesc:a584d33d62d56b21b214d7da5ef6d1c34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the index <code>N...</code> by computing the storage index at compile time. <br /></td></tr>
+<tr class="separator:a584d33d62d56b21b214d7da5ef6d1c34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a925cba86e55c4ff90bc9c8c9c5f6a55c"><td class="memTemplParams" colspan="2"><a id="a925cba86e55c4ff90bc9c8c9c5f6a55c"></a>
+template&lt;int... N, typename... Args&gt; </td></tr>
+<tr class="memitem:a925cba86e55c4ff90bc9c8c9c5f6a55c"><td class="memTemplItemLeft" align="right" valign="top">constexpr friend Tensor&lt; Args... &gt;::const_reference&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a925cba86e55c4ff90bc9c8c9c5f6a55c">get</a> (const Tensor&lt; Args... &gt; &amp;t) noexcept</td></tr>
+<tr class="memdesc:a925cba86e55c4ff90bc9c8c9c5f6a55c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the index <code>N...</code> by computing the storage index at compile time. <br /></td></tr>
+<tr class="separator:a925cba86e55c4ff90bc9c8c9c5f6a55c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeacd9cf2e8d612c4cd3601d7df5e2cec"><td class="memItemLeft" align="right" valign="top"><a id="aeacd9cf2e8d612c4cd3601d7df5e2cec"></a>
+constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, sizeof...(Indices)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aeacd9cf2e8d612c4cd3601d7df5e2cec">get_tensor_index</a> (const const_iterator &amp;iter) const noexcept</td></tr>
+<tr class="memdesc:aeacd9cf2e8d612c4cd3601d7df5e2cec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given an iterator or storage index, get the canonical tensor index. For scalars this is defined to be std::array&lt;int, 1&gt;{{0}}. <br /></td></tr>
+<tr class="separator:aeacd9cf2e8d612c4cd3601d7df5e2cec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a96be887d2cd97f8558ee2f812cd1f711"><td class="memItemLeft" align="right" valign="top"><a id="a96be887d2cd97f8558ee2f812cd1f711"></a>
+static constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, sizeof...(Indices)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a96be887d2cd97f8558ee2f812cd1f711">get_tensor_index</a> (const size_t storage_index) noexcept</td></tr>
+<tr class="memdesc:a96be887d2cd97f8558ee2f812cd1f711"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given an iterator or storage index, get the canonical tensor index. For scalars this is defined to be std::array&lt;int, 1&gt;{{0}}. <br /></td></tr>
+<tr class="separator:a96be887d2cd97f8558ee2f812cd1f711"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af0dc634a3b4918a24f97432719695f60"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#af0dc634a3b4918a24f97432719695f60">multiplicity</a> (const const_iterator &amp;iter) const noexcept</td></tr>
+<tr class="memdesc:af0dc634a3b4918a24f97432719695f60"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given an iterator or storage index, get the multiplicity of an index.  <a href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#af0dc634a3b4918a24f97432719695f60">More...</a><br /></td></tr>
+<tr class="separator:af0dc634a3b4918a24f97432719695f60"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25dbb436b3c6ec0f9dc12cdf326ccee9"><td class="memItemLeft" align="right" valign="top">static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a25dbb436b3c6ec0f9dc12cdf326ccee9">multiplicity</a> (const size_t storage_index) noexcept</td></tr>
+<tr class="memdesc:a25dbb436b3c6ec0f9dc12cdf326ccee9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given an iterator or storage index, get the multiplicity of an index.  <a href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a25dbb436b3c6ec0f9dc12cdf326ccee9">More...</a><br /></td></tr>
+<tr class="separator:a25dbb436b3c6ec0f9dc12cdf326ccee9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename X, typename Symm, template&lt; typename... &gt; class IndexList, typename... Indices&gt;<br />
+class Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;</h3>
+
+<p>Represents an object with multiple components. </p>
+<h3>Details</h3>
+<p>Tensor is a container that represents indexable geometric objects. Each index has its own dimension, valence, and frame and must be either spatial or spacetime. Note that the dimension passed to <code>SpatialIndex</code> and <code>SpacetimeIndex</code> is always the spatial dimension of the index. Tensors with symmetric indices are stored only once and must be of the same type. A list of available type aliases can be found in the <a class="el" href="namespacetnsr.html" title="Type aliases to construct common Tensors.">tnsr</a> namespace where the adopted conventions are:</p>
+<ol type="1">
+<li>Upper case for contravariant or upper indices, lower case for covariant or lower indices.</li>
+<li><code>a, b, c, d</code> are used for spacetime indices while <code>i, j, k, l</code> are used for spatial indices.</li>
+<li><code><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a></code> is not inside the <code><a class="el" href="namespacetnsr.html" title="Type aliases to construct common Tensors.">tnsr</a></code> namespace but is used to represent a scalar with no indices.</li>
+</ol>
+<h3>Example</h3>
+<div class="fragment"><div class="line">  Tensor&lt;double&gt; scalar{};</div>
+</div><!-- fragment --><div class="fragment"><div class="line">  tnsr::I&lt;double, 3, Frame::Grid&gt; spatial_vector3{};</div>
+</div><!-- fragment --><div class="fragment"><div class="line">  tnsr::A&lt;double, 3, Frame::Grid&gt; spacetime_vector3{};</div>
+</div><!-- fragment --><div class="fragment"><div class="line">  Tensor&lt;double, Symmetry&lt;1, 2, 2&gt;,</div>
+<div class="line">         index_list&lt;SpacetimeIndex&lt;1, UpLo::Lo, Frame::Grid&gt;,</div>
+<div class="line">                    <a class="code" href="group__TensorGroup.html#ga557beda9bce6c7f236213ec8b24b3ff3">SpatialIndex&lt;1, UpLo::Lo, Frame::Grid&gt;</a>,</div>
+<div class="line">                    <a class="code" href="group__TensorGroup.html#ga557beda9bce6c7f236213ec8b24b3ff3">SpatialIndex&lt;1, UpLo::Lo, Frame::Grid&gt;</a>&gt;&gt;</div>
+<div class="line">      tensor_1{};</div>
+</div><!-- fragment --> <dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">X</td><td>the type held </td></tr>
+    <tr><td class="paramname">Symm</td><td>the <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9" title="Computes the canonical symmetry from the integers T">Symmetry</a> of the indices </td></tr>
+    <tr><td class="paramname">IndexList</td><td>a typelist of <a class="el" href="group__TensorGroup.html#ga05c512b755e913cdbddce8634bdb4fa6">TensorIndexType</a>'s </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><h2 class="groupheader">Member Typedef Documentation</h2>
+<a id="a2b446ecc17a194cab3ad9d8a57009e6b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2b446ecc17a194cab3ad9d8a57009e6b">&#9670;&nbsp;</a></span>structure</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename X , typename Symm , template&lt; typename... &gt; class IndexList, typename... Indices&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;::<a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a2b446ecc17a194cab3ad9d8a57009e6b">structure</a> =  Tensor_detail::Structure&lt;Symm, Indices...&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The Tensor_detail::Structure for the particular tensor index structure. </p>
+<p>Each tensor index structure, e.g. \(T_{ab}\), \(T_a{}^b\) or \(T^{ab}\) has its own Tensor_detail::TensorStructure that holds information about how the data is stored, what the multiplicity of the stored indices are, the number of (independent) components, etc. </p>
+
+</div>
+</div>
+<a id="af9779532d1a343003c2d4bb3891d1351"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af9779532d1a343003c2d4bb3891d1351">&#9670;&nbsp;</a></span>symmetry</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename X , typename Symm , template&lt; typename... &gt; class IndexList, typename... Indices&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;::<a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#af9779532d1a343003c2d4bb3891d1351">symmetry</a> =  Symm</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Typelist of the symmetry of the Tensor. </p>
+<h3>Details</h3>
+<p>For a rank-3 tensor symmetric in the last two indices, \(T_{a(bc)}\), the <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9" title="Computes the canonical symmetry from the integers T">Symmetry</a> is <code>&lt;2, 1, 1&gt;</code>. For a non-symmetric rank-2 tensor the <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9" title="Computes the canonical symmetry from the integers T">Symmetry</a> is <code>&lt;2, 1&gt;</code>. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a9a3525a6a2c9e2f42d5aed2491940776"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9a3525a6a2c9e2f42d5aed2491940776">&#9670;&nbsp;</a></span>Tensor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename X , typename Symm , template&lt; typename... &gt; class IndexList, typename... Indices&gt; </div>
+<div class="memtemplate">
+template&lt;size_t NumberOfIndices, Requires&lt;(NumberOfIndices&lt;=1)&gt; &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;::Tensor </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#a68fd9d8aea622c86dbc4d3eebad42bd8">storage_type</a>&#160;</td>
+          <td class="paramname"><em>data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">explicit</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Initialize a vector or scalar from an array. </p>
+<h3>Example</h3>
+<div class="fragment"><div class="line">  tnsr::I&lt;DataVector, 3, Frame::Grid&gt; tensor_data_vector{</div>
+<div class="line">      {{{1., 2., 3.}, {4., 5., 6.}, {7., 8., 9.}}}};</div>
+<div class="line">  <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;DataVector&gt;</a> scalar_data_vector{{{{1., 2., 3.}}}};</div>
+</div><!-- fragment --><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">data</td><td>the values of the individual components of the Vector </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="ada6de83f8564671d0889c3523637b092"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ada6de83f8564671d0889c3523637b092">&#9670;&nbsp;</a></span>component_name()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename X , typename Symm , template&lt; typename... &gt; class IndexList, typename... Indices&gt; </div>
+<div class="memtemplate">
+template&lt;typename T  = int&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;::component_name </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, <a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a>()&gt; &amp;&#160;</td>
+          <td class="paramname"><em>tensor_index</em> = <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;T,&#160;<a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a>()&gt;{}</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a>()&gt; &amp;&#160;</td>
+          <td class="paramname"><em>axis_labels</em> = <code><a class="el" href="group__UtilitiesGroup.html#gaea51ad2c5ef8f8f99279545e1389d056">make_array</a>&lt;<a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a>()&gt;(<a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>(&quot;&quot;))</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Given a tensor index, get the canonical label associated with the canonical <a class="el" href="group__TensorGroup.html#ga05c512b755e913cdbddce8634bdb4fa6">TensorIndexType</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">tensor_index</td><td>The index of the tensor component to label </td></tr>
+    <tr><td class="paramname">axis_labels</td><td>The labels for the indices. Defaults to "t", "x", "y" and "z" for spacetime indices and "x", "y" and "z" for spatial indices. Note that a tensor can have indices of different types, so we specify labels for each index individually. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a5f5066d2591237979485a3ca99edc94c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f5066d2591237979485a3ca99edc94c">&#9670;&nbsp;</a></span>component_suffix() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename X , typename Symm , template&lt; typename... &gt; class IndexList, typename... Indices&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;::component_suffix </td>
+          <td>(</td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>storage_index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a>()&gt; &amp;&#160;</td>
+          <td class="paramname"><em>axis_labels</em> = <code><a class="el" href="group__UtilitiesGroup.html#gaea51ad2c5ef8f8f99279545e1389d056">make_array</a>&lt;<a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a>()&gt;(<a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>(&quot;&quot;))</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Suffix to append to the tensor name that indicates the component. </p>
+<p>The suffix is empty for scalars, otherwise it is an underscore followed by the <code>Tensor::component_name</code> of either the <code>tensor_index</code> or the canonical tensor index obtained from the <code>storage_index</code>. Use <code>axis_labels</code> to overwrite the default labels for each component (see <code>Tensor::component_name</code>).</p>
+<p>An example use case for the suffix is to label tensor components in data files.</p>
+<dl class="section see"><dt>See also</dt><dd>Tensor::component_name </dd></dl>
+
+</div>
+</div>
+<a id="a0efeae79741ff698f09b3a849f5477d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0efeae79741ff698f09b3a849f5477d2">&#9670;&nbsp;</a></span>component_suffix() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename X , typename Symm , template&lt; typename... &gt; class IndexList, typename... Indices&gt; </div>
+<div class="memtemplate">
+template&lt;typename IndexType  = int&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;::component_suffix </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="group__TensorGroup.html#ga875b107b929ff008a27078792ac0bc8e">IndexType</a>, <a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a>()&gt; &amp;&#160;</td>
+          <td class="paramname"><em>tensor_index</em> = <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;<a class="el" href="group__TensorGroup.html#ga875b107b929ff008a27078792ac0bc8e">IndexType</a>,&#160;<a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a>()&gt;{}</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a>()&gt; &amp;&#160;</td>
+          <td class="paramname"><em>axis_labels</em> = <code><a class="el" href="group__UtilitiesGroup.html#gaea51ad2c5ef8f8f99279545e1389d056">make_array</a>&lt;<a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aaea80e716b200eee1a0d2501a47a6a72">rank</a>()&gt;(<a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>(&quot;&quot;))</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Suffix to append to the tensor name that indicates the component. </p>
+<p>The suffix is empty for scalars, otherwise it is an underscore followed by the <code>Tensor::component_name</code> of either the <code>tensor_index</code> or the canonical tensor index obtained from the <code>storage_index</code>. Use <code>axis_labels</code> to overwrite the default labels for each component (see <code>Tensor::component_name</code>).</p>
+<p>An example use case for the suffix is to label tensor components in data files.</p>
+<dl class="section see"><dt>See also</dt><dd>Tensor::component_name </dd></dl>
+
+</div>
+</div>
+<a id="a23bf0aa811b7fb86705242151ca0c8e4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a23bf0aa811b7fb86705242151ca0c8e4">&#9670;&nbsp;</a></span>get() <span class="overload">[1/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename X , typename Symm , template&lt; typename... &gt; class IndexList, typename... Indices&gt; </div>
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr const_reference Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;::get </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, sizeof...(Indices)&gt; &amp;&#160;</td>
+          <td class="paramname"><em>tensor_index</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get data entry using an array representing a tensor index. </p>
+<h3>Details</h3>
+<p>Let \(T_{abc}\) be a Tensor. Then <code>get({{0, 2, 1}})</code> returns the \(T_{0 2 1}\) component. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">tensor_index</td><td>the index at which to get the data </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a05c65694f62f6a6cee962ae2cf485913"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a05c65694f62f6a6cee962ae2cf485913">&#9670;&nbsp;</a></span>get() <span class="overload">[2/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename X , typename Symm , template&lt; typename... &gt; class IndexList, typename... Indices&gt; </div>
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr reference Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;::get </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, sizeof...(Indices)&gt; &amp;&#160;</td>
+          <td class="paramname"><em>tensor_index</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get data entry using an array representing a tensor index. </p>
+<h3>Details</h3>
+<p>Let \(T_{abc}\) be a Tensor. Then <code>get({{0, 2, 1}})</code> returns the \(T_{0 2 1}\) component. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">tensor_index</td><td>the index at which to get the data </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a2a4a3f1e0a04a79e876c7da49d1b1ff9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a4a3f1e0a04a79e876c7da49d1b1ff9">&#9670;&nbsp;</a></span>get() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename X , typename Symm , template&lt; typename... &gt; class IndexList, typename... Indices&gt; </div>
+<div class="memtemplate">
+template&lt;typename... N&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr const_reference Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;::get </td>
+          <td>(</td>
+          <td class="paramtype">N...&#160;</td>
+          <td class="paramname"><em>n</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get data entry using a list of integers representing a tensor index. </p>
+<h3>Details</h3>
+<p>Let \(T_{abc}\) be a Tensor. Then <code>get(0, 2, 1)</code> returns the \(T_{0 2 1}\) component. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">n</td><td>the index at which to get the data </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a4576da9ba53c3a89da2e06944446a5b9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4576da9ba53c3a89da2e06944446a5b9">&#9670;&nbsp;</a></span>get() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename X , typename Symm , template&lt; typename... &gt; class IndexList, typename... Indices&gt; </div>
+<div class="memtemplate">
+template&lt;typename... N&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr reference Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;::get </td>
+          <td>(</td>
+          <td class="paramtype">N...&#160;</td>
+          <td class="paramname"><em>n</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get data entry using a list of integers representing a tensor index. </p>
+<h3>Details</h3>
+<p>Let \(T_{abc}\) be a Tensor. Then <code>get(0, 2, 1)</code> returns the \(T_{0 2 1}\) component. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">n</td><td>the index at which to get the data </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ae77064bf9f6703319086f9b62217c59a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae77064bf9f6703319086f9b62217c59a">&#9670;&nbsp;</a></span>get_vector_of_data()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename X , typename Symm , template&lt; typename... &gt; class IndexList, typename... Indices&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; X &gt; &gt; Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;::get_vector_of_data</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Copy tensor data into an <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;X&gt;</code> along with the component names into a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&gt;</code> </p>
+<p><em>Requires:</em> <code><a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::is_same</a>&lt;X, <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a>&gt;::value</code> is true </p>
+
+</div>
+</div>
+<a id="aa4a100ce633b686c0a07b9f558644fe4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa4a100ce633b686c0a07b9f558644fe4">&#9670;&nbsp;</a></span>index_dim()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename X , typename Symm , template&lt; typename... &gt; class IndexList, typename... Indices&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static constexpr size_t Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;::index_dim </td>
+          <td>(</td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>i</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get dimensionality of i'th tensor index. </p>
+<div class="fragment"><div class="line">    <span class="keyword">using</span> T = Tensor&lt;double, Symmetry&lt;1, 2, 3&gt;,</div>
+<div class="line">                     index_list&lt;SpacetimeIndex&lt;2, UpLo::Up, Frame::Inertial&gt;,</div>
+<div class="line">                                <a class="code" href="group__TensorGroup.html#ga557beda9bce6c7f236213ec8b24b3ff3">SpatialIndex&lt;1, UpLo::Up, Frame::Inertial&gt;</a>,</div>
+<div class="line">                                <a class="code" href="group__TensorGroup.html#ga557beda9bce6c7f236213ec8b24b3ff3">SpatialIndex&lt;2, UpLo::Up, Frame::Inertial&gt;</a>&gt;&gt;;</div>
+<div class="line">    <span class="keyword">const</span> T t{};</div>
+<div class="line">    CHECK(index_dim&lt;0&gt;(t) == 3);</div>
+<div class="line">    CHECK(index_dim&lt;1&gt;(t) == 1);</div>
+<div class="line">    CHECK(index_dim&lt;2&gt;(t) == 2);</div>
+<div class="line">    CHECK(<a class="code" href="group__TensorGroup.html#gaa89f4b3bf804d2a2bfdac72509e8c60d">T::index_dim</a>(0) == 3);</div>
+<div class="line">    CHECK(<a class="code" href="group__TensorGroup.html#gaa89f4b3bf804d2a2bfdac72509e8c60d">T::index_dim</a>(1) == 1);</div>
+<div class="line">    CHECK(<a class="code" href="group__TensorGroup.html#gaa89f4b3bf804d2a2bfdac72509e8c60d">T::index_dim</a>(2) == 2);</div>
+<div class="line">    CHECK(T::index_dims() == <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;size_t, 3&gt;</a>{{3, 1, 2}});</div>
+</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="group__TensorGroup.html#gaa89f4b3bf804d2a2bfdac72509e8c60d">index_dim</a> </dd></dl>
+
+</div>
+</div>
+<a id="a466903df83d7e1230f1aa921bb2c112a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a466903df83d7e1230f1aa921bb2c112a">&#9670;&nbsp;</a></span>index_dims()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename X , typename Symm , template&lt; typename... &gt; class IndexList, typename... Indices&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;size_t, sizeof...(Indices)&gt; Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;::index_dims </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return array of dimensionality of each index. </p>
+<div class="fragment"><div class="line">    <span class="keyword">using</span> T = Tensor&lt;double, Symmetry&lt;1, 2, 3&gt;,</div>
+<div class="line">                     index_list&lt;SpacetimeIndex&lt;2, UpLo::Up, Frame::Inertial&gt;,</div>
+<div class="line">                                <a class="code" href="group__TensorGroup.html#ga557beda9bce6c7f236213ec8b24b3ff3">SpatialIndex&lt;1, UpLo::Up, Frame::Inertial&gt;</a>,</div>
+<div class="line">                                <a class="code" href="group__TensorGroup.html#ga557beda9bce6c7f236213ec8b24b3ff3">SpatialIndex&lt;2, UpLo::Up, Frame::Inertial&gt;</a>&gt;&gt;;</div>
+<div class="line">    <span class="keyword">const</span> T t{};</div>
+<div class="line">    CHECK(index_dim&lt;0&gt;(t) == 3);</div>
+<div class="line">    CHECK(index_dim&lt;1&gt;(t) == 1);</div>
+<div class="line">    CHECK(index_dim&lt;2&gt;(t) == 2);</div>
+<div class="line">    CHECK(<a class="code" href="group__TensorGroup.html#gaa89f4b3bf804d2a2bfdac72509e8c60d">T::index_dim</a>(0) == 3);</div>
+<div class="line">    CHECK(<a class="code" href="group__TensorGroup.html#gaa89f4b3bf804d2a2bfdac72509e8c60d">T::index_dim</a>(1) == 1);</div>
+<div class="line">    CHECK(<a class="code" href="group__TensorGroup.html#gaa89f4b3bf804d2a2bfdac72509e8c60d">T::index_dim</a>(2) == 2);</div>
+<div class="line">    CHECK(T::index_dims() == <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;size_t, 3&gt;</a>{{3, 1, 2}});</div>
+</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#aa4a100ce633b686c0a07b9f558644fe4" title="Get dimensionality of i&#39;th tensor index.">index_dim</a> <a class="el" href="group__TensorGroup.html#gaa89f4b3bf804d2a2bfdac72509e8c60d">index_dim</a> </dd></dl>
+
+</div>
+</div>
+<a id="af0dc634a3b4918a24f97432719695f60"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af0dc634a3b4918a24f97432719695f60">&#9670;&nbsp;</a></span>multiplicity() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename X , typename Symm , template&lt; typename... &gt; class IndexList, typename... Indices&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr size_t Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;::multiplicity </td>
+          <td>(</td>
+          <td class="paramtype">const const_iterator &amp;&#160;</td>
+          <td class="paramname"><em>iter</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Given an iterator or storage index, get the multiplicity of an index. </p>
+<dl class="section see"><dt>See also</dt><dd>TensorMetafunctions::compute_multiplicity </dd></dl>
+
+</div>
+</div>
+<a id="a25dbb436b3c6ec0f9dc12cdf326ccee9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a25dbb436b3c6ec0f9dc12cdf326ccee9">&#9670;&nbsp;</a></span>multiplicity() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename X , typename Symm , template&lt; typename... &gt; class IndexList, typename... Indices&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static constexpr size_t Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;::multiplicity </td>
+          <td>(</td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>storage_index</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Given an iterator or storage index, get the multiplicity of an index. </p>
+<dl class="section see"><dt>See also</dt><dd>TensorMetafunctions::compute_multiplicity </dd></dl>
+
+</div>
+</div>
+<a id="aaea80e716b200eee1a0d2501a47a6a72"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaea80e716b200eee1a0d2501a47a6a72">&#9670;&nbsp;</a></span>rank()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename X , typename Symm , template&lt; typename... &gt; class IndexList, typename... Indices&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static constexpr size_t Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;::rank </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the rank of the Tensor. </p>
+<h3>Details</h3>
+<p>The rank of a tensor is the number of indices it has. For example, the tensor \(v^a\) is rank-1, the tensor \(\phi\) is rank-0, and the tensor \(T_{abc}\) is rank-3. </p>
+
+</div>
+</div>
+<a id="a3a99d7fad33ad77656622fc6ae554634"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3a99d7fad33ad77656622fc6ae554634">&#9670;&nbsp;</a></span>size()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename X , typename Symm , template&lt; typename... &gt; class IndexList, typename... Indices&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static constexpr size_t Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;::size </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return the number of independent components of the Tensor. </p>
+<h3>Details</h3>
+<p>Returns the number of independent components of the Tensor taking into account symmetries. For example, let \(T_{ab}\) be a n-dimensional rank-2 symmetric tensor, then the number of independent components is \(n(n+1)/2\). </p>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/DataStructures/Tensor/<a class="el" href="Tensor_8hpp_source.html">Tensor.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="agroup__TensorGroup_html_gaa89f4b3bf804d2a2bfdac72509e8c60d"><div class="ttname"><a href="group__TensorGroup.html#gaa89f4b3bf804d2a2bfdac72509e8c60d">index_dim</a></div><div class="ttdeci">constexpr size_t index_dim(const Tensor&lt; Ts... &gt; &amp;) noexcept</div><div class="ttdef"><b>Definition:</b> Tensor.hpp:555</div></div>
+<div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt; size_t, 3 &gt;</a></div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga06ebcb38a1f13c246e53378b9e8959ce"><div class="ttname"><a href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a></div><div class="ttdeci">Tensor&lt; T, Symmetry&lt;&gt;, index_list&lt;&gt; &gt; Scalar</div><div class="ttdef"><b>Definition:</b> TypeAliases.hpp:21</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga557beda9bce6c7f236213ec8b24b3ff3"><div class="ttname"><a href="group__TensorGroup.html#ga557beda9bce6c7f236213ec8b24b3ff3">SpatialIndex</a></div><div class="ttdeci">Tensor_detail::TensorIndexType&lt; SpatialDim, Ul, Fr, IndexType::Spatial &gt; SpatialIndex</div><div class="ttdef"><b>Definition:</b> IndexType.hpp:187</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

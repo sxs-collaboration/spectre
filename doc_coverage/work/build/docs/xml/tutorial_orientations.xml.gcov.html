@@ -1,0 +1,223 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - 39f3c2b725318dcf91749887b1e61f477736e132 - /work/build/docs/xml/tutorial_orientations.xml</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title"> SpECTRE Documentation Coverage Report</td></tr>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../index.html">top level</a> - <a href="index.html">work/build/docs/xml</a> - tutorial_orientations.xml</td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+             <td class="headerItem">Commit:</td>
+             <td class="headerValue"><a target="_blank" href="https://github.com/sxs-collaboration/spectre/commit/39f3c2b725318dcf91749887b1e61f477736e132">39f3c2b725318dcf91749887b1e61f477736e132</a></td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2021-07-13 03:19:40</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineCov">          1 : &lt;?xml version='1.0' encoding='UTF-8' standalone='no'?&gt;</span></a>
+<a name="2"><span class="lineNum">       2 </span>            : &lt;doxygen xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:noNamespaceSchemaLocation=&quot;compound.xsd&quot; version=&quot;1.8.17&quot;&gt;</a>
+<a name="3"><span class="lineNum">       3 </span>            :   &lt;compounddef id=&quot;tutorial_orientations&quot; kind=&quot;page&quot;&gt;</a>
+<a name="4"><span class="lineNum">       4 </span>            :     &lt;compoundname&gt;tutorial_orientations&lt;/compoundname&gt;</a>
+<a name="5"><span class="lineNum">       5 </span>            :     &lt;title&gt;OrientationMap&lt;/title&gt;</a>
+<a name="6"><span class="lineNum">       6 </span>            :     &lt;briefdescription&gt;</a>
+<a name="7"><span class="lineNum">       7 </span>            :     &lt;/briefdescription&gt;</a>
+<a name="8"><span class="lineNum">       8 </span>            :     &lt;detaileddescription&gt;</a>
+<a name="9"><span class="lineNum">       9 </span>            : &lt;sect2 id=&quot;tutorial_orientations_1autotoc_md266&quot;&gt;</a>
+<a name="10"><span class="lineNum">      10 </span>            : &lt;title&gt;Introduction&lt;/title&gt;</a>
+<a name="11"><span class="lineNum">      11 </span>            : &lt;para&gt;Each element in a domain has a set of internal directions which it uses for computations in its own local coordinate system. These are referred to as the logical directions &lt;formula id=&quot;548&quot;&gt;$\xi$&lt;/formula&gt;, &lt;formula id=&quot;549&quot;&gt;$\eta$&lt;/formula&gt;, and &lt;formula id=&quot;299&quot;&gt;$\zeta$&lt;/formula&gt;, where &lt;formula id=&quot;548&quot;&gt;$\xi$&lt;/formula&gt; is the first dimension, &lt;formula id=&quot;549&quot;&gt;$\eta$&lt;/formula&gt; is the second dimension, and &lt;formula id=&quot;299&quot;&gt;$\zeta$&lt;/formula&gt; is the third dimension. In a domain with multiple elements, the logical directions are not necessarily aligned on the interfaces between two elements, as shown in the figure below. As certain operations (e.g. fluxes, limiting) communicate information across the boundaries of adjacent elements, there needs to be a class that takes into account the relative orientations of elements which neighbor each other. This class is &lt;ref refid=&quot;classOrientationMap&quot; kindref=&quot;compound&quot;&gt;OrientationMap&lt;/ref&gt;.&lt;/para&gt;</a>
+<a name="12"><span class="lineNum">      12 </span>            : &lt;/sect2&gt;</a>
+<a name="13"><span class="lineNum">      13 </span>            : &lt;sect2 id=&quot;tutorial_orientations_1autotoc_md267&quot;&gt;</a>
+<a name="14"><span class="lineNum">      14 </span>            : &lt;title&gt;%OrientationMaps between %Blocks&lt;/title&gt;</a>
+<a name="15"><span class="lineNum">      15 </span>            : &lt;para&gt;Each &lt;ref refid=&quot;classBlock&quot; kindref=&quot;compound&quot;&gt;Block&lt;/ref&gt; in a &lt;ref refid=&quot;classDomain&quot; kindref=&quot;compound&quot;&gt;Domain&lt;/ref&gt; has a set of BlockNeighbors, which each hold an &lt;ref refid=&quot;classOrientationMap&quot; kindref=&quot;compound&quot;&gt;OrientationMap&lt;/ref&gt;. In this scenario, the &lt;ref refid=&quot;classBlock&quot; kindref=&quot;compound&quot;&gt;Block&lt;/ref&gt; is referred to as the host, and the &lt;ref refid=&quot;classOrientationMap&quot; kindref=&quot;compound&quot;&gt;OrientationMap&lt;/ref&gt; held by each &lt;ref refid=&quot;classBlockNeighbor&quot; kindref=&quot;compound&quot;&gt;BlockNeighbor&lt;/ref&gt; is referred to as &amp;quot;the</a>
+<a name="16"><span class="lineNum">      16 </span>            : orientation the BlockNeighbor has with respect to the host Block.&amp;quot; This is a convention, so we give an example of constructing and assigning the correct OrientationMaps:&lt;/para&gt;</a>
+<a name="17"><span class="lineNum">      17 </span>            : &lt;para&gt;&lt;image type=&quot;html&quot; name=&quot;twocubes.png&quot;&gt;Two neighboring blocks.&lt;/image&gt;</a>
+<a name="18"><span class="lineNum">      18 </span>            : &lt;/para&gt;</a>
+<a name="19"><span class="lineNum">      19 </span>            : &lt;para&gt;In the image above, we see a domain decomposition into two Blocks, which have their logical axes rotated relative to one another. With the left block as the host &lt;ref refid=&quot;classBlock&quot; kindref=&quot;compound&quot;&gt;Block&lt;/ref&gt;, we see that it has a neighbor in the &lt;formula id=&quot;949&quot;&gt;$+\xi$&lt;/formula&gt; direction. The host &lt;ref refid=&quot;classBlock&quot; kindref=&quot;compound&quot;&gt;Block&lt;/ref&gt; holds a &lt;computeroutput&gt;&lt;ref refid=&quot;cpp/container/unordered_map&quot; kindref=&quot;compound&quot; external=&quot;/__w/spectre/spectre/docs/config/cppreference-doxygen-web.tag.xml&quot;&gt;std::unordered_map&lt;/ref&gt;&lt;/computeroutput&gt; from Directions to BlockNeighbors; the &lt;ref refid=&quot;classBlockNeighbor&quot; kindref=&quot;compound&quot;&gt;BlockNeighbor&lt;/ref&gt; itself holds an &lt;ref refid=&quot;classOrientationMap&quot; kindref=&quot;compound&quot;&gt;OrientationMap&lt;/ref&gt; that determines the mapping from each logical direction in the host &lt;ref refid=&quot;classBlock&quot; kindref=&quot;compound&quot;&gt;Block&lt;/ref&gt; to that in the neighboring &lt;ref refid=&quot;classBlock&quot; kindref=&quot;compound&quot;&gt;Block&lt;/ref&gt;. That is, the &lt;ref refid=&quot;classOrientationMap&quot; kindref=&quot;compound&quot;&gt;OrientationMap&lt;/ref&gt; takes as input local information (i.e. logical directions in the host&amp;apos;s coordinate system) and returns neighbor information (i.e. logical directions in the neighbor&amp;apos;s coordinate system). An &lt;ref refid=&quot;classOrientationMap&quot; kindref=&quot;compound&quot;&gt;OrientationMap&lt;/ref&gt; is constructed by passing in the block neighbor directions that correspond to the &lt;formula id=&quot;949&quot;&gt;$+\xi$&lt;/formula&gt;, &lt;formula id=&quot;3025&quot;&gt;$+\eta$&lt;/formula&gt;, &lt;formula id=&quot;304&quot;&gt;$+\zeta$&lt;/formula&gt; directions in the host. In this case, these directions in the host map to the &lt;formula id=&quot;304&quot;&gt;$+\zeta$&lt;/formula&gt;, &lt;formula id=&quot;949&quot;&gt;$+\xi$&lt;/formula&gt;, &lt;formula id=&quot;3025&quot;&gt;$+\eta$&lt;/formula&gt; directions in the neighbor, respectively. This &lt;ref refid=&quot;classBlockNeighbor&quot; kindref=&quot;compound&quot;&gt;BlockNeighbor&lt;/ref&gt; thus holds the &lt;ref refid=&quot;classOrientationMap&quot; kindref=&quot;compound&quot;&gt;OrientationMap&lt;/ref&gt; constructed with the list ( &lt;formula id=&quot;304&quot;&gt;$+\zeta$&lt;/formula&gt;, &lt;formula id=&quot;949&quot;&gt;$+\xi$&lt;/formula&gt;, &lt;formula id=&quot;3025&quot;&gt;$+\eta$&lt;/formula&gt;). With the right block as the host block, we see that it has a &lt;ref refid=&quot;classBlockNeighbor&quot; kindref=&quot;compound&quot;&gt;BlockNeighbor&lt;/ref&gt; in the &lt;formula id=&quot;3026&quot;&gt;$-\zeta$&lt;/formula&gt; direction, and the &lt;ref refid=&quot;classOrientationMap&quot; kindref=&quot;compound&quot;&gt;OrientationMap&lt;/ref&gt; held by this &lt;ref refid=&quot;classBlockNeighbor&quot; kindref=&quot;compound&quot;&gt;BlockNeighbor&lt;/ref&gt; is the one constructed with the array ( &lt;formula id=&quot;3025&quot;&gt;$+\eta$&lt;/formula&gt;, &lt;formula id=&quot;304&quot;&gt;$+\zeta$&lt;/formula&gt;, &lt;formula id=&quot;949&quot;&gt;$+\xi$&lt;/formula&gt;). For convenience, &lt;ref refid=&quot;classOrientationMap&quot; kindref=&quot;compound&quot;&gt;OrientationMap&lt;/ref&gt; has a method &lt;computeroutput&gt;inverse_map&lt;/computeroutput&gt; which returns the &lt;ref refid=&quot;classOrientationMap&quot; kindref=&quot;compound&quot;&gt;OrientationMap&lt;/ref&gt; that takes as input neighbor information and returns local information.&lt;/para&gt;</a>
+<a name="20"><span class="lineNum">      20 </span>            : &lt;para&gt;OrientationMaps need to be provided for each &lt;ref refid=&quot;classBlockNeighbor&quot; kindref=&quot;compound&quot;&gt;BlockNeighbor&lt;/ref&gt; in each direction for each &lt;ref refid=&quot;classBlock&quot; kindref=&quot;compound&quot;&gt;Block&lt;/ref&gt;. This quickly becomes too large of a number to determine by hand as the number of Blocks and the number of dimensions increases. A remedy to this problem is the corner numbering scheme.&lt;/para&gt;</a>
+<a name="21"><span class="lineNum">      21 </span>            : &lt;/sect2&gt;</a>
+<a name="22"><span class="lineNum">      22 </span>            : &lt;sect2 id=&quot;tutorial_orientations_1autotoc_md268&quot;&gt;</a>
+<a name="23"><span class="lineNum">      23 </span>            : &lt;title&gt;Encoding BlockNeighbor information using Corner Orderings and Numberings&lt;/title&gt;</a>
+<a name="24"><span class="lineNum">      24 </span>            : &lt;para&gt;The orientation of the &lt;formula id=&quot;3027&quot;&gt;${dim}$&lt;/formula&gt; logical directions within each element determines an ordering of the &lt;formula id=&quot;3028&quot;&gt;$2^{dim}$&lt;/formula&gt; vertices of that element. This is called the local corner numbering scheme (Local CNS) with respect to that element. We give the ordering of the local corners below for the case of a three-dimensional element:&lt;/para&gt;</a>
+<a name="25"><span class="lineNum">      25 </span>            : &lt;para&gt;&lt;image type=&quot;html&quot; name=&quot;onecube_numbered.png&quot;&gt;The local corner numbering.&lt;/image&gt;</a>
+<a name="26"><span class="lineNum">      26 </span>            : &lt;/para&gt;</a>
+<a name="27"><span class="lineNum">      27 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Corner&lt;sp/&gt;0&lt;sp/&gt;is&lt;sp/&gt;the&lt;sp/&gt;location&lt;sp/&gt;of&lt;sp/&gt;the&lt;sp/&gt;lower&lt;sp/&gt;xi,&lt;sp/&gt;lower&lt;sp/&gt;eta,&lt;sp/&gt;lower&lt;sp/&gt;zeta&lt;sp/&gt;corner.&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="28"><span class="lineNum">      28 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Corner&lt;sp/&gt;1&lt;sp/&gt;is&lt;sp/&gt;the&lt;sp/&gt;location&lt;sp/&gt;of&lt;sp/&gt;the&lt;sp/&gt;upper&lt;sp/&gt;xi,&lt;sp/&gt;lower&lt;sp/&gt;eta,&lt;sp/&gt;lower&lt;sp/&gt;zeta&lt;sp/&gt;corner.&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="29"><span class="lineNum">      29 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Corner&lt;sp/&gt;2&lt;sp/&gt;is&lt;sp/&gt;the&lt;sp/&gt;location&lt;sp/&gt;of&lt;sp/&gt;the&lt;sp/&gt;lower&lt;sp/&gt;xi,&lt;sp/&gt;upper&lt;sp/&gt;eta,&lt;sp/&gt;lower&lt;sp/&gt;zeta&lt;sp/&gt;corner.&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="30"><span class="lineNum">      30 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Corner&lt;sp/&gt;3&lt;sp/&gt;is&lt;sp/&gt;the&lt;sp/&gt;location&lt;sp/&gt;of&lt;sp/&gt;the&lt;sp/&gt;upper&lt;sp/&gt;xi,&lt;sp/&gt;upper&lt;sp/&gt;eta,&lt;sp/&gt;lower&lt;sp/&gt;zeta&lt;sp/&gt;corner.&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="31"><span class="lineNum">      31 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Corner&lt;sp/&gt;4&lt;sp/&gt;is&lt;sp/&gt;the&lt;sp/&gt;location&lt;sp/&gt;of&lt;sp/&gt;the&lt;sp/&gt;lower&lt;sp/&gt;xi,&lt;sp/&gt;lower&lt;sp/&gt;eta,&lt;sp/&gt;upper&lt;sp/&gt;zeta&lt;sp/&gt;corner.&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="32"><span class="lineNum">      32 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Corner&lt;sp/&gt;5&lt;sp/&gt;is&lt;sp/&gt;the&lt;sp/&gt;location&lt;sp/&gt;of&lt;sp/&gt;the&lt;sp/&gt;upper&lt;sp/&gt;xi,&lt;sp/&gt;lower&lt;sp/&gt;eta,&lt;sp/&gt;upper&lt;sp/&gt;zeta&lt;sp/&gt;corner.&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="33"><span class="lineNum">      33 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Corner&lt;sp/&gt;6&lt;sp/&gt;is&lt;sp/&gt;the&lt;sp/&gt;location&lt;sp/&gt;of&lt;sp/&gt;the&lt;sp/&gt;lower&lt;sp/&gt;xi,&lt;sp/&gt;upper&lt;sp/&gt;eta,&lt;sp/&gt;upper&lt;sp/&gt;zeta&lt;sp/&gt;corner.&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="34"><span class="lineNum">      34 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Corner&lt;sp/&gt;7&lt;sp/&gt;is&lt;sp/&gt;the&lt;sp/&gt;location&lt;sp/&gt;of&lt;sp/&gt;the&lt;sp/&gt;upper&lt;sp/&gt;xi,&lt;sp/&gt;upper&lt;sp/&gt;eta,&lt;sp/&gt;upper&lt;sp/&gt;zeta&lt;sp/&gt;corner.&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="35"><span class="lineNum">      35 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="36"><span class="lineNum">      36 </span>            : &lt;para&gt;What remains is to endow the domain decomposition with a global corner numbering (Global CNS). We give an example below:&lt;/para&gt;</a>
+<a name="37"><span class="lineNum">      37 </span>            : &lt;para&gt;&lt;image type=&quot;html&quot; name=&quot;twocubes_numbered.png&quot;&gt;A global corner numbering.&lt;/image&gt;</a>
+<a name="38"><span class="lineNum">      38 </span>            : &lt;/para&gt;</a>
+<a name="39"><span class="lineNum">      39 </span>            : &lt;para&gt;In the image above, we see that each vertex of the two-block domain has been assigned a number. Although each block has eight corners, four are shared among them, so there are only twelve unique corners in this domain. Any numbering may be used in the global corner numbering, so long as the each distinct corner is given a single distinct corner number.&lt;/para&gt;</a>
+<a name="40"><span class="lineNum">      40 </span>            : &lt;para&gt;&lt;simplesect kind=&quot;note&quot;&gt;&lt;para&gt;This Global CNS assumes that there is no additional identifying of faces with one another for periodic boundary conditions. That is, each element must have &lt;formula id=&quot;3028&quot;&gt;$2^{dim}$&lt;/formula&gt; distinct corner numbers. If you wish to additionally identify faces of the same block with each other, that must be done in an additional step. This step is explained in the &amp;quot;Setting Periodic Boundary</a>
+<a name="41"><span class="lineNum">      41 </span>            : Conditions&amp;quot; section.&lt;/para&gt;</a>
+<a name="42"><span class="lineNum">      42 </span>            : &lt;/simplesect&gt;</a>
+<a name="43"><span class="lineNum">      43 </span>            : &lt;/para&gt;</a>
+<a name="44"><span class="lineNum">      44 </span>            : &lt;/sect2&gt;</a>
+<a name="45"><span class="lineNum">      45 </span>            : &lt;sect2 id=&quot;tutorial_orientations_1autotoc_md269&quot;&gt;</a>
+<a name="46"><span class="lineNum">      46 </span>            : &lt;title&gt;The Ordered Subset of the Global CNS (Subset CNS):&lt;/title&gt;</a>
+<a name="47"><span class="lineNum">      47 </span>            : &lt;para&gt;With the Global CNS in hand, each &lt;ref refid=&quot;classBlock&quot; kindref=&quot;compound&quot;&gt;Block&lt;/ref&gt; inherits an ordered subset of Global CNS. The ordering in this set is determined by the ordering of the Local CNS, and the elements of the set determined by how one assigned the Global CNS to the &lt;ref refid=&quot;classDomain&quot; kindref=&quot;compound&quot;&gt;Domain&lt;/ref&gt;. For the image above, the Subset CNS corresponding to the left block is {0, 1, 3, 4, 6, 7, 9, 10}, while the Subset CNS corresponding to the right block is {1, 4, 7, 10, 2, 5, 8, 11}. This ordering of the Subset CNS encodes the relative orientations between each &lt;ref refid=&quot;classBlock&quot; kindref=&quot;compound&quot;&gt;Block&lt;/ref&gt;. Subset CNSs need to be provided for each &lt;ref refid=&quot;classBlock&quot; kindref=&quot;compound&quot;&gt;Block&lt;/ref&gt; in a &lt;ref refid=&quot;classDomain&quot; kindref=&quot;compound&quot;&gt;Domain&lt;/ref&gt;. It turns out that for very regular domains, (i.e. spherical or rectilinear) we can generate the appropriate Subset CNSs. As this is a conceptual tutorial, how to construct these domains in SpECTRE is described in the &lt;ref refid=&quot;tutorial_domain_creation&quot; kindref=&quot;compound&quot;&gt;Domain Creation&lt;/ref&gt; tutorial.&lt;/para&gt;</a>
+<a name="48"><span class="lineNum">      48 </span>            : &lt;/sect2&gt;</a>
+<a name="49"><span class="lineNum">      49 </span>            : &lt;sect2 id=&quot;tutorial_orientations_1autotoc_md270&quot;&gt;</a>
+<a name="50"><span class="lineNum">      50 </span>            : &lt;title&gt;Explanation of the Algorithms in DomainHelpers:&lt;/title&gt;</a>
+<a name="51"><span class="lineNum">      51 </span>            : &lt;para&gt;For illustrative purposes, we will use the following &lt;ref refid=&quot;classDomain&quot; kindref=&quot;compound&quot;&gt;Domain&lt;/ref&gt; composed of two Blocks as described above as an example. Because there are 12 corners in this &lt;ref refid=&quot;classDomain&quot; kindref=&quot;compound&quot;&gt;Domain&lt;/ref&gt;, we will arbitrarily assign a unique id to each corner. Knowing the orientation of the logical axes within a block, we construct a Subset CNS for each &lt;ref refid=&quot;classBlock&quot; kindref=&quot;compound&quot;&gt;Block&lt;/ref&gt;.&lt;linebreak/&gt;</a>
+<a name="52"><span class="lineNum">      52 </span>            :  Here is one possible result, given some relative orientation between the blocks:&lt;/para&gt;</a>
+<a name="53"><span class="lineNum">      53 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Block1:&lt;sp/&gt;{0,&lt;sp/&gt;1,&lt;sp/&gt;3,&lt;sp/&gt;4,&lt;sp/&gt;6,&lt;sp/&gt;7,&lt;sp/&gt;9,&lt;sp/&gt;10}&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="54"><span class="lineNum">      54 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Block2:&lt;sp/&gt;{1,&lt;sp/&gt;4,&lt;sp/&gt;7,&lt;sp/&gt;10,&lt;sp/&gt;2,&lt;sp/&gt;5,&lt;sp/&gt;8,&lt;sp/&gt;11}&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="55"><span class="lineNum">      55 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="56"><span class="lineNum">      56 </span>            : &lt;para&gt;The values of the ids only serve to identify which corners are unique and which are shared. This is determined by the Global CNS. The order of the ids in the list is determined by the Local CNS. We take advantage of the fact that the array index of the global corner id is the number of the corner in the local CNS.&lt;/para&gt;</a>
+<a name="57"><span class="lineNum">      57 </span>            : &lt;para&gt;The algorithm begins by determining the shared corners between the Blocks:&lt;/para&gt;</a>
+<a name="58"><span class="lineNum">      58 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;result:&lt;sp/&gt;{1,&lt;sp/&gt;4,&lt;sp/&gt;7,&lt;sp/&gt;10}&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="59"><span class="lineNum">      59 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="60"><span class="lineNum">      60 </span>            : &lt;para&gt;The next step is to determine the local ids of these shared global ids:&lt;/para&gt;</a>
+<a name="61"><span class="lineNum">      61 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Block1&lt;sp/&gt;result:&lt;sp/&gt;{1,3,5,7}&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="62"><span class="lineNum">      62 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Block2&lt;sp/&gt;result:&lt;sp/&gt;{0,1,2,3}&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="63"><span class="lineNum">      63 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="64"><span class="lineNum">      64 </span>            : &lt;para&gt;The next step is to convert these ids into their binary representation. For reference, we give the binary representation for each number 0-7:&lt;/para&gt;</a>
+<a name="65"><span class="lineNum">      65 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Corner&lt;sp/&gt;0:&lt;sp/&gt;000&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="66"><span class="lineNum">      66 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Corner&lt;sp/&gt;1:&lt;sp/&gt;001&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="67"><span class="lineNum">      67 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Corner&lt;sp/&gt;2:&lt;sp/&gt;010&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="68"><span class="lineNum">      68 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Corner&lt;sp/&gt;3:&lt;sp/&gt;011&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="69"><span class="lineNum">      69 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Corner&lt;sp/&gt;4:&lt;sp/&gt;100&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="70"><span class="lineNum">      70 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Corner&lt;sp/&gt;5:&lt;sp/&gt;101&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="71"><span class="lineNum">      71 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Corner&lt;sp/&gt;6:&lt;sp/&gt;110&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="72"><span class="lineNum">      72 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Corner&lt;sp/&gt;7:&lt;sp/&gt;111&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="73"><span class="lineNum">      73 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="74"><span class="lineNum">      74 </span>            : &lt;para&gt;Here 0 and 1 indicate lower and upper in the corresponding axis (zeta, eta, xi), respectively, and the ordering has been reversed so that the rightmost column corresponds to the xi position and the leftmost column to the zeta position. Returning to the example at hand, we have:&lt;/para&gt;</a>
+<a name="75"><span class="lineNum">      75 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Block1&lt;sp/&gt;result:&lt;sp/&gt;{001,011,101,111}&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="76"><span class="lineNum">      76 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Block2&lt;sp/&gt;result:&lt;sp/&gt;{000,001,010,011}&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="77"><span class="lineNum">      77 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="78"><span class="lineNum">      78 </span>            : &lt;para&gt;Note that we can now read off the shared face relative to each &lt;ref refid=&quot;classBlock&quot; kindref=&quot;compound&quot;&gt;Block&lt;/ref&gt; easily:&lt;/para&gt;</a>
+<a name="79"><span class="lineNum">      79 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Block1&lt;sp/&gt;result:&lt;sp/&gt;Upper&lt;sp/&gt;xi&lt;sp/&gt;(All&lt;sp/&gt;binary&lt;sp/&gt;Block1&lt;sp/&gt;ids&lt;sp/&gt;have&lt;sp/&gt;a&lt;sp/&gt;1&lt;sp/&gt;in&lt;sp/&gt;the&lt;sp/&gt;third&lt;sp/&gt;position)&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="80"><span class="lineNum">      80 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Block2&lt;sp/&gt;result:&lt;sp/&gt;Lower&lt;sp/&gt;zeta&lt;sp/&gt;(All&lt;sp/&gt;binary&lt;sp/&gt;Block2&lt;sp/&gt;ids&lt;sp/&gt;have&lt;sp/&gt;a&lt;sp/&gt;0&lt;sp/&gt;in&lt;sp/&gt;the&lt;sp/&gt;first&lt;sp/&gt;position)&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="81"><span class="lineNum">      81 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="82"><span class="lineNum">      82 </span>            : &lt;para&gt;Now we know that &lt;computeroutput&gt;&lt;ref refid=&quot;classDirection&quot; kindref=&quot;compound&quot;&gt;Direction&lt;/ref&gt;&amp;lt;3&amp;gt;::upper_xi()&lt;/computeroutput&gt; in Block1 corresponds to &lt;computeroutput&gt;&lt;ref refid=&quot;classDirection&quot; kindref=&quot;compound&quot;&gt;Direction&lt;/ref&gt;&amp;lt;3&amp;gt;::lower_zeta().opposite()&lt;/computeroutput&gt; in Block2.&lt;/para&gt;</a>
+<a name="83"><span class="lineNum">      83 </span>            : &lt;para&gt;The use of &lt;computeroutput&gt;.opposite()&lt;/computeroutput&gt; is a result of the Directions to a &lt;ref refid=&quot;classBlock&quot; kindref=&quot;compound&quot;&gt;Block&lt;/ref&gt; face being anti-parallel because each &lt;ref refid=&quot;classBlock&quot; kindref=&quot;compound&quot;&gt;Block&lt;/ref&gt; lies on the opposite side of the shared face. &lt;linebreak/&gt;</a>
+<a name="84"><span class="lineNum">      84 </span>            : &lt;/para&gt;</a>
+<a name="85"><span class="lineNum">      85 </span>            : &lt;para&gt;The remaining two correspondences are given by the alignment of the shared face. It is useful to know the following information:&lt;linebreak/&gt;</a>
+<a name="86"><span class="lineNum">      86 </span>            :  In the Local CNS, if an edge lies along the xi direction, if one takes the two corners making up that edge and takes the difference of their ids, one always gets the result &lt;formula id=&quot;3029&quot;&gt;$ \pm 1$&lt;/formula&gt;. Similarly, if the edge lies in the eta direction, the result will be &lt;formula id=&quot;3030&quot;&gt;$ \pm 2$&lt;/formula&gt;. Finally, if the edge lies in the zeta direction, the result will be &lt;formula id=&quot;3031&quot;&gt;$ \pm 4$&lt;/formula&gt;. We use this information to determine the alignment of the shared face:&lt;/para&gt;</a>
+<a name="87"><span class="lineNum">      87 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Block1:&lt;sp/&gt;3-1=2&lt;sp/&gt;&lt;sp/&gt;=&amp;gt;&lt;sp/&gt;This&lt;sp/&gt;edge&lt;sp/&gt;is&lt;sp/&gt;in&lt;sp/&gt;the&lt;sp/&gt;+eta&lt;sp/&gt;direction.&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="88"><span class="lineNum">      88 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Block2:&lt;sp/&gt;1-0=1&lt;sp/&gt;=&amp;gt;&lt;sp/&gt;This&lt;sp/&gt;edge&lt;sp/&gt;is&lt;sp/&gt;in&lt;sp/&gt;the&lt;sp/&gt;+xi&lt;sp/&gt;direction.&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="89"><span class="lineNum">      89 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Then,&lt;sp/&gt;+eta&lt;sp/&gt;in&lt;sp/&gt;Block1&lt;sp/&gt;corresponds&lt;sp/&gt;to&lt;sp/&gt;+xi&lt;sp/&gt;in&lt;sp/&gt;Block2.&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="90"><span class="lineNum">      90 </span>            : &lt;codeline&gt;&lt;/codeline&gt;</a>
+<a name="91"><span class="lineNum">      91 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Block1:&lt;sp/&gt;5-1=4&lt;sp/&gt;=&amp;gt;&lt;sp/&gt;This&lt;sp/&gt;edge&lt;sp/&gt;is&lt;sp/&gt;in&lt;sp/&gt;the&lt;sp/&gt;+zeta&lt;sp/&gt;direction.&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="92"><span class="lineNum">      92 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Block2:&lt;sp/&gt;2-0=2&lt;sp/&gt;=&amp;gt;&lt;sp/&gt;This&lt;sp/&gt;edge&lt;sp/&gt;is&lt;sp/&gt;in&lt;sp/&gt;the&lt;sp/&gt;+eta&lt;sp/&gt;direction.&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="93"><span class="lineNum">      93 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Then,&lt;sp/&gt;+zeta&lt;sp/&gt;in&lt;sp/&gt;Block1&lt;sp/&gt;corresponds&lt;sp/&gt;to&lt;sp/&gt;+eta&lt;sp/&gt;in&lt;sp/&gt;Block2.&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="94"><span class="lineNum">      94 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="95"><span class="lineNum">      95 </span>            : &lt;para&gt;The corresponding directions in each &lt;ref refid=&quot;classBlock&quot; kindref=&quot;compound&quot;&gt;Block&lt;/ref&gt; have now been deduced.&lt;/para&gt;</a>
+<a name="96"><span class="lineNum">      96 </span>            : &lt;para&gt;To confirm, we can use the other ids as well and arrive at the same result:&lt;linebreak/&gt;</a>
+<a name="97"><span class="lineNum">      97 </span>            : &lt;/para&gt;</a>
+<a name="98"><span class="lineNum">      98 </span>            : &lt;para&gt;&lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Block1:&lt;sp/&gt;7-5=2&lt;sp/&gt;&lt;sp/&gt;=&amp;gt;&lt;sp/&gt;+eta&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="99"><span class="lineNum">      99 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Block2:&lt;sp/&gt;3-2=1&lt;sp/&gt;=&amp;gt;&lt;sp/&gt;+xi&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="100"><span class="lineNum">     100 </span>            : &lt;codeline&gt;&lt;/codeline&gt;</a>
+<a name="101"><span class="lineNum">     101 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Block1:&lt;sp/&gt;7-3=4&lt;sp/&gt;&lt;sp/&gt;=&amp;gt;&lt;sp/&gt;+zeta&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="102"><span class="lineNum">     102 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Block2:&lt;sp/&gt;3-1=2&lt;sp/&gt;&lt;sp/&gt;=&amp;gt;&lt;sp/&gt;+eta&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="103"><span class="lineNum">     103 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="104"><span class="lineNum">     104 </span>            : &lt;/sect2&gt;</a>
+<a name="105"><span class="lineNum">     105 </span>            : &lt;sect2 id=&quot;tutorial_orientations_1autotoc_md271&quot;&gt;</a>
+<a name="106"><span class="lineNum">     106 </span>            : &lt;title&gt;Setting Periodic Boundary Conditions&lt;/title&gt;</a>
+<a name="107"><span class="lineNum">     107 </span>            : &lt;para&gt;It is also possible to identify faces of a &lt;ref refid=&quot;classBlock&quot; kindref=&quot;compound&quot;&gt;Block&lt;/ref&gt; using the subset CNS. For example, to identify the lower zeta face with the upper zeta face of a &lt;ref refid=&quot;classBlock&quot; kindref=&quot;compound&quot;&gt;Block&lt;/ref&gt; where the corners are labeled &lt;computeroutput&gt;{3,0,4,1,9,6,10,7}&lt;/computeroutput&gt;, one may supply the lists &lt;computeroutput&gt;{3,0,4,1}&lt;/computeroutput&gt; and &lt;computeroutput&gt;{9,6,10,7}&lt;/computeroutput&gt; to the &lt;computeroutput&gt;set_identified_boundaries&lt;/computeroutput&gt; function. &lt;simplesect kind=&quot;note&quot;&gt;&lt;para&gt;The &lt;computeroutput&gt;set_identified_boundaries&lt;/computeroutput&gt; function is sensitive to the order of the corners in the lists supplied as arguments. This is because the function identifies corners and edges with each other as opposed to simply faces. This allows the user to specify more peculiar boundary conditions. For example, using &lt;computeroutput&gt;{3,0,4,1}&lt;/computeroutput&gt; and &lt;computeroutput&gt;{6,7,9,10}&lt;/computeroutput&gt; to set the periodic boundaries will identify the lower zeta face with the upper zeta face, but after a rotation of a quarter-turn.&lt;/para&gt;</a>
+<a name="108"><span class="lineNum">     108 </span>            : &lt;/simplesect&gt;</a>
+<a name="109"><span class="lineNum">     109 </span>            : For reference, here are the corners to use for each face for a &lt;ref refid=&quot;classBlock&quot; kindref=&quot;compound&quot;&gt;Block&lt;/ref&gt; with corners labelled as &lt;computeroutput&gt;{0,1,2,3,4,5,6,7}&lt;/computeroutput&gt; to set up periodic boundary conditions in each dimension, i.e. a &lt;formula id=&quot;3032&quot;&gt;$\mathrm{T}^3$&lt;/formula&gt; topology:&lt;/para&gt;</a>
+<a name="110"><span class="lineNum">     110 </span>            : &lt;para&gt;&lt;table rows=&quot;7&quot; cols=&quot;2&quot;&gt;&lt;row&gt;</a>
+<a name="111"><span class="lineNum">     111 </span>            : &lt;entry thead=&quot;yes&quot;&gt;&lt;para&gt;Face &lt;/para&gt;</a>
+<a name="112"><span class="lineNum">     112 </span>            : &lt;/entry&gt;&lt;entry thead=&quot;yes&quot;&gt;&lt;para&gt;Corners  &lt;/para&gt;</a>
+<a name="113"><span class="lineNum">     113 </span>            : &lt;/entry&gt;&lt;/row&gt;</a>
+<a name="114"><span class="lineNum">     114 </span>            : &lt;row&gt;</a>
+<a name="115"><span class="lineNum">     115 </span>            : &lt;entry thead=&quot;no&quot;&gt;&lt;para&gt;upper xi &lt;/para&gt;</a>
+<a name="116"><span class="lineNum">     116 </span>            : &lt;/entry&gt;&lt;entry thead=&quot;no&quot;&gt;&lt;para&gt;&lt;computeroutput&gt;{1,3,5,7}&lt;/computeroutput&gt;  &lt;/para&gt;</a>
+<a name="117"><span class="lineNum">     117 </span>            : &lt;/entry&gt;&lt;/row&gt;</a>
+<a name="118"><span class="lineNum">     118 </span>            : &lt;row&gt;</a>
+<a name="119"><span class="lineNum">     119 </span>            : &lt;entry thead=&quot;no&quot;&gt;&lt;para&gt;lower xi &lt;/para&gt;</a>
+<a name="120"><span class="lineNum">     120 </span>            : &lt;/entry&gt;&lt;entry thead=&quot;no&quot;&gt;&lt;para&gt;&lt;computeroutput&gt;{0,2,4,6}&lt;/computeroutput&gt;  &lt;/para&gt;</a>
+<a name="121"><span class="lineNum">     121 </span>            : &lt;/entry&gt;&lt;/row&gt;</a>
+<a name="122"><span class="lineNum">     122 </span>            : &lt;row&gt;</a>
+<a name="123"><span class="lineNum">     123 </span>            : &lt;entry thead=&quot;no&quot;&gt;&lt;para&gt;upper eta &lt;/para&gt;</a>
+<a name="124"><span class="lineNum">     124 </span>            : &lt;/entry&gt;&lt;entry thead=&quot;no&quot;&gt;&lt;para&gt;&lt;computeroutput&gt;{2,3,6,7}&lt;/computeroutput&gt;  &lt;/para&gt;</a>
+<a name="125"><span class="lineNum">     125 </span>            : &lt;/entry&gt;&lt;/row&gt;</a>
+<a name="126"><span class="lineNum">     126 </span>            : &lt;row&gt;</a>
+<a name="127"><span class="lineNum">     127 </span>            : &lt;entry thead=&quot;no&quot;&gt;&lt;para&gt;lower eta &lt;/para&gt;</a>
+<a name="128"><span class="lineNum">     128 </span>            : &lt;/entry&gt;&lt;entry thead=&quot;no&quot;&gt;&lt;para&gt;&lt;computeroutput&gt;{0,1,4,5}&lt;/computeroutput&gt;  &lt;/para&gt;</a>
+<a name="129"><span class="lineNum">     129 </span>            : &lt;/entry&gt;&lt;/row&gt;</a>
+<a name="130"><span class="lineNum">     130 </span>            : &lt;row&gt;</a>
+<a name="131"><span class="lineNum">     131 </span>            : &lt;entry thead=&quot;no&quot;&gt;&lt;para&gt;upper zeta &lt;/para&gt;</a>
+<a name="132"><span class="lineNum">     132 </span>            : &lt;/entry&gt;&lt;entry thead=&quot;no&quot;&gt;&lt;para&gt;&lt;computeroutput&gt;{4,5,6,7}&lt;/computeroutput&gt;  &lt;/para&gt;</a>
+<a name="133"><span class="lineNum">     133 </span>            : &lt;/entry&gt;&lt;/row&gt;</a>
+<a name="134"><span class="lineNum">     134 </span>            : &lt;row&gt;</a>
+<a name="135"><span class="lineNum">     135 </span>            : &lt;entry thead=&quot;no&quot;&gt;&lt;para&gt;lower zeta &lt;/para&gt;</a>
+<a name="136"><span class="lineNum">     136 </span>            : &lt;/entry&gt;&lt;entry thead=&quot;no&quot;&gt;&lt;para&gt;&lt;computeroutput&gt;{0,1,2,3}&lt;/computeroutput&gt;  &lt;/para&gt;</a>
+<a name="137"><span class="lineNum">     137 </span>            : &lt;/entry&gt;&lt;/row&gt;</a>
+<a name="138"><span class="lineNum">     138 </span>            : &lt;/table&gt;</a>
+<a name="139"><span class="lineNum">     139 </span>            : &lt;/para&gt;</a>
+<a name="140"><span class="lineNum">     140 </span>            : &lt;/sect2&gt;</a>
+<a name="141"><span class="lineNum">     141 </span>            :     &lt;/detaileddescription&gt;</a>
+<a name="142"><span class="lineNum">     142 </span>            :   &lt;/compounddef&gt;</a>
+<a name="143"><span class="lineNum">     143 </span>            : &lt;/doxygen&gt;</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

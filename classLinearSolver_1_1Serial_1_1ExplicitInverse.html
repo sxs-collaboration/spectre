@@ -1,0 +1,380 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: LinearSolver::Serial::ExplicitInverse&lt; LinearSolverRegistrars &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceLinearSolver.html">LinearSolver</a></li><li class="navelem"><b>Serial</b></li><li class="navelem"><a class="el" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">ExplicitInverse</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classLinearSolver_1_1Serial_1_1ExplicitInverse-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">LinearSolver::Serial::ExplicitInverse&lt; LinearSolverRegistrars &gt; Class Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Linear solver that builds a matrix representation of the linear operator and inverts it directly.  
+ <a href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ExplicitInverse_8hpp_source.html">ExplicitInverse.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a4c72d6e30710266dda7552d3e59dcea9"><td class="memItemLeft" align="right" valign="top"><a id="a4c72d6e30710266dda7552d3e59dcea9"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a4c72d6e30710266dda7552d3e59dcea9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classLinearSolver_1_1Serial_1_1LinearSolver"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classLinearSolver_1_1Serial_1_1LinearSolver')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classLinearSolver_1_1Serial_1_1LinearSolver.html">LinearSolver::Serial::LinearSolver&lt; tmpl::list&lt; Registrars::ExplicitInverse &gt; &gt;</a></td></tr>
+<tr class="memitem:a4d6b0c848b6cbdec48dddeb9cc367e82 inherit pub_types_classLinearSolver_1_1Serial_1_1LinearSolver"><td class="memItemLeft" align="right" valign="top"><a id="a4d6b0c848b6cbdec48dddeb9cc367e82"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = <a class="el" href="namespaceRegistration.html#abfd9ae1266be994041d2cfaa4199eed2">Registration::registrants</a>&lt; tmpl::list&lt; <a class="el" href="namespaceLinearSolver_1_1Serial_1_1Registrars.html#ac037e64f431bb0b16b3535fdd0033a88">Registrars::ExplicitInverse</a> &gt; &gt;</td></tr>
+<tr class="separator:a4d6b0c848b6cbdec48dddeb9cc367e82 inherit pub_types_classLinearSolver_1_1Serial_1_1LinearSolver"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ae8f800f18854752d18ded43b3bd8d73a"><td class="memItemLeft" align="right" valign="top"><a id="ae8f800f18854752d18ded43b3bd8d73a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ExplicitInverse</b> (const <a class="el" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">ExplicitInverse</a> &amp;)=default</td></tr>
+<tr class="separator:ae8f800f18854752d18ded43b3bd8d73a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e9e7f46a90116d7448f20a790b21834"><td class="memItemLeft" align="right" valign="top"><a id="a2e9e7f46a90116d7448f20a790b21834"></a>
+<a class="el" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">ExplicitInverse</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">ExplicitInverse</a> &amp;)=default</td></tr>
+<tr class="separator:a2e9e7f46a90116d7448f20a790b21834"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25940e0df145fb6ec1a7806b45f0df33"><td class="memItemLeft" align="right" valign="top"><a id="a25940e0df145fb6ec1a7806b45f0df33"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ExplicitInverse</b> (<a class="el" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">ExplicitInverse</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a25940e0df145fb6ec1a7806b45f0df33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad6652c43aef254c45683feff07c391a8"><td class="memItemLeft" align="right" valign="top"><a id="ad6652c43aef254c45683feff07c391a8"></a>
+<a class="el" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">ExplicitInverse</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">ExplicitInverse</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:ad6652c43aef254c45683feff07c391a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a278b6cec2dfcd3f398aa72a1424e5ad7"><td class="memTemplParams" colspan="2">template&lt;typename LinearOperator , typename VarsType , typename SourceType &gt; </td></tr>
+<tr class="memitem:a278b6cec2dfcd3f398aa72a1424e5ad7"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structConvergence_1_1HasConverged.html">Convergence::HasConverged</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a278b6cec2dfcd3f398aa72a1424e5ad7">solve</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; VarsType * &gt; solution, const LinearOperator &amp;linear_operator, const SourceType &amp;source) const noexcept</td></tr>
+<tr class="memdesc:a278b6cec2dfcd3f398aa72a1424e5ad7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solve the equation \(Ax=b\) by explicitly constructing the operator matrix \(A\) and its inverse. The first solve is computationally expensive and successive solves are cheap.  <a href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a278b6cec2dfcd3f398aa72a1424e5ad7">More...</a><br /></td></tr>
+<tr class="separator:a278b6cec2dfcd3f398aa72a1424e5ad7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a2ac8c12624e16551c09efc601ae7bf"><td class="memItemLeft" align="right" valign="top"><a id="a4a2ac8c12624e16551c09efc601ae7bf"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a4a2ac8c12624e16551c09efc601ae7bf">reset</a> () noexcept override</td></tr>
+<tr class="memdesc:a4a2ac8c12624e16551c09efc601ae7bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flags the operator to require re-initialization. No memory is released. Call this function to rebuild the solver when the operator changed. <br /></td></tr>
+<tr class="separator:a4a2ac8c12624e16551c09efc601ae7bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18d35a0574e7f3befc2c4b0f9e2a6762"><td class="memItemLeft" align="right" valign="top"><a id="a18d35a0574e7f3befc2c4b0f9e2a6762"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a18d35a0574e7f3befc2c4b0f9e2a6762">size</a> () const noexcept</td></tr>
+<tr class="memdesc:a18d35a0574e7f3befc2c4b0f9e2a6762"><td class="mdescLeft">&#160;</td><td class="mdescRight">Size of the operator. The stored matrix will have <code>size^2</code> entries. <br /></td></tr>
+<tr class="separator:a18d35a0574e7f3befc2c4b0f9e2a6762"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a911bcfe6b3ce3387c818daada2dd2feb"><td class="memItemLeft" align="right" valign="top"><a id="a911bcfe6b3ce3387c818daada2dd2feb"></a>
+const <a class="el" href="classDenseMatrix.html">DenseMatrix</a>&lt; double &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a911bcfe6b3ce3387c818daada2dd2feb">matrix_representation</a> () const noexcept</td></tr>
+<tr class="memdesc:a911bcfe6b3ce3387c818daada2dd2feb"><td class="mdescLeft">&#160;</td><td class="mdescRight">The matrix representation of the solver. This matrix approximates the inverse of the subdomain operator. <br /></td></tr>
+<tr class="separator:a911bcfe6b3ce3387c818daada2dd2feb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d5d1aebf71a9094b2f67e28d0d6f331"><td class="memItemLeft" align="right" valign="top"><a id="a4d5d1aebf71a9094b2f67e28d0d6f331"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:a4d5d1aebf71a9094b2f67e28d0d6f331"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8a5d63530b56f1c788b6665e39b6e9f"><td class="memItemLeft" align="right" valign="top"><a id="ab8a5d63530b56f1c788b6665e39b6e9f"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classLinearSolver_1_1Serial_1_1LinearSolver.html">Base</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const noexcept override</td></tr>
+<tr class="separator:ab8a5d63530b56f1c788b6665e39b6e9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf32ac7176384bb9b4af8de8b17b8ba3"><td class="memTemplParams" colspan="2"><a id="abf32ac7176384bb9b4af8de8b17b8ba3"></a>
+template&lt;typename LinearOperator , typename VarsType , typename SourceType &gt; </td></tr>
+<tr class="memitem:abf32ac7176384bb9b4af8de8b17b8ba3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structConvergence_1_1HasConverged.html">Convergence::HasConverged</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><b>solve</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; VarsType * &gt; solution, const LinearOperator &amp;linear_operator, const SourceType &amp;source) const noexcept</td></tr>
+<tr class="separator:abf32ac7176384bb9b4af8de8b17b8ba3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classLinearSolver_1_1Serial_1_1LinearSolver"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classLinearSolver_1_1Serial_1_1LinearSolver')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classLinearSolver_1_1Serial_1_1LinearSolver.html">LinearSolver::Serial::LinearSolver&lt; tmpl::list&lt; Registrars::ExplicitInverse &gt; &gt;</a></td></tr>
+<tr class="memitem:a5397f04fb504b6ab9d2242cf704e7326 inherit pub_methods_classLinearSolver_1_1Serial_1_1LinearSolver"><td class="memItemLeft" align="right" valign="top"><a id="a5397f04fb504b6ab9d2242cf704e7326"></a>
+virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classLinearSolver_1_1Serial_1_1LinearSolver.html">LinearSolver</a>&lt; tmpl::list&lt; <a class="el" href="namespaceLinearSolver_1_1Serial_1_1Registrars.html#ac037e64f431bb0b16b3535fdd0033a88">Registrars::ExplicitInverse</a> &gt; &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const=0</td></tr>
+<tr class="separator:a5397f04fb504b6ab9d2242cf704e7326 inherit pub_methods_classLinearSolver_1_1Serial_1_1LinearSolver"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e01eb2c42c43d757913758f9574410c inherit pub_methods_classLinearSolver_1_1Serial_1_1LinearSolver"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structConvergence_1_1HasConverged.html">Convergence::HasConverged</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLinearSolver_1_1Serial_1_1LinearSolver.html#a3e01eb2c42c43d757913758f9574410c">solve</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; VarsType * &gt; initial_guess_in_solution_out, const LinearOperator &amp;linear_operator, const SourceType &amp;source, Args &amp;&amp;... args) const noexcept</td></tr>
+<tr class="memdesc:a3e01eb2c42c43d757913758f9574410c inherit pub_methods_classLinearSolver_1_1Serial_1_1LinearSolver"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solve the linear equation \(Ax=b\) where \(A\) is the <code>linear_operator</code> and \(b\) is the <code>source</code>.  <a href="classLinearSolver_1_1Serial_1_1LinearSolver.html#a3e01eb2c42c43d757913758f9574410c">More...</a><br /></td></tr>
+<tr class="separator:a3e01eb2c42c43d757913758f9574410c inherit pub_methods_classLinearSolver_1_1Serial_1_1LinearSolver"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb8e744ad9481a78f1928bd7556c2674 inherit pub_methods_classLinearSolver_1_1Serial_1_1LinearSolver"><td class="memItemLeft" align="right" valign="top"><a id="aeb8e744ad9481a78f1928bd7556c2674"></a>
+<a class="el" href="structConvergence_1_1HasConverged.html">Convergence::HasConverged</a>&#160;</td><td class="memItemRight" valign="bottom"><b>solve</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; VarsType * &gt; initial_guess_in_solution_out, const LinearOperator &amp;linear_operator, const SourceType &amp;source, Args &amp;&amp;... args) const noexcept</td></tr>
+<tr class="separator:aeb8e744ad9481a78f1928bd7556c2674 inherit pub_methods_classLinearSolver_1_1Serial_1_1LinearSolver"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a9793a75b09047e2576650747dae2f853"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a9793a75b09047e2576650747dae2f853"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename LinearSolverRegistrars = tmpl::list&lt;Registrars::ExplicitInverse&gt;&gt;<br />
+class LinearSolver::Serial::ExplicitInverse&lt; LinearSolverRegistrars &gt;</h3>
+
+<p>Linear solver that builds a matrix representation of the linear operator and inverts it directly. </p>
+<p>This solver first constructs an explicit matrix representation by "sniffing
+out" the operator, i.e. feeding it with unit vectors, and then directly inverts the matrix. The result is an operator that solves the linear problem in a single step. This means that each element has a large initialization cost, but all successive solves converge immediately.</p>
+<dl class="section user"><dt>Advice on using this linear solver:</dt><dd></dd></dl>
+<ul>
+<li>This solver is entirely agnostic to the structure of the linear operator. It is usually better to implement a linear solver that is specialized for your linear operator to take advantage of its properties. For example, if the operator has a tensor-product structure, the linear solver might take advantage of that. Only use this solver if no alternatives are available and if you have verified that it speeds up your solves.</li>
+<li>Since this linear solver stores the full inverse operator matrix it can have significant memory demands. For example, an operator representing a 3D first-order <a class="el" href="namespaceElasticity.html" title="Items related to solving elasticity problems.">Elasticity</a> system (9 variables) discretized on 12 grid points per dimension requires ca. 2GB of memory (per element) to store the matrix, scaling quadratically with the number of variables and with a power of 6 with the number of grid points per dimension. Therefore, make sure to distribute the elements on a sufficient number of nodes to meet the memory requirements.</li>
+<li>This linear solver can be <code><a class="el" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a4a2ac8c12624e16551c09efc601ae7bf" title="Flags the operator to require re-initialization. No memory is released. Call this function to rebuild...">reset()</a></code> when the operator changes (e.g. in each nonlinear-solver iteration). However, when using this solver as preconditioner it can be advantageous to avoid the reset and the corresponding cost of re-building the matrix and its inverse if the operator only changes "a little". In that case the preconditioner solves subdomain problems only approximately, but possibly still sufficiently to provide effective preconditioning. </li>
+</ul>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a278b6cec2dfcd3f398aa72a1424e5ad7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a278b6cec2dfcd3f398aa72a1424e5ad7">&#9670;&nbsp;</a></span>solve()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename LinearSolverRegistrars  = tmpl::list&lt;Registrars::ExplicitInverse&gt;&gt; </div>
+<div class="memtemplate">
+template&lt;typename LinearOperator , typename VarsType , typename SourceType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structConvergence_1_1HasConverged.html">Convergence::HasConverged</a> <a class="el" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">LinearSolver::Serial::ExplicitInverse</a>&lt; LinearSolverRegistrars &gt;::solve </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; VarsType * &gt;&#160;</td>
+          <td class="paramname"><em>solution</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const LinearOperator &amp;&#160;</td>
+          <td class="paramname"><em>linear_operator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const SourceType &amp;&#160;</td>
+          <td class="paramname"><em>source</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Solve the equation \(Ax=b\) by explicitly constructing the operator matrix \(A\) and its inverse. The first solve is computationally expensive and successive solves are cheap. </p>
+<p>Building a matrix representation of the <code>linear_operator</code> requires iterating over the <code>SourceType</code> (which is also the type returned by the <code>linear_operator</code>) in a consistent way. This can be non-trivial for heterogeneous data structures because it requires they define a data ordering. Specifically, the <code>SourceType</code> must have a <code><a class="el" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a18d35a0574e7f3befc2c4b0f9e2a6762" title="Size of the operator. The stored matrix will have size^2 entries.">size()</a></code> function as well as <code>begin()</code> and <code>end()</code> iterators that point into the data. If the iterators have a <code><a class="el" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a4a2ac8c12624e16551c09efc601ae7bf" title="Flags the operator to require re-initialization. No memory is released. Call this function to rebuild...">reset()</a></code> function it is used to avoid repeatedly re-creating the <code>begin()</code> iterator. The <code><a class="el" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html#a4a2ac8c12624e16551c09efc601ae7bf" title="Flags the operator to require re-initialization. No memory is released. Call this function to rebuild...">reset()</a></code> function must not invalidate the <code>end()</code> iterator. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="a9793a75b09047e2576650747dae2f853"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9793a75b09047e2576650747dae2f853">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename LinearSolverRegistrars  = tmpl::list&lt;Registrars::ExplicitInverse&gt;&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classLinearSolver_1_1Serial_1_1ExplicitInverse.html">LinearSolver::Serial::ExplicitInverse</a>&lt; LinearSolverRegistrars &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      <span class="stringliteral">&quot;Build a matrix representation of the linear operator and invert it &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;directly. This means that the first solve has a large initialization &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;cost, but all subsequent solves converge immediately.&quot;</span></div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/NumericalAlgorithms/LinearSolver/<a class="el" href="ExplicitInverse_8hpp_source.html">ExplicitInverse.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Domain/FaceNormal.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_2b2489ccd21aa27a14d4bfff471515cd.html">Domain</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#namespaces">Namespaces</a>  </div>
+  <div class="headertitle">
+<div class="title">FaceNormal.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/algorithm.html">algorithm</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/functional.html">functional</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/unordered_map.html">unordered_map</a>&gt;</code><br />
+<code>#include &quot;DataStructures/DataBox/Tag.hpp&quot;</code><br />
+<code>#include &quot;<a class="el" href="TypeAliases_8hpp_source.html">DataStructures/Tensor/TypeAliases.hpp</a>&quot;</code><br />
+<code>#include &quot;Domain/CoordinateMaps/Tags.hpp&quot;</code><br />
+<code>#include &quot;Domain/FunctionsOfTime/Tags.hpp&quot;</code><br />
+<code>#include &quot;Domain/InterfaceComputeTags.hpp&quot;</code><br />
+<code>#include &quot;<a class="el" href="Domain_2Tags_8hpp_source.html">Domain/Tags.hpp</a>&quot;</code><br />
+<code>#include &quot;Time/Tags.hpp&quot;</code><br />
+<code>#include &quot;<a class="el" href="Gsl_8hpp_source.html">Utilities/Gsl.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="TMPL_8hpp_source.html">Utilities/TMPL.hpp</a>&quot;</code><br />
+</div>
+<p><a href="FaceNormal_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1UnnormalizedFaceNormal.html">domain::Tags::UnnormalizedFaceNormal&lt; VolumeDim, Frame &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1UnnormalizedFaceNormalCompute.html">domain::Tags::UnnormalizedFaceNormalCompute&lt; VolumeDim, Frame &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1UnnormalizedFaceNormalMovingMeshCompute.html">domain::Tags::UnnormalizedFaceNormalMovingMeshCompute&lt; VolumeDim &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1InterfaceCompute_3_01Tags_1_1BoundaryDirectionsExterior_3_01VolumeDim_0184ce0938d30efe351cc7c3751f2e8f00.html">domain::Tags::InterfaceCompute&lt; Tags::BoundaryDirectionsExterior&lt; VolumeDim &gt;, UnnormalizedFaceNormalCompute&lt; VolumeDim, Frame &gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1Tags_1_1InterfaceCompute_3_01Tags_1_1BoundaryDirectionsExterior_3_01VolumeDim_01b2f8f04bf7a8f4884795db9ccff8abac.html">domain::Tags::InterfaceCompute&lt; Tags::BoundaryDirectionsExterior&lt; VolumeDim &gt;, UnnormalizedFaceNormalMovingMeshCompute&lt; VolumeDim &gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespacedomain_1_1Tags"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedomain_1_1Tags.html">domain::Tags</a></td></tr>
+<tr class="memdesc:namespacedomain_1_1Tags"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tags for the domain. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ga4b765bb8483842f249f114d3704985a4"><td class="memTemplParams" colspan="2">template&lt;size_t VolumeDim, typename TargetFrame &gt; </td></tr>
+<tr class="memitem:ga4b765bb8483842f249f114d3704985a4"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#ga4b765bb8483842f249f114d3704985a4">unnormalized_face_normal</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim, TargetFrame &gt; * &gt; result, const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim - 1 &gt; &amp;interface_mesh, const <a class="el" href="classElementMap.html">ElementMap</a>&lt; VolumeDim, TargetFrame &gt; &amp;map, const <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt; &amp;direction) noexcept</td></tr>
+<tr class="memdesc:ga4b765bb8483842f249f114d3704985a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the outward grid normal on a face of an <a class="el" href="classElement.html">Element</a>.  <a href="group__ComputationalDomainGroup.html#ga4b765bb8483842f249f114d3704985a4">More...</a><br /></td></tr>
+<tr class="separator:ga4b765bb8483842f249f114d3704985a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga417a2e1563c807ebf515d4e9fa04d425"><td class="memTemplParams" colspan="2">template&lt;size_t VolumeDim, typename TargetFrame &gt; </td></tr>
+<tr class="memitem:ga417a2e1563c807ebf515d4e9fa04d425"><td class="memTemplItemLeft" align="right" valign="top">tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim, TargetFrame &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#ga417a2e1563c807ebf515d4e9fa04d425">unnormalized_face_normal</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim - 1 &gt; &amp;interface_mesh, const <a class="el" href="classElementMap.html">ElementMap</a>&lt; VolumeDim, TargetFrame &gt; &amp;map, const <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt; &amp;direction) noexcept</td></tr>
+<tr class="memdesc:ga417a2e1563c807ebf515d4e9fa04d425"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the outward grid normal on a face of an <a class="el" href="classElement.html">Element</a>.  <a href="group__ComputationalDomainGroup.html#ga417a2e1563c807ebf515d4e9fa04d425">More...</a><br /></td></tr>
+<tr class="separator:ga417a2e1563c807ebf515d4e9fa04d425"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga924a6540e51bb8a9b0a60ad70a77f1d6"><td class="memTemplParams" colspan="2">template&lt;size_t VolumeDim, typename TargetFrame &gt; </td></tr>
+<tr class="memitem:ga924a6540e51bb8a9b0a60ad70a77f1d6"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#ga924a6540e51bb8a9b0a60ad70a77f1d6">unnormalized_face_normal</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim, TargetFrame &gt; * &gt; result, const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim - 1 &gt; &amp;interface_mesh, const <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, TargetFrame, VolumeDim &gt; &amp;map, const <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt; &amp;direction) noexcept</td></tr>
+<tr class="memdesc:ga924a6540e51bb8a9b0a60ad70a77f1d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the outward grid normal on a face of an <a class="el" href="classElement.html">Element</a>.  <a href="group__ComputationalDomainGroup.html#ga924a6540e51bb8a9b0a60ad70a77f1d6">More...</a><br /></td></tr>
+<tr class="separator:ga924a6540e51bb8a9b0a60ad70a77f1d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad8cb42b1b2f7c90c5c86eaef2d2b97f7"><td class="memTemplParams" colspan="2">template&lt;size_t VolumeDim, typename TargetFrame &gt; </td></tr>
+<tr class="memitem:gad8cb42b1b2f7c90c5c86eaef2d2b97f7"><td class="memTemplItemLeft" align="right" valign="top">tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim, TargetFrame &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#gad8cb42b1b2f7c90c5c86eaef2d2b97f7">unnormalized_face_normal</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim - 1 &gt; &amp;interface_mesh, const <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, TargetFrame, VolumeDim &gt; &amp;map, const <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt; &amp;direction) noexcept</td></tr>
+<tr class="memdesc:gad8cb42b1b2f7c90c5c86eaef2d2b97f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the outward grid normal on a face of an <a class="el" href="classElement.html">Element</a>.  <a href="group__ComputationalDomainGroup.html#gad8cb42b1b2f7c90c5c86eaef2d2b97f7">More...</a><br /></td></tr>
+<tr class="separator:gad8cb42b1b2f7c90c5c86eaef2d2b97f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6b0fceb75956800f13d434ebeb793966"><td class="memTemplParams" colspan="2">template&lt;size_t VolumeDim&gt; </td></tr>
+<tr class="memitem:ga6b0fceb75956800f13d434ebeb793966"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#ga6b0fceb75956800f13d434ebeb793966">unnormalized_face_normal</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; result, const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim - 1 &gt; &amp;interface_mesh, const <a class="el" href="classElementMap.html">ElementMap</a>&lt; VolumeDim, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a> &gt; &amp;logical_to_grid_map, const <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, VolumeDim &gt; &amp;grid_to_inertial_map, double time, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time, const <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt; &amp;direction) noexcept</td></tr>
+<tr class="memdesc:ga6b0fceb75956800f13d434ebeb793966"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the outward grid normal on a face of an <a class="el" href="classElement.html">Element</a>.  <a href="group__ComputationalDomainGroup.html#ga6b0fceb75956800f13d434ebeb793966">More...</a><br /></td></tr>
+<tr class="separator:ga6b0fceb75956800f13d434ebeb793966"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga384eb2d4bd3b6f4b803d9db1741da54f"><td class="memTemplParams" colspan="2">template&lt;size_t VolumeDim&gt; </td></tr>
+<tr class="memitem:ga384eb2d4bd3b6f4b803d9db1741da54f"><td class="memTemplItemLeft" align="right" valign="top">tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, VolumeDim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#ga384eb2d4bd3b6f4b803d9db1741da54f">unnormalized_face_normal</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim - 1 &gt; &amp;interface_mesh, const <a class="el" href="classElementMap.html">ElementMap</a>&lt; VolumeDim, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a> &gt; &amp;logical_to_grid_map, const <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, VolumeDim &gt; &amp;grid_to_inertial_map, double time, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time, const <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt; &amp;direction) noexcept</td></tr>
+<tr class="memdesc:ga384eb2d4bd3b6f4b803d9db1741da54f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the outward grid normal on a face of an <a class="el" href="classElement.html">Element</a>.  <a href="group__ComputationalDomainGroup.html#ga384eb2d4bd3b6f4b803d9db1741da54f">More...</a><br /></td></tr>
+<tr class="separator:ga384eb2d4bd3b6f4b803d9db1741da54f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Declares function unnormalized_face_normal </p>
+</div></div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

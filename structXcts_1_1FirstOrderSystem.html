@@ -1,0 +1,295 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Xcts::FirstOrderSystem&lt; EnabledEquations, ConformalGeometry, ConformalMatterScale &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceXcts.html">Xcts</a></li><li class="navelem"><a class="el" href="structXcts_1_1FirstOrderSystem.html">FirstOrderSystem</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structXcts_1_1FirstOrderSystem-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Xcts::FirstOrderSystem&lt; EnabledEquations, ConformalGeometry, ConformalMatterScale &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>The Extended Conformal Thin Sandwich (XCTS) decomposition of the Einstein constraint equations, formulated as a set of coupled first-order partial differential equations.  
+ <a href="structXcts_1_1FirstOrderSystem.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="src_2Elliptic_2Systems_2Xcts_2FirstOrderSystem_8hpp_source.html">FirstOrderSystem.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a214893390869295e563fa3bd202eec10"><td class="memItemLeft" align="right" valign="top"><a id="a214893390869295e563fa3bd202eec10"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>primal_fields</b> = tmpl::flatten&lt; tmpl::list&lt; <a class="el" href="structXcts_1_1Tags_1_1ConformalFactor.html">conformal_factor</a>, tmpl::conditional_t&lt; EnabledEquations==<a class="el" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78a1d7c1747c46332d5d8dff1ff4c751e09">Equations::HamiltonianAndLapse</a> or EnabledEquations==<a class="el" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78a5e29b37ae66a23995a8a1e87e49ea805">Equations::HamiltonianLapseAndShift</a>, <a class="el" href="structXcts_1_1Tags_1_1LapseTimesConformalFactor.html">lapse_times_conformal_factor</a>, tmpl::list&lt;&gt; &gt;, tmpl::conditional_t&lt; EnabledEquations==<a class="el" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78a5e29b37ae66a23995a8a1e87e49ea805">Equations::HamiltonianLapseAndShift</a>, <a class="el" href="structXcts_1_1Tags_1_1ShiftExcess.html">shift_excess</a>, tmpl::list&lt;&gt; &gt;&gt; &gt;</td></tr>
+<tr class="separator:a214893390869295e563fa3bd202eec10"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb35c3afbe0a9ebb868d6f546094ab98"><td class="memItemLeft" align="right" valign="top"><a id="adb35c3afbe0a9ebb868d6f546094ab98"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>auxiliary_fields</b> = tmpl::flatten&lt; tmpl::list&lt; <a class="el" href="structTags_1_1deriv.html">conformal_factor_gradient</a>, tmpl::conditional_t&lt; EnabledEquations==<a class="el" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78a1d7c1747c46332d5d8dff1ff4c751e09">Equations::HamiltonianAndLapse</a> or EnabledEquations==<a class="el" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78a5e29b37ae66a23995a8a1e87e49ea805">Equations::HamiltonianLapseAndShift</a>, <a class="el" href="structTags_1_1deriv.html">lapse_times_conformal_factor_gradient</a>, tmpl::list&lt;&gt; &gt;, tmpl::conditional_t&lt; EnabledEquations==<a class="el" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78a5e29b37ae66a23995a8a1e87e49ea805">Equations::HamiltonianLapseAndShift</a>, <a class="el" href="structXcts_1_1Tags_1_1ShiftStrain.html">shift_strain</a>, tmpl::list&lt;&gt; &gt;&gt; &gt;</td></tr>
+<tr class="separator:adb35c3afbe0a9ebb868d6f546094ab98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5bb5cac5e3a718e08239ae90ffdb2798"><td class="memItemLeft" align="right" valign="top"><a id="a5bb5cac5e3a718e08239ae90ffdb2798"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>primal_fluxes</b> = tmpl::flatten&lt; tmpl::list&lt; ::<a class="el" href="structTags_1_1Flux.html">Tags::Flux</a>&lt; <a class="el" href="structXcts_1_1Tags_1_1ConformalFactor.html">conformal_factor</a>, tmpl::size_t&lt; 3 &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, tmpl::conditional_t&lt; EnabledEquations==<a class="el" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78a1d7c1747c46332d5d8dff1ff4c751e09">Equations::HamiltonianAndLapse</a> or EnabledEquations==<a class="el" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78a5e29b37ae66a23995a8a1e87e49ea805">Equations::HamiltonianLapseAndShift</a>, ::<a class="el" href="structTags_1_1Flux.html">Tags::Flux</a>&lt; <a class="el" href="structXcts_1_1Tags_1_1LapseTimesConformalFactor.html">lapse_times_conformal_factor</a>, tmpl::size_t&lt; 3 &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, tmpl::list&lt;&gt; &gt;, tmpl::conditional_t&lt; EnabledEquations==<a class="el" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78a5e29b37ae66a23995a8a1e87e49ea805">Equations::HamiltonianLapseAndShift</a>, <a class="el" href="structXcts_1_1Tags_1_1LongitudinalShiftExcess.html">longitudinal_shift_excess</a>, tmpl::list&lt;&gt; &gt;&gt; &gt;</td></tr>
+<tr class="separator:a5bb5cac5e3a718e08239ae90ffdb2798"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c41cf6919058b428a7f0a06ba0496c6"><td class="memItemLeft" align="right" valign="top"><a id="a2c41cf6919058b428a7f0a06ba0496c6"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>auxiliary_fluxes</b> = <a class="el" href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e">db::wrap_tags_in</a>&lt;::<a class="el" href="structTags_1_1Flux.html">Tags::Flux</a>, auxiliary_fields, tmpl::size_t&lt; 3 &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;</td></tr>
+<tr class="separator:a2c41cf6919058b428a7f0a06ba0496c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72b9cb9fef065ba7f0f630132fd1760b"><td class="memItemLeft" align="right" valign="top"><a id="a72b9cb9fef065ba7f0f630132fd1760b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>background_fields</b> = tmpl::flatten&lt; tmpl::list&lt; <a class="el" href="structXcts_1_1Tags_1_1Conformal.html">Tags::Conformal</a>&lt; <a class="el" href="structgr_1_1Tags_1_1EnergyDensity.html">gr::Tags::EnergyDensity</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, ConformalMatterScale &gt;, <a class="el" href="structgr_1_1Tags_1_1TraceExtrinsicCurvature.html">gr::Tags::TraceExtrinsicCurvature</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, tmpl::conditional_t&lt; ConformalGeometry==<a class="el" href="namespaceXcts.html#a235c4dbcedba424b00d04d2905d4bee9a1e0e0b1e4554e27d30a562a079215f33">Geometry::Curved</a>, tmpl::list&lt; <a class="el" href="namespaceXcts_1_1Tags.html#a951ad424fae3b9710cb40566edfc8ba5">Tags::InverseConformalMetric</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structXcts_1_1Tags_1_1ConformalRicciScalar.html">Tags::ConformalRicciScalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structXcts_1_1Tags_1_1ConformalChristoffelContracted.html">Tags::ConformalChristoffelContracted</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;, tmpl::list&lt;&gt; &gt;, tmpl::conditional_t&lt; EnabledEquations==<a class="el" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78ad8dbcb7f98b38c5c9f9a0ad33e94ec2a">Equations::Hamiltonian</a>, <a class="el" href="structXcts_1_1Tags_1_1LongitudinalShiftMinusDtConformalMetricOverLapseSquare.html">Tags::LongitudinalShiftMinusDtConformalMetricOverLapseSquare</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, tmpl::list&lt;&gt; &gt;, tmpl::conditional_t&lt; EnabledEquations==<a class="el" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78a1d7c1747c46332d5d8dff1ff4c751e09">Equations::HamiltonianAndLapse</a> or EnabledEquations==<a class="el" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78a5e29b37ae66a23995a8a1e87e49ea805">Equations::HamiltonianLapseAndShift</a>, tmpl::list&lt; <a class="el" href="structXcts_1_1Tags_1_1Conformal.html">Tags::Conformal</a>&lt; <a class="el" href="structgr_1_1Tags_1_1StressTrace.html">gr::Tags::StressTrace</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, ConformalMatterScale &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1TraceExtrinsicCurvature.html">gr::Tags::TraceExtrinsicCurvature</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;&gt;, tmpl::list&lt;&gt; &gt;, tmpl::conditional_t&lt; EnabledEquations==<a class="el" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78a1d7c1747c46332d5d8dff1ff4c751e09">Equations::HamiltonianAndLapse</a>, tmpl::list&lt; <a class="el" href="structXcts_1_1Tags_1_1LongitudinalShiftMinusDtConformalMetricSquare.html">Tags::LongitudinalShiftMinusDtConformalMetricSquare</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structXcts_1_1Tags_1_1ShiftDotDerivExtrinsicCurvatureTrace.html">Tags::ShiftDotDerivExtrinsicCurvatureTrace</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;, tmpl::list&lt;&gt; &gt;, tmpl::conditional_t&lt; EnabledEquations==<a class="el" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78a5e29b37ae66a23995a8a1e87e49ea805">Equations::HamiltonianLapseAndShift</a>, tmpl::list&lt; <a class="el" href="structXcts_1_1Tags_1_1Conformal.html">Tags::Conformal</a>&lt; <a class="el" href="structgr_1_1Tags_1_1MomentumDensity.html">gr::Tags::MomentumDensity</a>&lt; 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, ConformalMatterScale &gt;, ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structgr_1_1Tags_1_1TraceExtrinsicCurvature.html">gr::Tags::TraceExtrinsicCurvature</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, tmpl::size_t&lt; 3 &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structXcts_1_1Tags_1_1ShiftBackground.html">Tags::ShiftBackground</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structXcts_1_1Tags_1_1LongitudinalShiftBackgroundMinusDtConformalMetric.html">Tags::LongitudinalShiftBackgroundMinusDtConformalMetric</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, ::<a class="el" href="structTags_1_1div.html">Tags::div</a>&lt; <a class="el" href="structXcts_1_1Tags_1_1LongitudinalShiftBackgroundMinusDtConformalMetric.html">Tags::LongitudinalShiftBackgroundMinusDtConformalMetric</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;, tmpl::conditional_t&lt; ConformalGeometry==<a class="el" href="namespaceXcts.html#a235c4dbcedba424b00d04d2905d4bee9a1e0e0b1e4554e27d30a562a079215f33">Geometry::Curved</a>, tmpl::list&lt; <a class="el" href="namespaceXcts_1_1Tags.html#a32e890a18672bb8912812454e11d7e09">Tags::ConformalMetric</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structXcts_1_1Tags_1_1ConformalChristoffelFirstKind.html">Tags::ConformalChristoffelFirstKind</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structXcts_1_1Tags_1_1ConformalChristoffelSecondKind.html">Tags::ConformalChristoffelSecondKind</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;, tmpl::list&lt;&gt; &gt;&gt;, tmpl::list&lt;&gt; &gt;&gt; &gt;</td></tr>
+<tr class="separator:a72b9cb9fef065ba7f0f630132fd1760b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf87cbe6519c9c8592f03b88bf7224e3"><td class="memItemLeft" align="right" valign="top"><a id="abf87cbe6519c9c8592f03b88bf7224e3"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>fluxes_computer</b> = <a class="el" href="structXcts_1_1Fluxes.html">Fluxes</a>&lt; EnabledEquations, ConformalGeometry &gt;</td></tr>
+<tr class="separator:abf87cbe6519c9c8592f03b88bf7224e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a68fbbc91d53225dc73938131647531c9"><td class="memItemLeft" align="right" valign="top"><a id="a68fbbc91d53225dc73938131647531c9"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>sources_computer</b> = <a class="el" href="structXcts_1_1Sources.html">Sources</a>&lt; EnabledEquations, ConformalGeometry, ConformalMatterScale &gt;</td></tr>
+<tr class="separator:a68fbbc91d53225dc73938131647531c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac5425d84c5073cd6a838b0a901254e13"><td class="memItemLeft" align="right" valign="top"><a id="ac5425d84c5073cd6a838b0a901254e13"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>sources_computer_linearized</b> = <a class="el" href="structXcts_1_1LinearizedSources.html">LinearizedSources</a>&lt; EnabledEquations, ConformalGeometry, ConformalMatterScale &gt;</td></tr>
+<tr class="separator:ac5425d84c5073cd6a838b0a901254e13"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf827d13bb74828936a9e3bb22697855"><td class="memItemLeft" align="right" valign="top"><a id="abf827d13bb74828936a9e3bb22697855"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>boundary_conditions_base</b> = <a class="el" href="classelliptic_1_1BoundaryConditions_1_1BoundaryCondition.html">elliptic::BoundaryConditions::BoundaryCondition</a>&lt; 3, tmpl::list&lt; elliptic::BoundaryConditions::Registrars::AnalyticSolution&lt; <a class="el" href="structXcts_1_1FirstOrderSystem.html">FirstOrderSystem</a> &gt;, BoundaryConditions::Registrars::Flatness &gt; &gt;</td></tr>
+<tr class="separator:abf827d13bb74828936a9e3bb22697855"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a369dd96e679f16d3a9ac96e32b0c7e60"><td class="memItemLeft" align="right" valign="top"><a id="a369dd96e679f16d3a9ac96e32b0c7e60"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>inv_metric_tag</b> = tmpl::conditional_t&lt; ConformalGeometry==<a class="el" href="namespaceXcts.html#a235c4dbcedba424b00d04d2905d4bee9a4e98dfef39bb5b4bbfec908085352ac4">Geometry::FlatCartesian</a>, void, <a class="el" href="namespaceXcts_1_1Tags.html#a951ad424fae3b9710cb40566edfc8ba5">Tags::InverseConformalMetric</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;</td></tr>
+<tr class="separator:a369dd96e679f16d3a9ac96e32b0c7e60"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a488ecab7ab9309f3700f395c37447aaf"><td class="memTemplParams" colspan="2"><a id="a488ecab7ab9309f3700f395c37447aaf"></a>
+template&lt;typename Tag &gt; </td></tr>
+<tr class="memitem:a488ecab7ab9309f3700f395c37447aaf"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>magnitude_tag</b> = tmpl::conditional_t&lt; ConformalGeometry==<a class="el" href="namespaceXcts.html#a235c4dbcedba424b00d04d2905d4bee9a4e98dfef39bb5b4bbfec908085352ac4">Geometry::FlatCartesian</a>, ::<a class="el" href="structTags_1_1EuclideanMagnitude.html">Tags::EuclideanMagnitude</a>&lt; Tag &gt;, ::<a class="el" href="structTags_1_1NonEuclideanMagnitude.html">Tags::NonEuclideanMagnitude</a>&lt; Tag, inv_metric_tag &gt; &gt;</td></tr>
+<tr class="separator:a488ecab7ab9309f3700f395c37447aaf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a8ea902c181c8b4d1f43796357fd65938"><td class="memItemLeft" align="right" valign="top"><a id="a8ea902c181c8b4d1f43796357fd65938"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = 3</td></tr>
+<tr class="separator:a8ea902c181c8b4d1f43796357fd65938"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;Equations EnabledEquations, Geometry ConformalGeometry, int ConformalMatterScale&gt;<br />
+struct Xcts::FirstOrderSystem&lt; EnabledEquations, ConformalGeometry, ConformalMatterScale &gt;</h3>
+
+<p>The Extended Conformal Thin Sandwich (XCTS) decomposition of the Einstein constraint equations, formulated as a set of coupled first-order partial differential equations. </p>
+<p>See <a class="el" href="namespaceXcts.html">Xcts</a> for details on the XCTS equations. This system introduces as auxiliary variables the conformal factor gradient \(v_i=\partial_i\psi\), the gradient of the lapse times the conformal factor \(w_i=\partial_i\left(\alpha\psi\right)\), and the symmetric shift strain \(B_{ij}=\bar{D}_{(i}\beta_{j)}\). Note that \(B_{ij}\) is the symmetrized covariant gradient of the shift vector field and analogous to the "strain" in an elasticity equation (see <code><a class="el" href="structElasticity_1_1FirstOrderSystem.html" title="The linear elasticity equation formulated as a set of coupled first-order PDEs.">Elasticity::FirstOrderSystem</a></code> and <code><a class="el" href="structXcts_1_1Tags_1_1ShiftStrain.html" title="The symmetric &quot;strain&quot; of the shift vector .">Xcts::Tags::ShiftStrain</a></code> for details). From the strain we can compute the longitudinal operator by essentially removing its trace (see <code><a class="el" href="namespaceXcts.html#af832a979d3bbfc987380a08f04e94592" title="The longitudinal operator, or vector gradient, .">Xcts::longitudinal_operator</a></code>).</p>
+<p>When we cast the equations in first-order flux-form</p>
+<p class="formulaDsp">
+\[ -\partial_i F^i_A + S_A = f_A(x) \]
+</p>
+<p>(see also <code><a class="el" href="structPoisson_1_1FirstOrderSystem.html" title="The Poisson equation formulated as a set of coupled first-order PDEs.">Poisson::FirstOrderSystem</a></code>), the fluxes \(F^i_A\), sources \(S_A\) and fixed-sources \(f_A\) are:</p>
+<p class="formulaDsp">
+\begin{align} F^i_{v_j} ={} &amp;\delta^i_j \psi \\ S_{v_j} ={} &amp;v_j \\ F^i_\psi ={} &amp;\bar{\gamma}^{ij} v_j \\ S_\psi ={} &amp;-\bar{\Gamma}^i_{ij} F^j_\psi + \frac{1}{8}\psi\bar{R} + \frac{1}{12}\psi^5 K^2 - \frac{1}{8}\psi^{-7}\bar{A}^2 - 2\pi\psi^5\rho \end{align}
+</p>
+<p>for the Hamiltonian constraint,</p>
+<p class="formulaDsp">
+\begin{align} F^i_{w_j} ={} &amp;\delta^i_j \alpha\psi \\ S_{w_j} ={} &amp;w_j \\ F^i_{\alpha\psi} ={} &amp;\bar{\gamma}^{ij} w_j \\ S_{\alpha\psi} ={} &amp;-\bar{\Gamma}^i_{ij} F^j_{\alpha\psi} + \alpha\psi \left(\frac{7}{8}\psi^{-8} \bar{A}^2 + \frac{5}{12} \psi^4 K^2 + \frac{1}{8}\bar{R} + 2\pi\psi^4\left(\rho + 2S\right) \right) \\ &amp;- \psi^5\partial_t K + \psi^5\left(\beta^i\bar{D}_i K + \beta_\mathrm{background}^i\bar{D}_i K\right) \end{align}
+</p>
+<p>for the lapse equation, and</p>
+<p class="formulaDsp">
+\begin{align} F^i_{B_{jk}} ={} &amp;\delta^i_{(j} \gamma_{k)l} \beta^l \\ S_{B_{jk}} ={} &amp;B_{jk} + \bar{\Gamma}_{ijk}\beta^i \\ F^i_{\beta^j} ={} &amp;2\left(\gamma^{ik}\gamma^{jl} - \frac{1}{3} \gamma^{ij}\gamma^{kl}\right) B_{kl} \\ S_{\beta^i} ={} &amp;-\bar{\Gamma}^j_{jk} F^i_{\beta^k} - \bar{\Gamma}^i_{jk} F^j_{\beta^k} + \left(F^i_{\beta^j} + \left(\bar{L}\beta_\mathrm{background}\right)^{ij} - \bar{u}^{ij}\right) \bar{\gamma}_{jk} \left(\frac{F^k_{\alpha\psi}}{\alpha\psi} - 7 \frac{F^k_\psi}{\psi}\right) \\ &amp;- \bar{D}_j\left(\left(\bar{L}\beta_\mathrm{background}\right)^{ij} - \bar{u}^{ij}\right) + \frac{4}{3}\frac{\alpha\psi}{\psi}\bar{D}^i K + 16\pi\left(\alpha\psi\right)\psi^3 S^i \end{align}
+</p>
+<p>for the momentum constraint, with</p>
+<p class="formulaDsp">
+\begin{align} \bar{A}^{ij} ={} &amp;\frac{\psi^7}{2\alpha\psi}\left( \left(\bar{L}\beta\right)^{ij} + \left(\bar{L}\beta_\mathrm{background}\right)^{ij} - \bar{u}^{ij} \right) \\ \text{and} \quad \left(\bar{L}\beta\right)^{ij} ={} &amp;\bar{\nabla}^i \beta^j + \bar{\nabla}^j \beta^i - \frac{2}{3}\gamma^{ij}\bar{\nabla}_k\beta^k \\ ={} &amp;2\left(\bar{\gamma}^{ik}\bar{\gamma}^{jl} - \frac{1}{3} \bar{\gamma}^{ij}\bar{\gamma}^{kl}\right) B_{kl} \end{align}
+</p>
+<p>and all \(f_A=0\).</p>
+<p>Note that the symbol \(\beta\) in the equations above means \(\beta_\mathrm{excess}\). The full shift is \(\beta_\mathrm{excess} + \beta_\mathrm{background}\). See <code><a class="el" href="structXcts_1_1Tags_1_1ShiftBackground.html" title="The constant part  of the shift .">Xcts::Tags::ShiftBackground</a></code> and <code><a class="el" href="structXcts_1_1Tags_1_1ShiftExcess.html" title="The dynamic part  of the shift .">Xcts::Tags::ShiftExcess</a></code> for details on this split. Also note that the background shift is degenerate with \(\bar{u}\) so we treat the quantity \(\left(\bar{L}\beta_\mathrm{background}\right)^{ij} - \bar{u}^{ij}\) as a single background field (see <code><a class="el" href="structXcts_1_1Tags_1_1LongitudinalShiftBackgroundMinusDtConformalMetric.html" title="The conformal longitudinal operator applied to the background shift vector minus the time derivative ...">Xcts::Tags::LongitudinalShiftBackgroundMinusDtConformalMetric</a></code>). The covariant divergence of this quantity w.r.t. the conformal metric is also a background field.</p>
+<dl class="section user"><dt>Solving a subset of equations:</dt><dd>This system allows you to select a subset of <code><a class="el" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78" title="Indicates a subset of the XCTS equations.">Xcts::Equations</a></code> so you don't have to solve for all variables if some are analytically known. Specify the set of enabled equations as the first template parameter. The set of required background fields depends on your choice of equations.</dd></dl>
+<dl class="section user"><dt>Conformal background geometry:</dt><dd>The equations simplify significantly if the conformal metric is flat ("conformal flatness") and in Cartesian coordinates. In this case you can specify <code><a class="el" href="namespaceXcts.html#a235c4dbcedba424b00d04d2905d4bee9a4e98dfef39bb5b4bbfec908085352ac4" title="Euclidean (flat) manifold with Cartesian coordinates, i.e. the conformal metric has components  in th...">Xcts::Geometry::FlatCartesian</a></code> as the second template parameter so computations are optimized for a flat background geometry and you don't have to supply geometric background fields. Else, specify <code><a class="el" href="namespaceXcts.html#a235c4dbcedba424b00d04d2905d4bee9a1e0e0b1e4554e27d30a562a079215f33" title="The conformal geometry is either curved or employs curved coordinates, so non-vanishing Christoffel s...">Xcts::Geometry::Curved</a></code>.</dd></dl>
+<dl class="section user"><dt>Conformal matter scale:</dt><dd>The matter source terms in the XCTS equations have the known defect that they can spoil uniqueness of the solutions. See e.g. <a class="el" href="citelist.html#CITEREF_Baumgarte2006ug">[10]</a> for a detailed study. To cure this defect one can conformally re-scale the matter source terms as \(\bar{\rho}=\psi^n\rho\), \(\bar{S}=\psi^n S\) and \(\bar{S^i}=\psi^n S^i\) and treat the re-scaled fields as freely-specifyable background data for the XCTS equations. You can select the <code>ConformalMatterScale</code> \(n\) as the third template parameter. Common choices are \(n=0\) for vacuum systems where the matter sources are irrelevant, \(n=6\) as suggested in <a class="el" href="citelist.html#CITEREF_Foucart2008qt">[43]</a> or \(n=8\) as suggested in <a class="el" href="citelist.html#CITEREF_Baumgarte2006ug">[10]</a>. </dd></dl>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Elliptic/Systems/Xcts/<a class="el" href="src_2Elliptic_2Systems_2Xcts_2FirstOrderSystem_8hpp_source.html">FirstOrderSystem.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

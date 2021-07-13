@@ -1,0 +1,667 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: ActionTesting Namespace Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">ActionTesting Namespace Reference<div class="ingroups"><a class="el" href="group__TestingFrameworkGroup.html">Testing Framework</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Structures used for mocking the parallel components framework in order to test actions.  
+<a href="namespaceActionTesting.html#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActionTesting_1_1GlobalCoreId.html">GlobalCoreId</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wraps a size_t representing the global core number.  <a href="structActionTesting_1_1GlobalCoreId.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActionTesting_1_1InitializeDataBox_3_01tmpl_1_1list_3_01SimpleTags_8_8_8_01_4_00_01ComputeTagsList_01_4.html">InitializeDataBox&lt; tmpl::list&lt; SimpleTags... &gt;, ComputeTagsList &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActionTesting_1_1LocalCoreId.html">LocalCoreId</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wraps a size_t representing the local core number. This is so the user can write things like <code>emplace_array_component(<a class="el" href="structActionTesting_1_1NodeId.html" title="Wraps a size_t representing the node number. This is so the user can write things like emplace_array_...">NodeId</a>{3},<a class="el" href="structActionTesting_1_1LocalCoreId.html" title="Wraps a size_t representing the local core number. This is so the user can write things like emplace_...">LocalCoreId</a>{2},...)</code> instead of <code>emplace_array_component(3,2,...)</code>.  <a href="structActionTesting_1_1LocalCoreId.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActionTesting_1_1MockArrayChare.html">MockArrayChare</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A mock class for the CMake-generated <code><a class="el" href="structParallel_1_1Algorithms_1_1Array.html" title="A struct that stores the charm++ types relevant for a particular array component.">Parallel::Algorithms::Array</a></code>  <a href="structActionTesting_1_1MockArrayChare.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockDistributedObject.html">MockDistributedObject</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classActionTesting_1_1MockDistributedObject.html" title="MockDistributedObject mocks the AlgorithmImpl class. It should not be considered as part of the user ...">MockDistributedObject</a> mocks the AlgorithmImpl class. It should not be considered as part of the user interface.  <a href="classActionTesting_1_1MockDistributedObject.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActionTesting_1_1MockGroupChare.html">MockGroupChare</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A mock class for the CMake-generated <code><a class="el" href="structParallel_1_1Algorithms_1_1Group.html" title="A struct that stores the charm++ types relevant for a particular group component.">Parallel::Algorithms::Group</a></code>  <a href="structActionTesting_1_1MockGroupChare.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActionTesting_1_1MockNodeGroupChare.html">MockNodeGroupChare</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A mock class for the CMake-generated <code>Parallel::Algorithms::NodeGroup</code>  <a href="structActionTesting_1_1MockNodeGroupChare.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActionTesting_1_1MockSingletonChare.html">MockSingletonChare</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A mock class for the CMake-generated <code><a class="el" href="structParallel_1_1Algorithms_1_1Singleton.html" title="A struct that stores the charm++ types relevant for a particular singleton component.">Parallel::Algorithms::Singleton</a></code>  <a href="structActionTesting_1_1MockSingletonChare.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActionTesting_1_1NodeId.html">NodeId</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wraps a size_t representing the node number. This is so the user can write things like <code>emplace_array_component(<a class="el" href="structActionTesting_1_1NodeId.html" title="Wraps a size_t representing the node number. This is so the user can write things like emplace_array_...">NodeId</a>{3},...)</code> instead of <code>emplace_array_component(3,...)</code>.  <a href="structActionTesting_1_1NodeId.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a4332d8a974af3630ddf4e358d9966f27"><td class="memItemLeft" align="right" valign="top"><a id="a4332d8a974af3630ddf4e358d9966f27"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="structActionTesting_1_1NodeId.html">NodeId</a> &amp;lhs, const <a class="el" href="structActionTesting_1_1NodeId.html">NodeId</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a4332d8a974af3630ddf4e358d9966f27"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ad1d7a94b6b76d3385c118f474ecadc"><td class="memItemLeft" align="right" valign="top"><a id="a0ad1d7a94b6b76d3385c118f474ecadc"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="structActionTesting_1_1NodeId.html">NodeId</a> &amp;lhs, const <a class="el" href="structActionTesting_1_1NodeId.html">NodeId</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a0ad1d7a94b6b76d3385c118f474ecadc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ad416c8b7d7d3a0d04c618a87d3ee2f"><td class="memItemLeft" align="right" valign="top"><a id="a6ad416c8b7d7d3a0d04c618a87d3ee2f"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="structActionTesting_1_1LocalCoreId.html">LocalCoreId</a> &amp;lhs, const <a class="el" href="structActionTesting_1_1LocalCoreId.html">LocalCoreId</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a6ad416c8b7d7d3a0d04c618a87d3ee2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c0c04d912a15592c9d96c03a5365bcb"><td class="memItemLeft" align="right" valign="top"><a id="a2c0c04d912a15592c9d96c03a5365bcb"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="structActionTesting_1_1LocalCoreId.html">LocalCoreId</a> &amp;lhs, const <a class="el" href="structActionTesting_1_1LocalCoreId.html">LocalCoreId</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a2c0c04d912a15592c9d96c03a5365bcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7ddf8ee6a8dd0b878782ab5d17173f8"><td class="memItemLeft" align="right" valign="top"><a id="aa7ddf8ee6a8dd0b878782ab5d17173f8"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="structActionTesting_1_1GlobalCoreId.html">GlobalCoreId</a> &amp;lhs, const <a class="el" href="structActionTesting_1_1GlobalCoreId.html">GlobalCoreId</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:aa7ddf8ee6a8dd0b878782ab5d17173f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3453ed3f1e04d6f8c7967a3299db222f"><td class="memItemLeft" align="right" valign="top"><a id="a3453ed3f1e04d6f8c7967a3299db222f"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="structActionTesting_1_1GlobalCoreId.html">GlobalCoreId</a> &amp;lhs, const <a class="el" href="structActionTesting_1_1GlobalCoreId.html">GlobalCoreId</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a3453ed3f1e04d6f8c7967a3299db222f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a46ee6bd026b832ec6286b17be61158f0"><td class="memTemplParams" colspan="2"><a id="a46ee6bd026b832ec6286b17be61158f0"></a>
+template&lt;typename Metavariables &gt; </td></tr>
+<tr class="memitem:a46ee6bd026b832ec6286b17be61158f0"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a46ee6bd026b832ec6286b17be61158f0">set_phase</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; Metavariables &gt; * &gt; runner, const typename Metavariables::Phase &amp;phase) noexcept</td></tr>
+<tr class="memdesc:a46ee6bd026b832ec6286b17be61158f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the phase of all parallel components to <code>phase</code> <br /></td></tr>
+<tr class="separator:a46ee6bd026b832ec6286b17be61158f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa514ab61a3e64d7aa7744911fe4d999c"><td class="memTemplParams" colspan="2"><a id="aa514ab61a3e64d7aa7744911fe4d999c"></a>
+template&lt;typename Component , typename... Options&gt; </td></tr>
+<tr class="memitem:aa514ab61a3e64d7aa7744911fe4d999c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#aa514ab61a3e64d7aa7744911fe4d999c">emplace_component</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; typename Component::metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:aa514ab61a3e64d7aa7744911fe4d999c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplaces a distributed object with index <code>array_index</code> into the parallel component <code>Component</code>. The options <code>opts</code> are forwarded to be used in a call to <code>detail::ForwardAllOptionsToDataBox::apply</code>. <br /></td></tr>
+<tr class="separator:aa514ab61a3e64d7aa7744911fe4d999c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac0b8c8857d55fcdbbe41cd0bdbf9ddfc"><td class="memTemplParams" colspan="2"><a id="ac0b8c8857d55fcdbbe41cd0bdbf9ddfc"></a>
+template&lt;typename Component , typename... Options&gt; </td></tr>
+<tr class="memitem:ac0b8c8857d55fcdbbe41cd0bdbf9ddfc"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#ac0b8c8857d55fcdbbe41cd0bdbf9ddfc">emplace_array_component</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; typename Component::metavariables &gt; * &gt; runner, const <a class="el" href="structActionTesting_1_1NodeId.html">NodeId</a> node_id, const <a class="el" href="structActionTesting_1_1LocalCoreId.html">LocalCoreId</a> local_core_id, const typename Component::array_index &amp;array_index, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:ac0b8c8857d55fcdbbe41cd0bdbf9ddfc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplaces a distributed array object with index <code>array_index</code> into the parallel component <code>Component</code>. The options <code>opts</code> are forwarded to be used in a call to <code>detail::ForwardAllOptionsToDataBox::apply</code>. <br /></td></tr>
+<tr class="separator:ac0b8c8857d55fcdbbe41cd0bdbf9ddfc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b963e2d649757097e5ac207c9a2f2b0"><td class="memTemplParams" colspan="2"><a id="a5b963e2d649757097e5ac207c9a2f2b0"></a>
+template&lt;typename Component , typename... Options&gt; </td></tr>
+<tr class="memitem:a5b963e2d649757097e5ac207c9a2f2b0"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a5b963e2d649757097e5ac207c9a2f2b0">emplace_singleton_component</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; typename Component::metavariables &gt; * &gt; runner, const <a class="el" href="structActionTesting_1_1NodeId.html">NodeId</a> node_id, const <a class="el" href="structActionTesting_1_1LocalCoreId.html">LocalCoreId</a> local_core_id, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a5b963e2d649757097e5ac207c9a2f2b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplaces a distributed singleton object into the parallel component <code>Component</code>. The options <code>opts</code> are forwarded to be used in a call to <code>detail::ForwardAllOptionsToDataBox::apply</code>. <br /></td></tr>
+<tr class="separator:a5b963e2d649757097e5ac207c9a2f2b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a308da60ea861a12688ceaf9d13cef45b"><td class="memTemplParams" colspan="2"><a id="a308da60ea861a12688ceaf9d13cef45b"></a>
+template&lt;typename Component , typename... Options&gt; </td></tr>
+<tr class="memitem:a308da60ea861a12688ceaf9d13cef45b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a308da60ea861a12688ceaf9d13cef45b">emplace_group_component</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; typename Component::metavariables &gt; * &gt; runner, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a308da60ea861a12688ceaf9d13cef45b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplaces a distributed group object into the parallel component <code>Component</code>. The options <code>opts</code> are forwarded to be used in a call to <code>detail::ForwardAllOptionsToDataBox::apply</code>. <br /></td></tr>
+<tr class="separator:a308da60ea861a12688ceaf9d13cef45b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a33da9f11d07b58a578233825d9399ce5"><td class="memTemplParams" colspan="2"><a id="a33da9f11d07b58a578233825d9399ce5"></a>
+template&lt;typename Component , typename... Options&gt; </td></tr>
+<tr class="memitem:a33da9f11d07b58a578233825d9399ce5"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a33da9f11d07b58a578233825d9399ce5">emplace_nodegroup_component</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; typename Component::metavariables &gt; * &gt; runner, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a33da9f11d07b58a578233825d9399ce5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplaces a distributed nodegroup object into the parallel component <code>Component</code>. The options <code>opts</code> are forwarded to be used in a call to <code>detail::ForwardAllOptionsToDataBox::apply</code>. <br /></td></tr>
+<tr class="separator:a33da9f11d07b58a578233825d9399ce5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f0e8f71de62510302dda880b8410b4c"><td class="memTemplParams" colspan="2"><a id="a4f0e8f71de62510302dda880b8410b4c"></a>
+template&lt;typename Component , typename... Options, typename Metavars  = typename Component::metavariables, Requires&lt; detail::has_initialization_phase_v&lt; Metavars &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a4f0e8f71de62510302dda880b8410b4c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a4f0e8f71de62510302dda880b8410b4c">emplace_component_and_initialize</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; typename Component::metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index, const typename detail::get_initialization&lt; Component &gt;::InitialValues &amp;initial_values, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a4f0e8f71de62510302dda880b8410b4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplaces a distributed object with index <code>array_index</code> into the parallel component <code>Component</code>. The options <code>opts</code> are forwarded to be used in a call to <code>detail::ForwardAllOptionsToDataBox::apply</code> Additionally, the simple tags in the DataBox are initialized from the values set in <code>initial_values</code>. <br /></td></tr>
+<tr class="separator:a4f0e8f71de62510302dda880b8410b4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a183a1ce0c6f7e17af58380674b968ca9"><td class="memTemplParams" colspan="2"><a id="a183a1ce0c6f7e17af58380674b968ca9"></a>
+template&lt;typename Component , typename... Options, typename Metavars  = typename Component::metavariables, Requires&lt; detail::has_initialization_phase_v&lt; Metavars &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a183a1ce0c6f7e17af58380674b968ca9"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a183a1ce0c6f7e17af58380674b968ca9">emplace_array_component_and_initialize</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; typename Component::metavariables &gt; * &gt; runner, const <a class="el" href="structActionTesting_1_1NodeId.html">NodeId</a> node_id, const <a class="el" href="structActionTesting_1_1LocalCoreId.html">LocalCoreId</a> local_core_id, const typename Component::array_index &amp;array_index, const typename detail::get_initialization&lt; Component &gt;::InitialValues &amp;initial_values, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a183a1ce0c6f7e17af58380674b968ca9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplaces a distributed array object with index <code>array_index</code> into the parallel component <code>Component</code>. The options <code>opts</code> are forwarded to be used in a call to <code>detail::ForwardAllOptionsToDataBox::apply</code> Additionally, the simple tags in the DataBox are initialized from the values set in <code>initial_values</code>. <br /></td></tr>
+<tr class="separator:a183a1ce0c6f7e17af58380674b968ca9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5150bd733dcab5135240bb938779088f"><td class="memTemplParams" colspan="2"><a id="a5150bd733dcab5135240bb938779088f"></a>
+template&lt;typename Component , typename... Options, typename Metavars  = typename Component::metavariables, Requires&lt; detail::has_initialization_phase_v&lt; Metavars &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a5150bd733dcab5135240bb938779088f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a5150bd733dcab5135240bb938779088f">emplace_singleton_component_and_initialize</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; typename Component::metavariables &gt; * &gt; runner, const <a class="el" href="structActionTesting_1_1NodeId.html">NodeId</a> node_id, const <a class="el" href="structActionTesting_1_1LocalCoreId.html">LocalCoreId</a> local_core_id, const typename detail::get_initialization&lt; Component &gt;::InitialValues &amp;initial_values, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a5150bd733dcab5135240bb938779088f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplaces a distributed singleton object into the parallel component <code>Component</code>. The options <code>opts</code> are forwarded to be used in a call to <code>detail::ForwardAllOptionsToDataBox::apply</code> Additionally, the simple tags in the DataBox are initialized from the values set in <code>initial_values</code>. <br /></td></tr>
+<tr class="separator:a5150bd733dcab5135240bb938779088f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a374304bc4a107b68cec22560e92ea643"><td class="memTemplParams" colspan="2"><a id="a374304bc4a107b68cec22560e92ea643"></a>
+template&lt;typename Component , typename... Options, typename Metavars  = typename Component::metavariables, Requires&lt; detail::has_initialization_phase_v&lt; Metavars &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a374304bc4a107b68cec22560e92ea643"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a374304bc4a107b68cec22560e92ea643">emplace_group_component_and_initialize</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; typename Component::metavariables &gt; * &gt; runner, const typename detail::get_initialization&lt; Component &gt;::InitialValues &amp;initial_values, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a374304bc4a107b68cec22560e92ea643"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplaces a distributed group object into the parallel component <code>Component</code>. The options <code>opts</code> are forwarded to be used in a call to <code>detail::ForwardAllOptionsToDataBox::apply</code> Additionally, the simple tags in the DataBox are initialized from the values set in <code>initial_values</code>. <br /></td></tr>
+<tr class="separator:a374304bc4a107b68cec22560e92ea643"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a180870008cf114c5874463ac01d1eb"><td class="memTemplParams" colspan="2"><a id="a2a180870008cf114c5874463ac01d1eb"></a>
+template&lt;typename Component , typename... Options, typename Metavars  = typename Component::metavariables, Requires&lt; detail::has_initialization_phase_v&lt; Metavars &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a2a180870008cf114c5874463ac01d1eb"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a2a180870008cf114c5874463ac01d1eb">emplace_nodegroup_component_and_initialize</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; typename Component::metavariables &gt; * &gt; runner, const typename detail::get_initialization&lt; Component &gt;::InitialValues &amp;initial_values, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a2a180870008cf114c5874463ac01d1eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplaces a distributed nodegroup object into the parallel component <code>Component</code>. The options <code>opts</code> are forwarded to be used in a call to <code>detail::ForwardAllOptionsToDataBox::apply</code> Additionally, the simple tags in the DataBox are initialized from the values set in <code>initial_values</code>. <br /></td></tr>
+<tr class="separator:a2a180870008cf114c5874463ac01d1eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38e4125f212ec02fde513c3e0995fe67"><td class="memTemplParams" colspan="2"><a id="a38e4125f212ec02fde513c3e0995fe67"></a>
+template&lt;typename Component , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a38e4125f212ec02fde513c3e0995fe67"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a38e4125f212ec02fde513c3e0995fe67">get_next_action_index</a> (const <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a38e4125f212ec02fde513c3e0995fe67"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the index in the action list of the next action. <br /></td></tr>
+<tr class="separator:a38e4125f212ec02fde513c3e0995fe67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f85a884bc2199e599cbf961638c7c7b"><td class="memTemplParams" colspan="2"><a id="a3f85a884bc2199e599cbf961638c7c7b"></a>
+template&lt;typename Component , typename Tag , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a3f85a884bc2199e599cbf961638c7c7b"><td class="memTemplItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a3f85a884bc2199e599cbf961638c7c7b">get_databox_tag</a> (const <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a3f85a884bc2199e599cbf961638c7c7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the <code>Tag</code> from the <code>DataBox</code> of the parallel component <code>Component</code> with array index <code>array_index</code>. If the component's current <code>DataBox</code> type does not contain <code>Tag</code> then an error is emitted. <br /></td></tr>
+<tr class="separator:a3f85a884bc2199e599cbf961638c7c7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1ae27d86428f1be2a5aea63bb088df8"><td class="memTemplParams" colspan="2"><a id="ac1ae27d86428f1be2a5aea63bb088df8"></a>
+template&lt;typename Component , typename Tag , typename Metavariables &gt; </td></tr>
+<tr class="memitem:ac1ae27d86428f1be2a5aea63bb088df8"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#ac1ae27d86428f1be2a5aea63bb088df8">box_contains</a> (const <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:ac1ae27d86428f1be2a5aea63bb088df8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>true</code> if the current DataBox of <code>Component</code> with index <code>array_index</code> contains the tag <code>Tag</code>. If the tag is not contained, returns <code>false</code>. <br /></td></tr>
+<tr class="separator:ac1ae27d86428f1be2a5aea63bb088df8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a563c20abd2f3670df7a03f404f168e15"><td class="memTemplParams" colspan="2"><a id="a563c20abd2f3670df7a03f404f168e15"></a>
+template&lt;typename Component , typename Tag , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a563c20abd2f3670df7a03f404f168e15"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a563c20abd2f3670df7a03f404f168e15">tag_is_retrievable</a> (const <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a563c20abd2f3670df7a03f404f168e15"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>true</code> if the tag <code>Tag</code> can be retrieved from the current DataBox of <code>Component</code> with index <code>array_index</code>. <br /></td></tr>
+<tr class="separator:a563c20abd2f3670df7a03f404f168e15"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9179b63a24df649db1bd10345d49c847"><td class="memTemplParams" colspan="2"><a id="a9179b63a24df649db1bd10345d49c847"></a>
+template&lt;typename Component , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a9179b63a24df649db1bd10345d49c847"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a9179b63a24df649db1bd10345d49c847">next_action</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; Metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a9179b63a24df649db1bd10345d49c847"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke the next action in the ActionList on the parallel component <code>Component</code> on the component labeled by <code>array_index</code>, failing if it was not ready. <br /></td></tr>
+<tr class="separator:a9179b63a24df649db1bd10345d49c847"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a177297372549392c3edb9f33dd272045"><td class="memTemplParams" colspan="2"><a id="a177297372549392c3edb9f33dd272045"></a>
+template&lt;typename Component , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a177297372549392c3edb9f33dd272045"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a177297372549392c3edb9f33dd272045">next_action_if_ready</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; Metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a177297372549392c3edb9f33dd272045"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke the next action in the ActionList on the parallel component <code>Component</code> on the component labeled by <code>array_index</code>, returning whether it was ready. <br /></td></tr>
+<tr class="separator:a177297372549392c3edb9f33dd272045"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca813b8efba8a7b4c8fcc41ca13839e2"><td class="memTemplParams" colspan="2"><a id="aca813b8efba8a7b4c8fcc41ca13839e2"></a>
+template&lt;typename Component , typename Action , typename Metavariables , typename... Args&gt; </td></tr>
+<tr class="memitem:aca813b8efba8a7b4c8fcc41ca13839e2"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#aca813b8efba8a7b4c8fcc41ca13839e2">simple_action</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; Metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:aca813b8efba8a7b4c8fcc41ca13839e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs the simple action <code>Action</code> on the <code>array_index</code>th element of the parallel component <code>Component</code>. <br /></td></tr>
+<tr class="separator:aca813b8efba8a7b4c8fcc41ca13839e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7de7112a702c806a96cd581b40501632"><td class="memTemplParams" colspan="2"><a id="a7de7112a702c806a96cd581b40501632"></a>
+template&lt;typename Component , typename Action , typename Metavariables , typename... Args&gt; </td></tr>
+<tr class="memitem:a7de7112a702c806a96cd581b40501632"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a7de7112a702c806a96cd581b40501632">threaded_action</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; Metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:a7de7112a702c806a96cd581b40501632"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs the simple action <code>Action</code> on the <code>array_index</code>th element of the parallel component <code>Component</code>. <br /></td></tr>
+<tr class="separator:a7de7112a702c806a96cd581b40501632"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5649a7b020bff06c3f389325ab30492c"><td class="memTemplParams" colspan="2"><a id="a5649a7b020bff06c3f389325ab30492c"></a>
+template&lt;typename Component , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a5649a7b020bff06c3f389325ab30492c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a5649a7b020bff06c3f389325ab30492c">invoke_queued_simple_action</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; Metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a5649a7b020bff06c3f389325ab30492c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs the next queued simple action on the <code>array_index</code>th element of the parallel component <code>Component</code>. <br /></td></tr>
+<tr class="separator:a5649a7b020bff06c3f389325ab30492c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa0cc87670e0ae509d24bf2fcff2d141"><td class="memTemplParams" colspan="2"><a id="aaa0cc87670e0ae509d24bf2fcff2d141"></a>
+template&lt;typename Component , typename Metavariables &gt; </td></tr>
+<tr class="memitem:aaa0cc87670e0ae509d24bf2fcff2d141"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#aaa0cc87670e0ae509d24bf2fcff2d141">is_simple_action_queue_empty</a> (const <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:aaa0cc87670e0ae509d24bf2fcff2d141"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>true</code> if there are no simple actions in the queue. <br /></td></tr>
+<tr class="separator:aaa0cc87670e0ae509d24bf2fcff2d141"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4cd372efc294369207c3687eeb9300c6"><td class="memTemplParams" colspan="2"><a id="a4cd372efc294369207c3687eeb9300c6"></a>
+template&lt;typename Component , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a4cd372efc294369207c3687eeb9300c6"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a4cd372efc294369207c3687eeb9300c6">number_of_queued_simple_actions</a> (const <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a4cd372efc294369207c3687eeb9300c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of simple actions in the queue. <br /></td></tr>
+<tr class="separator:a4cd372efc294369207c3687eeb9300c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5517f1a15dad85e1e6b21fb475efcc43"><td class="memTemplParams" colspan="2"><a id="a5517f1a15dad85e1e6b21fb475efcc43"></a>
+template&lt;typename Component , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a5517f1a15dad85e1e6b21fb475efcc43"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a5517f1a15dad85e1e6b21fb475efcc43">invoke_queued_threaded_action</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; Metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a5517f1a15dad85e1e6b21fb475efcc43"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs the next queued threaded action on the <code>array_index</code>th element of the parallel component <code>Component</code>. <br /></td></tr>
+<tr class="separator:a5517f1a15dad85e1e6b21fb475efcc43"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a080212b821aabe11a91d344469f87efc"><td class="memTemplParams" colspan="2"><a id="a080212b821aabe11a91d344469f87efc"></a>
+template&lt;typename Component , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a080212b821aabe11a91d344469f87efc"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a080212b821aabe11a91d344469f87efc">is_threaded_action_queue_empty</a> (const <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a080212b821aabe11a91d344469f87efc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>true</code> if there are no threaded actions in the queue. <br /></td></tr>
+<tr class="separator:a080212b821aabe11a91d344469f87efc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a95ae013bdecaff33d3c0805c4d5dfb59"><td class="memTemplParams" colspan="2"><a id="a95ae013bdecaff33d3c0805c4d5dfb59"></a>
+template&lt;typename Component , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a95ae013bdecaff33d3c0805c4d5dfb59"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a95ae013bdecaff33d3c0805c4d5dfb59">number_of_queued_threaded_actions</a> (const <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a95ae013bdecaff33d3c0805c4d5dfb59"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of threaded actions in the queue. <br /></td></tr>
+<tr class="separator:a95ae013bdecaff33d3c0805c4d5dfb59"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13b6ad8185fbb4d7d61e4d4721dc5f63"><td class="memTemplParams" colspan="2"><a id="a13b6ad8185fbb4d7d61e4d4721dc5f63"></a>
+template&lt;typename Component , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a13b6ad8185fbb4d7d61e4d4721dc5f63"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a13b6ad8185fbb4d7d61e4d4721dc5f63">get_terminate</a> (const <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a13b6ad8185fbb4d7d61e4d4721dc5f63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns whether or not the <code>Component</code> with index <code>array_index</code> has been terminated. <br /></td></tr>
+<tr class="separator:a13b6ad8185fbb4d7d61e4d4721dc5f63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2cb56d7012b27cab5d118a9fa0783d2"><td class="memTemplParams" colspan="2"><a id="af2cb56d7012b27cab5d118a9fa0783d2"></a>
+template&lt;typename Component , typename Metavariables , typename ArrayIndex &gt; </td></tr>
+<tr class="memitem:af2cb56d7012b27cab5d118a9fa0783d2"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt; &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a> (<a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a>&lt; Metavariables &gt; &amp;runner, const ArrayIndex &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:af2cb56d7012b27cab5d118a9fa0783d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the GlobalCache of <code>Component</code> with index <code>array_index</code>. <br /></td></tr>
+<tr class="separator:af2cb56d7012b27cab5d118a9fa0783d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9eb05fa236a168c4c82d45a685e24924"><td class="memTemplParams" colspan="2"><a id="a9eb05fa236a168c4c82d45a685e24924"></a>
+template&lt;typename ComponentList , typename MockRuntimeSystem , typename ArrayIndex &gt; </td></tr>
+<tr class="memitem:a9eb05fa236a168c4c82d45a685e24924"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; size_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a9eb05fa236a168c4c82d45a685e24924">indices_of_components_with_queued_simple_actions</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a> * &gt; runner, const ArrayIndex &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a9eb05fa236a168c4c82d45a685e24924"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a vector of all the indices of the Components in the ComponentList that have queued simple actions, for a particular array_index. <br /></td></tr>
+<tr class="separator:a9eb05fa236a168c4c82d45a685e24924"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54642f4081fd6e4f2a201ad9104019af"><td class="memTemplParams" colspan="2"><a id="a54642f4081fd6e4f2a201ad9104019af"></a>
+template&lt;typename ComponentList , typename MockRuntimeSystem &gt; </td></tr>
+<tr class="memitem:a54642f4081fd6e4f2a201ad9104019af"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a54642f4081fd6e4f2a201ad9104019af">array_indices_with_queued_simple_actions</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a> * &gt; runner) noexcept -&gt; detail::array_indices_for_each_component&lt; ComponentList &gt;</td></tr>
+<tr class="memdesc:a54642f4081fd6e4f2a201ad9104019af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a vector of array_indices for each Component. The vector is filled with only those array_indices for which there are queued simple actions. <br /></td></tr>
+<tr class="separator:a54642f4081fd6e4f2a201ad9104019af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc5f932491a77a138ba3b5afe27fd799"><td class="memTemplParams" colspan="2"><a id="abc5f932491a77a138ba3b5afe27fd799"></a>
+template&lt;typename ComponentList &gt; </td></tr>
+<tr class="memitem:abc5f932491a77a138ba3b5afe27fd799"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#abc5f932491a77a138ba3b5afe27fd799">number_of_elements_with_queued_simple_actions</a> (const detail::array_indices_for_each_component&lt; ComponentList &gt; &amp;array_indices) noexcept</td></tr>
+<tr class="memdesc:abc5f932491a77a138ba3b5afe27fd799"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given the output of <code>array_indices_with_queued_simple_actions</code>, returns the total number of array indices that have queued simple actions. <br /></td></tr>
+<tr class="separator:abc5f932491a77a138ba3b5afe27fd799"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3183c5884148ff4d48ea39538072fe2"><td class="memTemplParams" colspan="2"><a id="af3183c5884148ff4d48ea39538072fe2"></a>
+template&lt;typename ComponentList , typename MockRuntimeSystem , typename Generator &gt; </td></tr>
+<tr class="memitem:af3183c5884148ff4d48ea39538072fe2"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#af3183c5884148ff4d48ea39538072fe2">invoke_random_queued_simple_action</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a> * &gt; runner, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Generator * &gt; generator, const detail::array_indices_for_each_component&lt; ComponentList &gt; &amp;array_indices) noexcept</td></tr>
+<tr class="memdesc:af3183c5884148ff4d48ea39538072fe2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invokes the next queued action on a random Component on a random array_index of that component. <code>array_indices</code> is the thing returned by <code>array_indices_with_queued_simple_actions</code> <br /></td></tr>
+<tr class="separator:af3183c5884148ff4d48ea39538072fe2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Structures used for mocking the parallel components framework in order to test actions. </p>
+<p>The <a class="el" href="namespaceActionTesting.html" title="Structures used for mocking the parallel components framework in order to test actions.">ActionTesting</a> framework is designed to mock the parallel components so that actions and sequences of actions can be tested in a controlled environment that behaves effectively identical to the actual parallel environment.</p>
+<h3><a class="anchor" id="autotoc_md121"></a>
+The basics</h3>
+<p>The action testing framework (ATF) works essentially identically to the parallel infrastructure. A metavariables must be supplied which must at least list the components used (<code>using component_list = tmpl::list&lt;&gt;</code>) and the phases (<code>enum class Phase {}</code>). As a simple example, let's look at the test for the <code><a class="el" href="structParallel_1_1Actions_1_1TerminatePhase.html" title="Terminate the algorithm to proceed to the next phase.">Parallel::Actions::TerminatePhase</a></code> action.</p>
+<p>The <code>Metavariables</code> is given by:</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>Metavariables {</div>
+<div class="line">  <span class="keyword">using</span> component_list = tmpl::list&lt;Component&lt;Metavariables&gt;&gt;;</div>
+<div class="line">  <span class="keyword">enum class</span> Phase { Initialization, Testing, Exit };</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> The component list in this case just contains a single component that is described below. The <code>Phase</code> enum contains the standard <code>Initialization</code> and <code>Exit</code> phases. A <code>Testing</code> phase is also added, but the name of the phase has no special meaning. Multiple phases with different names could instead be used.</p>
+<p>The component is templated on the metavariables, which, while not always necessary, eliminates some compilation issues that may arise otherwise. The component for the <code>TerminatePhase</code> test is given by:</p>
+<div class="fragment"><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Metavariables&gt;</div>
+<div class="line"><span class="keyword">struct </span>Component {</div>
+<div class="line">  <span class="keyword">using</span> metavariables = Metavariables;</div>
+<div class="line">  <span class="keyword">using</span> chare_type = <a class="code" href="structActionTesting_1_1MockArrayChare.html">ActionTesting::MockArrayChare</a>;</div>
+<div class="line">  <span class="keyword">using</span> array_index = int;</div>
+<div class="line">  <span class="keyword">using</span> phase_dependent_action_list = tmpl::list&lt;<a class="code" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt;</div>
+<div class="line">      <span class="keyword">typename</span> Metavariables::Phase, Metavariables::Phase::Testing,</div>
+<div class="line">      tmpl::list&lt;Parallel::Actions::TerminatePhase&gt;&gt;&gt;;</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> Just like with the standard parallel code, a <code>metavariables</code> type alias must be present. The chare type should be <code><a class="el" href="structActionTesting_1_1MockArrayChare.html" title="A mock class for the CMake-generated Parallel::Algorithms::Array">ActionTesting::MockArrayChare</a></code>, <code><a class="el" href="structActionTesting_1_1MockGroupChare.html" title="A mock class for the CMake-generated Parallel::Algorithms::Group">ActionTesting::MockGroupChare</a></code>, <code><a class="el" href="structActionTesting_1_1MockNodeGroupChare.html" title="A mock class for the CMake-generated Parallel::Algorithms::NodeGroup">ActionTesting::MockNodeGroupChare</a></code>, or <code><a class="el" href="structActionTesting_1_1MockSingletonChare.html" title="A mock class for the CMake-generated Parallel::Algorithms::Singleton">ActionTesting::MockSingletonChare</a></code>. Currently many groups, nodegroups, and singletons are treated during action testing as a one-element array component, but that usage is deprecated and will eventually be removed. The <code>index_type</code> must be whatever the actions will use to index the array. In the case of a singleton <code>int</code> is recommended. Finally, the <code>phase_dependent_action_list</code> must be specified just as in the cases for parallel executables. In this case only the <code>Testing</code> phase is used and only has the <code>TerminatePhase</code> action listed.</p>
+<p>The <code>SPECTRE_TEST_CASE</code> is</p>
+<div class="fragment"><div class="line">SPECTRE_TEST_CASE(<span class="stringliteral">&quot;Unit.Parallel.Actions.TerminatePhase&quot;</span>,</div>
+<div class="line">                  <span class="stringliteral">&quot;[Unit][Parallel][Actions]&quot;</span>) {</div>
+<div class="line">  <span class="keyword">using</span> component = Component&lt;Metavariables&gt;;</div>
+<div class="line"> </div>
+<div class="line">  <a class="code" href="classActionTesting_1_1MockRuntimeSystem.html">ActionTesting::MockRuntimeSystem&lt;Metavariables&gt;</a> runner{{}};</div>
+<div class="line">  ActionTesting::emplace_component&lt;component&gt;(&amp;runner, 0);</div>
+<div class="line"> </div>
+<div class="line">  <a class="code" href="namespaceActionTesting.html#a46ee6bd026b832ec6286b17be61158f0">ActionTesting::set_phase</a>(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;runner),</div>
+<div class="line">                           Metavariables::Phase::Testing);</div>
+<div class="line"> </div>
+<div class="line">  CHECK_FALSE(ActionTesting::get_terminate&lt;component&gt;(runner, 0));</div>
+<div class="line">  ActionTesting::next_action&lt;component&gt;(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;runner), 0);</div>
+<div class="line">  CHECK(ActionTesting::get_terminate&lt;component&gt;(runner, 0));</div>
+<div class="line">}</div>
+</div><!-- fragment --><p> The type alias <code>component = Component&lt;Metavariables&gt;</code> is just used to reduce the amount of typing needed. The ATF provides a <code><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">ActionTesting::MockRuntimeSystem</a></code> class, which is the code that takes the place of the parallel runtime system (RTS) (e.g. Charm++) that manages the actions and components. The constructor of <code><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">ActionTesting::MockRuntimeSystem</a></code> takes a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;size_t&gt;</code> whose length is the number of (mocked) nodes and whose values are the number of (mocked) cores on each node; the RTS runs only on a single core, but it keeps track of which components are on which (mocked) nodes and cores so that one can test some of the functionality of multiple cores/nodes. Components are added to the RTS using the functions <code><a class="el" href="namespaceActionTesting.html#ac0b8c8857d55fcdbbe41cd0bdbf9ddfc" title="Emplaces a distributed array object with index array_index into the parallel component Component....">ActionTesting::emplace_array_component()</a></code>, <code><a class="el" href="namespaceActionTesting.html#a5b963e2d649757097e5ac207c9a2f2b0" title="Emplaces a distributed singleton object into the parallel component Component. The options opts are f...">ActionTesting::emplace_singleton_component()</a></code>, <code><a class="el" href="namespaceActionTesting.html#a308da60ea861a12688ceaf9d13cef45b" title="Emplaces a distributed group object into the parallel component Component. The options opts are forwa...">ActionTesting::emplace_group_component()</a></code>, and <code><a class="el" href="namespaceActionTesting.html#a33da9f11d07b58a578233825d9399ce5" title="Emplaces a distributed nodegroup object into the parallel component Component. The options opts are f...">ActionTesting::emplace_nodegroup_component()</a></code>. Currently there is a deprecated <code><a class="el" href="namespaceActionTesting.html#aa514ab61a3e64d7aa7744911fe4d999c" title="Emplaces a distributed object with index array_index into the parallel component Component....">ActionTesting::emplace_component()</a></code> function that is the same as <code><a class="el" href="namespaceActionTesting.html#ac0b8c8857d55fcdbbe41cd0bdbf9ddfc" title="Emplaces a distributed array object with index array_index into the parallel component Component....">ActionTesting::emplace_array_component()</a></code> and can be used for the deprecated usage of treating singletons, groups, and nodegroups as single-element arrays. The emplace functions take the runner by <code>not_null</code>. The array emplace function take the array index of the component being inserted (<code>0</code> in the above example, but this is arbitrary), and the array and singleton emplace functions take the (mocked) node and core on which the component lives. The emplace function for groups places its object on all (mocked) cores and the array index is the same as the global core index; the emplace function for nodegroups places its object on a single (mocked) core on each (mocked) node, and the array index is the same as the node index. All emplace functions optionally take a parameter pack of additional arguments that are forwarded to the constructor of the component. These additional arguments are how input options (set in the <code>initialization_tags</code> type alias of the parallel component) get passed to parallel components.</p>
+<p>With the ATF, everything is controlled explicitly, providing the ability to perform full introspection into the state of the RTS at virtually any point during the execution. This means that the phase is not automatically advanced like it is in a parallel executable, but instead must be advanced by calling the <code><a class="el" href="namespaceActionTesting.html#a46ee6bd026b832ec6286b17be61158f0" title="Set the phase of all parallel components to phase">ActionTesting::set_phase</a></code> function. While testing the <code>TerminatePhase</code> action we are only interesting in checking whether the algorithm has set the <code>terminate</code> flag. This is done using the <code><a class="el" href="namespaceActionTesting.html#a13b6ad8185fbb4d7d61e4d4721dc5f63" title="Returns whether or not the Component with index array_index has been terminated.">ActionTesting::get_terminate()</a></code> function and is done for each distributed object (i.e. per component). The next action in the action list for the current phase is invoked by using the <code><a class="el" href="namespaceActionTesting.html#a9179b63a24df649db1bd10345d49c847" title="Invoke the next action in the ActionList on the parallel component Component on the component labeled...">ActionTesting::next_action()</a></code> function, which takes as arguments the runner by <code>not_null</code> and the array index of the distributed object to invoke the next action on.</p>
+<h3><a class="anchor" id="autotoc_md122"></a>
+InitializeDataBox and action introspection</h3>
+<p>Having covered the very basics of ATF let us look at the test for the <code><a class="el" href="structActions_1_1Goto.html">Actions::Goto</a></code> action. We will introduce the functionality <code>InitializeDataBox</code>,<code>force_next_action_to_be</code>, <code>get_next_action_index</code>, and <code>get_databox_tag</code>. The <code>Goto&lt;the_label_class&gt;</code> action changes the next action in the algorithm to be the <code><a class="el" href="structActions_1_1Label.html">Actions::Label</a>&lt;the_label_class&gt;</code>. For this test the Metavariables is:</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>Metavariables {</div>
+<div class="line">  <span class="keyword">using</span> component_list = tmpl::list&lt;Component&lt;Metavariables&gt;&gt;;</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">enum class</span> Phase { Initialization, TestGoto, TestRepeatUntil, Exit };</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> You can see that this time there are two test phases, <code>TestGoto</code> and <code>TestRepeatUntil</code>.</p>
+<p>The component for this case is quite a bit more complicated so we will go through it in detail. It is given by</p>
+<div class="fragment"><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Metavariables&gt;</div>
+<div class="line"><span class="keyword">struct </span>Component {</div>
+<div class="line">  <span class="keyword">using</span> metavariables = Metavariables;</div>
+<div class="line">  <span class="keyword">using</span> chare_type = <a class="code" href="structActionTesting_1_1MockArrayChare.html">ActionTesting::MockArrayChare</a>;</div>
+<div class="line">  <span class="keyword">using</span> array_index = int;</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">using</span> repeat_until_phase_action_list = tmpl::flatten&lt;</div>
+<div class="line">      tmpl::list&lt;Actions::RepeatUntil&lt;HasConverged, tmpl::list&lt;Increment&gt;&gt;,</div>
+<div class="line">                 <a class="code" href="structParallel_1_1Actions_1_1TerminatePhase.html">Parallel::Actions::TerminatePhase</a>&gt;&gt;;</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">using</span> phase_dependent_action_list = tmpl::list&lt;</div>
+<div class="line">      <a class="code" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt;<span class="keyword">typename</span> Metavariables::Phase,</div>
+<div class="line">                             Metavariables::Phase::Initialization,</div>
+<div class="line">                             tmpl::list&lt;ActionTesting::InitializeDataBox&lt;</div>
+<div class="line">                                 <a class="code" href="group__DataBoxGroup.html#ga3dc674ba575ece4a8be1c23fa6c2cdcb">db::AddSimpleTags&lt;Counter&gt;</a>,</div>
+<div class="line">                                 <a class="code" href="group__DataBoxGroup.html#ga64597eb7f5df0dc4d99698289265b1a7">db::AddComputeTags&lt;HasConvergedCompute&gt;</a>&gt;&gt;&gt;,</div>
+<div class="line"> </div>
+<div class="line">      <a class="code" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt;</div>
+<div class="line">          <span class="keyword">typename</span> Metavariables::Phase, Metavariables::Phase::TestGoto,</div>
+<div class="line">          tmpl::list&lt;Actions::Goto&lt;Label1&gt;, <a class="code" href="structActions_1_1Label.html">Actions::Label&lt;Label2&gt;</a>,</div>
+<div class="line">                     <a class="code" href="structActions_1_1Label.html">Actions::Label&lt;Label1&gt;</a>, <a class="code" href="structActions_1_1Goto.html">Actions::Goto&lt;Label2&gt;</a>&gt;&gt;,</div>
+<div class="line"> </div>
+<div class="line">      <a class="code" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt;<span class="keyword">typename</span> Metavariables::Phase,</div>
+<div class="line">                             Metavariables::Phase::TestRepeatUntil,</div>
+<div class="line">                             repeat_until_phase_action_list&gt;&gt;;</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> Just as before there are <code>metavariables</code>, <code>chare_type</code>, and <code>array_index</code> type aliases. The <code>repeat_until_phase_action_list</code> is the list of iterable actions that are called during the <code>TestRepeatUntil</code> phase. The <code>Initialization</code> phase action list now has the action <code>ActionTesting::InitializeDataBox</code>, which takes simple tags and compute tags that will be added to the DataBox in the initial phase. How the values for the simple tags are set will be made clear below when we discuss the <code><a class="el" href="namespaceActionTesting.html#a4f0e8f71de62510302dda880b8410b4c" title="Emplaces a distributed object with index array_index into the parallel component Component....">ActionTesting::emplace_component_and_initialize()</a></code> functions. The action lists for the <code>TestGoto</code> and <code>TestRepeatUntil</code> phases are fairly simple and not the focus of this discussion.</p>
+<p>Having discussed the metavariables and component, let us now look at the test case.</p>
+<div class="fragment"><div class="line">SPECTRE_TEST_CASE(<span class="stringliteral">&quot;Unit.Parallel.GotoAction&quot;</span>, <span class="stringliteral">&quot;[Unit][Parallel][Actions]&quot;</span>) {</div>
+<div class="line">  <span class="keyword">using</span> component = Component&lt;Metavariables&gt;;</div>
+<div class="line">  <span class="keyword">using</span> MockRuntimeSystem = <a class="code" href="classActionTesting_1_1MockRuntimeSystem.html">ActionTesting::MockRuntimeSystem&lt;Metavariables&gt;</a>;</div>
+<div class="line">  MockRuntimeSystem runner{{}};</div>
+<div class="line">  ActionTesting::emplace_component_and_initialize&lt;component&gt;(&amp;runner, 0,</div>
+<div class="line">                                                             {<span class="keywordtype">size_t</span>{0}});</div>
+<div class="line"> </div>
+<div class="line">  <a class="code" href="namespaceActionTesting.html#a46ee6bd026b832ec6286b17be61158f0">ActionTesting::set_phase</a>(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;runner),</div>
+<div class="line">                           Metavariables::Phase::TestGoto);</div>
+<div class="line">  runner.force_next_action_to_be&lt;component, <a class="code" href="structActions_1_1Label.html">Actions::Label&lt;Label1&gt;</a>&gt;(0);</div>
+<div class="line">  runner.next_action&lt;component&gt;(0);</div>
+<div class="line">  CHECK(runner.get_next_action_index&lt;component&gt;(0) == 3);</div>
+<div class="line"> </div>
+<div class="line">  runner.force_next_action_to_be&lt;component, <a class="code" href="structActions_1_1Goto.html">Actions::Goto&lt;Label1&gt;</a>&gt;(0);</div>
+<div class="line">  runner.next_action&lt;component&gt;(0);</div>
+<div class="line">  CHECK(runner.get_next_action_index&lt;component&gt;(0) == 2);</div>
+<div class="line"> </div>
+<div class="line">  runner.force_next_action_to_be&lt;component, <a class="code" href="structActions_1_1Goto.html">Actions::Goto&lt;Label2&gt;</a>&gt;(0);</div>
+<div class="line">  runner.next_action&lt;component&gt;(0);</div>
+<div class="line">  CHECK(runner.get_next_action_index&lt;component&gt;(0) == 1);</div>
+<div class="line"> </div>
+<div class="line">  <a class="code" href="namespaceActionTesting.html#a46ee6bd026b832ec6286b17be61158f0">ActionTesting::set_phase</a>(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;runner),</div>
+<div class="line">                           Metavariables::Phase::TestRepeatUntil);</div>
+<div class="line">  <span class="keywordflow">while</span> (not ActionTesting::get_terminate&lt;component&gt;(runner, 0)) {</div>
+<div class="line">    runner.next_action&lt;component&gt;(0);</div>
+<div class="line">  }</div>
+<div class="line">  CHECK(ActionTesting::get_databox_tag&lt;component, HasConverged&gt;(runner, 0));</div>
+<div class="line">  CHECK(ActionTesting::get_databox_tag&lt;component, Counter&gt;(runner, 0) == 2);</div>
+<div class="line"> </div>
+<div class="line">  <span class="comment">// Test zero iterations of the `RepeatUntil` loop</span></div>
+<div class="line">  <a class="code" href="namespaceActionTesting.html#a46ee6bd026b832ec6286b17be61158f0">ActionTesting::set_phase</a>(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;runner),</div>
+<div class="line">                           Metavariables::Phase::TestRepeatUntil);</div>
+<div class="line">  runner.next_action&lt;component&gt;(0);</div>
+<div class="line">  CHECK(runner.get_next_action_index&lt;component&gt;(0) ==</div>
+<div class="line">        tmpl::index_of&lt;<span class="keyword">typename</span> component::repeat_until_phase_action_list,</div>
+<div class="line">                       <a class="code" href="structParallel_1_1Actions_1_1TerminatePhase.html">Parallel::Actions::TerminatePhase</a>&gt;::value);</div>
+<div class="line">  <span class="comment">// Make sure `Increment` was not called for this situation where the</span></div>
+<div class="line">  <span class="comment">// condition is already fulfilled at the start.</span></div>
+<div class="line">  CHECK(ActionTesting::get_databox_tag&lt;component, Counter&gt;(runner, 0) == 2);</div>
+<div class="line">}</div>
+</div><!-- fragment --><p> Just as for the <code>TerminatePhase</code> test we have some type aliases to reduce the amount of typing needed and to make the test easier to read. The runner is again created with the default constructor. However, the component is now inserted using the functions <code><a class="el" href="namespaceActionTesting.html#a183a1ce0c6f7e17af58380674b968ca9" title="Emplaces a distributed array object with index array_index into the parallel component Component....">ActionTesting::emplace_array_component_and_initialize()</a></code>, <code><a class="el" href="namespaceActionTesting.html#a5150bd733dcab5135240bb938779088f" title="Emplaces a distributed singleton object into the parallel component Component. The options opts are f...">ActionTesting::emplace_singleton_component_and_initialize()</a></code>, <code><a class="el" href="namespaceActionTesting.html#a374304bc4a107b68cec22560e92ea643" title="Emplaces a distributed group object into the parallel component Component. The options opts are forwa...">ActionTesting::emplace_group_component_and_initialize()</a></code>, and <code><a class="el" href="namespaceActionTesting.html#a2a180870008cf114c5874463ac01d1eb" title="Emplaces a distributed nodegroup object into the parallel component Component. The options opts are f...">ActionTesting::emplace_nodegroup_component_and_initialize()</a></code>. There is a deprecated function <code><a class="el" href="namespaceActionTesting.html#a4f0e8f71de62510302dda880b8410b4c" title="Emplaces a distributed object with index array_index into the parallel component Component....">ActionTesting::emplace_component_and_initialize()</a></code> that is used when one treats groups, nodegroups, and singletons as arrays. The third argument to the <code><a class="el" href="namespaceActionTesting.html#a4f0e8f71de62510302dda880b8410b4c" title="Emplaces a distributed object with index array_index into the parallel component Component....">ActionTesting::emplace_component_and_initialize()</a></code> functions is a <code><a class="el" href="classtuples_1_1TaggedTuple.html" title="An associative container that is indexed by structs.">tuples::TaggedTuple</a></code> of the simple tags, which is to be populated with the initial values for the component. Note that there is no call to <code><a class="el" href="namespaceActionTesting.html#a46ee6bd026b832ec6286b17be61158f0" title="Set the phase of all parallel components to phase">ActionTesting::set_phase</a> (&amp;runner, Metavariables::Phase::Initialization)</code>: this and the required action invocation is handled internally by the <code><a class="el" href="namespaceActionTesting.html#a4f0e8f71de62510302dda880b8410b4c" title="Emplaces a distributed object with index array_index into the parallel component Component....">ActionTesting::emplace_component_and_initialize()</a></code> functions.</p>
+<p>Once the phase is set the next action to be executed is set to be <code><a class="el" href="structActions_1_1Label.html">Actions::Label</a>&lt;Label1&gt;</code> by calling the <code><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#abe29a8f091aeb9e5c01f0733fd00dfd5" title="Instead of the next call to next_action applying the next action in the action list,...">MockRuntimeSystem::force_next_action_to_be()</a></code> member function of the runner. The argument to the function is the array index of the component for which to set the next action. After the <code>Label&lt;Label1&gt;</code> action is invoked we check that the next action is the fourth (index <code>3</code> because we use zero-based indexing) by calling the <code><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#af013cd1953643239fbaacbb47ab200ca" title="Obtain the index into the action list of the next action.">MockRuntimeSystem::get_next_action_index()</a></code> member function. For clarity, the indices of the actions in the <code>Phase::TestGoto</code> phase are:</p><ul>
+<li>0: <code><a class="el" href="structActions_1_1Goto.html">Actions::Goto</a>&lt;Label1&gt;</code></li>
+<li>1: <code><a class="el" href="structActions_1_1Label.html">Actions::Label</a>&lt;Label2&gt;</code></li>
+<li>2: <code><a class="el" href="structActions_1_1Label.html">Actions::Label</a>&lt;Label1&gt;</code></li>
+<li>3: <code><a class="el" href="structActions_1_1Goto.html">Actions::Goto</a>&lt;Label2&gt;</code></li>
+</ul>
+<h3><a class="anchor" id="autotoc_md123"></a>
+DataBox introspection</h3>
+<p>Since the exact DataBox type of any component at some point in the action list may not be known, the <code><a class="el" href="namespaceActionTesting.html#a3f85a884bc2199e599cbf961638c7c7b" title="Returns the Tag from the DataBox of the parallel component Component with array index array_index....">ActionTesting::get_databox_tag()</a></code> function is provided. An example usage of this function can be seen in the last line of the test snippet above. The component and tag are passed as template parameters while the runner and array index are passed as arguments. It is also possible to retrieve DataBox directly using the <code><a class="el" href="namespaceActionTesting.html#a90b9ac07989a5e4ff8077ad8e9353a82" title="Retrieves the DataBox with tags TagsList (omitting the GlobalCache and add_from_options tags) from th...">ActionTesting::get_databox()</a></code> function if the DataBox type is known:</p>
+<div class="fragment"><div class="line">  <span class="keyword">const</span> <span class="keyword">auto</span>&amp; box =</div>
+<div class="line">      ActionTesting::get_databox&lt;component_for_simple_action_mock&lt;metavars&gt;,</div>
+<div class="line">                                 <a class="code" href="group__DataBoxGroup.html#ga3dc674ba575ece4a8be1c23fa6c2cdcb">db::AddSimpleTags&lt;ValueTag, PassedToB&gt;</a>&gt;(runner,</div>
+<div class="line">                                                                         0);</div>
+</div><!-- fragment --><p> There is also a <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> overload of <code><a class="el" href="namespaceActionTesting.html#a90b9ac07989a5e4ff8077ad8e9353a82" title="Retrieves the DataBox with tags TagsList (omitting the GlobalCache and add_from_options tags) from th...">ActionTesting::get_databox()</a></code> that can be used to mutate tags in the DataBox. It is also possible to check if an item can be retrieved from the DataBox using the <code><a class="el" href="namespaceActionTesting.html#a563c20abd2f3670df7a03f404f168e15" title="Returns true if the tag Tag can be retrieved from the current DataBox of Component with index array_i...">ActionTesting::tag_is_retrievable()</a></code> function as follows:</p>
+<div class="fragment"><div class="line">      ActionTesting::tag_is_retrievable&lt;component, DummyTimeTag&gt;(runner, 0)</div>
+</div><!-- fragment --> <h3><a class="anchor" id="autotoc_md124"></a>
+Stub actions and invoking simple and threaded actions</h3>
+<p>A simple action can be invoked on a distributed object or component using the <code><a class="el" href="namespaceActionTesting.html#aca813b8efba8a7b4c8fcc41ca13839e2" title="Runs the simple action Action on the array_indexth element of the parallel component Component.">ActionTesting::simple_action()</a></code> function:</p>
+<div class="fragment"><div class="line">  ActionTesting::simple_action&lt;component_for_simple_action_mock&lt;metavars&gt;,</div>
+<div class="line">                               simple_action_b&gt;(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;runner), 0, 2);</div>
+</div><!-- fragment --><p> A threaded action can be invoked on a distributed object or component using the <code><a class="el" href="namespaceActionTesting.html#a7de7112a702c806a96cd581b40501632" title="Runs the simple action Action on the array_indexth element of the parallel component Component.">ActionTesting::threaded_action()</a></code> function:</p>
+<div class="fragment"><div class="line">  ActionTesting::threaded_action&lt;component_for_simple_action_mock&lt;metavars&gt;,</div>
+<div class="line">                                 threaded_action_a&gt;(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;runner), 0);</div>
+</div><!-- fragment --><p> Sometimes an individual action calls other actions but we still want to be able to test the action and its effects in isolation. To this end the ATF supports replacing calls to actions with calls to other actions. For example, instead of calling <code>simple_action_a</code> we want to call <code>simple_action_a_mock</code> which just verifies the data received is correct and sets a flag in the DataBox that it was invoked. This can be done by setting the type aliases <code>replace_these_simple_actions</code> and <code>with_these_simple_actions</code> in the parallel component definition as follows:</p>
+<div class="fragment"><div class="line">  <span class="keyword">using</span> replace_these_simple_actions =</div>
+<div class="line">      tmpl::list&lt;simple_action_a, simple_action_c, threaded_action_b&gt;;</div>
+<div class="line">  <span class="keyword">using</span> with_these_simple_actions =</div>
+<div class="line">      tmpl::list&lt;simple_action_a_mock, simple_action_c_mock,</div>
+<div class="line">                 threaded_action_b_mock&gt;;</div>
+</div><!-- fragment --><p> The length of the two type lists must be the same and the Nth action in <code>replace_these_simple_actions</code> gets replaced by the Nth action in <code>with_these_simple_actions</code>. Note that <code>simple_action_a_mock</code> will get invoked in any context that <code>simple_action_a</code> is called to be invoked. The same feature also exists for threaded actions:</p>
+<div class="fragment"><div class="line">  <span class="keyword">using</span> replace_these_threaded_actions = tmpl::list&lt;threaded_action_b&gt;;</div>
+<div class="line">  <span class="keyword">using</span> with_these_threaded_actions = tmpl::list&lt;threaded_action_b_mock&gt;;</div>
+</div><!-- fragment --><p> Furthermore, simple actions invoked from an action are not run immediately. Instead, they are queued so that order randomization and introspection may occur. The simplest form of introspection is checking whether the simple action queue is empty:</p>
+<div class="fragment"><div class="line">          <a class="code" href="namespaceActionTesting.html#aaa0cc87670e0ae509d24bf2fcff2d141">ActionTesting::is_simple_action_queue_empty</a>&lt;</div>
+<div class="line">              component_for_simple_action_mock&lt;metavars&gt;&gt;(runner, 0)</div>
+</div><!-- fragment --><p> The <code><a class="el" href="namespaceActionTesting.html#a5649a7b020bff06c3f389325ab30492c" title="Runs the next queued simple action on the array_indexth element of the parallel component Component.">ActionTesting::invoke_queued_simple_action()</a></code> invokes the next queued simple action:</p>
+<div class="fragment"><div class="line">  <a class="code" href="namespaceActionTesting.html#a5649a7b020bff06c3f389325ab30492c">ActionTesting::invoke_queued_simple_action</a>&lt;</div>
+<div class="line">      component_for_simple_action_mock&lt;metavars&gt;&gt;(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;runner), 0);</div>
+</div><!-- fragment --><p> Note that the same functionality exists for threaded actions. The functions are <code><a class="el" href="namespaceActionTesting.html#a080212b821aabe11a91d344469f87efc" title="Returns true if there are no threaded actions in the queue.">ActionTesting::is_threaded_action_queue_empty()</a></code>, and <code><a class="el" href="namespaceActionTesting.html#a5517f1a15dad85e1e6b21fb475efcc43" title="Runs the next queued threaded action on the array_indexth element of the parallel component Component...">ActionTesting::invoke_queued_threaded_action()</a></code>.</p>
+<h3><a class="anchor" id="autotoc_md125"></a>
+Mocking or replacing components with stubs</h3>
+<p>An action can invoke an action on another parallel component. In this case we need to be able to tell the mocking framework to replace the component the action is trying to invoke the other action on and instead use a different component that we have set up to mock the original component. For example, the action below invokes an action on <code>ComponentB</code></p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>CallActionOnComponentB {</div>
+<div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ParallelComponent, <span class="keyword">typename</span> DbTagsList,</div>
+<div class="line">            <span class="keyword">typename</span> Metavariables, <span class="keyword">typename</span> ArrayIndex&gt;</div>
+<div class="line">  <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(db::DataBox&lt;DbTagsList&gt;&amp; <span class="comment">/*box*/</span>,                  <span class="comment">// NOLINT</span></div>
+<div class="line">                    <a class="code" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache&lt;Metavariables&gt;</a>&amp; <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>,  <span class="comment">// NOLINT</span></div>
+<div class="line">                    <span class="keyword">const</span> ArrayIndex&amp; <span class="comment">/*array_index*/</span>) noexcept {</div>
+<div class="line">    Parallel::simple_action&lt;ActionCalledOnComponentB&gt;(</div>
+<div class="line">        <a class="code" href="group__ParallelGroup.html#gab0de6c4b4047a7eb4cbe45a33faa3f41">Parallel::get_parallel_component</a>&lt;ComponentB&lt;Metavariables&gt;&gt;(<a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>));</div>
+<div class="line">  }</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> Let us assume we cannot use the component <code>ComponentB</code> in our test and that we need to mock it. We do so using the type alias <code>component_being_mocked</code> in the mock component:</p>
+<div class="fragment"><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Metavariables&gt;</div>
+<div class="line"><span class="keyword">struct </span>ComponentBMock {</div>
+<div class="line">  <span class="keyword">using</span> metavariables = Metavariables;</div>
+<div class="line">  <span class="keyword">using</span> chare_type = <a class="code" href="structActionTesting_1_1MockArrayChare.html">ActionTesting::MockArrayChare</a>;</div>
+<div class="line">  <span class="keyword">using</span> array_index = size_t;</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">using</span> component_being_mocked = ComponentB&lt;Metavariables&gt;;</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">using</span> phase_dependent_action_list = tmpl::list&lt;</div>
+<div class="line">      <a class="code" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt;</div>
+<div class="line">          <span class="keyword">typename</span> Metavariables::Phase, Metavariables::Phase::Initialization,</div>
+<div class="line">          tmpl::list&lt;</div>
+<div class="line">              ActionTesting::InitializeDataBox&lt;db::AddSimpleTags&lt;ValueTag&gt;&gt;&gt;&gt;,</div>
+<div class="line"> </div>
+<div class="line">      <a class="code" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt;<span class="keyword">typename</span> Metavariables::Phase,</div>
+<div class="line">                             Metavariables::Phase::Testing, tmpl::list&lt;&gt;&gt;&gt;;</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> When creating the runner <code>ComponentBMock</code> is emplaced:</p>
+<div class="fragment"><div class="line">  <a class="code" href="namespaceActionTesting.html#a4f0e8f71de62510302dda880b8410b4c">ActionTesting::emplace_component_and_initialize</a>&lt;</div>
+<div class="line">      ComponentBMock&lt;Metavariables&gt;&gt;(&amp;runner, 0, {0});</div>
+</div><!-- fragment --><p> Any checks and function calls into the ATF also use <code>ComponentBMock</code>. For example:</p>
+<div class="fragment"><div class="line">  CHECK(not ActionTesting::is_simple_action_queue_empty&lt;component_b_mock&gt;(</div>
+<div class="line">      runner, 0));</div>
+<div class="line">  ActionTesting::invoke_queued_simple_action&lt;component_b_mock&gt;(</div>
+<div class="line">      <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;runner), 0);</div>
+<div class="line">  CHECK(ActionTesting::get_databox_tag&lt;component_b_mock, ValueTag&gt;(runner, 0) ==</div>
+<div class="line">        5);</div>
+</div><!-- fragment --> <h3><a class="anchor" id="autotoc_md126"></a>
+Const global cache tags</h3>
+<p>Actions sometimes need tags/items to be placed into the <code><a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a></code>. Once the list of tags for the global cache has been assembled, the associated objects need to be inserted. This is done using the constructor of the <code><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">ActionTesting::MockRuntimeSystem</a></code>. For example, consider the tags:</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>ValueTag : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = int;</div>
+<div class="line">  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> <span class="stringliteral">&quot;ValueTag&quot;</span>; }</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">struct </span>PassedToB : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = double;</div>
+<div class="line">  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> <span class="stringliteral">&quot;PassedToB&quot;</span>; }</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> These are added into the global cache by, for example, the metavariables:</p>
+<div class="fragment"><div class="line">  <span class="keyword">using</span> const_global_cache_tags = tmpl::list&lt;ValueTag, PassedToB&gt;;</div>
+</div><!-- fragment --><p> A constructor of <code><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">ActionTesting::MockRuntimeSystem</a></code> takes a <code><a class="el" href="classtuples_1_1TaggedTuple.html" title="An associative container that is indexed by structs.">tuples::TaggedTuple</a></code> of the const global cache tags. If you know the order of the tags in the <code><a class="el" href="classtuples_1_1TaggedTuple.html" title="An associative container that is indexed by structs.">tuples::TaggedTuple</a></code> you can use the constructor without explicitly specifying the type of the <code><a class="el" href="classtuples_1_1TaggedTuple.html" title="An associative container that is indexed by structs.">tuples::TaggedTuple</a></code> as follows:</p>
+<div class="fragment"><div class="line">  <a class="code" href="classActionTesting_1_1MockRuntimeSystem.html">ActionTesting::MockRuntimeSystem&lt;metavars&gt;</a> runner1{{3, 7.0}};</div>
+</div><!-- fragment --><p> If you do not know the order of the tags but know all the tags that are present you can use another constructor where you explicitly specify the <code><a class="el" href="classtuples_1_1TaggedTuple.html" title="An associative container that is indexed by structs.">tuples::TaggedTuple</a></code> type:</p>
+<div class="fragment"><div class="line">  <a class="code" href="classActionTesting_1_1MockRuntimeSystem.html">ActionTesting::MockRuntimeSystem&lt;metavars&gt;</a> runner2{</div>
+<div class="line">      <a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;PassedToB, ValueTag&gt;</a>{7.0, 3}};</div>
+</div><!-- fragment --> <h3><a class="anchor" id="autotoc_md127"></a>
+Inbox tags introspection</h3>
+<p>The inbox tags can also be retrieved from a component by using the <code><a class="el" href="namespaceActionTesting.html#a8d716108dcfdc412935c9a375dd66162" title="Returns the InboxTag from the parallel component Component with array index array_index.">ActionTesting::get_inbox_tag</a></code> function. Both a const version:</p>
+<div class="fragment"><div class="line">      ActionTesting::get_inbox_tag&lt;component, Tags::ValueTag&gt;(runner, 0).at(1)</div>
+</div><!-- fragment --><p> and a non-const version exist:</p>
+<div class="fragment"><div class="line">  ActionTesting::get_inbox_tag&lt;component, Tags::ValueTag&gt;(</div>
+<div class="line">      <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;runner), 0)</div>
+<div class="line">      .clear();</div>
+</div><!-- fragment --><p> The non-const version can be used like in the above example to clear or otherwise manipulate the inbox tags.</p>
+<h3><a class="anchor" id="autotoc_md128"></a>
+autotoc_md128</h3>
+</div></div><!-- contents -->
+<div class="ttc" id="anamespaceActionTesting_html_a4f0e8f71de62510302dda880b8410b4c"><div class="ttname"><a href="namespaceActionTesting.html#a4f0e8f71de62510302dda880b8410b4c">ActionTesting::emplace_component_and_initialize</a></div><div class="ttdeci">void emplace_component_and_initialize(const gsl::not_null&lt; MockRuntimeSystem&lt; typename Component::metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index, const typename detail::get_initialization&lt; Component &gt;::InitialValues &amp;initial_values, Options &amp;&amp;... opts) noexcept</div><div class="ttdoc">Emplaces a distributed object with index array_index into the parallel component Component....</div><div class="ttdef"><b>Definition:</b> MockRuntimeSystemFreeFunctions.hpp:103</div></div>
+<div class="ttc" id="anamespaceActionTesting_html_a5649a7b020bff06c3f389325ab30492c"><div class="ttname"><a href="namespaceActionTesting.html#a5649a7b020bff06c3f389325ab30492c">ActionTesting::invoke_queued_simple_action</a></div><div class="ttdeci">void invoke_queued_simple_action(const gsl::not_null&lt; MockRuntimeSystem&lt; Metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index) noexcept</div><div class="ttdoc">Runs the next queued simple action on the array_indexth element of the parallel component Component.</div><div class="ttdef"><b>Definition:</b> MockRuntimeSystemFreeFunctions.hpp:320</div></div>
+<div class="ttc" id="aapply_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/apply.html">std::apply</a></div><div class="ttdeci">T apply(T... args)</div></div>
+<div class="ttc" id="astructActions_1_1Goto_html"><div class="ttname"><a href="structActions_1_1Goto.html">Actions::Goto</a></div><div class="ttdef"><b>Definition:</b> Goto.hpp:69</div></div>
+<div class="ttc" id="anamespaceActionTesting_html_a46ee6bd026b832ec6286b17be61158f0"><div class="ttname"><a href="namespaceActionTesting.html#a46ee6bd026b832ec6286b17be61158f0">ActionTesting::set_phase</a></div><div class="ttdeci">void set_phase(const gsl::not_null&lt; MockRuntimeSystem&lt; Metavariables &gt; * &gt; runner, const typename Metavariables::Phase &amp;phase) noexcept</div><div class="ttdoc">Set the phase of all parallel components to phase</div><div class="ttdef"><b>Definition:</b> MockRuntimeSystemFreeFunctions.hpp:23</div></div>
+<div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
+<div class="ttc" id="aclassActionTesting_1_1MockRuntimeSystem_html"><div class="ttname"><a href="classActionTesting_1_1MockRuntimeSystem.html">ActionTesting::MockRuntimeSystem</a></div><div class="ttdef"><b>Definition:</b> MockRuntimeSystem.hpp:97</div></div>
+<div class="ttc" id="aclassParallel_1_1GlobalCache_html"><div class="ttname"><a href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a></div><div class="ttdef"><b>Definition:</b> ElementReceiveInterpPoints.hpp:15</div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_gab0de6c4b4047a7eb4cbe45a33faa3f41"><div class="ttname"><a href="group__ParallelGroup.html#gab0de6c4b4047a7eb4cbe45a33faa3f41">Parallel::get_parallel_component</a></div><div class="ttdeci">auto get_parallel_component(GlobalCache&lt; Metavariables &gt; &amp;cache) noexcept -&gt; Parallel::proxy_from_parallel_component&lt; GlobalCache_detail::get_component_if_mocked&lt; typename Metavariables::component_list, ParallelComponentTag &gt;&gt; &amp;</div><div class="ttdoc">Access the Charm++ proxy associated with a ParallelComponent.</div><div class="ttdef"><b>Definition:</b> GlobalCache.hpp:535</div></div>
+<div class="ttc" id="agroup__DataBoxGroup_html_ga64597eb7f5df0dc4d99698289265b1a7"><div class="ttname"><a href="group__DataBoxGroup.html#ga64597eb7f5df0dc4d99698289265b1a7">db::AddComputeTags</a></div><div class="ttdeci">tmpl::flatten&lt; tmpl::list&lt; Tags... &gt; &gt; AddComputeTags</div><div class="ttdoc">List of Compute Item Tags to add to the DataBox.</div><div class="ttdef"><b>Definition:</b> DataBox.hpp:863</div></div>
+<div class="ttc" id="astructParallel_1_1Actions_1_1TerminatePhase_html"><div class="ttname"><a href="structParallel_1_1Actions_1_1TerminatePhase.html">Parallel::Actions::TerminatePhase</a></div><div class="ttdoc">Terminate the algorithm to proceed to the next phase.</div><div class="ttdef"><b>Definition:</b> TerminatePhase.hpp:26</div></div>
+<div class="ttc" id="astructdb_1_1SimpleTag_html"><div class="ttname"><a href="structdb_1_1SimpleTag.html">db::SimpleTag</a></div><div class="ttdoc">Mark a struct as a simple tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:36</div></div>
+<div class="ttc" id="astructParallel_1_1PhaseActions_html"><div class="ttname"><a href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a></div><div class="ttdoc">List of all the actions to be executed in the specified phase.</div><div class="ttdef"><b>Definition:</b> PhaseDependentActionList.hpp:16</div></div>
+<div class="ttc" id="aclasstuples_1_1TaggedTuple_html"><div class="ttname"><a href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a></div><div class="ttdoc">An associative container that is indexed by structs.</div><div class="ttdef"><b>Definition:</b> TaggedTuple.hpp:271</div></div>
+<div class="ttc" id="astructActionTesting_1_1MockArrayChare_html"><div class="ttname"><a href="structActionTesting_1_1MockArrayChare.html">ActionTesting::MockArrayChare</a></div><div class="ttdoc">A mock class for the CMake-generated Parallel::Algorithms::Array</div><div class="ttdef"><b>Definition:</b> ActionTesting.hpp:649</div></div>
+<div class="ttc" id="agroup__DataBoxGroup_html_ga3dc674ba575ece4a8be1c23fa6c2cdcb"><div class="ttname"><a href="group__DataBoxGroup.html#ga3dc674ba575ece4a8be1c23fa6c2cdcb">db::AddSimpleTags</a></div><div class="ttdeci">tmpl::flatten&lt; tmpl::list&lt; Tags... &gt; &gt; AddSimpleTags</div><div class="ttdoc">List of Tags to add to the DataBox.</div><div class="ttdef"><b>Definition:</b> DataBox.hpp:856</div></div>
+<div class="ttc" id="anamespaceActionTesting_html_af2cb56d7012b27cab5d118a9fa0783d2"><div class="ttname"><a href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">ActionTesting::cache</a></div><div class="ttdeci">Parallel::GlobalCache&lt; Metavariables &gt; &amp; cache(MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const ArrayIndex &amp;array_index) noexcept</div><div class="ttdoc">Returns the GlobalCache of Component with index array_index.</div><div class="ttdef"><b>Definition:</b> MockRuntimeSystemFreeFunctions.hpp:382</div></div>
+<div class="ttc" id="anamespaceActionTesting_html_aaa0cc87670e0ae509d24bf2fcff2d141"><div class="ttname"><a href="namespaceActionTesting.html#aaa0cc87670e0ae509d24bf2fcff2d141">ActionTesting::is_simple_action_queue_empty</a></div><div class="ttdeci">bool is_simple_action_queue_empty(const MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</div><div class="ttdoc">Returns true if there are no simple actions in the queue.</div><div class="ttdef"><b>Definition:</b> MockRuntimeSystemFreeFunctions.hpp:328</div></div>
+<div class="ttc" id="aGsl_8hpp_html_a649c6961f9146205c203e45d58fd0c4c"><div class="ttname"><a href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a></div><div class="ttdeci">gsl::not_null&lt; T * &gt; make_not_null(T *ptr) noexcept</div><div class="ttdoc">Construct a not_null from a pointer. Often this will be done as an implicit conversion,...</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:880</div></div>
+<div class="ttc" id="astructActions_1_1Label_html"><div class="ttname"><a href="structActions_1_1Label.html">Actions::Label</a></div><div class="ttdef"><b>Definition:</b> Goto.hpp:38</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

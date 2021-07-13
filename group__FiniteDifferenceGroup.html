@@ -1,0 +1,619 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Finite Difference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">Finite Difference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Functions needed for (conservative) finite difference methods.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespacefd"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefd.html">fd</a></td></tr>
+<tr class="memdesc:namespacefd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions and classes for finite difference methods. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespacefd_1_1reconstruction"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacefd_1_1reconstruction.html">fd::reconstruction</a></td></tr>
+<tr class="memdesc:namespacefd_1_1reconstruction"><td class="mdescLeft">&#160;</td><td class="mdescRight">Variable and flux vector splitting reconstruction schemes for finite difference methods. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga76c41a870dc974c41acc26548c989508"><td class="memTemplParams" colspan="2">template&lt;size_t NonlinearWeightExponent, size_t Dim&gt; </td></tr>
+<tr class="memitem:ga76c41a870dc974c41acc26548c989508"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__FiniteDifferenceGroup.html#ga76c41a870dc974c41acc26548c989508">fd::reconstruction::aoweno_53</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; double &gt;, Dim &gt; * &gt; reconstructed_upper_side_of_face_vars, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; double &gt;, Dim &gt; * &gt; reconstructed_lower_side_of_face_vars, const <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt; &amp;volume_vars, const <a class="el" href="classDirectionMap.html">DirectionMap</a>&lt; Dim, <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt;&gt; &amp;ghost_cell_vars, const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;volume_extents, const size_t number_of_variables, const double gamma_hi, const double gamma_lo, const double epsilon) noexcept</td></tr>
+<tr class="memdesc:ga76c41a870dc974c41acc26548c989508"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs an adaptive order (AO) WENO reconstruction using a single 5th order stencil and a 3rd-order CWENO scheme.  <a href="group__FiniteDifferenceGroup.html#ga76c41a870dc974c41acc26548c989508">More...</a><br /></td></tr>
+<tr class="separator:ga76c41a870dc974c41acc26548c989508"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4ec10b109680f10a83e0c3c35ed3ba09"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:ga4ec10b109680f10a83e0c3c35ed3ba09"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__FiniteDifferenceGroup.html#ga4ec10b109680f10a83e0c3c35ed3ba09">fd::reconstruction::minmod</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; double &gt;, Dim &gt; * &gt; reconstructed_upper_side_of_face_vars, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; double &gt;, Dim &gt; * &gt; reconstructed_lower_side_of_face_vars, const <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt; &amp;volume_vars, const <a class="el" href="classDirectionMap.html">DirectionMap</a>&lt; Dim, <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt;&gt; &amp;ghost_cell_vars, const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;volume_extents, const size_t number_of_variables) noexcept</td></tr>
+<tr class="memdesc:ga4ec10b109680f10a83e0c3c35ed3ba09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs minmod reconstruction on the <code>volume_vars</code> in each direction.  <a href="group__FiniteDifferenceGroup.html#ga4ec10b109680f10a83e0c3c35ed3ba09">More...</a><br /></td></tr>
+<tr class="separator:ga4ec10b109680f10a83e0c3c35ed3ba09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf4791bdc4f3d449879be39371630ebec"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:gaf4791bdc4f3d449879be39371630ebec"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__FiniteDifferenceGroup.html#gaf4791bdc4f3d449879be39371630ebec">fd::reconstruction::monotised_central</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; double &gt;, Dim &gt; * &gt; reconstructed_upper_side_of_face_vars, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; double &gt;, Dim &gt; * &gt; reconstructed_lower_side_of_face_vars, const <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt; &amp;volume_vars, const <a class="el" href="classDirectionMap.html">DirectionMap</a>&lt; Dim, <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt;&gt; &amp;ghost_cell_vars, const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;volume_extents, const size_t number_of_variables) noexcept</td></tr>
+<tr class="memdesc:gaf4791bdc4f3d449879be39371630ebec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs monotised central-difference reconstruction on the <code>vars</code> in each direction.  <a href="group__FiniteDifferenceGroup.html#gaf4791bdc4f3d449879be39371630ebec">More...</a><br /></td></tr>
+<tr class="separator:gaf4791bdc4f3d449879be39371630ebec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga45a2e3da471d238503b2498420025a17"><td class="memTemplParams" colspan="2">template&lt;Side LowerOrUpperSide, typename Reconstructor , size_t Dim, typename... ArgsForReconstructor&gt; </td></tr>
+<tr class="memitem:ga45a2e3da471d238503b2498420025a17"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__FiniteDifferenceGroup.html#ga45a2e3da471d238503b2498420025a17">fd::reconstruction::reconstruct_neighbor</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt; face_data, const <a class="el" href="classDataVector.html">DataVector</a> &amp;volume_data, const <a class="el" href="classDataVector.html">DataVector</a> &amp;neighbor_data, const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;volume_extents, const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;ghost_data_extents, const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; &amp;direction_to_reconstruct, const ArgsForReconstructor &amp;... args_for_reconstructor) noexcept</td></tr>
+<tr class="memdesc:ga45a2e3da471d238503b2498420025a17"><td class="mdescLeft">&#160;</td><td class="mdescRight">In a given direction, reconstruct the cells in the neighboring <a class="el" href="classElement.html">Element</a> (or cluster of cells) nearest to the shared boundary between the current and neighboring <a class="el" href="classElement.html">Element</a> (or cluster of cells).  <a href="group__FiniteDifferenceGroup.html#ga45a2e3da471d238503b2498420025a17">More...</a><br /></td></tr>
+<tr class="separator:ga45a2e3da471d238503b2498420025a17"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>Functions needed for (conservative) finite difference methods. </p>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="ga76c41a870dc974c41acc26548c989508"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga76c41a870dc974c41acc26548c989508">&#9670;&nbsp;</a></span>aoweno_53()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t NonlinearWeightExponent, size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void fd::reconstruction::aoweno_53 </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; double &gt;, Dim &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>reconstructed_upper_side_of_face_vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; double &gt;, Dim &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>reconstructed_lower_side_of_face_vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDirectionMap.html">DirectionMap</a>&lt; Dim, <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>ghost_cell_vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_extents</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>number_of_variables</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>gamma_hi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>gamma_lo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double&#160;</td>
+          <td class="paramname"><em>epsilon</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Performs an adaptive order (AO) WENO reconstruction using a single 5th order stencil and a 3rd-order CWENO scheme. </p>
+<p>The AO-WENO(5,3) scheme is based on the scheme presented in <a class="el" href="citelist.html#CITEREF_Balsara2016780">[5]</a> but adjusted to do reconstruction on variables instead of fluxes. The Legendre basis functions on the domain \(\xi\in[-1/2,1/2]\) are given by:</p>
+<p class="formulaDsp">
+\begin{align*} L_0(\xi) &amp;= 1 \\ L_1(\xi) &amp;= \xi \\ L_2(\xi) &amp;= \xi^2-\frac{1}{12} \\ L_3(\xi) &amp;= \xi^3 - \frac{3}{20} \xi \\ L_4(\xi) &amp;= \xi^4 - \frac{3}{14} \xi^2 + \frac{3}{560} \end{align*}
+</p>
+<p>The oscillation indicators are given by</p>
+<p class="formulaDsp">
+\begin{align*} \beta_l = \sum_{k=1}^{p}\sum_{m=1}^{p}\sigma_{km} u_{k,l} u_{m,l} \end{align*}
+</p>
+<p>where \(p\) is the maximum degree of the basis function used for the stencil \(l\), and</p>
+<p class="formulaDsp">
+\begin{align*} \sigma_{km}=\sum_{i=1}^{p}\int_{-1/2}^{1/2} \frac{d^i L_k(\xi)}{d\xi^i}\frac{d^i L_m(\xi)}{d\xi^i}d\xi \end{align*}
+</p>
+<p>We write the 3rd-order reconstructed polynomial \(P^{r3}_l(\xi)\) associated with the stencil \(S^{r3}_l\) as</p>
+<p class="formulaDsp">
+\begin{align*} P^{r3}_l(\xi) = u_0 +u_{\xi} L_1(\xi) + u_{\xi 2} L_2(\xi) \end{align*}
+</p>
+<p>For the stencil \(S^{r3}_1\) we get</p>
+<p class="formulaDsp">
+\begin{align*} u_0 &amp;= \frac{25}{24} u_{j} -\frac{1}{12} u_{j-1} + \frac{1}{24} u_{j-2} \\ u_{\xi} &amp;= \frac{1}{2}u_{j-2} - 2 u_{j-1} + \frac{3}{2} u_j \\ u_{\xi2} &amp;= \frac{1}{2} u_{j-2} - u_{j-1} + \frac{1}{2} u_j \end{align*}
+</p>
+<p>For the stencil \(S^{r3}_2\) we get</p>
+<p class="formulaDsp">
+\begin{align*} u_0 &amp;= \frac{1}{24} u_{j-1} + \frac{11}{12} u_{j} + \frac{1}{24} u_{j+1} \\ u_{\xi} &amp;= \frac{1}{2}(u_{j+1} - u_{j-1}) \\ u_{\xi2} &amp;= \frac{1}{2} u_{j-1} - u_{j} + \frac{1}{2} u_{j+1} \end{align*}
+</p>
+<p>For the stencil \(S^{r3}_3\) we get</p>
+<p class="formulaDsp">
+\begin{align*} u_0 &amp;= \frac{25}{24} u_{j} -\frac{1}{12} u_{j+1} + \frac{1}{24} u_{j+2} \\ u_{\xi} &amp;= -\frac{1}{2}u_{j+2} + 2 u_{j+1} - \frac{3}{2} u_j \\ u_{\xi2} &amp;= \frac{1}{2} u_{j+2} - u_{j+1} + \frac{1}{2} u_j \end{align*}
+</p>
+<p>The oscillation indicator for the 3rd-order stencils is given by</p>
+<p class="formulaDsp">
+\begin{align*} \beta^{r3}_l = \left(u_{\xi}\right)^2+\frac{13}{3}\left(u_{\xi2}\right)^2 \end{align*}
+</p>
+<p>We write the 5th-order reconstructed polynomial \(P^{r5}(\xi)\) as</p>
+<p class="formulaDsp">
+\begin{align*} P^{r5}_l(\xi) = u_0 +u_{\xi} L_1(\xi) + u_{\xi 2} L_2(\xi) + u_{\xi3} L_3(\xi) + u_{\xi4} L_4(\xi) \end{align*}
+</p>
+<p>with</p>
+<p class="formulaDsp">
+\begin{align*} u_0 &amp;= -\frac{17}{5760} u_{j-2} + \frac{77}{1440} u_{j-1} + \frac{863}{960} u_{j} + \frac{77}{1440} u_{j+1} - \frac{17}{5760} u_{j+2} \\ u_{\xi} &amp;= \frac{17}{240} u_{j-2} - \frac{77}{120} u_{j-1} + \frac{77}{120} u_{j+1} - \frac{17}{240} u_{j+2} \\ u_{\xi2} &amp;= -\frac{11}{336} u_{j-2} + \frac{53}{84} u_{j-1} - \frac{67}{56} u_{j} + \frac{53}{84} u_{j+1} - \frac{11}{336} u_{j+2} \\ u_{\xi3} &amp;= -\frac{1}{12} u_{j-2} + \frac{1}{6} u_{j-1} -\frac{1}{6} u_{j+1} + \frac{1}{12} u_{j+2} \\ u_{\xi4} &amp;= \frac{1}{24} u_{j-2} -\frac{1}{6} u_{j-1} +\frac{1}{4} u_{j} - \frac{1}{6}u_{j+1}+\frac{1}{24}u_{j+2} \end{align*}
+</p>
+<p>The oscillation indicator is given by</p>
+<p class="formulaDsp">
+\begin{align*} \beta^{r5}&amp;=\left(u_{\xi}+\frac{1}{10}u_{\xi3}\right)^2 \\ &amp;+\frac{13}{3}\left(u_{\xi2}+\frac{123}{455}u_{\xi4}\right)^2\\ &amp;+\frac{781}{20}(u_{\xi3})^2+\frac{1421461}{2275}(u_{\xi4})^2 \end{align*}
+</p>
+<p>There are two linear weights \(\gamma_{\mathrm{hi}}\) and \(\gamma_{\mathrm{lo}}\). \(\gamma_{\mathrm{hi}}\) controls how much of the 5th-order stencil is used in smooth regions, while \(\gamma_{\mathrm{lo}}\) controls the linear weight of the central 3rd-order stencil. For larger \(\gamma_{\mathrm{lo}}\), the 3rd-order method is more centrally weighted. The linear weights for the stencils are given by</p>
+<p class="formulaDsp">
+\begin{align*} \gamma^{r5}&amp;=\gamma_{\mathrm{hi}} \\ \gamma^{r3}_1&amp; = (1-\gamma_{\mathrm{hi}})(1-\gamma_{\mathrm{lo}})/2 \\ \gamma^{r3}_2&amp; = (1-\gamma_{\mathrm{hi}})\gamma_{\mathrm{lo}} \\ \gamma^{r3}_3&amp; = (1-\gamma_{\mathrm{hi}})(1-\gamma_{\mathrm{lo}})/2 \end{align*}
+</p>
+<p>We use the standard nonlinear weights instead of the "Z" weights of <a class="el" href="citelist.html#CITEREF_Borges20083191">[16]</a></p>
+<p class="formulaDsp">
+\begin{align*} w^{r5}&amp;=\frac{\gamma^{r5}}{(\beta^{r5}+\epsilon)^q} \\ w^{r3}_l&amp;=\frac{\gamma^{r3}_l}{(\beta^{r3}_l+\epsilon)^q} \end{align*}
+</p>
+<p>where \(\epsilon\) is a small number used to avoid division by zero. The normalized nonlinear weights are denoted by \(\bar{w}^{r5}\) and \(\bar{w}_l^{r3}\). The final reconstructed polynomial \(P(\xi)\) is given by</p>
+<p class="formulaDsp">
+\begin{align*} P(\xi)&amp;=\frac{\bar{w}^{r5}}{\gamma^{r5}} \left(P^{r5}(\xi)-\gamma^{r3}_1P^{r3}_1(\xi) -\gamma^{r3}_2P^{r3}_2(\xi)-\gamma^{r3}_3P^{r3}_3(\xi)\right) \\ &amp;+\bar{w}^{r3}_1P^{r3}_1(\xi)+\bar{w}^{r3}_2P^{r3}_2(\xi) +\bar{w}^{r3}_3P^{r3}_3(\xi) \end{align*}
+</p>
+<p>The weights \(\gamma_{\mathrm{hi}}\) and \(\gamma_{\mathrm{lo}}\) are typically chosen to be in the range \([0.85,0.95]\).</p>
+<h3><a class="anchor" id="autotoc_md91"></a>
+First alternative oscillation indicators</h3>
+<p>Instead of integrating over just the cell, we can instead integrate the basis functions over the entire fit interval, \([-5/2,5/2]\). Using this interval for the \(S^{r3}_l\) and the \(S^{r5}\) stencils we get</p>
+<p class="formulaDsp">
+\begin{align*} \beta^{r3}_l&amp;=(u_{\xi})^2 + \frac{37}{3} (u_{\xi2})^2 \\ \beta^{r5} &amp;=\left(u_{\xi}+\frac{61}{10}u_{\xi3}\right)^2 + \frac{569}{4}u_{\xi3}^2 \\ &amp;+ \frac{1}{8190742}\left(5383 u_{\xi2} + 167158 u_{\xi4}\right)^2 +\frac{4410763}{501474}(u_{\xi2})^2 \\ &amp;=u_{\xi}^2 + \frac{61}{5}u_{\xi}u_{\xi3} + \frac{37}{3}u_{\xi2}^2 + \frac{1538}{7}u_{\xi2}u_{\xi4} \\ &amp;+ \frac{8973}{50}u_{\xi3}^2 + \frac{167158}{49}u_{\xi4}^2 \end{align*}
+</p>
+<p>Note that the indicator is manifestly non-negative, a required property of oscillation indicators. These indicators weight high modes more, which means the scheme is more sensitive to high-frequency features in the solution.</p>
+<dl class="section note"><dt>Note</dt><dd>currently it is the alternative indicators that are used. However, an option to control which are used can readily be added, probably best done as a template parameter with <code>if constexpr</code> to avoid conditionals inside tight loops. </dd></dl>
+
+</div>
+</div>
+<a id="ga4ec10b109680f10a83e0c3c35ed3ba09"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4ec10b109680f10a83e0c3c35ed3ba09">&#9670;&nbsp;</a></span>minmod()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void fd::reconstruction::minmod </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; double &gt;, Dim &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>reconstructed_upper_side_of_face_vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; double &gt;, Dim &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>reconstructed_lower_side_of_face_vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDirectionMap.html">DirectionMap</a>&lt; Dim, <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>ghost_cell_vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_extents</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>number_of_variables</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Performs minmod reconstruction on the <code>volume_vars</code> in each direction. </p>
+<p>On a 1d mesh with spacing \(\Delta x\) we denote the solution at the \(j\)th point by \(u_j\). The minmod reconstruction <a class="el" href="citelist.html#CITEREF_RezzollaBook">[89]</a> first computes:</p>
+<p class="formulaDsp">
+\begin{align} \sigma_j\equiv \textrm{minmod}\left(\frac{u_j-u_{j-1}}{\Delta x}, \frac{u_{j+1}-u_j}{\Delta x}\right) \end{align}
+</p>
+<p>where</p>
+<p class="formulaDsp">
+\begin{align} \mathrm{minmod}(a,b)= \left\{ \begin{array}{ll} \mathrm{sgn}(a)\min(\lvert a\rvert, \lvert b\rvert) &amp; \mathrm{if} \; \mathrm{sgn}(a)=\mathrm{sgn}(b) \\ 0 &amp; \mathrm{otherwise} \end{array}\right. \end{align}
+</p>
+<p>The reconstructed solution \(u_j(x)\) in the \(j\)th cell is given by</p>
+<p class="formulaDsp">
+\begin{align} u_j(x)=u_j + \sigma_j (x-x_j), \end{align}
+</p>
+<p>where \(x_j\) is the coordinate \(x\) at the center of the cell. </p>
+
+</div>
+</div>
+<a id="gaf4791bdc4f3d449879be39371630ebec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf4791bdc4f3d449879be39371630ebec">&#9670;&nbsp;</a></span>monotised_central()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void fd::reconstruction::monotised_central </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; double &gt;, Dim &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>reconstructed_upper_side_of_face_vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; double &gt;, Dim &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>reconstructed_lower_side_of_face_vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDirectionMap.html">DirectionMap</a>&lt; Dim, <a class="el" href="classgsl_1_1span.html">gsl::span</a>&lt; const double &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>ghost_cell_vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_extents</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>number_of_variables</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Performs monotised central-difference reconstruction on the <code>vars</code> in each direction. </p>
+<p>On a 1d mesh with spacing \(\Delta x\) we denote the solution at the \(j\)th point by \(u_j\). The monotised central-difference reconstruction <a class="el" href="citelist.html#CITEREF_RezzollaBook">[89]</a> first computes:</p>
+<p class="formulaDsp">
+\begin{align} \sigma_j\equiv \textrm{minmod} \left(\frac{u_{j+1} - u_{j-1}}{2\Delta x}, 2\frac{u_j-u_{j-1}}{\Delta x}, 2\frac{u_{j+1}-u_j}{\Delta x}\right) \end{align}
+</p>
+<p>where</p>
+<p class="formulaDsp">
+\begin{align} \mathrm{minmod}(a,b,c)= \left\{ \begin{array}{ll} \mathrm{sgn}(a)\min(\lvert a\rvert, \lvert b\rvert, \lvert c\rvert) &amp; \mathrm{if} \; \mathrm{sgn}(a)=\mathrm{sgn}(b)=\mathrm{sgn}(c) \\ 0 &amp; \mathrm{otherwise} \end{array}\right. \end{align}
+</p>
+<p>The reconstructed solution \(u_j(x)\) in the \(j\)th cell is given by</p>
+<p class="formulaDsp">
+\begin{align} u_j(x)=u_j + \sigma_j (x-x_j) \end{align}
+</p>
+<p>where \(x_j\) is the coordinate \(x\) at the center of the cell. </p>
+
+</div>
+</div>
+<a id="ga45a2e3da471d238503b2498420025a17"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga45a2e3da471d238503b2498420025a17">&#9670;&nbsp;</a></span>reconstruct_neighbor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;Side LowerOrUpperSide, typename Reconstructor , size_t Dim, typename... ArgsForReconstructor&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void fd::reconstruction::reconstruct_neighbor </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt;&#160;</td>
+          <td class="paramname"><em>face_data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>volume_data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>neighbor_data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_extents</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>ghost_data_extents</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>direction_to_reconstruct</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const ArgsForReconstructor &amp;...&#160;</td>
+          <td class="paramname"><em>args_for_reconstructor</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>In a given direction, reconstruct the cells in the neighboring <a class="el" href="classElement.html">Element</a> (or cluster of cells) nearest to the shared boundary between the current and neighboring <a class="el" href="classElement.html">Element</a> (or cluster of cells). </p>
+<p>This is needed if one is sending reconstruction and flux data separately, or if one is using DG-FD hybrid schemes. Below is an ASCII diagram of what is reconstructed.</p>
+<div class="fragment"><div class="line">Self      |  Neighbor</div>
+<div class="line">x x x x x | o o o</div>
+<div class="line">          ^+</div>
+<div class="line">          Reconstruct to <a class="codeRef" href="http://en.cppreference.com/w/cpp/io/manip/left.html">right</a>/+ side of the interface</div>
+</div><!-- fragment --> 
+</div>
+</div>
+</div><!-- contents -->
+<div class="ttc" id="aleft_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/io/manip/left.html">std::right</a></div><div class="ttdeci">T right(T... args)</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

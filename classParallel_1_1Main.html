@@ -1,0 +1,386 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Parallel::Main&lt; Metavariables &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceParallel.html">Parallel</a></li><li class="navelem"><a class="el" href="classParallel_1_1Main.html">Main</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classParallel_1_1Main-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Parallel::Main&lt; Metavariables &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__ParallelGroup.html">Parallelization</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><code>#include &lt;<a class="el" href="Main_8hpp_source.html">Main.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a33cb672609ff993764ee3b3a57639f45"><td class="memItemLeft" align="right" valign="top"><a id="a33cb672609ff993764ee3b3a57639f45"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>component_list</b> = typename Metavariables::component_list</td></tr>
+<tr class="separator:a33cb672609ff993764ee3b3a57639f45"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab477d6e92e04aa37f4a5dc9dbaa9ae72"><td class="memItemLeft" align="right" valign="top"><a id="ab477d6e92e04aa37f4a5dc9dbaa9ae72"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>const_global_cache_tags</b> = <a class="el" href="group__ParallelGroup.html#ga03e3053314568ebf144ba895c04ead0e">get_const_global_cache_tags</a>&lt; Metavariables &gt;</td></tr>
+<tr class="separator:ab477d6e92e04aa37f4a5dc9dbaa9ae72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9ddabd92671a762c5e358d42d117127"><td class="memItemLeft" align="right" valign="top"><a id="ad9ddabd92671a762c5e358d42d117127"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>mutable_global_cache_tags</b> = <a class="el" href="group__ParallelGroup.html#gab10d351ad8ecf07b1ec23dbad2e70a3d">get_mutable_global_cache_tags</a>&lt; Metavariables &gt;</td></tr>
+<tr class="separator:ad9ddabd92671a762c5e358d42d117127"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6dab378a75934add831563fe658f21a"><td class="memItemLeft" align="right" valign="top"><a id="ab6dab378a75934add831563fe658f21a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>phase_change_tags_and_combines_list</b> = detail::get_phase_change_tags_and_combines_list_or_default_t&lt; Metavariables, tmpl::list&lt;&gt; &gt;</td></tr>
+<tr class="separator:ab6dab378a75934add831563fe658f21a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ad31bce8155c9f055625469506748204f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classParallel_1_1Main.html#ad31bce8155c9f055625469506748204f">Main</a> (CkArgMsg *msg) noexcept</td></tr>
+<tr class="separator:ad31bce8155c9f055625469506748204f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a716b8fb8f5a732c5524a9e2364fbaca3"><td class="memItemLeft" align="right" valign="top"><a id="a716b8fb8f5a732c5524a9e2364fbaca3"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Main</b> (CkMigrateMessage *msg) noexcept</td></tr>
+<tr class="separator:a716b8fb8f5a732c5524a9e2364fbaca3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80cdab0724cd8fa5dfd432a6a7b83435"><td class="memItemLeft" align="right" valign="top"><a id="a80cdab0724cd8fa5dfd432a6a7b83435"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:a80cdab0724cd8fa5dfd432a6a7b83435"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff49a003d9b9c9303cccb1121ee20ec3"><td class="memItemLeft" align="right" valign="top"><a id="aff49a003d9b9c9303cccb1121ee20ec3"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classParallel_1_1Main.html#aff49a003d9b9c9303cccb1121ee20ec3">allocate_array_components_and_execute_initialization_phase</a> () noexcept</td></tr>
+<tr class="memdesc:aff49a003d9b9c9303cccb1121ee20ec3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate the initial elements of array components, and then execute the initialization phase on each component. <br /></td></tr>
+<tr class="separator:aff49a003d9b9c9303cccb1121ee20ec3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a48dd14fcfdef965d95ecdbfda2b64c"><td class="memItemLeft" align="right" valign="top"><a id="a4a48dd14fcfdef965d95ecdbfda2b64c"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classParallel_1_1Main.html#a4a48dd14fcfdef965d95ecdbfda2b64c">execute_next_phase</a> () noexcept</td></tr>
+<tr class="memdesc:a4a48dd14fcfdef965d95ecdbfda2b64c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine the next phase of the simulation and execute it. <br /></td></tr>
+<tr class="separator:a4a48dd14fcfdef965d95ecdbfda2b64c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9b2c7a928685ee0bcc96a9cea3585b63"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classParallel_1_1Main.html#a9b2c7a928685ee0bcc96a9cea3585b63">start_load_balance</a> () noexcept</td></tr>
+<tr class="memdesc:a9b2c7a928685ee0bcc96a9cea3585b63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Place the Charm++ call that starts load balancing.  <a href="classParallel_1_1Main.html#a9b2c7a928685ee0bcc96a9cea3585b63">More...</a><br /></td></tr>
+<tr class="separator:a9b2c7a928685ee0bcc96a9cea3585b63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa4b0532cfeddefdc76f9e73820526c79"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classParallel_1_1Main.html#aa4b0532cfeddefdc76f9e73820526c79">start_write_checkpoint</a> () noexcept</td></tr>
+<tr class="memdesc:aa4b0532cfeddefdc76f9e73820526c79"><td class="mdescLeft">&#160;</td><td class="mdescRight">Place the Charm++ call that starts writing a checkpoint.  <a href="classParallel_1_1Main.html#aa4b0532cfeddefdc76f9e73820526c79">More...</a><br /></td></tr>
+<tr class="separator:aa4b0532cfeddefdc76f9e73820526c79"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a693d0a5ae827fef2c4375cdf3b4ddfc2"><td class="memTemplParams" colspan="2">template&lt;typename InvokeCombine , typename... Tags&gt; </td></tr>
+<tr class="memitem:a693d0a5ae827fef2c4375cdf3b4ddfc2"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classParallel_1_1Main.html#a693d0a5ae827fef2c4375cdf3b4ddfc2">phase_change_reduction</a> (ReductionData&lt; <a class="el" href="structParallel_1_1ReductionDatum.html">ReductionDatum</a>&lt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;, InvokeCombine, <a class="el" href="structfuncl_1_1Identity.html">funcl::Identity</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::index_sequence</a>&lt;&gt;&gt;&gt; reduction_data) noexcept</td></tr>
+<tr class="memdesc:a693d0a5ae827fef2c4375cdf3b4ddfc2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reduction target for data used in phase change decisions.  <a href="classParallel_1_1Main.html#a693d0a5ae827fef2c4375cdf3b4ddfc2">More...</a><br /></td></tr>
+<tr class="separator:a693d0a5ae827fef2c4375cdf3b4ddfc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename Metavariables&gt;<br />
+class Parallel::Main&lt; Metavariables &gt;</h3>
+
+<p>The main function of a Charm++ executable. See <a href="group__ParallelGroup.html#details">the Parallelization documentation</a> for an overview of Metavariables, Phases, and parallel components. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="ad31bce8155c9f055625469506748204f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad31bce8155c9f055625469506748204f">&#9670;&nbsp;</a></span>Main()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Metavariables &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classParallel_1_1Main.html">Parallel::Main</a>&lt; Metavariables &gt;::<a class="el" href="classParallel_1_1Main.html">Main</a> </td>
+          <td>(</td>
+          <td class="paramtype">CkArgMsg *&#160;</td>
+          <td class="paramname"><em>msg</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">explicit</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a693d0a5ae827fef2c4375cdf3b4ddfc2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a693d0a5ae827fef2c4375cdf3b4ddfc2">&#9670;&nbsp;</a></span>phase_change_reduction()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Metavariables &gt; </div>
+<div class="memtemplate">
+template&lt;typename InvokeCombine , typename... Tags&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classParallel_1_1Main.html">Parallel::Main</a>&lt; Metavariables &gt;::phase_change_reduction </td>
+          <td>(</td>
+          <td class="paramtype">ReductionData&lt; <a class="el" href="structParallel_1_1ReductionDatum.html">ReductionDatum</a>&lt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;, InvokeCombine, <a class="el" href="structfuncl_1_1Identity.html">funcl::Identity</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::index_sequence</a>&lt;&gt;&gt;&gt;&#160;</td>
+          <td class="paramname"><em>reduction_data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Reduction target for data used in phase change decisions. </p>
+<p>It is required that the <code>Parallel::ReductionData</code> holds a single <code><a class="el" href="classtuples_1_1TaggedTuple.html" title="An associative container that is indexed by structs.">tuples::TaggedTuple</a></code>. </p>
+
+</div>
+</div>
+<a id="a9b2c7a928685ee0bcc96a9cea3585b63"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9b2c7a928685ee0bcc96a9cea3585b63">&#9670;&nbsp;</a></span>start_load_balance()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Metavariables &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classParallel_1_1Main.html">Parallel::Main</a>&lt; Metavariables &gt;::start_load_balance</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Place the Charm++ call that starts load balancing. </p>
+<h3>Details</h3>
+<p>This call is wrapped within an entry method so that it may be used as the callback after a quiescence detection. </p>
+
+</div>
+</div>
+<a id="aa4b0532cfeddefdc76f9e73820526c79"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa4b0532cfeddefdc76f9e73820526c79">&#9670;&nbsp;</a></span>start_write_checkpoint()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Metavariables &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classParallel_1_1Main.html">Parallel::Main</a>&lt; Metavariables &gt;::start_write_checkpoint</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Place the Charm++ call that starts writing a checkpoint. </p>
+<h3>Details</h3>
+<p>This call is wrapped within an entry method so that it may be used as the callback after a quiescence detection. </p>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Parallel/<a class="el" href="Main_8hpp_source.html">Main.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

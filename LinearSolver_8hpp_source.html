@@ -1,0 +1,521 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/NumericalAlgorithms/LinearSolver/LinearSolver.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_e67410f72df12b3cc042db20f578e557.html">NumericalAlgorithms</a></li><li class="navelem"><a class="el" href="dir_700a0c0fa91d73c58f1ba15ac3fb1e5c.html">LinearSolver</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">LinearSolver.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/optional.html">optional</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;pup.h&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;pup_stl.h&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a>&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160; </div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Convergence/HasConverged.hpp&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;Options/Auto.hpp&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Options_8hpp.html">Options/Options.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="CharmPupable_8hpp.html">Parallel/CharmPupable.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;Parallel/PupStlCpp17.hpp&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;Utilities/FakeVirtual.hpp&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;Utilities/Registration.hpp&quot;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Requires_8hpp.html">Utilities/Requires.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160; </div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="keyword">namespace </span>LinearSolver::Serial {</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment">/// Registrars for linear solvers</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment"></span><span class="keyword">namespace </span>Registrars {}</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment"> * \brief Base class for serial linear solvers that supports factory-creation.</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment"> * Derive linear solvers from this class so they can be factory-created. If your</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="comment"> * linear solver supports preconditioning, derive from</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment"> * `PreconditionedLinearSolver` instead to inherit utility that allows using any</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment"> * other factor-creatable linear solver as preconditioner.</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> LinearSolverRegistrars&gt;</div>
+<div class="line"><a name="l00037"></a><span class="lineno"><a class="line" href="classLinearSolver_1_1Serial_1_1LinearSolver.html">   37</a></span>&#160;<span class="keyword">class </span><a class="code" href="namespaceLinearSolver.html">LinearSolver</a> : <span class="keyword">public</span> PUP::able {</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160; <span class="keyword">protected</span>:<span class="comment"></span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment">  /// \cond</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment"></span>  <a class="code" href="namespaceLinearSolver.html">LinearSolver</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;  <a class="code" href="namespaceLinearSolver.html">LinearSolver</a>(<span class="keyword">const</span> <a class="code" href="namespaceLinearSolver.html">LinearSolver</a>&amp;) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  <a class="code" href="namespaceLinearSolver.html">LinearSolver</a>(<a class="code" href="namespaceLinearSolver.html">LinearSolver</a>&amp;&amp;) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;  <a class="code" href="namespaceLinearSolver.html">LinearSolver</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="namespaceLinearSolver.html">LinearSolver</a>&amp;) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  <a class="code" href="namespaceLinearSolver.html">LinearSolver</a>&amp; operator=(<a class="code" href="namespaceLinearSolver.html">LinearSolver</a>&amp;&amp;) = <span class="keywordflow">default</span>;<span class="comment"></span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment">  /// \endcond</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;  ~<a class="code" href="namespaceLinearSolver.html">LinearSolver</a>() <span class="keyword">override</span> = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment">  /// \cond</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment"></span>  <span class="keyword">explicit</span> <a class="code" href="namespaceLinearSolver.html">LinearSolver</a>(CkMigrateMessage* m) noexcept;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;  <a class="code" href="CharmPupable_8hpp.html#a2811c7e8423d4f37ad97e340c1322dd9">WRAPPED_PUPable_abstract</a>(<a class="code" href="namespaceLinearSolver.html">LinearSolver</a>);  <span class="comment">// NOLINT</span><span class="comment"></span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment">  /// \endcond</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;  <span class="keyword">using</span> creatable_classes = <a class="code" href="namespaceRegistration.html#abfd9ae1266be994041d2cfaa4199eed2">Registration::registrants&lt;LinearSolverRegistrars&gt;</a>;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;  <span class="keyword">virtual</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;LinearSolver&lt;LinearSolverRegistrars&gt;</a>&gt; get_clone()</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;      <span class="keyword">const</span> = 0;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment">  /*!</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment">   * \brief Solve the linear equation \f$Ax=b\f$ where \f$A\f$ is the</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment">   * `linear_operator` and \f$b\f$ is the `source`.</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment">   * - The (approximate) solution \f$x\f$ is returned in the</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment">   *   `initial_guess_in_solution_out` buffer, which also serves to provide an</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment">   *   initial guess for \f$x\f$. Not all solvers take the initial guess into</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment">   *   account, but all expect the buffer is sized correctly.</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment">   * - The `linear_operator` must be an invocable that takes a `VarsType` as</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment">   *   const-ref argument and returns a `SourceType` by reference.</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment">   *</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment">   * Each solve may mutate the private state of the solver, for example to cache</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment">   * quantities to accelerate successive solves for the same operator. Invoke</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment">   * `reset` to discard these caches.</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment">   */</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> LinearOperator, <span class="keyword">typename</span> VarsType, <span class="keyword">typename</span> SourceType,</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;            <span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;  <a class="code" href="structConvergence_1_1HasConverged.html">Convergence::HasConverged</a> <a class="code" href="classLinearSolver_1_1Serial_1_1LinearSolver.html#a3e01eb2c42c43d757913758f9574410c">solve</a>(</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;VarsType*&gt;</a> initial_guess_in_solution_out,</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;      <span class="keyword">const</span> LinearOperator&amp; linear_operator, <span class="keyword">const</span> SourceType&amp; source,</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;      Args&amp;&amp;... args) <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment">  /// Discard caches from previous solves. Use before solving a different linear</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment">  /// operator.</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment"></span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classLinearSolver_1_1Serial_1_1LinearSolver.html#a18d65f6af7bba96bfacd09d3e5184a50">reset</a>() noexcept = 0;</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;};</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> LinearSolverRegistrars&gt;</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<a class="code" href="classLinearSolver_1_1Serial_1_1LinearSolver.html">LinearSolver&lt;LinearSolverRegistrars&gt;::LinearSolver</a>(CkMigrateMessage* m) noexcept</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    : PUP::able(m) {}<span class="comment"></span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> LinearSolverRegistrars&gt;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> LinearOperator, <span class="keyword">typename</span> VarsType, <span class="keyword">typename</span> SourceType,</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;          <span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<a class="code" href="structConvergence_1_1HasConverged.html">Convergence::HasConverged</a> <a class="code" href="classLinearSolver_1_1Serial_1_1LinearSolver.html#a3e01eb2c42c43d757913758f9574410c">LinearSolver&lt;LinearSolverRegistrars&gt;::solve</a>(</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;VarsType*&gt;</a> initial_guess_in_solution_out,</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    <span class="keyword">const</span> LinearOperator&amp; linear_operator, <span class="keyword">const</span> SourceType&amp; source,</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    Args&amp;&amp;... args) <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;  <span class="keywordflow">return</span> call_with_dynamic_type&lt;Convergence::HasConverged, creatable_classes&gt;(</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;      <span class="keyword">this</span>, [&amp;initial_guess_in_solution_out, &amp;linear_operator, &amp;source,</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;             &amp;args...](<span class="keyword">auto</span>* <span class="keyword">const</span> linear_solver) noexcept {</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;        return linear_solver-&gt;solve(initial_guess_in_solution_out,</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;                                    linear_operator, source,</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;                                    std::forward&lt;Args&gt;(args)...);</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;      });</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;}</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="comment">/// Indicates the linear solver uses no preconditioner. It may perform</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="comment">/// compile-time optimization for this case.</span></div>
+<div class="line"><a name="l00111"></a><span class="lineno"><a class="line" href="structLinearSolver_1_1Serial_1_1NoPreconditioner.html">  111</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structLinearSolver_1_1Serial_1_1NoPreconditioner.html">NoPreconditioner</a> {};</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="comment"> * \brief Base class for serial linear solvers that supports factory-creation</span></div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="comment"> * and nested preconditioning.</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="comment"> * To enable support for preconditioning in your derived linear solver class,</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="comment"> * pass any type that has a `solve` and a `reset` function as the</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="comment"> * `Preconditioner` template parameter. It can also be an abstract</span></div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="comment"> * `LinearSolver` type, which means that any other linear solver can be used as</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="comment"> * preconditioner. Pass `NoPreconditioner` to disable support for</span></div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="comment"> * preconditioning.</span></div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Preconditioner, <span class="keyword">typename</span> LinearSolverRegistrars&gt;</div>
+<div class="line"><a name="l00125"></a><span class="lineno"><a class="line" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">  125</a></span>&#160;<span class="keyword">class </span><a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">PreconditionedLinearSolver</a> : <span class="keyword">public</span> <a class="code" href="namespaceLinearSolver.html">LinearSolver</a>&lt;LinearSolverRegistrars&gt; {</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;  <span class="keyword">using</span> <a class="code" href="classLinearSolver_1_1Serial_1_1LinearSolver.html">Base</a> = <a class="code" href="classLinearSolver_1_1Serial_1_1LinearSolver.html">LinearSolver&lt;LinearSolverRegistrars&gt;</a>;</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160; </div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;  <span class="keyword">using</span> PreconditionerType =</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;      tmpl::conditional_t&lt;std::is_abstract_v&lt;Preconditioner&gt;,</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;                          <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;Preconditioner&gt;</a>, Preconditioner&gt;;</div>
+<div class="line"><a name="l00133"></a><span class="lineno"><a class="line" href="structLinearSolver_1_1Serial_1_1PreconditionedLinearSolver_1_1PreconditionerOption.html">  133</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structLinearSolver_1_1Serial_1_1PreconditionedLinearSolver_1_1PreconditionerOption.html">PreconditionerOption</a> {</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> <span class="stringliteral">&quot;Preconditioner&quot;</span>; }</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    <span class="comment">// Support factory-creatable preconditioners by storing them as unique-ptrs</span></div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;    <span class="keyword">using</span> <a class="code" href="classOptions_1_1Auto.html">type</a> = <a class="code" href="classOptions_1_1Auto.html">Options::Auto&lt;PreconditionerType, Options::AutoLabel::None&gt;</a>;</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;    <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help =</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;        <span class="stringliteral">&quot;An approximate linear solve in every iteration that helps the &quot;</span></div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;        <span class="stringliteral">&quot;algorithm converge.&quot;</span>;</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;  };</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160; </div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160; <span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;  <a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">PreconditionedLinearSolver</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;  <a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">PreconditionedLinearSolver</a>(<a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">PreconditionedLinearSolver</a>&amp;&amp;) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;  <a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">PreconditionedLinearSolver</a>&amp; operator=(<a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">PreconditionedLinearSolver</a>&amp;&amp;) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160; </div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;  <span class="keyword">explicit</span> <a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">PreconditionedLinearSolver</a>(</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;      <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional&lt;PreconditionerType&gt;</a> local_preconditioner) noexcept;</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160; </div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;  <a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">PreconditionedLinearSolver</a>(<span class="keyword">const</span> <a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">PreconditionedLinearSolver</a>&amp; rhs) noexcept;</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;  <a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">PreconditionedLinearSolver</a>&amp; operator=(</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;      <span class="keyword">const</span> <a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">PreconditionedLinearSolver</a>&amp; rhs) noexcept;</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160; </div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;  ~<a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">PreconditionedLinearSolver</a>() <span class="keyword">override</span> = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;<span class="comment">  /// \cond</span></div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;<span class="comment"></span>  <span class="keyword">explicit</span> <a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">PreconditionedLinearSolver</a>(CkMigrateMessage* m) noexcept;<span class="comment"></span></div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;<span class="comment">  /// \endcond</span></div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;  <span class="keywordtype">void</span> pup(PUP::er&amp; p) noexcept <span class="keyword">override</span> {  <span class="comment">// NOLINT</span></div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;    PUP::able::pup(p);</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    <span class="keywordflow">if</span> constexpr (not std::is_same_v&lt;Preconditioner, NoPreconditioner&gt;) {</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;      p | preconditioner_;</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;    }</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;  }</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;<span class="comment">  /// Whether or not a preconditioner is set</span></div>
+<div class="line"><a name="l00169"></a><span class="lineno"><a class="line" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#ac2ee67e50341af306da71e5be772c4a9">  169</a></span>&#160;<span class="comment"></span>  <span class="keywordtype">bool</span> <a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#ac2ee67e50341af306da71e5be772c4a9">has_preconditioner</a>() const noexcept {</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;    <span class="keywordflow">if</span> constexpr (not std::is_same_v&lt;Preconditioner, NoPreconditioner&gt;) {</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;      <span class="keywordflow">return</span> preconditioner_.has_value();</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;      <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;    }</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;  }</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;<span class="comment">  /// @{</span></div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;<span class="comment">  /// Access to the preconditioner. Check `has_preconditioner()` before calling</span></div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;<span class="comment">  /// this function. Calling this function when `has_preconditioner()` returns</span></div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;<span class="comment">  /// `false` is an error.</span></div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;<span class="comment"></span>  <span class="keyword">template</span> &lt;</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;      <span class="keywordtype">bool</span> Enabled = not std::is_same_v&lt;Preconditioner, NoPreconditioner&gt;,</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;      <a class="code" href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a>&lt;Enabled and</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;               not std::is_same_v&lt;Preconditioner, NoPreconditioner&gt;&gt; = <span class="keyword">nullptr</span>&gt;</div>
+<div class="line"><a name="l00185"></a><span class="lineno"><a class="line" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#adf461b65c6342338ec57d9ff27fe6f1f">  185</a></span>&#160;  <span class="keyword">const</span> Preconditioner&amp; <a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#adf461b65c6342338ec57d9ff27fe6f1f">preconditioner</a>() const noexcept {</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;    <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(<a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#ac2ee67e50341af306da71e5be772c4a9">has_preconditioner</a>(),</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;           <span class="stringliteral">&quot;No preconditioner is set. Please use `has_preconditioner()` to &quot;</span></div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;           <span class="stringliteral">&quot;check before trying to retrieve it.&quot;</span>);</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;    <span class="keywordflow">if</span> constexpr (std::is_abstract_v&lt;Preconditioner&gt;) {</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;      <span class="keywordflow">return</span> **preconditioner_;</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;      <span class="keywordflow">return</span> *preconditioner_;</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;    }</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;  }</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160; </div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;  <span class="keyword">template</span> &lt;</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;      <span class="keywordtype">bool</span> Enabled = not std::is_same_v&lt;Preconditioner, NoPreconditioner&gt;,</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;      <a class="code" href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a>&lt;Enabled and</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;               not std::is_same_v&lt;Preconditioner, NoPreconditioner&gt;&gt; = <span class="keyword">nullptr</span>&gt;</div>
+<div class="line"><a name="l00200"></a><span class="lineno"><a class="line" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#a7d497c9853c6447baba4817d98be0ada">  200</a></span>&#160;  Preconditioner&amp; <a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#a7d497c9853c6447baba4817d98be0ada">preconditioner</a>() noexcept {</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;    <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(<a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#ac2ee67e50341af306da71e5be772c4a9">has_preconditioner</a>(),</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;           <span class="stringliteral">&quot;No preconditioner is set. Please use `has_preconditioner()` to &quot;</span></div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;           <span class="stringliteral">&quot;check before trying to retrieve it.&quot;</span>);</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;    <span class="keywordflow">if</span> constexpr (std::is_abstract_v&lt;Preconditioner&gt;) {</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;      <span class="keywordflow">return</span> **preconditioner_;</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;      <span class="keywordflow">return</span> *preconditioner_;</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;    }</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;  }</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160; </div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;  <span class="comment">// Keep the function virtual so derived classes must provide an</span></div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;  <span class="comment">// implementation, but also provide an implementation below that derived</span></div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;  <span class="comment">// classes can use to reset the preconditioner</span></div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;  <span class="keywordtype">void</span> <a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#ab1179789c6c7ed314a2c10ce0c762202">reset</a>() noexcept override = 0;</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160; </div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160; protected:<span class="comment"></span></div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;<span class="comment">  /// Copy the preconditioner. Useful to implement `get_clone` when the</span></div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;<span class="comment">  /// preconditioner has an abstract type.</span></div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;<span class="comment"></span>  template &lt;</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;      <span class="keywordtype">bool</span> Enabled = not std::is_same_v&lt;Preconditioner, <a class="code" href="structLinearSolver_1_1Serial_1_1NoPreconditioner.html">NoPreconditioner</a>&gt;,</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;      <a class="code" href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a>&lt;Enabled and</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;               not std::is_same_v&lt;Preconditioner, <a class="code" href="structLinearSolver_1_1Serial_1_1NoPreconditioner.html">NoPreconditioner</a>&gt;&gt; = <span class="keywordtype">nullptr</span>&gt;</div>
+<div class="line"><a name="l00223"></a><span class="lineno"><a class="line" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#ad336ab1445f8a5d6e4befe289becc63c">  223</a></span>&#160;  std::optional&lt;PreconditionerType&gt; <a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#ad336ab1445f8a5d6e4befe289becc63c">clone_preconditioner</a>() const noexcept {</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;    <span class="keywordflow">if</span> constexpr (std::is_abstract_v&lt;Preconditioner&gt;) {</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;      <span class="keywordflow">return</span> <a class="code" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#ac2ee67e50341af306da71e5be772c4a9">has_preconditioner</a>()</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;                 ? <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>((*preconditioner_)-&gt;get_clone())</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;                 : std::nullopt;</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;      <span class="keywordflow">return</span> preconditioner_;</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;    }</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;  }</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160; </div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;  <span class="comment">// Only needed when preconditioning is enabled, but current C++ can&#39;t remove</span></div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;  <span class="comment">// this variable at compile-time. Keeping the variable shouldn&#39;t have any</span></div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;  <span class="comment">// noticeable overhead though.</span></div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional&lt;PreconditionerType&gt;</a> preconditioner_{};</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;};</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160; </div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Preconditioner, <span class="keyword">typename</span> LinearSolverRegistrars&gt;</div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;PreconditionedLinearSolver&lt;Preconditioner, LinearSolverRegistrars&gt;::</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;    PreconditionedLinearSolver(</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional&lt;PreconditionerType&gt;</a> local_preconditioner) noexcept</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;    : preconditioner_(std::move(local_preconditioner)) {}</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160; </div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;<span class="comment">// Override copy constructors so they can clone abstract preconditioners</span></div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Preconditioner, <span class="keyword">typename</span> LinearSolverRegistrars&gt;</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;PreconditionedLinearSolver&lt;Preconditioner, LinearSolverRegistrars&gt;::</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;    PreconditionedLinearSolver(<span class="keyword">const</span> PreconditionedLinearSolver&amp; rhs) noexcept</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;    : Base(rhs) {</div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;  <span class="keywordflow">if</span> constexpr (not std::is_same_v&lt;Preconditioner, NoPreconditioner&gt;) {</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;    preconditioner_ = rhs.clone_preconditioner();</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;  }</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;}</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Preconditioner, <span class="keyword">typename</span> LinearSolverRegistrars&gt;</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;PreconditionedLinearSolver&lt;Preconditioner, LinearSolverRegistrars&gt;&amp;</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;PreconditionedLinearSolver&lt;Preconditioner, LinearSolverRegistrars&gt;::operator=(</div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;    <span class="keyword">const</span> PreconditionedLinearSolver&amp; rhs) noexcept {</div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;  Base::operator=(rhs);</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;  <span class="keywordflow">if</span> constexpr (not std::is_same_v&lt;Preconditioner, NoPreconditioner&gt;) {</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;    preconditioner_ = rhs.clone_preconditioner();</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;  }</div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;  <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;}</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Preconditioner, <span class="keyword">typename</span> LinearSolverRegistrars&gt;</div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;PreconditionedLinearSolver&lt;Preconditioner, LinearSolverRegistrars&gt;::</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;    PreconditionedLinearSolver(CkMigrateMessage* m) noexcept</div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;    : Base(m) {}<span class="comment"></span></div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Preconditioner, <span class="keyword">typename</span> LinearSolverRegistrars&gt;</div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;<span class="keywordtype">void</span> PreconditionedLinearSolver&lt;Preconditioner,</div>
+<div class="line"><a name="l00275"></a><span class="lineno"><a class="line" href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#ab1179789c6c7ed314a2c10ce0c762202">  275</a></span>&#160;                                LinearSolverRegistrars&gt;::reset() noexcept {</div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;  <span class="keywordflow">if</span> constexpr (not std::is_same_v&lt;Preconditioner, NoPreconditioner&gt;) {</div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;    <span class="keywordflow">if</span> (has_preconditioner()) {</div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;      preconditioner().reset();</div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;    }</div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;  }</div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;}</div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160; </div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;}  <span class="comment">// namespace LinearSolver::Serial</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="aclassLinearSolver_1_1Serial_1_1LinearSolver_html"><div class="ttname"><a href="classLinearSolver_1_1Serial_1_1LinearSolver.html">LinearSolver::Serial::LinearSolver</a></div><div class="ttdoc">Base class for serial linear solvers that supports factory-creation.</div><div class="ttdef"><b>Definition:</b> LinearSolver.hpp:37</div></div>
+<div class="ttc" id="astructLinearSolver_1_1Serial_1_1NoPreconditioner_html"><div class="ttname"><a href="structLinearSolver_1_1Serial_1_1NoPreconditioner.html">LinearSolver::Serial::NoPreconditioner</a></div><div class="ttdoc">Indicates the linear solver uses no preconditioner. It may perform compile-time optimization for this...</div><div class="ttdef"><b>Definition:</b> LinearSolver.hpp:111</div></div>
+<div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
+<div class="ttc" id="aCharmPupable_8hpp_html"><div class="ttname"><a href="CharmPupable_8hpp.html">CharmPupable.hpp</a></div></div>
+<div class="ttc" id="autility_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a></div></div>
+<div class="ttc" id="aclassLinearSolver_1_1Serial_1_1PreconditionedLinearSolver_html_ab1179789c6c7ed314a2c10ce0c762202"><div class="ttname"><a href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#ab1179789c6c7ed314a2c10ce0c762202">LinearSolver::Serial::PreconditionedLinearSolver::reset</a></div><div class="ttdeci">void reset() noexcept override=0</div><div class="ttdoc">Copy the preconditioner. Useful to implement get_clone when the preconditioner has an abstract type.</div><div class="ttdef"><b>Definition:</b> LinearSolver.hpp:275</div></div>
+<div class="ttc" id="aOptions_8hpp_html"><div class="ttname"><a href="Options_8hpp.html">Options.hpp</a></div></div>
+<div class="ttc" id="aclassLinearSolver_1_1Serial_1_1PreconditionedLinearSolver_html_a7d497c9853c6447baba4817d98be0ada"><div class="ttname"><a href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#a7d497c9853c6447baba4817d98be0ada">LinearSolver::Serial::PreconditionedLinearSolver::preconditioner</a></div><div class="ttdeci">Preconditioner &amp; preconditioner() noexcept</div><div class="ttdoc">Copy the preconditioner. Useful to implement get_clone when the preconditioner has an abstract type.</div><div class="ttdef"><b>Definition:</b> LinearSolver.hpp:200</div></div>
+<div class="ttc" id="astructLinearSolver_1_1Serial_1_1PreconditionedLinearSolver_1_1PreconditionerOption_html"><div class="ttname"><a href="structLinearSolver_1_1Serial_1_1PreconditionedLinearSolver_1_1PreconditionerOption.html">LinearSolver::Serial::PreconditionedLinearSolver::PreconditionerOption</a></div><div class="ttdef"><b>Definition:</b> LinearSolver.hpp:133</div></div>
+<div class="ttc" id="aclassLinearSolver_1_1Serial_1_1PreconditionedLinearSolver_html"><div class="ttname"><a href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html">LinearSolver::Serial::PreconditionedLinearSolver</a></div><div class="ttdoc">Base class for serial linear solvers that supports factory-creation and nested preconditioning.</div><div class="ttdef"><b>Definition:</b> LinearSolver.hpp:125</div></div>
+<div class="ttc" id="astructConvergence_1_1HasConverged_html"><div class="ttname"><a href="structConvergence_1_1HasConverged.html">Convergence::HasConverged</a></div><div class="ttdoc">Signals convergence of the algorithm.</div><div class="ttdef"><b>Definition:</b> HasConverged.hpp:68</div></div>
+<div class="ttc" id="aclassLinearSolver_1_1Serial_1_1PreconditionedLinearSolver_html_ac2ee67e50341af306da71e5be772c4a9"><div class="ttname"><a href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#ac2ee67e50341af306da71e5be772c4a9">LinearSolver::Serial::PreconditionedLinearSolver::has_preconditioner</a></div><div class="ttdeci">bool has_preconditioner() const noexcept</div><div class="ttdoc">Whether or not a preconditioner is set.</div><div class="ttdef"><b>Definition:</b> LinearSolver.hpp:169</div></div>
+<div class="ttc" id="aclassLinearSolver_1_1Serial_1_1LinearSolver_html_a18d65f6af7bba96bfacd09d3e5184a50"><div class="ttname"><a href="classLinearSolver_1_1Serial_1_1LinearSolver.html#a18d65f6af7bba96bfacd09d3e5184a50">LinearSolver::Serial::LinearSolver::reset</a></div><div class="ttdeci">virtual void reset() noexcept=0</div><div class="ttdoc">Discard caches from previous solves. Use before solving a different linear operator.</div></div>
+<div class="ttc" id="aCharmPupable_8hpp_html_a2811c7e8423d4f37ad97e340c1322dd9"><div class="ttname"><a href="CharmPupable_8hpp.html#a2811c7e8423d4f37ad97e340c1322dd9">WRAPPED_PUPable_abstract</a></div><div class="ttdeci">#define WRAPPED_PUPable_abstract(className)</div><div class="ttdoc">Wraps the Charm++ macro, see the Charm++ documentation.</div><div class="ttdef"><b>Definition:</b> CharmPupable.hpp:41</div></div>
+<div class="ttc" id="amemory_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a></div></div>
+<div class="ttc" id="aclassOptions_1_1Auto_html"><div class="ttname"><a href="classOptions_1_1Auto.html">Options::Auto</a></div><div class="ttdoc">A class indicating that a parsed value can be automatically computed instead of specified.</div><div class="ttdef"><b>Definition:</b> Auto.hpp:33</div></div>
+<div class="ttc" id="aclassLinearSolver_1_1Serial_1_1LinearSolver_html_a3e01eb2c42c43d757913758f9574410c"><div class="ttname"><a href="classLinearSolver_1_1Serial_1_1LinearSolver.html#a3e01eb2c42c43d757913758f9574410c">LinearSolver::Serial::LinearSolver::solve</a></div><div class="ttdeci">Convergence::HasConverged solve(gsl::not_null&lt; VarsType * &gt; initial_guess_in_solution_out, const LinearOperator &amp;linear_operator, const SourceType &amp;source, Args &amp;&amp;... args) const noexcept</div><div class="ttdoc">Solve the linear equation  where  is the linear_operator and  is the source.</div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_gaf170f3984e3d0f809b2558dbd981ca35"><div class="ttname"><a href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a></div><div class="ttdeci">#define ASSERT(a, m)</div><div class="ttdoc">Assert that an expression should be true.</div><div class="ttdef"><b>Definition:</b> Assert.hpp:49</div></div>
+<div class="ttc" id="anamespaceLinearSolver_html"><div class="ttname"><a href="namespaceLinearSolver.html">LinearSolver</a></div><div class="ttdoc">Functionality for solving linear systems of equations.</div><div class="ttdef"><b>Definition:</b> ExplicitInverse.hpp:20</div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="anamespaceOptions_html_aa61c7f41f21afa7646811456f673be89"><div class="ttname"><a href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a></div><div class="ttdeci">const char *const String</div><div class="ttdoc">The string used in option structs.</div><div class="ttdef"><b>Definition:</b> Options.hpp:32</div></div>
+<div class="ttc" id="aclassLinearSolver_1_1Serial_1_1PreconditionedLinearSolver_html_ad336ab1445f8a5d6e4befe289becc63c"><div class="ttname"><a href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#ad336ab1445f8a5d6e4befe289becc63c">LinearSolver::Serial::PreconditionedLinearSolver::clone_preconditioner</a></div><div class="ttdeci">std::optional&lt; PreconditionerType &gt; clone_preconditioner() const noexcept</div><div class="ttdoc">Copy the preconditioner. Useful to implement get_clone when the preconditioner has an abstract type.</div><div class="ttdef"><b>Definition:</b> LinearSolver.hpp:223</div></div>
+<div class="ttc" id="aRequires_8hpp_html"><div class="ttname"><a href="Requires_8hpp.html">Requires.hpp</a></div></div>
+<div class="ttc" id="aclassLinearSolver_1_1Serial_1_1PreconditionedLinearSolver_html_adf461b65c6342338ec57d9ff27fe6f1f"><div class="ttname"><a href="classLinearSolver_1_1Serial_1_1PreconditionedLinearSolver.html#adf461b65c6342338ec57d9ff27fe6f1f">LinearSolver::Serial::PreconditionedLinearSolver::preconditioner</a></div><div class="ttdeci">const Preconditioner &amp; preconditioner() const noexcept</div><div class="ttdoc">Access to the preconditioner. Check has_preconditioner() before calling this function....</div><div class="ttdef"><b>Definition:</b> LinearSolver.hpp:185</div></div>
+<div class="ttc" id="aoptional_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/optional.html">optional</a></div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga084d535585c18d4e80f8ec6052d341a3"><div class="ttname"><a href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a></div><div class="ttdeci">typename Requires_detail::requires_impl&lt; B &gt;::template_error_type_failed_to_meet_requirements_on_template_parameters Requires</div><div class="ttdoc">Express requirements on the template parameters of a function or class, replaces std::enable_if_t</div><div class="ttdef"><b>Definition:</b> Requires.hpp:67</div></div>
+<div class="ttc" id="aunique_ptr_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></div></div>
+<div class="ttc" id="anamespaceRegistration_html_abfd9ae1266be994041d2cfaa4199eed2"><div class="ttname"><a href="namespaceRegistration.html#abfd9ae1266be994041d2cfaa4199eed2">Registration::registrants</a></div><div class="ttdeci">tmpl::transform&lt; tmpl::remove_duplicates&lt; RegistrarList &gt;, detail::registrant&lt; tmpl::pin&lt; tmpl::remove_duplicates&lt; RegistrarList &gt; &gt;, tmpl::_1 &gt; &gt; registrants</div><div class="ttdoc">Transform a list of registrars into the list of associated registrants. This is usually used to defin...</div><div class="ttdef"><b>Definition:</b> Registration.hpp:65</div></div>
+<div class="ttc" id="atype_traits_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a></div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

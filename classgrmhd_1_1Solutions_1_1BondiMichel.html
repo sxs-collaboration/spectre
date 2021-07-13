@@ -1,0 +1,617 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: grmhd::Solutions::BondiMichel Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacegrmhd.html">grmhd</a></li><li class="navelem"><a class="el" href="namespacegrmhd_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="classgrmhd_1_1Solutions_1_1BondiMichel.html">BondiMichel</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
+<a href="#pro-attribs">Protected Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classgrmhd_1_1Solutions_1_1BondiMichel-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">grmhd::Solutions::BondiMichel Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Bondi-Michel accretion <a class="el" href="citelist.html#CITEREF_Michel1972">[77]</a> with superposed magnetic field in Schwarzschild spacetime in Cartesian Kerr-Schild coordinates.  
+ <a href="classgrmhd_1_1Solutions_1_1BondiMichel.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="BondiMichel_8hpp_source.html">BondiMichel.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1IntermediateVars.html">IntermediateVars</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1MagFieldStrength.html">MagFieldStrength</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The strength of the radial magnetic field.  <a href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1MagFieldStrength.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1Mass.html">Mass</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The mass of the black hole.  <a href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1Mass.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1PolytropicExponent.html">PolytropicExponent</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The polytropic exponent for the polytropic fluid.  <a href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1PolytropicExponent.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1SonicDensity.html">SonicDensity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The rest mass density of the fluid at the sonic radius.  <a href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1SonicDensity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1SonicRadius.html">SonicRadius</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The radius at which the fluid becomes supersonic.  <a href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1SonicRadius.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:aa277bb7efc0e618cfb3fd3aabf60f5bb"><td class="memItemLeft" align="right" valign="top"><a id="aa277bb7efc0e618cfb3fd3aabf60f5bb"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state_type</b> = <a class="el" href="classEquationsOfState_1_1PolytropicFluid.html">EquationsOfState::PolytropicFluid</a>&lt; true &gt;</td></tr>
+<tr class="separator:aa277bb7efc0e618cfb3fd3aabf60f5bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9c379195567e54ded672694aa0ef90cc"><td class="memItemLeft" align="right" valign="top"><a id="a9c379195567e54ded672694aa0ef90cc"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1Mass.html">Mass</a>, <a class="el" href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1SonicRadius.html">SonicRadius</a>, <a class="el" href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1SonicDensity.html">SonicDensity</a>, <a class="el" href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1PolytropicExponent.html">PolytropicExponent</a>, <a class="el" href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1MagFieldStrength.html">MagFieldStrength</a> &gt;</td></tr>
+<tr class="separator:a9c379195567e54ded672694aa0ef90cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_structgrmhd_1_1AnalyticSolution"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structgrmhd_1_1AnalyticSolution')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structgrmhd_1_1AnalyticSolution.html">grmhd::AnalyticSolution</a></td></tr>
+<tr class="memitem:a40bf7f5047fc5e354ba0b0a708df4c9c inherit pub_types_structgrmhd_1_1AnalyticSolution"><td class="memTemplParams" colspan="2"><a id="a40bf7f5047fc5e354ba0b0a708df4c9c"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a40bf7f5047fc5e354ba0b0a708df4c9c inherit pub_types_structgrmhd_1_1AnalyticSolution"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>tags</b> = tmpl::push_back&lt; typename <a class="el" href="structgr_1_1AnalyticSolution.html">gr::AnalyticSolution</a>&lt; 3 &gt;::template tags&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1RestMassDensity.html">hydro::Tags::RestMassDensity</a>&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1SpecificInternalEnergy.html">hydro::Tags::SpecificInternalEnergy</a>&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1Pressure.html">hydro::Tags::Pressure</a>&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; DataType, 3 &gt;, <a class="el" href="structhydro_1_1Tags_1_1MagneticField.html">hydro::Tags::MagneticField</a>&lt; DataType, 3 &gt;, <a class="el" href="structhydro_1_1Tags_1_1DivergenceCleaningField.html">hydro::Tags::DivergenceCleaningField</a>&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; DataType &gt;, <a class="el" href="structhydro_1_1Tags_1_1SpecificEnthalpy.html">hydro::Tags::SpecificEnthalpy</a>&lt; DataType &gt; &gt;</td></tr>
+<tr class="separator:a40bf7f5047fc5e354ba0b0a708df4c9c inherit pub_types_structgrmhd_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a3e2f9a1604759f5f8cdd31ac1c05be2e"><td class="memItemLeft" align="right" valign="top"><a id="a3e2f9a1604759f5f8cdd31ac1c05be2e"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BondiMichel</b> (const <a class="el" href="classgrmhd_1_1Solutions_1_1BondiMichel.html">BondiMichel</a> &amp;)=delete</td></tr>
+<tr class="separator:a3e2f9a1604759f5f8cdd31ac1c05be2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acbbc7198eb40bb5984e47c42ded27cae"><td class="memItemLeft" align="right" valign="top"><a id="acbbc7198eb40bb5984e47c42ded27cae"></a>
+<a class="el" href="classgrmhd_1_1Solutions_1_1BondiMichel.html">BondiMichel</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classgrmhd_1_1Solutions_1_1BondiMichel.html">BondiMichel</a> &amp;)=delete</td></tr>
+<tr class="separator:acbbc7198eb40bb5984e47c42ded27cae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4000358421a494acb64f58ad5c9550fc"><td class="memItemLeft" align="right" valign="top"><a id="a4000358421a494acb64f58ad5c9550fc"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BondiMichel</b> (<a class="el" href="classgrmhd_1_1Solutions_1_1BondiMichel.html">BondiMichel</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a4000358421a494acb64f58ad5c9550fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1930f07e27fb733593362bfb7221cd26"><td class="memItemLeft" align="right" valign="top"><a id="a1930f07e27fb733593362bfb7221cd26"></a>
+<a class="el" href="classgrmhd_1_1Solutions_1_1BondiMichel.html">BondiMichel</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classgrmhd_1_1Solutions_1_1BondiMichel.html">BondiMichel</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a1930f07e27fb733593362bfb7221cd26"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ed3a0b6388f0588538fb8cbba945f4c"><td class="memItemLeft" align="right" valign="top"><a id="a0ed3a0b6388f0588538fb8cbba945f4c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BondiMichel</b> (double mass, double sonic_radius, double sonic_density, double polytropic_exponent, double mag_field_strength) noexcept</td></tr>
+<tr class="separator:a0ed3a0b6388f0588538fb8cbba945f4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa86cb50ed7ab5bfdea22ad7cd6255efb"><td class="memTemplParams" colspan="2"><a id="aa86cb50ed7ab5bfdea22ad7cd6255efb"></a>
+template&lt;typename DataType , typename... Tags&gt; </td></tr>
+<tr class="memitem:aa86cb50ed7ab5bfdea22ad7cd6255efb"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1Solutions_1_1BondiMichel.html#aa86cb50ed7ab5bfdea22ad7cd6255efb">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, const double, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:aa86cb50ed7ab5bfdea22ad7cd6255efb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a collection of hydro variables at <code>(x, t)</code> <br /></td></tr>
+<tr class="separator:aa86cb50ed7ab5bfdea22ad7cd6255efb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71c9df8128e80dbdc3ccdfacc79665e4"><td class="memTemplParams" colspan="2"><a id="a71c9df8128e80dbdc3ccdfacc79665e4"></a>
+template&lt;typename DataType , typename Tag &gt; </td></tr>
+<tr class="memitem:a71c9df8128e80dbdc3ccdfacc79665e4"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tag &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, const double, tmpl::list&lt; Tag &gt;) const noexcept</td></tr>
+<tr class="separator:a71c9df8128e80dbdc3ccdfacc79665e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a41003a76c1b4bad0febb9ac0acd04c96"><td class="memItemLeft" align="right" valign="top"><a id="a41003a76c1b4bad0febb9ac0acd04c96"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;) noexcept</td></tr>
+<tr class="separator:a41003a76c1b4bad0febb9ac0acd04c96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab08cc74fc1fcd0ecb5497e16afa28b26"><td class="memItemLeft" align="right" valign="top"><a id="ab08cc74fc1fcd0ecb5497e16afa28b26"></a>
+const <a class="el" href="classEquationsOfState_1_1PolytropicFluid.html">EquationsOfState::PolytropicFluid</a>&lt; true &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state</b> () const noexcept</td></tr>
+<tr class="separator:ab08cc74fc1fcd0ecb5497e16afa28b26"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a9e77d46875b8f039d87d4d3f4c33af0d"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a9e77d46875b8f039d87d4d3f4c33af0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_static_attribs_structgrmhd_1_1AnalyticSolution"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_structgrmhd_1_1AnalyticSolution')"><img src="closed.png" alt="-"/>&#160;Static Public Attributes inherited from <a class="el" href="structgrmhd_1_1AnalyticSolution.html">grmhd::AnalyticSolution</a></td></tr>
+<tr class="memitem:aee0a613156c9b6276d4b073629f7260d inherit pub_static_attribs_structgrmhd_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="aee0a613156c9b6276d4b073629f7260d"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = 3_st</td></tr>
+<tr class="separator:aee0a613156c9b6276d4b073629f7260d inherit pub_static_attribs_structgrmhd_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:a24b7fea5d733723c02f96fb2c0b8342c"><td class="memTemplParams" colspan="2"><a id="a24b7fea5d733723c02f96fb2c0b8342c"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a24b7fea5d733723c02f96fb2c0b8342c"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1RestMassDensity.html">hydro::Tags::RestMassDensity</a>&lt; DataType &gt;&gt;, const <a class="el" href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1IntermediateVars.html">IntermediateVars</a>&lt; DataType &gt; &amp;vars) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1RestMassDensity.html">hydro::Tags::RestMassDensity</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="separator:a24b7fea5d733723c02f96fb2c0b8342c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac35c525256c284178c3351817824649e"><td class="memTemplParams" colspan="2"><a id="ac35c525256c284178c3351817824649e"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:ac35c525256c284178c3351817824649e"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificInternalEnergy.html">hydro::Tags::SpecificInternalEnergy</a>&lt; DataType &gt;&gt;, const <a class="el" href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1IntermediateVars.html">IntermediateVars</a>&lt; DataType &gt; &amp;vars) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificInternalEnergy.html">hydro::Tags::SpecificInternalEnergy</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="separator:ac35c525256c284178c3351817824649e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50c8d4d58b7c790101ecae0fe3a9b06b"><td class="memTemplParams" colspan="2"><a id="a50c8d4d58b7c790101ecae0fe3a9b06b"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a50c8d4d58b7c790101ecae0fe3a9b06b"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1Pressure.html">hydro::Tags::Pressure</a>&lt; DataType &gt;&gt;, const <a class="el" href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1IntermediateVars.html">IntermediateVars</a>&lt; DataType &gt; &amp;vars) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1Pressure.html">hydro::Tags::Pressure</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="separator:a50c8d4d58b7c790101ecae0fe3a9b06b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2fed35bbf64ee2c4cf26b612feee9547"><td class="memTemplParams" colspan="2"><a id="a2fed35bbf64ee2c4cf26b612feee9547"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a2fed35bbf64ee2c4cf26b612feee9547"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; DataType, 3 &gt;&gt;, const <a class="el" href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1IntermediateVars.html">IntermediateVars</a>&lt; DataType &gt; &amp;vars) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; DataType, 3 &gt;&gt;</td></tr>
+<tr class="separator:a2fed35bbf64ee2c4cf26b612feee9547"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3f5eaaf93406e8d94fa6ccc4b39e005"><td class="memTemplParams" colspan="2"><a id="ae3f5eaaf93406e8d94fa6ccc4b39e005"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:ae3f5eaaf93406e8d94fa6ccc4b39e005"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1MagneticField.html">hydro::Tags::MagneticField</a>&lt; DataType, 3 &gt;&gt;, const <a class="el" href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1IntermediateVars.html">IntermediateVars</a>&lt; DataType &gt; &amp;vars) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1MagneticField.html">hydro::Tags::MagneticField</a>&lt; DataType, 3 &gt;&gt;</td></tr>
+<tr class="separator:ae3f5eaaf93406e8d94fa6ccc4b39e005"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab4219f62bfc54c913de6fc32f330cb8d"><td class="memTemplParams" colspan="2"><a id="ab4219f62bfc54c913de6fc32f330cb8d"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:ab4219f62bfc54c913de6fc32f330cb8d"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1DivergenceCleaningField.html">hydro::Tags::DivergenceCleaningField</a>&lt; DataType &gt;&gt;, const <a class="el" href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1IntermediateVars.html">IntermediateVars</a>&lt; DataType &gt; &amp;vars) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1DivergenceCleaningField.html">hydro::Tags::DivergenceCleaningField</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="separator:ab4219f62bfc54c913de6fc32f330cb8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab808a58fded9ad7e31cbae229f7255a8"><td class="memTemplParams" colspan="2"><a id="ab808a58fded9ad7e31cbae229f7255a8"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:ab808a58fded9ad7e31cbae229f7255a8"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; DataType &gt;&gt;, const <a class="el" href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1IntermediateVars.html">IntermediateVars</a>&lt; DataType &gt; &amp;vars) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="separator:ab808a58fded9ad7e31cbae229f7255a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa32e3baa834ce4084a3311808cea8a21"><td class="memTemplParams" colspan="2"><a id="aa32e3baa834ce4084a3311808cea8a21"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:aa32e3baa834ce4084a3311808cea8a21"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificEnthalpy.html">hydro::Tags::SpecificEnthalpy</a>&lt; DataType &gt;&gt;, const <a class="el" href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1IntermediateVars.html">IntermediateVars</a>&lt; DataType &gt; &amp;vars) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1SpecificEnthalpy.html">hydro::Tags::SpecificEnthalpy</a>&lt; DataType &gt;&gt;</td></tr>
+<tr class="separator:aa32e3baa834ce4084a3311808cea8a21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afcc488070173e0ba01d2f48ef8c91c96"><td class="memTemplParams" colspan="2"><a id="afcc488070173e0ba01d2f48ef8c91c96"></a>
+template&lt;typename DataType , typename Tag , Requires&lt; not tmpl::list_contains_v&lt; hydro::grmhd_tags&lt; DataType &gt;, Tag &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:afcc488070173e0ba01d2f48ef8c91c96"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tag &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, 3 &gt; &amp;, tmpl::list&lt; Tag &gt;, <a class="el" href="structgrmhd_1_1Solutions_1_1BondiMichel_1_1IntermediateVars.html">IntermediateVars</a>&lt; DataType &gt; &amp;vars) const noexcept</td></tr>
+<tr class="separator:afcc488070173e0ba01d2f48ef8c91c96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
+Protected Attributes</h2></td></tr>
+<tr class="memitem:ab39ca919fcdcf9f048f3c40a458edc48"><td class="memItemLeft" align="right" valign="top"><a id="ab39ca919fcdcf9f048f3c40a458edc48"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>mass_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:ab39ca919fcdcf9f048f3c40a458edc48"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4c96fbedb3376250955088b8025c3ab"><td class="memItemLeft" align="right" valign="top"><a id="af4c96fbedb3376250955088b8025c3ab"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>sonic_radius_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:af4c96fbedb3376250955088b8025c3ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae868e33f5682b986dcbb445544ca9400"><td class="memItemLeft" align="right" valign="top"><a id="ae868e33f5682b986dcbb445544ca9400"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>sonic_density_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:ae868e33f5682b986dcbb445544ca9400"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba6a77f30e11b4ac0f1471d7206ae8e4"><td class="memItemLeft" align="right" valign="top"><a id="aba6a77f30e11b4ac0f1471d7206ae8e4"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>polytropic_exponent_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:aba6a77f30e11b4ac0f1471d7206ae8e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1707d669407b9c6017fcb103b62eae78"><td class="memItemLeft" align="right" valign="top"><a id="a1707d669407b9c6017fcb103b62eae78"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>mag_field_strength_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:a1707d669407b9c6017fcb103b62eae78"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a080fc5f9a346422ee4210c21fcd949"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><b>sonic_fluid_speed_squared_</b></td></tr>
+<tr class="separator:a2a080fc5f9a346422ee4210c21fcd949"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d42dccc560e1cb7d561633dc67b3008"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><b>sonic_sound_speed_squared_</b></td></tr>
+<tr class="separator:a3d42dccc560e1cb7d561633dc67b3008"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed9ab68ea40ead687fc7b5dfb64185ee"><td class="memItemLeft" align="right" valign="top"><a id="aed9ab68ea40ead687fc7b5dfb64185ee"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>polytropic_constant_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:aed9ab68ea40ead687fc7b5dfb64185ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a22bf95d6f13594b55e31d87a0b42a5e6"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><b>mass_accretion_rate_over_four_pi_</b></td></tr>
+<tr class="separator:a22bf95d6f13594b55e31d87a0b42a5e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab437878a3fbb3de4fef04134c5c05655"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><b>bernoulli_constant_squared_minus_one_</b></td></tr>
+<tr class="separator:ab437878a3fbb3de4fef04134c5c05655"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa23b8fda174d6eb688b43a3472ee7c17"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><b>rest_mass_density_at_infinity_</b></td></tr>
+<tr class="separator:aa23b8fda174d6eb688b43a3472ee7c17"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84c40416d52969d4c5eed601fc0d22cb"><td class="memItemLeft" align="right" valign="top"><a id="a84c40416d52969d4c5eed601fc0d22cb"></a>
+<a class="el" href="classEquationsOfState_1_1PolytropicFluid.html">EquationsOfState::PolytropicFluid</a>&lt; true &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state_</b> {}</td></tr>
+<tr class="separator:a84c40416d52969d4c5eed601fc0d22cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e45ca5822248a106646ee742d3737c1"><td class="memItemLeft" align="right" valign="top"><a id="a3e45ca5822248a106646ee742d3737c1"></a>
+<a class="el" href="classgr_1_1Solutions_1_1KerrSchild.html">gr::Solutions::KerrSchild</a>&#160;</td><td class="memItemRight" valign="bottom"><b>background_spacetime_</b> {}</td></tr>
+<tr class="separator:a3e45ca5822248a106646ee742d3737c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:acbc3e17b8ef668e7a2b3c530a9db665a"><td class="memItemLeft" align="right" valign="top"><a id="acbc3e17b8ef668e7a2b3c530a9db665a"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classgrmhd_1_1Solutions_1_1BondiMichel.html">BondiMichel</a> &amp;lhs, const <a class="el" href="classgrmhd_1_1Solutions_1_1BondiMichel.html">BondiMichel</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:acbc3e17b8ef668e7a2b3c530a9db665a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Bondi-Michel accretion <a class="el" href="citelist.html#CITEREF_Michel1972">[77]</a> with superposed magnetic field in Schwarzschild spacetime in Cartesian Kerr-Schild coordinates. </p>
+<p>An analytic solution to the 3-D GRMHD system. The user specifies the sonic radius \(r_c\) and sonic rest mass density \(\rho_c\), which are the radius and rest mass density at the sonic point, the radius at which the fluid's Eulerian velocity as seen by a distant observer overtakes the local sound speed \(c_{s,c}\). With a specified polytropic exponent \(\gamma\), these quantities can be related to the sound speed at infinity \(c_{s,\infty}\) using the following relations:</p>
+<p class="formulaDsp">
+\begin{align*} c_{s,c}^2 &amp;= \frac{M}{2r_c - 3M} \\ c_{s,\infty}^2 &amp;= \gamma - 1 + (c_{s,c}^2 - \gamma + 1)\sqrt{1 + 3c_{s,c}^2} \end{align*}
+</p>
+<p>In the case of the interstellar medium, the sound speed is \(\approx 10^{-4}\), which results in a sonic radius of \(\approx 10^8 M\) for \(\gamma \neq 5/3\) <a class="el" href="citelist.html#CITEREF_RezzollaBook">[89]</a>.</p>
+<p>The density is found via root-finding, through the Bernoulli equation. As one approaches the sonic radius, a second root makes an appearance and one must take care to bracket the correct root. This is done by using the upper bound \(\frac{\dot{M}}{4\pi}\sqrt{\frac{2}{Mr^3}}\).</p>
+<p>Additionally specified by the user are the polytropic exponent \(\gamma\), and the strength parameter of the magnetic field \(B_0\). In Cartesian Kerr-Schild coordinates \((x, y, z)\), where \( r = \sqrt{x^2 + y^2 + z^2}\), the superposed magnetic field is <a class="el" href="citelist.html#CITEREF_Etienne2010ui">[40]</a></p>
+<p class="formulaDsp">
+\begin{align*} B^i(\vec{x},t) = \frac{B_0 M^2}{r^3 \sqrt{\gamma}}x^i =\frac{B_0 M^2}{r^3 \sqrt{1 + 2M/r}}x^i. \end{align*}
+</p>
+<p>The accretion rate is</p>
+<p class="formulaDsp">
+\begin{align*} \dot{M}=4\pi r^2\rho u^r, \end{align*}
+</p>
+<p>and at the sonic radius</p>
+<p class="formulaDsp">
+\begin{align*} \dot{M}_c=\sqrt{8}\pi \sqrt{M}r_c^{3/2}\rho_c. \end{align*}
+</p>
+<p>The polytropic constant is given by</p>
+<p class="formulaDsp">
+\begin{align*} K=\frac{1}{\gamma\rho_c^{\gamma-1}} \left[\frac{M(\gamma-1)}{(2r_c-3M)(\gamma-1)-M}\right]. \end{align*}
+</p>
+<p>The density as a function of the sound speed is</p>
+<p class="formulaDsp">
+\begin{align*} \rho^{\gamma-1}=\frac{(\gamma-1)c_s^2}{\gamma K(\gamma-1-c_s^2)}. \end{align*}
+</p>
+<h4><a class="anchor" id="autotoc_md119"></a>
+Horizon quantities, \f$\gamma\ne5/3\f$</h4>
+<p>The density at the horizon is given by:</p>
+<p class="formulaDsp">
+\begin{align*} \rho_h\simeq\frac{1}{16} \left(\frac{5-3\gamma}{2}\right)^{(3\gamma-5)/[2(\gamma-1)]} \frac{\rho_\infty}{c_{s,\infty}^3}. \end{align*}
+</p>
+<p>Using the Lorentz invariance of \(b^2\) we evaluate:</p>
+<p class="formulaDsp">
+\begin{align*} b^2=\frac{B^2}{W^2}+(B^i v_i)^2= B^r B^r(1-\gamma_{rr}v^r v^r)+B^r B^r v^r v^r =B^r B^r = \frac{B_0^2 M^4}{r^4}, \end{align*}
+</p>
+<p>where \(r\) is the Cartesian Kerr-Schild radius, which is equal to the areal radius for a non-spinning black hole. At the horizon we get</p>
+<p class="formulaDsp">
+\begin{align*} b^2_h=\frac{B^2_0}{16}. \end{align*}
+</p>
+<p>Finally, we get</p>
+<p class="formulaDsp">
+\begin{align*} B_0 = 4 \sqrt{b^2_h} = 4\sqrt{\rho_h} \sqrt{\frac{b^2_h}{\rho_h}}, \end{align*}
+</p>
+<p>where the last equality is useful for comparison to papers that give \(b^2_h/\rho_h\).</p>
+<p>To help with comparing to other codes the following script can be used to compute \(b^2_h/\rho_h\):</p>
+<div class="fragment"><div class="line"><span class="comment">#!/bin/env python</span></div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</div>
+<div class="line"> </div>
+<div class="line"><span class="comment"># Input parameters</span></div>
+<div class="line">B_0 = 18</div>
+<div class="line">r_c = 8</div>
+<div class="line">rho_c = 1 / 16</div>
+<div class="line">gamma = 4 / 3</div>
+<div class="line">mass = 1</div>
+<div class="line"> </div>
+<div class="line">K = 1 / (gamma * rho_c**(gamma - 1)) * ((gamma - 1) * mass) / (</div>
+<div class="line">    (2 * r_c - 3 * mass) * (gamma - 1) - mass)</div>
+<div class="line">c_s_c = mass / (2 * r_c - 3 * mass)</div>
+<div class="line">c_inf = gamma - 1 + (c_s_c - gamma + 1) * np.sqrt(1. + 3. * c_s_c)</div>
+<div class="line">rho_inf = ((gamma - 1) * c_inf / (gamma * K *</div>
+<div class="line">                                  (gamma - 1 - c_inf)))**(1. / (gamma - 1.))</div>
+<div class="line">rho_h = 1. / 16. * (2.5 - 1.5 * gamma)**(</div>
+<div class="line">    (3 * gamma - 5) / (2 * (gamma - 1))) * rho_inf / (c_inf**1.5)</div>
+<div class="line"> </div>
+<div class="line">print(<span class="stringliteral">&quot;B_0&quot;</span>, B_0)</div>
+<div class="line">print(<span class="stringliteral">&quot;r_c: &quot;</span>, r_c)</div>
+<div class="line">print(<span class="stringliteral">&quot;rho_c&quot;</span>, rho_c)</div>
+<div class="line">print(<span class="stringliteral">&quot;b_h^2/rho_h: &quot;</span>, B_0**2 / (16. * rho_h))</div>
+<div class="line">print(<span class="stringliteral">&quot;gamma: &quot;</span>, gamma)</div>
+</div><!-- fragment --><h4><a class="anchor" id="autotoc_md120"></a>
+Horizon quantities, \f$\gamma=5/3\f$</h4>
+<p>The density at the horizon is given by:</p>
+<p class="formulaDsp">
+\begin{align*} \rho_h\simeq \frac{1}{16}\frac{\rho_\infty}{u_h c_{s,\infty}^3}, \end{align*}
+</p>
+<p>which gives <a class="el" href="citelist.html#CITEREF_RezzollaBook">[89]</a></p>
+<p class="formulaDsp">
+\begin{align*} \rho_h\simeq 0.08\frac{\rho_\infty}{c_{s,\infty}^3}. \end{align*}
+</p>
+<p>The magnetic field \(b^2\) is the same as the \(\gamma\ne5/3\). </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="ab437878a3fbb3de4fef04134c5c05655"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab437878a3fbb3de4fef04134c5c05655">&#9670;&nbsp;</a></span>bernoulli_constant_squared_minus_one_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double grmhd::Solutions::BondiMichel::bernoulli_constant_squared_minus_one_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>()</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a9e77d46875b8f039d87d4d3f4c33af0d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9e77d46875b8f039d87d4d3f4c33af0d">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> grmhd::Solutions::BondiMichel::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Bondi-Michel solution with a radial magnetic field using \n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;the Schwarzschild coordinate system. Quantities prefixed with \n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;`sonic` refer to field quantities evaluated at the radius \n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;where the fluid speed overtakes the sound speed.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a22bf95d6f13594b55e31d87a0b42a5e6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a22bf95d6f13594b55e31d87a0b42a5e6">&#9670;&nbsp;</a></span>mass_accretion_rate_over_four_pi_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double grmhd::Solutions::BondiMichel::mass_accretion_rate_over_four_pi_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>()</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="aa23b8fda174d6eb688b43a3472ee7c17"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa23b8fda174d6eb688b43a3472ee7c17">&#9670;&nbsp;</a></span>rest_mass_density_at_infinity_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double grmhd::Solutions::BondiMichel::rest_mass_density_at_infinity_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>()</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a2a080fc5f9a346422ee4210c21fcd949"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a080fc5f9a346422ee4210c21fcd949">&#9670;&nbsp;</a></span>sonic_fluid_speed_squared_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double grmhd::Solutions::BondiMichel::sonic_fluid_speed_squared_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>()</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a3d42dccc560e1cb7d561633dc67b3008"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3d42dccc560e1cb7d561633dc67b3008">&#9670;&nbsp;</a></span>sonic_sound_speed_squared_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double grmhd::Solutions::BondiMichel::sonic_sound_speed_squared_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>()</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticSolutions/GrMhd/<a class="el" href="BondiMichel_8hpp_source.html">BondiMichel.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="asignaling_NaN_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits::signaling_NaN</a></div><div class="ttdeci">T signaling_NaN(T... args)</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

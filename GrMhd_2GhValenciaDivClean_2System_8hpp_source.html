@@ -1,0 +1,309 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_d7cddb31ba741ba3a4d5be000d880a30.html">Evolution</a></li><li class="navelem"><a class="el" href="dir_ae9813db12dd9fd3f3106ad3644a1b2a.html">Systems</a></li><li class="navelem"><a class="el" href="dir_f381d06f57dcc87b868e9ee9ab4d5511.html">GrMhd</a></li><li class="navelem"><a class="el" href="dir_43ea1ceb8c88592e0bcf64ba7524702b.html">GhValenciaDivClean</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">System.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160; </div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;DataStructures/Tensor/EagerMath/Magnitude.hpp&quot;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;DataStructures/VariablesTag.hpp&quot;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/GeneralizedHarmonic/System.hpp&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/GrMhd/GhValenciaDivClean/TimeDerivativeTerms.hpp&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/GrMhd/ValenciaDivClean/Characteristics.hpp&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/GrMhd/ValenciaDivClean/Fluxes.hpp&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservative.hpp&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/GrMhd/ValenciaDivClean/Sources.hpp&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp&quot;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/GrMhd/ValenciaDivClean/TimeDerivativeTerms.hpp&quot;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/GeneralRelativity/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/Hydro/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160; </div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacegrmhd.html">grmhd</a> {</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment">/// Namespace associated with utilities for the combined Generalized Harmonic</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment">/// and Valencia formulation of ideal GRMHD with divergence cleaning systems.</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment"></span><span class="keyword">namespace </span>GhValenciaDivClean {</div>
+<div class="line"><a name="l00032"></a><span class="lineno"><a class="line" href="structgrmhd_1_1GhValenciaDivClean_1_1System.html">   32</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structgrmhd_1_1GhValenciaDivClean_1_1System.html">System</a> {</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  <span class="keyword">using</span> <a class="code" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition.html">boundary_conditions_base</a> = <a class="code" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryConditions::BoundaryCondition</a>;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="keyword">using</span> <a class="code" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection.html">boundary_correction_base</a> = <a class="code" href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrections::BoundaryCorrection</a>;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  <span class="keyword">static</span> constexpr <span class="keywordtype">bool</span> has_primitive_and_conservative_vars = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  <span class="keyword">static</span> constexpr <span class="keywordtype">size_t</span> volume_dim = 3;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keyword">using</span> <a class="code" href="structgrmhd_1_1ValenciaDivClean_1_1System.html">grmhd_system</a> = <a class="code" href="structgrmhd_1_1ValenciaDivClean_1_1System.html">grmhd::ValenciaDivClean::System</a>;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  <span class="keyword">using</span> <a class="code" href="structGeneralizedHarmonic_1_1System.html">gh_system</a> = <a class="code" href="structGeneralizedHarmonic_1_1System.html">GeneralizedHarmonic::System&lt;3_st&gt;</a>;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  <span class="keyword">using</span> <a class="code" href="structTags_1_1Variables.html">variables_tag</a> = <a class="code" href="structTags_1_1Variables.html">::Tags::Variables</a>&lt;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;      tmpl::append&lt;<span class="keyword">typename</span> gh_system::variables_tag::tags_list,</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;                   <span class="keyword">typename</span> grmhd_system::variables_tag::tags_list&gt;&gt;;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;  <span class="keyword">using</span> non_conservative_variables =</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;      <span class="keyword">typename</span> gh_system::variables_tag::tags_list;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  <span class="keyword">using</span> flux_variables = tmpl::append&lt;<span class="keyword">typename</span> gh_system::flux_variables,</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;                                      <span class="keyword">typename</span> grmhd_system::flux_variables&gt;;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  <span class="keyword">using</span> gradient_variables =</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;      tmpl::append&lt;<span class="keyword">typename</span> gh_system::gradient_variables,</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;                   <span class="keyword">typename</span> grmhd_system::gradient_variables&gt;;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;  <span class="keyword">using</span> gradients_tags = gradient_variables;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;  <span class="keyword">using</span> sourced_variables = <span class="keyword">typename</span> grmhd_system::sourced_variables;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;  <span class="keyword">static</span> constexpr <span class="keywordtype">bool</span> is_in_flux_conservative_form = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  <span class="keyword">using</span> primitive_variables_tag =</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;      <span class="keyword">typename</span> <a class="code" href="structTags_1_1Variables.html">grmhd_system::primitive_variables_tag</a>;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;  <span class="keyword">using</span> <a class="code" href="structTags_1_1Variables.html">spacetime_variables_tag</a> = <a class="code" href="structTags_1_1Variables.html">::Tags::Variables</a>&lt;tmpl::list&lt;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;      <a class="code" href="structTags_1_1deriv.html">::Tags::deriv&lt;gr::Tags::Lapse&lt;DataVector&gt;</a>, tmpl::size_t&lt;3&gt;,</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;                    <a class="code" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt;,</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;      <a class="code" href="structTags_1_1deriv.html">::Tags::deriv&lt;gr::Tags::Shift&lt;3, Frame::Inertial, DataVector&gt;</a>,</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;                    tmpl::size_t&lt;3&gt;, <a class="code" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt;,</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;      <a class="code" href="structTags_1_1deriv.html">::Tags::deriv&lt;gr::Tags::SpatialMetric&lt;3, Frame::Inertial, DataVector&gt;</a>,</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;                    tmpl::size_t&lt;3&gt;, <a class="code" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt;,</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;      <a class="code" href="structgr_1_1Tags_1_1ExtrinsicCurvature.html">gr::Tags::ExtrinsicCurvature&lt;3, Frame::Inertial, DataVector&gt;</a>&gt;&gt;;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;  <span class="keyword">using</span> <a class="code" href="structgrmhd_1_1GhValenciaDivClean_1_1TimeDerivativeTerms.html">compute_volume_time_derivative_terms</a> = <a class="code" href="structgrmhd_1_1GhValenciaDivClean_1_1TimeDerivativeTerms.html">TimeDerivativeTerms</a>;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;  <span class="keyword">using</span> volume_fluxes = <span class="keyword">typename</span> <a class="code" href="structgrmhd_1_1ValenciaDivClean_1_1ComputeFluxes.html">grmhd_system::volume_fluxes</a>;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;  <span class="keyword">using</span> volume_sources = <span class="keyword">typename</span> <a class="code" href="structgrmhd_1_1ValenciaDivClean_1_1ComputeSources.html">grmhd_system::volume_sources</a>;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;  <span class="keyword">using</span> conservative_from_primitive =</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;      <span class="keyword">typename</span> <a class="code" href="structgrmhd_1_1ValenciaDivClean_1_1ConservativeFromPrimitive.html">grmhd_system::conservative_from_primitive</a>;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> OrderedListOfPrimitiveRecoverySchemes&gt;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;  <span class="keyword">using</span> primitive_from_conservative =</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;      <span class="keyword">typename</span> grmhd_system::template primitive_from_conservative&lt;</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;          OrderedListOfPrimitiveRecoverySchemes&gt;;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;  <span class="keyword">using</span> <a class="code" href="structGeneralizedHarmonic_1_1Tags_1_1ComputeLargestCharacteristicSpeed.html">compute_largest_characteristic_speed</a> =</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;      <a class="code" href="structGeneralizedHarmonic_1_1Tags_1_1ComputeLargestCharacteristicSpeed.html">gh_system::compute_largest_characteristic_speed</a>;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160; </div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;  <span class="keyword">using</span> inverse_spatial_metric_tag =</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;      <span class="keyword">typename</span> <a class="code" href="structgr_1_1Tags_1_1InverseSpatialMetric.html">gh_system::inverse_spatial_metric_tag</a>;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;};</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;}  <span class="comment">// namespace GhValenciaDivClean</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;}  <span class="comment">// namespace grmhd</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="anamespacegrmhd_html"><div class="ttname"><a href="namespacegrmhd.html">grmhd</a></div><div class="ttdoc">Items related to general relativistic magnetohydrodynamics (GRMHD)</div><div class="ttdef"><b>Definition:</b> BoundaryCondition.hpp:19</div></div>
+<div class="ttc" id="astructFrame_1_1Inertial_html"><div class="ttname"><a href="structFrame_1_1Inertial.html">Frame::Inertial</a></div><div class="ttdef"><b>Definition:</b> IndexType.hpp:44</div></div>
+<div class="ttc" id="astructgrmhd_1_1GhValenciaDivClean_1_1TimeDerivativeTerms_html"><div class="ttname"><a href="structgrmhd_1_1GhValenciaDivClean_1_1TimeDerivativeTerms.html">grmhd::GhValenciaDivClean::TimeDerivativeTerms</a></div><div class="ttdoc">Compute the RHS terms and flux values for both the Generalized Harmonic formulation of Einstein's equ...</div><div class="ttdef"><b>Definition:</b> TimeDerivativeTerms.hpp:181</div></div>
+<div class="ttc" id="astructGeneralizedHarmonic_1_1Tags_1_1ComputeLargestCharacteristicSpeed_html"><div class="ttname"><a href="structGeneralizedHarmonic_1_1Tags_1_1ComputeLargestCharacteristicSpeed.html">GeneralizedHarmonic::Tags::ComputeLargestCharacteristicSpeed</a></div><div class="ttdoc">Computes the largest magnitude of the characteristic speeds.</div><div class="ttdef"><b>Definition:</b> Characteristics.hpp:241</div></div>
+<div class="ttc" id="astructTags_1_1Variables_html"><div class="ttname"><a href="structTags_1_1Variables.html">Tags::Variables</a></div><div class="ttdef"><b>Definition:</b> VariablesTag.hpp:21</div></div>
+<div class="ttc" id="astructgrmhd_1_1ValenciaDivClean_1_1System_html"><div class="ttname"><a href="structgrmhd_1_1ValenciaDivClean_1_1System.html">grmhd::ValenciaDivClean::System</a></div><div class="ttdef"><b>Definition:</b> System.hpp:36</div></div>
+<div class="ttc" id="aclassgrmhd_1_1GhValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition_html"><div class="ttname"><a href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryConditions_1_1BoundaryCondition.html">grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition</a></div><div class="ttdoc">The base class for Generalized Harmonic and Valencia combined boundary conditions; all boundary condi...</div><div class="ttdef"><b>Definition:</b> BoundaryCondition.hpp:60</div></div>
+<div class="ttc" id="aclassgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection_html"><div class="ttname"><a href="classgrmhd_1_1GhValenciaDivClean_1_1BoundaryCorrections_1_1BoundaryCorrection.html">grmhd::GhValenciaDivClean::BoundaryCorrections::BoundaryCorrection</a></div><div class="ttdoc">The base class used to make boundary corrections factory createable so they can be specified in the i...</div><div class="ttdef"><b>Definition:</b> BoundaryCorrection.hpp:39</div></div>
+<div class="ttc" id="astructgrmhd_1_1GhValenciaDivClean_1_1System_html"><div class="ttname"><a href="structgrmhd_1_1GhValenciaDivClean_1_1System.html">grmhd::GhValenciaDivClean::System</a></div><div class="ttdef"><b>Definition:</b> System.hpp:32</div></div>
+<div class="ttc" id="astructgrmhd_1_1ValenciaDivClean_1_1ConservativeFromPrimitive_html"><div class="ttname"><a href="structgrmhd_1_1ValenciaDivClean_1_1ConservativeFromPrimitive.html">grmhd::ValenciaDivClean::ConservativeFromPrimitive</a></div><div class="ttdoc">Compute the conservative variables from primitive variables.</div><div class="ttdef"><b>Definition:</b> ConservativeFromPrimitive.hpp:61</div></div>
+<div class="ttc" id="astructgrmhd_1_1ValenciaDivClean_1_1ComputeFluxes_html"><div class="ttname"><a href="structgrmhd_1_1ValenciaDivClean_1_1ComputeFluxes.html">grmhd::ValenciaDivClean::ComputeFluxes</a></div><div class="ttdoc">The fluxes of the conservative variables.</div><div class="ttdef"><b>Definition:</b> Fluxes.hpp:59</div></div>
+<div class="ttc" id="astructGeneralizedHarmonic_1_1System_html"><div class="ttname"><a href="structGeneralizedHarmonic_1_1System.html">GeneralizedHarmonic::System</a></div><div class="ttdef"><b>Definition:</b> System.hpp:25</div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="astructgrmhd_1_1ValenciaDivClean_1_1ComputeSources_html"><div class="ttname"><a href="structgrmhd_1_1ValenciaDivClean_1_1ComputeSources.html">grmhd::ValenciaDivClean::ComputeSources</a></div><div class="ttdoc">Compute the source terms for the flux-conservative Valencia formulation of GRMHD with divergence clea...</div><div class="ttdef"><b>Definition:</b> Sources.hpp:84</div></div>
+<div class="ttc" id="astructTags_1_1deriv_html"><div class="ttname"><a href="structTags_1_1deriv.html">Tags::deriv</a></div><div class="ttdoc">Prefix indicating spatial derivatives.</div><div class="ttdef"><b>Definition:</b> PartialDerivatives.hpp:52</div></div>
+<div class="ttc" id="astructgr_1_1Tags_1_1ExtrinsicCurvature_html"><div class="ttname"><a href="structgr_1_1Tags_1_1ExtrinsicCurvature.html">gr::Tags::ExtrinsicCurvature</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:116</div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="astructgr_1_1Tags_1_1InverseSpatialMetric_html"><div class="ttname"><a href="structgr_1_1Tags_1_1InverseSpatialMetric.html">gr::Tags::InverseSpatialMetric</a></div><div class="ttdoc">Inverse of the spatial metric.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:33</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,369 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: NewtonianEuler::AnalyticData::KhInstability&lt; Dim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceNewtonianEuler.html">NewtonianEuler</a></li><li class="navelem"><a class="el" href="namespaceNewtonianEuler_1_1AnalyticData.html">AnalyticData</a></li><li class="navelem"><a class="el" href="classNewtonianEuler_1_1AnalyticData_1_1KhInstability.html">KhInstability</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classNewtonianEuler_1_1AnalyticData_1_1KhInstability-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">NewtonianEuler::AnalyticData::KhInstability&lt; Dim &gt; Class Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Initial data to simulate the Kelvin-Helmholtz instability.  
+ <a href="classNewtonianEuler_1_1AnalyticData_1_1KhInstability.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="KhInstability_8hpp_source.html">KhInstability.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1AdiabaticIndex.html">AdiabaticIndex</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The adiabatic index of the fluid.  <a href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1AdiabaticIndex.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1BackgroundDensity.html">BackgroundDensity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The mass density outside of the strip.  <a href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1BackgroundDensity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1BackgroundVelocity.html">BackgroundVelocity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The velocity along \(x\) outside of the strip.  <a href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1BackgroundVelocity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1PerturbAmplitude.html">PerturbAmplitude</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The amplitude of the perturbation.  <a href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1PerturbAmplitude.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1PerturbWidth.html">PerturbWidth</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The characteristic length for the width of the perturbation.  <a href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1PerturbWidth.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1Pressure.html">Pressure</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The initial (constant) pressure of the fluid.  <a href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1Pressure.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1StripBimedianHeight.html">StripBimedianHeight</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The vertical coordinate of the horizontal bimedian of the strip.  <a href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1StripBimedianHeight.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1StripDensity.html">StripDensity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The mass density in the strip.  <a href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1StripDensity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1StripThickness.html">StripThickness</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The thickness of the strip.  <a href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1StripThickness.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1StripVelocity.html">StripVelocity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The velocity along \(x\) in the strip.  <a href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1StripVelocity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ae06c9593075b8b7fdfaba610dc385e72"><td class="memItemLeft" align="right" valign="top"><a id="ae06c9593075b8b7fdfaba610dc385e72"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state_type</b> = <a class="el" href="classEquationsOfState_1_1IdealFluid.html">EquationsOfState::IdealFluid</a>&lt; false &gt;</td></tr>
+<tr class="separator:ae06c9593075b8b7fdfaba610dc385e72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6463dd44a8ccc0e85cd8b8f1e3397436"><td class="memItemLeft" align="right" valign="top"><a id="a6463dd44a8ccc0e85cd8b8f1e3397436"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>source_term_type</b> = <a class="el" href="structNewtonianEuler_1_1Sources_1_1NoSource.html">Sources::NoSource</a></td></tr>
+<tr class="separator:a6463dd44a8ccc0e85cd8b8f1e3397436"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0410fb8bcade7fcde6d2039eaadd99ee"><td class="memItemLeft" align="right" valign="top"><a id="a0410fb8bcade7fcde6d2039eaadd99ee"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1AdiabaticIndex.html">AdiabaticIndex</a>, <a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1StripBimedianHeight.html">StripBimedianHeight</a>, <a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1StripThickness.html">StripThickness</a>, <a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1StripDensity.html">StripDensity</a>, <a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1StripVelocity.html">StripVelocity</a>, <a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1BackgroundDensity.html">BackgroundDensity</a>, <a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1BackgroundVelocity.html">BackgroundVelocity</a>, <a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1Pressure.html">Pressure</a>, <a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1PerturbAmplitude.html">PerturbAmplitude</a>, <a class="el" href="structNewtonianEuler_1_1AnalyticData_1_1KhInstability_1_1PerturbWidth.html">PerturbWidth</a> &gt;</td></tr>
+<tr class="separator:a0410fb8bcade7fcde6d2039eaadd99ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a6d44b37b2d79201831073f5abed8c70b"><td class="memItemLeft" align="right" valign="top"><a id="a6d44b37b2d79201831073f5abed8c70b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>KhInstability</b> (const <a class="el" href="classNewtonianEuler_1_1AnalyticData_1_1KhInstability.html">KhInstability</a> &amp;)=delete</td></tr>
+<tr class="separator:a6d44b37b2d79201831073f5abed8c70b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9924404a50f3408edf31ce914d94bea6"><td class="memItemLeft" align="right" valign="top"><a id="a9924404a50f3408edf31ce914d94bea6"></a>
+<a class="el" href="classNewtonianEuler_1_1AnalyticData_1_1KhInstability.html">KhInstability</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classNewtonianEuler_1_1AnalyticData_1_1KhInstability.html">KhInstability</a> &amp;)=delete</td></tr>
+<tr class="separator:a9924404a50f3408edf31ce914d94bea6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e6ba88f129d5e38aeb7d0408a500e1c"><td class="memItemLeft" align="right" valign="top"><a id="a6e6ba88f129d5e38aeb7d0408a500e1c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>KhInstability</b> (<a class="el" href="classNewtonianEuler_1_1AnalyticData_1_1KhInstability.html">KhInstability</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a6e6ba88f129d5e38aeb7d0408a500e1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa889de066bed8c329546019957d4d41f"><td class="memItemLeft" align="right" valign="top"><a id="aa889de066bed8c329546019957d4d41f"></a>
+<a class="el" href="classNewtonianEuler_1_1AnalyticData_1_1KhInstability.html">KhInstability</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classNewtonianEuler_1_1AnalyticData_1_1KhInstability.html">KhInstability</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:aa889de066bed8c329546019957d4d41f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c570d10c045431149b2cd8b35250d4b"><td class="memItemLeft" align="right" valign="top"><a id="a1c570d10c045431149b2cd8b35250d4b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>KhInstability</b> (double adiabatic_index, double strip_bimedian_height, double strip_thickness, double strip_density, double strip_velocity, double background_density, double background_velocity, double pressure, double perturbation_amplitude, double perturbation_width)</td></tr>
+<tr class="separator:a1c570d10c045431149b2cd8b35250d4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f09f9c63db4e8a3ddf8f01cfafa6c4a"><td class="memTemplParams" colspan="2"><a id="a4f09f9c63db4e8a3ddf8f01cfafa6c4a"></a>
+template&lt;typename DataType , typename... Tags&gt; </td></tr>
+<tr class="memitem:a4f09f9c63db4e8a3ddf8f01cfafa6c4a"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classNewtonianEuler_1_1AnalyticData_1_1KhInstability.html#a4f09f9c63db4e8a3ddf8f01cfafa6c4a">variables</a> (const tnsr::I&lt; DataType, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;x, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:a4f09f9c63db4e8a3ddf8f01cfafa6c4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a collection of hydrodynamic variables at position x. <br /></td></tr>
+<tr class="separator:a4f09f9c63db4e8a3ddf8f01cfafa6c4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72133b8899809c278fb5be3866a9b700"><td class="memItemLeft" align="right" valign="top"><a id="a72133b8899809c278fb5be3866a9b700"></a>
+const <a class="el" href="classEquationsOfState_1_1IdealFluid.html">EquationsOfState::IdealFluid</a>&lt; false &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>equation_of_state</b> () const noexcept</td></tr>
+<tr class="separator:a72133b8899809c278fb5be3866a9b700"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a34dc4899155efe1915ce0079ae4db25a"><td class="memItemLeft" align="right" valign="top"><a id="a34dc4899155efe1915ce0079ae4db25a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;) noexcept</td></tr>
+<tr class="separator:a34dc4899155efe1915ce0079ae4db25a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aec45a414b76d7ad53d5d0e1bec060642"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:aec45a414b76d7ad53d5d0e1bec060642"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a64e208f493f1309fa1a98d7a14a14dea"><td class="memTemplParams" colspan="2"><a id="a64e208f493f1309fa1a98d7a14a14dea"></a>
+template&lt;size_t SpatialDim&gt; </td></tr>
+<tr class="memitem:a64e208f493f1309fa1a98d7a14a14dea"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classNewtonianEuler_1_1AnalyticData_1_1KhInstability.html">KhInstability</a>&lt; SpatialDim &gt; &amp;lhs, const <a class="el" href="classNewtonianEuler_1_1AnalyticData_1_1KhInstability.html">KhInstability</a>&lt; SpatialDim &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a64e208f493f1309fa1a98d7a14a14dea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+class NewtonianEuler::AnalyticData::KhInstability&lt; Dim &gt;</h3>
+
+<p>Initial data to simulate the Kelvin-Helmholtz instability. </p>
+<p>For comparison purposes, this class implements the planar shear of <a class="el" href="citelist.html#CITEREF_Schaal2015">[92]</a>, which is evolved using periodic boundary conditions. The initial state consists of a horizontal strip of mass density \(\rho_\text{in}\) moving with horizontal speed \(v_{\text{in}}\). The rest of the fluid possesses mass density \(\rho_\text{out}\), and its horizontal velocity is \(v_{\text{out}}\), both constant. Mathematically,</p>
+<p class="formulaDsp">
+\begin{align*} \rho(x, y) = \begin{cases} \rho_\text{in}, &amp; \left|y - y_\text{mid}\right| &lt; b/2\\ \rho_\text{out}, &amp; \text{otherwise}, \end{cases} \end{align*}
+</p>
+<p>and</p>
+<p class="formulaDsp">
+\begin{align*} v_x(x, y) = \begin{cases} v_{\text{in}}, &amp; \left|y - y_\text{mid}\right| &lt; b/2\\ v_{\text{out}}, &amp; \text{otherwise}, \end{cases} \end{align*}
+</p>
+<p>where \(b &gt; 0\) is the thickness of the strip, and \(y = y_\text{mid}\) is its horizontal bimedian. The initial pressure is set equal to a constant, and the system is evolved assuming an ideal fluid of known adiabatic index. Finally, in order to excite the instability, the vertical velocity is initialized to</p>
+<p class="formulaDsp">
+\begin{align*} v_y(x, y) = A\sin(4\pi x) \left[\exp\left(-\dfrac{(y - y_\text{top})^2}{2\sigma^2}\right) + \exp\left(-\dfrac{(y - y_\text{bot})^2}{2\sigma^2}\right)\right], \end{align*}
+</p>
+<p>whose net effect is to perturb the horizontal boundaries of the strip periodically along the \(x-\)axis. Here \(A\) is the amplitude, \(\sigma\) is a characteristic length for the perturbation width, and \(y_\text{top} = y_\text{mid} + b/2\) and \(y_\text{bot} = y_\text{mid} - b/2\) are the vertical coordinates of the top and bottom boundaries of the strip, respectively.</p>
+<dl class="section note"><dt>Note</dt><dd>The periodic form of the perturbation enforces the horizontal extent of the domain to be a multiple of 0.5. The domain chosen in <a class="el" href="citelist.html#CITEREF_Schaal2015">[92]</a> is the square \([0, 1]^2\), which covers two wavelengths of the perturbation. In addition, the authors ran their simulations using</dd></dl>
+<div class="fragment"><div class="line">AdiabaticIndex: 1.4</div>
+<div class="line">StripBimedianHeight: 0.5</div>
+<div class="line">StripThickness: 0.5</div>
+<div class="line">StripDensity: 2.0</div>
+<div class="line">StripVelocity: 0.5</div>
+<div class="line">BackgroundDensity: 1.0</div>
+<div class="line">BackgroundVelocity: -0.5</div>
+<div class="line">Pressure: 2.5</div>
+<div class="line">PerturbAmplitude: 0.1</div>
+<div class="line">PerturbWidth: 0.035355339059327376 # 0.05/<a class="code" href="group__TensorExpressionsGroup.html#gaf9042e362077610ab68fd91c2dd55e18">sqrt</a>(2)</div>
+</div><!-- fragment --><dl class="section note"><dt>Note</dt><dd>This class can be used to initialize 2D and 3D data. In 3D, the strip is aligned to the \(xy-\)plane, and the vertical direction is taken to be the \(z-\)axis. </dd></dl>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="aec45a414b76d7ad53d5d0e1bec060642"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aec45a414b76d7ad53d5d0e1bec060642">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classNewtonianEuler_1_1AnalyticData_1_1KhInstability.html">NewtonianEuler::AnalyticData::KhInstability</a>&lt; Dim &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Initial data to simulate the KH instability.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following files:<ul>
+<li>src/Evolution/Executables/NewtonianEuler/<a class="el" href="EvolveNewtonianEulerFwd_8hpp_source.html">EvolveNewtonianEulerFwd.hpp</a></li>
+<li>src/PointwiseFunctions/AnalyticData/NewtonianEuler/<a class="el" href="KhInstability_8hpp_source.html">KhInstability.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="agroup__TensorExpressionsGroup_html_gaf9042e362077610ab68fd91c2dd55e18"><div class="ttname"><a href="group__TensorExpressionsGroup.html#gaf9042e362077610ab68fd91c2dd55e18">sqrt</a></div><div class="ttdeci">auto sqrt(const TensorExpression&lt; T, typename T::type, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;&gt; &amp;t)</div><div class="ttdoc">Returns the tensor expression representing the square root of a tensor expression that evaluates to a...</div><div class="ttdef"><b>Definition:</b> SquareRoot.hpp:83</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

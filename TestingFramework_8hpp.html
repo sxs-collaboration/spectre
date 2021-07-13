@@ -1,0 +1,262 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: tests/Unit/Framework/TestingFramework.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_33df814919e476f9d56dccef9b24e276.html">tests</a></li><li class="navelem"><a class="el" href="dir_38113a4c235494bd05bb19f85d006940.html">Unit</a></li><li class="navelem"><a class="el" href="dir_bfa7bcfc7f40b36e07518da92ec4c107.html">Framework</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#define-members">Macros</a>  </div>
+  <div class="headertitle">
+<div class="title">TestingFramework.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &lt;catch.hpp&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/csignal.html">csignal</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/iomanip.html">iomanip</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/limits.html">limits</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/sstream.html">sstream</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/stdexcept.html">stdexcept</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/unordered_set.html">unordered_set</a>&gt;</code><br />
+<code>#include &quot;<a class="el" href="Error_8hpp_source.html">Utilities/ErrorHandling/Error.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="Requires_8hpp_source.html">Utilities/Requires.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="StlStreamDeclarations_8hpp_source.html">Utilities/StlStreamDeclarations.hpp</a>&quot;</code><br />
+<code>#include &quot;Utilities/System/Abort.hpp&quot;</code><br />
+<code>#include &quot;Utilities/System/Exit.hpp&quot;</code><br />
+<code>#include &quot;Utilities/TypeTraits/IsA.hpp&quot;</code><br />
+<code>#include &quot;Utilities/TypeTraits/IsIterable.hpp&quot;</code><br />
+<code>#include &quot;Utilities/TypeTraits/IsMaplike.hpp&quot;</code><br />
+</div>
+<p><a href="TestingFramework_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:ga37fce1ae5980139598815eda5a5de8ab"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga37fce1ae5980139598815eda5a5de8ab">SPECTRE_PARALLEL_REQUIRE</a>(expr)</td></tr>
+<tr class="memdesc:ga37fce1ae5980139598815eda5a5de8ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">A similar to Catch's REQUIRE statement, but can be used in tests that spawn several chares with possibly complex interaction between the chares.  <a href="group__TestingFrameworkGroup.html#ga37fce1ae5980139598815eda5a5de8ab">More...</a><br /></td></tr>
+<tr class="separator:ga37fce1ae5980139598815eda5a5de8ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2adb81ed48c421e8f77541f34eb3f821"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga2adb81ed48c421e8f77541f34eb3f821">SPECTRE_PARALLEL_REQUIRE_FALSE</a>(expr)</td></tr>
+<tr class="memdesc:ga2adb81ed48c421e8f77541f34eb3f821"><td class="mdescLeft">&#160;</td><td class="mdescRight">A similar to Catch's REQUIRE_FALSE statement, but can be used in tests that spawn several chares with possibly complex interaction between the chares.  <a href="group__TestingFrameworkGroup.html#ga2adb81ed48c421e8f77541f34eb3f821">More...</a><br /></td></tr>
+<tr class="separator:ga2adb81ed48c421e8f77541f34eb3f821"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5509fb28c65f22498410618609f8c085"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga5509fb28c65f22498410618609f8c085">CHECK_COMPLEX_APPROX</a>(a,  b)</td></tr>
+<tr class="memdesc:ga5509fb28c65f22498410618609f8c085"><td class="mdescLeft">&#160;</td><td class="mdescRight">A wrapper around Catch's CHECK macro that checks approximate equality of the two entries in a <a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/complex.html">std::complex</a>. For efficiency, no function forwarding is performed, just a pair of <code>CHECK</code>s inline.  <a href="group__TestingFrameworkGroup.html#ga5509fb28c65f22498410618609f8c085">More...</a><br /></td></tr>
+<tr class="separator:ga5509fb28c65f22498410618609f8c085"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5527bb2a3aa50f572faae13dfb8783e5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga5527bb2a3aa50f572faae13dfb8783e5">CHECK_COMPLEX_CUSTOM_APPROX</a>(a,  b,  appx)</td></tr>
+<tr class="memdesc:ga5527bb2a3aa50f572faae13dfb8783e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <code>CHECK_COMPLEX_APPROX</code> with user-defined Approx. The third argument should be of type <code>Approx</code>.  <a href="group__TestingFrameworkGroup.html#ga5527bb2a3aa50f572faae13dfb8783e5">More...</a><br /></td></tr>
+<tr class="separator:ga5527bb2a3aa50f572faae13dfb8783e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6ce5d669c94418f197e4c55c53e64a64"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">CHECK_ITERABLE_APPROX</a>(a,  b)</td></tr>
+<tr class="memdesc:ga6ce5d669c94418f197e4c55c53e64a64"><td class="mdescLeft">&#160;</td><td class="mdescRight">A wrapper around Catch's CHECK macro that checks approximate equality of entries in iterable containers. For maplike containers, keys are checked for strict equality and values are checked for approximate equality.  <a href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">More...</a><br /></td></tr>
+<tr class="separator:ga6ce5d669c94418f197e4c55c53e64a64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4f36d1ee34e6eb0721e35918eb488f0c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga4f36d1ee34e6eb0721e35918eb488f0c">CHECK_ITERABLE_CUSTOM_APPROX</a>(a,  b,  appx)</td></tr>
+<tr class="memdesc:ga4f36d1ee34e6eb0721e35918eb488f0c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <code>CHECK_ITERABLE_APPROX</code> with user-defined Approx. The third argument should be of type <code>Approx</code>.  <a href="group__TestingFrameworkGroup.html#ga4f36d1ee34e6eb0721e35918eb488f0c">More...</a><br /></td></tr>
+<tr class="separator:ga4f36d1ee34e6eb0721e35918eb488f0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf962c28abc1a1f014f2a6b32c6f01680"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#gaf962c28abc1a1f014f2a6b32c6f01680">ERROR_TEST</a>()</td></tr>
+<tr class="memdesc:gaf962c28abc1a1f014f2a6b32c6f01680"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mark a test as checking a call to ERROR.  <a href="group__TestingFrameworkGroup.html#gaf962c28abc1a1f014f2a6b32c6f01680">More...</a><br /></td></tr>
+<tr class="separator:gaf962c28abc1a1f014f2a6b32c6f01680"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4439208ed8accb2887ff47388e91e58b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga4439208ed8accb2887ff47388e91e58b">ASSERTION_TEST</a>()</td></tr>
+<tr class="memdesc:ga4439208ed8accb2887ff47388e91e58b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mark a test to be checking an ASSERT.  <a href="group__TestingFrameworkGroup.html#ga4439208ed8accb2887ff47388e91e58b">More...</a><br /></td></tr>
+<tr class="separator:ga4439208ed8accb2887ff47388e91e58b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacd515a98a97cf7fc82e722274b17e7ce"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#gacd515a98a97cf7fc82e722274b17e7ce">OUTPUT_TEST</a>()</td></tr>
+<tr class="memdesc:gacd515a98a97cf7fc82e722274b17e7ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mark a test as checking the output with a regular expression.  <a href="group__TestingFrameworkGroup.html#gacd515a98a97cf7fc82e722274b17e7ce">More...</a><br /></td></tr>
+<tr class="separator:gacd515a98a97cf7fc82e722274b17e7ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Code to wrap or improve the Catch testing framework used for unit tests. </p>
+</div></div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

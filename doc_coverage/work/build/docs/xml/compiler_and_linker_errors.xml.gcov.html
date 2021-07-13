@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - 39f3c2b725318dcf91749887b1e61f477736e132 - /work/build/docs/xml/compiler_and_linker_errors.xml</title>
+  <link rel="stylesheet" type="text/css" href="../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title"> SpECTRE Documentation Coverage Report</td></tr>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../index.html">top level</a> - <a href="index.html">work/build/docs/xml</a> - compiler_and_linker_errors.xml</td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+             <td class="headerItem">Commit:</td>
+             <td class="headerValue"><a target="_blank" href="https://github.com/sxs-collaboration/spectre/commit/39f3c2b725318dcf91749887b1e61f477736e132">39f3c2b725318dcf91749887b1e61f477736e132</a></td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2021-07-13 03:19:40</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineCov">          1 : &lt;?xml version='1.0' encoding='UTF-8' standalone='no'?&gt;</span></a>
+<a name="2"><span class="lineNum">       2 </span>            : &lt;doxygen xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:noNamespaceSchemaLocation=&quot;compound.xsd&quot; version=&quot;1.8.17&quot;&gt;</a>
+<a name="3"><span class="lineNum">       3 </span>            :   &lt;compounddef id=&quot;compiler_and_linker_errors&quot; kind=&quot;page&quot;&gt;</a>
+<a name="4"><span class="lineNum">       4 </span>            :     &lt;compoundname&gt;compiler_and_linker_errors&lt;/compoundname&gt;</a>
+<a name="5"><span class="lineNum">       5 </span>            :     &lt;title&gt;Understanding Compiler and Linker Errors&lt;/title&gt;</a>
+<a name="6"><span class="lineNum">       6 </span>            :     &lt;briefdescription&gt;</a>
+<a name="7"><span class="lineNum">       7 </span>            :     &lt;/briefdescription&gt;</a>
+<a name="8"><span class="lineNum">       8 </span>            :     &lt;detaileddescription&gt;</a>
+<a name="9"><span class="lineNum">       9 </span>            : &lt;sect1 id=&quot;compiler_and_linker_errors_1understanding_linker_errors&quot;&gt;</a>
+<a name="10"><span class="lineNum">      10 </span>            : &lt;title&gt;Linker Errors&lt;/title&gt;</a>
+<a name="11"><span class="lineNum">      11 </span>            : &lt;para&gt;There are a few common mistakes that can lead to linker problems, specifically problems where there is an &lt;computeroutput&gt;undefined reference&lt;/computeroutput&gt;. These include:&lt;itemizedlist&gt;</a>
+<a name="12"><span class="lineNum">      12 </span>            : &lt;listitem&gt;&lt;para&gt;forgetting to add a &lt;computeroutput&gt;.cpp&lt;/computeroutput&gt; file to the list of sources of a library in a &lt;computeroutput&gt;CMakeLists.txt&lt;/computeroutput&gt; file&lt;/para&gt;</a>
+<a name="13"><span class="lineNum">      13 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;missing an explicit instantiation of a function or class template in a &lt;computeroutput&gt;cpp&lt;/computeroutput&gt; file&lt;/para&gt;</a>
+<a name="14"><span class="lineNum">      14 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;not including a &lt;computeroutput&gt;tpp&lt;/computeroutput&gt; file inside a &lt;computeroutput&gt;cpp&lt;/computeroutput&gt; file&lt;/para&gt;</a>
+<a name="15"><span class="lineNum">      15 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;the template specialization or function overload has been explicitly disabled via SFINAE (usually through the use of a &lt;computeroutput&gt;Requires&lt;/computeroutput&gt;)&lt;/para&gt;</a>
+<a name="16"><span class="lineNum">      16 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;not linking a library (explained below)&lt;/para&gt;</a>
+<a name="17"><span class="lineNum">      17 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="18"><span class="lineNum">      18 </span>            : &lt;/para&gt;</a>
+<a name="19"><span class="lineNum">      19 </span>            : &lt;para&gt;Possibly the most difficult part of fixing linking errors is understanding what they are trying to tell you. Let&amp;apos;s take the following example &lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;error:&lt;sp/&gt;undefined&lt;sp/&gt;reference&lt;sp/&gt;to&lt;sp/&gt;&amp;apos;Tensor&amp;lt;DataVector,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="20"><span class="lineNum">      20 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;brigand::list&amp;lt;brigand::integral_constant&amp;lt;int,&lt;sp/&gt;1&amp;gt;&lt;sp/&gt;&amp;gt;,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="21"><span class="lineNum">      21 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;brigand::list&amp;lt;Tensor_detail::TensorIndexType&amp;lt;3ul,&lt;sp/&gt;(UpLo)0,&lt;sp/&gt;Frame::Inertial,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="22"><span class="lineNum">      22 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;(IndexType)0&amp;gt;&lt;sp/&gt;&amp;gt;&lt;sp/&gt;&amp;gt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="23"><span class="lineNum">      23 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;random_unit_normal&amp;lt;DataVector&amp;gt;(gsl::not_null&amp;lt;std::mersenne_twister_engine&amp;lt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="24"><span class="lineNum">      24 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;unsigned&lt;sp/&gt;long,&lt;sp/&gt;32ul,&lt;sp/&gt;624ul,&lt;sp/&gt;397ul,&lt;sp/&gt;31ul,&lt;sp/&gt;2567483615ul,&lt;sp/&gt;11ul,&lt;sp/&gt;4294967295ul,&lt;sp/&gt;7ul,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="25"><span class="lineNum">      25 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;2636928640ul,&lt;sp/&gt;15ul,&lt;sp/&gt;4022730752ul,&lt;sp/&gt;18ul,&lt;sp/&gt;1812433253ul&amp;gt;*&amp;gt;,&lt;sp/&gt;Tensor&amp;lt;DataVector,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="26"><span class="lineNum">      26 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;brigand::list&amp;lt;brigand::integral_constant&amp;lt;int,&lt;sp/&gt;1&amp;gt;,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="27"><span class="lineNum">      27 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;brigand::integral_constant&amp;lt;int,&lt;sp/&gt;1&amp;gt;&lt;sp/&gt;&amp;gt;,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="28"><span class="lineNum">      28 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;brigand::list&amp;lt;Tensor_detail::TensorIndexType&amp;lt;3ul,&lt;sp/&gt;(UpLo)1,&lt;sp/&gt;Frame::Inertial,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="29"><span class="lineNum">      29 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;(IndexType)0&amp;gt;,&lt;sp/&gt;Tensor_detail::TensorIndexType&amp;lt;3ul,&lt;sp/&gt;(UpLo)1,&lt;sp/&gt;Frame::Inertial,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="30"><span class="lineNum">      30 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;(IndexType)0&amp;gt;&lt;sp/&gt;&amp;gt;&lt;sp/&gt;&amp;gt;&lt;sp/&gt;const&amp;amp;)&amp;apos;&lt;sp/&gt;in&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="31"><span class="lineNum">      31 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;lib/libTest_GeneralizedHarmonic.a(Test_UpwindFlux.cpp.o):&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="32"><span class="lineNum">      32 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Test_UpwindFlux.cpp:function&lt;sp/&gt;(anonymous&lt;sp/&gt;namespace)::test_upwind_flux_random()&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="33"><span class="lineNum">      33 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="34"><span class="lineNum">      34 </span>            : &lt;para&gt;We can start by splitting out information about different parts of the error. First, &lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;error:&lt;sp/&gt;undefined&lt;sp/&gt;reference&lt;sp/&gt;to&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="35"><span class="lineNum">      35 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="36"><span class="lineNum">      36 </span>            : &lt;para&gt;tells us that we forgot to add a link dependency for a library or executable. The next relevant part of information is which library (executable) and file the missing function/class was in. This is at the end of the error message (unfortunately, where in the error message can depend on your linker, these examples used &lt;computeroutput&gt;ld.lld&lt;/computeroutput&gt; v9): &lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;lib/libTest_GeneralizedHarmonic.a(Test_UpwindFlux.cpp.o):&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="37"><span class="lineNum">      37 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Test_UpwindFlux.cpp:function&lt;sp/&gt;(anonymous&lt;sp/&gt;namespace)::test_upwind_flux_random()&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="38"><span class="lineNum">      38 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="39"><span class="lineNum">      39 </span>            : &lt;para&gt;What this means is that the missing link dependency is used in the library &lt;computeroutput&gt;Test_GeneralizedHarmonic&lt;/computeroutput&gt;, the file &lt;computeroutput&gt;Test_UpwindFlux.cpp&lt;/computeroutput&gt;, and the function &lt;computeroutput&gt;test_upwind_flux_random()&lt;/computeroutput&gt;.&lt;/para&gt;</a>
+<a name="40"><span class="lineNum">      40 </span>            : &lt;para&gt;We have now determined what the linker error is (a missing link dependency), and in which library, file, and function the missing link dependency is used. We now need to understand what the missing link dependency is. Since SpECTRE uses a lot of templates, the missing reference (link dependency) can be quite long. In this case it is: &lt;programlisting&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Tensor&amp;lt;DataVector,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="41"><span class="lineNum">      41 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;brigand::list&amp;lt;brigand::integral_constant&amp;lt;int,&lt;sp/&gt;1&amp;gt;&lt;sp/&gt;&amp;gt;,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="42"><span class="lineNum">      42 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;brigand::list&amp;lt;Tensor_detail::TensorIndexType&amp;lt;3ul,&lt;sp/&gt;(UpLo)0,&lt;sp/&gt;Frame::Inertial,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="43"><span class="lineNum">      43 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;(IndexType)0&amp;gt;&lt;sp/&gt;&amp;gt;&lt;sp/&gt;&amp;gt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="44"><span class="lineNum">      44 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;random_unit_normal&amp;lt;DataVector&amp;gt;(gsl::not_null&amp;lt;std::mersenne_twister_engine&amp;lt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="45"><span class="lineNum">      45 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;unsigned&lt;sp/&gt;long,&lt;sp/&gt;32ul,&lt;sp/&gt;624ul,&lt;sp/&gt;397ul,&lt;sp/&gt;31ul,&lt;sp/&gt;2567483615ul,&lt;sp/&gt;11ul,&lt;sp/&gt;4294967295ul,&lt;sp/&gt;7ul,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="46"><span class="lineNum">      46 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;2636928640ul,&lt;sp/&gt;15ul,&lt;sp/&gt;4022730752ul,&lt;sp/&gt;18ul,&lt;sp/&gt;1812433253ul&amp;gt;*&amp;gt;,&lt;sp/&gt;Tensor&amp;lt;DataVector,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="47"><span class="lineNum">      47 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;brigand::list&amp;lt;brigand::integral_constant&amp;lt;int,&lt;sp/&gt;1&amp;gt;,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="48"><span class="lineNum">      48 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;brigand::integral_constant&amp;lt;int,&lt;sp/&gt;1&amp;gt;&lt;sp/&gt;&amp;gt;,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="49"><span class="lineNum">      49 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;brigand::list&amp;lt;Tensor_detail::TensorIndexType&amp;lt;3ul,&lt;sp/&gt;(UpLo)1,&lt;sp/&gt;Frame::Inertial,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="50"><span class="lineNum">      50 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;(IndexType)0&amp;gt;,&lt;sp/&gt;Tensor_detail::TensorIndexType&amp;lt;3ul,&lt;sp/&gt;(UpLo)1,&lt;sp/&gt;Frame::Inertial,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="51"><span class="lineNum">      51 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;(IndexType)0&amp;gt;&lt;sp/&gt;&amp;gt;&lt;sp/&gt;&amp;gt;&lt;sp/&gt;const&amp;amp;)&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="52"><span class="lineNum">      52 </span>            : &lt;/programlisting&gt;&lt;/para&gt;</a>
+<a name="53"><span class="lineNum">      53 </span>            : &lt;para&gt;In order to make this easier to read, it is recommended to run the code through ClangFormat. This can be done by copying the linker output into an empty &lt;computeroutput&gt;cpp&lt;/computeroutput&gt; file and running &lt;computeroutput&gt;clang-format -i EMPTY_FILE_WITH_LINKER_OUTPUT&lt;/computeroutput&gt;. Keep in mind that ClangFormat will only work if you have only copied the part of the linker output that resembles valid C++. Doing so in this case gives: &lt;programlisting filename=&quot;.cpp&quot;&gt;&lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;Tensor&amp;lt;DataVector,&lt;sp/&gt;brigand::list&amp;lt;brigand::integral_constant&amp;lt;int,&lt;sp/&gt;1&amp;gt;&lt;sp/&gt;&amp;gt;,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="54"><span class="lineNum">      54 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;brigand::list&amp;lt;Tensor_detail::TensorIndexType&amp;lt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="55"><span class="lineNum">      55 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;3ul,&lt;sp/&gt;(&lt;ref refid=&quot;group__TensorGroup_1gaab1181edf2ab2b664b0f174223f08c28&quot; kindref=&quot;member&quot;&gt;UpLo&lt;/ref&gt;)0,&lt;sp/&gt;&lt;ref refid=&quot;structFrame_1_1Inertial&quot; kindref=&quot;compound&quot;&gt;Frame::Inertial&lt;/ref&gt;,&lt;sp/&gt;(&lt;ref refid=&quot;group__TensorGroup_1ga875b107b929ff008a27078792ac0bc8e&quot; kindref=&quot;member&quot;&gt;IndexType&lt;/ref&gt;)0&amp;gt;&lt;sp/&gt;&amp;gt;&lt;sp/&gt;&amp;gt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="56"><span class="lineNum">      56 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;random_unit_normal&amp;lt;DataVector&amp;gt;(&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="57"><span class="lineNum">      57 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;ref refid=&quot;classgsl_1_1not__null&quot; kindref=&quot;compound&quot;&gt;gsl::not_null&lt;/ref&gt;&amp;lt;&lt;ref refid=&quot;cpp/numeric/random/mersenne_twister_engine&quot; kindref=&quot;compound&quot; external=&quot;/__w/spectre/spectre/docs/config/cppreference-doxygen-web.tag.xml&quot;&gt;std::mersenne_twister_engine&lt;/ref&gt;&amp;lt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="58"><span class="lineNum">      58 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;/highlight&gt;&lt;highlight class=&quot;keywordtype&quot;&gt;unsigned&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;/highlight&gt;&lt;highlight class=&quot;keywordtype&quot;&gt;long&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;,&lt;sp/&gt;32ul,&lt;sp/&gt;624ul,&lt;sp/&gt;397ul,&lt;sp/&gt;31ul,&lt;sp/&gt;2567483615ul,&lt;sp/&gt;11ul,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="59"><span class="lineNum">      59 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;4294967295ul,&lt;sp/&gt;7ul,&lt;sp/&gt;2636928640ul,&lt;sp/&gt;15ul,&lt;sp/&gt;4022730752ul,&lt;sp/&gt;18ul,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="60"><span class="lineNum">      60 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;1812433253ul&amp;gt;*&amp;gt;,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="61"><span class="lineNum">      61 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;Tensor&amp;lt;&lt;ref refid=&quot;classDataVector&quot; kindref=&quot;compound&quot;&gt;DataVector&lt;/ref&gt;,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="62"><span class="lineNum">      62 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;brigand::list&amp;lt;brigand::integral_constant&amp;lt;int,&lt;sp/&gt;1&amp;gt;,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="63"><span class="lineNum">      63 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;brigand::integral_constant&amp;lt;int,&lt;sp/&gt;1&amp;gt;&lt;sp/&gt;&amp;gt;,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="64"><span class="lineNum">      64 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;brigand::list&amp;lt;&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="65"><span class="lineNum">      65 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;Tensor_detail::TensorIndexType&amp;lt;3ul,&lt;sp/&gt;(&lt;ref refid=&quot;group__TensorGroup_1gaab1181edf2ab2b664b0f174223f08c28&quot; kindref=&quot;member&quot;&gt;UpLo&lt;/ref&gt;)1,&lt;sp/&gt;&lt;ref refid=&quot;structFrame_1_1Inertial&quot; kindref=&quot;compound&quot;&gt;Frame::Inertial&lt;/ref&gt;,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="66"><span class="lineNum">      66 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;(&lt;ref refid=&quot;group__TensorGroup_1ga875b107b929ff008a27078792ac0bc8e&quot; kindref=&quot;member&quot;&gt;IndexType&lt;/ref&gt;)0&amp;gt;,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="67"><span class="lineNum">      67 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;Tensor_detail::TensorIndexType&amp;lt;3ul,&lt;sp/&gt;(&lt;ref refid=&quot;group__TensorGroup_1gaab1181edf2ab2b664b0f174223f08c28&quot; kindref=&quot;member&quot;&gt;UpLo&lt;/ref&gt;)1,&lt;sp/&gt;&lt;ref refid=&quot;structFrame_1_1Inertial&quot; kindref=&quot;compound&quot;&gt;Frame::Inertial&lt;/ref&gt;,&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="68"><span class="lineNum">      68 </span>            : &lt;codeline&gt;&lt;highlight class=&quot;normal&quot;&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;&lt;sp/&gt;(&lt;ref refid=&quot;group__TensorGroup_1ga875b107b929ff008a27078792ac0bc8e&quot; kindref=&quot;member&quot;&gt;IndexType&lt;/ref&gt;)0&amp;gt;&lt;sp/&gt;&amp;gt;&lt;sp/&gt;&amp;gt;&lt;sp/&gt;&lt;/highlight&gt;&lt;highlight class=&quot;keyword&quot;&gt;const&lt;/highlight&gt;&lt;highlight class=&quot;normal&quot;&gt;&amp;amp;);&lt;/highlight&gt;&lt;/codeline&gt;</a>
+<a name="69"><span class="lineNum">      69 </span>            : &lt;/programlisting&gt; We see that it is the function &lt;computeroutput&gt;random_unit_normal&lt;/computeroutput&gt; that isn&amp;apos;t found. Now we can search in the code base where than function is defined. Doing a &lt;computeroutput&gt;git grep &amp;quot;random_unit_normal&amp;quot;&lt;/computeroutput&gt; points to &lt;computeroutput&gt;tests/Unit/Helpers/DataStructures/RandomUnitNormal.?pp&lt;/computeroutput&gt;. Looking at &lt;computeroutput&gt;&lt;ref refid=&quot;RandomUnitNormal_8hpp_source&quot; kindref=&quot;compound&quot;&gt;tests/Unit/Helpers/DataStructures/RandomUnitNormal.hpp&lt;/ref&gt;&lt;/computeroutput&gt; we see that the function &lt;computeroutput&gt;random_unit_normal&lt;/computeroutput&gt; is declared there, and looking in the corresponding &lt;computeroutput&gt;cpp&lt;/computeroutput&gt; we see &lt;computeroutput&gt;random_unit_normal&lt;/computeroutput&gt; is instantiated in the source file. Opening up &lt;computeroutput&gt;tests/Unit/Helpers/DataStructures/CMakeLists.txt&lt;/computeroutput&gt; we see that the library name is &lt;computeroutput&gt;DataStructuresHelpers&lt;/computeroutput&gt;, and &lt;computeroutput&gt;RandomUnitNormal.cpp&lt;/computeroutput&gt; is in the list of sources for the library. Thus, linking &lt;computeroutput&gt;Test_GeneralizedHarmonic&lt;/computeroutput&gt; against &lt;computeroutput&gt;DataStructuresHelpers&lt;/computeroutput&gt; will resolve our error. To link against a library, you must add it to the &lt;computeroutput&gt;target_link_libraries&lt;/computeroutput&gt;, or the last argument passed to &lt;computeroutput&gt;add_test_library&lt;/computeroutput&gt;.&lt;/para&gt;</a>
+<a name="70"><span class="lineNum">      70 </span>            : &lt;para&gt;If &lt;computeroutput&gt;random_unit_normal&lt;/computeroutput&gt; had been defined in the header file, then the error would&amp;apos;ve indicated that we did not include the header (or &lt;computeroutput&gt;tpp&lt;/computeroutput&gt;) file into &lt;computeroutput&gt;Test_UpwindFlux.cpp&lt;/computeroutput&gt;, and so the compiler could not generate an instantiation.&lt;/para&gt;</a>
+<a name="71"><span class="lineNum">      71 </span>            : &lt;para&gt;In summary:&lt;itemizedlist&gt;</a>
+<a name="72"><span class="lineNum">      72 </span>            : &lt;listitem&gt;&lt;para&gt;Identify target with undefined reference, i.e. the file included in a library or executable.&lt;/para&gt;</a>
+<a name="73"><span class="lineNum">      73 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;Identify missing source definition (usually a function or static variable).&lt;/para&gt;</a>
+<a name="74"><span class="lineNum">      74 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;Find source declaration and definition in repository.&lt;/para&gt;</a>
+<a name="75"><span class="lineNum">      75 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;If source definition is in a &lt;computeroutput&gt;cpp&lt;/computeroutput&gt; file, make sure it is in the list of sources in the &lt;computeroutput&gt;CMakeLists.txt&lt;/computeroutput&gt; in the same directory and that the corresponding library is linked against by the target.&lt;/para&gt;</a>
+<a name="76"><span class="lineNum">      76 </span>            : &lt;para&gt;If the undefined reference is a template, make sure the required instantiation exists.&lt;/para&gt;</a>
+<a name="77"><span class="lineNum">      77 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;If the undefined reference&amp;apos;s definition is in a &lt;computeroutput&gt;tpp&lt;/computeroutput&gt; file, make sure the &lt;computeroutput&gt;tpp&lt;/computeroutput&gt; file is included in the target file.&lt;/para&gt;</a>
+<a name="78"><span class="lineNum">      78 </span>            : &lt;/listitem&gt;&lt;listitem&gt;&lt;para&gt;If the undefined reference&amp;apos;s source definition is in an &lt;computeroutput&gt;hpp&lt;/computeroutput&gt; file, make sure the specific instantiation is possible (e.g. not forbidden by a &lt;computeroutput&gt;Requires&lt;/computeroutput&gt;) &lt;/para&gt;</a>
+<a name="79"><span class="lineNum">      79 </span>            : &lt;/listitem&gt;&lt;/itemizedlist&gt;</a>
+<a name="80"><span class="lineNum">      80 </span>            : &lt;/para&gt;</a>
+<a name="81"><span class="lineNum">      81 </span>            : &lt;/sect1&gt;</a>
+<a name="82"><span class="lineNum">      82 </span>            :     &lt;/detaileddescription&gt;</a>
+<a name="83"><span class="lineNum">      83 </span>            :   &lt;/compounddef&gt;</a>
+<a name="84"><span class="lineNum">      84 </span>            : &lt;/doxygen&gt;</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

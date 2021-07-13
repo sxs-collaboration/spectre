@@ -1,0 +1,378 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::CoordinateMaps::BulgedCube Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1CoordinateMaps.html">CoordinateMaps</a></li><li class="navelem"><a class="el" href="classdomain_1_1CoordinateMaps_1_1BulgedCube.html">BulgedCube</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classdomain_1_1CoordinateMaps_1_1BulgedCube-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::CoordinateMaps::BulgedCube Class Reference<div class="ingroups"><a class="el" href="group__CoordinateMapsGroup.html">Coordinate Maps</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Three dimensional map from the cube to a bulged cube. The cube is shaped such that the surface is compatible with the inner surface of Wedge&lt;3&gt;. The shape of the object can be chosen to be cubical, if the sphericity is set to 0, or to a sphere, if the sphericity is set to 1. The sphericity can be set to any number between 0 and 1 for a bulged cube.  
+ <a href="classdomain_1_1CoordinateMaps_1_1BulgedCube.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="BulgedCube_8hpp_source.html">BulgedCube.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a36280c100c4e7c77fc4905e61589bb0a"><td class="memItemLeft" align="right" valign="top"><a id="a36280c100c4e7c77fc4905e61589bb0a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BulgedCube</b> (double radius, double sphericity, bool use_equiangular_map) noexcept</td></tr>
+<tr class="separator:a36280c100c4e7c77fc4905e61589bb0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1697043f87a153d564e39a3ae07eae26"><td class="memItemLeft" align="right" valign="top"><a id="a1697043f87a153d564e39a3ae07eae26"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BulgedCube</b> (<a class="el" href="classdomain_1_1CoordinateMaps_1_1BulgedCube.html">BulgedCube</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a1697043f87a153d564e39a3ae07eae26"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adaa02e48faee96dbd1ddabe3f6f4270a"><td class="memItemLeft" align="right" valign="top"><a id="adaa02e48faee96dbd1ddabe3f6f4270a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BulgedCube</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1BulgedCube.html">BulgedCube</a> &amp;) noexcept=default</td></tr>
+<tr class="separator:adaa02e48faee96dbd1ddabe3f6f4270a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18dc49846ad629979530b30c657331a5"><td class="memItemLeft" align="right" valign="top"><a id="a18dc49846ad629979530b30c657331a5"></a>
+<a class="el" href="classdomain_1_1CoordinateMaps_1_1BulgedCube.html">BulgedCube</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1BulgedCube.html">BulgedCube</a> &amp;) noexcept=default</td></tr>
+<tr class="separator:a18dc49846ad629979530b30c657331a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3085d82d5f6791f205eefc19bf81d3f"><td class="memItemLeft" align="right" valign="top"><a id="ae3085d82d5f6791f205eefc19bf81d3f"></a>
+<a class="el" href="classdomain_1_1CoordinateMaps_1_1BulgedCube.html">BulgedCube</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1CoordinateMaps_1_1BulgedCube.html">BulgedCube</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:ae3085d82d5f6791f205eefc19bf81d3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acbd9b189bc371f6ceacf1b669bf0125b"><td class="memTemplParams" colspan="2"><a id="acbd9b189bc371f6ceacf1b669bf0125b"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:acbd9b189bc371f6ceacf1b669bf0125b"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator()</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:acbd9b189bc371f6ceacf1b669bf0125b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a733bba5a7e36b650dac91a3e3e4b9667"><td class="memItemLeft" align="right" valign="top"><a id="a733bba5a7e36b650dac91a3e3e4b9667"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMaps_1_1BulgedCube.html#a733bba5a7e36b650dac91a3e3e4b9667">inverse</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;target_coords) const noexcept</td></tr>
+<tr class="memdesc:a733bba5a7e36b650dac91a3e3e4b9667"><td class="mdescLeft">&#160;</td><td class="mdescRight">The inverse function is only callable with doubles because the inverse might fail if called for a point out of range, and it is unclear what should happen if the inverse were to succeed for some points in a <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> but fail for other points. <br /></td></tr>
+<tr class="separator:a733bba5a7e36b650dac91a3e3e4b9667"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5ede34ea44e217c64df79bdbec563ff"><td class="memTemplParams" colspan="2"><a id="af5ede34ea44e217c64df79bdbec563ff"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:af5ede34ea44e217c64df79bdbec563ff"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:af5ede34ea44e217c64df79bdbec563ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae928158e606c834a13a3f0ce5b13142d"><td class="memTemplParams" colspan="2"><a id="ae928158e606c834a13a3f0ce5b13142d"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ae928158e606c834a13a3f0ce5b13142d"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>inv_jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:ae928158e606c834a13a3f0ce5b13142d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a57b531ac8cf54563c1dc36e3cd7b932b"><td class="memItemLeft" align="right" valign="top"><a id="a57b531ac8cf54563c1dc36e3cd7b932b"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a57b531ac8cf54563c1dc36e3cd7b932b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad3ac950cf51d4563158ddffb2a174430"><td class="memItemLeft" align="right" valign="top"><a id="ad3ac950cf51d4563158ddffb2a174430"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_identity</b> () const noexcept</td></tr>
+<tr class="separator:ad3ac950cf51d4563158ddffb2a174430"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aafaaf89588f23cf79fd04f6f5c2a0b35"><td class="memItemLeft" align="right" valign="top"><a id="aafaaf89588f23cf79fd04f6f5c2a0b35"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>dim</b> = 3</td></tr>
+<tr class="separator:aafaaf89588f23cf79fd04f6f5c2a0b35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a2d2eac1172958f73026ee367a5919c88"><td class="memItemLeft" align="right" valign="top"><a id="a2d2eac1172958f73026ee367a5919c88"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1BulgedCube.html">BulgedCube</a> &amp;lhs, const <a class="el" href="classdomain_1_1CoordinateMaps_1_1BulgedCube.html">BulgedCube</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a2d2eac1172958f73026ee367a5919c88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Three dimensional map from the cube to a bulged cube. The cube is shaped such that the surface is compatible with the inner surface of Wedge&lt;3&gt;. The shape of the object can be chosen to be cubical, if the sphericity is set to 0, or to a sphere, if the sphericity is set to 1. The sphericity can be set to any number between 0 and 1 for a bulged cube. </p>
+<h3>Details</h3>
+<p>The volume map from the cube to a bulged cube is obtained by interpolating between six surface maps, twelve bounding curves, and eight corners. The surface map for the upper +z axis is obtained by interpolating between a cubical surface and a spherical surface. The two surfaces are chosen such that the latter circumscribes the former.</p>
+<p>We make a choice here as to whether we wish to use the logical coordinates parameterizing these surface as they are, in which case we have the equidistant choice of coordinates, or whether to apply a tangent map to them which leads us to the equiangular choice of coordinates. In terms of the logical coordinates, the equiangular coordinates are:</p>
+<p class="formulaDsp">
+\[\textrm{equiangular xi} : \Xi(\xi) = \textrm{tan}(\xi\pi/4)\]
+</p>
+<p class="formulaDsp">
+\[\textrm{equiangular eta} : \mathrm{H}(\eta) = \textrm{tan}(\eta\pi/4)\]
+</p>
+<p>With derivatives:</p>
+<p class="formulaDsp">
+\[\Xi&#39;(\xi) = \frac{\pi}{4}(1+\Xi^2)\]
+</p>
+<p class="formulaDsp">
+\[\mathrm{H}&#39;(\eta) = \frac{\pi}{4}(1+\mathrm{H}^2)\]
+</p>
+<p>The equidistant coordinates are:</p>
+<p class="formulaDsp">
+\[ \textrm{equidistant xi} : \Xi = \xi\]
+</p>
+<p class="formulaDsp">
+\[ \textrm{equidistant eta} : \mathrm{H} = \eta\]
+</p>
+<p>with derivatives:</p>
+<center> \(\Xi&#39;(\xi) = 1\), and \(\mathrm{H}&#39;(\eta) = 1\)</center><p>We also define the variable \(\rho\), given by:</p>
+<p class="formulaDsp">
+\[\rho = \sqrt{1+\Xi^2+\mathrm{H}^2}\]
+</p>
+<h3><a class="anchor" id="autotoc_md16"></a>
+The Spherical Face Map</h3>
+<p>The surface map for the spherical face of radius \(R\) lying in the \(+z\) direction in either choice of coordinates is then given by:</p>
+<p class="formulaDsp">
+\[ \vec{\sigma}_{spherical}(\xi,\eta) = \begin{bmatrix} x(\xi,\eta)\\ y(\xi,\eta)\\ z(\xi,\eta)\\ \end{bmatrix} = \frac{R}{\rho} \begin{bmatrix} \Xi\\ \mathrm{H}\\ 1\\ \end{bmatrix} \]
+</p>
+<h3><a class="anchor" id="autotoc_md17"></a>
+The Cubical Face Map</h3>
+<p>The surface map for the cubical face of side length \(2L\) lying in the \(+z\) direction is given by:</p>
+<p class="formulaDsp">
+\[ \vec{\sigma}_{cubical}(\xi,\eta) = \begin{bmatrix} x(\xi,\eta)\\ y(\xi,\eta)\\ L\\ \end{bmatrix} = L \begin{bmatrix} \Xi\\ \mathrm{H}\\ 1\\ \end{bmatrix} \]
+</p>
+<h3><a class="anchor" id="autotoc_md18"></a>
+The Bulged Face Map</h3>
+<p>To construct the bulged map we interpolate between a cubical face map of side length \(2L\) and a spherical face map of radius \(R\), with the interpolation parameter being \(s\), the <code>sphericity</code>. The surface map for the bulged face lying in the \(+z\) direction is then given by:</p>
+<p class="formulaDsp">
+\[ \vec{\sigma}_{+\zeta}(\xi,\eta) = \left\{(1-s)L + \frac{sR}{\rho}\right\} \begin{bmatrix} \Xi\\ \mathrm{H}\\ 1\\ \end{bmatrix} \]
+</p>
+<p>This equation defines the upper-z map \(\vec{\sigma}_{+\zeta}\), and we similarly define the other five surface maps \(\vec{\sigma}_{+\eta}\), \(\vec{\sigma}_{+\xi}\), and so on by appropriate rotations. We constrain L by demanding that the spherical face circumscribe the cube. With this condition, we have \(L = R/\sqrt3\).</p>
+<h3><a class="anchor" id="autotoc_md19"></a>
+The General Formula for 3D Isoparametric Maps</h3>
+<p>The general formula is given by Eq. 1 in section 2.1 of Hesthaven's paper "A Stable Penalty Method For The Compressible Navier-Stokes Equations III.
+ Multidimensional Domain Decomposition Schemes" available <a href="
+ http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.699.1161&amp;rep=rep1&amp;type=pdf
+ ">here </a>.</p>
+<p>Hesthaven's formula is general in the degree of the shape functions used, so for our purposes we take the special case where the shape functions are linear in the interpolation variable, and define new variables accordingly. However, our interpolation variables do not necessarily have to be the logical coordinates themselves, though they often are. To make this distinction clear, we will define the new interpolation variables \(\{\tilde{\xi},\tilde{\eta},\tilde{\zeta}\}\), which may either be the logical coordinates themselves or a invertible transformation of them. For the purposes of the bulged cube map, this transformation will be the same transformation that takes the logical coordinates into the equiangular coordinates. We will later see how this choice can lead to simplifications in the final map.</p>
+<p>We define the following variables for \(\alpha, \beta, \gamma \in\{\tilde{\xi},\tilde{\eta},\tilde{\zeta}\}\):</p>
+<p class="formulaDsp">
+\[ f^{\pm}_{\alpha} = \frac{1}{2}(1\pm\alpha)\\ f^{\pm\pm}_{\alpha \ \beta} = \frac{1}{4}(1\pm\alpha)(1\pm\beta)\\ f^{\pm\pm\pm}_{\alpha \ \beta \ \gamma} = \frac{1}{8}(1\pm\alpha)(1\pm\beta)(1\pm\gamma) \]
+</p>
+<p>The formula involves six surfaces, which we will denote by \(\vec{\sigma}\), twelve curves, denoted by \(\vec{\Gamma}\), and eight vertices, denoted by \(\vec{\pi}\), with the subscripts denoting which face(s) these objects belong to. The full volume map is given by:</p>
+<p class="formulaDsp">
+\begin{align*} \vec{x}(\xi,\eta,\zeta) = &amp; f^{+}_{\tilde{\zeta}}\vec{\sigma}_{+\zeta}(\xi, \eta)+ f^{-}_{\tilde{\zeta}}\vec{\sigma}_{-\zeta}(\xi, \eta)\\ &amp;+ f^{+}_{\tilde{\eta}}\vec{\sigma}_{+\eta}(\xi, \zeta)+ f^{-}_{\tilde{\eta}}\vec{\sigma}_{-\eta}(\xi, \zeta)+ f^{+}_{\tilde{\xi}}\vec{\sigma}_{+\xi}(\eta, \zeta)+ f^{-}_{\tilde{\xi}}\vec{\sigma}_{-\xi}(\eta, \zeta)\\ &amp;- f^{++}_{\tilde{\xi} \ \tilde{\eta}}\vec{\Gamma}_{+\xi +\eta}(\zeta)- f^{-+}_{\tilde{\xi} \ \tilde{\eta}}\vec{\Gamma}_{-\xi +\eta}(\zeta)- f^{+-}_{\tilde{\xi} \ \tilde{\eta}}\vec{\Gamma}_{+\xi -\eta}(\zeta)- f^{--}_{\tilde{\xi} \ \tilde{\eta}}\vec{\Gamma}_{-\xi -\eta}(\zeta)\\ &amp;- f^{++}_{\tilde{\xi} \ \tilde{\zeta}}\vec{\Gamma}_{+\xi +\zeta}(\eta)- f^{-+}_{\tilde{\xi} \ \tilde{\zeta}}\vec{\Gamma}_{-\xi +\zeta}(\eta)- f^{+-}_{\tilde{\xi} \ \tilde{\zeta}}\vec{\Gamma}_{+\xi -\zeta}(\eta)- f^{--}_{\tilde{\xi} \ \tilde{\zeta}}\vec{\Gamma}_{-\xi -\zeta}(\eta)\\ &amp;- f^{++}_{\tilde{\eta} \ \tilde{\zeta}}\vec{\Gamma}_{+\eta +\zeta}(\xi)- f^{-+}_{\tilde{\eta} \ \tilde{\zeta}}\vec{\Gamma}_{-\eta +\zeta}(\xi)- f^{+-}_{\tilde{\eta} \ \tilde{\zeta}}\vec{\Gamma}_{+\eta -\zeta}(\xi)- f^{--}_{\tilde{\eta} \tilde{\zeta}}\vec{\Gamma}_{-\eta -\zeta}(\xi)\\ &amp;+ f^{+++}_{\tilde{\xi} \ \tilde{\eta} \ \tilde{\zeta}}\vec{\pi}_{+\xi +\eta +\zeta}+ f^{-++}_{\tilde{\xi} \ \tilde{\eta} \ \tilde{\zeta}}\vec{\pi}_{-\xi +\eta +\zeta}+ f^{+-+}_{\tilde{\xi} \ \tilde{\eta} \ \tilde{\zeta}}\vec{\pi}_{+\xi -\eta +\zeta}+ f^{--+}_{\tilde{\xi} \ \tilde{\eta} \ \tilde{\zeta}}\vec{\pi}_{-\xi -\eta +\zeta}\\ &amp;+ f^{++-}_{\tilde{\xi} \ \tilde{\eta} \ \tilde{\zeta}}\vec{\pi}_{+\xi +\eta -\zeta}+ f^{-+-}_{\tilde{\xi} \ \tilde{\eta} \ \tilde{\zeta}}\vec{\pi}_{-\xi +\eta -\zeta}+ f^{+--}_{\tilde{\xi} \ \tilde{\eta} \ \tilde{\zeta}}\vec{\pi}_{+\xi -\eta -\zeta}+ f^{---}_{\tilde{\xi} \ \tilde{\eta} \ \tilde{\zeta}}\vec{\pi}_{-\xi -\eta -\zeta} \end{align*}
+</p>
+<h3><a class="anchor" id="autotoc_md20"></a>
+The Special Case for Octahedral Symmetry</h3>
+<p>The general formula is for the case in which there are six independently specified bounding surfaces. In our case, the surfaces are obtained by rotations and reflections of the upper- \(\zeta\) face.</p>
+<p>We define the matrices corresponding to these transformations to be:</p>
+<p class="formulaDsp">
+\[ S_{xy} = \begin{bmatrix} 0 &amp; 1 &amp; 0\\ 1 &amp; 0 &amp; 0\\ 0 &amp; 0 &amp; 1\\ \end{bmatrix},\ S_{xz} = \begin{bmatrix} 0 &amp; 0 &amp; 1\\ 0 &amp; 1 &amp; 0\\ 1 &amp; 0 &amp; 0\\ \end{bmatrix},\ S_{yz} = \begin{bmatrix} 1 &amp; 0 &amp; 0\\ 0 &amp; 0 &amp; 1\\ 0 &amp; 1 &amp; 0\\ \end{bmatrix}\]
+</p>
+<p class="formulaDsp">
+\[C_{zxy} = \begin{bmatrix} 0 &amp; 0 &amp; 1\\ 1 &amp; 0 &amp; 0\\ 0 &amp; 1 &amp; 0\\ \end{bmatrix},\ C_{yzx} = \begin{bmatrix} 0 &amp; 1 &amp; 0\\ 0 &amp; 0 &amp; 1\\ 1 &amp; 0 &amp; 0\\ \end{bmatrix}\]
+</p>
+<p class="formulaDsp">
+\[N_{x} = \begin{bmatrix} -1 &amp; 0 &amp; 0\\ 0 &amp; 1 &amp; 0\\ 0 &amp; 0 &amp; 1\\ \end{bmatrix},\ N_{y} = \begin{bmatrix} 1 &amp; 0 &amp; 0\\ 0 &amp; -1 &amp; 0\\ 0 &amp; 0 &amp; 1\\ \end{bmatrix},\ N_{z} = \begin{bmatrix} 1 &amp; 0 &amp; 0\\ 0 &amp; 1 &amp; 0\\ 0 &amp; 0 &amp; -1\\ \end{bmatrix} \]
+</p>
+<p>The surface maps can now all be written in terms of \(\vec{\sigma}_{+\zeta}\) and these matrices: </p><center> \(\vec{\sigma}_{-\zeta}(\xi, \eta) = N_z\vec{\sigma}_{+\zeta}(\xi, \eta)\\ \vec{\sigma}_{+\eta}(\xi, \zeta) = S_{yz}\vec{\sigma}_{+\zeta}(\xi, \zeta)\\ \vec{\sigma}_{-\eta}(\xi, \zeta) = N_yS_{yz}\vec{\sigma}_{+\zeta}(\xi, \zeta)\\ \vec{\sigma}_{+\xi}(\eta, \zeta) = C_{zxy}\vec{\sigma}_{+\zeta}(\eta, \zeta)\\ \vec{\sigma}_{-\xi}(\eta, \zeta) = N_xC_{zyx}\vec{\sigma}_{+\zeta}(\eta, \zeta)\) </center><p>The four bounding curves \(\vec{\Gamma}\) on the \(+\zeta\) face are given by:</p>
+<center> \(\vec{\Gamma}_{+\xi,+\zeta}(\eta) = \vec{\sigma}_{+\zeta}(+1,\eta)\\ \vec{\Gamma}_{-\xi,+\zeta}(\eta) = \vec{\sigma}_{+\zeta}(-1,\eta) = N_x\vec{\sigma}_{+\zeta}(+1, \eta)\\ \vec{\Gamma}_{+\eta,+\zeta}(\xi) = \vec{\sigma}_{+\zeta}(\xi,+1) = S_{xy}\vec{\sigma}_{+\zeta}(+1, \xi)\\ \vec{\Gamma}_{-\eta,+\zeta}(\xi) = \vec{\sigma}_{+\zeta}(\xi,-1) = N_yS_{xy}\vec{\sigma}_{+\zeta}(+1,\xi)\) </center><p>The bounding curves on the other surfaces can be obtained by transformations on the \(+\zeta\) face:</p>
+<center> \(\vec{\Gamma}_{+\xi,-\zeta}(\eta) = N_z\vec{\sigma}_{+\zeta}(+1,\eta)\\ \vec{\Gamma}_{-\xi,-\zeta}(\eta) = N_z\vec{\sigma}_{+\zeta}(-1,\eta) = N_zN_x\vec{\sigma}_{+\zeta}(+1,\eta)\\ \vec{\Gamma}_{+\eta,-\zeta}(\xi) = N_z\vec{\sigma}_{+\zeta}(\xi,+1) = N_zS_{xy}\vec{\sigma}_{+\zeta}(+1, \xi)\\ \vec{\Gamma}_{-\eta,-\zeta}(\xi) = N_z\vec{\sigma}_{+\zeta}(\xi,-1) = N_zN_yS_{xy}\vec{\sigma}_{+\zeta}(+1, \xi)\\ \vec{\Gamma}_{+\xi,+\eta}(\zeta) = C_{zxy}\vec{\sigma}_{+\zeta}(+1,\zeta)\\ \vec{\Gamma}_{-\xi,+\eta}(\zeta) = N_xC_{zxy}\vec{\sigma}_{+\zeta}(+1,\zeta)\\ \vec{\Gamma}_{+\xi,-\eta}(\zeta) = C_{zxy}\vec{\sigma}_{+\zeta}(-1,\zeta) = C_{zxy}N_x\vec{\sigma}_{+\zeta}(+1,\zeta)\\ \vec{\Gamma}_{-\xi,-\eta}(\zeta) = N_xC_{zxy}\vec{\sigma}_{+\zeta}(-1,\zeta) = N_xC_{zxy}N_x\vec{\sigma}_{+\zeta}(+1,\zeta)\) </center><p>Now we can write the volume map in terms of \(\vec{\sigma}_{+\zeta}\) only: </p><p class="formulaDsp">
+\begin{align*}\vec{x}(\xi,\eta,\zeta) = &amp; (f^{+}_{\tilde{\zeta}} + f^{-}_{\tilde{\zeta}}N_z) \vec{\sigma}_{+\zeta}(\xi, \eta)\\ &amp;+ (f^{+}_{\tilde{\eta}} + f^{-}_{\tilde{\eta}}N_y) S_{yz}\vec{\sigma}_{+\zeta}(\xi, \zeta)\\ &amp;+ (f^{+}_{\tilde{\xi}} + f^{-}_{\tilde{\xi}}N_x) C_{zxy}\vec{\sigma}_{+\zeta}(\eta, \zeta)\\ &amp;- (f^{+}_{\tilde{\xi}}+f^{-}_{\tilde{\xi}}N_x) (f^{+}_{\tilde{\eta}}+f^{-}_{\tilde{\eta}}N_y) C_{zxy}\vec{\sigma}_{+\zeta}(+1, \zeta)\\ &amp;- (f^{+}_{\tilde{\zeta}}+f^{-}_{\tilde{\zeta}}N_z)\left\{ (f^{+}_{\tilde{\xi}}+f^{-}_{\tilde{\xi}}N_x)\vec{\sigma}_{+\zeta}(+1, \eta)+ (f^{+}_{\tilde{\eta}}+f^{-}_{\tilde{\eta}}N_y)S_{xy}\vec{\sigma}_{+\zeta}(+1, \xi)\right\}\\ &amp;+ \frac{r}{\sqrt{3}}\vec{\tilde{\xi}} \end{align*}
+</p>
+<p>Note that we can now absorb all of the \(f\)s into the matrix prefactors in the above equation and obtain a final set of matrices. We define the following <em>blending matrices</em>:</p>
+<p class="formulaDsp">
+\[ B_{\tilde{\xi}} = \begin{bmatrix} 0 &amp; 0 &amp; \tilde{\xi}\\ 1 &amp; 0 &amp; 0\\ 0 &amp; 1 &amp; 0\\ \end{bmatrix},\ B_{\tilde{\eta}} = \begin{bmatrix} 1 &amp; 0 &amp; 0\\ 0 &amp; 0 &amp; \tilde{\eta}\\ 0 &amp; 1 &amp; 0\\ \end{bmatrix},\ B_{\tilde{\zeta}} = \begin{bmatrix} 1 &amp; 0 &amp; 0\\ 0 &amp; 1 &amp; 0\\ 0 &amp; 0 &amp; \tilde{\zeta}\\ \end{bmatrix}\\ B_{\tilde{\xi}\tilde{\eta}} = \begin{bmatrix} 0 &amp; 0 &amp; \tilde{\xi}\\ \tilde{\eta} &amp; 0 &amp; 0\\ 0 &amp; 1 &amp; 0\\ \end{bmatrix},\ B_{\tilde{\xi}\tilde{\zeta}} = \begin{bmatrix} \tilde{\xi} &amp; 0 &amp; 0\\ 0 &amp; 1 &amp; 0\\ 0 &amp; 0 &amp; \tilde{\zeta}\\ \end{bmatrix},\ B_{\tilde{\eta}\tilde{\zeta}} = \begin{bmatrix} 0 &amp; 1 &amp; 0\\ \tilde{\eta} &amp; 0 &amp; 0\\ 0 &amp; 0 &amp; \tilde{\zeta}\\ \end{bmatrix}\\ B_{\tilde{\xi}\tilde{\eta}\tilde{\zeta}} = \begin{bmatrix} \tilde{\xi} &amp; 0 &amp; 0\\ 0 &amp; \tilde{\eta} &amp; 0\\ 0 &amp; 0 &amp; \tilde{\zeta}\\ \end{bmatrix} \]
+</p>
+<p>Now we can write the volume map in these terms:</p>
+<p class="formulaDsp">
+\begin{align*} \vec{x}(\xi,\eta,\zeta) = &amp; B_{\tilde{\zeta}} \vec{\sigma}_{+\zeta}(\xi, \eta)\\&amp; + B_{\tilde{\eta}} \vec{\sigma}_{+\zeta}(\xi, \zeta)+ B_{\tilde{\xi}} \vec{\sigma}_{+\zeta}(\eta, \zeta)\\&amp; - B_{\tilde{\xi} \tilde{\eta}} \vec{\sigma}_{+\zeta}(+1, \zeta)- B_{\tilde{\xi} \tilde{\zeta}} \vec{\sigma}_{+\zeta}(+1, \eta)+ B_{\tilde{\eta} \tilde{\zeta}} \vec{\sigma}_{+\zeta}(+1, \xi)\\&amp; + B_{\tilde{\xi} \tilde{\eta} \tilde{\zeta}} \vec{\sigma}_{+\zeta}(+1, +1) \end{align*}
+</p>
+<h3><a class="anchor" id="autotoc_md21"></a>
+The Bulged Cube Map</h3>
+<p>We now use the result above to provide the mapping for the bulged cube. First we will define the variables \(\rho_A\) and \(\rho_{AB}\), for \(A, B \in \{\Xi,\mathrm{H}, \mathrm{Z}\} \), where \(\mathrm{Z}\) is \(\tan(\zeta\pi/4)\) in the equiangular case and \(\zeta\) in the equidistant case:</p>
+<p class="formulaDsp">
+\[ \rho_A = \sqrt{2 + A^2}\\ \rho_{AB} = \sqrt{1 + A^2 + B^2} \]
+</p>
+<p> The final mapping is then: </p><p class="formulaDsp">
+\[ \vec{x}(\xi,\eta,\zeta) = \frac{(1-s)R}{\sqrt{3}} \begin{bmatrix} \Xi\\ \mathrm{H}\\ \mathrm{Z}\\ \end{bmatrix} + \frac{sR}{\sqrt{3}} \begin{bmatrix} \tilde{\xi}\\ \tilde{\eta}\\ \tilde{\zeta}\\ \end{bmatrix} + sR \begin{bmatrix} \tilde{\xi} &amp; \Xi &amp; \Xi\\ \mathrm{H} &amp; \tilde{\eta} &amp;\mathrm{H}\\ \mathrm{Z} &amp; \mathrm{Z} &amp; \tilde{\zeta}\\ \end{bmatrix} \begin{bmatrix} 1/\rho_{\mathrm{H}\mathrm{Z}}\\ 1/\rho_{\Xi\mathrm{Z}}\\ 1/\rho_{\Xi\mathrm{H}}\\ \end{bmatrix} - sR \begin{bmatrix} \Xi &amp; \tilde{\xi} &amp; \tilde{\xi}\\ \tilde{\eta} &amp; \mathrm{H} &amp;\tilde{\eta}\\ \tilde{\zeta} &amp; \tilde{\zeta} &amp; \mathrm{Z}\\ \end{bmatrix} \begin{bmatrix} 1/\rho_{\Xi}\\ 1/\rho_{\mathrm{H}}\\ 1/\rho_{\mathrm{Z}}\\ \end{bmatrix} \]
+</p>
+<p>Recall that the lower case Greek letters with tildes are the variables used for the linear interpolation between the six bounding surfaces, and that the upper case Greek letters are the coordinates along these surfaces - both of which can be specified to be either equidistant or equiangular. In the case where the interpolation variable is chosen to match that of the coordinates along the surface, we have \(\tilde{\xi} = \Xi\), etc. In this case, the formula reduces further. The reduced formula below is the one used for this <a class="el" href="classdomain_1_1CoordinateMap.html" title="A coordinate map or composition of coordinate maps.">CoordinateMap</a>. It is given by:</p>
+<p class="formulaDsp">
+\[ \vec{x}(\xi,\eta,\zeta) = \left\{ \frac{R}{\sqrt{3}} + sR \left( 1/\rho_{\mathrm{H}\mathrm{Z}}+ 1/\rho_{\Xi\mathrm{Z}}+ 1/\rho_{\Xi\mathrm{H}}- 1/\rho_{\Xi}- 1/\rho_{\mathrm{H}}- 1/\rho_{\mathrm{Z}} \right) \right\} \begin{bmatrix} \Xi\\ \mathrm{H}\\ \mathrm{Z}\\ \end{bmatrix} \]
+</p>
+<p>The inverse mapping is analytic in the angular directions. A root find must be performed for the inverse mapping in the radial direction. This one-dimensional formula is obtained by taking the magnitude of both sides of the mapping, and changing variables from \(\xi, \eta, \zeta\) to \(x, y, z\) and introducing \(\rho^2 := \sqrt{\xi^2+\eta^2+\zeta^2}\). </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/CoordinateMaps/<a class="el" href="BulgedCube_8hpp_source.html">BulgedCube.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

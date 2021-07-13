@@ -1,0 +1,2166 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Tensor</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
+  <div class="headertitle">
+<div class="title">Tensor</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Tensor use documentation.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceFrame"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceFrame.html">Frame</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceTensorMetafunctions"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTensorMetafunctions.html">TensorMetafunctions</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespacetnsr"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetnsr.html">tnsr</a></td></tr>
+<tr class="memdesc:namespacetnsr"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type aliases to construct common Tensors. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structFrame_1_1FrameIsPhysical.html">Frame::FrameIsPhysical</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__tensor__index__type.html">tt::is_tensor_index_type&lt; T &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html">Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents an object with multiple components.  <a href="classTensor_3_01X_00_01Symm_00_01IndexList_3_01Indices_8_8_8_01_4_01_4.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:ga4e16b80d37cb8a3e7c8ab95e72ab8724"><td class="memTemplParams" colspan="2">template&lt;typename CheckFrame &gt; </td></tr>
+<tr class="memitem:ga4e16b80d37cb8a3e7c8ab95e72ab8724"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga4e16b80d37cb8a3e7c8ab95e72ab8724">Frame::is_frame_physical</a> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::integral_constant</a>&lt; bool, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_base_of.html">std::is_base_of</a>&lt; <a class="el" href="structFrame_1_1FrameIsPhysical.html">FrameIsPhysical</a>, CheckFrame &gt;::value &gt;</td></tr>
+<tr class="separator:ga4e16b80d37cb8a3e7c8ab95e72ab8724"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga557beda9bce6c7f236213ec8b24b3ff3"><td class="memTemplParams" colspan="2">template&lt;size_t SpatialDim, UpLo Ul, typename Fr &gt; </td></tr>
+<tr class="memitem:ga557beda9bce6c7f236213ec8b24b3ff3"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga557beda9bce6c7f236213ec8b24b3ff3">SpatialIndex</a> = Tensor_detail::TensorIndexType&lt; SpatialDim, Ul, Fr, <a class="el" href="group__TensorGroup.html#gga875b107b929ff008a27078792ac0bc8ea33d7f1ec5fe18e7ba799474138e71504">IndexType::Spatial</a> &gt;</td></tr>
+<tr class="separator:ga557beda9bce6c7f236213ec8b24b3ff3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga05c512b755e913cdbddce8634bdb4fa6"><td class="memTemplParams" colspan="2">template&lt;size_t SpatialDim, UpLo Ul, typename Fr &gt; </td></tr>
+<tr class="memitem:ga05c512b755e913cdbddce8634bdb4fa6"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga05c512b755e913cdbddce8634bdb4fa6">SpacetimeIndex</a> = Tensor_detail::TensorIndexType&lt; SpatialDim, Ul, Fr, <a class="el" href="group__TensorGroup.html#gga875b107b929ff008a27078792ac0bc8eaed5df3a695921f514a83c22d119c0f8e">IndexType::Spacetime</a> &gt;</td></tr>
+<tr class="separator:ga05c512b755e913cdbddce8634bdb4fa6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacb33fd857700a3fc87b9dce8c877fee7"><td class="memTemplParams" colspan="2">template&lt;typename Index &gt; </td></tr>
+<tr class="memitem:gacb33fd857700a3fc87b9dce8c877fee7"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a> = Tensor_detail::TensorIndexType&lt; Index::index_type==<a class="el" href="group__TensorGroup.html#gga875b107b929ff008a27078792ac0bc8ea33d7f1ec5fe18e7ba799474138e71504">IndexType::Spatial</a> ? Index::value :Index::value - 1, Index::ul==<a class="el" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28a258f49887ef8d14ac268c92b02503aaa">UpLo::Up</a> ? <a class="el" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28aff50b4aa1c9cc2197ef898436641c911">UpLo::Lo</a> :<a class="el" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28a258f49887ef8d14ac268c92b02503aaa">UpLo::Up</a>, typename Index::Frame, Index::index_type &gt;</td></tr>
+<tr class="separator:gacb33fd857700a3fc87b9dce8c877fee7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad8087fef90d482c58a25934cb9346950"><td class="memTemplParams" colspan="2">template&lt;typename Index &gt; </td></tr>
+<tr class="memitem:gad8087fef90d482c58a25934cb9346950"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#gad8087fef90d482c58a25934cb9346950">change_index_type</a> = Tensor_detail::TensorIndexType&lt; Index::index_type==<a class="el" href="group__TensorGroup.html#gga875b107b929ff008a27078792ac0bc8ea33d7f1ec5fe18e7ba799474138e71504">IndexType::Spatial</a> ? Index::dim :Index::dim - 1, Index::ul, typename Index::Frame, Index::index_type==<a class="el" href="group__TensorGroup.html#gga875b107b929ff008a27078792ac0bc8ea33d7f1ec5fe18e7ba799474138e71504">IndexType::Spatial</a> ? <a class="el" href="group__TensorGroup.html#gga875b107b929ff008a27078792ac0bc8eaed5df3a695921f514a83c22d119c0f8e">IndexType::Spacetime</a> :<a class="el" href="group__TensorGroup.html#gga875b107b929ff008a27078792ac0bc8ea33d7f1ec5fe18e7ba799474138e71504">IndexType::Spatial</a> &gt;</td></tr>
+<tr class="separator:gad8087fef90d482c58a25934cb9346950"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf6f86692d77435c9721e1ab051232407"><td class="memTemplParams" colspan="2"><a id="gaf6f86692d77435c9721e1ab051232407"></a>
+template&lt;typename Symm , typename... IndexPack&gt; </td></tr>
+<tr class="memitem:gaf6f86692d77435c9721e1ab051232407"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#gaf6f86692d77435c9721e1ab051232407">TensorMetafunctions::check_index_symmetry</a> = typename detail::check_index_symmetry_impl&lt; tmpl::size&lt; Symm &gt;::value==0 or tmpl::size&lt; Symm &gt;::value==1 ? 0 :2 &gt;::template f&lt; Symm, tmpl::map&lt;&gt;, IndexPack... &gt;</td></tr>
+<tr class="memdesc:gaf6f86692d77435c9721e1ab051232407"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check that each of symmetric indices is in the same frame and have the same dimensionality. <br /></td></tr>
+<tr class="separator:gaf6f86692d77435c9721e1ab051232407"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5e4aece332518b3a95c2a73557aaa596"><td class="memTemplParams" colspan="2">template&lt;typename Tensor , std::size_t VolumeDim, UpLo Ul, typename Fr  = Frame::Grid&gt; </td></tr>
+<tr class="memitem:ga5e4aece332518b3a95c2a73557aaa596"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga5e4aece332518b3a95c2a73557aaa596">TensorMetafunctions::prepend_spatial_index</a> = ::Tensor&lt; typename Tensor::type, tmpl::push_front&lt; typename Tensor::symmetry, tmpl::int32_t&lt; 1+tmpl::fold&lt; typename Tensor::symmetry, tmpl::int32_t&lt; 0 &gt;, tmpl::max&lt; tmpl::_state, tmpl::_element &gt; &gt;::value &gt; &gt;, tmpl::push_front&lt; typename Tensor::index_list, <a class="el" href="group__TensorGroup.html#ga557beda9bce6c7f236213ec8b24b3ff3">SpatialIndex</a>&lt; VolumeDim, Ul, Fr &gt; &gt;&gt;</td></tr>
+<tr class="memdesc:ga5e4aece332518b3a95c2a73557aaa596"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a spatial index to the front of a Tensor.  <a href="group__TensorGroup.html#ga5e4aece332518b3a95c2a73557aaa596">More...</a><br /></td></tr>
+<tr class="separator:ga5e4aece332518b3a95c2a73557aaa596"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaef68ec7e4373c578d0a5885df8ac89fa"><td class="memTemplParams" colspan="2">template&lt;typename Tensor , std::size_t VolumeDim, UpLo Ul, typename Fr  = Frame::Grid&gt; </td></tr>
+<tr class="memitem:gaef68ec7e4373c578d0a5885df8ac89fa"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#gaef68ec7e4373c578d0a5885df8ac89fa">TensorMetafunctions::prepend_spacetime_index</a> = ::Tensor&lt; typename Tensor::type, tmpl::push_front&lt; typename Tensor::symmetry, tmpl::int32_t&lt; 1+tmpl::fold&lt; typename Tensor::symmetry, tmpl::int32_t&lt; 0 &gt;, tmpl::max&lt; tmpl::_state, tmpl::_element &gt; &gt;::value &gt; &gt;, tmpl::push_front&lt; typename Tensor::index_list, <a class="el" href="group__TensorGroup.html#ga05c512b755e913cdbddce8634bdb4fa6">SpacetimeIndex</a>&lt; VolumeDim, Ul, Fr &gt; &gt;&gt;</td></tr>
+<tr class="memdesc:gaef68ec7e4373c578d0a5885df8ac89fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a spacetime index to the front of a Tensor.  <a href="group__TensorGroup.html#gaef68ec7e4373c578d0a5885df8ac89fa">More...</a><br /></td></tr>
+<tr class="separator:gaef68ec7e4373c578d0a5885df8ac89fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga897a0492a08b8d3493fe552796c1cf02"><td class="memTemplParams" colspan="2">template&lt;typename Tensor &gt; </td></tr>
+<tr class="memitem:ga897a0492a08b8d3493fe552796c1cf02"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga897a0492a08b8d3493fe552796c1cf02">TensorMetafunctions::remove_first_index</a> = ::Tensor&lt; typename Tensor::type, tmpl::pop_front&lt; typename Tensor::symmetry &gt;, tmpl::pop_front&lt; typename Tensor::index_list &gt; &gt;</td></tr>
+<tr class="memdesc:ga897a0492a08b8d3493fe552796c1cf02"><td class="mdescLeft">&#160;</td><td class="mdescRight">remove the first index of a tensor  <a href="group__TensorGroup.html#ga897a0492a08b8d3493fe552796c1cf02">More...</a><br /></td></tr>
+<tr class="separator:ga897a0492a08b8d3493fe552796c1cf02"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga25fd6050b5c828f90dd353a44dbd8c1e"><td class="memTemplParams" colspan="2">template&lt;typename NewType , typename Tensor &gt; </td></tr>
+<tr class="memitem:ga25fd6050b5c828f90dd353a44dbd8c1e"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga25fd6050b5c828f90dd353a44dbd8c1e">TensorMetafunctions::swap_type</a> = ::Tensor&lt; NewType, typename Tensor::symmetry, typename Tensor::index_list &gt;</td></tr>
+<tr class="memdesc:ga25fd6050b5c828f90dd353a44dbd8c1e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Swap the data type of a tensor for a new type.  <a href="group__TensorGroup.html#ga25fd6050b5c828f90dd353a44dbd8c1e">More...</a><br /></td></tr>
+<tr class="separator:ga25fd6050b5c828f90dd353a44dbd8c1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3b376e9167e178638a1adece2ab22ec9"><td class="memTemplParams" colspan="2">template&lt;std::int32_t... T&gt; </td></tr>
+<tr class="memitem:ga3b376e9167e178638a1adece2ab22ec9"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a> = typename detail::SymmetryImpl&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::make_index_sequence</a>&lt; sizeof...(T)&gt;, tmpl::integral_list&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::int32_t</a>, T... &gt; &gt;::type</td></tr>
+<tr class="memdesc:ga3b376e9167e178638a1adece2ab22ec9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the canonical symmetry from the integers <code>T</code>  <a href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">More...</a><br /></td></tr>
+<tr class="separator:ga3b376e9167e178638a1adece2ab22ec9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga06ebcb38a1f13c246e53378b9e8959ce"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga06ebcb38a1f13c246e53378b9e8959ce"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a> = Tensor&lt; T, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt;&gt;, index_list&lt;&gt; &gt;</td></tr>
+<tr class="separator:ga06ebcb38a1f13c246e53378b9e8959ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:gaab1181edf2ab2b664b0f174223f08c28"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#gaab1181edf2ab2b664b0f174223f08c28">UpLo</a> { <a class="el" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28a258f49887ef8d14ac268c92b02503aaa">UpLo::Up</a>, 
+<a class="el" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28aff50b4aa1c9cc2197ef898436641c911">UpLo::Lo</a>
+ }</td></tr>
+<tr class="separator:gaab1181edf2ab2b664b0f174223f08c28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga875b107b929ff008a27078792ac0bc8e"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga875b107b929ff008a27078792ac0bc8e">IndexType</a> : char { <a class="el" href="group__TensorGroup.html#gga875b107b929ff008a27078792ac0bc8ea33d7f1ec5fe18e7ba799474138e71504">IndexType::Spatial</a>, 
+<a class="el" href="group__TensorGroup.html#gga875b107b929ff008a27078792ac0bc8eaed5df3a695921f514a83c22d119c0f8e">IndexType::Spacetime</a>
+ }</td></tr>
+<tr class="separator:ga875b107b929ff008a27078792ac0bc8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:gaa1ed07a07e44db3061d20d945d8aae36"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Index &gt; </td></tr>
+<tr class="memitem:gaa1ed07a07e44db3061d20d945d8aae36"><td class="memTemplItemLeft" align="right" valign="top">Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#gaa1ed07a07e44db3061d20d945d8aae36">cross_product</a> (const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_a, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_b) noexcept</td></tr>
+<tr class="memdesc:gaa1ed07a07e44db3061d20d945d8aae36"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the Euclidean cross product of two vectors or one forms.  <a href="group__TensorGroup.html#gaa1ed07a07e44db3061d20d945d8aae36">More...</a><br /></td></tr>
+<tr class="separator:gaa1ed07a07e44db3061d20d945d8aae36"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga39ba3fcae856f79175a241a1272d1796"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Index &gt; </td></tr>
+<tr class="memitem:ga39ba3fcae856f79175a241a1272d1796"><td class="memTemplItemLeft" align="right" valign="top">Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt; &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga39ba3fcae856f79175a241a1272d1796">cross_product</a> (const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_a, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt;&gt; &amp;vector_b) noexcept</td></tr>
+<tr class="memdesc:ga39ba3fcae856f79175a241a1272d1796"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the Euclidean cross product of a vector and a one form.  <a href="group__TensorGroup.html#ga39ba3fcae856f79175a241a1272d1796">More...</a><br /></td></tr>
+<tr class="separator:ga39ba3fcae856f79175a241a1272d1796"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacbf01b3290d5c59cefe9d6aa419738fc"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Index &gt; </td></tr>
+<tr class="memitem:gacbf01b3290d5c59cefe9d6aa419738fc"><td class="memTemplItemLeft" align="right" valign="top">Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#gacbf01b3290d5c59cefe9d6aa419738fc">cross_product</a> (const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_a, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_b, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1, 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a>, <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;metric_or_inverse_metric, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; &amp;metric_determinant) noexcept</td></tr>
+<tr class="memdesc:gacbf01b3290d5c59cefe9d6aa419738fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the cross product of two vectors or one forms.  <a href="group__TensorGroup.html#gacbf01b3290d5c59cefe9d6aa419738fc">More...</a><br /></td></tr>
+<tr class="separator:gacbf01b3290d5c59cefe9d6aa419738fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacf423e552e0fbc1d6254d2a11b4ea6f9"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Index &gt; </td></tr>
+<tr class="memitem:gacf423e552e0fbc1d6254d2a11b4ea6f9"><td class="memTemplItemLeft" align="right" valign="top">Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt; &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#gacf423e552e0fbc1d6254d2a11b4ea6f9">cross_product</a> (const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_a, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt;&gt; &amp;vector_b, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1, 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a>, <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;metric_or_inverse_metric, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; &amp;metric_determinant) noexcept</td></tr>
+<tr class="memdesc:gacf423e552e0fbc1d6254d2a11b4ea6f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the cross product of a vector and a one form.  <a href="group__TensorGroup.html#gacf423e552e0fbc1d6254d2a11b4ea6f9">More...</a><br /></td></tr>
+<tr class="separator:gacf423e552e0fbc1d6254d2a11b4ea6f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga17182cc25cfff1775433013fb80781f8"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Symm , typename IndexList &gt; </td></tr>
+<tr class="memitem:ga17182cc25cfff1775433013fb80781f8"><td class="memTemplItemLeft" align="right" valign="top">double&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga17182cc25cfff1775433013fb80781f8">l2_norm</a> (const Tensor&lt; DataType, Symm, IndexList &gt; &amp;tensor) noexcept</td></tr>
+<tr class="memdesc:ga17182cc25cfff1775433013fb80781f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute Euclidean \(L^2\)-norm of arbitrary Tensors reduced over an element.  <a href="group__TensorGroup.html#ga17182cc25cfff1775433013fb80781f8">More...</a><br /></td></tr>
+<tr class="separator:ga17182cc25cfff1775433013fb80781f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga20cdfbc585831e6ab4d165d8d6e3aac4"><td class="memTemplParams" colspan="2"><a id="ga20cdfbc585831e6ab4d165d8d6e3aac4"></a>
+template&lt;size_t Dim, typename DataType &gt; </td></tr>
+<tr class="memitem:ga20cdfbc585831e6ab4d165d8d6e3aac4"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; DataType, Dim, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga20cdfbc585831e6ab4d165d8d6e3aac4">identity</a> (const DataType &amp;used_for_type) noexcept</td></tr>
+<tr class="memdesc:ga20cdfbc585831e6ab4d165d8d6e3aac4"><td class="mdescLeft">&#160;</td><td class="mdescRight">returns the Identity matrix <br /></td></tr>
+<tr class="separator:ga20cdfbc585831e6ab4d165d8d6e3aac4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8997337995d9183da158e7cc2da99101"><td class="memTemplParams" colspan="2">template&lt;typename Fr &gt; </td></tr>
+<tr class="memitem:ga8997337995d9183da158e7cc2da99101"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga8997337995d9183da158e7cc2da99101">Frame::prefix</a> () noexcept</td></tr>
+<tr class="separator:ga8997337995d9183da158e7cc2da99101"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa89f4b3bf804d2a2bfdac72509e8c60d"><td class="memTemplParams" colspan="2">template&lt;int I, class... Ts&gt; </td></tr>
+<tr class="memitem:gaa89f4b3bf804d2a2bfdac72509e8c60d"><td class="memTemplItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#gaa89f4b3bf804d2a2bfdac72509e8c60d">index_dim</a> (const Tensor&lt; Ts... &gt; &amp;) noexcept</td></tr>
+<tr class="separator:gaa89f4b3bf804d2a2bfdac72509e8c60d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:ga36bbeb0ee2084a06f7d950201cdc0d79"><td class="memTemplParams" colspan="2">template&lt;typename CheckFrame &gt; </td></tr>
+<tr class="memitem:ga36bbeb0ee2084a06f7d950201cdc0d79"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga36bbeb0ee2084a06f7d950201cdc0d79">Frame::is_frame_physical_v</a> = <a class="el" href="group__TensorGroup.html#ga4e16b80d37cb8a3e7c8ab95e72ab8724">is_frame_physical</a>&lt;CheckFrame&gt;::value</td></tr>
+<tr class="separator:ga36bbeb0ee2084a06f7d950201cdc0d79"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga73d129796fcc1edcdd005096933b89f5"><td class="memTemplParams" colspan="2">template&lt;typename T , typename Symm , typename Index0 , typename Index1 &gt; </td></tr>
+<tr class="memitem:ga73d129796fcc1edcdd005096933b89f5"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga73d129796fcc1edcdd005096933b89f5">determinant</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; T &gt; * &gt; det_tensor, const Tensor&lt; T, Symm, index_list&lt; Index0, Index1 &gt;&gt; &amp;tensor) noexcept</td></tr>
+<tr class="memdesc:ga73d129796fcc1edcdd005096933b89f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the determinant of a rank-2 Tensor <code>tensor</code>.  <a href="group__TensorGroup.html#ga73d129796fcc1edcdd005096933b89f5">More...</a><br /></td></tr>
+<tr class="separator:ga73d129796fcc1edcdd005096933b89f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae65d90877c857b6e839a2cbbd49170ce"><td class="memTemplParams" colspan="2">template&lt;typename T , typename Symm , typename Index0 , typename Index1 &gt; </td></tr>
+<tr class="memitem:gae65d90877c857b6e839a2cbbd49170ce"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#gae65d90877c857b6e839a2cbbd49170ce">determinant</a> (const Tensor&lt; T, Symm, index_list&lt; Index0, Index1 &gt;&gt; &amp;tensor) noexcept</td></tr>
+<tr class="memdesc:gae65d90877c857b6e839a2cbbd49170ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the determinant of a rank-2 Tensor <code>tensor</code>.  <a href="group__TensorGroup.html#gae65d90877c857b6e839a2cbbd49170ce">More...</a><br /></td></tr>
+<tr class="separator:gae65d90877c857b6e839a2cbbd49170ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga51d5abd4e1bcb2e64195dcc15e2f2e5f"><td class="memTemplParams" colspan="2">template&lt;typename T , typename Symm , typename Index0 , typename Index1 &gt; </td></tr>
+<tr class="memitem:ga51d5abd4e1bcb2e64195dcc15e2f2e5f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga51d5abd4e1bcb2e64195dcc15e2f2e5f">determinant_and_inverse</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; T &gt; * &gt; det, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Tensor&lt; T, Symm, tmpl::list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; Index1 &gt;, <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; Index0 &gt;&gt;&gt; * &gt; inv, const Tensor&lt; T, Symm, tmpl::list&lt; Index0, Index1 &gt;&gt; &amp;tensor) noexcept</td></tr>
+<tr class="memdesc:ga51d5abd4e1bcb2e64195dcc15e2f2e5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the determinant and inverse of a rank-2 Tensor.  <a href="group__TensorGroup.html#ga51d5abd4e1bcb2e64195dcc15e2f2e5f">More...</a><br /></td></tr>
+<tr class="separator:ga51d5abd4e1bcb2e64195dcc15e2f2e5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga483fc075c909d22d2d9b4dbfd1ac5bc2"><td class="memTemplParams" colspan="2">template&lt;typename T , typename Symm , typename Index0 , typename Index1 &gt; </td></tr>
+<tr class="memitem:ga483fc075c909d22d2d9b4dbfd1ac5bc2"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga483fc075c909d22d2d9b4dbfd1ac5bc2">determinant_and_inverse</a> (const Tensor&lt; T, Symm, tmpl::list&lt; Index0, Index1 &gt;&gt; &amp;tensor) noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; T &gt;, Tensor&lt; T, Symm, tmpl::list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; Index1 &gt;, <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; Index0 &gt;&gt;&gt;&gt;</td></tr>
+<tr class="memdesc:ga483fc075c909d22d2d9b4dbfd1ac5bc2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the determinant and inverse of a rank-2 Tensor.  <a href="group__TensorGroup.html#ga483fc075c909d22d2d9b4dbfd1ac5bc2">More...</a><br /></td></tr>
+<tr class="separator:ga483fc075c909d22d2d9b4dbfd1ac5bc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6f3c432baee84114e9518f35d0acabd7"><td class="memTemplParams" colspan="2">template&lt;typename DetTag , typename InvTag , typename T , typename Symm , typename Index0 , typename Index1 &gt; </td></tr>
+<tr class="memitem:ga6f3c432baee84114e9518f35d0acabd7"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga6f3c432baee84114e9518f35d0acabd7">determinant_and_inverse</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; tmpl::list&lt; DetTag, InvTag &gt;&gt; * &gt; det_and_inv, const Tensor&lt; T, Symm, tmpl::list&lt; Index0, Index1 &gt;&gt; &amp;tensor) noexcept</td></tr>
+<tr class="memdesc:ga6f3c432baee84114e9518f35d0acabd7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the determinant and inverse of a rank-2 Tensor.  <a href="group__TensorGroup.html#ga6f3c432baee84114e9518f35d0acabd7">More...</a><br /></td></tr>
+<tr class="separator:ga6f3c432baee84114e9518f35d0acabd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1c28364d3baa1a93698e14ff19b6bdbb"><td class="memTemplParams" colspan="2">template&lt;typename DetTag , typename InvTag , typename T , typename Symm , typename Index0 , typename Index1 &gt; </td></tr>
+<tr class="memitem:ga1c28364d3baa1a93698e14ff19b6bdbb"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga1c28364d3baa1a93698e14ff19b6bdbb">determinant_and_inverse</a> (const Tensor&lt; T, Symm, tmpl::list&lt; Index0, Index1 &gt;&gt; &amp;tensor) noexcept -&gt; Variables&lt; tmpl::list&lt; DetTag, InvTag &gt;&gt;</td></tr>
+<tr class="memdesc:ga1c28364d3baa1a93698e14ff19b6bdbb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the determinant and inverse of a rank-2 Tensor.  <a href="group__TensorGroup.html#ga1c28364d3baa1a93698e14ff19b6bdbb">More...</a><br /></td></tr>
+<tr class="separator:ga1c28364d3baa1a93698e14ff19b6bdbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga43b9cfd3c9f44120c4f6bef9bdcf3f84"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Index &gt; </td></tr>
+<tr class="memitem:ga43b9cfd3c9f44120c4f6bef9bdcf3f84"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga43b9cfd3c9f44120c4f6bef9bdcf3f84">dot_product</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; dot_product, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_a, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_b) noexcept</td></tr>
+<tr class="memdesc:ga43b9cfd3c9f44120c4f6bef9bdcf3f84"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the Euclidean dot product of two vectors or one forms.  <a href="group__TensorGroup.html#ga43b9cfd3c9f44120c4f6bef9bdcf3f84">More...</a><br /></td></tr>
+<tr class="separator:ga43b9cfd3c9f44120c4f6bef9bdcf3f84"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga64686d0bea2118d2c921f532c658682d"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Index &gt; </td></tr>
+<tr class="memitem:ga64686d0bea2118d2c921f532c658682d"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga64686d0bea2118d2c921f532c658682d">dot_product</a> (const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_a, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_b) noexcept</td></tr>
+<tr class="memdesc:ga64686d0bea2118d2c921f532c658682d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the Euclidean dot product of two vectors or one forms.  <a href="group__TensorGroup.html#ga64686d0bea2118d2c921f532c658682d">More...</a><br /></td></tr>
+<tr class="separator:ga64686d0bea2118d2c921f532c658682d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8dd31436c4ee29c37069d7309c018944"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Index &gt; </td></tr>
+<tr class="memitem:ga8dd31436c4ee29c37069d7309c018944"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga8dd31436c4ee29c37069d7309c018944">dot_product</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; dot_product, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_a, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt;&gt; &amp;vector_b) noexcept</td></tr>
+<tr class="memdesc:ga8dd31436c4ee29c37069d7309c018944"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the dot product of a vector and a one form.  <a href="group__TensorGroup.html#ga8dd31436c4ee29c37069d7309c018944">More...</a><br /></td></tr>
+<tr class="separator:ga8dd31436c4ee29c37069d7309c018944"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0d0e95a8c334a770bc46ebf2c3036fdc"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Index &gt; </td></tr>
+<tr class="memitem:ga0d0e95a8c334a770bc46ebf2c3036fdc"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga0d0e95a8c334a770bc46ebf2c3036fdc">dot_product</a> (const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_a, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt;&gt; &amp;vector_b) noexcept</td></tr>
+<tr class="memdesc:ga0d0e95a8c334a770bc46ebf2c3036fdc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the dot product of a vector and a one form.  <a href="group__TensorGroup.html#ga0d0e95a8c334a770bc46ebf2c3036fdc">More...</a><br /></td></tr>
+<tr class="separator:ga0d0e95a8c334a770bc46ebf2c3036fdc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac46e5809e19bd39a06e544a54b17c6ce"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Index &gt; </td></tr>
+<tr class="memitem:gac46e5809e19bd39a06e544a54b17c6ce"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#gac46e5809e19bd39a06e544a54b17c6ce">dot_product</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; dot_product, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_a, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_b, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1, 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;, <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt;&gt; &amp;metric) noexcept</td></tr>
+<tr class="memdesc:gac46e5809e19bd39a06e544a54b17c6ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the dot_product of two vectors or one forms.  <a href="group__TensorGroup.html#gac46e5809e19bd39a06e544a54b17c6ce">More...</a><br /></td></tr>
+<tr class="separator:gac46e5809e19bd39a06e544a54b17c6ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga789e958f4e773958057a25a82d1ed9dd"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Index &gt; </td></tr>
+<tr class="memitem:ga789e958f4e773958057a25a82d1ed9dd"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga789e958f4e773958057a25a82d1ed9dd">dot_product</a> (const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_a, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector_b, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1, 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;, <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt;&gt; &amp;metric) noexcept</td></tr>
+<tr class="memdesc:ga789e958f4e773958057a25a82d1ed9dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the dot_product of two vectors or one forms.  <a href="group__TensorGroup.html#ga789e958f4e773958057a25a82d1ed9dd">More...</a><br /></td></tr>
+<tr class="separator:ga789e958f4e773958057a25a82d1ed9dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9d72b90417816ceb6825b710d931c8a1"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Index &gt; </td></tr>
+<tr class="memitem:ga9d72b90417816ceb6825b710d931c8a1"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga9d72b90417816ceb6825b710d931c8a1">magnitude</a> (const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector) noexcept</td></tr>
+<tr class="memdesc:ga9d72b90417816ceb6825b710d931c8a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the Euclidean magnitude of a rank-1 tensor.  <a href="group__TensorGroup.html#ga9d72b90417816ceb6825b710d931c8a1">More...</a><br /></td></tr>
+<tr class="separator:ga9d72b90417816ceb6825b710d931c8a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8f5946ddbd442a876da16b9c17977137"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Index &gt; </td></tr>
+<tr class="memitem:ga8f5946ddbd442a876da16b9c17977137"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga8f5946ddbd442a876da16b9c17977137">magnitude</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; magnitude, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector) noexcept</td></tr>
+<tr class="memdesc:ga8f5946ddbd442a876da16b9c17977137"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the Euclidean magnitude of a rank-1 tensor.  <a href="group__TensorGroup.html#ga8f5946ddbd442a876da16b9c17977137">More...</a><br /></td></tr>
+<tr class="separator:ga8f5946ddbd442a876da16b9c17977137"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga50e1b23cf05cae59d364d3b04f414ec7"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Index &gt; </td></tr>
+<tr class="memitem:ga50e1b23cf05cae59d364d3b04f414ec7"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga50e1b23cf05cae59d364d3b04f414ec7">magnitude</a> (const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1, 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;, <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt;&gt; &amp;metric) noexcept</td></tr>
+<tr class="memdesc:ga50e1b23cf05cae59d364d3b04f414ec7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the magnitude of a rank-1 tensor.  <a href="group__TensorGroup.html#ga50e1b23cf05cae59d364d3b04f414ec7">More...</a><br /></td></tr>
+<tr class="separator:ga50e1b23cf05cae59d364d3b04f414ec7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga94fc4c89681ea2fc1d063047d9d68a87"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Index &gt; </td></tr>
+<tr class="memitem:ga94fc4c89681ea2fc1d063047d9d68a87"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga94fc4c89681ea2fc1d063047d9d68a87">magnitude</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; magnitude, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;vector, const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1, 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;, <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt;&gt; &amp;metric) noexcept</td></tr>
+<tr class="memdesc:ga94fc4c89681ea2fc1d063047d9d68a87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the magnitude of a rank-1 tensor.  <a href="group__TensorGroup.html#ga94fc4c89681ea2fc1d063047d9d68a87">More...</a><br /></td></tr>
+<tr class="separator:ga94fc4c89681ea2fc1d063047d9d68a87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga738d9963ed96fc819a27c945260bbe8d"><td class="memTemplParams" colspan="2">template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:ga738d9963ed96fc819a27c945260bbe8d"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga738d9963ed96fc819a27c945260bbe8d">sqrt_magnitude</a> (const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; &amp;input) noexcept</td></tr>
+<tr class="memdesc:ga738d9963ed96fc819a27c945260bbe8d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute square root of the Euclidean magnitude of a rank-0 tensor.  <a href="group__TensorGroup.html#ga738d9963ed96fc819a27c945260bbe8d">More...</a><br /></td></tr>
+<tr class="separator:ga738d9963ed96fc819a27c945260bbe8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacc674b1ed25fecd70b37672e7b7d4b97"><td class="memTemplParams" colspan="2">template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:gacc674b1ed25fecd70b37672e7b7d4b97"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#gacc674b1ed25fecd70b37672e7b7d4b97">sqrt_magnitude</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; sqrt_magnitude, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; &amp;input) noexcept</td></tr>
+<tr class="memdesc:gacc674b1ed25fecd70b37672e7b7d4b97"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute square root of the Euclidean magnitude of a rank-0 tensor.  <a href="group__TensorGroup.html#gacc674b1ed25fecd70b37672e7b7d4b97">More...</a><br /></td></tr>
+<tr class="separator:gacc674b1ed25fecd70b37672e7b7d4b97"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6592d16678e66e96868a2dd3fa6cbd1a"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Symm , typename IndexList &gt; </td></tr>
+<tr class="memitem:ga6592d16678e66e96868a2dd3fa6cbd1a"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga6592d16678e66e96868a2dd3fa6cbd1a">pointwise_l2_norm</a> (const Tensor&lt; DataType, Symm, IndexList &gt; &amp;tensor) noexcept</td></tr>
+<tr class="memdesc:ga6592d16678e66e96868a2dd3fa6cbd1a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute point-wise Euclidean \(L^2\)-norm of arbitrary Tensors.  <a href="group__TensorGroup.html#ga6592d16678e66e96868a2dd3fa6cbd1a">More...</a><br /></td></tr>
+<tr class="separator:ga6592d16678e66e96868a2dd3fa6cbd1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6cbf665eec8181bbec4ab07c5694b7fb"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Symm , typename IndexList &gt; </td></tr>
+<tr class="memitem:ga6cbf665eec8181bbec4ab07c5694b7fb"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga6cbf665eec8181bbec4ab07c5694b7fb">pointwise_l2_norm</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt; norm, const Tensor&lt; DataType, Symm, IndexList &gt; &amp;tensor) noexcept</td></tr>
+<tr class="memdesc:ga6cbf665eec8181bbec4ab07c5694b7fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute point-wise Euclidean \(L^2\)-norm of arbitrary Tensors.  <a href="group__TensorGroup.html#ga6cbf665eec8181bbec4ab07c5694b7fb">More...</a><br /></td></tr>
+<tr class="separator:ga6cbf665eec8181bbec4ab07c5694b7fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6d191fc7b1f0be4accbf6b4163830da7"><td class="memTemplParams" colspan="2">template&lt;typename DataType , size_t VolumeDim, typename Frame &gt; </td></tr>
+<tr class="memitem:ga6d191fc7b1f0be4accbf6b4163830da7"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga6d191fc7b1f0be4accbf6b4163830da7">orthonormal_oneform</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; DataType, VolumeDim, Frame &gt; * &gt; orthonormal_form, const tnsr::i&lt; DataType, VolumeDim, Frame &gt; &amp;unit_form, const tnsr::II&lt; DataType, VolumeDim, Frame &gt; &amp;inv_spatial_metric) noexcept</td></tr>
+<tr class="memdesc:ga6d191fc7b1f0be4accbf6b4163830da7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute a spatial one-form orthonormal to the given unit form.  <a href="group__TensorGroup.html#ga6d191fc7b1f0be4accbf6b4163830da7">More...</a><br /></td></tr>
+<tr class="separator:ga6d191fc7b1f0be4accbf6b4163830da7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac00ec21514a815da4ce43c2e0b9f2b5e"><td class="memTemplParams" colspan="2">template&lt;typename DataType , size_t VolumeDim, typename Frame &gt; </td></tr>
+<tr class="memitem:gac00ec21514a815da4ce43c2e0b9f2b5e"><td class="memTemplItemLeft" align="right" valign="top">tnsr::i&lt; DataType, VolumeDim, Frame &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#gac00ec21514a815da4ce43c2e0b9f2b5e">orthonormal_oneform</a> (const tnsr::i&lt; DataType, VolumeDim, Frame &gt; &amp;unit_form, const tnsr::II&lt; DataType, VolumeDim, Frame &gt; &amp;inv_spatial_metric) noexcept</td></tr>
+<tr class="memdesc:gac00ec21514a815da4ce43c2e0b9f2b5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute a spatial one-form orthonormal to the given unit form.  <a href="group__TensorGroup.html#gac00ec21514a815da4ce43c2e0b9f2b5e">More...</a><br /></td></tr>
+<tr class="separator:gac00ec21514a815da4ce43c2e0b9f2b5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga60c73222672dbf4d3cd9a692c1fcb1ac"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Frame &gt; </td></tr>
+<tr class="memitem:ga60c73222672dbf4d3cd9a692c1fcb1ac"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#ga60c73222672dbf4d3cd9a692c1fcb1ac">orthonormal_oneform</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; DataType, 3, Frame &gt; * &gt; orthonormal_form, const tnsr::i&lt; DataType, 3, Frame &gt; &amp;first_unit_form, const tnsr::i&lt; DataType, 3, Frame &gt; &amp;second_unit_form, const tnsr::ii&lt; DataType, 3, Frame &gt; &amp;spatial_metric, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; &amp;det_spatial_metric) noexcept</td></tr>
+<tr class="memdesc:ga60c73222672dbf4d3cd9a692c1fcb1ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute a spatial one-form orthonormal to two given unit forms.  <a href="group__TensorGroup.html#ga60c73222672dbf4d3cd9a692c1fcb1ac">More...</a><br /></td></tr>
+<tr class="separator:ga60c73222672dbf4d3cd9a692c1fcb1ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf825c1ddccd809ffaa555d5fa4997295"><td class="memTemplParams" colspan="2">template&lt;typename DataType , typename Frame &gt; </td></tr>
+<tr class="memitem:gaf825c1ddccd809ffaa555d5fa4997295"><td class="memTemplItemLeft" align="right" valign="top">tnsr::i&lt; DataType, 3, Frame &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TensorGroup.html#gaf825c1ddccd809ffaa555d5fa4997295">orthonormal_oneform</a> (const tnsr::i&lt; DataType, 3, Frame &gt; &amp;first_unit_form, const tnsr::i&lt; DataType, 3, Frame &gt; &amp;second_unit_form, const tnsr::ii&lt; DataType, 3, Frame &gt; &amp;spatial_metric, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; &amp;det_spatial_metric) noexcept</td></tr>
+<tr class="memdesc:gaf825c1ddccd809ffaa555d5fa4997295"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute a spatial one-form orthonormal to two given unit forms.  <a href="group__TensorGroup.html#gaf825c1ddccd809ffaa555d5fa4997295">More...</a><br /></td></tr>
+<tr class="separator:gaf825c1ddccd809ffaa555d5fa4997295"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>Tensor use documentation. </p>
+<h2 class="groupheader">Typedef Documentation</h2>
+<a id="gad8087fef90d482c58a25934cb9346950"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad8087fef90d482c58a25934cb9346950">&#9670;&nbsp;</a></span>change_index_type</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Index &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TensorGroup.html#gad8087fef90d482c58a25934cb9346950">change_index_type</a> =  Tensor_detail::TensorIndexType&lt; Index::index_type == <a class="el" href="group__TensorGroup.html#gga875b107b929ff008a27078792ac0bc8ea33d7f1ec5fe18e7ba799474138e71504">IndexType::Spatial</a> ? Index::dim : Index::dim - 1, Index::ul, typename Index::Frame, Index::index_type == <a class="el" href="group__TensorGroup.html#gga875b107b929ff008a27078792ac0bc8ea33d7f1ec5fe18e7ba799474138e71504">IndexType::Spatial</a> ? <a class="el" href="group__TensorGroup.html#gga875b107b929ff008a27078792ac0bc8eaed5df3a695921f514a83c22d119c0f8e">IndexType::Spacetime</a> : <a class="el" href="group__TensorGroup.html#gga875b107b929ff008a27078792ac0bc8ea33d7f1ec5fe18e7ba799474138e71504">IndexType::Spatial</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Change the <a class="el" href="group__TensorGroup.html#ga05c512b755e913cdbddce8634bdb4fa6">TensorIndexType</a> to be spacetime if it's spatial and vice versa</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname"><a class="el" href="classIndex.html">Index</a></td><td>the <a class="el" href="group__TensorGroup.html#ga05c512b755e913cdbddce8634bdb4fa6">TensorIndexType</a> to change </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gacb33fd857700a3fc87b9dce8c877fee7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gacb33fd857700a3fc87b9dce8c877fee7">&#9670;&nbsp;</a></span>change_index_up_lo</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Index &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a> =  Tensor_detail::TensorIndexType&lt; Index::index_type == <a class="el" href="group__TensorGroup.html#gga875b107b929ff008a27078792ac0bc8ea33d7f1ec5fe18e7ba799474138e71504">IndexType::Spatial</a> ? Index::value : Index::value - 1, Index::ul == <a class="el" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28a258f49887ef8d14ac268c92b02503aaa">UpLo::Up</a> ? <a class="el" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28aff50b4aa1c9cc2197ef898436641c911">UpLo::Lo</a> : <a class="el" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28a258f49887ef8d14ac268c92b02503aaa">UpLo::Up</a>, typename Index::Frame, Index::index_type&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Change the <a class="el" href="group__TensorGroup.html#ga05c512b755e913cdbddce8634bdb4fa6">TensorIndexType</a> to be covariant if it's contravariant and vice-versa</p>
+<p>Here is an example of how to use <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a> </p><div class="fragment"><div class="line"><span class="keyword">using</span> <a class="code" href="classIndex.html">Index</a> = <a class="code" href="group__TensorGroup.html#ga557beda9bce6c7f236213ec8b24b3ff3">SpatialIndex&lt;3, UpLo::Lo, Frame::Grid&gt;</a>;</div>
+<div class="line"><span class="keyword">using</span> UpIndex = <a class="code" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo&lt;Index&gt;</a>;</div>
+<div class="line">static_assert(std::is_same_v&lt;UpIndex, <a class="code" href="group__TensorGroup.html#ga557beda9bce6c7f236213ec8b24b3ff3">SpatialIndex&lt;3, UpLo::Up, Frame::Grid&gt;</a>&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing change_index_up_lo&quot;</span>);</div>
+</div><!-- fragment --> <dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname"><a class="el" href="classIndex.html">Index</a></td><td>the <a class="el" href="group__TensorGroup.html#ga05c512b755e913cdbddce8634bdb4fa6">TensorIndexType</a> to change </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga4e16b80d37cb8a3e7c8ab95e72ab8724"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4e16b80d37cb8a3e7c8ab95e72ab8724">&#9670;&nbsp;</a></span>is_frame_physical</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename CheckFrame &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TensorGroup.html#ga4e16b80d37cb8a3e7c8ab95e72ab8724">Frame::is_frame_physical</a> = typedef <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::integral_constant</a>&lt;bool, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_base_of.html">std::is_base_of</a>&lt;<a class="el" href="structFrame_1_1FrameIsPhysical.html">FrameIsPhysical</a>, CheckFrame&gt;::value&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a> if the frame is "physical" in the sense that it is meaningful to evaluate an analytic solution in that frame. </p>
+<h3>Example</h3>
+<div class="fragment"><div class="line">static_assert(not Frame::is_frame_physical_v&lt;Frame::Logical&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing Frame::is_frame_physical&quot;</span>);</div>
+<div class="line">static_assert(not Frame::is_frame_physical_v&lt;Frame::Distorted&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing Frame::is_frame_physical&quot;</span>);</div>
+<div class="line">static_assert(not Frame::is_frame_physical_v&lt;Frame::Grid&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing Frame::is_frame_physical&quot;</span>);</div>
+<div class="line">static_assert(Frame::is_frame_physical_v&lt;Frame::Inertial&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing Frame::is_frame_physical&quot;</span>);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="gaef68ec7e4373c578d0a5885df8ac89fa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaef68ec7e4373c578d0a5885df8ac89fa">&#9670;&nbsp;</a></span>prepend_spacetime_index</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Tensor , std::size_t VolumeDim, UpLo Ul, typename Fr  = Frame::Grid&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TensorGroup.html#gaef68ec7e4373c578d0a5885df8ac89fa">TensorMetafunctions::prepend_spacetime_index</a> = typedef ::Tensor&lt; typename Tensor::type, tmpl::push_front&lt; typename Tensor::symmetry, tmpl::int32_t&lt; 1 + tmpl::fold&lt;typename Tensor::symmetry, tmpl::int32_t&lt;0&gt;, tmpl::max&lt;tmpl::_state, tmpl::_element&gt; &gt;::value&gt; &gt;, tmpl::push_front&lt;typename Tensor::index_list, <a class="el" href="group__TensorGroup.html#ga05c512b755e913cdbddce8634bdb4fa6">SpacetimeIndex</a>&lt;VolumeDim, Ul, Fr&gt; &gt;&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Add a spacetime index to the front of a Tensor. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Tensor</td><td>the tensor type to which the new index is prepended </td></tr>
+    <tr><td class="paramname">VolumeDim</td><td>the volume dimension of the tensor index to prepend </td></tr>
+    <tr><td class="paramname">Fr</td><td>the <a class="el" href="namespaceFrame.html">Frame</a> of the tensor index to prepend </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga5e4aece332518b3a95c2a73557aaa596"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5e4aece332518b3a95c2a73557aaa596">&#9670;&nbsp;</a></span>prepend_spatial_index</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Tensor , std::size_t VolumeDim, UpLo Ul, typename Fr  = Frame::Grid&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TensorGroup.html#ga5e4aece332518b3a95c2a73557aaa596">TensorMetafunctions::prepend_spatial_index</a> = typedef ::Tensor&lt; typename Tensor::type, tmpl::push_front&lt; typename Tensor::symmetry, tmpl::int32_t&lt; 1 + tmpl::fold&lt;typename Tensor::symmetry, tmpl::int32_t&lt;0&gt;, tmpl::max&lt;tmpl::_state, tmpl::_element&gt; &gt;::value&gt; &gt;, tmpl::push_front&lt;typename Tensor::index_list, <a class="el" href="group__TensorGroup.html#ga557beda9bce6c7f236213ec8b24b3ff3">SpatialIndex</a>&lt;VolumeDim, Ul, Fr&gt; &gt;&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Add a spatial index to the front of a Tensor. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Tensor</td><td>the tensor type to which the new index is prepended </td></tr>
+    <tr><td class="paramname">VolumeDim</td><td>the volume dimension of the tensor index to prepend </td></tr>
+    <tr><td class="paramname">Fr</td><td>the <a class="el" href="namespaceFrame.html">Frame</a> of the tensor index to prepend </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga897a0492a08b8d3493fe552796c1cf02"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga897a0492a08b8d3493fe552796c1cf02">&#9670;&nbsp;</a></span>remove_first_index</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Tensor &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TensorGroup.html#ga897a0492a08b8d3493fe552796c1cf02">TensorMetafunctions::remove_first_index</a> = typedef ::Tensor&lt;typename Tensor::type, tmpl::pop_front&lt;typename Tensor::symmetry&gt;, tmpl::pop_front&lt;typename Tensor::index_list&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>remove the first index of a tensor </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Tensor</td><td>the tensor type whose first index is removed </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga06ebcb38a1f13c246e53378b9e8959ce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga06ebcb38a1f13c246e53378b9e8959ce">&#9670;&nbsp;</a></span>Scalar</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a> =  Tensor&lt;T, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt;&gt;, index_list&lt;&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Scalar type </p>
+
+</div>
+</div>
+<a id="ga05c512b755e913cdbddce8634bdb4fa6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga05c512b755e913cdbddce8634bdb4fa6">&#9670;&nbsp;</a></span>SpacetimeIndex</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t SpatialDim, UpLo Ul, typename Fr &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TensorGroup.html#ga05c512b755e913cdbddce8634bdb4fa6">SpacetimeIndex</a> =  Tensor_detail::TensorIndexType&lt;SpatialDim, Ul, Fr, <a class="el" href="group__TensorGroup.html#gga875b107b929ff008a27078792ac0bc8eaed5df3a695921f514a83c22d119c0f8e">IndexType::Spacetime</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>A SpacetimeIndex holds information about the number of spatial dimensions, whether the index is covariant or contravariant (<a class="el" href="group__TensorGroup.html#gaab1181edf2ab2b664b0f174223f08c28">UpLo</a>), and the <a class="el" href="namespaceFrame.html">Frame</a> the index is in.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">SpatialDim</td><td>the spatial dimensionality of the <a class="el" href="group__TensorGroup.html#ga05c512b755e913cdbddce8634bdb4fa6">TensorIndexType</a> </td></tr>
+    <tr><td class="paramname">Ul</td><td>either <a class="el" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28a258f49887ef8d14ac268c92b02503aaa" title="Contravariant, or Upper index.">UpLo::Up</a> or <a class="el" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28aff50b4aa1c9cc2197ef898436641c911" title="Covariant, or Lower index.">UpLo::Lo</a> for contra or covariant </td></tr>
+    <tr><td class="paramname">Fr</td><td>the <a class="el" href="namespaceFrame.html">Frame</a> the <a class="el" href="group__TensorGroup.html#ga05c512b755e913cdbddce8634bdb4fa6">TensorIndexType</a> is in </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga557beda9bce6c7f236213ec8b24b3ff3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga557beda9bce6c7f236213ec8b24b3ff3">&#9670;&nbsp;</a></span>SpatialIndex</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t SpatialDim, UpLo Ul, typename Fr &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TensorGroup.html#ga557beda9bce6c7f236213ec8b24b3ff3">SpatialIndex</a> =  Tensor_detail::TensorIndexType&lt;SpatialDim, Ul, Fr, <a class="el" href="group__TensorGroup.html#gga875b107b929ff008a27078792ac0bc8ea33d7f1ec5fe18e7ba799474138e71504">IndexType::Spatial</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>A SpatialIndex holds information about the number of spatial dimensions, whether the index is covariant or contravariant (<a class="el" href="group__TensorGroup.html#gaab1181edf2ab2b664b0f174223f08c28">UpLo</a>), and the <a class="el" href="namespaceFrame.html">Frame</a> the index is in. </p><dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">SpatialDim</td><td>the spatial dimensionality of the <a class="el" href="group__TensorGroup.html#ga557beda9bce6c7f236213ec8b24b3ff3">TensorIndexType</a> </td></tr>
+    <tr><td class="paramname">Ul</td><td>either <a class="el" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28a258f49887ef8d14ac268c92b02503aaa" title="Contravariant, or Upper index.">UpLo::Up</a> or <a class="el" href="group__TensorGroup.html#ggaab1181edf2ab2b664b0f174223f08c28aff50b4aa1c9cc2197ef898436641c911" title="Covariant, or Lower index.">UpLo::Lo</a> for contra or covariant </td></tr>
+    <tr><td class="paramname">Fr</td><td>the <a class="el" href="namespaceFrame.html">Frame</a> the <a class="el" href="group__TensorGroup.html#ga557beda9bce6c7f236213ec8b24b3ff3">TensorIndexType</a> is in </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga25fd6050b5c828f90dd353a44dbd8c1e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga25fd6050b5c828f90dd353a44dbd8c1e">&#9670;&nbsp;</a></span>swap_type</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename NewType , typename Tensor &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TensorGroup.html#ga25fd6050b5c828f90dd353a44dbd8c1e">TensorMetafunctions::swap_type</a> = typedef ::Tensor&lt;NewType, typename Tensor::symmetry, typename Tensor::index_list&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Swap the data type of a tensor for a new type. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">NewType</td><td>the new data type </td></tr>
+    <tr><td class="paramname">Tensor</td><td>the tensor from which to keep symmetry and index information </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga3b376e9167e178638a1adece2ab22ec9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3b376e9167e178638a1adece2ab22ec9">&#9670;&nbsp;</a></span>Symmetry</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::int32_t... T&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a> =  typename detail::SymmetryImpl&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/integer_sequence.html">std::make_index_sequence</a>&lt;sizeof...(T)&gt;, tmpl::integral_list&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::int32_t</a>, T...&gt; &gt;::type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Computes the canonical symmetry from the integers <code>T</code> </p>
+<h3>Details</h3>
+<p>Compute the canonical symmetry typelist given a set of integers, T. The resulting typelist is in ascending order of the integers, from right to left. For example, the result of <code>Symmetry&lt;1, 2, 1, 3&gt;</code> is <code>integral_list&lt;int32_t, 2, 3, 2, 1&gt;</code>. Anti-symmetries are not currently supported.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>the integers denoting the symmetry of the Tensor </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="ga875b107b929ff008a27078792ac0bc8e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga875b107b929ff008a27078792ac0bc8e">&#9670;&nbsp;</a></span>IndexType</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="group__TensorGroup.html#ga875b107b929ff008a27078792ac0bc8e">IndexType</a> : char</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Indicates whether the <a class="el" href="group__TensorGroup.html#ga05c512b755e913cdbddce8634bdb4fa6">TensorIndexType</a> is Spatial or Spacetime </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="gga875b107b929ff008a27078792ac0bc8ea33d7f1ec5fe18e7ba799474138e71504"></a>Spatial&#160;</td><td class="fielddoc"><p>The <a class="el" href="group__TensorGroup.html#ga557beda9bce6c7f236213ec8b24b3ff3">TensorIndexType</a> is purely spatial. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga875b107b929ff008a27078792ac0bc8eaed5df3a695921f514a83c22d119c0f8e"></a>Spacetime&#160;</td><td class="fielddoc"><p>The <a class="el" href="group__TensorGroup.html#ga05c512b755e913cdbddce8634bdb4fa6">TensorIndexType</a> is a spacetime index. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a id="gaab1181edf2ab2b664b0f174223f08c28"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaab1181edf2ab2b664b0f174223f08c28">&#9670;&nbsp;</a></span>UpLo</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="group__TensorGroup.html#gaab1181edf2ab2b664b0f174223f08c28">UpLo</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Whether a <a class="el" href="group__TensorGroup.html#ga05c512b755e913cdbddce8634bdb4fa6">TensorIndexType</a> is covariant or contravariant </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ggaab1181edf2ab2b664b0f174223f08c28a258f49887ef8d14ac268c92b02503aaa"></a>Up&#160;</td><td class="fielddoc"><p>Contravariant, or Upper index. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggaab1181edf2ab2b664b0f174223f08c28aff50b4aa1c9cc2197ef898436641c911"></a>Lo&#160;</td><td class="fielddoc"><p>Covariant, or Lower index. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="ga39ba3fcae856f79175a241a1272d1796"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga39ba3fcae856f79175a241a1272d1796">&#9670;&nbsp;</a></span>cross_product() <span class="overload">[1/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , typename Index &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Tensor&lt;DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt;1&gt;, index_list&lt;<a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt;<a class="el" href="classIndex.html">Index</a>&gt; &gt; &gt; cross_product </td>
+          <td>(</td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector_a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector_b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the Euclidean cross product of a vector and a one form. </p>
+<h3>Details</h3>
+<p>Returns \(A^j B_l \delta^{lk} \epsilon_{ijk}\) for input vector \(A^j\) and input one form \(B_l\) or \(A_j B^l \delta_{lk} \epsilon^{ijk}\) for input one form \(A_j\) and input vector \(B^l\). Note that this function returns a vector if <code>vector_b</code> is a vector and a one form if <code>vector_b</code> is a one form. </p>
+
+</div>
+</div>
+<a id="gacf423e552e0fbc1d6254d2a11b4ea6f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gacf423e552e0fbc1d6254d2a11b4ea6f9">&#9670;&nbsp;</a></span>cross_product() <span class="overload">[2/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , typename Index &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Tensor&lt;DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt;1&gt;, index_list&lt;<a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt;<a class="el" href="classIndex.html">Index</a>&gt; &gt; &gt; cross_product </td>
+          <td>(</td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector_a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector_b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1, 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a>, <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>metric_or_inverse_metric</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; &amp;&#160;</td>
+          <td class="paramname"><em>metric_determinant</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the cross product of a vector and a one form. </p>
+<h3>Details</h3>
+<p>Returns \(\sqrt{g} A^j B_l g^{lk} \epsilon_{ijk}\) for input vector \(A^j\) and input one form \(B_l\). In this case, the argument <code>vector_a</code> should be a vector, <code>vector_b</code> should be a one form, <code>metric_or_inverse_metric</code> should be the inverse spatial metric \(g^{ij}\), and <code>metric_determinant</code> should be the determinant of the spatial metric \(\det(g_{ij})\). Or, returns \(\sqrt{g}^{-1} A_j B^l g_{lk} \epsilon^{ijk}\) for input one form \(A_j\) and input vector \(B^l\). In this case, the argument <code>vector_a</code> should be a one form, <code>vector_b</code> should be a vector, <code>metric_or_inverse_metric</code> should be the spatial metric \(g_{ij}\), and <code>metric_determinant</code> should be the determinant of the spatial metric \(\det(g_{ij})\). Note that this function returns a vector if <code>vector_b</code> is a vector and a one form if <code>vector_b</code> is a one form. </p>
+
+</div>
+</div>
+<a id="gaa1ed07a07e44db3061d20d945d8aae36"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa1ed07a07e44db3061d20d945d8aae36">&#9670;&nbsp;</a></span>cross_product() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , typename Index &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Tensor&lt;DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt;1&gt;, index_list&lt;<a class="el" href="classIndex.html">Index</a>&gt; &gt; cross_product </td>
+          <td>(</td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector_a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector_b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the Euclidean cross product of two vectors or one forms. </p>
+<h3>Details</h3>
+<p>Returns \(A^j B^k \epsilon_{ljk} \delta^{il}\) for input vectors \(A^j\) and \(B^k\) or \(A_j B_k \epsilon^{ljk} \delta_{il}\) for input one forms \(A_j\) and \(B_k\). </p>
+
+</div>
+</div>
+<a id="gacbf01b3290d5c59cefe9d6aa419738fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gacbf01b3290d5c59cefe9d6aa419738fc">&#9670;&nbsp;</a></span>cross_product() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , typename Index &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Tensor&lt;DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt;1&gt;, index_list&lt;<a class="el" href="classIndex.html">Index</a>&gt; &gt; cross_product </td>
+          <td>(</td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector_a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector_b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1, 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a>, <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>metric_or_inverse_metric</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; &amp;&#160;</td>
+          <td class="paramname"><em>metric_determinant</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the cross product of two vectors or one forms. </p>
+<h3>Details</h3>
+<p>Returns \(\sqrt{g} g^{li} A^j B^k \epsilon_{ljk}\), where \(A^j\) and \(B^k\) are vectors and \(g^{li}\) and \(g\) are the inverse and determinant, respectively, of the spatial metric (computed via <code>determinant_and_inverse</code>). In this case, the arguments <code>vector_a</code> and <code>vector_b</code> should be vectors, the argument <code>metric_or_inverse_metric</code> should be the inverse spatial metric \(g^{ij}\), and the argument <code>metric_determinant</code> should be the determinant of the spatial metric \(\det(g_{ij})\). Or, returns \(\sqrt{g}^{-1} g_{li} A_j B_k \epsilon^{ljk}\), where \(A_j\) and \(B_k\) are one forms and \(g_{li}\) and \(g\) are the spatial metric and its determinant. In this case, the arguments <code>vector_a</code> and <code>vector_b</code> should be one forms, the argument <code>metric_or_inverse_metric</code> should be the spatial metric \(g_{ij}\), and the argument <code>metric_determinant</code> should be the determinant of the spatial metric \(\det(g_{ij})\). </p>
+
+</div>
+</div>
+<a id="ga73d129796fcc1edcdd005096933b89f5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga73d129796fcc1edcdd005096933b89f5">&#9670;&nbsp;</a></span>determinant() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename Symm , typename Index0 , typename Index1 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void determinant </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; T &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>det_tensor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; T, Symm, index_list&lt; Index0, Index1 &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>tensor</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Computes the determinant of a rank-2 Tensor <code>tensor</code>. </p>
+<p><em>Requires:</em> That <code>tensor</code> be a rank-2 Tensor, with both indices sharing the same dimension and type. </p>
+
+</div>
+</div>
+<a id="gae65d90877c857b6e839a2cbbd49170ce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae65d90877c857b6e839a2cbbd49170ce">&#9670;&nbsp;</a></span>determinant() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename Symm , typename Index0 , typename Index1 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;T&gt; determinant </td>
+          <td>(</td>
+          <td class="paramtype">const Tensor&lt; T, Symm, index_list&lt; Index0, Index1 &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>tensor</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Computes the determinant of a rank-2 Tensor <code>tensor</code>. </p>
+<p><em>Requires:</em> That <code>tensor</code> be a rank-2 Tensor, with both indices sharing the same dimension and type. </p>
+
+</div>
+</div>
+<a id="ga51d5abd4e1bcb2e64195dcc15e2f2e5f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga51d5abd4e1bcb2e64195dcc15e2f2e5f">&#9670;&nbsp;</a></span>determinant_and_inverse() <span class="overload">[1/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename Symm , typename Index0 , typename Index1 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void determinant_and_inverse </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; T &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>det</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Tensor&lt; T, Symm, tmpl::list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; Index1 &gt;, <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; Index0 &gt;&gt;&gt; * &gt;&#160;</td>
+          <td class="paramname"><em>inv</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; T, Symm, tmpl::list&lt; Index0, Index1 &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>tensor</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Computes the determinant and inverse of a rank-2 Tensor. </p>
+<p>Computes the determinant and inverse together, because this leads to fewer operations compared to computing the determinant independently.</p>
+<h3>Details</h3>
+<p>Treats the input rank-2 tensor as a matrix. The first (second) index of the tensor corresponds to the rows (columns) of the matrix. The determinant is a scalar tensor. The inverse is a rank-2 tensor whose indices are reversed and of opposite valence relative to the input tensor, i.e. given \(T_a^b\) returns \((Tinv)_b^a\).</p>
+<dl class="section note"><dt>Note</dt><dd>When inverting a 4x4 spacetime metric, it is typically more efficient to use the 3+1 decomposition of the 4-metric in terms of lapse, shift, and spatial 3-metric, in which only the spatial 3-metric needs to be inverted. </dd></dl>
+
+</div>
+</div>
+<a id="ga6f3c432baee84114e9518f35d0acabd7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6f3c432baee84114e9518f35d0acabd7">&#9670;&nbsp;</a></span>determinant_and_inverse() <span class="overload">[2/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DetTag , typename InvTag , typename T , typename Symm , typename Index0 , typename Index1 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void determinant_and_inverse </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; tmpl::list&lt; DetTag, InvTag &gt;&gt; * &gt;&#160;</td>
+          <td class="paramname"><em>det_and_inv</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; T, Symm, tmpl::list&lt; Index0, Index1 &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>tensor</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Computes the determinant and inverse of a rank-2 Tensor. </p>
+<p>Computes the determinant and inverse together, because this leads to fewer operations compared to computing the determinant independently.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">DetTag</td><td>the Tag for the determinant of input Tensor. </td></tr>
+    <tr><td class="paramname">InvTag</td><td>the Tag for the inverse of input Tensor.</td></tr>
+  </table>
+  </dd>
+</dl>
+<h3>Details</h3>
+<p>See <a class="el" href="group__TensorGroup.html#ga51d5abd4e1bcb2e64195dcc15e2f2e5f" title="Computes the determinant and inverse of a rank-2 Tensor.">determinant_and_inverse()</a>. </p>
+
+</div>
+</div>
+<a id="ga483fc075c909d22d2d9b4dbfd1ac5bc2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga483fc075c909d22d2d9b4dbfd1ac5bc2">&#9670;&nbsp;</a></span>determinant_and_inverse() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename Symm , typename Index0 , typename Index1 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto determinant_and_inverse </td>
+          <td>(</td>
+          <td class="paramtype">const Tensor&lt; T, Symm, tmpl::list&lt; Index0, Index1 &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>tensor</em></td><td>)</td>
+          <td> -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt;<a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;T&gt;, Tensor&lt;T, Symm,
+                                   tmpl::list&lt;<a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt;Index1&gt;,
+                                              <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt;Index0&gt;&gt;&gt;&gt; </td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Computes the determinant and inverse of a rank-2 Tensor. </p>
+<p>Computes the determinant and inverse together, because this leads to fewer operations compared to computing the determinant independently.</p>
+<h3>Details</h3>
+<p>Treats the input rank-2 tensor as a matrix. The first (second) index of the tensor corresponds to the rows (columns) of the matrix. The determinant is a scalar tensor. The inverse is a rank-2 tensor whose indices are reversed and of opposite valence relative to the input tensor, i.e. given \(T_a^b\) returns \((Tinv)_b^a\).</p>
+<dl class="section note"><dt>Note</dt><dd>When inverting a 4x4 spacetime metric, it is typically more efficient to use the 3+1 decomposition of the 4-metric in terms of lapse, shift, and spatial 3-metric, in which only the spatial 3-metric needs to be inverted. </dd></dl>
+
+</div>
+</div>
+<a id="ga1c28364d3baa1a93698e14ff19b6bdbb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga1c28364d3baa1a93698e14ff19b6bdbb">&#9670;&nbsp;</a></span>determinant_and_inverse() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DetTag , typename InvTag , typename T , typename Symm , typename Index0 , typename Index1 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto determinant_and_inverse </td>
+          <td>(</td>
+          <td class="paramtype">const Tensor&lt; T, Symm, tmpl::list&lt; Index0, Index1 &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>tensor</em></td><td>)</td>
+          <td> -&gt; Variables&lt;tmpl::list&lt;DetTag, InvTag&gt;&gt; </td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Computes the determinant and inverse of a rank-2 Tensor. </p>
+<p>Computes the determinant and inverse together, because this leads to fewer operations compared to computing the determinant independently.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">DetTag</td><td>the Tag for the determinant of input Tensor. </td></tr>
+    <tr><td class="paramname">InvTag</td><td>the Tag for the inverse of input Tensor.</td></tr>
+  </table>
+  </dd>
+</dl>
+<h3>Details</h3>
+<p>See <a class="el" href="group__TensorGroup.html#ga51d5abd4e1bcb2e64195dcc15e2f2e5f" title="Computes the determinant and inverse of a rank-2 Tensor.">determinant_and_inverse()</a>. </p>
+
+</div>
+</div>
+<a id="ga8dd31436c4ee29c37069d7309c018944"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga8dd31436c4ee29c37069d7309c018944">&#9670;&nbsp;</a></span>dot_product() <span class="overload">[1/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , typename Index &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void dot_product </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>dot_product</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector_a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector_b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the dot product of a vector and a one form. </p>
+<h3>Details</h3>
+<p>Returns \(A^a B_b \delta_{a}^b\) for input vector \(A^a\) and input one form \(B_b\) or \(A_a B^b \delta^a_b\) for input one form \(A_a\) and input vector \(B^b\). </p>
+
+</div>
+</div>
+<a id="ga43b9cfd3c9f44120c4f6bef9bdcf3f84"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga43b9cfd3c9f44120c4f6bef9bdcf3f84">&#9670;&nbsp;</a></span>dot_product() <span class="overload">[2/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , typename Index &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void dot_product </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>dot_product</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector_a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector_b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the Euclidean dot product of two vectors or one forms. </p>
+<h3>Details</h3>
+<p>Returns \(A^a B^b \delta_{ab}\) for input vectors \(A^a\) and \(B^b\) or \(A_a B_b \delta^{ab}\) for input one forms \(A_a\) and \(B_b\). </p>
+
+</div>
+</div>
+<a id="gac46e5809e19bd39a06e544a54b17c6ce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac46e5809e19bd39a06e544a54b17c6ce">&#9670;&nbsp;</a></span>dot_product() <span class="overload">[3/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , typename Index &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void dot_product </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>dot_product</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector_a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector_b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1, 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;, <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>metric</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the dot_product of two vectors or one forms. </p>
+<h3>Details</h3>
+<p>Returns \(g_{ab} A^a B^b\), where \(g_{ab}\) is the metric, \(A^a\) is vector_a, and \(B^b\) is vector_b. Or, returns \(g^{ab} A_a B_b\) when given one forms \(A_a\) and \(B_b\) with an inverse metric \(g^{ab}\). </p>
+
+</div>
+</div>
+<a id="ga0d0e95a8c334a770bc46ebf2c3036fdc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0d0e95a8c334a770bc46ebf2c3036fdc">&#9670;&nbsp;</a></span>dot_product() <span class="overload">[4/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , typename Index &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;DataType&gt; dot_product </td>
+          <td>(</td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector_a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector_b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the dot product of a vector and a one form. </p>
+<h3>Details</h3>
+<p>Returns \(A^a B_b \delta_{a}^b\) for input vector \(A^a\) and input one form \(B_b\) or \(A_a B^b \delta^a_b\) for input one form \(A_a\) and input vector \(B^b\). </p>
+
+</div>
+</div>
+<a id="ga64686d0bea2118d2c921f532c658682d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga64686d0bea2118d2c921f532c658682d">&#9670;&nbsp;</a></span>dot_product() <span class="overload">[5/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , typename Index &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;DataType&gt; dot_product </td>
+          <td>(</td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector_a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector_b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the Euclidean dot product of two vectors or one forms. </p>
+<h3>Details</h3>
+<p>Returns \(A^a B^b \delta_{ab}\) for input vectors \(A^a\) and \(B^b\) or \(A_a B_b \delta^{ab}\) for input one forms \(A_a\) and \(B_b\). </p>
+
+</div>
+</div>
+<a id="ga789e958f4e773958057a25a82d1ed9dd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga789e958f4e773958057a25a82d1ed9dd">&#9670;&nbsp;</a></span>dot_product() <span class="overload">[6/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , typename Index &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;DataType&gt; dot_product </td>
+          <td>(</td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector_a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector_b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1, 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;, <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>metric</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the dot_product of two vectors or one forms. </p>
+<h3>Details</h3>
+<p>Returns \(g_{ab} A^a B^b\), where \(g_{ab}\) is the metric, \(A^a\) is vector_a, and \(B^b\) is vector_b. Or, returns \(g^{ab} A_a B_b\) when given one forms \(A_a\) and \(B_b\) with an inverse metric \(g^{ab}\). </p>
+
+</div>
+</div>
+<a id="gaa89f4b3bf804d2a2bfdac72509e8c60d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa89f4b3bf804d2a2bfdac72509e8c60d">&#9670;&nbsp;</a></span>index_dim()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;int I, class... Ts&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr size_t index_dim </td>
+          <td>(</td>
+          <td class="paramtype">const Tensor&lt; Ts... &gt; &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get dimensionality of i'th tensor index</p>
+<div class="fragment"><div class="line">    <span class="keyword">using</span> T = Tensor&lt;double, Symmetry&lt;1, 2, 3&gt;,</div>
+<div class="line">                     index_list&lt;SpacetimeIndex&lt;2, UpLo::Up, Frame::Inertial&gt;,</div>
+<div class="line">                                <a class="code" href="group__TensorGroup.html#ga557beda9bce6c7f236213ec8b24b3ff3">SpatialIndex&lt;1, UpLo::Up, Frame::Inertial&gt;</a>,</div>
+<div class="line">                                <a class="code" href="group__TensorGroup.html#ga557beda9bce6c7f236213ec8b24b3ff3">SpatialIndex&lt;2, UpLo::Up, Frame::Inertial&gt;</a>&gt;&gt;;</div>
+<div class="line">    <span class="keyword">const</span> T t{};</div>
+<div class="line">    CHECK(index_dim&lt;0&gt;(t) == 3);</div>
+<div class="line">    CHECK(index_dim&lt;1&gt;(t) == 1);</div>
+<div class="line">    CHECK(index_dim&lt;2&gt;(t) == 2);</div>
+<div class="line">    CHECK(<a class="code" href="group__TensorGroup.html#gaa89f4b3bf804d2a2bfdac72509e8c60d">T::index_dim</a>(0) == 3);</div>
+<div class="line">    CHECK(<a class="code" href="group__TensorGroup.html#gaa89f4b3bf804d2a2bfdac72509e8c60d">T::index_dim</a>(1) == 1);</div>
+<div class="line">    CHECK(<a class="code" href="group__TensorGroup.html#gaa89f4b3bf804d2a2bfdac72509e8c60d">T::index_dim</a>(2) == 2);</div>
+<div class="line">    CHECK(T::index_dims() == <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;size_t, 3&gt;</a>{{3, 1, 2}});</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="ga17182cc25cfff1775433013fb80781f8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga17182cc25cfff1775433013fb80781f8">&#9670;&nbsp;</a></span>l2_norm()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , typename Symm , typename IndexList &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double l2_norm </td>
+          <td>(</td>
+          <td class="paramtype">const Tensor&lt; DataType, Symm, IndexList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>tensor</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute Euclidean \(L^2\)-norm of arbitrary Tensors reduced over an element. </p>
+<h3>Details</h3>
+<p>Computes the RMS value of the point-wise Frobenius norm of a given Tensor with arbitrary rank over all grid points in an element. If the Tensor \(A\) has rank \(n\) and dimensionality \(D\), and the element (of order \(N\)) has \(N+1\) points, then its element-reduced Frobenius norm is computed as:</p>
+<p class="formulaDsp">
+\begin{equation} ||A||_2 = \left(\frac{1}{N+1}\sum^{N}_{p=0} \left(\sum^{D-1}_{i_1=0}\sum^{D-1}_{i_2=0}\cdots \sum^{D-1}_{i_n=0} |A^p_{i_1 i_2 \cdots i_n}|^2 \right) \right)^{1/2}, \end{equation}
+</p>
+<p>where both contra-variant and co-variant indices are shown as lower indices, and \(p\) indexes grid points in the element.</p>
+<dl class="section warning"><dt>Warning</dt><dd>This function reduces the Frobenius norm over the element, not the whole domain. </dd></dl>
+
+</div>
+</div>
+<a id="ga8f5946ddbd442a876da16b9c17977137"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga8f5946ddbd442a876da16b9c17977137">&#9670;&nbsp;</a></span>magnitude() <span class="overload">[1/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , typename Index &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magnitude </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>magnitude</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the Euclidean magnitude of a rank-1 tensor. </p>
+<h3>Details</h3>
+<p>Computes the square root of the sum of the squares of the components of the rank-1 tensor. </p>
+
+</div>
+</div>
+<a id="ga94fc4c89681ea2fc1d063047d9d68a87"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga94fc4c89681ea2fc1d063047d9d68a87">&#9670;&nbsp;</a></span>magnitude() <span class="overload">[2/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , typename Index &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magnitude </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>magnitude</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1, 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;, <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>metric</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the magnitude of a rank-1 tensor. </p>
+<h3>Details</h3>
+<p>Returns the square root of the input tensor contracted twice with the given metric. </p>
+
+</div>
+</div>
+<a id="ga9d72b90417816ceb6825b710d931c8a1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9d72b90417816ceb6825b710d931c8a1">&#9670;&nbsp;</a></span>magnitude() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , typename Index &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;DataType&gt; magnitude </td>
+          <td>(</td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the Euclidean magnitude of a rank-1 tensor. </p>
+<h3>Details</h3>
+<p>Computes the square root of the sum of the squares of the components of the rank-1 tensor. </p>
+
+</div>
+</div>
+<a id="ga50e1b23cf05cae59d364d3b04f414ec7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga50e1b23cf05cae59d364d3b04f414ec7">&#9670;&nbsp;</a></span>magnitude() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , typename Index &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;DataType&gt; magnitude </td>
+          <td>(</td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1 &gt;, index_list&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>vector</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, <a class="el" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt; 1, 1 &gt;, index_list&lt; <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;, <a class="el" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a>&lt; <a class="el" href="classIndex.html">Index</a> &gt;&gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>metric</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the magnitude of a rank-1 tensor. </p>
+<h3>Details</h3>
+<p>Returns the square root of the input tensor contracted twice with the given metric. </p>
+
+</div>
+</div>
+<a id="gaf825c1ddccd809ffaa555d5fa4997295"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf825c1ddccd809ffaa555d5fa4997295">&#9670;&nbsp;</a></span>orthonormal_oneform() <span class="overload">[1/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , typename Frame &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">tnsr::i&lt;DataType, 3, Frame&gt; orthonormal_oneform </td>
+          <td>(</td>
+          <td class="paramtype">const tnsr::i&lt; DataType, 3, Frame &gt; &amp;&#160;</td>
+          <td class="paramname"><em>first_unit_form</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::i&lt; DataType, 3, Frame &gt; &amp;&#160;</td>
+          <td class="paramname"><em>second_unit_form</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::ii&lt; DataType, 3, Frame &gt; &amp;&#160;</td>
+          <td class="paramname"><em>spatial_metric</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; &amp;&#160;</td>
+          <td class="paramname"><em>det_spatial_metric</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute a spatial one-form orthonormal to two given unit forms. </p>
+<p>Given a unit spatial one-form \(s_i\) and another form \(t_i\) that is orthonormal to \(s_i\), compute a new form \(u_i\) which is orthonormal to both \(s_i\) and \(t_i\), in the sense that \(\gamma^{ij}s_i u_j = \gamma^{ij}t_i u_j = 0\), for the given inverse spatial metric \(\gamma^{ij}\). The normalization of \(u_i\) is such that \(\gamma^{ij}u_iu_j = 1\).</p>
+<h3>Details</h3>
+<p>The new form is obtained by taking the covariant cross product of \(s_i\) and \( t_i\), for which the spatial metric as well as its determinant must be provided. </p>
+
+</div>
+</div>
+<a id="gac00ec21514a815da4ce43c2e0b9f2b5e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac00ec21514a815da4ce43c2e0b9f2b5e">&#9670;&nbsp;</a></span>orthonormal_oneform() <span class="overload">[2/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , size_t VolumeDim, typename Frame &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">tnsr::i&lt;DataType, VolumeDim, Frame&gt; orthonormal_oneform </td>
+          <td>(</td>
+          <td class="paramtype">const tnsr::i&lt; DataType, VolumeDim, Frame &gt; &amp;&#160;</td>
+          <td class="paramname"><em>unit_form</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::II&lt; DataType, VolumeDim, Frame &gt; &amp;&#160;</td>
+          <td class="paramname"><em>inv_spatial_metric</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute a spatial one-form orthonormal to the given unit form. </p>
+<p>Given a unit spatial one-form \(s_i\), compute a new form \(t_i\) which is orthonormal to \(s_i\), in the sense that \(\gamma^{ij}s_i t_j = 0\), for the given inverse spatial metric \(\gamma^{ij}\). The normalization of \(t_i\) is such that \(\gamma^{ij}t_it_j = 1\).</p>
+<h3>Details</h3>
+<p>The new form is obtained via Gram-Schmidt process, starting from a form whose components are \(t_i = \delta_i^I\), where \(I\) is the index of the component of \(s_i\) with the smallest absolute value. </p>
+
+</div>
+</div>
+<a id="ga60c73222672dbf4d3cd9a692c1fcb1ac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga60c73222672dbf4d3cd9a692c1fcb1ac">&#9670;&nbsp;</a></span>orthonormal_oneform() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , typename Frame &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void orthonormal_oneform </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; DataType, 3, Frame &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>orthonormal_form</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::i&lt; DataType, 3, Frame &gt; &amp;&#160;</td>
+          <td class="paramname"><em>first_unit_form</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::i&lt; DataType, 3, Frame &gt; &amp;&#160;</td>
+          <td class="paramname"><em>second_unit_form</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::ii&lt; DataType, 3, Frame &gt; &amp;&#160;</td>
+          <td class="paramname"><em>spatial_metric</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; &amp;&#160;</td>
+          <td class="paramname"><em>det_spatial_metric</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute a spatial one-form orthonormal to two given unit forms. </p>
+<p>Given a unit spatial one-form \(s_i\) and another form \(t_i\) that is orthonormal to \(s_i\), compute a new form \(u_i\) which is orthonormal to both \(s_i\) and \(t_i\), in the sense that \(\gamma^{ij}s_i u_j = \gamma^{ij}t_i u_j = 0\), for the given inverse spatial metric \(\gamma^{ij}\). The normalization of \(u_i\) is such that \(\gamma^{ij}u_iu_j = 1\).</p>
+<h3>Details</h3>
+<p>The new form is obtained by taking the covariant cross product of \(s_i\) and \( t_i\), for which the spatial metric as well as its determinant must be provided. </p>
+
+</div>
+</div>
+<a id="ga6d191fc7b1f0be4accbf6b4163830da7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6d191fc7b1f0be4accbf6b4163830da7">&#9670;&nbsp;</a></span>orthonormal_oneform() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , size_t VolumeDim, typename Frame &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void orthonormal_oneform </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; DataType, VolumeDim, Frame &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>orthonormal_form</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::i&lt; DataType, VolumeDim, Frame &gt; &amp;&#160;</td>
+          <td class="paramname"><em>unit_form</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::II&lt; DataType, VolumeDim, Frame &gt; &amp;&#160;</td>
+          <td class="paramname"><em>inv_spatial_metric</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute a spatial one-form orthonormal to the given unit form. </p>
+<p>Given a unit spatial one-form \(s_i\), compute a new form \(t_i\) which is orthonormal to \(s_i\), in the sense that \(\gamma^{ij}s_i t_j = 0\), for the given inverse spatial metric \(\gamma^{ij}\). The normalization of \(t_i\) is such that \(\gamma^{ij}t_it_j = 1\).</p>
+<h3>Details</h3>
+<p>The new form is obtained via Gram-Schmidt process, starting from a form whose components are \(t_i = \delta_i^I\), where \(I\) is the index of the component of \(s_i\) with the smallest absolute value. </p>
+
+</div>
+</div>
+<a id="ga6cbf665eec8181bbec4ab07c5694b7fb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6cbf665eec8181bbec4ab07c5694b7fb">&#9670;&nbsp;</a></span>pointwise_l2_norm() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , typename Symm , typename IndexList &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void pointwise_l2_norm </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>norm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tensor&lt; DataType, Symm, IndexList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>tensor</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute point-wise Euclidean \(L^2\)-norm of arbitrary Tensors. </p>
+<h3>Details</h3>
+<p>At each grid point \(p\) in the element, this function computes the point-wise Frobenius norm of a given Tensor with arbitrary rank. If the Tensor \(A\) has rank \(n\) and dimensionality \(D\), then its Frobenius norm at point \(p\) is computed as:</p>
+<p class="formulaDsp">
+\begin{equation} ||A||_2(p) = \left(\sum^{D-1}_{i_1=0}\sum^{D-1}_{i_2=0}\cdots \sum^{D-1}_{i_n=0} |A_{i_1 i_2 \cdots i_n}(p)|^2 \right)^{1/2}, \end{equation}
+</p>
+<p>where both contra-variant and co-variant indices are shown as lower indices. </p>
+
+</div>
+</div>
+<a id="ga6592d16678e66e96868a2dd3fa6cbd1a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6592d16678e66e96868a2dd3fa6cbd1a">&#9670;&nbsp;</a></span>pointwise_l2_norm() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType , typename Symm , typename IndexList &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;DataType&gt; pointwise_l2_norm </td>
+          <td>(</td>
+          <td class="paramtype">const Tensor&lt; DataType, Symm, IndexList &gt; &amp;&#160;</td>
+          <td class="paramname"><em>tensor</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute point-wise Euclidean \(L^2\)-norm of arbitrary Tensors. </p>
+<h3>Details</h3>
+<p>At each grid point \(p\) in the element, this function computes the point-wise Frobenius norm of a given Tensor with arbitrary rank. If the Tensor \(A\) has rank \(n\) and dimensionality \(D\), then its Frobenius norm at point \(p\) is computed as:</p>
+<p class="formulaDsp">
+\begin{equation} ||A||_2(p) = \left(\sum^{D-1}_{i_1=0}\sum^{D-1}_{i_2=0}\cdots \sum^{D-1}_{i_n=0} |A_{i_1 i_2 \cdots i_n}(p)|^2 \right)^{1/2}, \end{equation}
+</p>
+<p>where both contra-variant and co-variant indices are shown as lower indices. </p>
+
+</div>
+</div>
+<a id="ga8997337995d9183da158e7cc2da99101"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga8997337995d9183da158e7cc2da99101">&#9670;&nbsp;</a></span>prefix()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Fr &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> Frame::prefix </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>The frame-dependent prefix used when constructing the string returned by the name function of a tag.</p>
+<p>For <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> it is the empty string, otherwise, it is the name of the <a class="el" href="namespaceFrame.html">Frame</a> followed by an underscore (as the name will be used in I/O). </p>
+<h3>Example</h3>
+<div class="fragment"><div class="line">  TestHelpers::db::test_simple_tag&lt;</div>
+<div class="line">      <a class="code" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity&lt;DataVector, 3, Frame::Grid&gt;</a>&gt;(</div>
+<div class="line">      <span class="stringliteral">&quot;Grid_SpatialVelocity&quot;</span>);</div>
+<div class="line">  TestHelpers::db::test_simple_tag&lt;</div>
+<div class="line">      <a class="code" href="structhydro_1_1Tags_1_1SpatialVelocityOneForm.html">hydro::Tags::SpatialVelocityOneForm&lt;DataVector, 3, Frame::Logical&gt;</a>&gt;(</div>
+<div class="line">      <span class="stringliteral">&quot;Logical_SpatialVelocityOneForm&quot;</span>);</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="gacc674b1ed25fecd70b37672e7b7d4b97"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gacc674b1ed25fecd70b37672e7b7d4b97">&#9670;&nbsp;</a></span>sqrt_magnitude() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void sqrt_magnitude </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>sqrt_magnitude</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; &amp;&#160;</td>
+          <td class="paramname"><em>input</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute square root of the Euclidean magnitude of a rank-0 tensor. </p>
+<h3>Details</h3>
+<p>Computes the square root of the absolute value of the scalar. </p>
+
+</div>
+</div>
+<a id="ga738d9963ed96fc819a27c945260bbe8d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga738d9963ed96fc819a27c945260bbe8d">&#9670;&nbsp;</a></span>sqrt_magnitude() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename DataType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;DataType&gt; sqrt_magnitude </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; &amp;&#160;</td>
+          <td class="paramname"><em>input</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute square root of the Euclidean magnitude of a rank-0 tensor. </p>
+<h3>Details</h3>
+<p>Computes the square root of the absolute value of the scalar. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a id="ga36bbeb0ee2084a06f7d950201cdc0d79"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga36bbeb0ee2084a06f7d950201cdc0d79">&#9670;&nbsp;</a></span>is_frame_physical_v</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename CheckFrame &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool Frame::is_frame_physical_v = <a class="el" href="group__TensorGroup.html#ga4e16b80d37cb8a3e7c8ab95e72ab8724">is_frame_physical</a>&lt;CheckFrame&gt;::value</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Returns true if the frame is "physical" in the sense that it is meaningful to evaluate an analytic solution in that frame. </p>
+<h3>Example</h3>
+<div class="fragment"><div class="line">static_assert(not Frame::is_frame_physical_v&lt;Frame::Logical&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing Frame::is_frame_physical&quot;</span>);</div>
+<div class="line">static_assert(not Frame::is_frame_physical_v&lt;Frame::Distorted&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing Frame::is_frame_physical&quot;</span>);</div>
+<div class="line">static_assert(not Frame::is_frame_physical_v&lt;Frame::Grid&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing Frame::is_frame_physical&quot;</span>);</div>
+<div class="line">static_assert(Frame::is_frame_physical_v&lt;Frame::Inertial&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing Frame::is_frame_physical&quot;</span>);</div>
+</div><!-- fragment -->
+</div>
+</div>
+</div><!-- contents -->
+<div class="ttc" id="astructhydro_1_1Tags_1_1SpatialVelocityOneForm_html"><div class="ttname"><a href="structhydro_1_1Tags_1_1SpatialVelocityOneForm.html">hydro::Tags::SpatialVelocityOneForm</a></div><div class="ttdoc">The spatial velocity one-form , where  is raised and lowered with the spatial metric.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:152</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_gaa89f4b3bf804d2a2bfdac72509e8c60d"><div class="ttname"><a href="group__TensorGroup.html#gaa89f4b3bf804d2a2bfdac72509e8c60d">index_dim</a></div><div class="ttdeci">constexpr size_t index_dim(const Tensor&lt; Ts... &gt; &amp;) noexcept</div><div class="ttdef"><b>Definition:</b> Tensor.hpp:555</div></div>
+<div class="ttc" id="aclassIndex_html"><div class="ttname"><a href="classIndex.html">Index</a></div><div class="ttdef"><b>Definition:</b> Index.hpp:31</div></div>
+<div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt; size_t, 3 &gt;</a></div></div>
+<div class="ttc" id="astructhydro_1_1Tags_1_1SpatialVelocity_html"><div class="ttname"><a href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a></div><div class="ttdoc">The spatial velocity  of the fluid, where . Here  is the spatial part of the 4-velocity of the fluid,...</div><div class="ttdef"><b>Definition:</b> Tags.hpp:142</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga557beda9bce6c7f236213ec8b24b3ff3"><div class="ttname"><a href="group__TensorGroup.html#ga557beda9bce6c7f236213ec8b24b3ff3">SpatialIndex</a></div><div class="ttdeci">Tensor_detail::TensorIndexType&lt; SpatialDim, Ul, Fr, IndexType::Spatial &gt; SpatialIndex</div><div class="ttdef"><b>Definition:</b> IndexType.hpp:187</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_gacb33fd857700a3fc87b9dce8c877fee7"><div class="ttname"><a href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a></div><div class="ttdeci">Tensor_detail::TensorIndexType&lt; Index::index_type==IndexType::Spatial ? Index::value :Index::value - 1, Index::ul==UpLo::Up ? UpLo::Lo :UpLo::Up, typename Index::Frame, Index::index_type &gt; change_index_up_lo</div><div class="ttdef"><b>Definition:</b> IndexType.hpp:235</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

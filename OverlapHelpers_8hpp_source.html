@@ -1,0 +1,513 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_52eadd4f43f0b98e08a2e8dc15a77911.html">ParallelAlgorithms</a></li><li class="navelem"><a class="el" href="dir_ef07fb1efed83c700c2b8fea8f1b7679.html">LinearSolver</a></li><li class="navelem"><a class="el" href="dir_b4658c0d8adb042d29d709f17b5bff74.html">Schwarz</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">OverlapHelpers.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;boost/functional/hash.hpp&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/limits.html">limits</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/tuple.html">tuple</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160; </div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataVector.hpp&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;DataStructures/FixedHashMap.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Index_8hpp.html">DataStructures/Index.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Tensor_8hpp.html">DataStructures/Tensor/Tensor.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Variables_8hpp.html">DataStructures/Variables.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Direction_8hpp.html">Domain/Structure/Direction.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ElementId_8hpp.html">Domain/Structure/ElementId.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;Domain/Structure/MaxNumberOfNeighbors.hpp&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;Utilities/ContainerHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Assert_8hpp.html">Utilities/ErrorHandling/Assert.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160; </div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceLinearSolver_1_1Schwarz.html">LinearSolver::Schwarz</a> {</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment">/// Identifies a subdomain region that overlaps with another element</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00026"></a><span class="lineno"><a class="line" href="namespaceLinearSolver_1_1Schwarz.html#a2d76a9985279a866886fb074484d5e2d">   26</a></span>&#160;<span class="keyword">using</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">OverlapId</a> = <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair&lt;Direction&lt;Dim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;Dim&gt;</a>&gt;;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment">/// Data structure that can store the `ValueType` on each possible overlap of an</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment">/// element-centered subdomain with its neighbors. Overlaps are identified by</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment">/// their `OverlapId`.</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim, <span class="keyword">typename</span> ValueType&gt;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keyword">using</span> <a class="code" href="classFixedHashMap.html">OverlapMap</a> =</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <a class="code" href="classFixedHashMap.html">FixedHashMap</a>&lt;<a class="code" href="group__ComputationalDomainGroup.html#gafa8cb44daebc8f9e080718961530be89">maximum_number_of_neighbors</a>(Dim), <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">OverlapId&lt;Dim&gt;</a>, ValueType,</div>
+<div class="line"><a name="l00034"></a><span class="lineno"><a class="line" href="namespaceLinearSolver_1_1Schwarz.html#a2f93b06273400d7ac4150c064502a047">   34</a></span>&#160;                 boost::hash&lt;OverlapId&lt;Dim&gt;&gt;&gt;;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment"> * \brief The number of points that an overlap extends into the `volume_extent`</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment"> * In a dimension where an element has `volume_extent` points, the overlap</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment"> * extent is the largest number under these constraints:</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment"> * - It is at most `max_overlap`.</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment"> * - It is smaller than the `volume_extent`.</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment"> * This means the overlap extent is always smaller than the `volume_extent`. The</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment"> * reason for this constraint is that we define the _width_ of the overlap as</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment"> * the element-logical coordinate distance from the face of the element to the</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment"> * first collocation point _outside_ the overlap extent. Therefore, even an</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment"> * overlap region that covers the full element in width does not include the</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment"> * collocation point on the opposite side of the element.</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment"> * Here&#39;s a few notes on the definition of the overlap extent and width:</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment"> * - A typical smooth weighting function goes to zero at the overlap width, so</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment"> *   if the grid points located at the overlap width were included in the</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment"> *   subdomain, their solutions would not contribute to the weighted sum of</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment"> *   subdomain solutions.</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment"> * - Defining the overlap width as the distance to the first point _outside_ the</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment"> *   overlap extent makes it non-zero even for a single point of overlap into a</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment"> *   Gauss-Lobatto grid (which has points located at the element face).</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment"> * - Boundary contributions for many (but not all) discontinuous Galerkin</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment"> *   schemes on Gauss-Lobatto grids are limited to the grid points on the</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment"> *   element face, e.g. for a DG operator that is pre-multiplied by the mass</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment"> *   matrix, or one where boundary contributions are lifted using the diagonal</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment"> *   mass-matrix approximation. Not including the grid points facing away from</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment"> *   the subdomain in the overlap allows to ignore that face altogether in the</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment"> *   subdomain operator.</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="keywordtype">size_t</span> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>(<span class="keywordtype">size_t</span> volume_extent, <span class="keywordtype">size_t</span> max_overlap) noexcept;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment"> * \brief Total number of grid points in an overlap region that extends</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment"> * `overlap_extent` points into the `volume_extents` from either side in the</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment"> * `overlap_dimension`</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment"> * The overlap region has `overlap_extent` points in the `overlap_dimension`,</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment"> * and `volume_extents` points in the other dimensions. The number of grid</span></div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment"> * points returned by this function is the product of these extents.</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="keywordtype">size_t</span> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#ab856922e3c9e70cee558b1906ed284ff">overlap_num_points</a>(<span class="keyword">const</span> <a class="code" href="classIndex.html">Index&lt;Dim&gt;</a>&amp; volume_extents,</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;                          <span class="keywordtype">size_t</span> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>,</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;                          <span class="keywordtype">size_t</span> overlap_dimension) noexcept;</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment"> * \brief Width of an overlap extending `overlap_extent` points into the</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment"> * `collocation_points` from either side.</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment"> * The &quot;width&quot; of an overlap is the element-logical coordinate distance from the</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment"> * element boundary to the first collocation point outside the overlap region in</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment"> * the overlap dimension, i.e. the dimension perpendicular to the element face.</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment"> * See `LinearSolver::Schwarz::overlap_extent` for details.</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment"> * This function assumes the `collocation_points` are mirrored around 0.</span></div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="keywordtype">double</span> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a7d0aef214331418e9e3a25e9f8d47c59">overlap_width</a>(<span class="keywordtype">size_t</span> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>,</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;                     <span class="keyword">const</span> <a class="code" href="classDataVector.html">DataVector</a>&amp; <a class="code" href="namespaceSpectral.html#ae2433e9284c6284a25ee9fc45a4eb538">collocation_points</a>) noexcept;</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="comment"> * \brief Iterate over grid points in a region that extends partially into the</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="comment"> * volume</span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="comment"> * Here&#39;s an example how to use this iterator:</span></div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="comment"> * \snippet Test_OverlapHelpers.cpp overlap_iterator</span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00107"></a><span class="lineno"><a class="line" href="classLinearSolver_1_1Schwarz_1_1OverlapIterator.html">  107</a></span>&#160;<span class="keyword">class </span><a class="code" href="classLinearSolver_1_1Schwarz_1_1OverlapIterator.html">OverlapIterator</a> {</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;  <span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;  <a class="code" href="classLinearSolver_1_1Schwarz_1_1OverlapIterator.html">OverlapIterator</a>(<span class="keyword">const</span> <a class="code" href="classIndex.html">Index&lt;Dim&gt;</a>&amp; volume_extents, <span class="keywordtype">size_t</span> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>,</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;                  <span class="keyword">const</span> <a class="code" href="classDirection.html">Direction&lt;Dim&gt;</a>&amp; direction) noexcept;</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160; </div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;  <span class="keyword">explicit</span> <span class="keyword">operator</span> bool() <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;  <a class="code" href="classLinearSolver_1_1Schwarz_1_1OverlapIterator.html">OverlapIterator</a>&amp; operator++();</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="comment">  /// Offset into a DataVector that holds full volume data</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="comment"></span>  <span class="keywordtype">size_t</span> <a class="code" href="classLinearSolver_1_1Schwarz_1_1OverlapIterator.html#a3e2b7aa0e5cb2e04f4965eb2ecf0b855">volume_offset</a>() <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="comment">  /// Offset into a DataVector that holds data only on the overlap region</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="comment"></span>  <span class="keywordtype">size_t</span> <a class="code" href="classLinearSolver_1_1Schwarz_1_1OverlapIterator.html#ac169aed33090a72199466b72037229c3">overlap_offset</a>() <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160; </div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;  <span class="keywordtype">void</span> reset() noexcept;</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160; </div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;  <span class="keywordtype">size_t</span> size_ = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/max.html">std::numeric_limits&lt;size_t&gt;::max</a>();</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;  <span class="keywordtype">size_t</span> num_slices_ = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/max.html">std::numeric_limits&lt;size_t&gt;::max</a>();</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;  <span class="keywordtype">size_t</span> stride_ = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/max.html">std::numeric_limits&lt;size_t&gt;::max</a>();</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;  <span class="keywordtype">size_t</span> stride_count_ = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/max.html">std::numeric_limits&lt;size_t&gt;::max</a>();</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;  <span class="keywordtype">size_t</span> jump_ = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/max.html">std::numeric_limits&lt;size_t&gt;::max</a>();</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;  <span class="keywordtype">size_t</span> initial_offset_ = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/max.html">std::numeric_limits&lt;size_t&gt;::max</a>();</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;  <span class="keywordtype">size_t</span> volume_offset_ = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/max.html">std::numeric_limits&lt;size_t&gt;::max</a>();</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;  <span class="keywordtype">size_t</span> overlap_offset_ = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/max.html">std::numeric_limits&lt;size_t&gt;::max</a>();</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;};</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;<span class="comment">/// @{</span></div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;<span class="comment">/// The part of the tensor data that lies within the overlap region</span></div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim, <span class="keyword">typename</span> DataType, <span class="keyword">typename</span>... TensorStructure&gt;</div>
+<div class="line"><a name="l00139"></a><span class="lineno"><a class="line" href="namespaceLinearSolver_1_1Schwarz.html#a93d56df56230079863bb60142a4c4e57">  139</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a93d56df56230079863bb60142a4c4e57">data_on_overlap</a>(<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;Tensor&lt;DataType, TensorStructure...&gt;*&gt;</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;                         restricted_tensor,</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;                     <span class="keyword">const</span> Tensor&lt;DataType, TensorStructure...&gt;&amp; tensor,</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;                     <span class="keyword">const</span> <a class="code" href="classIndex.html">Index&lt;Dim&gt;</a>&amp; volume_extents,</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;                     <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>,</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;                     <span class="keyword">const</span> <a class="code" href="classDirection.html">Direction&lt;Dim&gt;</a>&amp; direction) noexcept {</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;  <span class="keywordflow">for</span> (<a class="code" href="classLinearSolver_1_1Schwarz_1_1OverlapIterator.html">OverlapIterator</a> overlap_iterator{volume_extents, <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>,</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;                                        direction};</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;       overlap_iterator; ++overlap_iterator) {</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> tensor_component = 0; tensor_component &lt; tensor.size();</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;         ++tensor_component) {</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;      (*restricted_tensor)[tensor_component][overlap_iterator</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;                                                 .overlap_offset()] =</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;          tensor[tensor_component][overlap_iterator.volume_offset()];</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;    }</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;  }</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;}</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160; </div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim, <span class="keyword">typename</span> DataType, <span class="keyword">typename</span>... TensorStructure&gt;</div>
+<div class="line"><a name="l00158"></a><span class="lineno"><a class="line" href="namespaceLinearSolver_1_1Schwarz.html#aff1eb5c0f214656bf56d82577787de57">  158</a></span>&#160;Tensor&lt;DataType, TensorStructure...&gt; <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a93d56df56230079863bb60142a4c4e57">data_on_overlap</a>(</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;    <span class="keyword">const</span> Tensor&lt;DataType, TensorStructure...&gt;&amp; tensor,</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;    <span class="keyword">const</span> <a class="code" href="classIndex.html">Index&lt;Dim&gt;</a>&amp; volume_extents, <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>,</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;    <span class="keyword">const</span> <a class="code" href="classDirection.html">Direction&lt;Dim&gt;</a>&amp; direction) noexcept {</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;  Tensor&lt;DataType, TensorStructure...&gt; restricted_tensor{<a class="code" href="namespaceLinearSolver_1_1Schwarz.html#ab856922e3c9e70cee558b1906ed284ff">overlap_num_points</a>(</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;      volume_extents, <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>, direction.dimension())};</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;  <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a93d56df56230079863bb60142a4c4e57">data_on_overlap</a>(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;restricted_tensor), tensor, volume_extents,</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;                  <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>, direction);</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;  <span class="keywordflow">return</span> restricted_tensor;</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;}</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160; </div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;<span class="keyword">namespace </span>detail {</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;<span class="keywordtype">void</span> data_on_overlap_impl(<span class="keywordtype">double</span>* overlap_data, <span class="keyword">const</span> <span class="keywordtype">double</span>* volume_data,</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;                          <span class="keywordtype">size_t</span> num_components,</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;                          <span class="keyword">const</span> <a class="code" href="classIndex.html">Index&lt;Dim&gt;</a>&amp; volume_extents,</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;                          <span class="keywordtype">size_t</span> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>,</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;                          <span class="keyword">const</span> <a class="code" href="classDirection.html">Direction&lt;Dim&gt;</a>&amp; direction) noexcept;</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;}  <span class="comment">// namespace detail</span></div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160; </div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim, <span class="keyword">typename</span> OverlapTagsList, <span class="keyword">typename</span> VolumeTagsList&gt;</div>
+<div class="line"><a name="l00179"></a><span class="lineno"><a class="line" href="namespaceLinearSolver_1_1Schwarz.html#aca2fef092d73bcd0cc1f0509b61eda60">  179</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a93d56df56230079863bb60142a4c4e57">data_on_overlap</a>(</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;Variables&lt;OverlapTagsList&gt;*&gt; overlap_data,</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;    <span class="keyword">const</span> Variables&lt;VolumeTagsList&gt;&amp; volume_data,</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;    <span class="keyword">const</span> <a class="code" href="classIndex.html">Index&lt;Dim&gt;</a>&amp; volume_extents, <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>,</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;    <span class="keyword">const</span> <a class="code" href="classDirection.html">Direction&lt;Dim&gt;</a>&amp; direction) noexcept {</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;  constexpr <span class="keywordtype">size_t</span> num_components =</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;      Variables&lt;VolumeTagsList&gt;::number_of_independent_components;</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;  <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(volume_data.number_of_grid_points() == volume_extents.product(),</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;         <span class="stringliteral">&quot;volume_data has wrong number of grid points.  Expected &quot;</span></div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;             &lt;&lt; volume_extents.product() &lt;&lt; <span class="stringliteral">&quot;, got &quot;</span></div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;             &lt;&lt; volume_data.number_of_grid_points());</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;  <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(overlap_data-&gt;number_of_grid_points() ==</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;             <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#ab856922e3c9e70cee558b1906ed284ff">overlap_num_points</a>(volume_extents, <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>,</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;                                direction.dimension()),</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;         <span class="stringliteral">&quot;overlap_data has wrong number of grid points.  Expected &quot;</span></div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;             &lt;&lt; <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#ab856922e3c9e70cee558b1906ed284ff">overlap_num_points</a>(volume_extents, <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>,</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;                                   direction.dimension())</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;             &lt;&lt; <span class="stringliteral">&quot;, got &quot;</span> &lt;&lt; overlap_data-&gt;number_of_grid_points());</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;  detail::data_on_overlap_impl(overlap_data-&gt;data(), volume_data.data(),</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;                               num_components, volume_extents, <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>,</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;                               direction);</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;}</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160; </div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim, <span class="keyword">typename</span> TagsList&gt;</div>
+<div class="line"><a name="l00203"></a><span class="lineno"><a class="line" href="namespaceLinearSolver_1_1Schwarz.html#a1c51694d05b1a1c74fc227dcb3fc277a">  203</a></span>&#160;Variables&lt;TagsList&gt; <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a93d56df56230079863bb60142a4c4e57">data_on_overlap</a>(<span class="keyword">const</span> Variables&lt;TagsList&gt;&amp; volume_data,</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;                                    <span class="keyword">const</span> <a class="code" href="classIndex.html">Index&lt;Dim&gt;</a>&amp; volume_extents,</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;                                    <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>,</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;                                    <span class="keyword">const</span> <a class="code" href="classDirection.html">Direction&lt;Dim&gt;</a>&amp; direction) noexcept {</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;  Variables&lt;TagsList&gt; overlap_data{<a class="code" href="namespaceLinearSolver_1_1Schwarz.html#ab856922e3c9e70cee558b1906ed284ff">overlap_num_points</a>(</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;      volume_extents, <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>, direction.dimension())};</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;  <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a93d56df56230079863bb60142a4c4e57">data_on_overlap</a>(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;overlap_data), volume_data, volume_extents,</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;                  <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>, direction);</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;  <span class="keywordflow">return</span> overlap_data;</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;}<span class="comment"></span></div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;<span class="comment">/// @}</span></div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;<span class="keyword">namespace </span>detail {</div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;<span class="keywordtype">void</span> add_overlap_data_impl(<span class="keywordtype">double</span>* volume_data, <span class="keyword">const</span> <span class="keywordtype">double</span>* overlap_data,</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;                           <span class="keywordtype">size_t</span> num_components,</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;                           <span class="keyword">const</span> <a class="code" href="classIndex.html">Index&lt;Dim&gt;</a>&amp; volume_extents,</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;                           <span class="keywordtype">size_t</span> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>,</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;                           <span class="keyword">const</span> <a class="code" href="classDirection.html">Direction&lt;Dim&gt;</a>&amp; direction) noexcept;</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;}  <span class="comment">// namespace detail</span></div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;<span class="comment">/// Add the `overlap_data` to the `volume_data`</span></div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim, <span class="keyword">typename</span> VolumeTagsList, <span class="keyword">typename</span> OverlapTagsList&gt;</div>
+<div class="line"><a name="l00226"></a><span class="lineno"><a class="line" href="namespaceLinearSolver_1_1Schwarz.html#ab5b5b1d6b4f185bdbd7357f28655b677">  226</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#ab5b5b1d6b4f185bdbd7357f28655b677">add_overlap_data</a>(</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;Variables&lt;VolumeTagsList&gt;*&gt; volume_data,</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;    <span class="keyword">const</span> Variables&lt;OverlapTagsList&gt;&amp; overlap_data,</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;    <span class="keyword">const</span> <a class="code" href="classIndex.html">Index&lt;Dim&gt;</a>&amp; volume_extents, <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>,</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;    <span class="keyword">const</span> <a class="code" href="classDirection.html">Direction&lt;Dim&gt;</a>&amp; direction) noexcept {</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;  constexpr <span class="keywordtype">size_t</span> num_components =</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;      Variables&lt;VolumeTagsList&gt;::number_of_independent_components;</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;  <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(volume_data-&gt;number_of_grid_points() == volume_extents.product(),</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;         <span class="stringliteral">&quot;volume_data has wrong number of grid points.  Expected &quot;</span></div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;             &lt;&lt; volume_extents.product() &lt;&lt; <span class="stringliteral">&quot;, got &quot;</span></div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;             &lt;&lt; volume_data-&gt;number_of_grid_points());</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;  <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(overlap_data.number_of_grid_points() ==</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;             <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#ab856922e3c9e70cee558b1906ed284ff">overlap_num_points</a>(volume_extents, <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>,</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;                                direction.dimension()),</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;         <span class="stringliteral">&quot;overlap_data has wrong number of grid points.  Expected &quot;</span></div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;             &lt;&lt; <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#ab856922e3c9e70cee558b1906ed284ff">overlap_num_points</a>(volume_extents, <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>,</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;                                   direction.dimension())</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;             &lt;&lt; <span class="stringliteral">&quot;, got &quot;</span> &lt;&lt; overlap_data.number_of_grid_points());</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;  detail::add_overlap_data_impl(volume_data-&gt;data(), overlap_data.data(),</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;                                num_components, volume_extents, <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>,</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;                                direction);</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;}</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;<span class="comment">/// @{</span></div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;<span class="comment">/// Extend the overlap data to the full mesh by filling it with zeros outside</span></div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;<span class="comment">/// the overlap region</span></div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim, <span class="keyword">typename</span> ExtendedTagsList, <span class="keyword">typename</span> OverlapTagsList&gt;</div>
+<div class="line"><a name="l00253"></a><span class="lineno"><a class="line" href="namespaceLinearSolver_1_1Schwarz.html#a9cef68ec62f2cd472805c9a576109e07">  253</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a9cef68ec62f2cd472805c9a576109e07">extended_overlap_data</a>(</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;Variables&lt;ExtendedTagsList&gt;*&gt; extended_data,</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;    <span class="keyword">const</span> Variables&lt;OverlapTagsList&gt;&amp; overlap_data,</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;    <span class="keyword">const</span> <a class="code" href="classIndex.html">Index&lt;Dim&gt;</a>&amp; volume_extents, <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>,</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;    <span class="keyword">const</span> <a class="code" href="classDirection.html">Direction&lt;Dim&gt;</a>&amp; direction) noexcept {</div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;  *extended_data = Variables&lt;ExtendedTagsList&gt;{volume_extents.product(), 0.};</div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;  <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#ab5b5b1d6b4f185bdbd7357f28655b677">add_overlap_data</a>(extended_data, overlap_data, volume_extents, <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>,</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;                   direction);</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;}</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160; </div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim, <span class="keyword">typename</span> TagsList&gt;</div>
+<div class="line"><a name="l00264"></a><span class="lineno"><a class="line" href="namespaceLinearSolver_1_1Schwarz.html#a14f47ee158a227e3765e9e7b223b2152">  264</a></span>&#160;Variables&lt;TagsList&gt; <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a9cef68ec62f2cd472805c9a576109e07">extended_overlap_data</a>(</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;    <span class="keyword">const</span> Variables&lt;TagsList&gt;&amp; overlap_data, <span class="keyword">const</span> <a class="code" href="classIndex.html">Index&lt;Dim&gt;</a>&amp; volume_extents,</div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>, <span class="keyword">const</span> <a class="code" href="classDirection.html">Direction&lt;Dim&gt;</a>&amp; direction) noexcept {</div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;  Variables&lt;TagsList&gt; extended_data{volume_extents.product()};</div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;  <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a9cef68ec62f2cd472805c9a576109e07">extended_overlap_data</a>(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;extended_data), overlap_data,</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;                        volume_extents, <a class="code" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>, direction);</div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;  <span class="keywordflow">return</span> extended_data;</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;}<span class="comment"></span></div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;<span class="comment">/// @}</span></div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;}  <span class="comment">// namespace LinearSolver::Schwarz</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="aclassLinearSolver_1_1Schwarz_1_1OverlapIterator_html_a3e2b7aa0e5cb2e04f4965eb2ecf0b855"><div class="ttname"><a href="classLinearSolver_1_1Schwarz_1_1OverlapIterator.html#a3e2b7aa0e5cb2e04f4965eb2ecf0b855">LinearSolver::Schwarz::OverlapIterator::volume_offset</a></div><div class="ttdeci">size_t volume_offset() const noexcept</div><div class="ttdoc">Offset into a DataVector that holds full volume data.</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_gafa8cb44daebc8f9e080718961530be89"><div class="ttname"><a href="group__ComputationalDomainGroup.html#gafa8cb44daebc8f9e080718961530be89">maximum_number_of_neighbors</a></div><div class="ttdeci">constexpr size_t maximum_number_of_neighbors(const size_t dim)</div><div class="ttdef"><b>Definition:</b> MaxNumberOfNeighbors.hpp:15</div></div>
+<div class="ttc" id="anamespaceLinearSolver_1_1Schwarz_html_a1366a47573e66a972bda3027b35dc5cd"><div class="ttname"><a href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">LinearSolver::Schwarz::overlap_extent</a></div><div class="ttdeci">size_t overlap_extent(size_t volume_extent, size_t max_overlap) noexcept</div><div class="ttdoc">The number of points that an overlap extends into the volume_extent</div></div>
+<div class="ttc" id="apair_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a></div></div>
+<div class="ttc" id="atuple_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/tuple.html">tuple</a></div></div>
+<div class="ttc" id="aclassIndex_html"><div class="ttname"><a href="classIndex.html">Index</a></div><div class="ttdef"><b>Definition:</b> Index.hpp:31</div></div>
+<div class="ttc" id="aclassLinearSolver_1_1Schwarz_1_1OverlapIterator_html_ac169aed33090a72199466b72037229c3"><div class="ttname"><a href="classLinearSolver_1_1Schwarz_1_1OverlapIterator.html#ac169aed33090a72199466b72037229c3">LinearSolver::Schwarz::OverlapIterator::overlap_offset</a></div><div class="ttdeci">size_t overlap_offset() const noexcept</div><div class="ttdoc">Offset into a DataVector that holds data only on the overlap region.</div></div>
+<div class="ttc" id="aclassDirection_html"><div class="ttname"><a href="classDirection.html">Direction&lt; Dim &gt;</a></div></div>
+<div class="ttc" id="anamespaceLinearSolver_1_1Schwarz_html"><div class="ttname"><a href="namespaceLinearSolver_1_1Schwarz.html">LinearSolver::Schwarz</a></div><div class="ttdoc">Items related to the Schwarz linear solver.</div><div class="ttdef"><b>Definition:</b> CommunicateOverlapFields.hpp:37</div></div>
+<div class="ttc" id="aclassElementId_html"><div class="ttname"><a href="classElementId.html">ElementId&lt; Dim &gt;</a></div></div>
+<div class="ttc" id="anamespaceSpectral_html_ae2433e9284c6284a25ee9fc45a4eb538"><div class="ttname"><a href="namespaceSpectral.html#ae2433e9284c6284a25ee9fc45a4eb538">Spectral::collocation_points</a></div><div class="ttdeci">const DataVector &amp; collocation_points(size_t num_points) noexcept</div><div class="ttdoc">Collocation points.</div></div>
+<div class="ttc" id="aElementId_8hpp_html"><div class="ttname"><a href="ElementId_8hpp.html">ElementId.hpp</a></div></div>
+<div class="ttc" id="aclassLinearSolver_1_1Schwarz_1_1OverlapIterator_html"><div class="ttname"><a href="classLinearSolver_1_1Schwarz_1_1OverlapIterator.html">LinearSolver::Schwarz::OverlapIterator</a></div><div class="ttdoc">Iterate over grid points in a region that extends partially into the volume.</div><div class="ttdef"><b>Definition:</b> OverlapHelpers.hpp:107</div></div>
+<div class="ttc" id="anamespaceLinearSolver_1_1Schwarz_html_ab5b5b1d6b4f185bdbd7357f28655b677"><div class="ttname"><a href="namespaceLinearSolver_1_1Schwarz.html#ab5b5b1d6b4f185bdbd7357f28655b677">LinearSolver::Schwarz::add_overlap_data</a></div><div class="ttdeci">void add_overlap_data(const gsl::not_null&lt; Variables&lt; VolumeTagsList &gt; * &gt; volume_data, const Variables&lt; OverlapTagsList &gt; &amp;overlap_data, const Index&lt; Dim &gt; &amp;volume_extents, const size_t overlap_extent, const Direction&lt; Dim &gt; &amp;direction) noexcept</div><div class="ttdoc">Add the overlap_data to the volume_data</div><div class="ttdef"><b>Definition:</b> OverlapHelpers.hpp:226</div></div>
+<div class="ttc" id="anamespaceLinearSolver_1_1Schwarz_html_a7d0aef214331418e9e3a25e9f8d47c59"><div class="ttname"><a href="namespaceLinearSolver_1_1Schwarz.html#a7d0aef214331418e9e3a25e9f8d47c59">LinearSolver::Schwarz::overlap_width</a></div><div class="ttdeci">double overlap_width(size_t overlap_extent, const DataVector &amp;collocation_points) noexcept</div><div class="ttdoc">Width of an overlap extending overlap_extent points into the collocation_points from either side.</div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="aAssert_8hpp_html"><div class="ttname"><a href="Assert_8hpp.html">Assert.hpp</a></div></div>
+<div class="ttc" id="anamespaceLinearSolver_1_1Schwarz_html_a93d56df56230079863bb60142a4c4e57"><div class="ttname"><a href="namespaceLinearSolver_1_1Schwarz.html#a93d56df56230079863bb60142a4c4e57">LinearSolver::Schwarz::data_on_overlap</a></div><div class="ttdeci">void data_on_overlap(const gsl::not_null&lt; Tensor&lt; DataType, TensorStructure... &gt; * &gt; restricted_tensor, const Tensor&lt; DataType, TensorStructure... &gt; &amp;tensor, const Index&lt; Dim &gt; &amp;volume_extents, const size_t overlap_extent, const Direction&lt; Dim &gt; &amp;direction) noexcept</div><div class="ttdoc">The part of the tensor data that lies within the overlap region.</div><div class="ttdef"><b>Definition:</b> OverlapHelpers.hpp:139</div></div>
+<div class="ttc" id="aIndex_8hpp_html"><div class="ttname"><a href="Index_8hpp.html">Index.hpp</a></div></div>
+<div class="ttc" id="anamespaceLinearSolver_1_1Schwarz_html_ab856922e3c9e70cee558b1906ed284ff"><div class="ttname"><a href="namespaceLinearSolver_1_1Schwarz.html#ab856922e3c9e70cee558b1906ed284ff">LinearSolver::Schwarz::overlap_num_points</a></div><div class="ttdeci">size_t overlap_num_points(const Index&lt; Dim &gt; &amp;volume_extents, size_t overlap_extent, size_t overlap_dimension) noexcept</div><div class="ttdoc">Total number of grid points in an overlap region that extends overlap_extent points into the volume_e...</div></div>
+<div class="ttc" id="aclassDataVector_html"><div class="ttname"><a href="classDataVector.html">DataVector</a></div><div class="ttdoc">Stores a collection of function values.</div><div class="ttdef"><b>Definition:</b> DataVector.hpp:46</div></div>
+<div class="ttc" id="anamespaceLinearSolver_1_1Schwarz_html_a9cef68ec62f2cd472805c9a576109e07"><div class="ttname"><a href="namespaceLinearSolver_1_1Schwarz.html#a9cef68ec62f2cd472805c9a576109e07">LinearSolver::Schwarz::extended_overlap_data</a></div><div class="ttdeci">void extended_overlap_data(const gsl::not_null&lt; Variables&lt; ExtendedTagsList &gt; * &gt; extended_data, const Variables&lt; OverlapTagsList &gt; &amp;overlap_data, const Index&lt; Dim &gt; &amp;volume_extents, const size_t overlap_extent, const Direction&lt; Dim &gt; &amp;direction) noexcept</div><div class="ttdoc">Extend the overlap data to the full mesh by filling it with zeros outside the overlap region.</div><div class="ttdef"><b>Definition:</b> OverlapHelpers.hpp:253</div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_gaf170f3984e3d0f809b2558dbd981ca35"><div class="ttname"><a href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a></div><div class="ttdeci">#define ASSERT(a, m)</div><div class="ttdoc">Assert that an expression should be true.</div><div class="ttdef"><b>Definition:</b> Assert.hpp:49</div></div>
+<div class="ttc" id="aVariables_8hpp_html"><div class="ttname"><a href="Variables_8hpp.html">Variables.hpp</a></div></div>
+<div class="ttc" id="alimits_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/limits.html">limits</a></div></div>
+<div class="ttc" id="aTensor_8hpp_html"><div class="ttname"><a href="Tensor_8hpp.html">Tensor.hpp</a></div></div>
+<div class="ttc" id="aGsl_8hpp_html_a649c6961f9146205c203e45d58fd0c4c"><div class="ttname"><a href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a></div><div class="ttdeci">gsl::not_null&lt; T * &gt; make_not_null(T *ptr) noexcept</div><div class="ttdoc">Construct a not_null from a pointer. Often this will be done as an implicit conversion,...</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:880</div></div>
+<div class="ttc" id="aDirection_8hpp_html"><div class="ttname"><a href="Direction_8hpp.html">Direction.hpp</a></div></div>
+<div class="ttc" id="amax_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/numeric_limits/max.html">std::numeric_limits::max</a></div><div class="ttdeci">T max(T... args)</div></div>
+<div class="ttc" id="aclassFixedHashMap_html"><div class="ttname"><a href="classFixedHashMap.html">FixedHashMap</a></div><div class="ttdoc">A hash table with a compile-time specified maximum size and ability to efficiently handle perfect has...</div><div class="ttdef"><b>Definition:</b> FixedHashMap.hpp:82</div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

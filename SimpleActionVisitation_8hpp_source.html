@@ -1,0 +1,448 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Parallel/SimpleActionVisitation.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_f1a490c609eea752f5cd0b5c139209b7.html">Parallel</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">SimpleActionVisitation.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;boost/variant/get.hpp&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;boost/variant/variant.hpp&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/exception.html">exception</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="DataBox_8hpp.html">DataStructures/DataBox/DataBox.hpp</a>&quot;</span>  <span class="comment">// IWYU pragma: keep</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Error_8hpp.html">Utilities/ErrorHandling/Error.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="PrettyType_8hpp.html">Utilities/PrettyType.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Requires_8hpp.html">Utilities/Requires.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;Utilities/TypeTraits.hpp&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160; </div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceParallel.html">Parallel</a> {</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="keyword">namespace </span>Algorithm_detail {</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> TT, <span class="keyword">typename</span> TParallelComponent, <span class="keyword">typename</span>... TArgs&gt;</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="keyword">class </span>is_apply_callable {</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> ParallelComponent, <span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;  <span class="keyword">static</span> <span class="keyword">auto</span> test_callable(<span class="keywordtype">int</span>) noexcept</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;      -&gt; decltype(std::declval&lt;T&gt;().<span class="keyword">template</span> apply&lt;ParallelComponent&gt;(</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;                      std::declval&lt;Args&gt;()...),</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;                  <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a>());</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span>, <span class="keyword">typename</span>...&gt;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  <span class="keyword">static</span> <span class="keyword">auto</span> test_callable(...) noexcept -&gt; std::false_type;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160; </div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; public:</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  static constexpr <span class="keywordtype">bool</span> value =</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;      decltype(test_callable&lt;TT, TParallelComponent, TArgs...&gt;(0))::value;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  using type = std::integral_constant&lt;<span class="keywordtype">bool</span>, value&gt;;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;};</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160; </div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;template &lt;typename T, typename ParallelComponent, typename... Args&gt;</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;static constexpr const <span class="keywordtype">bool</span> is_apply_callable_v =</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    is_apply_callable&lt;T, ParallelComponent, Args...&gt;::value;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160; </div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;template &lt;typename T, typename ParallelComponent, typename... Args&gt;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;using is_apply_callable_t =</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    typename is_apply_callable&lt;T, ParallelComponent, Args...&gt;::type;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160; </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;template &lt;typename Invokable, typename ParallelComponent, typename ThisVariant,</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;          typename... Variants, typename... Args,</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;          <a class="code" href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a>&lt;is_apply_callable_v&lt;Invokable, ParallelComponent,</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;                                       std::add_lvalue_reference_t&lt;ThisVariant&gt;,</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;                                       Args&amp;&amp;...&gt;&gt; = <span class="keywordtype">nullptr</span>&gt;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="keywordtype">void</span> simple_action_visitor_helper(boost::variant&lt;Variants...&gt;&amp; box,</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;                                  const <a class="code" href="namespacegsl.html">gsl</a>::not_null&lt;<span class="keywordtype">int</span>*&gt; iter,</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;                                  const <a class="code" href="namespacegsl.html">gsl</a>::not_null&lt;<span class="keywordtype">bool</span>*&gt; already_visited,</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;                                  Args&amp;&amp;... args) {</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;  <span class="keywordflow">if</span> (box.which() == *iter and not*already_visited) {</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keywordflow">try</span> {</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;      static_assert(</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;          <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::is_same</a>&lt;<span class="keywordtype">void</span>,</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;                       decltype(Invokable::template apply&lt;ParallelComponent&gt;(</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;                           std::declval&lt;ThisVariant&amp;&gt;(),</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;                           std::declval&lt;Args&gt;()...))&gt;::value,</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;          <span class="stringliteral">&quot;A simple action must return void.&quot;</span>);</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;      Invokable::template apply&lt;ParallelComponent&gt;(boost::get&lt;ThisVariant&gt;(box),</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;                                                   std::forward&lt;Args&gt;(args)...);</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    } <span class="keywordflow">catch</span> (<a class="codeRef" href="http://en.cppreference.com/w/cpp/error/exception.html">std::exception</a>&amp; e) {</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;      <a class="code" href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a>(<span class="stringliteral">&quot;Fatal error: Failed to call simple Action &#39;&quot;</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;            &lt;&lt; pretty_type::get_name&lt;Invokable&gt;() &lt;&lt; <span class="stringliteral">&quot;&#39; on iteration &#39;&quot;</span> &lt;&lt; iter</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;            &lt;&lt; <span class="stringliteral">&quot;&#39; with DataBox type &#39;&quot;</span> &lt;&lt; pretty_type::get_name&lt;ThisVariant&gt;()</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;            &lt;&lt; <span class="stringliteral">&quot;&#39;\nThe exception is: &#39;&quot;</span> &lt;&lt; e.what() &lt;&lt; <span class="stringliteral">&quot;&#39;\n&quot;</span>);</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    }</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    *already_visited = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;  }</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;  (*iter)++;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;}</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Invokable, <span class="keyword">typename</span> ParallelComponent, <span class="keyword">typename</span> ThisVariant,</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;          <span class="keyword">typename</span>... Variants, <span class="keyword">typename</span>... Args,</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;          <a class="code" href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a>&lt;not is_apply_callable_v&lt;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;              Invokable, ParallelComponent,</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;              <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/add_reference.html">std::add_lvalue_reference_t&lt;ThisVariant&gt;</a>, Args&amp;&amp;...&gt;&gt; = <span class="keyword">nullptr</span>&gt;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="keywordtype">void</span> simple_action_visitor_helper(boost::variant&lt;Variants...&gt;&amp; box,</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;                                  <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;int*&gt;</a> iter,</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;                                  <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;bool*&gt;</a> already_visited,</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;                                  Args&amp;&amp;... <span class="comment">/*args*/</span>) {</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;  <span class="keywordflow">if</span> (box.which() == *iter and not*already_visited) {</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> args_list{};</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> helper = [&amp;args_list](<span class="keyword">auto</span> arg_v) {</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;      args_list +=</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;          pretty_type::get_name&lt;typename decltype(arg_v)::type&gt;() + <span class="stringliteral">&quot;, &quot;</span>;</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    };</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    <a class="code" href="group__UtilitiesGroup.html#ga902d1cefbb10846eb8f5be9f6be5c340">EXPAND_PACK_LEFT_TO_RIGHT</a>(helper(tmpl::type_&lt;Args&gt;{}));</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    <span class="keywordflow">if</span> (<span class="keyword">sizeof</span>...(Args) &gt; 0) {</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;      args_list.pop_back();</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;      args_list.pop_back();</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    }</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    <a class="code" href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a>(<span class="stringliteral">&quot;\nCannot call apply function of &#39;&quot;</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;          &lt;&lt; pretty_type::get_name&lt;Invokable&gt;() &lt;&lt; <span class="stringliteral">&quot;&#39; with DataBox type &#39;&quot;</span></div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;          &lt;&lt; pretty_type::get_name&lt;ThisVariant&gt;() &lt;&lt; <span class="stringliteral">&quot;&#39; and arguments &#39;&quot;</span></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;          &lt;&lt; args_list &lt;&lt; <span class="stringliteral">&quot;&#39;.\n&quot;</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;          &lt;&lt; <span class="stringliteral">&quot;If the argument types to the apply function match, then it is &quot;</span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;             <span class="stringliteral">&quot;possible that the apply function has non-deducible template &quot;</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;             <span class="stringliteral">&quot;parameters. This could occur from removing an apply function &quot;</span></div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;             <span class="stringliteral">&quot;argument and forgetting to remove its associated template &quot;</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;             <span class="stringliteral">&quot;parameters.\n&quot;</span>);</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;  }</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;  (*iter)++;</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;}</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="comment"> * \brief Calls an `Invokable`&#39;s `apply` static member function with the current</span></div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="comment"> * type in the `boost::variant`.</span></div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="comment"> * The simple action can only be invoked if it accesses members of the DataBox</span></div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="comment"> * that are guaranteed to be present at the time of invocation. This can lead to</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment"> * race conditions since simple actions can be invoked at any time during</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="comment"> * execution at any part of any phase. As a concrete example of such a race</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="comment"> * condition, consider a parallel component with iterable actions A, B, and C</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="comment"> * where B adds something to the DataBox (call it G) and C removes it. If a</span></div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="comment"> * simple action S that uses G is called on the parallel component the call will</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="comment"> * succeed if S is invoked between B and C, and fail otherwise.</span></div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Invokable, <span class="keyword">typename</span> ParallelComponent, <span class="keyword">typename</span>... Variants,</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;          <span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;<span class="keywordtype">void</span> simple_action_visitor(boost::variant&lt;Variants...&gt;&amp; box, Args&amp;&amp;... args) {</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;  <span class="comment">// iter is the current element of the variant in the &quot;for loop&quot;</span></div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;  <span class="keywordtype">int</span> iter = 0;</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;  <span class="comment">// already_visited ensures that only one visitor is invoked</span></div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;  <span class="keywordtype">bool</span> already_visited = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;  <a class="code" href="group__UtilitiesGroup.html#ga902d1cefbb10846eb8f5be9f6be5c340">EXPAND_PACK_LEFT_TO_RIGHT</a>(</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;      simple_action_visitor_helper&lt;Invokable, ParallelComponent, Variants&gt;(</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;          box, &amp;iter, &amp;already_visited, std::forward&lt;Args&gt;(args)...));</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;}</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160; </div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> ReturnType&gt;</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;<span class="keyword">struct </span>assignable_from_return_type {</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;  <span class="keyword">using</span> type = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/remove_cv.html">std::remove_const_t&lt;ReturnType&gt;</a>;</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;};</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160; </div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;<span class="comment">// need to handle const refs separately because the const in that case is not</span></div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;<span class="comment">// top-level</span></div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> ReturnType&gt;</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;<span class="keyword">struct </span>assignable_from_return_type&lt;const ReturnType&amp;&gt; {</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;  <span class="keyword">using</span> type = <span class="keyword">const</span> ReturnType*;</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;};</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160; </div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> ReturnType&gt;</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;<span class="keyword">struct </span>assignable_from_return_type&lt;ReturnType&amp;&gt; {</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;  <span class="keyword">using</span> type = ReturnType*;</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;};</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160; </div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> ReturnType&gt;</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;<span class="keyword">struct </span>assignable_from_return_type&lt;const ReturnType*&gt; {</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;  <span class="keyword">using</span> type = ReturnType*;</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;};</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160; </div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Invokable, <span class="keyword">typename</span> ParallelComponent, <span class="keyword">typename</span>... Variants,</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;          <span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;<span class="keyword">typename</span> Invokable::return_type local_synchronous_action_visitor(</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;    boost::variant&lt;Variants...&gt;&amp; box, Args&amp;&amp;... args) {</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;  <span class="comment">// iter is the current element of the variant in the &quot;for loop&quot;</span></div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;  <span class="keywordtype">int</span> iter = 0;</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;  <span class="comment">// already_visited ensures that only one visitor is invoked</span></div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;  <span class="keywordtype">bool</span> already_visited = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;  <span class="comment">// when the requested return type is a reference, we need to handle it locally</span></div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;  <span class="comment">// as a pointer, then dereference upon return (because C++ references cannot</span></div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;  <span class="comment">// be assigned to placeholder values in this wider scope).</span></div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;  tmpl::conditional_t&lt;std::is_same_v&lt;typename Invokable::return_type, void&gt;,</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;                      <a class="code" href="structNoSuchType.html">NoSuchType</a>,</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;                      <span class="keyword">typename</span> assignable_from_return_type&lt;</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;                          <span class="keyword">typename</span> Invokable::return_type&gt;::type&gt;</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;      return_value{};</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;  <span class="keyword">auto</span> helper = [&amp;return_value, &amp;box, &amp;args..., &amp;already_visited,</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;                 &amp;iter](<span class="keyword">auto</span> this_variant_v) {</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;    <span class="keyword">using</span> this_variant = <span class="keyword">typename</span> decltype(this_variant_v)::type;</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;    <span class="keywordflow">if</span> (box.which() == iter and not already_visited) {</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;      <span class="keywordflow">if</span> constexpr (is_apply_callable_v&lt;</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;                        Invokable, ParallelComponent,</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;                        <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/add_reference.html">std::add_lvalue_reference_t&lt;this_variant&gt;</a>, Args&amp;&amp;...&gt;) {</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;        <span class="keywordflow">try</span> {</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;          <span class="keywordflow">if</span> constexpr (std::is_same_v&lt;typename Invokable::return_type, void&gt;) {</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;            (void)return_value;</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;            Invokable::template apply&lt;ParallelComponent&gt;(</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;                boost::get&lt;this_variant&gt;(box), std::forward&lt;Args&gt;(args)...);</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;          } <span class="keywordflow">else</span> <span class="keywordflow">if</span> constexpr (std::is_reference_v&lt;</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;                                   <span class="keyword">typename</span> Invokable::return_type&gt;) {</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;            return_value = &amp;(Invokable::template apply&lt;ParallelComponent&gt;(</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;                boost::get&lt;this_variant&gt;(box), std::forward&lt;Args&gt;(args)...));</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;          } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;            return_value = Invokable::template apply&lt;ParallelComponent&gt;(</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;                boost::get&lt;this_variant&gt;(box), std::forward&lt;Args&gt;(args)...);</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;          }</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;        } <span class="keywordflow">catch</span> (<a class="codeRef" href="http://en.cppreference.com/w/cpp/error/exception.html">std::exception</a>&amp; e) {</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;          <a class="code" href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a>(<span class="stringliteral">&quot;Fatal error: Failed to call local sync action &#39;&quot;</span></div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;                &lt;&lt; pretty_type::get_name&lt;Invokable&gt;() &lt;&lt; <span class="stringliteral">&quot;&#39; on iteration &#39;&quot;</span></div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;                &lt;&lt; iter &lt;&lt; <span class="stringliteral">&quot;&#39; with DataBox type &#39;&quot;</span></div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;                &lt;&lt; pretty_type::get_name&lt;this_variant&gt;()</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;                &lt;&lt; <span class="stringliteral">&quot;&#39;\nThe exception is: &#39;&quot;</span> &lt;&lt; e.what() &lt;&lt; <span class="stringliteral">&quot;&#39;\n&quot;</span>);</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;        }</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;        already_visited = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;      } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;        <a class="code" href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a>(<span class="stringliteral">&quot;\nCannot call apply function of &#39;&quot;</span></div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;              &lt;&lt; pretty_type::get_name&lt;Invokable&gt;() &lt;&lt; <span class="stringliteral">&quot;&#39; with DataBox type &#39;&quot;</span></div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;              &lt;&lt; pretty_type::get_name&lt;this_variant&gt;() &lt;&lt; <span class="stringliteral">&quot;&#39;.\n&quot;</span>);</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;      }</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;    }</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;    ++iter;</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;  };</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;  <a class="code" href="group__UtilitiesGroup.html#ga902d1cefbb10846eb8f5be9f6be5c340">EXPAND_PACK_LEFT_TO_RIGHT</a>(helper(tmpl::type_&lt;Variants&gt;{}));</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;  <span class="keywordflow">if</span> constexpr (not std::is_same_v&lt;typename Invokable::return_type, void&gt;) {</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;    <span class="keywordflow">if</span> constexpr (std::is_reference_v&lt;typename Invokable::return_type&gt;) {</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;      <span class="keywordflow">return</span> *return_value;</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;      <span class="keywordflow">return</span> return_value;</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;    }</div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;  }</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;}</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;}  <span class="comment">// namespace Algorithm_detail</span></div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;}  <span class="comment">// namespace Parallel</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="astructNoSuchType_html"><div class="ttname"><a href="structNoSuchType.html">NoSuchType</a></div><div class="ttdoc">Used to mark &quot;no type&quot; or &quot;bad state&quot; for metaprogramming.</div><div class="ttdef"><b>Definition:</b> NoSuchType.hpp:10</div></div>
+<div class="ttc" id="ais_same_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/is_same.html">std::is_same</a></div></div>
+<div class="ttc" id="aintegral_constant_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a></div></div>
+<div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga902d1cefbb10846eb8f5be9f6be5c340"><div class="ttname"><a href="group__UtilitiesGroup.html#ga902d1cefbb10846eb8f5be9f6be5c340">EXPAND_PACK_LEFT_TO_RIGHT</a></div><div class="ttdeci">#define EXPAND_PACK_LEFT_TO_RIGHT(...)</div><div class="ttdoc">Expand a parameter pack evaluating the terms from left to right.</div><div class="ttdef"><b>Definition:</b> TMPL.hpp:565</div></div>
+<div class="ttc" id="autility_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a></div></div>
+<div class="ttc" id="aexception_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/exception.html">exception</a></div></div>
+<div class="ttc" id="aError_8hpp_html"><div class="ttname"><a href="Error_8hpp.html">Error.hpp</a></div></div>
+<div class="ttc" id="aPrettyType_8hpp_html"><div class="ttname"><a href="PrettyType_8hpp.html">PrettyType.hpp</a></div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_ga1d27028c1827976007fe9d29ad3a2f66"><div class="ttname"><a href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a></div><div class="ttdeci">#define ERROR(m)</div><div class="ttdoc">prints an error message to the standard error stream and aborts the program.</div><div class="ttdef"><b>Definition:</b> Error.hpp:37</div></div>
+<div class="ttc" id="aadd_reference_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/add_reference.html">std::add_lvalue_reference_t</a></div></div>
+<div class="ttc" id="aDataBox_8hpp_html"><div class="ttname"><a href="DataBox_8hpp.html">DataBox.hpp</a></div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="aRequires_8hpp_html"><div class="ttname"><a href="Requires_8hpp.html">Requires.hpp</a></div></div>
+<div class="ttc" id="aremove_cv_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/remove_cv.html">std::remove_const_t</a></div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga084d535585c18d4e80f8ec6052d341a3"><div class="ttname"><a href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a></div><div class="ttdeci">typename Requires_detail::requires_impl&lt; B &gt;::template_error_type_failed_to_meet_requirements_on_template_parameters Requires</div><div class="ttdoc">Express requirements on the template parameters of a function or class, replaces std::enable_if_t</div><div class="ttdef"><b>Definition:</b> Requires.hpp:67</div></div>
+<div class="ttc" id="anamespaceParallel_html"><div class="ttname"><a href="namespaceParallel.html">Parallel</a></div><div class="ttdoc">Functionality for parallelization.</div><div class="ttdef"><b>Definition:</b> ElementReceiveInterpPoints.hpp:13</div></div>
+<div class="ttc" id="anamespacegsl_html"><div class="ttname"><a href="namespacegsl.html">gsl</a></div><div class="ttdoc">Implementations from the Guideline Support Library.</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:11</div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<div class="ttc" id="astring_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/string.html">string</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,279 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: StrahlkorperTags::ExtrinsicCurvatureCompute&lt; Frame &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceStrahlkorperTags.html">StrahlkorperTags</a></li><li class="navelem"><a class="el" href="structStrahlkorperTags_1_1ExtrinsicCurvatureCompute.html">ExtrinsicCurvatureCompute</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structStrahlkorperTags_1_1ExtrinsicCurvatureCompute-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">StrahlkorperTags::ExtrinsicCurvatureCompute&lt; Frame &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Calculates the Extrinsic curvature of a 2D <a class="el" href="structStrahlkorperTags_1_1Strahlkorper.html" title="Tag referring to a Strahlkorper">Strahlkorper</a> embedded in a 3D space.  
+ <a href="structStrahlkorperTags_1_1ExtrinsicCurvatureCompute.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ApparentHorizons_2Tags_8hpp_source.html">Tags.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a4379c46223e1f62ed54ca89d1d6299a7"><td class="memItemLeft" align="right" valign="top"><a id="a4379c46223e1f62ed54ca89d1d6299a7"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>base</b> = <a class="el" href="structStrahlkorperTags_1_1ExtrinsicCurvature.html">ExtrinsicCurvature</a>&lt; Frame &gt;</td></tr>
+<tr class="separator:a4379c46223e1f62ed54ca89d1d6299a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0cd94ffcdd9b73dd34d5524beaa2deb1"><td class="memItemLeft" align="right" valign="top"><a id="a0cd94ffcdd9b73dd34d5524beaa2deb1"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt; <a class="el" href="structStrahlkorperTags_1_1GradUnitNormalOneForm.html">GradUnitNormalOneForm</a>&lt; Frame &gt;, <a class="el" href="structStrahlkorperTags_1_1UnitNormalOneForm.html">UnitNormalOneForm</a>&lt; Frame &gt;, <a class="el" href="structStrahlkorperTags_1_1UnitNormalVector.html">UnitNormalVector</a>&lt; Frame &gt; &gt;</td></tr>
+<tr class="separator:a0cd94ffcdd9b73dd34d5524beaa2deb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac7ca264e67423068e9a9b3d8d7b8f4db"><td class="memItemLeft" align="right" valign="top"><a id="ac7ca264e67423068e9a9b3d8d7b8f4db"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_type</b> = tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, Frame &gt;</td></tr>
+<tr class="separator:ac7ca264e67423068e9a9b3d8d7b8f4db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_structStrahlkorperTags_1_1ExtrinsicCurvature"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structStrahlkorperTags_1_1ExtrinsicCurvature')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structStrahlkorperTags_1_1ExtrinsicCurvature.html">StrahlkorperTags::ExtrinsicCurvature&lt; Frame &gt;</a></td></tr>
+<tr class="memitem:a184d7459708a7c7192c65349a9e3a8aa inherit pub_types_structStrahlkorperTags_1_1ExtrinsicCurvature"><td class="memItemLeft" align="right" valign="top"><a id="a184d7459708a7c7192c65349a9e3a8aa"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>type</b> = tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, Frame &gt;</td></tr>
+<tr class="separator:a184d7459708a7c7192c65349a9e3a8aa inherit pub_types_structStrahlkorperTags_1_1ExtrinsicCurvature"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aea9826bd7618991f3465dd8601e635a6"><td class="memItemLeft" align="right" valign="top">static constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><b>function</b></td></tr>
+<tr class="separator:aea9826bd7618991f3465dd8601e635a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename Frame&gt;<br />
+struct StrahlkorperTags::ExtrinsicCurvatureCompute&lt; Frame &gt;</h3>
+
+<p>Calculates the Extrinsic curvature of a 2D <a class="el" href="structStrahlkorperTags_1_1Strahlkorper.html" title="Tag referring to a Strahlkorper">Strahlkorper</a> embedded in a 3D space. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="aea9826bd7618991f3465dd8601e635a6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aea9826bd7618991f3465dd8601e635a6">&#9670;&nbsp;</a></span>function</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Frame &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr auto <a class="el" href="structStrahlkorperTags_1_1ExtrinsicCurvatureCompute.html">StrahlkorperTags::ExtrinsicCurvatureCompute</a>&lt; Frame &gt;::function</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      <span class="keyword">static_cast&lt;</span><span class="keywordtype">void</span> (*)(<span class="keyword">const </span><a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;tnsr::ii&lt;DataVector, 3, Frame&gt;</a>*<span class="keyword">&gt;</span>,</div>
+<div class="line">                           <span class="keyword">const</span> tnsr::ii&lt;DataVector, 3, Frame&gt;&amp;,</div>
+<div class="line">                           <span class="keyword">const</span> tnsr::i&lt;DataVector, 3, Frame&gt;&amp;,</div>
+<div class="line">                           <span class="keyword">const</span> tnsr::I&lt;DataVector, 3, Frame&gt;&amp;) noexcept&gt;(</div>
+<div class="line">          &amp;StrahlkorperGr::extrinsic_curvature&lt;Frame&gt;)</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/ApparentHorizons/<a class="el" href="ApparentHorizons_2Tags_8hpp_source.html">Tags.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

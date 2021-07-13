@@ -1,0 +1,434 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: tests/Unit/Framework/TestHelpers.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_33df814919e476f9d56dccef9b24e276.html">tests</a></li><li class="navelem"><a class="el" href="dir_38113a4c235494bd05bb19f85d006940.html">Unit</a></li><li class="navelem"><a class="el" href="dir_bfa7bcfc7f40b36e07518da92ec4c107.html">Framework</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#define-members">Macros</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">TestHelpers.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &quot;<a class="el" href="TestingFramework_8hpp_source.html">Framework/TestingFramework.hpp</a>&quot;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/algorithm.html">algorithm</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/array.html">array</a>&gt;</code><br />
+<code>#include &lt;boost/algorithm/string/predicate.hpp&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/iterator.html">iterator</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/ostream.html">ostream</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/random.html">random</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/tuple.html">tuple</a>&gt;</code><br />
+<code>#include &quot;DataStructures/DataBox/TagName.hpp&quot;</code><br />
+<code>#include &quot;<a class="el" href="Variables_8hpp_source.html">DataStructures/Variables.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="RegisterDerivedClassesWithCharm_8hpp_source.html">Parallel/RegisterDerivedClassesWithCharm.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="Serialize_8hpp_source.html">Parallel/Serialize.hpp</a>&quot;</code><br />
+<code>#include &quot;Utilities/ContainerHelpers.hpp&quot;</code><br />
+<code>#include &quot;<a class="el" href="DereferenceWrapper_8hpp_source.html">Utilities/DereferenceWrapper.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="Assert_8hpp_source.html">Utilities/ErrorHandling/Assert.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="Error_8hpp_source.html">Utilities/ErrorHandling/Error.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="Gsl_8hpp_source.html">Utilities/Gsl.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="MakeArray_8hpp_source.html">Utilities/MakeArray.hpp</a>&quot;</code><br />
+<code>#include &quot;Utilities/MakeString.hpp&quot;</code><br />
+<code>#include &quot;<a class="el" href="Requires_8hpp_source.html">Utilities/Requires.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="StdArrayHelpers_8hpp_source.html">Utilities/StdArrayHelpers.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="TMPL_8hpp_source.html">Utilities/TMPL.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="Tuple_8hpp_source.html">Utilities/Tuple.hpp</a>&quot;</code><br />
+<code>#include &quot;Utilities/TypeTraits.hpp&quot;</code><br />
+<code>#include &quot;Utilities/TypeTraits/HasEquivalence.hpp&quot;</code><br />
+</div>
+<p><a href="Framework_2TestHelpers_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNonCopyable.html">NonCopyable</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDoesNotThrow.html">DoesNotThrow</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDoesThrow.html">DoesThrow</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcheck__variables__approx.html">check_variables_approx&lt; T &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcheck__variables__approx_3_01Variables_3_01TagList_01_4_01_4.html">check_variables_approx&lt; Variables&lt; TagList &gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcheck__iterable__approx_3_01T_00_01Requires_3_01is__any__spin__weighted__v_3_01T_01_4_01_4_01_4.html">check_iterable_approx&lt; T, Requires&lt; is_any_spin_weighted_v&lt; T &gt; &gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:gaec8dcdc783140fb14fe617cc0cc1dcae"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#gaec8dcdc783140fb14fe617cc0cc1dcae">CHECK_OP</a>(a,  op,  b,  c)</td></tr>
+<tr class="memdesc:gaec8dcdc783140fb14fe617cc0cc1dcae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check a op b == c and also the op= version.  <a href="group__TestingFrameworkGroup.html#gaec8dcdc783140fb14fe617cc0cc1dcae">More...</a><br /></td></tr>
+<tr class="separator:gaec8dcdc783140fb14fe617cc0cc1dcae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad7f766439113f958bf4f8ba0f53c4881"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#gad7f766439113f958bf4f8ba0f53c4881">MAKE_GENERATOR</a>(...)</td></tr>
+<tr class="memdesc:gad7f766439113f958bf4f8ba0f53c4881"><td class="mdescLeft">&#160;</td><td class="mdescRight"><code><a class="el" href="group__TestingFrameworkGroup.html#gad7f766439113f958bf4f8ba0f53c4881" title="MAKE_GENERATOR(NAME [, SEED]) declares a variable of name NAME containing a generator of type std::mt...">MAKE_GENERATOR(NAME [, SEED])</a></code> declares a variable of name <code>NAME</code> containing a generator of type <code><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/random/mersenne_twister_engine.html">std::mt19937</a></code>.  <a href="group__TestingFrameworkGroup.html#gad7f766439113f958bf4f8ba0f53c4881">More...</a><br /></td></tr>
+<tr class="separator:gad7f766439113f958bf4f8ba0f53c4881"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga447b43fced460461e76beca1a28fc273"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga447b43fced460461e76beca1a28fc273">CHECK_VARIABLES_APPROX</a>(a,  b)</td></tr>
+<tr class="memdesc:ga447b43fced460461e76beca1a28fc273"><td class="mdescLeft">&#160;</td><td class="mdescRight">A wrapper around Catch's CHECK macro that checks approximate equality of each entry in each tag within a variables.  <a href="group__TestingFrameworkGroup.html#ga447b43fced460461e76beca1a28fc273">More...</a><br /></td></tr>
+<tr class="separator:ga447b43fced460461e76beca1a28fc273"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6553c686d7f6b55372814227d1542272"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga6553c686d7f6b55372814227d1542272">CHECK_VARIABLES_CUSTOM_APPROX</a>(a,  b,  appx)</td></tr>
+<tr class="memdesc:ga6553c686d7f6b55372814227d1542272"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <code>CHECK_VARIABLES_APPROX</code>, but with a user-defined Approx. The third argument should be of type <code>Approx</code>.  <a href="group__TestingFrameworkGroup.html#ga6553c686d7f6b55372814227d1542272">More...</a><br /></td></tr>
+<tr class="separator:ga6553c686d7f6b55372814227d1542272"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga2895e57f4cacd63d2549655bb29bba7b"><td class="memTemplParams" colspan="2">
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga2895e57f4cacd63d2549655bb29bba7b"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga2895e57f4cacd63d2549655bb29bba7b">serialize_and_deserialize</a> (const T &amp;t)</td></tr>
+<tr class="memdesc:ga2895e57f4cacd63d2549655bb29bba7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serializes and deserializes an object <code>t</code> of type <code>T</code> <br /></td></tr>
+<tr class="separator:ga2895e57f4cacd63d2549655bb29bba7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac14a5413ee918a2be9197d16339ed0a1"><td class="memTemplParams" colspan="2">
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:gac14a5413ee918a2be9197d16339ed0a1"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#gac14a5413ee918a2be9197d16339ed0a1">serialize_and_deserialize</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; T * &gt; result, const T &amp;t) noexcept</td></tr>
+<tr class="memdesc:gac14a5413ee918a2be9197d16339ed0a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serializes and deserializes an object <code>t</code> of type <code>T</code> <br /></td></tr>
+<tr class="separator:gac14a5413ee918a2be9197d16339ed0a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4294de51e79ce048d0a76bd72f80d19a"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga4294de51e79ce048d0a76bd72f80d19a"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga4294de51e79ce048d0a76bd72f80d19a">test_serialization</a> (const T &amp;t)</td></tr>
+<tr class="memdesc:ga4294de51e79ce048d0a76bd72f80d19a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tests the serialization of comparable types.  <a href="group__TestingFrameworkGroup.html#ga4294de51e79ce048d0a76bd72f80d19a">More...</a><br /></td></tr>
+<tr class="separator:ga4294de51e79ce048d0a76bd72f80d19a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9032f7d7bb3698bab71a49d1df9c2d99"><td class="memTemplParams" colspan="2">template&lt;typename B , typename D , typename... Args&gt; </td></tr>
+<tr class="memitem:ga9032f7d7bb3698bab71a49d1df9c2d99"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga9032f7d7bb3698bab71a49d1df9c2d99">test_serialization_via_base</a> (Args &amp;&amp;... args)</td></tr>
+<tr class="memdesc:ga9032f7d7bb3698bab71a49d1df9c2d99"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test the serialization of a derived class via a base class pointer.  <a href="group__TestingFrameworkGroup.html#ga9032f7d7bb3698bab71a49d1df9c2d99">More...</a><br /></td></tr>
+<tr class="separator:ga9032f7d7bb3698bab71a49d1df9c2d99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a606665331765067f231cf230f7b1ca"><td class="memTemplParams" colspan="2"><a id="a6a606665331765067f231cf230f7b1ca"></a>
+template&lt;typename T , Requires&lt; tt::has_equivalence&lt; T &gt;::value &gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a6a606665331765067f231cf230f7b1ca"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="Framework_2TestHelpers_8hpp.html#a6a606665331765067f231cf230f7b1ca">test_copy_semantics</a> (const T &amp;a)</td></tr>
+<tr class="memdesc:a6a606665331765067f231cf230f7b1ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test for copy semantics assuming operator== is implement correctly. <br /></td></tr>
+<tr class="separator:a6a606665331765067f231cf230f7b1ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaddd14aaf8ff9752cb1e8f13dcba0ef3"><td class="memTemplParams" colspan="2">template&lt;typename T , Requires&lt; tt::has_equivalence&lt; T &gt;::value &gt;  = nullptr, typename... Args&gt; </td></tr>
+<tr class="memitem:aaddd14aaf8ff9752cb1e8f13dcba0ef3"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="Framework_2TestHelpers_8hpp.html#aaddd14aaf8ff9752cb1e8f13dcba0ef3">test_move_semantics</a> (T &amp;&amp;a, const T &amp;comparison, Args &amp;&amp;... args)</td></tr>
+<tr class="memdesc:aaddd14aaf8ff9752cb1e8f13dcba0ef3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test for move semantics assuming operator== is implemented correctly.  <a href="Framework_2TestHelpers_8hpp.html#aaddd14aaf8ff9752cb1e8f13dcba0ef3">More...</a><br /></td></tr>
+<tr class="separator:aaddd14aaf8ff9752cb1e8f13dcba0ef3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ab67fecc0e23c4c9dcc733b5020d973"><td class="memTemplParams" colspan="2">template&lt;typename T , Requires&lt; tt::has_equivalence&lt; T &gt;::value &gt;  = nullptr, typename... Args&gt; </td></tr>
+<tr class="memitem:a0ab67fecc0e23c4c9dcc733b5020d973"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="Framework_2TestHelpers_8hpp.html#a0ab67fecc0e23c4c9dcc733b5020d973">test_throwing_move_semantics</a> (T &amp;&amp;a, const T &amp;comparison, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:a0ab67fecc0e23c4c9dcc733b5020d973"><td class="mdescLeft">&#160;</td><td class="mdescRight">Test for move semantics assuming operator== is implemented correctly.  <a href="Framework_2TestHelpers_8hpp.html#a0ab67fecc0e23c4c9dcc733b5020d973">More...</a><br /></td></tr>
+<tr class="separator:a0ab67fecc0e23c4c9dcc733b5020d973"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a356f7f8c17ac522cc2e2685483a36f7e"><td class="memTemplParams" colspan="2"><a id="a356f7f8c17ac522cc2e2685483a36f7e"></a>
+template&lt;typename Container &gt; </td></tr>
+<tr class="memitem:a356f7f8c17ac522cc2e2685483a36f7e"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>test_iterators</b> (Container &amp;c)</td></tr>
+<tr class="separator:a356f7f8c17ac522cc2e2685483a36f7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66ff8056c3c2c59e26a235e1f6d1b63b"><td class="memTemplParams" colspan="2"><a id="a66ff8056c3c2c59e26a235e1f6d1b63b"></a>
+template&lt;typename Container &gt; </td></tr>
+<tr class="memitem:a66ff8056c3c2c59e26a235e1f6d1b63b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>test_reverse_iterators</b> (Container &amp;c)</td></tr>
+<tr class="separator:a66ff8056c3c2c59e26a235e1f6d1b63b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaeca05cc83258027c4547dfd39f399965"><td class="memTemplParams" colspan="2">
+template&lt;typename T , typename U &gt; </td></tr>
+<tr class="memitem:gaeca05cc83258027c4547dfd39f399965"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#gaeca05cc83258027c4547dfd39f399965">check_cmp</a> (const T &amp;less, const U &amp;greater)</td></tr>
+<tr class="memdesc:gaeca05cc83258027c4547dfd39f399965"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to test comparison operators. Pass values with less &lt; greater. <br /></td></tr>
+<tr class="separator:gaeca05cc83258027c4547dfd39f399965"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6a70d3bd416e878e8b9d9a783bfb60da"><td class="memTemplParams" colspan="2">template&lt;typename Invocable , size_t VolumeDim&gt; </td></tr>
+<tr class="memitem:ga6a70d3bd416e878e8b9d9a783bfb60da"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/types/result_of.html">std::result_of_t</a>&lt; const Invocable &amp;(const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, VolumeDim &gt; &amp;)&gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga6a70d3bd416e878e8b9d9a783bfb60da">numerical_derivative</a> (const Invocable &amp;function, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, VolumeDim &gt; &amp;x, const size_t direction, const double delta) noexcept</td></tr>
+<tr class="memdesc:ga6a70d3bd416e878e8b9d9a783bfb60da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculates the derivative of an Invocable at a point x - represented by an array of doubles - in the domain of <code>map</code> with a sixth-order finite difference method.  <a href="group__TestingFrameworkGroup.html#ga6a70d3bd416e878e8b9d9a783bfb60da">More...</a><br /></td></tr>
+<tr class="separator:ga6a70d3bd416e878e8b9d9a783bfb60da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f8da1561e0cb0bb02fafc99e13c676e"><td class="memItemLeft" align="right" valign="top"><a id="a2f8da1561e0cb0bb02fafc99e13c676e"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="structNonCopyable.html">NonCopyable</a> &amp;, const <a class="el" href="structNonCopyable.html">NonCopyable</a> &amp;) noexcept</td></tr>
+<tr class="separator:a2f8da1561e0cb0bb02fafc99e13c676e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a366e043f49a322204ff3001d35c8a10f"><td class="memItemLeft" align="right" valign="top"><a id="a366e043f49a322204ff3001d35c8a10f"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="structNonCopyable.html">NonCopyable</a> &amp;a, const <a class="el" href="structNonCopyable.html">NonCopyable</a> &amp;b) noexcept</td></tr>
+<tr class="separator:a366e043f49a322204ff3001d35c8a10f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1a6d12dc003db50a85f9130ebc1eae4"><td class="memItemLeft" align="right" valign="top"><a id="ac1a6d12dc003db50a85f9130ebc1eae4"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;&lt;</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const <a class="el" href="structNonCopyable.html">NonCopyable</a> &amp;) noexcept</td></tr>
+<tr class="separator:ac1a6d12dc003db50a85f9130ebc1eae4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga809dd7c089188c1c15f847f73cf6d924"><td class="memTemplParams" colspan="2">template&lt;typename Exception , typename ThrowingFunctor &gt; </td></tr>
+<tr class="memitem:ga809dd7c089188c1c15f847f73cf6d924"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga809dd7c089188c1c15f847f73cf6d924">test_throw_exception</a> (const ThrowingFunctor &amp;func, const Exception &amp;expected)</td></tr>
+<tr class="memdesc:ga809dd7c089188c1c15f847f73cf6d924"><td class="mdescLeft">&#160;</td><td class="mdescRight">Execute <code>func</code> and check that it throws an exception <code>expected</code>.  <a href="group__TestingFrameworkGroup.html#ga809dd7c089188c1c15f847f73cf6d924">More...</a><br /></td></tr>
+<tr class="separator:ga809dd7c089188c1c15f847f73cf6d924"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3378f95885cee16e88fd2f160ece8fda"><td class="memTemplParams" colspan="2"><a id="a3378f95885cee16e88fd2f160ece8fda"></a>
+template&lt;typename Tag , typename TagList &gt; </td></tr>
+<tr class="memitem:a3378f95885cee16e88fd2f160ece8fda"><td class="memTemplItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>extract_value_for_variables_comparison</b> (const Variables&lt; TagList &gt; &amp;input_vars, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a>) noexcept</td></tr>
+<tr class="separator:a3378f95885cee16e88fd2f160ece8fda"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a36c66f7ba90155316e0888064ffc34cf"><td class="memTemplParams" colspan="2"><a id="a36c66f7ba90155316e0888064ffc34cf"></a>
+template&lt;typename Tag , typename TagList &gt; </td></tr>
+<tr class="memitem:a36c66f7ba90155316e0888064ffc34cf"><td class="memTemplItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>extract_value_for_variables_comparison</b> (const Variables&lt; TagList &gt; &amp;input_vars, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::false_type</a>) noexcept</td></tr>
+<tr class="separator:a36c66f7ba90155316e0888064ffc34cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Commonly used routines, functions and definitions shared amongst unit tests </p>
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="aaddd14aaf8ff9752cb1e8f13dcba0ef3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaddd14aaf8ff9752cb1e8f13dcba0ef3">&#9670;&nbsp;</a></span>test_move_semantics()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , Requires&lt; tt::has_equivalence&lt; T &gt;::value &gt;  = nullptr, typename... Args&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void test_move_semantics </td>
+          <td>(</td>
+          <td class="paramtype">T &amp;&amp;&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const T &amp;&#160;</td>
+          <td class="paramname"><em>comparison</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Args &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Test for move semantics assuming operator== is implemented correctly. </p>
+<p><em>Requires:</em> <code><a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_rvalue_reference.html">std::is_rvalue_reference</a>&lt;decltype(a)&gt;::value</code> is true. If T is not default constructible, you pass additional arguments that are used to construct a T. </p>
+
+</div>
+</div>
+<a id="a0ab67fecc0e23c4c9dcc733b5020d973"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ab67fecc0e23c4c9dcc733b5020d973">&#9670;&nbsp;</a></span>test_throwing_move_semantics()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , Requires&lt; tt::has_equivalence&lt; T &gt;::value &gt;  = nullptr, typename... Args&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void test_throwing_move_semantics </td>
+          <td>(</td>
+          <td class="paramtype">T &amp;&amp;&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const T &amp;&#160;</td>
+          <td class="paramname"><em>comparison</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Args &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Test for move semantics assuming operator== is implemented correctly. </p>
+<p><em>Requires:</em> <code><a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_rvalue_reference.html">std::is_rvalue_reference</a>&lt;decltype(a)&gt;::value</code> is true. This version is included for use with the rare type that (likely incorrectly) has not marked the move assignment and move construction operators <code>noexcept</code> </p>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

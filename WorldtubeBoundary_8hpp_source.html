@@ -1,0 +1,402 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Evolution/Systems/Cce/Components/WorldtubeBoundary.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_d7cddb31ba741ba3a4d5be000d880a30.html">Evolution</a></li><li class="navelem"><a class="el" href="dir_ae9813db12dd9fd3f3106ad3644a1b2a.html">Systems</a></li><li class="navelem"><a class="el" href="dir_b9586a27d0e1f299c51d3004d7f0b675.html">Cce</a></li><li class="navelem"><a class="el" href="dir_ba8b892dfcbe56a7b1492a6b183bf789.html">Components</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">WorldtubeBoundary.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/Actions/InitializeWorldtubeBoundary.hpp&quot;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/BoundaryData.hpp&quot;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;Parallel/Actions/SetupDataBox.hpp&quot;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;Parallel/Actions/TerminatePhase.hpp&quot;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="GlobalCache_8hpp.html">Parallel/GlobalCache.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;Parallel/Invoke.hpp&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160; </div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceCce.html">Cce</a> {</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="comment"> * \brief Generic base class for components that supply CCE worldtube boundary</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment"> * data. See class specializations for specific worldtube boundary components.</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> WorldtubeComponent, <span class="keyword">typename</span> Metavariables&gt;</div>
+<div class="line"><a name="l00021"></a><span class="lineno"><a class="line" href="structCce_1_1WorldtubeComponentBase.html">   21</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1WorldtubeComponentBase.html">WorldtubeComponentBase</a> {</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;  <span class="keyword">using</span> <a class="code" href="structParallel_1_1Algorithms_1_1Singleton.html">chare_type</a> = <a class="code" href="structParallel_1_1Algorithms_1_1Singleton.html">Parallel::Algorithms::Singleton</a>;</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;  <span class="keyword">using</span> metavariables = Metavariables;</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;  <span class="keyword">using</span> initialize_action_list =</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;      tmpl::list&lt;<a class="code" href="structActions_1_1SetupDataBox.html">::Actions::SetupDataBox</a>,</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;                 <a class="code" href="structCce_1_1Actions_1_1InitializeWorldtubeBoundary.html">Actions::InitializeWorldtubeBoundary&lt;WorldtubeComponent&gt;</a>,</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;                 <a class="code" href="structInitialization_1_1Actions_1_1RemoveOptionsAndTerminatePhase.html">Initialization::Actions::RemoveOptionsAndTerminatePhase</a>&gt;;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;  <span class="keyword">using</span> initialization_tags =</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;      <a class="code" href="group__ParallelGroup.html#ga1e2e4c961e55eb461d66770393e4f45d">Parallel::get_initialization_tags&lt;initialize_action_list&gt;</a>;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  <span class="keyword">using</span> worldtube_boundary_computation_steps = tmpl::list&lt;&gt;;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="keyword">using</span> phase_dependent_action_list =</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;      tmpl::list&lt;<a class="code" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt;<span class="keyword">typename</span> Metavariables::Phase,</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;                                        Metavariables::Phase::Initialization,</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;                                        initialize_action_list&gt;,</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;                 <a class="code" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt;<span class="keyword">typename</span> Metavariables::Phase,</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;                                        Metavariables::Phase::Evolve,</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;                                        worldtube_boundary_computation_steps&gt;&gt;;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160; </div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  <span class="keyword">using</span> options = tmpl::list&lt;&gt;;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160; </div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">void</span> initialize(Parallel::CProxy_GlobalCache&lt;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;                         Metavariables&gt;&amp; <span class="comment">/*global_cache*/</span>) noexcept {}</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160; </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">void</span> execute_next_phase(</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;      <span class="keyword">const</span> <span class="keyword">typename</span> Metavariables::Phase next_phase,</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;      <span class="keyword">const</span> Parallel::CProxy_GlobalCache&lt;Metavariables&gt;&amp;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;          global_cache) noexcept {</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keyword">auto</span>&amp; local_cache = *(global_cache.ckLocalBranch());</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="keywordflow">if</span> (next_phase == Metavariables::Phase::Evolve) {</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;      Parallel::get_parallel_component&lt;WorldtubeComponent&gt;(local_cache)</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;          .start_phase(next_phase);</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    }</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;  }</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;};</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment"> * \brief Component that supplies CCE worldtube boundary data.</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment"> * \details The \ref DataBoxGroup associated with the worldtube boundary</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment"> * component contains a data manager (e.g. `WorldtubeDataManager`) linked to</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment"> * an H5 file. The data manager handles buffering and interpolating to desired</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment"> * target time points when requested via the simple action</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment"> * `BoundaryComputeAndSendToEvolution`, at which point it will send the required</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment"> * collection of boundary quantities to the identified &#39;CharacteristicEvolution&#39;</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment"> * component. It is assumed that the simple action</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment"> * `BoundaryComputeAndSendToEvolution` will only be called during the</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment"> * `Evolve` phase.</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment"> * Uses const global tags:</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment"> * - `Tags::LMax`</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment"> * `Metavariables` must contain:</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment"> * - the `enum` `Phase` with at least `Initialization` and `Evolve` phases.</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment"> * - a type alias `cce_boundary_communication_tags` for the set of tags to send</span></div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment"> * from the worldtube to the evolution component. This will typically be</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment"> * `Cce::Tags::characteristic_worldtube_boundary_tags&lt;Tags::BoundaryValue&gt;`.</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Metavariables&gt;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="keyword">struct </span><a class="code" href="classCce_1_1H5WorldtubeBoundary.html">H5WorldtubeBoundary</a></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    : <span class="keyword">public</span> <a class="code" href="structCce_1_1WorldtubeComponentBase.html">WorldtubeComponentBase</a>&lt;H5WorldtubeBoundary&lt;Metavariables&gt;,</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;                                    Metavariables&gt; {</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;  <span class="keyword">using</span> base_type =</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;      <a class="code" href="structCce_1_1WorldtubeComponentBase.html">WorldtubeComponentBase&lt;H5WorldtubeBoundary&lt;Metavariables&gt;</a>, Metavariables&gt;;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;  <span class="keyword">using</span> base_type::execute_next_phase;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;  <span class="keyword">using</span> base_type::initialize;</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;  <span class="keyword">using</span> <span class="keyword">typename</span> base_type::chare_type;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;  <span class="keyword">using</span> const_global_cache_tags = tmpl::list&lt;Tags::InitializeJ&gt;;</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;  <span class="keyword">using</span> <span class="keyword">typename</span> base_type::initialization_tags;</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;  <span class="keyword">using</span> <span class="keyword">typename</span> base_type::metavariables;</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;  <span class="keyword">using</span> <span class="keyword">typename</span> base_type::options;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;  <span class="keyword">using</span> <span class="keyword">typename</span> base_type::phase_dependent_action_list;</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;  <span class="keyword">using</span> end_time_tag = <a class="code" href="structCce_1_1Tags_1_1EndTimeFromFile.html">Tags::EndTimeFromFile</a>;</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;};</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="comment"> * \brief Component that supplies CCE worldtube boundary data sourced from an</span></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="comment"> * analytic solution.</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="comment"> * \details The \ref DataBoxGroup associated with the worldtube boundary</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="comment"> * component contains a data manager (e.g. `AnalyticBoundaryDataManager`) that</span></div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="comment"> * contains the analytic solution being provided. The data manager handles</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="comment"> * computation of the analytic solution boundary data when requested via</span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="comment"> * the simple action `BoundaryComputeAndSendToEvolution`, at which point it will</span></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="comment"> * send the required collection of boundary quantities to the identified</span></div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="comment"> * &#39;CharacteristicEvolution&#39; component. It is assumed that the simple action</span></div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="comment"> * `BoundaryComputeAndSendToEvolution` will only be called during the</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="comment"> * `Evolve` phase.</span></div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="comment"> * Uses const global tags:</span></div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="comment"> * - `Tags::LMax`</span></div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="comment"> * - `Tags::SpecifiedEndTime`</span></div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment"> * `Metavariables` must contain:</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="comment"> * - the `enum` `Phase` with at least `Initialization` and `Evolve` phases.</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="comment"> * - a type alias `cce_boundary_communication_tags` for the set of tags to send</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="comment"> *   from the worldtube to the evolution component. This will typically be</span></div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="comment"> *   `Cce::Tags::characteristic_worldtube_boundary_tags&lt;Tags::BoundaryValue&gt;`.</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Metavariables&gt;</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="keyword">struct </span>AnalyticWorldtubeBoundary</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    : <span class="keyword">public</span> WorldtubeComponentBase&lt;AnalyticWorldtubeBoundary&lt;Metavariables&gt;,</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;                                    Metavariables&gt; {</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;  <span class="keyword">using</span> base_type =</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;      WorldtubeComponentBase&lt;AnalyticWorldtubeBoundary&lt;Metavariables&gt;,</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;                             Metavariables&gt;;</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;  <span class="keyword">using</span> base_type::execute_next_phase;</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;  <span class="keyword">using</span> base_type::initialize;</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;  <span class="keyword">using</span> <span class="keyword">typename</span> base_type::chare_type;</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;  <span class="keyword">using</span> const_global_cache_tags = tmpl::list&lt;Tags::AnalyticInitializeJ&gt;;</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;  <span class="keyword">using</span> <span class="keyword">typename</span> base_type::initialization_tags;</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;  <span class="keyword">using</span> <span class="keyword">typename</span> base_type::metavariables;</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;  <span class="keyword">using</span> <span class="keyword">typename</span> base_type::options;</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;  <span class="keyword">using</span> <span class="keyword">typename</span> base_type::phase_dependent_action_list;</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;  <span class="keyword">using</span> end_time_tag = Tags::SpecifiedEndTime;</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;};</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;<span class="comment"> * \brief Component that supplies CCE worldtube boundary data sourced from a</span></div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;<span class="comment"> * running GH system.</span></div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;<span class="comment"> * \details The \ref DataBoxGroup associated with the worldtube boundary</span></div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;<span class="comment"> * component contains an interface manager (derived from</span></div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;<span class="comment"> * `Cce::GhWorldtubeInterfaceManager`) that stores and provides the data</span></div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;<span class="comment"> * received from the GH system. The data manager handles buffering</span></div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;<span class="comment"> * and interpolating to desired target time points when requested via the simple</span></div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;<span class="comment"> * action `Cce::Actions::BoundaryComputeAndSendToEvolution`, at which point it</span></div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;<span class="comment"> * will send the required collection of boundary quantities to the identified</span></div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;<span class="comment"> * `CharacteristicEvolution` component. It is assumed that the simple action</span></div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;<span class="comment"> * `Cce::Actions::BoundaryComputeAndSendToEvolution` will only be called during</span></div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;<span class="comment"> * the `Evolve` phase.</span></div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;<span class="comment"> * Uses const global tags:</span></div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;<span class="comment"> * - `InitializationTags::LMax`</span></div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;<span class="comment"> * - `InitializationTags::ExtractionRadius`</span></div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;<span class="comment"> * `Metavariables` must contain:</span></div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;<span class="comment"> * - the `enum` `Phase` with at least `Initialization` and `Evolve` phases.</span></div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;<span class="comment"> * - a type alias `cce_boundary_communication_tags` for the set of tags to send</span></div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;<span class="comment"> * from the worldtube to the evolution component. This will typically be</span></div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;<span class="comment"> * `Cce::Tags::characteristic_worldtube_boundary_tags&lt;Tags::BoundaryValue&gt;`.</span></div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Metavariables&gt;</div>
+<div class="line"><a name="l00166"></a><span class="lineno"><a class="line" href="structCce_1_1GhWorldtubeBoundary.html">  166</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1GhWorldtubeBoundary.html">GhWorldtubeBoundary</a></div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;    : <span class="keyword">public</span> <a class="code" href="structCce_1_1WorldtubeComponentBase.html">WorldtubeComponentBase</a>&lt;GhWorldtubeBoundary&lt;Metavariables&gt;,</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;                                    Metavariables&gt; {</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;  <span class="keyword">using</span> <a class="code" href="structCce_1_1WorldtubeComponentBase.html">base_type</a> =</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;      <a class="code" href="structCce_1_1WorldtubeComponentBase.html">WorldtubeComponentBase&lt;GhWorldtubeBoundary&lt;Metavariables&gt;</a>, Metavariables&gt;;</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;  <span class="keyword">using</span> base_type::execute_next_phase;</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;  <span class="keyword">using</span> base_type::initialize;</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;  <span class="keyword">using</span> <span class="keyword">typename</span> <a class="code" href="structParallel_1_1Algorithms_1_1Singleton.html">base_type::chare_type</a>;</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;  <span class="keyword">using</span> const_global_cache_tags = tmpl::list&lt;Tags::InitializeJ&gt;;</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;  <span class="keyword">using</span> <span class="keyword">typename</span> base_type::initialization_tags;</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;  <span class="keyword">using</span> <span class="keyword">typename</span> base_type::metavariables;</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;  <span class="keyword">using</span> <span class="keyword">typename</span> base_type::options;</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;  <span class="keyword">using</span> <span class="keyword">typename</span> base_type::phase_dependent_action_list;</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;  <span class="keyword">using</span> <a class="code" href="structCce_1_1Tags_1_1NoEndTime.html">end_time_tag</a> = <a class="code" href="structCce_1_1Tags_1_1NoEndTime.html">Tags::NoEndTime</a>;</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;};</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;}  <span class="comment">// namespace Cce</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="astructActions_1_1SetupDataBox_html"><div class="ttname"><a href="structActions_1_1SetupDataBox.html">Actions::SetupDataBox</a></div><div class="ttdoc">Add into the DataBox default constructed items for the collection of tags requested by any of the act...</div><div class="ttdef"><b>Definition:</b> SetupDataBox.hpp:102</div></div>
+<div class="ttc" id="astructCce_1_1WorldtubeComponentBase_html"><div class="ttname"><a href="structCce_1_1WorldtubeComponentBase.html">Cce::WorldtubeComponentBase</a></div><div class="ttdoc">Generic base class for components that supply CCE worldtube boundary data. See class specializations ...</div><div class="ttdef"><b>Definition:</b> WorldtubeBoundary.hpp:21</div></div>
+<div class="ttc" id="aGlobalCache_8hpp_html"><div class="ttname"><a href="GlobalCache_8hpp.html">GlobalCache.hpp</a></div></div>
+<div class="ttc" id="astructInitialization_1_1Actions_1_1RemoveOptionsAndTerminatePhase_html"><div class="ttname"><a href="structInitialization_1_1Actions_1_1RemoveOptionsAndTerminatePhase.html">Initialization::Actions::RemoveOptionsAndTerminatePhase</a></div><div class="ttdef"><b>Definition:</b> RemoveOptionsAndTerminatePhase.hpp:27</div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_ga1e2e4c961e55eb461d66770393e4f45d"><div class="ttname"><a href="group__ParallelGroup.html#ga1e2e4c961e55eb461d66770393e4f45d">Parallel::get_initialization_tags</a></div><div class="ttdeci">tmpl::remove_duplicates&lt; tmpl::flatten&lt; tmpl::list&lt; AllocationTagsList, tmpl::transform&lt; InitializationActionsList, detail::get_initialization_tags_from_action&lt; tmpl::_1 &gt; &gt;&gt; &gt;&gt; get_initialization_tags</div><div class="ttdoc">Given a list of initialization actions, and possibly a list of tags needed for allocation of an array...</div><div class="ttdef"><b>Definition:</b> ParallelComponentHelpers.hpp:254</div></div>
+<div class="ttc" id="aclassCce_1_1H5WorldtubeBoundary_html"><div class="ttname"><a href="classCce_1_1H5WorldtubeBoundary.html">Cce::H5WorldtubeBoundary</a></div><div class="ttdoc">Component that supplies CCE worldtube boundary data.</div><div class="ttdef"><b>Definition:</b> CharacteristicExtractFwd.hpp:8</div></div>
+<div class="ttc" id="astructParallel_1_1PhaseActions_html"><div class="ttname"><a href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a></div><div class="ttdoc">List of all the actions to be executed in the specified phase.</div><div class="ttdef"><b>Definition:</b> PhaseDependentActionList.hpp:16</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1NoEndTime_html"><div class="ttname"><a href="structCce_1_1Tags_1_1NoEndTime.html">Cce::Tags::NoEndTime</a></div><div class="ttdoc">Represents the final time of a CCE evolution that should just proceed until it receives no more bound...</div><div class="ttdef"><b>Definition:</b> OptionTags.hpp:455</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1EndTimeFromFile_html"><div class="ttname"><a href="structCce_1_1Tags_1_1EndTimeFromFile.html">Cce::Tags::EndTimeFromFile</a></div><div class="ttdoc">Represents the final time of a bounded CCE evolution, determined either from option specification or ...</div><div class="ttdef"><b>Definition:</b> OptionTags.hpp:428</div></div>
+<div class="ttc" id="astructParallel_1_1Algorithms_1_1Singleton_html"><div class="ttname"><a href="structParallel_1_1Algorithms_1_1Singleton.html">Parallel::Algorithms::Singleton</a></div><div class="ttdoc">A struct that stores the charm++ types relevant for a particular singleton component.</div><div class="ttdef"><b>Definition:</b> AlgorithmSingletonDeclarations.hpp:29</div></div>
+<div class="ttc" id="anamespaceCce_html"><div class="ttname"><a href="namespaceCce.html">Cce</a></div><div class="ttdoc">The set of utilities for performing Cauchy characteristic evolution and Cauchy characteristic matchin...</div><div class="ttdef"><b>Definition:</b> CharacteristicExtractFwd.hpp:6</div></div>
+<div class="ttc" id="astructCce_1_1GhWorldtubeBoundary_html"><div class="ttname"><a href="structCce_1_1GhWorldtubeBoundary.html">Cce::GhWorldtubeBoundary</a></div><div class="ttdoc">Component that supplies CCE worldtube boundary data sourced from a running GH system.</div><div class="ttdef"><b>Definition:</b> WorldtubeBoundary.hpp:166</div></div>
+<div class="ttc" id="astructCce_1_1Actions_1_1InitializeWorldtubeBoundary_html"><div class="ttname"><a href="structCce_1_1Actions_1_1InitializeWorldtubeBoundary.html">Cce::Actions::InitializeWorldtubeBoundary</a></div><div class="ttdoc">Generic action for initializing various worldtube boundary components.</div><div class="ttdef"><b>Definition:</b> InitializeWorldtubeBoundary.hpp:100</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

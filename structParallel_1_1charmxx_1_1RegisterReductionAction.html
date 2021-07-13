@@ -1,0 +1,317 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Parallel::charmxx::RegisterReductionAction&lt; ParallelComponent, Action, ReductionType &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceParallel.html">Parallel</a></li><li class="navelem"><b>charmxx</b></li><li class="navelem"><a class="el" href="structParallel_1_1charmxx_1_1RegisterReductionAction.html">RegisterReductionAction</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structParallel_1_1charmxx_1_1RegisterReductionAction-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Parallel::charmxx::RegisterReductionAction&lt; ParallelComponent, Action, ReductionType &gt; Struct Template Reference<div class="ingroups"><a class="el" href="group__CharmExtensionsGroup.html">Charm++ Extensions</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Derived class for registering reduction actions.  
+ <a href="structParallel_1_1charmxx_1_1RegisterReductionAction.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="CharmRegistration_8hpp_source.html">CharmRegistration.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ab6f793f96223132de389394bff6e38d9"><td class="memItemLeft" align="right" valign="top"><a id="ab6f793f96223132de389394bff6e38d9"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>chare_type</b> = typename ParallelComponent::chare_type</td></tr>
+<tr class="separator:ab6f793f96223132de389394bff6e38d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad57c3aeb2375455a628a10e821188ed0"><td class="memItemLeft" align="right" valign="top"><a id="ad57c3aeb2375455a628a10e821188ed0"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>charm_type</b> = charm_types_with_parameters&lt; ParallelComponent, typename get_array_index&lt; chare_type &gt;::template f&lt; ParallelComponent &gt; &gt;</td></tr>
+<tr class="separator:ad57c3aeb2375455a628a10e821188ed0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a7c772ac9c5cd3e0e2ce7432b8d2578"><td class="memItemLeft" align="right" valign="top"><a id="a8a7c772ac9c5cd3e0e2ce7432b8d2578"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>cproxy</b> = typename charm_type::cproxy</td></tr>
+<tr class="separator:a8a7c772ac9c5cd3e0e2ce7432b8d2578"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a10bda5f96fdcbd57996e5e4c99d54814"><td class="memItemLeft" align="right" valign="top"><a id="a10bda5f96fdcbd57996e5e4c99d54814"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>ckindex</b> = typename charm_type::ckindex</td></tr>
+<tr class="separator:a10bda5f96fdcbd57996e5e4c99d54814"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed26373977952b0458e67326ec1b52c9"><td class="memItemLeft" align="right" valign="top"><a id="aed26373977952b0458e67326ec1b52c9"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>algorithm</b> = typename charm_type::algorithm</td></tr>
+<tr class="separator:aed26373977952b0458e67326ec1b52c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a88bdf1574ea59ef014b344d99b1bcbfe"><td class="memItemLeft" align="right" valign="top"><a id="a88bdf1574ea59ef014b344d99b1bcbfe"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RegisterReductionAction</b> (const <a class="el" href="structParallel_1_1charmxx_1_1RegisterReductionAction.html">RegisterReductionAction</a> &amp;)=default</td></tr>
+<tr class="separator:a88bdf1574ea59ef014b344d99b1bcbfe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c899653f14cd01bc967edd2f6852eb6"><td class="memItemLeft" align="right" valign="top"><a id="a7c899653f14cd01bc967edd2f6852eb6"></a>
+<a class="el" href="structParallel_1_1charmxx_1_1RegisterReductionAction.html">RegisterReductionAction</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="structParallel_1_1charmxx_1_1RegisterReductionAction.html">RegisterReductionAction</a> &amp;)=default</td></tr>
+<tr class="separator:a7c899653f14cd01bc967edd2f6852eb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa72998d064f71b05d95f9f5241cbf112"><td class="memItemLeft" align="right" valign="top"><a id="aa72998d064f71b05d95f9f5241cbf112"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RegisterReductionAction</b> (<a class="el" href="structParallel_1_1charmxx_1_1RegisterReductionAction.html">RegisterReductionAction</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:aa72998d064f71b05d95f9f5241cbf112"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c87a20e1d06f95880118a6ccd4f7a9a"><td class="memItemLeft" align="right" valign="top"><a id="a5c87a20e1d06f95880118a6ccd4f7a9a"></a>
+<a class="el" href="structParallel_1_1charmxx_1_1RegisterReductionAction.html">RegisterReductionAction</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="structParallel_1_1charmxx_1_1RegisterReductionAction.html">RegisterReductionAction</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a5c87a20e1d06f95880118a6ccd4f7a9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72d07f2466667c49f6c40e3217827f4b"><td class="memItemLeft" align="right" valign="top"><a id="a72d07f2466667c49f6c40e3217827f4b"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>register_with_charm</b> () const noexcept override</td></tr>
+<tr class="separator:a72d07f2466667c49f6c40e3217827f4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afac9d73d5f287f8c1a0cae64eae332ca"><td class="memItemLeft" align="right" valign="top"><a id="afac9d73d5f287f8c1a0cae64eae332ca"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memItemRight" valign="bottom"><b>name</b> () const noexcept override</td></tr>
+<tr class="separator:afac9d73d5f287f8c1a0cae64eae332ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_structParallel_1_1charmxx_1_1RegistrationHelper"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_structParallel_1_1charmxx_1_1RegistrationHelper')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="structParallel_1_1charmxx_1_1RegistrationHelper.html">Parallel::charmxx::RegistrationHelper</a></td></tr>
+<tr class="memitem:a3c393df1e34abae39445d72bef07e13b inherit pub_methods_structParallel_1_1charmxx_1_1RegistrationHelper"><td class="memItemLeft" align="right" valign="top"><a id="a3c393df1e34abae39445d72bef07e13b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RegistrationHelper</b> (const <a class="el" href="structParallel_1_1charmxx_1_1RegistrationHelper.html">RegistrationHelper</a> &amp;)=default</td></tr>
+<tr class="separator:a3c393df1e34abae39445d72bef07e13b inherit pub_methods_structParallel_1_1charmxx_1_1RegistrationHelper"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4e20fabbdea5a60a66807f4925d3c1e inherit pub_methods_structParallel_1_1charmxx_1_1RegistrationHelper"><td class="memItemLeft" align="right" valign="top"><a id="ac4e20fabbdea5a60a66807f4925d3c1e"></a>
+<a class="el" href="structParallel_1_1charmxx_1_1RegistrationHelper.html">RegistrationHelper</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="structParallel_1_1charmxx_1_1RegistrationHelper.html">RegistrationHelper</a> &amp;)=default</td></tr>
+<tr class="separator:ac4e20fabbdea5a60a66807f4925d3c1e inherit pub_methods_structParallel_1_1charmxx_1_1RegistrationHelper"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a08b1bd9d16087c99aa9650cb80a10c6f inherit pub_methods_structParallel_1_1charmxx_1_1RegistrationHelper"><td class="memItemLeft" align="right" valign="top"><a id="a08b1bd9d16087c99aa9650cb80a10c6f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RegistrationHelper</b> (<a class="el" href="structParallel_1_1charmxx_1_1RegistrationHelper.html">RegistrationHelper</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a08b1bd9d16087c99aa9650cb80a10c6f inherit pub_methods_structParallel_1_1charmxx_1_1RegistrationHelper"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea7c01a213c24bcb59a2697e606fb232 inherit pub_methods_structParallel_1_1charmxx_1_1RegistrationHelper"><td class="memItemLeft" align="right" valign="top"><a id="aea7c01a213c24bcb59a2697e606fb232"></a>
+<a class="el" href="structParallel_1_1charmxx_1_1RegistrationHelper.html">RegistrationHelper</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="structParallel_1_1charmxx_1_1RegistrationHelper.html">RegistrationHelper</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:aea7c01a213c24bcb59a2697e606fb232 inherit pub_methods_structParallel_1_1charmxx_1_1RegistrationHelper"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4aa6ee336aaea9c8a6f07f8686f4698 inherit pub_methods_structParallel_1_1charmxx_1_1RegistrationHelper"><td class="memItemLeft" align="right" valign="top"><a id="ad4aa6ee336aaea9c8a6f07f8686f4698"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_registering_chare</b> () const noexcept</td></tr>
+<tr class="separator:ad4aa6ee336aaea9c8a6f07f8686f4698 inherit pub_methods_structParallel_1_1charmxx_1_1RegistrationHelper"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aa831ddafea6e233a06b4622821f688b7"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><b>registrar</b></td></tr>
+<tr class="separator:aa831ddafea6e233a06b4622821f688b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename ParallelComponent, typename Action, typename ReductionType&gt;<br />
+struct Parallel::charmxx::RegisterReductionAction&lt; ParallelComponent, Action, ReductionType &gt;</h3>
+
+<p>Derived class for registering reduction actions. </p>
+<p>Calls the appropriate Charm++ functions to register a reduction action. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="aa831ddafea6e233a06b4622821f688b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa831ddafea6e233a06b4622821f688b7">&#9670;&nbsp;</a></span>registrar</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename ParallelComponent , typename Action , typename ReductionType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="structParallel_1_1charmxx_1_1RegisterReductionAction.html">Parallel::charmxx::RegisterReductionAction</a>&lt; ParallelComponent, Action, ReductionType &gt;::registrar</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=  </div>
+<div class="line">    <a class="code" href="group__CharmExtensionsGroup.html#gaac0202956ee958f4f1e1dfbba5b578e3">Parallel::charmxx::register_func_with_charm</a>&lt;</div>
+<div class="line">        RegisterReductionAction&lt;ParallelComponent, Action, ReductionType&gt;&gt;()</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Parallel/<a class="el" href="CharmRegistration_8hpp_source.html">CharmRegistration.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="agroup__CharmExtensionsGroup_html_gaac0202956ee958f4f1e1dfbba5b578e3"><div class="ttname"><a href="group__CharmExtensionsGroup.html#gaac0202956ee958f4f1e1dfbba5b578e3">Parallel::charmxx::register_func_with_charm</a></div><div class="ttdeci">bool register_func_with_charm() noexcept</div><div class="ttdoc">Function that adds a pointer to a specific derived class to the charm_register_list</div><div class="ttdef"><b>Definition:</b> CharmRegistration.hpp:641</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

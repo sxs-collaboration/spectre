@@ -1,0 +1,254 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: VolumeCornerIterator&lt; VolumeDim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classVolumeCornerIterator-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">VolumeCornerIterator&lt; VolumeDim &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__ComputationalDomainGroup.html">Computational Domain</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><code>#include &lt;<a class="el" href="DomainHelpers_8hpp_source.html">DomainHelpers.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a65561978cda1e6acee6d2bed516eb67d"><td class="memItemLeft" align="right" valign="top"><a id="a65561978cda1e6acee6d2bed516eb67d"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>VolumeCornerIterator</b> (size_t initial_local_corner_number) noexcept</td></tr>
+<tr class="separator:a65561978cda1e6acee6d2bed516eb67d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7088d920c25affb53de40414b1a4ad29"><td class="memItemLeft" align="right" valign="top"><a id="a7088d920c25affb53de40414b1a4ad29"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>VolumeCornerIterator</b> (<a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; block_index, <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; global_corner_extents) noexcept</td></tr>
+<tr class="separator:a7088d920c25affb53de40414b1a4ad29"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84abe4d27aad3a7535584ed598966f48"><td class="memItemLeft" align="right" valign="top"><a id="a84abe4d27aad3a7535584ed598966f48"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator++</b> () noexcept</td></tr>
+<tr class="separator:a84abe4d27aad3a7535584ed598966f48"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aefd3b4de83058be1bac153bfa3fccd61"><td class="memItemLeft" align="right" valign="top"><a id="aefd3b4de83058be1bac153bfa3fccd61"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>operator bool</b> () const noexcept</td></tr>
+<tr class="separator:aefd3b4de83058be1bac153bfa3fccd61"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a219bd51feebca618223985675fe7fe50"><td class="memItemLeft" align="right" valign="top"><a id="a219bd51feebca618223985675fe7fe50"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>local_corner_number</b> () const noexcept</td></tr>
+<tr class="separator:a219bd51feebca618223985675fe7fe50"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab54538288b6d4a3e9c56cb43a2b4d6d4"><td class="memItemLeft" align="right" valign="top"><a id="ab54538288b6d4a3e9c56cb43a2b4d6d4"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>global_corner_number</b> () const noexcept</td></tr>
+<tr class="separator:ab54538288b6d4a3e9c56cb43a2b4d6d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71f8d5d539207595f888c7617d2e4e1b"><td class="memItemLeft" align="right" valign="top"><a id="a71f8d5d539207595f888c7617d2e4e1b"></a>
+const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="group__ComputationalDomainGroup.html#ga8c0137d7160ad71b6ed265c53c99ed00">Side</a>, VolumeDim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> () const noexcept</td></tr>
+<tr class="separator:a71f8d5d539207595f888c7617d2e4e1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a134c513ec21658931c966b70cdf345"><td class="memItemLeft" align="right" valign="top"><a id="a4a134c513ec21658931c966b70cdf345"></a>
+const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="group__ComputationalDomainGroup.html#ga8c0137d7160ad71b6ed265c53c99ed00">Side</a>, VolumeDim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator*</b> () const noexcept</td></tr>
+<tr class="separator:a4a134c513ec21658931c966b70cdf345"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6fc87fad8209c285b506a62b5efb5f75"><td class="memItemLeft" align="right" valign="top"><a id="a6fc87fad8209c285b506a62b5efb5f75"></a>
+const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, VolumeDim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>coords_of_corner</b> () const noexcept</td></tr>
+<tr class="separator:a6fc87fad8209c285b506a62b5efb5f75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af030d17d357382e9fc61d4529f384adf"><td class="memItemLeft" align="right" valign="top"><a id="af030d17d357382e9fc61d4529f384adf"></a>
+const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;, VolumeDim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>directions_of_corner</b> () const noexcept</td></tr>
+<tr class="separator:af030d17d357382e9fc61d4529f384adf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae26f676926ecb5bd8a5b84606558e3b0"><td class="memItemLeft" align="right" valign="top"><a id="ae26f676926ecb5bd8a5b84606558e3b0"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setup_from_local_corner_number</b> () noexcept</td></tr>
+<tr class="separator:ae26f676926ecb5bd8a5b84606558e3b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t VolumeDim&gt;<br />
+class VolumeCornerIterator&lt; VolumeDim &gt;</h3>
+
+<p>Iterates over the corners of a VolumeDim-dimensional cube. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/<a class="el" href="DomainHelpers_8hpp_source.html">DomainHelpers.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,596 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: evolution::dg::MortarData&lt; Dim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceevolution.html">evolution</a></li><li class="navelem"><a class="el" href="namespaceevolution_1_1dg.html">dg</a></li><li class="navelem"><a class="el" href="classevolution_1_1dg_1_1MortarData.html">MortarData</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classevolution_1_1dg_1_1MortarData-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">evolution::dg::MortarData&lt; Dim &gt; Class Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Data on the mortar used to compute the boundary correction for the DG scheme.  
+ <a href="classevolution_1_1dg_1_1MortarData.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="MortarData_8hpp_source.html">MortarData.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a81b820c3e97a7ef5b4e6c809bdd8c595"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classevolution_1_1dg_1_1MortarData.html#a81b820c3e97a7ef5b4e6c809bdd8c595">insert_local_geometric_quantities</a> (const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;local_volume_det_inv_jacobian, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;local_face_det_jacobian, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;local_face_normal_magnitude) noexcept</td></tr>
+<tr class="memdesc:a81b820c3e97a7ef5b4e6c809bdd8c595"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert the magnitude of the local face normal, the determinant of the volume inverse Jacobian, and the determinant of the face Jacobian. Used for local time stepping with Gauss points.  <a href="classevolution_1_1dg_1_1MortarData.html#a81b820c3e97a7ef5b4e6c809bdd8c595">More...</a><br /></td></tr>
+<tr class="separator:a81b820c3e97a7ef5b4e6c809bdd8c595"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac0d00a98f9f5e480e7e5c61fa12e511"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classevolution_1_1dg_1_1MortarData.html#aac0d00a98f9f5e480e7e5c61fa12e511">insert_local_face_normal_magnitude</a> (const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;local_face_normal_magnitude) noexcept</td></tr>
+<tr class="memdesc:aac0d00a98f9f5e480e7e5c61fa12e511"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert the magnitude of the local face normal. Used for local time stepping with Gauss-Lobatto points.  <a href="classevolution_1_1dg_1_1MortarData.html#aac0d00a98f9f5e480e7e5c61fa12e511">More...</a><br /></td></tr>
+<tr class="separator:aac0d00a98f9f5e480e7e5c61fa12e511"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6b06d79c41526fdeae3ba1c535aa2eb2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classevolution_1_1dg_1_1MortarData.html#a6b06d79c41526fdeae3ba1c535aa2eb2">get_local_volume_det_inv_jacobian</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; local_volume_det_inv_jacobian) const noexcept</td></tr>
+<tr class="memdesc:a6b06d79c41526fdeae3ba1c535aa2eb2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the <code>local_volume_det_inv_jacobian</code> by setting the <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> to point into the <code><a class="el" href="classevolution_1_1dg_1_1MortarData.html" title="Data on the mortar used to compute the boundary correction for the DG scheme.">MortarData</a></code>'s internal storage.  <a href="classevolution_1_1dg_1_1MortarData.html#a6b06d79c41526fdeae3ba1c535aa2eb2">More...</a><br /></td></tr>
+<tr class="separator:a6b06d79c41526fdeae3ba1c535aa2eb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91b63649940001f75e373aff0e255ff7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classevolution_1_1dg_1_1MortarData.html#a91b63649940001f75e373aff0e255ff7">get_local_face_det_jacobian</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; local_face_det_jacobian) const noexcept</td></tr>
+<tr class="memdesc:a91b63649940001f75e373aff0e255ff7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the <code>local_face_det_jacobian</code> by setting the <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> to point into the <code><a class="el" href="classevolution_1_1dg_1_1MortarData.html" title="Data on the mortar used to compute the boundary correction for the DG scheme.">MortarData</a></code>'s internal storage.  <a href="classevolution_1_1dg_1_1MortarData.html#a91b63649940001f75e373aff0e255ff7">More...</a><br /></td></tr>
+<tr class="separator:a91b63649940001f75e373aff0e255ff7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a784e7561a04e4f050e1ba797b1d05766"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classevolution_1_1dg_1_1MortarData.html#a784e7561a04e4f050e1ba797b1d05766">get_local_face_normal_magnitude</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; local_face_normal_magnitude) const noexcept</td></tr>
+<tr class="memdesc:a784e7561a04e4f050e1ba797b1d05766"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the <code>local_face_normal_magnitude</code> by setting the <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> to point into the <code><a class="el" href="classevolution_1_1dg_1_1MortarData.html" title="Data on the mortar used to compute the boundary correction for the DG scheme.">MortarData</a></code>'s internal storage.  <a href="classevolution_1_1dg_1_1MortarData.html#a784e7561a04e4f050e1ba797b1d05766">More...</a><br /></td></tr>
+<tr class="separator:a784e7561a04e4f050e1ba797b1d05766"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77a153173a6fa345399926b55bbea316"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classevolution_1_1dg_1_1MortarData.html#a77a153173a6fa345399926b55bbea316">extract</a> () noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classMesh.html">Mesh</a>&lt; Dim - 1 &gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt;&gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classMesh.html">Mesh</a>&lt; Dim - 1 &gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt;&gt;&gt;</td></tr>
+<tr class="memdesc:a77a153173a6fa345399926b55bbea316"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the inserted data and reset the state to empty.  <a href="classevolution_1_1dg_1_1MortarData.html#a77a153173a6fa345399926b55bbea316">More...</a><br /></td></tr>
+<tr class="separator:a77a153173a6fa345399926b55bbea316"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af988fedb617e19474db2452fbf5a8f44"><td class="memItemLeft" align="right" valign="top"><a id="af988fedb617e19474db2452fbf5a8f44"></a>
+const <a class="el" href="classTimeStepId.html">TimeStepId</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>time_step_id</b> () const noexcept</td></tr>
+<tr class="separator:af988fedb617e19474db2452fbf5a8f44"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac60d4edacf704e65c5ddcfd9a8d56f5b"><td class="memItemLeft" align="right" valign="top"><a id="ac60d4edacf704e65c5ddcfd9a8d56f5b"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>local_mortar_data</b> () const noexcept -&gt; const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classMesh.html">Mesh</a>&lt; Dim - 1 &gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt;&gt;&gt; &amp;</td></tr>
+<tr class="separator:ac60d4edacf704e65c5ddcfd9a8d56f5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a06602345a01ff3ee5e29edd3ad160442"><td class="memItemLeft" align="right" valign="top"><a id="a06602345a01ff3ee5e29edd3ad160442"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>neighbor_mortar_data</b> () const noexcept -&gt; const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classMesh.html">Mesh</a>&lt; Dim - 1 &gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt;&gt;&gt; &amp;</td></tr>
+<tr class="separator:a06602345a01ff3ee5e29edd3ad160442"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a78603121b4d0f32b85ef7deeb6e112f7"><td class="memItemLeft" align="right" valign="top"><a id="a78603121b4d0f32b85ef7deeb6e112f7"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a78603121b4d0f32b85ef7deeb6e112f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:af33fe7b531d0b09a8e1000a282e4d6b3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classevolution_1_1dg_1_1MortarData.html#af33fe7b531d0b09a8e1000a282e4d6b3">insert_local_mortar_data</a> (<a class="el" href="classTimeStepId.html">TimeStepId</a> time_step_id, <a class="el" href="classMesh.html">Mesh</a>&lt; Dim - 1 &gt; local_interface_mesh, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt; local_mortar_vars) noexcept</td></tr>
+<tr class="memdesc:af33fe7b531d0b09a8e1000a282e4d6b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert data onto the mortar.  <a href="classevolution_1_1dg_1_1MortarData.html#af33fe7b531d0b09a8e1000a282e4d6b3">More...</a><br /></td></tr>
+<tr class="separator:af33fe7b531d0b09a8e1000a282e4d6b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a56ef4778f52b6a9f007d6dc5f9d77f5a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classevolution_1_1dg_1_1MortarData.html#a56ef4778f52b6a9f007d6dc5f9d77f5a">insert_neighbor_mortar_data</a> (<a class="el" href="classTimeStepId.html">TimeStepId</a> time_step_id, <a class="el" href="classMesh.html">Mesh</a>&lt; Dim - 1 &gt; neighbor_interface_mesh, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt; neighbor_mortar_vars) noexcept</td></tr>
+<tr class="memdesc:a56ef4778f52b6a9f007d6dc5f9d77f5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert data onto the mortar.  <a href="classevolution_1_1dg_1_1MortarData.html#a56ef4778f52b6a9f007d6dc5f9d77f5a">More...</a><br /></td></tr>
+<tr class="separator:a56ef4778f52b6a9f007d6dc5f9d77f5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a47d51a839cf597e7991c64323b31b4da"><td class="memTemplParams" colspan="2"><a id="a47d51a839cf597e7991c64323b31b4da"></a>
+template&lt;size_t LocalDim&gt; </td></tr>
+<tr class="memitem:a47d51a839cf597e7991c64323b31b4da"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classevolution_1_1dg_1_1MortarData.html">MortarData</a>&lt; LocalDim &gt; &amp;lhs, const <a class="el" href="classevolution_1_1dg_1_1MortarData.html">MortarData</a>&lt; LocalDim &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a47d51a839cf597e7991c64323b31b4da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+class evolution::dg::MortarData&lt; Dim &gt;</h3>
+
+<p>Data on the mortar used to compute the boundary correction for the DG scheme. </p>
+<p>The class holds the local data that has been projected to the mortar as well as the neighbor data that has been projected to the mortar. The local and neighbor data is later used to compute the same unique boundary correction on the mortar for both elements. That is, the final boundary correction computation is done twice: once on each element touching the mortar. However, the computation is done in such a way that the results agree.</p>
+<p>In addition to the (type-erased) fields on both sides of the mortar, the face (not mortar!) mesh of the neighbor is stored. The mesh will be necessary when hybridizing DG with finite difference or finite volume schemes (DG-subcell).</p>
+<p>If the element and its neighbor have unaligned logical coordinate systems then the data is stored in the local logical coordinate's orientation ( \(\xi\) varies fastest). This means the action sending the data is responsible for reorienting the data on the mortar so it matches the neighbor's orientation.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Dim</td><td>the volume dimension of the mesh </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a77a153173a6fa345399926b55bbea316"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a77a153173a6fa345399926b55bbea316">&#9670;&nbsp;</a></span>extract()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto <a class="el" href="classevolution_1_1dg_1_1MortarData.html">evolution::dg::MortarData</a>&lt; Dim &gt;::extract </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> -&gt;  <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classMesh.html">Mesh</a>&lt; Dim - 1 &gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt;&gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classMesh.html">Mesh</a>&lt; Dim - 1 &gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt;&gt;&gt;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return the inserted data and reset the state to empty. </p>
+<p>The first element is the local data while the second element is the neighbor data. </p>
+
+</div>
+</div>
+<a id="a91b63649940001f75e373aff0e255ff7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a91b63649940001f75e373aff0e255ff7">&#9670;&nbsp;</a></span>get_local_face_det_jacobian()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classevolution_1_1dg_1_1MortarData.html">evolution::dg::MortarData</a>&lt; Dim &gt;::get_local_face_det_jacobian </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>local_face_det_jacobian</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sets the <code>local_face_det_jacobian</code> by setting the <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> to point into the <code><a class="el" href="classevolution_1_1dg_1_1MortarData.html" title="Data on the mortar used to compute the boundary correction for the DG scheme.">MortarData</a></code>'s internal storage. </p>
+<dl class="section warning"><dt>Warning</dt><dd>The result should never be changed. </dd></dl>
+
+</div>
+</div>
+<a id="a784e7561a04e4f050e1ba797b1d05766"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a784e7561a04e4f050e1ba797b1d05766">&#9670;&nbsp;</a></span>get_local_face_normal_magnitude()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classevolution_1_1dg_1_1MortarData.html">evolution::dg::MortarData</a>&lt; Dim &gt;::get_local_face_normal_magnitude </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>local_face_normal_magnitude</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sets the <code>local_face_normal_magnitude</code> by setting the <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> to point into the <code><a class="el" href="classevolution_1_1dg_1_1MortarData.html" title="Data on the mortar used to compute the boundary correction for the DG scheme.">MortarData</a></code>'s internal storage. </p>
+<dl class="section warning"><dt>Warning</dt><dd>The result should never be changed. </dd></dl>
+
+</div>
+</div>
+<a id="a6b06d79c41526fdeae3ba1c535aa2eb2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6b06d79c41526fdeae3ba1c535aa2eb2">&#9670;&nbsp;</a></span>get_local_volume_det_inv_jacobian()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classevolution_1_1dg_1_1MortarData.html">evolution::dg::MortarData</a>&lt; Dim &gt;::get_local_volume_det_inv_jacobian </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>local_volume_det_inv_jacobian</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sets the <code>local_volume_det_inv_jacobian</code> by setting the <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> to point into the <code><a class="el" href="classevolution_1_1dg_1_1MortarData.html" title="Data on the mortar used to compute the boundary correction for the DG scheme.">MortarData</a></code>'s internal storage. </p>
+<dl class="section warning"><dt>Warning</dt><dd>The result should never be changed. </dd></dl>
+
+</div>
+</div>
+<a id="aac0d00a98f9f5e480e7e5c61fa12e511"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aac0d00a98f9f5e480e7e5c61fa12e511">&#9670;&nbsp;</a></span>insert_local_face_normal_magnitude()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classevolution_1_1dg_1_1MortarData.html">evolution::dg::MortarData</a>&lt; Dim &gt;::insert_local_face_normal_magnitude </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>local_face_normal_magnitude</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Insert the magnitude of the local face normal. Used for local time stepping with Gauss-Lobatto points. </p>
+<p>The magnitude of the face normal is given by:</p>
+<p class="formulaDsp">
+\begin{align*} \sqrt{ \frac{\partial\xi}{\partial x^i} \gamma^{ij} \frac{\partial\xi}{\partial x^j}} \end{align*}
+</p>
+<p>for a face in the \(\xi\)-direction, with inverse spatial metric \(\gamma^{ij}\). </p>
+
+</div>
+</div>
+<a id="a81b820c3e97a7ef5b4e6c809bdd8c595"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a81b820c3e97a7ef5b4e6c809bdd8c595">&#9670;&nbsp;</a></span>insert_local_geometric_quantities()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classevolution_1_1dg_1_1MortarData.html">evolution::dg::MortarData</a>&lt; Dim &gt;::insert_local_geometric_quantities </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>local_volume_det_inv_jacobian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>local_face_det_jacobian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>local_face_normal_magnitude</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Insert the magnitude of the local face normal, the determinant of the volume inverse Jacobian, and the determinant of the face Jacobian. Used for local time stepping with Gauss points. </p>
+<p>The magnitude of the face normal is given by:</p>
+<p class="formulaDsp">
+\begin{align*} \sqrt{ \frac{\partial\xi}{\partial x^i} \gamma^{ij} \frac{\partial\xi}{\partial x^j}} \end{align*}
+</p>
+<p>for a face in the \(\xi\)-direction, with inverse spatial metric \(\gamma^{ij}\). </p>
+
+</div>
+</div>
+<a id="af33fe7b531d0b09a8e1000a282e4d6b3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af33fe7b531d0b09a8e1000a282e4d6b3">&#9670;&nbsp;</a></span>insert_local_mortar_data()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classevolution_1_1dg_1_1MortarData.html">evolution::dg::MortarData</a>&lt; Dim &gt;::insert_local_mortar_data </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classTimeStepId.html">TimeStepId</a>&#160;</td>
+          <td class="paramname"><em>time_step_id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMesh.html">Mesh</a>&lt; Dim - 1 &gt;&#160;</td>
+          <td class="paramname"><em>local_interface_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt;&#160;</td>
+          <td class="paramname"><em>local_mortar_vars</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Insert data onto the mortar. </p>
+<p>Exactly one local and neighbor insert call must be made between calls to <code><a class="el" href="classevolution_1_1dg_1_1MortarData.html#a77a153173a6fa345399926b55bbea316" title="Return the inserted data and reset the state to empty.">extract()</a></code>.</p>
+<p>The insert functions require that:</p><ul>
+<li>the data is inserted only once</li>
+<li>the <code><a class="el" href="classTimeStepId.html">TimeStepId</a></code> of the local and neighbor data are the same (this is only checked if the local/neighbor data was already inserted)</li>
+</ul>
+<dl class="section note"><dt>Note</dt><dd>it is not required that the number of grid points between the local and neighbor data be the same since one may be using FD/FV instead of DG and this switch is done locally in space and time in such a way that neighboring elements have no a priori knowledge about what well be received. </dd></dl>
+
+</div>
+</div>
+<a id="a56ef4778f52b6a9f007d6dc5f9d77f5a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a56ef4778f52b6a9f007d6dc5f9d77f5a">&#9670;&nbsp;</a></span>insert_neighbor_mortar_data()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classevolution_1_1dg_1_1MortarData.html">evolution::dg::MortarData</a>&lt; Dim &gt;::insert_neighbor_mortar_data </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classTimeStepId.html">TimeStepId</a>&#160;</td>
+          <td class="paramname"><em>time_step_id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMesh.html">Mesh</a>&lt; Dim - 1 &gt;&#160;</td>
+          <td class="paramname"><em>neighbor_interface_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt;&#160;</td>
+          <td class="paramname"><em>neighbor_mortar_vars</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Insert data onto the mortar. </p>
+<p>Exactly one local and neighbor insert call must be made between calls to <code><a class="el" href="classevolution_1_1dg_1_1MortarData.html#a77a153173a6fa345399926b55bbea316" title="Return the inserted data and reset the state to empty.">extract()</a></code>.</p>
+<p>The insert functions require that:</p><ul>
+<li>the data is inserted only once</li>
+<li>the <code><a class="el" href="classTimeStepId.html">TimeStepId</a></code> of the local and neighbor data are the same (this is only checked if the local/neighbor data was already inserted)</li>
+</ul>
+<dl class="section note"><dt>Note</dt><dd>it is not required that the number of grid points between the local and neighbor data be the same since one may be using FD/FV instead of DG and this switch is done locally in space and time in such a way that neighboring elements have no a priori knowledge about what well be received. </dd></dl>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/DiscontinuousGalerkin/<a class="el" href="MortarData_8hpp_source.html">MortarData.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

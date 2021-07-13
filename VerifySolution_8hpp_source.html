@@ -1,0 +1,314 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: tests/Unit/Helpers/PointwiseFunctions/AnalyticSolutions/Xcts/VerifySolution.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_33df814919e476f9d56dccef9b24e276.html">tests</a></li><li class="navelem"><a class="el" href="dir_38113a4c235494bd05bb19f85d006940.html">Unit</a></li><li class="navelem"><a class="el" href="dir_b87ca7a475176b712f1482b79974072f.html">Helpers</a></li><li class="navelem"><a class="el" href="dir_d90dedbb314a00c76a1ee36a1da37b54.html">PointwiseFunctions</a></li><li class="navelem"><a class="el" href="dir_8db81faa2792daf48031b0412b17c33a.html">AnalyticSolutions</a></li><li class="navelem"><a class="el" href="dir_17f04fa512de9ae8c324d82a830bed2c.html">Xcts</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">VerifySolution.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Affine_8hpp.html">Domain/CoordinateMaps/Affine.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="CoordinateMap_8hpp.html">Domain/CoordinateMaps/CoordinateMap.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;Domain/CoordinateMaps/CoordinateMap.tpp&quot;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ProductMaps_8hpp.html">Domain/CoordinateMaps/ProductMaps.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;Domain/CoordinateMaps/ProductMaps.tpp&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;Elliptic/Systems/Xcts/FirstOrderSystem.hpp&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;Elliptic/Systems/Xcts/Geometry.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;Framework/CheckWithRandomValues.hpp&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TestingFramework_8hpp.html">Framework/TestingFramework.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;Helpers/PointwiseFunctions/AnalyticSolutions/FirstOrderEllipticSolutionsTestHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="NumericalAlgorithms_2Spectral_2Mesh_8hpp.html">NumericalAlgorithms/Spectral/Mesh.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160; </div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="keyword">namespace </span>TestHelpers::Xcts::Solutions {</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160; </div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="keyword">namespace </span>detail {</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="keyword">template</span> &lt;<a class="code" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78">::Xcts::Equations</a> EnabledEquations,</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;          <a class="code" href="namespaceXcts.html#a235c4dbcedba424b00d04d2905d4bee9">::Xcts::Geometry</a> ConformalGeometry, <span class="keywordtype">int</span> ConformalMatterScale,</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;          <span class="keyword">typename</span> Solution&gt;</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="keywordtype">void</span> verify_solution_impl(<span class="keyword">const</span> Solution&amp; solution,</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;                          <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;double, 3&gt;</a>&amp; center,</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;                          <span class="keyword">const</span> <span class="keywordtype">double</span> inner_radius, <span class="keyword">const</span> <span class="keywordtype">double</span> outer_radius,</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;                          <span class="keyword">const</span> <span class="keywordtype">double</span> tolerance) {</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  CAPTURE(EnabledEquations);</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;  CAPTURE(ConformalGeometry);</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <span class="keyword">using</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/program/system.html">system</a> = <a class="code" href="structXcts_1_1FirstOrderSystem.html">::Xcts::FirstOrderSystem</a>&lt;EnabledEquations, ConformalGeometry,</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;                                          ConformalMatterScale&gt;;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;3&gt;</a> <a class="code" href="namespaceevolution_1_1dg_1_1subcell_1_1fd.html#aee4d7253aeb3ba0f1034c0ed6738c030">mesh</a>{12, Spectral::Basis::Legendre,</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;                     Spectral::Quadrature::GaussLobatto};</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="keyword">using</span> AffineMap = <a class="code" href="classdomain_1_1CoordinateMaps_1_1Affine.html">domain::CoordinateMaps::Affine</a>;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  <span class="keyword">using</span> AffineMap3D =</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;      <a class="code" href="classdomain_1_1CoordinateMaps_1_1ProductOf3Maps.html">domain::CoordinateMaps::ProductOf3Maps&lt;AffineMap, AffineMap, AffineMap&gt;</a>;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keyword">const</span> <a class="code" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap&lt;Frame::Logical, Frame::Inertial, AffineMap3D&gt;</a></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;      coord_map{</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;          {{-1., 1., center[0] + inner_radius, center[0] + outer_radius},</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;           {-1., 1., center[1] + inner_radius, center[1] + outer_radius},</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;           {-1., 1., center[2] + inner_radius, center[2] + outer_radius}}};</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  FirstOrderEllipticSolutionsTestHelpers::verify_solution&lt;system&gt;(</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;      solution, mesh, coord_map, tolerance);</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;}</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;}  <span class="comment">// namespace detail</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment"> * \brief Verify the `solution` solves the XCTS equations numerically.</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment"> * \tparam ConformalGeometry Specify `Xcts::Geometry::FlatCartesian` to test</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment"> * both the flat _and_ the curved system, or `Xcts::Geometry::Curved` to only</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment"> * test the curved system (for solutions on a curved conformal background).</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment"> * \tparam Solution The analytic solution to test (inferred)</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment"> * \param solution The analytic solution to test</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment"> * \param center offset for the \p inner_radius and the \p outer_radius</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment"> * \param inner_radius Lower-left corner of a cube on which to test</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment"> * \param outer_radius Upper-right corner of a cube on which to test</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment"> * \param tolerance Requested tolerance</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="keyword">template</span> &lt;<a class="code" href="namespaceXcts.html#a235c4dbcedba424b00d04d2905d4bee9">::Xcts::Geometry</a> ConformalGeometry, <span class="keywordtype">int</span> ConformalMatterScale,</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;          <span class="keyword">typename</span> Solution&gt;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__TestingFrameworkGroup.html#ga4bdd7dc2f3490b528226613281d19f17">verify_solution</a>(<span class="keyword">const</span> Solution&amp; solution,</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;                     <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;double, 3&gt;</a>&amp; center,</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;                     <span class="keyword">const</span> <span class="keywordtype">double</span> inner_radius, <span class="keyword">const</span> <span class="keywordtype">double</span> outer_radius,</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;                     <span class="keyword">const</span> <span class="keywordtype">double</span> tolerance) {</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;  <span class="keywordflow">if</span> constexpr (ConformalGeometry == ::<a class="code" href="namespaceXcts.html#a235c4dbcedba424b00d04d2905d4bee9a4e98dfef39bb5b4bbfec908085352ac4">Xcts::Geometry::FlatCartesian</a>) {</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <a class="code" href="group__TestingFrameworkGroup.html#ga8cd2549e4a5627f34f8201af2bcbfd34">INVOKE_TEST_FUNCTION</a>(</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        detail::verify_solution_impl,</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        (solution, center, inner_radius, outer_radius, tolerance),</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        (::<a class="code" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78ad8dbcb7f98b38c5c9f9a0ad33e94ec2a">Xcts::Equations::Hamiltonian</a>, ::<a class="code" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78a1d7c1747c46332d5d8dff1ff4c751e09">Xcts::Equations::HamiltonianAndLapse</a>,</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;         ::<a class="code" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78a5e29b37ae66a23995a8a1e87e49ea805">Xcts::Equations::HamiltonianLapseAndShift</a>),</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        (::<a class="code" href="namespaceXcts.html#a235c4dbcedba424b00d04d2905d4bee9a4e98dfef39bb5b4bbfec908085352ac4">Xcts::Geometry::FlatCartesian</a>, ::<a class="code" href="namespaceXcts.html#a235c4dbcedba424b00d04d2905d4bee9a1e0e0b1e4554e27d30a562a079215f33">Xcts::Geometry::Curved</a>),</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        (ConformalMatterScale));</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;  } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <a class="code" href="group__TestingFrameworkGroup.html#ga8cd2549e4a5627f34f8201af2bcbfd34">INVOKE_TEST_FUNCTION</a>(</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        detail::verify_solution_impl,</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        (solution, center, inner_radius, outer_radius, tolerance),</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        (::<a class="code" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78ad8dbcb7f98b38c5c9f9a0ad33e94ec2a">Xcts::Equations::Hamiltonian</a>, ::<a class="code" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78a1d7c1747c46332d5d8dff1ff4c751e09">Xcts::Equations::HamiltonianAndLapse</a>,</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;         ::<a class="code" href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78a5e29b37ae66a23995a8a1e87e49ea805">Xcts::Equations::HamiltonianLapseAndShift</a>),</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        (::<a class="code" href="namespaceXcts.html#a235c4dbcedba424b00d04d2905d4bee9a1e0e0b1e4554e27d30a562a079215f33">Xcts::Geometry::Curved</a>), (ConformalMatterScale));</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;  }</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;}</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160; </div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;}  <span class="comment">// namespace TestHelpers::Xcts::Solutions</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="astructXcts_1_1FirstOrderSystem_html"><div class="ttname"><a href="structXcts_1_1FirstOrderSystem.html">Xcts::FirstOrderSystem</a></div><div class="ttdoc">The Extended Conformal Thin Sandwich (XCTS) decomposition of the Einstein constraint equations,...</div><div class="ttdef"><b>Definition:</b> FirstOrderSystem.hpp:142</div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_ga8cd2549e4a5627f34f8201af2bcbfd34"><div class="ttname"><a href="group__TestingFrameworkGroup.html#ga8cd2549e4a5627f34f8201af2bcbfd34">INVOKE_TEST_FUNCTION</a></div><div class="ttdeci">#define INVOKE_TEST_FUNCTION(FUNCTION_NAME, TUPLE_ARGS,...)</div><div class="ttdoc">Macro used to invoke a test function of multiple template arguments.</div><div class="ttdef"><b>Definition:</b> CheckWithRandomValues.hpp:794</div></div>
+<div class="ttc" id="anamespaceXcts_html_afc9a7d41a8c51fdc912cfc3e8196fa78a1d7c1747c46332d5d8dff1ff4c751e09"><div class="ttname"><a href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78a1d7c1747c46332d5d8dff1ff4c751e09">Xcts::Equations::HamiltonianAndLapse</a></div><div class="ttdeci">@ HamiltonianAndLapse</div><div class="ttdoc">Both the Hamiltonian constraint and the lapse equation, solved for  and .</div></div>
+<div class="ttc" id="aclassdomain_1_1CoordinateMaps_1_1ProductOf3Maps_html"><div class="ttname"><a href="classdomain_1_1CoordinateMaps_1_1ProductOf3Maps.html">domain::CoordinateMaps::ProductOf3Maps</a></div><div class="ttdoc">Product of three one-dimensional CoordinateMaps.</div><div class="ttdef"><b>Definition:</b> ProductMaps.hpp:90</div></div>
+<div class="ttc" id="aProductMaps_8hpp_html"><div class="ttname"><a href="ProductMaps_8hpp.html">ProductMaps.hpp</a></div></div>
+<div class="ttc" id="asystem_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/program/system.html">std::system</a></div><div class="ttdeci">T system(T... args)</div></div>
+<div class="ttc" id="aTestingFramework_8hpp_html"><div class="ttname"><a href="TestingFramework_8hpp.html">TestingFramework.hpp</a></div></div>
+<div class="ttc" id="anamespaceevolution_1_1dg_1_1subcell_1_1fd_html_aee4d7253aeb3ba0f1034c0ed6738c030"><div class="ttname"><a href="namespaceevolution_1_1dg_1_1subcell_1_1fd.html#aee4d7253aeb3ba0f1034c0ed6738c030">evolution::dg::subcell::fd::mesh</a></div><div class="ttdeci">Mesh&lt; Dim &gt; mesh(const Mesh&lt; Dim &gt; &amp;dg_mesh) noexcept</div><div class="ttdoc">Computes the cell-centered finite-difference mesh from the DG mesh, using  grid points per dimension,...</div></div>
+<div class="ttc" id="aCoordinateMap_8hpp_html"><div class="ttname"><a href="CoordinateMap_8hpp.html">CoordinateMap.hpp</a></div></div>
+<div class="ttc" id="aclassdomain_1_1CoordinateMaps_1_1Affine_html"><div class="ttname"><a href="classdomain_1_1CoordinateMaps_1_1Affine.html">domain::CoordinateMaps::Affine</a></div><div class="ttdoc">Affine map from .</div><div class="ttdef"><b>Definition:</b> Affine.hpp:37</div></div>
+<div class="ttc" id="anamespaceXcts_html_a235c4dbcedba424b00d04d2905d4bee9a1e0e0b1e4554e27d30a562a079215f33"><div class="ttname"><a href="namespaceXcts.html#a235c4dbcedba424b00d04d2905d4bee9a1e0e0b1e4554e27d30a562a079215f33">Xcts::Geometry::Curved</a></div><div class="ttdeci">@ Curved</div><div class="ttdoc">The conformal geometry is either curved or employs curved coordinates, so non-vanishing Christoffel s...</div></div>
+<div class="ttc" id="aAffine_8hpp_html"><div class="ttname"><a href="Affine_8hpp.html">Affine.hpp</a></div></div>
+<div class="ttc" id="anamespaceXcts_html_afc9a7d41a8c51fdc912cfc3e8196fa78a5e29b37ae66a23995a8a1e87e49ea805"><div class="ttname"><a href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78a5e29b37ae66a23995a8a1e87e49ea805">Xcts::Equations::HamiltonianLapseAndShift</a></div><div class="ttdeci">@ HamiltonianLapseAndShift</div><div class="ttdoc">The full XCTS equations, solved for ,  and .</div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_ga4bdd7dc2f3490b528226613281d19f17"><div class="ttname"><a href="group__TestingFrameworkGroup.html#ga4bdd7dc2f3490b528226613281d19f17">FirstOrderEllipticSolutionsTestHelpers::verify_solution</a></div><div class="ttdeci">void verify_solution(const SolutionType &amp;solution, const Mesh&lt; System::volume_dim &gt; &amp;mesh, const domain::CoordinateMap&lt; Frame::Logical, Frame::Inertial, Maps... &gt; coord_map, const double tolerance, const std::tuple&lt; FluxesArgs... &gt; &amp;fluxes_args, const std::tuple&lt; SourcesArgs... &gt; &amp;sources_args=std::tuple&lt;&gt;{})</div><div class="ttdef"><b>Definition:</b> FirstOrderEllipticSolutionsTestHelpers.hpp:141</div></div>
+<div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt; double, 3 &gt;</a></div></div>
+<div class="ttc" id="anamespaceXcts_html_afc9a7d41a8c51fdc912cfc3e8196fa78"><div class="ttname"><a href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78">Xcts::Equations</a></div><div class="ttdeci">Equations</div><div class="ttdoc">Indicates a subset of the XCTS equations.</div><div class="ttdef"><b>Definition:</b> FluxesAndSources.hpp:24</div></div>
+<div class="ttc" id="aclassMesh_html"><div class="ttname"><a href="classMesh.html">Mesh</a></div><div class="ttdoc">Holds the number of grid points, basis, and quadrature in each direction of the computational grid.</div><div class="ttdef"><b>Definition:</b> Mesh.hpp:49</div></div>
+<div class="ttc" id="anamespaceXcts_html_a235c4dbcedba424b00d04d2905d4bee9a4e98dfef39bb5b4bbfec908085352ac4"><div class="ttname"><a href="namespaceXcts.html#a235c4dbcedba424b00d04d2905d4bee9a4e98dfef39bb5b4bbfec908085352ac4">Xcts::Geometry::FlatCartesian</a></div><div class="ttdeci">@ FlatCartesian</div><div class="ttdoc">Euclidean (flat) manifold with Cartesian coordinates, i.e. the conformal metric has components  in th...</div></div>
+<div class="ttc" id="anamespaceXcts_html_a235c4dbcedba424b00d04d2905d4bee9"><div class="ttname"><a href="namespaceXcts.html#a235c4dbcedba424b00d04d2905d4bee9">Xcts::Geometry</a></div><div class="ttdeci">Geometry</div><div class="ttdoc">Types of conformal geometries for the XCTS equations.</div><div class="ttdef"><b>Definition:</b> Geometry.hpp:8</div></div>
+<div class="ttc" id="anamespaceXcts_html_afc9a7d41a8c51fdc912cfc3e8196fa78ad8dbcb7f98b38c5c9f9a0ad33e94ec2a"><div class="ttname"><a href="namespaceXcts.html#afc9a7d41a8c51fdc912cfc3e8196fa78ad8dbcb7f98b38c5c9f9a0ad33e94ec2a">Xcts::Equations::Hamiltonian</a></div><div class="ttdeci">@ Hamiltonian</div><div class="ttdoc">Only the Hamiltonian constraint, solved for .</div></div>
+<div class="ttc" id="aNumericalAlgorithms_2Spectral_2Mesh_8hpp_html"><div class="ttname"><a href="NumericalAlgorithms_2Spectral_2Mesh_8hpp.html">Mesh.hpp</a></div></div>
+<div class="ttc" id="aclassdomain_1_1CoordinateMap_html"><div class="ttname"><a href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a></div><div class="ttdoc">A coordinate map or composition of coordinate maps.</div><div class="ttdef"><b>Definition:</b> CoordinateMap.hpp:240</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

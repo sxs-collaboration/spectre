@@ -1,0 +1,669 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Linear Solver</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">Linear Solver</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Algorithms to solve linear systems of equations.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceLinearSolver_1_1InnerProductImpls"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLinearSolver_1_1InnerProductImpls.html">LinearSolver::InnerProductImpls</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceLinearSolver"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLinearSolver.html">LinearSolver</a></td></tr>
+<tr class="memdesc:namespaceLinearSolver"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functionality for solving linear systems of equations. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceLinearSolver_1_1multigrid"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLinearSolver_1_1multigrid.html">LinearSolver::multigrid</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceLinearSolver_1_1Tags"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLinearSolver_1_1Tags.html">LinearSolver::Tags</a></td></tr>
+<tr class="memdesc:namespaceLinearSolver_1_1Tags"><td class="mdescLeft">&#160;</td><td class="mdescRight">The <a class="el" href="group__DataBoxGroup.html">DataBox</a> tags associated with the linear solver. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLinearSolver_1_1cg_1_1ConjugateGradient.html">LinearSolver::cg::ConjugateGradient&lt; Metavariables, FieldsTag, OptionsGroup, SourceTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A conjugate gradient solver for linear systems of equations \(Ax=b\) where the operator \(A\) is symmetric.  <a href="structLinearSolver_1_1cg_1_1ConjugateGradient.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLinearSolver_1_1gmres_1_1Gmres.html">LinearSolver::gmres::Gmres&lt; Metavariables, FieldsTag, OptionsGroup, Preconditioned, SourceTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A GMRES solver for nonsymmetric linear systems of equations \(Ax=b\).  <a href="structLinearSolver_1_1gmres_1_1Gmres.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLinearSolver_1_1Richardson_1_1Richardson.html">LinearSolver::Richardson::Richardson&lt; FieldsTag, OptionsGroup, SourceTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A simple Richardson scheme for solving a system of linear equations \(Ax=b\).  <a href="structLinearSolver_1_1Richardson_1_1Richardson.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html">LinearSolver::Schwarz::Schwarz&lt; FieldsTag, OptionsGroup, SubdomainOperator, SourceTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An additive <a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">Schwarz</a> subdomain solver for linear systems of equations \(Ax=b\).  <a href="structLinearSolver_1_1Schwarz_1_1Schwarz.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga9f4f80fb21f848e2fac02bebe6c1d1e0"><td class="memTemplParams" colspan="2">template&lt;typename Lhs , typename Rhs &gt; </td></tr>
+<tr class="memitem:ga9f4f80fb21f848e2fac02bebe6c1d1e0"><td class="memTemplItemLeft" align="right" valign="top">double&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__LinearSolverGroup.html#ga9f4f80fb21f848e2fac02bebe6c1d1e0">LinearSolver::inner_product</a> (const Lhs &amp;lhs, const Rhs &amp;rhs) noexcept</td></tr>
+<tr class="memdesc:ga9f4f80fb21f848e2fac02bebe6c1d1e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">The local part of the Euclidean inner product on the vector space w.r.t. which the addition and scalar multiplication of both <code>Lhs</code> and <code>Rhs</code> is defined.  <a href="group__LinearSolverGroup.html#ga9f4f80fb21f848e2fac02bebe6c1d1e0">More...</a><br /></td></tr>
+<tr class="separator:ga9f4f80fb21f848e2fac02bebe6c1d1e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4999951104dbc122fa90b34476ca2fc5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__LinearSolverGroup.html#ga4999951104dbc122fa90b34476ca2fc5">lapack::general_matrix_linear_solve</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt; rhs_in_solution_out, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classMatrix.html">Matrix</a> * &gt; matrix_operator, int number_of_rhs=0) noexcept</td></tr>
+<tr class="memdesc:ga4999951104dbc122fa90b34476ca2fc5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrapper for LAPACK dgesv, which solves the general linear equation \(A x = b\) by LUP (Lower-triangular, upper-triangular, and permutation) decomposition.  <a href="group__LinearSolverGroup.html#ga4999951104dbc122fa90b34476ca2fc5">More...</a><br /></td></tr>
+<tr class="separator:ga4999951104dbc122fa90b34476ca2fc5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf64b2245ff12d1073addc99edf159e4b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__LinearSolverGroup.html#gaf64b2245ff12d1073addc99edf159e4b">lapack::general_matrix_linear_solve</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt; rhs_in_solution_out, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; int &gt; * &gt; pivots, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classMatrix.html">Matrix</a> * &gt; matrix_operator, int number_of_rhs=0) noexcept</td></tr>
+<tr class="memdesc:gaf64b2245ff12d1073addc99edf159e4b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrapper for LAPACK dgesv, which solves the general linear equation \(A x = b\) by LUP (Lower-triangular, upper-triangular, and permutation) decomposition.  <a href="group__LinearSolverGroup.html#gaf64b2245ff12d1073addc99edf159e4b">More...</a><br /></td></tr>
+<tr class="separator:gaf64b2245ff12d1073addc99edf159e4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7407b50f2e68665359315fb5224be9dd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__LinearSolverGroup.html#ga7407b50f2e68665359315fb5224be9dd">lapack::general_matrix_linear_solve</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt; solution, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classMatrix.html">Matrix</a> * &gt; matrix_operator, const <a class="el" href="classDataVector.html">DataVector</a> &amp;rhs, int number_of_rhs=0) noexcept</td></tr>
+<tr class="memdesc:ga7407b50f2e68665359315fb5224be9dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrapper for LAPACK dgesv, which solves the general linear equation \(A x = b\) by LUP (Lower-triangular, upper-triangular, and permutation) decomposition.  <a href="group__LinearSolverGroup.html#ga7407b50f2e68665359315fb5224be9dd">More...</a><br /></td></tr>
+<tr class="separator:ga7407b50f2e68665359315fb5224be9dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga48ce158bca29c9fee8c9cafdacf8a42f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__LinearSolverGroup.html#ga48ce158bca29c9fee8c9cafdacf8a42f">lapack::general_matrix_linear_solve</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt; solution, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; int &gt; * &gt; pivots, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classMatrix.html">Matrix</a> * &gt; matrix_operator, const <a class="el" href="classDataVector.html">DataVector</a> &amp;rhs, int number_of_rhs=0) noexcept</td></tr>
+<tr class="memdesc:ga48ce158bca29c9fee8c9cafdacf8a42f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrapper for LAPACK dgesv, which solves the general linear equation \(A x = b\) by LUP (Lower-triangular, upper-triangular, and permutation) decomposition.  <a href="group__LinearSolverGroup.html#ga48ce158bca29c9fee8c9cafdacf8a42f">More...</a><br /></td></tr>
+<tr class="separator:ga48ce158bca29c9fee8c9cafdacf8a42f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga78866da65a52e699a2595d02805f914f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__LinearSolverGroup.html#ga78866da65a52e699a2595d02805f914f">lapack::general_matrix_linear_solve</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt; rhs_in_solution_out, const <a class="el" href="classMatrix.html">Matrix</a> &amp;matrix_operator, int number_of_rhs=0) noexcept</td></tr>
+<tr class="memdesc:ga78866da65a52e699a2595d02805f914f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrapper for LAPACK dgesv, which solves the general linear equation \(A x = b\) by LUP (Lower-triangular, upper-triangular, and permutation) decomposition.  <a href="group__LinearSolverGroup.html#ga78866da65a52e699a2595d02805f914f">More...</a><br /></td></tr>
+<tr class="separator:ga78866da65a52e699a2595d02805f914f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaeca12f7155929b86e251a6a75419fb0c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__LinearSolverGroup.html#gaeca12f7155929b86e251a6a75419fb0c">lapack::general_matrix_linear_solve</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt; solution, const <a class="el" href="classMatrix.html">Matrix</a> &amp;matrix_operator, const <a class="el" href="classDataVector.html">DataVector</a> &amp;rhs, int number_of_rhs=0) noexcept</td></tr>
+<tr class="memdesc:gaeca12f7155929b86e251a6a75419fb0c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrapper for LAPACK dgesv, which solves the general linear equation \(A x = b\) by LUP (Lower-triangular, upper-triangular, and permutation) decomposition.  <a href="group__LinearSolverGroup.html#gaeca12f7155929b86e251a6a75419fb0c">More...</a><br /></td></tr>
+<tr class="separator:gaeca12f7155929b86e251a6a75419fb0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>Algorithms to solve linear systems of equations. </p>
+<h3>Details</h3>
+<p>In a way, the linear solver is for elliptic systems what time stepping is for the evolution code. This is because the DG scheme for an elliptic system reduces to a linear system of equations of the type \(Ax=b\), where \(A\) is a global matrix representing the DG discretization of the problem. Since this is one equation for each node in the computational domain it becomes unfeasible to numerically invert the global matrix \(A\). Instead, we solve the problem iteratively so that we never need to construct \(A\) globally but only need \(Ax\) that can be evaluated locally by virtue of the DG formulation. This action of the operator is what we have to supply in each step of the iterative algorithms implemented here. It is where most of the computational cost goes and usually involves computing a volume contribution for each element and communicating fluxes with neighboring elements. Since the iterative algorithms typically scale badly with increasing grid size, a preconditioner \(P\) is needed in order to make \(P^{-1}A\) easier to invert.</p>
+<dl class="section note"><dt>Note</dt><dd>The smallest possible residual magnitude the linear solver can reach is the product between the machine epsilon and the condition number of the linear operator that is being inverted. Smaller residuals are numerical artifacts. Requiring an absolute or relative residual below this limit will likely make the linear solver run until it reaches its maximum number of iterations.</dd>
+<dd>
+Remember that when the linear operator \(A\) corresponds to a PDE discretization, decreasing the linear solver residual below the discretization error will not improve the numerical solution any further. I.e. the error \(e_k=x_k-x_\mathrm{analytic}\) to an analytic solution will be dominated by the linear solver residual at first, but even if the discretization \(Ax_k=b\) was exactly solved after some iteration \(k\), the discretization residual \(Ae_k=b-Ax_\mathrm{analytic}=r_\mathrm{discretization}\) would still remain. Therefore, ideally choose the absolute or relative residual criteria based on an estimate of the discretization residual.</dd></dl>
+<p>In the iterative algorithms we usually don't work with the physical field \(x\) directly. Instead we need to apply the operator to an internal variable defined by the respective algorithm. This variable is exposed as the <code><a class="el" href="structLinearSolver_1_1Tags_1_1Operand.html" title="The operand that the local linear operator  is applied to.">LinearSolver::Tags::Operand</a></code> prefix, and the algorithm expects that the computed operator action is written into <code><a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt;<a class="el" href="structLinearSolver_1_1Tags_1_1OperatorAppliedTo.html" title="The linear operator  applied to the data in Tag">LinearSolver::Tags::OperatorAppliedTo</a>, <a class="el" href="structLinearSolver_1_1Tags_1_1Operand.html" title="The operand that the local linear operator  is applied to.">LinearSolver::Tags::Operand</a>&lt;...&gt;&gt;</code> in each step. </p>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="ga78866da65a52e699a2595d02805f914f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga78866da65a52e699a2595d02805f914f">&#9670;&nbsp;</a></span>general_matrix_linear_solve() <span class="overload">[1/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lapack::general_matrix_linear_solve </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt;&#160;</td>
+          <td class="paramname"><em>rhs_in_solution_out</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMatrix.html">Matrix</a> &amp;&#160;</td>
+          <td class="paramname"><em>matrix_operator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>number_of_rhs</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Wrapper for LAPACK dgesv, which solves the general linear equation \(A x = b\) by LUP (Lower-triangular, upper-triangular, and permutation) decomposition. </p>
+<h3>Details</h3>
+<p>Several interfaces are provided with combinations of input parameters due to the versatility of the LAPACK utility.</p><ul>
+<li><code>rhs_in_solution_out</code> or <code>solution</code> : If the <code>rhs</code> <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> is not separately supplied, this single pass-by-pointer <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> acts as the input \( b\), and is overwritten with the solution \(x\); in this case <code>rhs_in_solution_out</code> must be sufficiently large to contain the solution. If <code>rhs</code> is separately supplied, <code>solution</code> will contain \(x\) at the end of the algorithm, and must be sufficiently large to contain the solution.</li>
+<li><code>rhs</code> (optional) : An input <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> representing \(b\) that is not overwritten.</li>
+<li><code>matrix_operator</code>: The <code><a class="el" href="classMatrix.html" title="A dynamically sized matrix of doubles with column-major storage.">Matrix</a></code> \(A\). If passed by pointer, this matrix will be 'destroyed' and overwritten with LU decomposition information. Optionally, a <code>pivots</code> vector may be passed by pointer so that the full LUP decomposition information can be recovered from the LAPACK output. If passed by const reference, the wrapper will make a copy so that LAPACK does not overwrite the supplied matrix.</li>
+<li><code>pivots</code> (optional) : a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;int&gt;</code>, passed by pointer, which will contain the permutation information necessary to reassemble the full matrix information if LAPACK is permitted to modify the input matrix in-place.</li>
+<li><code>number_of_rhs</code> : The number of columns of \(x\) and \(b\). This is thought of as the 'number of right-hand-sides' to be solved for. In most cases, that additional dimension can be inferred from the dimensionality of the matrix and the input vector(s), which occurs if <code>number_of_rhs</code> is set to 0 (default). If the provided <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> is an inappropriate size for that inference (i.e. is not a multiple of the largest dimension of the matrix), or if you only want to solve for the first <code>number_of_rhs</code> columns, the parameter <code>number_of_rhs</code> must be supplied.</li>
+</ul>
+<p>The function return <code>int</code> is the value provided by the <code>INFO</code> field of the LAPACK call. It is 0 for a successful linear solve, and nonzero values code for types of failures of the algorithm. See LAPACK documentation for further details about <code>dgesv</code>: <a href="http://www.netlib.org/lapack/">http://www.netlib.org/lapack/</a> </p>
+
+</div>
+</div>
+<a id="ga4999951104dbc122fa90b34476ca2fc5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4999951104dbc122fa90b34476ca2fc5">&#9670;&nbsp;</a></span>general_matrix_linear_solve() <span class="overload">[2/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lapack::general_matrix_linear_solve </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt;&#160;</td>
+          <td class="paramname"><em>rhs_in_solution_out</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classMatrix.html">Matrix</a> * &gt;&#160;</td>
+          <td class="paramname"><em>matrix_operator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>number_of_rhs</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Wrapper for LAPACK dgesv, which solves the general linear equation \(A x = b\) by LUP (Lower-triangular, upper-triangular, and permutation) decomposition. </p>
+<h3>Details</h3>
+<p>Several interfaces are provided with combinations of input parameters due to the versatility of the LAPACK utility.</p><ul>
+<li><code>rhs_in_solution_out</code> or <code>solution</code> : If the <code>rhs</code> <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> is not separately supplied, this single pass-by-pointer <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> acts as the input \( b\), and is overwritten with the solution \(x\); in this case <code>rhs_in_solution_out</code> must be sufficiently large to contain the solution. If <code>rhs</code> is separately supplied, <code>solution</code> will contain \(x\) at the end of the algorithm, and must be sufficiently large to contain the solution.</li>
+<li><code>rhs</code> (optional) : An input <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> representing \(b\) that is not overwritten.</li>
+<li><code>matrix_operator</code>: The <code><a class="el" href="classMatrix.html" title="A dynamically sized matrix of doubles with column-major storage.">Matrix</a></code> \(A\). If passed by pointer, this matrix will be 'destroyed' and overwritten with LU decomposition information. Optionally, a <code>pivots</code> vector may be passed by pointer so that the full LUP decomposition information can be recovered from the LAPACK output. If passed by const reference, the wrapper will make a copy so that LAPACK does not overwrite the supplied matrix.</li>
+<li><code>pivots</code> (optional) : a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;int&gt;</code>, passed by pointer, which will contain the permutation information necessary to reassemble the full matrix information if LAPACK is permitted to modify the input matrix in-place.</li>
+<li><code>number_of_rhs</code> : The number of columns of \(x\) and \(b\). This is thought of as the 'number of right-hand-sides' to be solved for. In most cases, that additional dimension can be inferred from the dimensionality of the matrix and the input vector(s), which occurs if <code>number_of_rhs</code> is set to 0 (default). If the provided <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> is an inappropriate size for that inference (i.e. is not a multiple of the largest dimension of the matrix), or if you only want to solve for the first <code>number_of_rhs</code> columns, the parameter <code>number_of_rhs</code> must be supplied.</li>
+</ul>
+<p>The function return <code>int</code> is the value provided by the <code>INFO</code> field of the LAPACK call. It is 0 for a successful linear solve, and nonzero values code for types of failures of the algorithm. See LAPACK documentation for further details about <code>dgesv</code>: <a href="http://www.netlib.org/lapack/">http://www.netlib.org/lapack/</a> </p>
+
+</div>
+</div>
+<a id="gaf64b2245ff12d1073addc99edf159e4b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf64b2245ff12d1073addc99edf159e4b">&#9670;&nbsp;</a></span>general_matrix_linear_solve() <span class="overload">[3/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lapack::general_matrix_linear_solve </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt;&#160;</td>
+          <td class="paramname"><em>rhs_in_solution_out</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; int &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>pivots</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classMatrix.html">Matrix</a> * &gt;&#160;</td>
+          <td class="paramname"><em>matrix_operator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>number_of_rhs</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Wrapper for LAPACK dgesv, which solves the general linear equation \(A x = b\) by LUP (Lower-triangular, upper-triangular, and permutation) decomposition. </p>
+<h3>Details</h3>
+<p>Several interfaces are provided with combinations of input parameters due to the versatility of the LAPACK utility.</p><ul>
+<li><code>rhs_in_solution_out</code> or <code>solution</code> : If the <code>rhs</code> <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> is not separately supplied, this single pass-by-pointer <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> acts as the input \( b\), and is overwritten with the solution \(x\); in this case <code>rhs_in_solution_out</code> must be sufficiently large to contain the solution. If <code>rhs</code> is separately supplied, <code>solution</code> will contain \(x\) at the end of the algorithm, and must be sufficiently large to contain the solution.</li>
+<li><code>rhs</code> (optional) : An input <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> representing \(b\) that is not overwritten.</li>
+<li><code>matrix_operator</code>: The <code><a class="el" href="classMatrix.html" title="A dynamically sized matrix of doubles with column-major storage.">Matrix</a></code> \(A\). If passed by pointer, this matrix will be 'destroyed' and overwritten with LU decomposition information. Optionally, a <code>pivots</code> vector may be passed by pointer so that the full LUP decomposition information can be recovered from the LAPACK output. If passed by const reference, the wrapper will make a copy so that LAPACK does not overwrite the supplied matrix.</li>
+<li><code>pivots</code> (optional) : a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;int&gt;</code>, passed by pointer, which will contain the permutation information necessary to reassemble the full matrix information if LAPACK is permitted to modify the input matrix in-place.</li>
+<li><code>number_of_rhs</code> : The number of columns of \(x\) and \(b\). This is thought of as the 'number of right-hand-sides' to be solved for. In most cases, that additional dimension can be inferred from the dimensionality of the matrix and the input vector(s), which occurs if <code>number_of_rhs</code> is set to 0 (default). If the provided <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> is an inappropriate size for that inference (i.e. is not a multiple of the largest dimension of the matrix), or if you only want to solve for the first <code>number_of_rhs</code> columns, the parameter <code>number_of_rhs</code> must be supplied.</li>
+</ul>
+<p>The function return <code>int</code> is the value provided by the <code>INFO</code> field of the LAPACK call. It is 0 for a successful linear solve, and nonzero values code for types of failures of the algorithm. See LAPACK documentation for further details about <code>dgesv</code>: <a href="http://www.netlib.org/lapack/">http://www.netlib.org/lapack/</a> </p>
+
+</div>
+</div>
+<a id="gaeca12f7155929b86e251a6a75419fb0c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaeca12f7155929b86e251a6a75419fb0c">&#9670;&nbsp;</a></span>general_matrix_linear_solve() <span class="overload">[4/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lapack::general_matrix_linear_solve </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt;&#160;</td>
+          <td class="paramname"><em>solution</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMatrix.html">Matrix</a> &amp;&#160;</td>
+          <td class="paramname"><em>matrix_operator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>rhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>number_of_rhs</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Wrapper for LAPACK dgesv, which solves the general linear equation \(A x = b\) by LUP (Lower-triangular, upper-triangular, and permutation) decomposition. </p>
+<h3>Details</h3>
+<p>Several interfaces are provided with combinations of input parameters due to the versatility of the LAPACK utility.</p><ul>
+<li><code>rhs_in_solution_out</code> or <code>solution</code> : If the <code>rhs</code> <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> is not separately supplied, this single pass-by-pointer <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> acts as the input \( b\), and is overwritten with the solution \(x\); in this case <code>rhs_in_solution_out</code> must be sufficiently large to contain the solution. If <code>rhs</code> is separately supplied, <code>solution</code> will contain \(x\) at the end of the algorithm, and must be sufficiently large to contain the solution.</li>
+<li><code>rhs</code> (optional) : An input <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> representing \(b\) that is not overwritten.</li>
+<li><code>matrix_operator</code>: The <code><a class="el" href="classMatrix.html" title="A dynamically sized matrix of doubles with column-major storage.">Matrix</a></code> \(A\). If passed by pointer, this matrix will be 'destroyed' and overwritten with LU decomposition information. Optionally, a <code>pivots</code> vector may be passed by pointer so that the full LUP decomposition information can be recovered from the LAPACK output. If passed by const reference, the wrapper will make a copy so that LAPACK does not overwrite the supplied matrix.</li>
+<li><code>pivots</code> (optional) : a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;int&gt;</code>, passed by pointer, which will contain the permutation information necessary to reassemble the full matrix information if LAPACK is permitted to modify the input matrix in-place.</li>
+<li><code>number_of_rhs</code> : The number of columns of \(x\) and \(b\). This is thought of as the 'number of right-hand-sides' to be solved for. In most cases, that additional dimension can be inferred from the dimensionality of the matrix and the input vector(s), which occurs if <code>number_of_rhs</code> is set to 0 (default). If the provided <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> is an inappropriate size for that inference (i.e. is not a multiple of the largest dimension of the matrix), or if you only want to solve for the first <code>number_of_rhs</code> columns, the parameter <code>number_of_rhs</code> must be supplied.</li>
+</ul>
+<p>The function return <code>int</code> is the value provided by the <code>INFO</code> field of the LAPACK call. It is 0 for a successful linear solve, and nonzero values code for types of failures of the algorithm. See LAPACK documentation for further details about <code>dgesv</code>: <a href="http://www.netlib.org/lapack/">http://www.netlib.org/lapack/</a> </p>
+
+</div>
+</div>
+<a id="ga7407b50f2e68665359315fb5224be9dd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7407b50f2e68665359315fb5224be9dd">&#9670;&nbsp;</a></span>general_matrix_linear_solve() <span class="overload">[5/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lapack::general_matrix_linear_solve </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt;&#160;</td>
+          <td class="paramname"><em>solution</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classMatrix.html">Matrix</a> * &gt;&#160;</td>
+          <td class="paramname"><em>matrix_operator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>rhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>number_of_rhs</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Wrapper for LAPACK dgesv, which solves the general linear equation \(A x = b\) by LUP (Lower-triangular, upper-triangular, and permutation) decomposition. </p>
+<h3>Details</h3>
+<p>Several interfaces are provided with combinations of input parameters due to the versatility of the LAPACK utility.</p><ul>
+<li><code>rhs_in_solution_out</code> or <code>solution</code> : If the <code>rhs</code> <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> is not separately supplied, this single pass-by-pointer <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> acts as the input \( b\), and is overwritten with the solution \(x\); in this case <code>rhs_in_solution_out</code> must be sufficiently large to contain the solution. If <code>rhs</code> is separately supplied, <code>solution</code> will contain \(x\) at the end of the algorithm, and must be sufficiently large to contain the solution.</li>
+<li><code>rhs</code> (optional) : An input <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> representing \(b\) that is not overwritten.</li>
+<li><code>matrix_operator</code>: The <code><a class="el" href="classMatrix.html" title="A dynamically sized matrix of doubles with column-major storage.">Matrix</a></code> \(A\). If passed by pointer, this matrix will be 'destroyed' and overwritten with LU decomposition information. Optionally, a <code>pivots</code> vector may be passed by pointer so that the full LUP decomposition information can be recovered from the LAPACK output. If passed by const reference, the wrapper will make a copy so that LAPACK does not overwrite the supplied matrix.</li>
+<li><code>pivots</code> (optional) : a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;int&gt;</code>, passed by pointer, which will contain the permutation information necessary to reassemble the full matrix information if LAPACK is permitted to modify the input matrix in-place.</li>
+<li><code>number_of_rhs</code> : The number of columns of \(x\) and \(b\). This is thought of as the 'number of right-hand-sides' to be solved for. In most cases, that additional dimension can be inferred from the dimensionality of the matrix and the input vector(s), which occurs if <code>number_of_rhs</code> is set to 0 (default). If the provided <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> is an inappropriate size for that inference (i.e. is not a multiple of the largest dimension of the matrix), or if you only want to solve for the first <code>number_of_rhs</code> columns, the parameter <code>number_of_rhs</code> must be supplied.</li>
+</ul>
+<p>The function return <code>int</code> is the value provided by the <code>INFO</code> field of the LAPACK call. It is 0 for a successful linear solve, and nonzero values code for types of failures of the algorithm. See LAPACK documentation for further details about <code>dgesv</code>: <a href="http://www.netlib.org/lapack/">http://www.netlib.org/lapack/</a> </p>
+
+</div>
+</div>
+<a id="ga48ce158bca29c9fee8c9cafdacf8a42f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga48ce158bca29c9fee8c9cafdacf8a42f">&#9670;&nbsp;</a></span>general_matrix_linear_solve() <span class="overload">[6/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lapack::general_matrix_linear_solve </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt;&#160;</td>
+          <td class="paramname"><em>solution</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; int &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>pivots</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classMatrix.html">Matrix</a> * &gt;&#160;</td>
+          <td class="paramname"><em>matrix_operator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>rhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>number_of_rhs</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Wrapper for LAPACK dgesv, which solves the general linear equation \(A x = b\) by LUP (Lower-triangular, upper-triangular, and permutation) decomposition. </p>
+<h3>Details</h3>
+<p>Several interfaces are provided with combinations of input parameters due to the versatility of the LAPACK utility.</p><ul>
+<li><code>rhs_in_solution_out</code> or <code>solution</code> : If the <code>rhs</code> <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> is not separately supplied, this single pass-by-pointer <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> acts as the input \( b\), and is overwritten with the solution \(x\); in this case <code>rhs_in_solution_out</code> must be sufficiently large to contain the solution. If <code>rhs</code> is separately supplied, <code>solution</code> will contain \(x\) at the end of the algorithm, and must be sufficiently large to contain the solution.</li>
+<li><code>rhs</code> (optional) : An input <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> representing \(b\) that is not overwritten.</li>
+<li><code>matrix_operator</code>: The <code><a class="el" href="classMatrix.html" title="A dynamically sized matrix of doubles with column-major storage.">Matrix</a></code> \(A\). If passed by pointer, this matrix will be 'destroyed' and overwritten with LU decomposition information. Optionally, a <code>pivots</code> vector may be passed by pointer so that the full LUP decomposition information can be recovered from the LAPACK output. If passed by const reference, the wrapper will make a copy so that LAPACK does not overwrite the supplied matrix.</li>
+<li><code>pivots</code> (optional) : a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;int&gt;</code>, passed by pointer, which will contain the permutation information necessary to reassemble the full matrix information if LAPACK is permitted to modify the input matrix in-place.</li>
+<li><code>number_of_rhs</code> : The number of columns of \(x\) and \(b\). This is thought of as the 'number of right-hand-sides' to be solved for. In most cases, that additional dimension can be inferred from the dimensionality of the matrix and the input vector(s), which occurs if <code>number_of_rhs</code> is set to 0 (default). If the provided <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> is an inappropriate size for that inference (i.e. is not a multiple of the largest dimension of the matrix), or if you only want to solve for the first <code>number_of_rhs</code> columns, the parameter <code>number_of_rhs</code> must be supplied.</li>
+</ul>
+<p>The function return <code>int</code> is the value provided by the <code>INFO</code> field of the LAPACK call. It is 0 for a successful linear solve, and nonzero values code for types of failures of the algorithm. See LAPACK documentation for further details about <code>dgesv</code>: <a href="http://www.netlib.org/lapack/">http://www.netlib.org/lapack/</a> </p>
+
+</div>
+</div>
+<a id="ga9f4f80fb21f848e2fac02bebe6c1d1e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9f4f80fb21f848e2fac02bebe6c1d1e0">&#9670;&nbsp;</a></span>inner_product()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Lhs , typename Rhs &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double LinearSolver::inner_product </td>
+          <td>(</td>
+          <td class="paramtype">const Lhs &amp;&#160;</td>
+          <td class="paramname"><em>lhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Rhs &amp;&#160;</td>
+          <td class="paramname"><em>rhs</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The local part of the Euclidean inner product on the vector space w.r.t. which the addition and scalar multiplication of both <code>Lhs</code> and <code>Rhs</code> is defined. </p>
+<h3>Details</h3>
+<p>The linear solver works under the following assumptions:</p><ul>
+<li>The data represented by <code>lhs</code> and <code>rhs</code> can each be interpreted as the local chunk of a vector of the same vector space \(V\). <em>Local</em> means there are vectors \(q, p\in V\) such that <code>lhs</code> and <code>rhs</code> represent the components of these vectors w.r.t. a subset \(B_i\) of a basis \(B\subset V\).</li>
+<li>The <code>*</code> and <code>+</code> operators of <code>Lhs</code> and <code>Rhs</code> implement the scalar multiplication and addition in the vector space <em>locally</em>, i.e. restricted to \(B_i\) in the above sense.</li>
+<li>The inner product is the local part \(\langle p,q\rangle|_{B_i}\) of the standard Euclidean dot product in the vector space so that globally it is \(\langle p,q\rangle=\sum_{i}\langle p,q\rangle|_{B_i}\) for \(B=\mathop{\dot{\bigcup}}_i B_i\).</li>
+</ul>
+<p>In practice this means that the full vectors \(p\) and \(q\) can be distributed on many elements, where each only holds local chunks <code>lhs</code> and <code>rhs</code> of the components. Scalar multiplication and addition can be performed locally as expected, but computing the full inner product requires a global reduction over all elements that sums their local <code>inner_product</code>s. </p>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

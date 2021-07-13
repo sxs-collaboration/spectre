@@ -1,0 +1,347 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: RadiationTransport::M1Grey::Solutions::ConstantM1 Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceRadiationTransport.html">RadiationTransport</a></li><li class="navelem"><a class="el" href="namespaceRadiationTransport_1_1M1Grey.html">M1Grey</a></li><li class="navelem"><a class="el" href="namespaceRadiationTransport_1_1M1Grey_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="classRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1.html">ConstantM1</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">RadiationTransport::M1Grey::Solutions::ConstantM1 Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Constant solution to M1 equations in Minkowski spacetime.  
+ <a href="classRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ConstantM1_8hpp_source.html">ConstantM1.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1_1_1ComovingEnergyDensity.html">ComovingEnergyDensity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The radiation comoving energy density.  <a href="structRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1_1_1ComovingEnergyDensity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1_1_1MeanVelocity.html">MeanVelocity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The mean flow velocity.  <a href="structRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1_1_1MeanVelocity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a067f952764e6ff4107e21a750b7a80e6"><td class="memItemLeft" align="right" valign="top"><a id="a067f952764e6ff4107e21a750b7a80e6"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1_1_1MeanVelocity.html">MeanVelocity</a>, <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1_1_1ComovingEnergyDensity.html">ComovingEnergyDensity</a> &gt;</td></tr>
+<tr class="separator:a067f952764e6ff4107e21a750b7a80e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a5324e274d21a2cae070bbd3bba4346a3"><td class="memItemLeft" align="right" valign="top"><a id="a5324e274d21a2cae070bbd3bba4346a3"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ConstantM1</b> (const <a class="el" href="classRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1.html">ConstantM1</a> &amp;)=delete</td></tr>
+<tr class="separator:a5324e274d21a2cae070bbd3bba4346a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb36b8df80e475d976ef29055b76a7cc"><td class="memItemLeft" align="right" valign="top"><a id="aeb36b8df80e475d976ef29055b76a7cc"></a>
+<a class="el" href="classRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1.html">ConstantM1</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1.html">ConstantM1</a> &amp;)=delete</td></tr>
+<tr class="separator:aeb36b8df80e475d976ef29055b76a7cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae544674ce6bf90030e3fff5f614b2e07"><td class="memItemLeft" align="right" valign="top"><a id="ae544674ce6bf90030e3fff5f614b2e07"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ConstantM1</b> (<a class="el" href="classRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1.html">ConstantM1</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:ae544674ce6bf90030e3fff5f614b2e07"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a34f48c54387a694750d225bcf68200d3"><td class="memItemLeft" align="right" valign="top"><a id="a34f48c54387a694750d225bcf68200d3"></a>
+<a class="el" href="classRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1.html">ConstantM1</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1.html">ConstantM1</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a34f48c54387a694750d225bcf68200d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade7f7a72d93c3b6b13ce1bac0616438d"><td class="memItemLeft" align="right" valign="top"><a id="ade7f7a72d93c3b6b13ce1bac0616438d"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ConstantM1</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;mean_velocity, double comoving_energy_density) noexcept</td></tr>
+<tr class="separator:ade7f7a72d93c3b6b13ce1bac0616438d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a87c3b180be7cf938114ff0e192871178"><td class="memItemLeft" align="right" valign="top"><a id="a87c3b180be7cf938114ff0e192871178"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ConstantM1</b> (CkMigrateMessage *) noexcept</td></tr>
+<tr class="separator:a87c3b180be7cf938114ff0e192871178"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3891280ca398f1b3408156df509a4fb2"><td class="memTemplParams" colspan="2"><a id="a3891280ca398f1b3408156df509a4fb2"></a>
+template&lt;typename... Tags&gt; </td></tr>
+<tr class="memitem:a3891280ca398f1b3408156df509a4fb2"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1.html#a3891280ca398f1b3408156df509a4fb2">variables</a> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;x, double t, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:a3891280ca398f1b3408156df509a4fb2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a collection of fluid and neutrino variables at <code>(x, t)</code> <br /></td></tr>
+<tr class="separator:a3891280ca398f1b3408156df509a4fb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a029db5cc699af6ca823f4f274dac7623"><td class="memTemplParams" colspan="2"><a id="a029db5cc699af6ca823f4f274dac7623"></a>
+template&lt;typename Tag &gt; </td></tr>
+<tr class="memitem:a029db5cc699af6ca823f4f274dac7623"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tag &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1.html#a029db5cc699af6ca823f4f274dac7623">variables</a> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;x, double t, tmpl::list&lt; Tag &gt;) const noexcept</td></tr>
+<tr class="memdesc:a029db5cc699af6ca823f4f274dac7623"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the metric variables. <br /></td></tr>
+<tr class="separator:a029db5cc699af6ca823f4f274dac7623"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d512c6f6e46d9d90b69c019d4912d7f"><td class="memItemLeft" align="right" valign="top"><a id="a0d512c6f6e46d9d90b69c019d4912d7f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;) noexcept</td></tr>
+<tr class="separator:a0d512c6f6e46d9d90b69c019d4912d7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ab5e8d4ff47ece3bd36e851d60f789db7"><td class="memTemplParams" colspan="2"><a id="ab5e8d4ff47ece3bd36e851d60f789db7"></a>
+template&lt;typename NeutrinoSpecies &gt; </td></tr>
+<tr class="memitem:ab5e8d4ff47ece3bd36e851d60f789db7"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1.html#ab5e8d4ff47ece3bd36e851d60f789db7">variables</a> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;x, double t, tmpl::list&lt; <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeE.html">RadiationTransport::M1Grey::Tags::TildeE</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeE.html">RadiationTransport::M1Grey::Tags::TildeE</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;&gt;</td></tr>
+<tr class="memdesc:ab5e8d4ff47ece3bd36e851d60f789db7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve fluid and neutrino variables at <code>(x, t)</code> <br /></td></tr>
+<tr class="separator:ab5e8d4ff47ece3bd36e851d60f789db7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a51d7895ed68ec2f9f5995dcf645b1d"><td class="memTemplParams" colspan="2"><a id="a5a51d7895ed68ec2f9f5995dcf645b1d"></a>
+template&lt;typename NeutrinoSpecies &gt; </td></tr>
+<tr class="memitem:a5a51d7895ed68ec2f9f5995dcf645b1d"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1.html#a5a51d7895ed68ec2f9f5995dcf645b1d">variables</a> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;x, double t, tmpl::list&lt; <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeS.html">RadiationTransport::M1Grey::Tags::TildeS</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1TildeS.html">RadiationTransport::M1Grey::Tags::TildeS</a>&lt; <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, NeutrinoSpecies &gt;&gt;</td></tr>
+<tr class="memdesc:a5a51d7895ed68ec2f9f5995dcf645b1d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve fluid and neutrino variables at <code>(x, t)</code> <br /></td></tr>
+<tr class="separator:a5a51d7895ed68ec2f9f5995dcf645b1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ada973a20d1f8d478dd0d567dde3482dd"><td class="memTemplParams" colspan="2"><a id="ada973a20d1f8d478dd0d567dde3482dd"></a>
+template&lt;typename NeutrinoSpecies &gt; </td></tr>
+<tr class="memitem:ada973a20d1f8d478dd0d567dde3482dd"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1.html#ada973a20d1f8d478dd0d567dde3482dd">variables</a> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;x, double t, tmpl::list&lt; <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1GreyEmissivity.html">RadiationTransport::M1Grey::Tags::GreyEmissivity</a>&lt; NeutrinoSpecies &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1GreyEmissivity.html">RadiationTransport::M1Grey::Tags::GreyEmissivity</a>&lt; NeutrinoSpecies &gt;&gt;</td></tr>
+<tr class="memdesc:ada973a20d1f8d478dd0d567dde3482dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve fluid and neutrino variables at <code>(x, t)</code> <br /></td></tr>
+<tr class="separator:ada973a20d1f8d478dd0d567dde3482dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc01ee5b1d6d5dd18f5e558629a7c363"><td class="memTemplParams" colspan="2"><a id="afc01ee5b1d6d5dd18f5e558629a7c363"></a>
+template&lt;typename NeutrinoSpecies &gt; </td></tr>
+<tr class="memitem:afc01ee5b1d6d5dd18f5e558629a7c363"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1.html#afc01ee5b1d6d5dd18f5e558629a7c363">variables</a> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;x, double t, tmpl::list&lt; <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1GreyAbsorptionOpacity.html">RadiationTransport::M1Grey::Tags::GreyAbsorptionOpacity</a>&lt; NeutrinoSpecies &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1GreyAbsorptionOpacity.html">RadiationTransport::M1Grey::Tags::GreyAbsorptionOpacity</a>&lt; NeutrinoSpecies &gt;&gt;</td></tr>
+<tr class="memdesc:afc01ee5b1d6d5dd18f5e558629a7c363"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve fluid and neutrino variables at <code>(x, t)</code> <br /></td></tr>
+<tr class="separator:afc01ee5b1d6d5dd18f5e558629a7c363"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71b1f3df3e71fb96a081698fc0ee962e"><td class="memTemplParams" colspan="2"><a id="a71b1f3df3e71fb96a081698fc0ee962e"></a>
+template&lt;typename NeutrinoSpecies &gt; </td></tr>
+<tr class="memitem:a71b1f3df3e71fb96a081698fc0ee962e"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1.html#a71b1f3df3e71fb96a081698fc0ee962e">variables</a> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;x, double t, tmpl::list&lt; <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1GreyScatteringOpacity.html">RadiationTransport::M1Grey::Tags::GreyScatteringOpacity</a>&lt; NeutrinoSpecies &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structRadiationTransport_1_1M1Grey_1_1Tags_1_1GreyScatteringOpacity.html">RadiationTransport::M1Grey::Tags::GreyScatteringOpacity</a>&lt; NeutrinoSpecies &gt;&gt;</td></tr>
+<tr class="memdesc:a71b1f3df3e71fb96a081698fc0ee962e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve fluid and neutrino variables at <code>(x, t)</code> <br /></td></tr>
+<tr class="separator:a71b1f3df3e71fb96a081698fc0ee962e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad54950458074f166886e7c0fb9064c94"><td class="memItemLeft" align="right" valign="top"><a id="ad54950458074f166886e7c0fb9064c94"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1.html#ad54950458074f166886e7c0fb9064c94">variables</a> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;x, double t, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt;</td></tr>
+<tr class="memdesc:ad54950458074f166886e7c0fb9064c94"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve fluid and neutrino variables at <code>(x, t)</code> <br /></td></tr>
+<tr class="separator:ad54950458074f166886e7c0fb9064c94"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e8cb3a8f04080f92f82eca8e686ea28"><td class="memItemLeft" align="right" valign="top"><a id="a2e8cb3a8f04080f92f82eca8e686ea28"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1.html#a2e8cb3a8f04080f92f82eca8e686ea28">variables</a> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;x, double t, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt;&gt;) const noexcept -&gt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt;&gt;</td></tr>
+<tr class="memdesc:a2e8cb3a8f04080f92f82eca8e686ea28"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve fluid and neutrino variables at <code>(x, t)</code> <br /></td></tr>
+<tr class="separator:a2e8cb3a8f04080f92f82eca8e686ea28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a26811ba804530a12d8e7ac5829225ee6"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a26811ba804530a12d8e7ac5829225ee6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a4a488cdf0ed6b6b635370eb9c8172720"><td class="memItemLeft" align="right" valign="top"><a id="a4a488cdf0ed6b6b635370eb9c8172720"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1.html">ConstantM1</a> &amp;lhs, const <a class="el" href="classRadiationTransport_1_1M1Grey_1_1Solutions_1_1ConstantM1.html">ConstantM1</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a4a488cdf0ed6b6b635370eb9c8172720"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Constant solution to M1 equations in Minkowski spacetime. </p>
+<p>An analytic solution to the 3-D M1 system. The user specifies the mean flow velocity of the fluid and the radiation energy density in the fluid frame J. The radiation is taken to be in equilibrium with the fluid (i.e. comoving, with an isotropic pressure P=J/3) </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a26811ba804530a12d8e7ac5829225ee6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26811ba804530a12d8e7ac5829225ee6">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> RadiationTransport::M1Grey::Solutions::ConstantM1::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Constant radiation field in equilibrium with fluid, in Minkowski &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;spacetime.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticSolutions/RadiationTransport/M1Grey/<a class="el" href="ConstantM1_8hpp_source.html">ConstantM1.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

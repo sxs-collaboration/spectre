@@ -1,0 +1,798 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Performance, Efficiency, and Optimizations</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#define-members">Macros</a>  </div>
+  <div class="headertitle">
+<div class="title">Performance, Efficiency, and Optimizations</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Classes and functions useful for performance optimizations.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:ga3c565a7e28ffef00dc80da15e5b61f3c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#ga3c565a7e28ffef00dc80da15e5b61f3c">VARIABLE_CAUSES_CLANG_FPE</a>(var)&#160;&#160;&#160;((void)(var))</td></tr>
+<tr class="separator:ga3c565a7e28ffef00dc80da15e5b61f3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad37486b3abf10556ab0487bf2189da5d"><td class="memTemplParams" colspan="2">template&lt;size_t N, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:gad37486b3abf10556ab0487bf2189da5d"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#gad37486b3abf10556ab0487bf2189da5d">Tags::TempScalar</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; DataType &gt; &gt;</td></tr>
+<tr class="separator:gad37486b3abf10556ab0487bf2189da5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga68c6155aed404de3cf6f67370e344f26"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:ga68c6155aed404de3cf6f67370e344f26"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#ga68c6155aed404de3cf6f67370e344f26">Tags::Tempa</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::a&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:ga68c6155aed404de3cf6f67370e344f26"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0324614c5b505682981302281f69955c"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:ga0324614c5b505682981302281f69955c"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#ga0324614c5b505682981302281f69955c">Tags::TempA</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::A&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:ga0324614c5b505682981302281f69955c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabd18612ca2a92e3a2c83a66d9e2b0f2b"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:gabd18612ca2a92e3a2c83a66d9e2b0f2b"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#gabd18612ca2a92e3a2c83a66d9e2b0f2b">Tags::Tempi</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::i&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:gabd18612ca2a92e3a2c83a66d9e2b0f2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga111ad3cf830a13269ce6816d188ff0f0"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:ga111ad3cf830a13269ce6816d188ff0f0"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#ga111ad3cf830a13269ce6816d188ff0f0">Tags::TempI</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::I&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:ga111ad3cf830a13269ce6816d188ff0f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2af1bda6fc3fb29377749e8b73a6a06e"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:ga2af1bda6fc3fb29377749e8b73a6a06e"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#ga2af1bda6fc3fb29377749e8b73a6a06e">Tags::Tempab</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::ab&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:ga2af1bda6fc3fb29377749e8b73a6a06e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0cdcc689d6043eb70811c75bbec696d1"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:ga0cdcc689d6043eb70811c75bbec696d1"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#ga0cdcc689d6043eb70811c75bbec696d1">Tags::TempaB</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::aB&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:ga0cdcc689d6043eb70811c75bbec696d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga77d76e064394817d3f9d04dc1444180a"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:ga77d76e064394817d3f9d04dc1444180a"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#ga77d76e064394817d3f9d04dc1444180a">Tags::TempAb</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::Ab&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:ga77d76e064394817d3f9d04dc1444180a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4e35b23650752f0f74431110df328f50"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:ga4e35b23650752f0f74431110df328f50"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#ga4e35b23650752f0f74431110df328f50">Tags::TempAB</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::AB&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:ga4e35b23650752f0f74431110df328f50"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadafd9a7ea7edb0a8b9c561d465571705"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:gadafd9a7ea7edb0a8b9c561d465571705"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#gadafd9a7ea7edb0a8b9c561d465571705">Tags::Tempij</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::ij&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:gadafd9a7ea7edb0a8b9c561d465571705"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad425ac2c96af7f185f33a4625e3bdb7a"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:gad425ac2c96af7f185f33a4625e3bdb7a"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#gad425ac2c96af7f185f33a4625e3bdb7a">Tags::TempiJ</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::iJ&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:gad425ac2c96af7f185f33a4625e3bdb7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0b00914e0ac2e3910c44b579ba410864"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:ga0b00914e0ac2e3910c44b579ba410864"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#ga0b00914e0ac2e3910c44b579ba410864">Tags::TempIj</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::Ij&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:ga0b00914e0ac2e3910c44b579ba410864"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga319cc0326f679493ce643bd7e69719b6"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:ga319cc0326f679493ce643bd7e69719b6"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#ga319cc0326f679493ce643bd7e69719b6">Tags::TempIJ</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::IJ&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:ga319cc0326f679493ce643bd7e69719b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae4345b78d3bc525faae235c67db4e100"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:gae4345b78d3bc525faae235c67db4e100"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#gae4345b78d3bc525faae235c67db4e100">Tags::Tempia</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::ia&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:gae4345b78d3bc525faae235c67db4e100"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga66bf5eacb43cc3a22f2cc9cb9b71ff16"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:ga66bf5eacb43cc3a22f2cc9cb9b71ff16"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#ga66bf5eacb43cc3a22f2cc9cb9b71ff16">Tags::Tempaa</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::aa&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:ga66bf5eacb43cc3a22f2cc9cb9b71ff16"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5cdb396aa93c964a7d0714fd7815c4ae"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:ga5cdb396aa93c964a7d0714fd7815c4ae"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#ga5cdb396aa93c964a7d0714fd7815c4ae">Tags::TempAA</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::AA&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:ga5cdb396aa93c964a7d0714fd7815c4ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf48abdfc11b9dff08de1c43e090eaec5"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:gaf48abdfc11b9dff08de1c43e090eaec5"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#gaf48abdfc11b9dff08de1c43e090eaec5">Tags::Tempii</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::ii&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:gaf48abdfc11b9dff08de1c43e090eaec5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4f7497c8d0f6a6b0ac9c7d2854397f97"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:ga4f7497c8d0f6a6b0ac9c7d2854397f97"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#ga4f7497c8d0f6a6b0ac9c7d2854397f97">Tags::TempII</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::II&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:ga4f7497c8d0f6a6b0ac9c7d2854397f97"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaed109731abef3893f39c239c73aa7064"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:gaed109731abef3893f39c239c73aa7064"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#gaed109731abef3893f39c239c73aa7064">Tags::Tempijj</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::ijj&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:gaed109731abef3893f39c239c73aa7064"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacf33302e7681997a7cf97bc8e1c73c60"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:gacf33302e7681997a7cf97bc8e1c73c60"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#gacf33302e7681997a7cf97bc8e1c73c60">Tags::TempIjj</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::Ijj&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:gacf33302e7681997a7cf97bc8e1c73c60"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga888f2a62a7302f144da579039242ead3"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:ga888f2a62a7302f144da579039242ead3"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#ga888f2a62a7302f144da579039242ead3">Tags::Tempijk</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::ijk&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:ga888f2a62a7302f144da579039242ead3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf16c633048900945b27487ccef326322"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:gaf16c633048900945b27487ccef326322"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#gaf16c633048900945b27487ccef326322">Tags::TempijK</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::ijK&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:gaf16c633048900945b27487ccef326322"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga816dc3c27a68f79492633ac66d9a9d41"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:ga816dc3c27a68f79492633ac66d9a9d41"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#ga816dc3c27a68f79492633ac66d9a9d41">Tags::Tempiaa</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::iaa&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:ga816dc3c27a68f79492633ac66d9a9d41"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga12dbdbef7a0d10910ec27f3ed7f469ed"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:ga12dbdbef7a0d10910ec27f3ed7f469ed"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#ga12dbdbef7a0d10910ec27f3ed7f469ed">Tags::TempIaa</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::Iaa&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:ga12dbdbef7a0d10910ec27f3ed7f469ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4310d8cd7f1b60ca143823a437d8a021"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:ga4310d8cd7f1b60ca143823a437d8a021"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#ga4310d8cd7f1b60ca143823a437d8a021">Tags::TempiaB</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::iaB&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:ga4310d8cd7f1b60ca143823a437d8a021"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9f093df8f321ad4b5a0d6d7f993d3c95"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:ga9f093df8f321ad4b5a0d6d7f993d3c95"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#ga9f093df8f321ad4b5a0d6d7f993d3c95">Tags::Tempabb</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::abb&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:ga9f093df8f321ad4b5a0d6d7f993d3c95"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga445322060ccb5afcb7cb2681645e2154"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:ga445322060ccb5afcb7cb2681645e2154"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#ga445322060ccb5afcb7cb2681645e2154">Tags::TempabC</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::abC&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:ga445322060ccb5afcb7cb2681645e2154"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga67f4a4326ea8e78dac22c9651be1a809"><td class="memTemplParams" colspan="2">template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </td></tr>
+<tr class="memitem:ga67f4a4326ea8e78dac22c9651be1a809"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__PeoGroup.html#ga67f4a4326ea8e78dac22c9651be1a809">Tags::Tempijaa</a> = <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt; N, tnsr::ijaa&lt; DataType, SpatialDim, Fr &gt; &gt;</td></tr>
+<tr class="separator:ga67f4a4326ea8e78dac22c9651be1a809"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>Classes and functions useful for performance optimizations. </p>
+<h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="ga3c565a7e28ffef00dc80da15e5b61f3c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3c565a7e28ffef00dc80da15e5b61f3c">&#9670;&nbsp;</a></span>VARIABLE_CAUSES_CLANG_FPE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define VARIABLE_CAUSES_CLANG_FPE</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">var</td><td>)</td>
+          <td>&#160;&#160;&#160;((void)(var))</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Clang's optimizer has a known bug that sometimes produces spurious FPEs. This indicates that the variable <code>var</code> can trigger that bug and prevents some optimizations. This is fixed upstream in Clang 11. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Typedef Documentation</h2>
+<a id="ga68c6155aed404de3cf6f67370e344f26"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga68c6155aed404de3cf6f67370e344f26">&#9670;&nbsp;</a></span>Tempa</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#ga68c6155aed404de3cf6f67370e344f26">Tags::Tempa</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::a&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="ga0324614c5b505682981302281f69955c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0324614c5b505682981302281f69955c">&#9670;&nbsp;</a></span>TempA</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#ga0324614c5b505682981302281f69955c">Tags::TempA</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::A&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="ga66bf5eacb43cc3a22f2cc9cb9b71ff16"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga66bf5eacb43cc3a22f2cc9cb9b71ff16">&#9670;&nbsp;</a></span>Tempaa</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#ga66bf5eacb43cc3a22f2cc9cb9b71ff16">Tags::Tempaa</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::aa&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="ga5cdb396aa93c964a7d0714fd7815c4ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5cdb396aa93c964a7d0714fd7815c4ae">&#9670;&nbsp;</a></span>TempAA</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#ga5cdb396aa93c964a7d0714fd7815c4ae">Tags::TempAA</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::AA&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="ga2af1bda6fc3fb29377749e8b73a6a06e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2af1bda6fc3fb29377749e8b73a6a06e">&#9670;&nbsp;</a></span>Tempab</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#ga2af1bda6fc3fb29377749e8b73a6a06e">Tags::Tempab</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::ab&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="ga0cdcc689d6043eb70811c75bbec696d1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0cdcc689d6043eb70811c75bbec696d1">&#9670;&nbsp;</a></span>TempaB</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#ga0cdcc689d6043eb70811c75bbec696d1">Tags::TempaB</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::aB&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="ga77d76e064394817d3f9d04dc1444180a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga77d76e064394817d3f9d04dc1444180a">&#9670;&nbsp;</a></span>TempAb</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#ga77d76e064394817d3f9d04dc1444180a">Tags::TempAb</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::Ab&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="ga4e35b23650752f0f74431110df328f50"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4e35b23650752f0f74431110df328f50">&#9670;&nbsp;</a></span>TempAB</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#ga4e35b23650752f0f74431110df328f50">Tags::TempAB</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::AB&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="ga9f093df8f321ad4b5a0d6d7f993d3c95"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9f093df8f321ad4b5a0d6d7f993d3c95">&#9670;&nbsp;</a></span>Tempabb</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#ga9f093df8f321ad4b5a0d6d7f993d3c95">Tags::Tempabb</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::abb&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="ga445322060ccb5afcb7cb2681645e2154"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga445322060ccb5afcb7cb2681645e2154">&#9670;&nbsp;</a></span>TempabC</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#ga445322060ccb5afcb7cb2681645e2154">Tags::TempabC</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::abC&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="gabd18612ca2a92e3a2c83a66d9e2b0f2b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gabd18612ca2a92e3a2c83a66d9e2b0f2b">&#9670;&nbsp;</a></span>Tempi</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#gabd18612ca2a92e3a2c83a66d9e2b0f2b">Tags::Tempi</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::i&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="ga111ad3cf830a13269ce6816d188ff0f0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga111ad3cf830a13269ce6816d188ff0f0">&#9670;&nbsp;</a></span>TempI</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#ga111ad3cf830a13269ce6816d188ff0f0">Tags::TempI</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::I&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="gae4345b78d3bc525faae235c67db4e100"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae4345b78d3bc525faae235c67db4e100">&#9670;&nbsp;</a></span>Tempia</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#gae4345b78d3bc525faae235c67db4e100">Tags::Tempia</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::ia&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="ga816dc3c27a68f79492633ac66d9a9d41"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga816dc3c27a68f79492633ac66d9a9d41">&#9670;&nbsp;</a></span>Tempiaa</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#ga816dc3c27a68f79492633ac66d9a9d41">Tags::Tempiaa</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::iaa&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="ga12dbdbef7a0d10910ec27f3ed7f469ed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga12dbdbef7a0d10910ec27f3ed7f469ed">&#9670;&nbsp;</a></span>TempIaa</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#ga12dbdbef7a0d10910ec27f3ed7f469ed">Tags::TempIaa</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::Iaa&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="ga4310d8cd7f1b60ca143823a437d8a021"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4310d8cd7f1b60ca143823a437d8a021">&#9670;&nbsp;</a></span>TempiaB</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#ga4310d8cd7f1b60ca143823a437d8a021">Tags::TempiaB</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::iaB&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="gaf48abdfc11b9dff08de1c43e090eaec5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf48abdfc11b9dff08de1c43e090eaec5">&#9670;&nbsp;</a></span>Tempii</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#gaf48abdfc11b9dff08de1c43e090eaec5">Tags::Tempii</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::ii&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="ga4f7497c8d0f6a6b0ac9c7d2854397f97"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4f7497c8d0f6a6b0ac9c7d2854397f97">&#9670;&nbsp;</a></span>TempII</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#ga4f7497c8d0f6a6b0ac9c7d2854397f97">Tags::TempII</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::II&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="gadafd9a7ea7edb0a8b9c561d465571705"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadafd9a7ea7edb0a8b9c561d465571705">&#9670;&nbsp;</a></span>Tempij</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#gadafd9a7ea7edb0a8b9c561d465571705">Tags::Tempij</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::ij&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="gad425ac2c96af7f185f33a4625e3bdb7a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad425ac2c96af7f185f33a4625e3bdb7a">&#9670;&nbsp;</a></span>TempiJ</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#gad425ac2c96af7f185f33a4625e3bdb7a">Tags::TempiJ</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::iJ&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="ga0b00914e0ac2e3910c44b579ba410864"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0b00914e0ac2e3910c44b579ba410864">&#9670;&nbsp;</a></span>TempIj</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#ga0b00914e0ac2e3910c44b579ba410864">Tags::TempIj</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::Ij&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="ga319cc0326f679493ce643bd7e69719b6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga319cc0326f679493ce643bd7e69719b6">&#9670;&nbsp;</a></span>TempIJ</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#ga319cc0326f679493ce643bd7e69719b6">Tags::TempIJ</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::IJ&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="ga67f4a4326ea8e78dac22c9651be1a809"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga67f4a4326ea8e78dac22c9651be1a809">&#9670;&nbsp;</a></span>Tempijaa</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#ga67f4a4326ea8e78dac22c9651be1a809">Tags::Tempijaa</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::ijaa&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="gaed109731abef3893f39c239c73aa7064"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaed109731abef3893f39c239c73aa7064">&#9670;&nbsp;</a></span>Tempijj</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#gaed109731abef3893f39c239c73aa7064">Tags::Tempijj</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::ijj&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="gacf33302e7681997a7cf97bc8e1c73c60"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gacf33302e7681997a7cf97bc8e1c73c60">&#9670;&nbsp;</a></span>TempIjj</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#gacf33302e7681997a7cf97bc8e1c73c60">Tags::TempIjj</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::Ijj&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="ga888f2a62a7302f144da579039242ead3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga888f2a62a7302f144da579039242ead3">&#9670;&nbsp;</a></span>Tempijk</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#ga888f2a62a7302f144da579039242ead3">Tags::Tempijk</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::ijk&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="gaf16c633048900945b27487ccef326322"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf16c633048900945b27487ccef326322">&#9670;&nbsp;</a></span>TempijK</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, size_t SpatialDim, typename Fr  = Frame::Inertial, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#gaf16c633048900945b27487ccef326322">Tags::TempijK</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, tnsr::ijK&lt;DataType, SpatialDim, Fr&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+<a id="gad37486b3abf10556ab0487bf2189da5d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad37486b3abf10556ab0487bf2189da5d">&#9670;&nbsp;</a></span>TempScalar</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t N, typename DataType  = DataVector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__PeoGroup.html#gad37486b3abf10556ab0487bf2189da5d">Tags::TempScalar</a> = typedef <a class="el" href="structTags_1_1TempTensor.html">TempTensor</a>&lt;N, <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;DataType&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><a class="el" href="structTags_1_1Variables.html">Variables</a> Tags for temporary tensors inside a function. </p>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

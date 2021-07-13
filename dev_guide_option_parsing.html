@@ -1,0 +1,412 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Option Parsing</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">Option Parsing </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><p>SpECTRE can read YAML configuration files at runtime to set parameters and choose between classes implementing an interface. Options are parsed during code initialization and can be used to construct objects placed in the <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a> and options passed to the parallel components. The types necessary to mark objects for parsing are declared in <code><a class="el" href="Options_8hpp.html">Options/Options.hpp</a></code>.</p>
+<h1><a class="anchor" id="autotoc_md166"></a>
+General option format</h1>
+<p>An option is defined by an "option tag", represented by a <code>struct</code>. At minimum, the struct must declare the type of the object to be parsed and provide a brief description of the meaning. The name of the option in the input file defaults to the name of the struct (excluding any template parameters and scope information), but can be overridden by providing a static <code>name()</code> function. Several other pieces of information, such as suggestions, limits and grouping, may be provided if desired. This information is all included in the generated help output.</p>
+<p>If an option has a suggested value, the value is specified in the input file as usual, but a warning will be issued if the specified value does not match the suggestion.</p>
+<p>Examples: </p><div class="fragment"><div class="line"><span class="keyword">struct </span>Bounded {</div>
+<div class="line">  <span class="keyword">using</span> type = int;</div>
+<div class="line">  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {</div>
+<div class="line">      <span class="stringliteral">&quot;Option with bounds and a suggested value&quot;</span>};</div>
+<div class="line">  <span class="comment">// These are optional</span></div>
+<div class="line">  <span class="keyword">static</span> type suggested_value() noexcept { <span class="keywordflow">return</span> 3; }</div>
+<div class="line">  <span class="keyword">static</span> type <a class="codeRef" href="http://en.cppreference.com/w/cpp/algorithm/lower_bound.html">lower_bound</a>() noexcept { <span class="keywordflow">return</span> 2; }</div>
+<div class="line">  <span class="keyword">static</span> type <a class="codeRef" href="http://en.cppreference.com/w/cpp/algorithm/upper_bound.html">upper_bound</a>() noexcept { <span class="keywordflow">return</span> 10; }</div>
+<div class="line">};</div>
+</div><!-- fragment --><div class="fragment"><div class="line"><span class="keyword">struct </span>VectorOption {</div>
+<div class="line">  <span class="keyword">using</span> type = <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;int&gt;</a>;</div>
+<div class="line">  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {<span class="stringliteral">&quot;A vector with length limits&quot;</span>};</div>
+<div class="line">  <span class="comment">// These are optional</span></div>
+<div class="line">  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept {</div>
+<div class="line">    <span class="keywordflow">return</span> <span class="stringliteral">&quot;Vector&quot;</span>;  <span class="comment">// defaults to &quot;VectorOption&quot;</span></div>
+<div class="line">  }</div>
+<div class="line">  <span class="keyword">static</span> <span class="keywordtype">size_t</span> lower_bound_on_size() { <span class="keywordflow">return</span> 2; }</div>
+<div class="line">  <span class="keyword">static</span> <span class="keywordtype">size_t</span> upper_bound_on_size() { <span class="keywordflow">return</span> 5; }</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> The option type can be any type understood natively by yaml-cpp (fundamentals, <code><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></code>, and <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map</a></code>, <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a></code>, <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/list.html">std::list</a></code>, <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a></code>, and <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a></code> of parsable types) and types SpECTRE adds support for. SpECTRE adds <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a></code> (but only with ordered keys), <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/variant.html">std::variant</a></code> (with alternatives tested in order), and various classes marked as constructible in their declarations.</p>
+<p>An option tag can be placed in a group by adding a <code>group</code> type alias to the struct. The alias should refer to a type that, like option tags, defines a help string and may override a static <code>name()</code> function.</p>
+<p>Example: </p><div class="fragment"><div class="line"><span class="keyword">struct </span>Group {</div>
+<div class="line">  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {<span class="stringliteral">&quot;Group halp&quot;</span>};</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">struct </span>GroupedTag {</div>
+<div class="line">  <span class="keyword">using</span> type = int;</div>
+<div class="line">  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {<span class="stringliteral">&quot;Tag halp&quot;</span>};</div>
+<div class="line">  <span class="keyword">using</span> group = Group;</div>
+<div class="line">};</div>
+</div><!-- fragment --> <h1><a class="anchor" id="autotoc_md167"></a>
+Constructible classes</h1>
+<p>A class that defines <code>static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89" title="The string used in option structs.">Options::String</a> help</code> and a typelist of option structs <code>options</code> can be created by the option parser. When the class is requested, the option parser will parse each of the options in the <code>options</code> list, and then supply them to the constructor of the class. A class can use <a class="el" href="structOptions_1_1Alternatives.html" title="Provide multiple ways to construct a class.">Options::Alternatives</a> to support more than one possible set of options for its creation. (See <a href="#custom-parsing">Custom parsing</a> below for more general creation mechanisms.)</p>
+<p>Unlike option descriptions, which should be brief, the class help string has no length limits and should give a description of the class and any necessary discussion of its options beyond what can be described in their individual help strings.</p>
+<p>Creatable classes must be default constructible and move assignable.</p>
+<p>The <code><a class="el" href="structOptions_1_1Context.html">Options::Context</a></code> is an optional argument to the constructor that should be used when the constructor checks for validity of the input. If the input is invalid, <code>PARSE_ERROR</code> is used to propagate the error message back through the options ensuring that the error message will have a full backtrace so it is easy for the user to diagnose.</p>
+<p>Example: </p><div class="fragment"><div class="line"><span class="keyword">class </span>CreateFromOptions {</div>
+<div class="line"> <span class="keyword">public</span>:</div>
+<div class="line">  <span class="keyword">struct </span>CfoOption {</div>
+<div class="line">    <span class="keyword">using</span> type = <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>;</div>
+<div class="line">    <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {<span class="stringliteral">&quot;Option help text&quot;</span>};</div>
+<div class="line">  };</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {<span class="stringliteral">&quot;Class help text&quot;</span>};</div>
+<div class="line">  <span class="keyword">using</span> options = tmpl::list&lt;CfoOption&gt;;</div>
+<div class="line"> </div>
+<div class="line">  CreateFromOptions() = <span class="keywordflow">default</span>;</div>
+<div class="line">  <span class="comment">// The Options::Context argument can be left off if unneeded.</span></div>
+<div class="line">  <span class="keyword">explicit</span> CreateFromOptions(<a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> str,</div>
+<div class="line">                             <span class="keyword">const</span> <a class="code" href="structOptions_1_1Context.html">Options::Context</a>&amp; context = {})</div>
+<div class="line">      : str_(std::move(str)) {</div>
+<div class="line">    <span class="keywordflow">if</span> (str_[0] != <span class="charliteral">&#39;f&#39;</span>) {</div>
+<div class="line">      <a class="code" href="group__OptionParsingGroup.html#ga2724ed7a660af53bf365f99878d79c82">PARSE_ERROR</a>(context,</div>
+<div class="line">                  <span class="stringliteral">&quot;Option must start with an &#39;f&#39; but is &#39;&quot;</span> &lt;&lt; str_ &lt;&lt; <span class="stringliteral">&quot;&#39;&quot;</span>);</div>
+<div class="line">    }</div>
+<div class="line">  }</div>
+<div class="line"> </div>
+<div class="line">  <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> str_{};</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">struct </span>Cfo {</div>
+<div class="line">  <span class="keyword">using</span> type = CreateFromOptions;</div>
+<div class="line">  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {<span class="stringliteral">&quot;help&quot;</span>};</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> input_file_text = R<span class="stringliteral">&quot;(</span></div>
+<div class="line"><span class="stringliteral">Cfo:</span></div>
+<div class="line"><span class="stringliteral">  CfoOption: foo</span></div>
+<div class="line"><span class="stringliteral">)&quot;;</span></div>
+</div><!-- fragment --><p> Classes may use the Metavariables struct, which is effectively the compile time input file, in their parsing by templating the <code>options</code> type alias or by taking the Metavariables as a final argument to the constructor (after the <code><a class="el" href="structOptions_1_1Context.html">Options::Context</a></code>).</p>
+<p>Example: </p><div class="fragment"><div class="line"><span class="keyword">class </span>CreateFromOptionsWithMetavariables {</div>
+<div class="line"> <span class="keyword">public</span>:</div>
+<div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Metavariables&gt;</div>
+<div class="line">  <span class="keyword">struct </span>CfoOption {</div>
+<div class="line">    <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> Metavariables::option_name(); }</div>
+<div class="line">    <span class="keyword">using</span> type = <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>;</div>
+<div class="line">    <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {<span class="stringliteral">&quot;Option help text&quot;</span>};</div>
+<div class="line">  };</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {<span class="stringliteral">&quot;Class help text&quot;</span>};</div>
+<div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Metavariables&gt;</div>
+<div class="line">  <span class="keyword">using</span> options = tmpl::list&lt;CfoOption&lt;Metavariables&gt;&gt;;</div>
+<div class="line"> </div>
+<div class="line">  CreateFromOptionsWithMetavariables() = <span class="keywordflow">default</span>;</div>
+<div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Metavariables&gt;</div>
+<div class="line">  CreateFromOptionsWithMetavariables(<a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> str,</div>
+<div class="line">                                     <span class="keyword">const</span> <a class="code" href="structOptions_1_1Context.html">Options::Context</a>&amp; <span class="comment">/*context*/</span>,</div>
+<div class="line">                                     Metavariables <span class="comment">/*meta*/</span>)</div>
+<div class="line">      : str_(std::move(str)),</div>
+<div class="line">        expected_(str_ == Metavariables::expected_string()) {}</div>
+<div class="line"> </div>
+<div class="line">  <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> str_{};</div>
+<div class="line">  <span class="keywordtype">bool</span> expected_{<span class="keyword">false</span>};</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">struct </span>Metavariables {</div>
+<div class="line">  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> option_name() noexcept { <span class="keywordflow">return</span> <span class="stringliteral">&quot;MetaName&quot;</span>; }</div>
+<div class="line">  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> expected_string() noexcept { <span class="keywordflow">return</span> <span class="stringliteral">&quot;MetaString&quot;</span>; }</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">struct </span>CfoWithMetavariables {</div>
+<div class="line">  <span class="keyword">using</span> type = CreateFromOptionsWithMetavariables;</div>
+<div class="line">  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {<span class="stringliteral">&quot;help&quot;</span>};</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> input_file_text_with_metavariables = R<span class="stringliteral">&quot;(</span></div>
+<div class="line"><span class="stringliteral">CfoWithMetavariables:</span></div>
+<div class="line"><span class="stringliteral">  MetaName: MetaString</span></div>
+<div class="line"><span class="stringliteral">)&quot;;</span></div>
+</div><!-- fragment --> <h1><a class="anchor" id="autotoc_md168"></a>
+Factory</h1>
+<p>The factory interface creates an object of type <code><a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt;Base&gt;</code> containing a pointer to some class derived from <code>Base</code>. The list of creatable derived classes is specified in the <code>factory_creation</code> struct in the metavariables, which must contain a <code>factory_classes</code> type alias that is a <code>tmpl::map</code> from base classes to lists of derived classes: </p><div class="fragment"><div class="line">  <span class="keyword">struct </span>factory_creation</div>
+<div class="line">      : <a class="code" href="structtt_1_1ConformsTo.html">tt::ConformsTo</a>&lt;Options::protocols::FactoryCreation&gt; {</div>
+<div class="line">    <span class="keyword">using</span> factory_classes = tmpl::map&lt;</div>
+<div class="line">        tmpl::pair&lt;OptionTest, tmpl::list&lt;Test1, Test2, TestWithArg,</div>
+<div class="line">                                          TestWithArg2, TestWithMetavars&gt;&gt;,</div>
+<div class="line">        tmpl::pair&lt;OtherBase, tmpl::list&lt;OtherDerived&gt;&gt;&gt;;</div>
+<div class="line">  };</div>
+</div><!-- fragment --><p> When a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt;Base&gt;</code> is requested, the factory will expect a single YAML argument specifying the name of the class (as given by a static <code>name()</code> function or, lacking that, the actual class name). If the derived class takes no arguments, the name can be given as a YAML string, otherwise it must be given as a single key-value pair, with the key the name of the class. The value portion of this pair is then used to create the requested derived class in the same way as an explicitly constructible class. Examples: </p><div class="fragment"><div class="line">OptionType: Test2</div>
+</div><!-- fragment --><div class="fragment"><div class="line">OptionType:</div>
+<div class="line">  TestWithArg:</div>
+<div class="line">    Arg: stuff</div>
+</div><!-- fragment --><p> <a class="anchor" id="custom-parsing"></a></p>
+<h1><a class="anchor" id="autotoc_md169"></a>
+Custom parsing</h1>
+<p>Occasionally, the requirements imposed by the default creation mechanism are too stringent. In these cases, the construction algorithm can be overridden by providing a specialization of the struct </p><div class="fragment"><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><span class="keyword">struct </span><a class="code" href="structOptions_1_1create__from__yaml.html">Options::create_from_yaml</a> {</div>
+<div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Metavariables&gt;</div>
+<div class="line">  <span class="keyword">static</span> T create(<span class="keyword">const</span> <a class="code" href="classOptions_1_1Option.html">Options::Option</a>&amp; options);</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> The create function can perform any operations required to construct the object.</p>
+<p>Example of using a specialization to parse an enum: </p><div class="fragment"><div class="line"><span class="keyword">namespace </span>{</div>
+<div class="line"><span class="keyword">enum class</span> CreateFromOptionsAnimal { Cat, Dog };</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">struct </span>CfoAnimal {</div>
+<div class="line">  <span class="keyword">using</span> type = CreateFromOptionsAnimal;</div>
+<div class="line">  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {<span class="stringliteral">&quot;Option help text&quot;</span>};</div>
+<div class="line">};</div>
+<div class="line">}  <span class="comment">// namespace</span></div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">template</span> &lt;&gt;</div>
+<div class="line"><span class="keyword">struct </span><a class="code" href="structOptions_1_1create__from__yaml.html">Options::create_from_yaml</a>&lt;CreateFromOptionsAnimal&gt; {</div>
+<div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Metavariables&gt;</div>
+<div class="line">  <span class="keyword">static</span> CreateFromOptionsAnimal create(<span class="keyword">const</span> <a class="code" href="classOptions_1_1Option.html">Options::Option</a>&amp; options) {</div>
+<div class="line">    <span class="keyword">const</span> <span class="keyword">auto</span> animal = options.parse_as&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&gt;();</div>
+<div class="line">    <span class="keywordflow">if</span> (animal == <span class="stringliteral">&quot;Cat&quot;</span>) {</div>
+<div class="line">      <span class="keywordflow">return</span> CreateFromOptionsAnimal::Cat;</div>
+<div class="line">    }</div>
+<div class="line">    <span class="keywordflow">if</span> (animal == <span class="stringliteral">&quot;Dog&quot;</span>) {</div>
+<div class="line">      <span class="keywordflow">return</span> CreateFromOptionsAnimal::Dog;</div>
+<div class="line">    }</div>
+<div class="line">    <a class="code" href="group__OptionParsingGroup.html#ga2724ed7a660af53bf365f99878d79c82">PARSE_ERROR</a>(options.context(),</div>
+<div class="line">                <span class="stringliteral">&quot;CreateFromOptionsAnimal must be &#39;Cat&#39; or &#39;Dog&#39;&quot;</span>);</div>
+<div class="line">  }</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> Note that in the case where the <code>create</code> function does <em>not</em> need to use the <code>Metavariables</code> it is recommended that a general implementation forward to an explicit instantiation with <code>void</code> as the <code>Metavariables</code> type. The reason for using <code>void</code> specialization is to reduce compile time. Since we only need one full implementation of the function independent of what type <code>Metavariables</code> is, we should only parse and compile it once. By having a specialization on <code>void</code> (or some other non-metavariables type like <code><a class="el" href="structNoSuchType.html" title="Used to mark &quot;no type&quot; or &quot;bad state&quot; for metaprogramming.">NoSuchType</a></code>) we can handle the metavariables-independent case efficiently. As a concrete example, the general definition and forward declaration of the <code>void</code> specialization in the header file would be:</p>
+<div class="fragment"><div class="line"><span class="keyword">namespace </span>{</div>
+<div class="line"><span class="keyword">enum class</span> CreateFromOptionsExoticAnimal { MexicanWalkingFish, Platypus };</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">struct </span>CfoExoticAnimal {</div>
+<div class="line">  <span class="keyword">using</span> type = CreateFromOptionsExoticAnimal;</div>
+<div class="line">  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {<span class="stringliteral">&quot;Option help text&quot;</span>};</div>
+<div class="line">};</div>
+<div class="line">}  <span class="comment">// namespace</span></div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">template</span> &lt;&gt;</div>
+<div class="line"><span class="keyword">struct </span><a class="code" href="structOptions_1_1create__from__yaml.html">Options::create_from_yaml</a>&lt;CreateFromOptionsExoticAnimal&gt; {</div>
+<div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Metavariables&gt;</div>
+<div class="line">  <span class="keyword">static</span> CreateFromOptionsExoticAnimal create(<span class="keyword">const</span> <a class="code" href="classOptions_1_1Option.html">Options::Option</a>&amp; options) {</div>
+<div class="line">    <span class="keywordflow">return</span> create&lt;void&gt;(options);</div>
+<div class="line">  }</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">template</span> &lt;&gt;</div>
+<div class="line">CreateFromOptionsExoticAnimal</div>
+<div class="line"><a class="code" href="structOptions_1_1create__from__yaml.html">Options::create_from_yaml&lt;CreateFromOptionsExoticAnimal&gt;::create&lt;void&gt;</a>(</div>
+<div class="line">    <span class="keyword">const</span> <a class="code" href="classOptions_1_1Option.html">Options::Option</a>&amp; options);</div>
+</div><!-- fragment --><p> while in the <code>cpp</code> file the definition of the <code>void</code> specialization is:</p>
+<div class="fragment"><div class="line"><span class="keyword">template</span> &lt;&gt;</div>
+<div class="line">CreateFromOptionsExoticAnimal</div>
+<div class="line"><a class="code" href="structOptions_1_1create__from__yaml.html">Options::create_from_yaml&lt;CreateFromOptionsExoticAnimal&gt;::create&lt;void&gt;</a>(</div>
+<div class="line">    <span class="keyword">const</span> <a class="code" href="classOptions_1_1Option.html">Options::Option</a>&amp; options) {</div>
+<div class="line">  <span class="keyword">const</span> <span class="keyword">auto</span> animal = options.parse_as&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&gt;();</div>
+<div class="line">  <span class="keywordflow">if</span> (animal == <span class="stringliteral">&quot;MexicanWalkingFish&quot;</span>) {</div>
+<div class="line">    <span class="keywordflow">return</span> CreateFromOptionsExoticAnimal::MexicanWalkingFish;</div>
+<div class="line">  }</div>
+<div class="line">  <span class="keywordflow">if</span> (animal == <span class="stringliteral">&quot;Platypus&quot;</span>) {</div>
+<div class="line">    <span class="keywordflow">return</span> CreateFromOptionsExoticAnimal::Platypus;</div>
+<div class="line">  }</div>
+<div class="line">  <a class="code" href="group__OptionParsingGroup.html#ga2724ed7a660af53bf365f99878d79c82">PARSE_ERROR</a>(options.context(),</div>
+<div class="line">              <span class="stringliteral">&quot;CreateFromOptionsExoticAnimal must be &#39;MexicanWalkingFish&#39; or &quot;</span></div>
+<div class="line">              <span class="stringliteral">&quot;&#39;Platypus&#39;&quot;</span>);</div>
+<div class="line">}</div>
+</div><!-- fragment --></div></div><!-- contents -->
+</div><!-- PageDoc -->
+<div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
+<div class="ttc" id="agroup__OptionParsingGroup_html_ga2724ed7a660af53bf365f99878d79c82"><div class="ttname"><a href="group__OptionParsingGroup.html#ga2724ed7a660af53bf365f99878d79c82">PARSE_ERROR</a></div><div class="ttdeci">#define PARSE_ERROR(context, m)</div><div class="ttdef"><b>Definition:</b> Options.hpp:71</div></div>
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a></div></div>
+<div class="ttc" id="astructOptions_1_1Context_html"><div class="ttname"><a href="structOptions_1_1Context.html">Options::Context</a></div><div class="ttdef"><b>Definition:</b> Options.hpp:41</div></div>
+<div class="ttc" id="aclassOptions_1_1Option_html"><div class="ttname"><a href="classOptions_1_1Option.html">Options::Option</a></div><div class="ttdef"><b>Definition:</b> Options.hpp:108</div></div>
+<div class="ttc" id="astructOptions_1_1create__from__yaml_html"><div class="ttname"><a href="structOptions_1_1create__from__yaml.html">Options::create_from_yaml</a></div><div class="ttdef"><b>Definition:</b> MinmodType.hpp:11</div></div>
+<div class="ttc" id="aupper_bound_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/algorithm/upper_bound.html">std::upper_bound</a></div><div class="ttdeci">T upper_bound(T... args)</div></div>
+<div class="ttc" id="alower_bound_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/algorithm/lower_bound.html">std::lower_bound</a></div><div class="ttdeci">T lower_bound(T... args)</div></div>
+<div class="ttc" id="anamespaceOptions_html_aa61c7f41f21afa7646811456f673be89"><div class="ttname"><a href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a></div><div class="ttdeci">const char *const String</div><div class="ttdoc">The string used in option structs.</div><div class="ttdef"><b>Definition:</b> Options.hpp:32</div></div>
+<div class="ttc" id="astructtt_1_1ConformsTo_html"><div class="ttname"><a href="structtt_1_1ConformsTo.html">tt::ConformsTo</a></div><div class="ttdoc">Indicate a class conforms to the Protocol.</div><div class="ttdef"><b>Definition:</b> ProtocolHelpers.hpp:22</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

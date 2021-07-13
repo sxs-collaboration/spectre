@@ -1,0 +1,218 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Using SpECTRE&#39;s Python modules</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">Using SpECTRE's Python modules </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><p>Some classes and functions from SpECTRE have Python bindings to make it easier to visualize data, write test code, and provide an introduction to numerical relativity without needing to delve into C++.</p>
+<h1><a class="anchor" id="autotoc_md272"></a>
+Installing the SpECTRE Python modules</h1>
+<p>First, build SpECTRE with Python bindings enabled by appending the <code>-D BUILD_PYTHON_BINDINGS=ON</code> flag to the <code>cmake</code> command. You can specify the Python version, interpreter and libraries used for compiling and testing the bindings by setting the <code>-D Python_EXECUTABLE</code> to an absolute path such as <code>/usr/bin/python3</code>. You will find that a <code>BUILD_DIR/bin/python</code> directory is created that contains the Python modules. Then, you can install the modules into your Python environment in <em>development mode</em>, which means they are symlinked so that changes to the modules will be reflected in your Python environment, with the command <code>pip install -e path/to/bin/python</code>. Alternatively, remove the <code>-e</code> flag to install the modules normally. You can do this in any Python environment that supports <code>pip</code>, for instance in a <a href="https://docs.python.org/3/tutorial/venv.html"><code>virtualenv</code>/<code>venv</code></a> or in an <a href="https://www.anaconda.com/distribution/">Anaconda</a> environment. You can also get access to the SpECTRE Python modules by adding <code>BUILD_DIR/bin/python</code> to your <code>PYTHONPATH</code>. This is done automatically by sourcing the <code>LoadPython.sh</code> file with the command <code>. BUILD_DIR/bin/LoadPython.sh</code>. By default, SpECTRE uses <code>jemalloc</code> which needs to be pre-loaded for the python bindings to work. Therefore, you need to run <code>LD_PRELOAD=/path/to/libjemalloc.so python</code> to execute python scripts or start python consoles. The path to your preferred jemalloc installation is printed out at the end of the <code>cmake</code> configuration or can be found by running the script <code>BUILD_DIR/bin/LoadPython.sh</code>. Alternatively, you can use your system's memory allocator by appending the flag <code>-D MEMORY_ALLOCATOR=SYSTEM</code> to the <code>cmake</code> command. In this case you will not need to pre-load any libraries.</p>
+<h1><a class="anchor" id="autotoc_md273"></a>
+Running Jupyter within the Docker container</h1>
+<p><a href="https://jupyterlab.readthedocs.io/">Jupyter lab</a> is installed in the Docker container. You can run it in the container and access it through a browser on the host for a convenient way to work with the SpECTRE Python bindings. To do so, make sure you have exposed a port when running the Docker container, e.g. by appending the option <code>-p 8000:8000</code> to the <code>docker run</code> command (see <a class="el" href="installation.html">Installation</a>). Inside the docker container, it can be convenient to use <code>disown</code> or to <code>apt-get install screen</code> and use <code>screen</code> to obtain a shell that runs the Jupyter server permanently in the background. Within the shell you want to run your Jupyter server, navigate to a directory that will serve as the root for the file system that Jupyter has access to. Make sure it is shared with the host (e.g. <code>SPECTRE_HOME</code>) so your Jupyter notebooks are not lost when the container is deleted. Then, run the following command:</p>
+<div class="fragment"><div class="line">jupyter lab --ip 0.0.0.0 --port 8000 --allow-root</div>
+</div><!-- fragment --><p>Copy the token that is being displayed. Now you can open a browser on the host machine, point it to <code><a href="http://localhost:8000">http://localhost:8000</a></code> and paste in the token. You will have access to the Python environment within the Docker container. If you have followed the instructions above for installing the SpECTRE Python package, you can try importing the Python package in a notebook with:</p>
+<div class="fragment"><div class="line"><span class="keyword">import</span> spectre</div>
+</div><!-- fragment --><p>While developing Python code in the <code>spectre</code> packages it can be useful to configure Jupyter to reload packages when they change. Add the following code before any import statements:</p>
+<div class="fragment"><div class="line">%load_ext autoreload</div>
+<div class="line">%autoreload 2</div>
+</div><!-- fragment --> </div></div><!-- contents -->
+</div><!-- PageDoc -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

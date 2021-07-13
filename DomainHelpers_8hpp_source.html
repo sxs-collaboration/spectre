@@ -1,0 +1,804 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Domain/DomainHelpers.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_2b2489ccd21aa27a14d4bfff471515cd.html">Domain</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">DomainHelpers.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<a href="DomainHelpers_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment">/// \file</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment">/// Defines DomainHelper functions</span></div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160; </div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/array.html">array</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/iosfwd.html">iosfwd</a>&gt;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/limits.html">limits</a>&gt;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a>&gt;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a>&gt;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160; </div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Index_8hpp.html">DataStructures/Index.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Tensor_8hpp.html">DataStructures/Tensor/Tensor.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;Domain/BoundaryConditions/BoundaryCondition.hpp&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;Domain/CoordinateMaps/Distribution.hpp&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Direction_8hpp.html">Domain/Structure/Direction.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Side_8hpp.html">Domain/Structure/Side.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ConstantExpressions_8hpp.html">Utilities/ConstantExpressions.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="MakeArray_8hpp.html">Utilities/MakeArray.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="keyword">class </span><a class="code" href="classBlockNeighbor.html">BlockNeighbor</a>;</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="keyword">namespace </span>domain {</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> SourceFrame, <span class="keyword">typename</span> TargetFrame, <span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="keyword">class </span>CoordinateMapBase;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;}  <span class="comment">// namespace domain</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim, <span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="keyword">class </span><a class="code" href="classDirectionMap.html">DirectionMap</a>;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="keyword">class </span><a class="code" href="classDomain.html">Domain</a>;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="keyword">class </span><a class="code" href="classOrientationMap.html">OrientationMap</a>;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceOptions.html">Options</a> {</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="keyword">class </span>Option;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="keyword">struct </span>create_from_yaml;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;}  <span class="comment">// namespace Options</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacedomain_1_1CoordinateMaps.html">domain::CoordinateMaps</a> {</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> Map1, <span class="keyword">typename</span> Map2&gt;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="keyword">class </span>ProductOf2Maps;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> Map1, <span class="keyword">typename</span> Map2, <span class="keyword">typename</span> Map3&gt;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="keyword">class </span>ProductOf3Maps;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="keyword">class </span>Affine;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="keyword">class </span>Equiangular;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="keyword">template</span>&lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="keyword">class </span>Wedge;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;}  <span class="comment">// namespace domain::CoordinateMaps</span><span class="comment"></span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment"></span><span class="comment"></span> </div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment">/// Each member in `PairOfFaces` holds the global corner ids of a block face.</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment">/// `PairOfFaces` is used in setting up periodic boundary conditions by</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment">/// identifying the two faces with each other.</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment">/// \requires The pair of faces must belong to a single block.</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno"><a class="line" href="structPairOfFaces.html">   61</a></span>&#160;<span class="comment"></span><span class="keyword">struct </span><a class="code" href="structPairOfFaces.html">PairOfFaces</a> {</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;size_t&gt;</a> first;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;size_t&gt;</a> second;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;};</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment">/// Sets up the BlockNeighbors using the corner numbering scheme</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment">/// provided by the user to deduce the correct neighbors and</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment">/// orientations. Does not set up periodic boundary conditions.</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__ComputationalDomainGroup.html#ga352a96e2ad69bb9fd2d71d412a4fc8b7">set_internal_boundaries</a>(</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="code" href="classDirectionMap.html">DirectionMap</a>&lt;VolumeDim, <a class="code" href="classBlockNeighbor.html">BlockNeighbor&lt;VolumeDim&gt;</a>&gt;&gt;*&gt;</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        neighbors_of_all_blocks,</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;<span class="keywordtype">size_t</span>, <a class="code" href="group__ConstantExpressionsGroup.html#ga6c01ded3973bb4b9973e5381c32c0807">two_to_the</a>(VolumeDim)&gt;&gt;&amp;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        corners_of_all_blocks) noexcept;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment">/// Sets up the BlockNeighbors using the corner numbering scheme</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment">/// implied by the maps provided by the user to deduce the correct</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment">/// neighbors and orientations.</span></div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment">/// \warning Does not set up periodic boundary conditions.</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__ComputationalDomainGroup.html#ga352a96e2ad69bb9fd2d71d412a4fc8b7">set_internal_boundaries</a>(</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="code" href="classDirectionMap.html">DirectionMap</a>&lt;VolumeDim, <a class="code" href="classBlockNeighbor.html">BlockNeighbor&lt;VolumeDim&gt;</a>&gt;&gt;*&gt;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        neighbors_of_all_blocks,</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt;</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;        <a class="code" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase&lt;Frame::Logical, Frame::Inertial, VolumeDim&gt;</a>&gt;&gt;&amp;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        maps) noexcept;</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment">/// Sets up additional BlockNeighbors corresponding to any</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment">/// identifications of faces provided by the user. Can be used</span></div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment">/// for manually setting up periodic boundary conditions.</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__ComputationalDomainGroup.html#ga5640402fc85ec353685c6914a9750459">set_identified_boundaries</a>(</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;PairOfFaces&gt;</a>&amp; identifications,</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;<span class="keywordtype">size_t</span>, <a class="code" href="group__ConstantExpressionsGroup.html#ga6c01ded3973bb4b9973e5381c32c0807">two_to_the</a>(VolumeDim)&gt;&gt;&amp;</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;        corners_of_all_blocks,</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="code" href="classDirectionMap.html">DirectionMap</a>&lt;VolumeDim, <a class="code" href="classBlockNeighbor.html">BlockNeighbor&lt;VolumeDim&gt;</a>&gt;&gt;*&gt;</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;        neighbors_of_all_blocks) noexcept;</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="comment">/// \brief The multi-indices that identify the individual Blocks in the lattice</span></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="keyword">auto</span> <a class="code" href="group__ComputationalDomainGroup.html#gaba91825909e9aa842eb091df693e919e">indices_for_rectilinear_domains</a>(</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    <span class="keyword">const</span> <a class="code" href="classIndex.html">Index&lt;VolumeDim&gt;</a>&amp; domain_extents,</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="code" href="classIndex.html">Index&lt;VolumeDim&gt;</a>&gt;&amp; block_indices_to_exclude = {}) noexcept</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    -&gt; <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="code" href="classIndex.html">Index&lt;VolumeDim&gt;</a>&gt;;</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="comment">/// \brief The corners for a rectilinear domain made of n-cubes.</span></div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment">/// The `domain_extents` argument holds the number of blocks to have</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="comment">/// in each dimension. The blocks all have aligned orientations by</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="comment">/// construction. The `block_indices_to_exclude` argument allows the user</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="comment">/// to selectively exclude blocks from the resulting domain. This allows</span></div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="comment">/// for the creation of non-trivial shapes such as the net for a tesseract.</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="keyword">auto</span> <a class="code" href="group__ComputationalDomainGroup.html#ga18341ca86191b511f92daf2d8c69302c">corners_for_rectilinear_domains</a>(</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;    <span class="keyword">const</span> <a class="code" href="classIndex.html">Index&lt;VolumeDim&gt;</a>&amp; domain_extents,</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="code" href="classIndex.html">Index&lt;VolumeDim&gt;</a>&gt;&amp; block_indices_to_exclude = {}) noexcept</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    -&gt; <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;<span class="keywordtype">size_t</span>, <a class="code" href="group__ConstantExpressionsGroup.html#ga6c01ded3973bb4b9973e5381c32c0807">two_to_the</a>(VolumeDim)&gt;&gt;;</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;<span class="comment">/// The number of wedges to include in the Shell domain.</span></div>
+<div class="line"><a name="l00129"></a><span class="lineno"><a class="line" href="group__ComputationalDomainGroup.html#gac672a529d9aaa6a948b8b7eb6ec9b528">  129</a></span>&#160;<span class="comment"></span><span class="keyword">enum class</span> <a class="code" href="group__ComputationalDomainGroup.html#gac672a529d9aaa6a948b8b7eb6ec9b528">ShellWedges</a> {<span class="comment"></span></div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;<span class="comment">  /// Use the entire shell</span></div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;<span class="comment"></span>  <a class="code" href="group__ComputationalDomainGroup.html#ggac672a529d9aaa6a948b8b7eb6ec9b528ab1c94ca2fbc3e78fc30069c8d0f01680">All</a>,<span class="comment"></span></div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;<span class="comment">  /// Use only the four equatorial wedges</span></div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;<span class="comment"></span>  <a class="code" href="group__ComputationalDomainGroup.html#ggac672a529d9aaa6a948b8b7eb6ec9b528ace553534ea34f25db4b4a8b5bd29cf45">FourOnEquator</a>,<span class="comment"></span></div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;<span class="comment">  /// Use only the single wedge along -x</span></div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;<span class="comment"></span>  <a class="code" href="group__ComputationalDomainGroup.html#ggac672a529d9aaa6a948b8b7eb6ec9b528ae9d8dbfbf81de7cf729066f677661edb">OneAlongMinusX</a></div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;};</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;<span class="comment">/// These are the CoordinateMaps of the Wedge&lt;3&gt;s used in the Sphere, Shell, and</span></div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;<span class="comment">/// binary compact object DomainCreators. This function can also be used to</span></div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;<span class="comment">/// wrap the Sphere or Shell in a cube made of six Wedge&lt;3&gt;s.</span></div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;<span class="comment">/// The argument `x_coord_of_shell_center` specifies a translation of the Shell</span></div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;<span class="comment">/// in the x-direction in the TargetFrame. For example, the BBH DomainCreator</span></div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;<span class="comment">/// uses this to set the position of each BH.</span></div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;<span class="comment">/// When the argument `use_half_wedges` is set to `true`, the wedges in the</span></div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;<span class="comment">/// +z,-z,+y,-y directions are cut in half along their xi-axes. The resulting</span></div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;<span class="comment">/// ten CoordinateMaps are used for the outermost Blocks of the BBH Domain.</span></div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;<span class="comment">/// The argument `aspect_ratio` sets the equatorial compression factor,</span></div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;<span class="comment">/// used by the EquatorialCompression maps which get composed with the Wedges.</span></div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;<span class="comment">/// This is done if `aspect_ratio` is set to something other than the default</span></div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;<span class="comment">/// value of one. The `radial_partitioning` specifies the radial boundaries of</span></div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;<span class="comment">/// sub-shells between `inner_radius` and `outer_radius`. Set the</span></div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;<span class="comment">/// `radial_distribution` to select the radial distribution of grid points in</span></div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;<span class="comment">/// the spherical shells.</span></div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> TargetFrame&gt;</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;<span class="keyword">auto</span> <a class="code" href="group__ComputationalDomainGroup.html#ga0a053203d0fdd947c6414ec7a548ee2a">sph_wedge_coordinate_maps</a>(</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;    <span class="keywordtype">double</span> inner_radius, <span class="keywordtype">double</span> outer_radius, <span class="keywordtype">double</span> inner_sphericity,</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;    <span class="keywordtype">double</span> outer_sphericity, <span class="keywordtype">bool</span> use_equiangular_map,</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;    <span class="keywordtype">double</span> x_coord_of_shell_center = 0.0, <span class="keywordtype">bool</span> use_half_wedges = <span class="keyword">false</span>,</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;    <span class="keywordtype">double</span> aspect_ratio = 1.0,</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a>&amp; radial_partitioning = {},</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;domain::CoordinateMaps::Distribution&gt;</a>&amp;</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;        radial_distribution = {domain::CoordinateMaps::Distribution::Linear},</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;    <a class="code" href="group__ComputationalDomainGroup.html#gac672a529d9aaa6a948b8b7eb6ec9b528">ShellWedges</a> which_wedges = <a class="code" href="group__ComputationalDomainGroup.html#ggac672a529d9aaa6a948b8b7eb6ec9b528ab1c94ca2fbc3e78fc30069c8d0f01680">ShellWedges::All</a>) noexcept</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;    -&gt; <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt;</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;        <a class="code" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase&lt;Frame::Logical, TargetFrame, 3&gt;</a>&gt;&gt;;</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;<span class="comment">/// These are the ten Frustums used in the DomainCreators for binary compact</span></div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;<span class="comment">/// objects. The Frustums partition the volume defined by two bounding</span></div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;<span class="comment">/// surfaces: The inner surface is the surface of the two joined inner cubes</span></div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;<span class="comment">/// enveloping the two compact objects, while the outer is the surface of the</span></div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;<span class="comment">/// outer cube. The cubes enveloping the two Shells each have a side length of</span></div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;<span class="comment">/// `length_inner_cube`. The outer cube has a side length of</span></div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;<span class="comment">/// `length_outer_cube`. `origin_preimage` is a parameter</span></div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;<span class="comment">/// that moves the center of the two joined inner cubes away from the origin</span></div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;<span class="comment">/// and to `-origin_preimage`. `projective_scale_factor` acts to change the</span></div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;<span class="comment">/// gridpoint distribution in the radial direction. \see Frustum for details.</span></div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> TargetFrame&gt;</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;<span class="keyword">auto</span> <a class="code" href="group__ComputationalDomainGroup.html#ga86534fcfbcabd6acc079b6fc38cdfbea">frustum_coordinate_maps</a>(</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;    <span class="keywordtype">double</span> length_inner_cube, <span class="keywordtype">double</span> length_outer_cube,</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;    <span class="keywordtype">bool</span> use_equiangular_map,</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;double, 3&gt;</a>&amp; origin_preimage = {{0.0, 0.0, 0.0}},</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;    <span class="keywordtype">double</span> projective_scale_factor = 1.0) noexcept</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;    -&gt; std::vector&lt;std::unique_ptr&lt;</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;        domain::CoordinateMapBase&lt;<a class="code" href="namespaceFrame.html">Frame</a>::Logical, TargetFrame, 3&gt;&gt;&gt;;</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;<span class="comment">/// \brief The corners for a domain with radial layers.</span></div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;<span class="comment">/// Generates the corners for a Domain which is made of one or more layers</span></div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;<span class="comment">/// of Blocks fully enveloping an interior volume, e.g. Shell or Sphere. The</span></div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;<span class="comment">/// `number_of_layers` specifies how many of these layers of Blocks to have</span></div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;<span class="comment">/// in the final domain.</span></div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;<span class="comment">/// `include_central_block` is set to `true` in Sphere, where the interior</span></div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;<span class="comment">/// volume is filled with a central Block, and `false` in Shell, where the</span></div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;<span class="comment">/// interior volume is left empty.</span></div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;<span class="comment">/// The `central_block_corners` are used as seed values to generate the corners</span></div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;<span class="comment">/// for the surrounding Blocks.</span></div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;<span class="comment"></span>std::vector&lt;std::array&lt;<span class="keywordtype">size_t</span>, 8&gt;&gt; <a class="code" href="group__ComputationalDomainGroup.html#ga18526a75399d20dfb670b233fa55cff8">corners_for_radially_layered_domains</a>(</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;    <span class="keywordtype">size_t</span> number_of_layers, <span class="keywordtype">bool</span> include_central_block,</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;    const std::array&lt;<span class="keywordtype">size_t</span>, 8&gt;&amp; central_block_corners = {{1, 2, 3, 4, 5, 6, 7,</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;                                                           8}},</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;    <a class="code" href="group__ComputationalDomainGroup.html#gac672a529d9aaa6a948b8b7eb6ec9b528">ShellWedges</a> which_wedges = <a class="code" href="group__ComputationalDomainGroup.html#ggac672a529d9aaa6a948b8b7eb6ec9b528ab1c94ca2fbc3e78fc30069c8d0f01680">ShellWedges::All</a>) noexcept;</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;<span class="comment">/// \brief The corners for a domain with biradial layers.</span></div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;<span class="comment">/// Generates the corners for a BBH-like Domain which is made of one or more</span></div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;<span class="comment">/// layers of Blocks fully enveloping two interior volumes. The</span></div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;<span class="comment">/// `number_of_radial_layers` gives the number of layers that fully envelop</span></div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;<span class="comment">/// each interior volume with six Blocks each. The `number_of_biradial_layers`</span></div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;<span class="comment">/// gives the number of layers that fully envelop both volumes at once, using</span></div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;<span class="comment">/// ten Blocks per layer as opposed to six. The `central_block_corners_lhs`</span></div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;<span class="comment">/// are used as seed values to generate the corners for the surrounding</span></div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;<span class="comment">/// Blocks.</span></div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;<span class="comment"></span><a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;std::array&lt;size_t, 8&gt;</a>&gt; <a class="code" href="group__ComputationalDomainGroup.html#gaa76c0e8c51614f3393118e403ed35a5f">corners_for_biradially_layered_domains</a>(</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;    <span class="keywordtype">size_t</span> number_of_radial_layers, <span class="keywordtype">size_t</span> number_of_biradial_layers,</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;    <span class="keywordtype">bool</span> include_central_block_lhs, <span class="keywordtype">bool</span> include_central_block_rhs,</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;size_t, 8&gt;</a>&amp; central_block_corners_lhs = {</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;        {1, 2, 3, 4, 5, 6, 7, 8}}) noexcept;</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;<span class="comment">/// These are the CoordinateMaps used in the Cylinder DomainCreator.</span></div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;<span class="comment">/// The `radial_partitioning` specifies the radial boundaries of sub-shells</span></div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;<span class="comment">/// between `inner_radius` and `outer_radius`, while `height_partitioning`</span></div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;<span class="comment">/// specifies the z-boundaries, splitting the cylinder into stacked</span></div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;<span class="comment">/// 3-dimensional disks. The circularity of the shell wedges changes from 0 to 1</span></div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;<span class="comment">/// within the innermost sub-shell.</span></div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;<span class="comment">/// Set the `radial_distribution` to select the radial distribution of grid</span></div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;<span class="comment">/// points in the cylindrical shells. The innermost shell must have</span></div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;<span class="comment">/// `domain::CoordinateMaps::Distribution::Linear` because it changes the</span></div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;<span class="comment">/// circularity.</span></div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> TargetFrame&gt;</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;<span class="keyword">auto</span> <a class="code" href="group__ComputationalDomainGroup.html#ga4b379cede89e5711f5f973edd5e0d548">cyl_wedge_coordinate_maps</a>(</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;    <span class="keywordtype">double</span> inner_radius, <span class="keywordtype">double</span> outer_radius, <span class="keywordtype">double</span> lower_bound,</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;    <span class="keywordtype">double</span> upper_bound, <span class="keywordtype">bool</span> use_equiangular_map,</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a>&amp; radial_partitioning = {},</div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a>&amp; height_partitioning = {},</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;domain::CoordinateMaps::Distribution&gt;</a>&amp;</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;        radial_distribution =</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;            {domain::CoordinateMaps::Distribution::Linear}) noexcept</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;    -&gt; <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt;</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;        <a class="code" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase&lt;Frame::Logical, TargetFrame, 3&gt;</a>&gt;&gt;;</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160; </div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;<span class="keyword">enum class</span> CylindricalDomainParityFlip { none, z_direction };</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;<span class="comment">/// Same as `cyl_wedge_coordinate_maps`, but only the center square blocks,</span></div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;<span class="comment">/// If `CylindricalDomainParityFlip::z_direction` is specified, then</span></div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;<span class="comment">/// the returned maps describe a cylinder with `lower_bound`</span></div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;<span class="comment">/// corresponding to logical coordinate `upper_zeta` and `upper_bound`</span></div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;<span class="comment">/// corresponding to logical coordinate `lower_zeta`, and thus the</span></div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;<span class="comment">/// resulting maps are left-handed.</span></div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;<span class="comment">/// `CylindricalDomainParityFlip::z_direction` is therefore useful</span></div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;<span class="comment">/// only when composing with another map that is also left-handed, so</span></div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;<span class="comment">/// that the composed coordinate system is right-handed.</span></div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;<span class="comment">/// Returned as a vector of the coordinate maps so that they can</span></div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;<span class="comment">/// be composed with other maps later.</span></div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">bool</span> UseEquiangularMap&gt;</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;<span class="keyword">auto</span> <a class="code" href="group__ComputationalDomainGroup.html#gaa886a5a35d828b78feabd35ef57dfe87">cyl_wedge_coord_map_center_blocks</a>(</div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;    <span class="keywordtype">double</span> inner_radius, <span class="keywordtype">double</span> lower_bound, <span class="keywordtype">double</span> upper_bound,</div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a>&amp; height_partitioning = {},</div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;    CylindricalDomainParityFlip parity_flip =</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;        CylindricalDomainParityFlip::none) noexcept</div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;    -&gt; tmpl::conditional_t&lt;</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;        UseEquiangularMap,</div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="code" href="classdomain_1_1CoordinateMaps_1_1ProductOf3Maps.html">domain::CoordinateMaps::ProductOf3Maps</a>&lt;</div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;            <a class="code" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">domain::CoordinateMaps::Equiangular</a>,</div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;            <a class="code" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">domain::CoordinateMaps::Equiangular</a>,</div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;            <a class="code" href="classdomain_1_1CoordinateMaps_1_1Affine.html">domain::CoordinateMaps::Affine</a>&gt;&gt;,</div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="code" href="classdomain_1_1CoordinateMaps_1_1ProductOf3Maps.html">domain::CoordinateMaps::ProductOf3Maps</a>&lt;</div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;            <a class="code" href="classdomain_1_1CoordinateMaps_1_1Affine.html">domain::CoordinateMaps::Affine</a>, <a class="code" href="classdomain_1_1CoordinateMaps_1_1Affine.html">domain::CoordinateMaps::Affine</a>,</div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;            <a class="code" href="classdomain_1_1CoordinateMaps_1_1Affine.html">domain::CoordinateMaps::Affine</a>&gt;&gt;&gt;;</div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;<span class="comment">/// Same as cyl_wedge_coordinate_maps, but only the surrounding wedge blocks.</span></div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;<span class="comment">/// If `CylindricalDomainParityFlip::z_direction` is specified, then</span></div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;<span class="comment">/// the returned maps describe a cylinder with `lower_bound`</span></div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;<span class="comment">/// corresponding to logical coordinate `upper_zeta` and `upper_bound`</span></div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;<span class="comment">/// corresponding to logical coordinate `lower_zeta`, and thus the</span></div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;<span class="comment">/// resulting maps are left-handed.</span></div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;<span class="comment">/// `CylindricalDomainParityFlip::z_direction` is therefore useful</span></div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;<span class="comment">/// only when composing with another map that is also left-handed, so</span></div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;<span class="comment">/// that the composed coordinate system is right-handed.</span></div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;<span class="comment">/// Returned as a vector of the coordinate maps so that they can</span></div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;<span class="comment">/// be composed with other maps later.</span></div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;<span class="comment"></span><span class="keyword">auto</span> <a class="code" href="group__ComputationalDomainGroup.html#gac97e959e577e9d546ef7cb167ba9de5e">cyl_wedge_coord_map_surrounding_blocks</a>(</div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;    <span class="keywordtype">double</span> inner_radius, <span class="keywordtype">double</span> outer_radius, <span class="keywordtype">double</span> lower_bound,</div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;    <span class="keywordtype">double</span> upper_bound, <span class="keywordtype">bool</span> use_equiangular_map, <span class="keywordtype">double</span> inner_circularity,</div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a>&amp; radial_partitioning = {},</div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a>&amp; height_partitioning = {},</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;domain::CoordinateMaps::Distribution&gt;</a>&amp;</div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;        radial_distribution = {domain::CoordinateMaps::Distribution::Linear},</div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;    CylindricalDomainParityFlip parity_flip =</div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;        CylindricalDomainParityFlip::none) noexcept</div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;    -&gt; <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="code" href="classdomain_1_1CoordinateMaps_1_1ProductOf2Maps.html">domain::CoordinateMaps::ProductOf2Maps</a>&lt;</div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;        <a class="code" href="classdomain_1_1CoordinateMaps_1_1Wedge.html">domain::CoordinateMaps::Wedge&lt;2&gt;</a>, <a class="code" href="classdomain_1_1CoordinateMaps_1_1Affine.html">domain::CoordinateMaps::Affine</a>&gt;&gt;;</div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;<span class="comment">/// \brief The corners for a cylindrical domain split into discs with radial</span></div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;<span class="comment">/// shells.</span></div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;<span class="comment">/// Generates the corners for a Domain which is made of one or more stacked</span></div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;<span class="comment">/// discs consisting of layers of Blocks enveloping an interior square prism.</span></div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;<span class="comment">/// The `number_of_shells` specifies how many of these layers of Blocks to have</span></div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;<span class="comment">/// in each disc.</span></div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;<span class="comment">/// The `number_of_discs` specifies how many discs make up the domain.</span></div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;<span class="comment">/// The very basic cylinder with one shell and one layer serves as a base</span></div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;<span class="comment">/// to generate the corners for subsequent shells first and discs second.</span></div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;<span class="comment"></span><a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;std::array&lt;size_t, 8&gt;</a>&gt; <a class="code" href="group__ComputationalDomainGroup.html#ga25fa2b3f359fdcd8fd7d15c7b0ce1dbc">corners_for_cylindrical_layered_domains</a>(</div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;    <span class="keywordtype">size_t</span> number_of_shells, <span class="keywordtype">size_t</span> number_of_discs) noexcept;</div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;<span class="comment">/// \brief Permutes the corner numbers of an n-cube.</span></div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;<span class="comment">/// Returns the correct ordering of global corner numbers for a rotated block</span></div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;<span class="comment">/// in an otherwise aligned edifice of blocks, given the OrientationMap a</span></div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;<span class="comment">/// block aligned with the edifice has relative to this one, and given the</span></div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;<span class="comment">/// corner numbering the rotated block would have if it were aligned.</span></div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;<span class="comment">/// This is useful in creating domains for testing purposes, e.g.</span></div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;<span class="comment">/// RotatedIntervals, RotatedRectangles, and RotatedBricks.</span></div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;<a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;size_t, <a class="code" href="group__ConstantExpressionsGroup.html#ga6c01ded3973bb4b9973e5381c32c0807">two_to_the</a>(VolumeDim)&gt; <a class="code" href="group__ComputationalDomainGroup.html#ga8c80443a66a28ba3cd542cf5f2d223c5">discrete_rotation</a>(</div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;    <span class="keyword">const</span> <a class="code" href="classOrientationMap.html">OrientationMap&lt;VolumeDim&gt;</a>&amp; orientation,</div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;<span class="keywordtype">size_t</span>, <a class="code" href="group__ConstantExpressionsGroup.html#ga6c01ded3973bb4b9973e5381c32c0807">two_to_the</a>(VolumeDim)&gt;&amp;</div>
+<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;        corners_of_aligned) noexcept;</div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;<span class="comment">/// \brief The CoordinateMaps for a rectilinear domain of n-cubes.</span></div>
+<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;<span class="comment">/// Allows for both Affine and Equiangular maps.</span></div>
+<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> TargetFrame, <span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;<span class="keyword">auto</span> <a class="code" href="group__ComputationalDomainGroup.html#ga2fa6f4a3bbb32cae7c59d29c519ce4a3">maps_for_rectilinear_domains</a>(</div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;    <span class="keyword">const</span> <a class="code" href="classIndex.html">Index&lt;VolumeDim&gt;</a>&amp; domain_extents,</div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a>, VolumeDim&gt;&amp; block_demarcations,</div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="code" href="classIndex.html">Index&lt;VolumeDim&gt;</a>&gt;&amp; block_indices_to_exclude = {},</div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;OrientationMap&lt;VolumeDim&gt;</a>&gt;&amp; orientations_of_all_blocks =</div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;        {},</div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;    <span class="keywordtype">bool</span> use_equiangular_map = <span class="keyword">false</span>) noexcept</div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;    -&gt; <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt;</div>
+<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;        <a class="code" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase&lt;Frame::Logical, TargetFrame, VolumeDim&gt;</a>&gt;&gt;;</div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;<span class="comment">/// \brief Create a rectilinear Domain of multicubes.</span></div>
+<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;<span class="comment">/// \details Useful for constructing domains for testing non-trivially</span></div>
+<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;<span class="comment">/// connected rectilinear domains made up of cubes. We refer to a domain of</span></div>
+<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;<span class="comment">/// this type as an edifice. The `domain_extents` provides the size (in the</span></div>
+<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;<span class="comment">/// number of blocks) of the initial aligned edifice to construct. The</span></div>
+<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;<span class="comment">/// `block_indices_to_exclude` parameter is used in refining the shape of</span></div>
+<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;<span class="comment">/// the edifice from a cube to sometime more non-trivial, such as an L-shape</span></div>
+<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;<span class="comment">/// or the net of a tesseract. The `block_demarcations` and</span></div>
+<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;<span class="comment">/// `use_equiangular_map` parameters determine the CoordinateMaps to be used.</span></div>
+<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;<span class="comment">/// `orientations_of_all_blocks` contains the OrientationMap of the edifice</span></div>
+<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;<span class="comment">/// relative to each block.</span></div>
+<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;<span class="comment">/// The `identifications` parameter is used when identifying the faces of</span></div>
+<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;<span class="comment">/// blocks in an edifice. This is used to identify the 1D boundaries in the 2D</span></div>
+<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;<span class="comment">/// net for a 3D cube to construct a domain with topology S2. Note: If the user</span></div>
+<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;<span class="comment">/// wishes to rotate the blocks as well as manually identify their faces, the</span></div>
+<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;<span class="comment">/// user must provide the PairOfFaces corresponding to the rotated corners.</span></div>
+<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;<a class="code" href="classDomain.html">Domain&lt;VolumeDim&gt;</a> <a class="code" href="group__ComputationalDomainGroup.html#ga800100a7e665c7fdc63549d99d14bf01">rectilinear_domain</a>(</div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;    <span class="keyword">const</span> <a class="code" href="classIndex.html">Index&lt;VolumeDim&gt;</a>&amp; domain_extents,</div>
+<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a>, VolumeDim&gt;&amp; block_demarcations,</div>
+<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;    <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="code" href="classDirectionMap.html">DirectionMap</a>&lt;</div>
+<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;        VolumeDim,</div>
+<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr&lt;domain::BoundaryConditions::BoundaryCondition&gt;</a>&gt;&gt;</div>
+<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;        boundary_conditions = {},</div>
+<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;Index&lt;VolumeDim&gt;</a>&gt;&amp; block_indices_to_exclude = {},</div>
+<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;OrientationMap&lt;VolumeDim&gt;</a>&gt;&amp; orientations_of_all_blocks =</div>
+<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;        {},</div>
+<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;bool, VolumeDim&gt;</a>&amp; dimension_is_periodic =</div>
+<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;        make_array&lt;VolumeDim&gt;(<span class="keyword">false</span>),</div>
+<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;PairOfFaces&gt;</a>&amp; identifications = {},</div>
+<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;    <span class="keywordtype">bool</span> use_equiangular_map = <span class="keyword">false</span>) noexcept;</div>
+<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;<span class="comment">/// Iterates over the corners of a VolumeDim-dimensional cube.</span></div>
+<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00389"></a><span class="lineno"><a class="line" href="classVolumeCornerIterator.html">  389</a></span>&#160;<span class="keyword">class </span><a class="code" href="classVolumeCornerIterator.html">VolumeCornerIterator</a> {</div>
+<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;  <a class="code" href="classVolumeCornerIterator.html">VolumeCornerIterator</a>() noexcept { setup_from_local_corner_number(); }</div>
+<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160; </div>
+<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;  <span class="keyword">explicit</span> <a class="code" href="classVolumeCornerIterator.html">VolumeCornerIterator</a>(<span class="keywordtype">size_t</span> initial_local_corner_number) noexcept</div>
+<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;      : local_corner_number_(initial_local_corner_number) {</div>
+<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;    setup_from_local_corner_number();</div>
+<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;  }</div>
+<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;  <a class="code" href="classVolumeCornerIterator.html">VolumeCornerIterator</a>(</div>
+<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;      <span class="comment">// The block index is also global corner</span></div>
+<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;      <span class="comment">// index of the lowest corner of the block.</span></div>
+<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;      <a class="code" href="classIndex.html">Index&lt;VolumeDim&gt;</a> block_index,</div>
+<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;      <a class="code" href="classIndex.html">Index&lt;VolumeDim&gt;</a> global_corner_extents) noexcept</div>
+<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;      : global_corner_number_(</div>
+<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;            <a class="code" href="group__DataStructuresGroup.html#gac2de486a64a176604f89cbbfbb8fffc9">collapsed_index</a>(block_index, global_corner_extents)),</div>
+<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;        global_corner_index_(block_index),</div>
+<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;        global_corner_extents_(global_corner_extents) {}</div>
+<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160; </div>
+<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;  <span class="keywordtype">void</span> operator++() noexcept {</div>
+<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;    ++local_corner_number_;</div>
+<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;    setup_from_local_corner_number();</div>
+<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;  }</div>
+<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160; </div>
+<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;  <span class="keyword">explicit</span> <span class="keyword">operator</span> bool() <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;    <span class="keywordflow">return</span> local_corner_number_ &lt; <a class="code" href="group__ConstantExpressionsGroup.html#ga6c01ded3973bb4b9973e5381c32c0807">two_to_the</a>(VolumeDim);</div>
+<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;  }</div>
+<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160; </div>
+<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;  <span class="keywordtype">size_t</span> local_corner_number() <span class="keyword">const</span> noexcept { <span class="keywordflow">return</span> local_corner_number_; }</div>
+<div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160; </div>
+<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;  <span class="keywordtype">size_t</span> global_corner_number() <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;    <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;size_t, VolumeDim&gt;</a> new_indices{};</div>
+<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; VolumeDim; i++) {</div>
+<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;      <a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(new_indices, i) =</div>
+<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;          global_corner_index_[i] +</div>
+<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;          (<a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(array_sides_, i) == Side::Upper ? 1 : 0);</div>
+<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;    }</div>
+<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;    <span class="keyword">const</span> <a class="code" href="classIndex.html">Index&lt;VolumeDim&gt;</a> interior_multi_index(new_indices);</div>
+<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="group__DataStructuresGroup.html#gac2de486a64a176604f89cbbfbb8fffc9">collapsed_index</a>(interior_multi_index, global_corner_extents_);</div>
+<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;  }</div>
+<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160; </div>
+<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;  <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;Side, VolumeDim&gt;</a>&amp; operator()() <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;    <span class="keywordflow">return</span> array_sides_;</div>
+<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;  }</div>
+<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160; </div>
+<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;  <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;Side, VolumeDim&gt;</a>&amp; operator*() <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160;    <span class="keywordflow">return</span> array_sides_;</div>
+<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160;  }</div>
+<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160; </div>
+<div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160;  <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;double, VolumeDim&gt;</a>&amp; coords_of_corner() <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160;    <span class="keywordflow">return</span> coords_of_corner_;</div>
+<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;  }</div>
+<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160; </div>
+<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;  <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;Direction&lt;VolumeDim&gt;</a>, VolumeDim&gt;&amp; directions_of_corner()</div>
+<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;      <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;    <span class="keywordflow">return</span> array_directions_;</div>
+<div class="line"><a name="l00444"></a><span class="lineno">  444</span>&#160;  }</div>
+<div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160; </div>
+<div class="line"><a name="l00446"></a><span class="lineno">  446</span>&#160;  <span class="keywordtype">void</span> setup_from_local_corner_number() noexcept {</div>
+<div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; VolumeDim; i++) {</div>
+<div class="line"><a name="l00448"></a><span class="lineno">  448</span>&#160;      <a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(coords_of_corner_, i) =</div>
+<div class="line"><a name="l00449"></a><span class="lineno">  449</span>&#160;          2.0 * <a class="code" href="group__ConstantExpressionsGroup.html#ga6081cdd84b199ef868569b149f3e7256">get_nth_bit</a>(local_corner_number_, i) - 1.0;</div>
+<div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160;      <a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(array_sides_, i) =</div>
+<div class="line"><a name="l00451"></a><span class="lineno">  451</span>&#160;          2 * <a class="code" href="group__ConstantExpressionsGroup.html#ga6081cdd84b199ef868569b149f3e7256">get_nth_bit</a>(local_corner_number_, i) - 1 == 1 ? Side::Upper</div>
+<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160;                                                            : Side::Lower;</div>
+<div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160;      <a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(array_directions_, i) =</div>
+<div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160;          <a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a>(i, <a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(array_sides_, i));</div>
+<div class="line"><a name="l00455"></a><span class="lineno">  455</span>&#160;    }</div>
+<div class="line"><a name="l00456"></a><span class="lineno">  456</span>&#160;  }</div>
+<div class="line"><a name="l00457"></a><span class="lineno">  457</span>&#160; </div>
+<div class="line"><a name="l00458"></a><span class="lineno">  458</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00459"></a><span class="lineno">  459</span>&#160;  <span class="keywordtype">size_t</span> local_corner_number_ = 0;</div>
+<div class="line"><a name="l00460"></a><span class="lineno">  460</span>&#160;  <span class="keywordtype">size_t</span> global_corner_number_{<a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/max.html">std::numeric_limits&lt;size_t&gt;::max</a>()};</div>
+<div class="line"><a name="l00461"></a><span class="lineno">  461</span>&#160;  <a class="code" href="classIndex.html">Index&lt;VolumeDim&gt;</a> global_corner_index_{};</div>
+<div class="line"><a name="l00462"></a><span class="lineno">  462</span>&#160;  <a class="code" href="classIndex.html">Index&lt;VolumeDim&gt;</a> global_corner_extents_{};</div>
+<div class="line"><a name="l00463"></a><span class="lineno">  463</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;Side, VolumeDim&gt;</a> array_sides_ = make_array&lt;VolumeDim&gt;(Side::Lower);</div>
+<div class="line"><a name="l00464"></a><span class="lineno">  464</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;Direction&lt;VolumeDim&gt;</a>, VolumeDim&gt; array_directions_{};</div>
+<div class="line"><a name="l00465"></a><span class="lineno">  465</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;double, VolumeDim&gt;</a> coords_of_corner_ = make_array&lt;VolumeDim&gt;(-1.0);</div>
+<div class="line"><a name="l00466"></a><span class="lineno">  466</span>&#160;};</div>
+<div class="line"><a name="l00467"></a><span class="lineno">  467</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00468"></a><span class="lineno">  468</span>&#160;<span class="comment">/// \ingroup ComputationalDomainGroup</span></div>
+<div class="line"><a name="l00469"></a><span class="lineno">  469</span>&#160;<span class="comment">/// Iterates over the 2^(VolumeDim-1) logical corners of the face of a</span></div>
+<div class="line"><a name="l00470"></a><span class="lineno">  470</span>&#160;<span class="comment">/// VolumeDim-dimensional cube in the given direction.</span></div>
+<div class="line"><a name="l00471"></a><span class="lineno">  471</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00472"></a><span class="lineno"><a class="line" href="classFaceCornerIterator.html">  472</a></span>&#160;<span class="keyword">class </span><a class="code" href="classFaceCornerIterator.html">FaceCornerIterator</a> {</div>
+<div class="line"><a name="l00473"></a><span class="lineno">  473</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00474"></a><span class="lineno">  474</span>&#160;  <span class="keyword">explicit</span> <a class="code" href="classFaceCornerIterator.html">FaceCornerIterator</a>(<a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a> direction) noexcept;</div>
+<div class="line"><a name="l00475"></a><span class="lineno">  475</span>&#160; </div>
+<div class="line"><a name="l00476"></a><span class="lineno">  476</span>&#160;  <span class="keywordtype">void</span> operator++() noexcept {</div>
+<div class="line"><a name="l00477"></a><span class="lineno">  477</span>&#160;    face_index_++;</div>
+<div class="line"><a name="l00478"></a><span class="lineno">  478</span>&#160;    <span class="keywordflow">do</span> {</div>
+<div class="line"><a name="l00479"></a><span class="lineno">  479</span>&#160;      index_++;</div>
+<div class="line"><a name="l00480"></a><span class="lineno">  480</span>&#160;    } <span class="keywordflow">while</span> (<a class="code" href="group__ConstantExpressionsGroup.html#ga6081cdd84b199ef868569b149f3e7256">get_nth_bit</a>(index_, direction_.dimension()) ==</div>
+<div class="line"><a name="l00481"></a><span class="lineno">  481</span>&#160;             (direction_.side() == Side::Upper ? 0 : 1));</div>
+<div class="line"><a name="l00482"></a><span class="lineno">  482</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; VolumeDim; ++i) {</div>
+<div class="line"><a name="l00483"></a><span class="lineno">  483</span>&#160;      corner_[i] = 2 * <span class="keyword">static_cast&lt;</span><span class="keywordtype">int</span><span class="keyword">&gt;</span>(<a class="code" href="group__ConstantExpressionsGroup.html#ga6081cdd84b199ef868569b149f3e7256">get_nth_bit</a>(index_, i)) - 1;</div>
+<div class="line"><a name="l00484"></a><span class="lineno">  484</span>&#160;    }</div>
+<div class="line"><a name="l00485"></a><span class="lineno">  485</span>&#160;  }</div>
+<div class="line"><a name="l00486"></a><span class="lineno">  486</span>&#160; </div>
+<div class="line"><a name="l00487"></a><span class="lineno">  487</span>&#160;  <span class="keyword">explicit</span> <span class="keyword">operator</span> bool() <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00488"></a><span class="lineno">  488</span>&#160;    <span class="keywordflow">return</span> face_index_ &lt; <a class="code" href="group__ConstantExpressionsGroup.html#ga6c01ded3973bb4b9973e5381c32c0807">two_to_the</a>(VolumeDim - 1);</div>
+<div class="line"><a name="l00489"></a><span class="lineno">  489</span>&#160;  }</div>
+<div class="line"><a name="l00490"></a><span class="lineno">  490</span>&#160; </div>
+<div class="line"><a name="l00491"></a><span class="lineno">  491</span>&#160;  tnsr::I&lt;double, VolumeDim, Frame::Logical&gt; operator()() <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00492"></a><span class="lineno">  492</span>&#160;    <span class="keywordflow">return</span> corner_;</div>
+<div class="line"><a name="l00493"></a><span class="lineno">  493</span>&#160;  }</div>
+<div class="line"><a name="l00494"></a><span class="lineno">  494</span>&#160; </div>
+<div class="line"><a name="l00495"></a><span class="lineno">  495</span>&#160;  tnsr::I&lt;double, VolumeDim, Frame::Logical&gt; operator*() <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00496"></a><span class="lineno">  496</span>&#160;    <span class="keywordflow">return</span> corner_;</div>
+<div class="line"><a name="l00497"></a><span class="lineno">  497</span>&#160;  }</div>
+<div class="line"><a name="l00498"></a><span class="lineno">  498</span>&#160; </div>
+<div class="line"><a name="l00499"></a><span class="lineno">  499</span>&#160;  <span class="comment">// Returns the value used to construct the logical corner.</span></div>
+<div class="line"><a name="l00500"></a><span class="lineno">  500</span>&#160;  <span class="keywordtype">size_t</span> volume_index() <span class="keyword">const</span> noexcept { <span class="keywordflow">return</span> index_; }</div>
+<div class="line"><a name="l00501"></a><span class="lineno">  501</span>&#160; </div>
+<div class="line"><a name="l00502"></a><span class="lineno">  502</span>&#160;  <span class="comment">// Returns the number of times operator++ has been called.</span></div>
+<div class="line"><a name="l00503"></a><span class="lineno">  503</span>&#160;  <span class="keywordtype">size_t</span> face_index() <span class="keyword">const</span> noexcept { <span class="keywordflow">return</span> face_index_; }</div>
+<div class="line"><a name="l00504"></a><span class="lineno">  504</span>&#160; </div>
+<div class="line"><a name="l00505"></a><span class="lineno">  505</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00506"></a><span class="lineno">  506</span>&#160;  <span class="keyword">const</span> <a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a> direction_;</div>
+<div class="line"><a name="l00507"></a><span class="lineno">  507</span>&#160;  <span class="keywordtype">size_t</span> index_;</div>
+<div class="line"><a name="l00508"></a><span class="lineno">  508</span>&#160;  <span class="keywordtype">size_t</span> face_index_ = 0;</div>
+<div class="line"><a name="l00509"></a><span class="lineno">  509</span>&#160;  tnsr::I&lt;double, VolumeDim, Frame::Logical&gt; corner_;</div>
+<div class="line"><a name="l00510"></a><span class="lineno">  510</span>&#160;};</div>
+<div class="line"><a name="l00511"></a><span class="lineno">  511</span>&#160; </div>
+<div class="line"><a name="l00512"></a><span class="lineno">  512</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00513"></a><span class="lineno">  513</span>&#160;<a class="code" href="classFaceCornerIterator.html">FaceCornerIterator&lt;VolumeDim&gt;::FaceCornerIterator</a>(</div>
+<div class="line"><a name="l00514"></a><span class="lineno">  514</span>&#160;    <a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a> direction) noexcept</div>
+<div class="line"><a name="l00515"></a><span class="lineno">  515</span>&#160;    : direction_(std::move(direction)),</div>
+<div class="line"><a name="l00516"></a><span class="lineno">  516</span>&#160;      index_(direction_.side() == Side::Upper</div>
+<div class="line"><a name="l00517"></a><span class="lineno">  517</span>&#160;                 ? <a class="code" href="group__ConstantExpressionsGroup.html#ga6c01ded3973bb4b9973e5381c32c0807">two_to_the</a>(direction_.dimension())</div>
+<div class="line"><a name="l00518"></a><span class="lineno">  518</span>&#160;                 : 0) {</div>
+<div class="line"><a name="l00519"></a><span class="lineno">  519</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; VolumeDim; ++i) {</div>
+<div class="line"><a name="l00520"></a><span class="lineno">  520</span>&#160;    corner_[i] = 2 * <span class="keyword">static_cast&lt;</span><span class="keywordtype">int</span><span class="keyword">&gt;</span>(<a class="code" href="group__ConstantExpressionsGroup.html#ga6081cdd84b199ef868569b149f3e7256">get_nth_bit</a>(index_, i)) - 1;</div>
+<div class="line"><a name="l00521"></a><span class="lineno">  521</span>&#160;  }</div>
+<div class="line"><a name="l00522"></a><span class="lineno">  522</span>&#160;}</div>
+<div class="line"><a name="l00523"></a><span class="lineno">  523</span>&#160; </div>
+<div class="line"><a name="l00524"></a><span class="lineno">  524</span>&#160;<a class="codeRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a>&amp; operator&lt;&lt;(<a class="codeRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a>&amp; os,</div>
+<div class="line"><a name="l00525"></a><span class="lineno">  525</span>&#160;                         <span class="keyword">const</span> <a class="code" href="group__ComputationalDomainGroup.html#gac672a529d9aaa6a948b8b7eb6ec9b528">ShellWedges</a>&amp; which_wedges) noexcept;</div>
+<div class="line"><a name="l00526"></a><span class="lineno">  526</span>&#160; </div>
+<div class="line"><a name="l00527"></a><span class="lineno">  527</span>&#160;<span class="keyword">template</span> &lt;&gt;</div>
+<div class="line"><a name="l00528"></a><span class="lineno"><a class="line" href="structOptions_1_1create__from__yaml_3_01ShellWedges_01_4.html">  528</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structOptions_1_1create__from__yaml.html">Options::create_from_yaml</a>&lt;<a class="code" href="group__ComputationalDomainGroup.html#gac672a529d9aaa6a948b8b7eb6ec9b528">ShellWedges</a>&gt; {</div>
+<div class="line"><a name="l00529"></a><span class="lineno">  529</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Metavariables&gt;</div>
+<div class="line"><a name="l00530"></a><span class="lineno">  530</span>&#160;  <span class="keyword">static</span> <a class="code" href="group__ComputationalDomainGroup.html#gac672a529d9aaa6a948b8b7eb6ec9b528">ShellWedges</a> create(<span class="keyword">const</span> <a class="code" href="classOptions_1_1Option.html">Options::Option</a>&amp; options) {</div>
+<div class="line"><a name="l00531"></a><span class="lineno">  531</span>&#160;    <span class="keywordflow">return</span> create&lt;void&gt;(options);</div>
+<div class="line"><a name="l00532"></a><span class="lineno">  532</span>&#160;  }</div>
+<div class="line"><a name="l00533"></a><span class="lineno">  533</span>&#160;};</div>
+<div class="line"><a name="l00534"></a><span class="lineno">  534</span>&#160;<span class="keyword">template</span> &lt;&gt;</div>
+<div class="line"><a name="l00535"></a><span class="lineno">  535</span>&#160;<a class="code" href="group__ComputationalDomainGroup.html#gac672a529d9aaa6a948b8b7eb6ec9b528">ShellWedges</a> <a class="code" href="structOptions_1_1create__from__yaml.html">Options::create_from_yaml&lt;ShellWedges&gt;::create&lt;void&gt;</a>(</div>
+<div class="line"><a name="l00536"></a><span class="lineno">  536</span>&#160;    <span class="keyword">const</span> <a class="code" href="classOptions_1_1Option.html">Options::Option</a>&amp; options);</div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga818f101f2f8bd824a3bc7c2c2361c560"><div class="ttname"><a href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a></div><div class="ttdeci">constexpr T &amp; at(std::array&lt; T, N &gt; &amp;arr, Size index)</div><div class="ttdoc">Retrieve a entry from a container, with checks in Debug mode that the index being retrieved is valid.</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:125</div></div>
+<div class="ttc" id="aclassdomain_1_1CoordinateMaps_1_1ProductOf3Maps_html"><div class="ttname"><a href="classdomain_1_1CoordinateMaps_1_1ProductOf3Maps.html">domain::CoordinateMaps::ProductOf3Maps</a></div><div class="ttdoc">Product of three one-dimensional CoordinateMaps.</div><div class="ttdef"><b>Definition:</b> ProductMaps.hpp:90</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ga25fa2b3f359fdcd8fd7d15c7b0ce1dbc"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ga25fa2b3f359fdcd8fd7d15c7b0ce1dbc">corners_for_cylindrical_layered_domains</a></div><div class="ttdeci">std::vector&lt; std::array&lt; size_t, 8 &gt; &gt; corners_for_cylindrical_layered_domains(size_t number_of_shells, size_t number_of_discs) noexcept</div><div class="ttdoc">The corners for a cylindrical domain split into discs with radial shells.</div></div>
+<div class="ttc" id="aclassBlockNeighbor_html"><div class="ttname"><a href="classBlockNeighbor.html">BlockNeighbor</a></div><div class="ttdef"><b>Definition:</b> BlockNeighbor.hpp:25</div></div>
+<div class="ttc" id="agroup__ConstantExpressionsGroup_html_ga6c01ded3973bb4b9973e5381c32c0807"><div class="ttname"><a href="group__ConstantExpressionsGroup.html#ga6c01ded3973bb4b9973e5381c32c0807">two_to_the</a></div><div class="ttdeci">constexpr T two_to_the(T n)</div><div class="ttdef"><b>Definition:</b> ConstantExpressions.hpp:36</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ga86534fcfbcabd6acc079b6fc38cdfbea"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ga86534fcfbcabd6acc079b6fc38cdfbea">frustum_coordinate_maps</a></div><div class="ttdeci">auto frustum_coordinate_maps(double length_inner_cube, double length_outer_cube, bool use_equiangular_map, const std::array&lt; double, 3 &gt; &amp;origin_preimage={{0.0, 0.0, 0.0}}, double projective_scale_factor=1.0) noexcept -&gt; std::vector&lt; std::unique_ptr&lt; domain::CoordinateMapBase&lt; Frame::Logical, TargetFrame, 3 &gt;&gt;&gt;</div></div>
+<div class="ttc" id="aclassdomain_1_1CoordinateMapBase_html"><div class="ttname"><a href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a></div><div class="ttdoc">Abstract base class for CoordinateMap.</div><div class="ttdef"><b>Definition:</b> CoordinateMap.hpp:45</div></div>
+<div class="ttc" id="aiosfwd_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/iosfwd.html">iosfwd</a></div></div>
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a></div></div>
+<div class="ttc" id="aMakeArray_8hpp_html"><div class="ttname"><a href="MakeArray_8hpp.html">MakeArray.hpp</a></div></div>
+<div class="ttc" id="aSide_8hpp_html"><div class="ttname"><a href="Side_8hpp.html">Side.hpp</a></div></div>
+<div class="ttc" id="aclassdomain_1_1CoordinateMaps_1_1ProductOf2Maps_html"><div class="ttname"><a href="classdomain_1_1CoordinateMaps_1_1ProductOf2Maps.html">domain::CoordinateMaps::ProductOf2Maps</a></div><div class="ttdoc">Product of two codimension=0 CoordinateMaps.</div><div class="ttdef"><b>Definition:</b> ProductMaps.hpp:35</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ga5640402fc85ec353685c6914a9750459"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ga5640402fc85ec353685c6914a9750459">set_identified_boundaries</a></div><div class="ttdeci">void set_identified_boundaries(const std::vector&lt; PairOfFaces &gt; &amp;identifications, const std::vector&lt; std::array&lt; size_t, two_to_the(VolumeDim)&gt;&gt; &amp;corners_of_all_blocks, gsl::not_null&lt; std::vector&lt; DirectionMap&lt; VolumeDim, BlockNeighbor&lt; VolumeDim &gt;&gt;&gt; * &gt; neighbors_of_all_blocks) noexcept</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ga8c80443a66a28ba3cd542cf5f2d223c5"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ga8c80443a66a28ba3cd542cf5f2d223c5">discrete_rotation</a></div><div class="ttdeci">std::array&lt; size_t, two_to_the(VolumeDim)&gt; discrete_rotation(const OrientationMap&lt; VolumeDim &gt; &amp;orientation, const std::array&lt; size_t, two_to_the(VolumeDim)&gt; &amp;corners_of_aligned) noexcept</div><div class="ttdoc">Permutes the corner numbers of an n-cube.</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_gac672a529d9aaa6a948b8b7eb6ec9b528"><div class="ttname"><a href="group__ComputationalDomainGroup.html#gac672a529d9aaa6a948b8b7eb6ec9b528">ShellWedges</a></div><div class="ttdeci">ShellWedges</div><div class="ttdef"><b>Definition:</b> DomainHelpers.hpp:129</div></div>
+<div class="ttc" id="aclassIndex_html"><div class="ttname"><a href="classIndex.html">Index&lt; VolumeDim &gt;</a></div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_gaa76c0e8c51614f3393118e403ed35a5f"><div class="ttname"><a href="group__ComputationalDomainGroup.html#gaa76c0e8c51614f3393118e403ed35a5f">corners_for_biradially_layered_domains</a></div><div class="ttdeci">std::vector&lt; std::array&lt; size_t, 8 &gt; &gt; corners_for_biradially_layered_domains(size_t number_of_radial_layers, size_t number_of_biradial_layers, bool include_central_block_lhs, bool include_central_block_rhs, const std::array&lt; size_t, 8 &gt; &amp;central_block_corners_lhs={ {1, 2, 3, 4, 5, 6, 7, 8}}) noexcept</div><div class="ttdoc">The corners for a domain with biradial layers.</div></div>
+<div class="ttc" id="aclassdomain_1_1CoordinateMaps_1_1Equiangular_html"><div class="ttname"><a href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">domain::CoordinateMaps::Equiangular</a></div><div class="ttdoc">Non-linear map from .</div><div class="ttdef"><b>Definition:</b> Equiangular.hpp:53</div></div>
+<div class="ttc" id="agroup__DataStructuresGroup_html_gac2de486a64a176604f89cbbfbb8fffc9"><div class="ttname"><a href="group__DataStructuresGroup.html#gac2de486a64a176604f89cbbfbb8fffc9">collapsed_index</a></div><div class="ttdeci">size_t collapsed_index(const Index&lt; N &gt; &amp;index, const Index&lt; N &gt; &amp;extents) noexcept</div></div>
+<div class="ttc" id="aclassOrientationMap_html"><div class="ttname"><a href="classOrientationMap.html">OrientationMap</a></div><div class="ttdoc">A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of th...</div><div class="ttdef"><b>Definition:</b> OrientationMap.hpp:34</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ga4b379cede89e5711f5f973edd5e0d548"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ga4b379cede89e5711f5f973edd5e0d548">cyl_wedge_coordinate_maps</a></div><div class="ttdeci">auto cyl_wedge_coordinate_maps(double inner_radius, double outer_radius, double lower_bound, double upper_bound, bool use_equiangular_map, const std::vector&lt; double &gt; &amp;radial_partitioning={}, const std::vector&lt; double &gt; &amp;height_partitioning={}, const std::vector&lt; domain::CoordinateMaps::Distribution &gt; &amp;radial_distribution={domain::CoordinateMaps::Distribution::Linear}) noexcept -&gt; std::vector&lt; std::unique_ptr&lt; domain::CoordinateMapBase&lt; Frame::Logical, TargetFrame, 3 &gt;&gt;&gt;</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ga352a96e2ad69bb9fd2d71d412a4fc8b7"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ga352a96e2ad69bb9fd2d71d412a4fc8b7">set_internal_boundaries</a></div><div class="ttdeci">void set_internal_boundaries(gsl::not_null&lt; std::vector&lt; DirectionMap&lt; VolumeDim, BlockNeighbor&lt; VolumeDim &gt;&gt;&gt; * &gt; neighbors_of_all_blocks, const std::vector&lt; std::array&lt; size_t, two_to_the(VolumeDim)&gt;&gt; &amp;corners_of_all_blocks) noexcept</div></div>
+<div class="ttc" id="agroup__ConstantExpressionsGroup_html_ga6081cdd84b199ef868569b149f3e7256"><div class="ttname"><a href="group__ConstantExpressionsGroup.html#ga6081cdd84b199ef868569b149f3e7256">get_nth_bit</a></div><div class="ttdeci">constexpr size_t get_nth_bit(const size_t i, const size_t N)</div><div class="ttdef"><b>Definition:</b> ConstantExpressions.hpp:46</div></div>
+<div class="ttc" id="aclassDirection_html"><div class="ttname"><a href="classDirection.html">Direction</a></div><div class="ttdef"><b>Definition:</b> Direction.hpp:23</div></div>
+<div class="ttc" id="aclassdomain_1_1CoordinateMaps_1_1Affine_html"><div class="ttname"><a href="classdomain_1_1CoordinateMaps_1_1Affine.html">domain::CoordinateMaps::Affine</a></div><div class="ttdoc">Affine map from .</div><div class="ttdef"><b>Definition:</b> Affine.hpp:37</div></div>
+<div class="ttc" id="aclassOptions_1_1Option_html"><div class="ttname"><a href="classOptions_1_1Option.html">Options::Option</a></div><div class="ttdef"><b>Definition:</b> Options.hpp:108</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ggac672a529d9aaa6a948b8b7eb6ec9b528ab1c94ca2fbc3e78fc30069c8d0f01680"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ggac672a529d9aaa6a948b8b7eb6ec9b528ab1c94ca2fbc3e78fc30069c8d0f01680">ShellWedges::All</a></div><div class="ttdeci">@ All</div><div class="ttdoc">Use the entire shell.</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ga18341ca86191b511f92daf2d8c69302c"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ga18341ca86191b511f92daf2d8c69302c">corners_for_rectilinear_domains</a></div><div class="ttdeci">auto corners_for_rectilinear_domains(const Index&lt; VolumeDim &gt; &amp;domain_extents, const std::vector&lt; Index&lt; VolumeDim &gt;&gt; &amp;block_indices_to_exclude={}) noexcept -&gt; std::vector&lt; std::array&lt; size_t, two_to_the(VolumeDim)&gt;&gt;</div><div class="ttdoc">The corners for a rectilinear domain made of n-cubes.</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ggac672a529d9aaa6a948b8b7eb6ec9b528ace553534ea34f25db4b4a8b5bd29cf45"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ggac672a529d9aaa6a948b8b7eb6ec9b528ace553534ea34f25db4b4a8b5bd29cf45">ShellWedges::FourOnEquator</a></div><div class="ttdeci">@ FourOnEquator</div><div class="ttdoc">Use only the four equatorial wedges.</div></div>
+<div class="ttc" id="anamespaceOptions_html"><div class="ttname"><a href="namespaceOptions.html">Options</a></div><div class="ttdoc">Utilities for parsing input files.</div><div class="ttdef"><b>Definition:</b> MinmodType.hpp:8</div></div>
+<div class="ttc" id="abasic_ostream_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a></div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_gac97e959e577e9d546ef7cb167ba9de5e"><div class="ttname"><a href="group__ComputationalDomainGroup.html#gac97e959e577e9d546ef7cb167ba9de5e">cyl_wedge_coord_map_surrounding_blocks</a></div><div class="ttdeci">auto cyl_wedge_coord_map_surrounding_blocks(double inner_radius, double outer_radius, double lower_bound, double upper_bound, bool use_equiangular_map, double inner_circularity, const std::vector&lt; double &gt; &amp;radial_partitioning={}, const std::vector&lt; double &gt; &amp;height_partitioning={}, const std::vector&lt; domain::CoordinateMaps::Distribution &gt; &amp;radial_distribution={domain::CoordinateMaps::Distribution::Linear}, CylindricalDomainParityFlip parity_flip=CylindricalDomainParityFlip::none) noexcept -&gt; std::vector&lt; domain::CoordinateMaps::ProductOf2Maps&lt; domain::CoordinateMaps::Wedge&lt; 2 &gt;, domain::CoordinateMaps::Affine &gt;&gt;</div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_gaba91825909e9aa842eb091df693e919e"><div class="ttname"><a href="group__ComputationalDomainGroup.html#gaba91825909e9aa842eb091df693e919e">indices_for_rectilinear_domains</a></div><div class="ttdeci">auto indices_for_rectilinear_domains(const Index&lt; VolumeDim &gt; &amp;domain_extents, const std::vector&lt; Index&lt; VolumeDim &gt;&gt; &amp;block_indices_to_exclude={}) noexcept -&gt; std::vector&lt; Index&lt; VolumeDim &gt;&gt;</div><div class="ttdoc">The multi-indices that identify the individual Blocks in the lattice.</div></div>
+<div class="ttc" id="astructPairOfFaces_html"><div class="ttname"><a href="structPairOfFaces.html">PairOfFaces</a></div><div class="ttdef"><b>Definition:</b> DomainHelpers.hpp:61</div></div>
+<div class="ttc" id="astructOptions_1_1create__from__yaml_html"><div class="ttname"><a href="structOptions_1_1create__from__yaml.html">Options::create_from_yaml</a></div><div class="ttdef"><b>Definition:</b> MinmodType.hpp:11</div></div>
+<div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/array.html">array</a></div></div>
+<div class="ttc" id="aIndex_8hpp_html"><div class="ttname"><a href="Index_8hpp.html">Index.hpp</a></div></div>
+<div class="ttc" id="aConstantExpressions_8hpp_html"><div class="ttname"><a href="ConstantExpressions_8hpp.html">ConstantExpressions.hpp</a></div></div>
+<div class="ttc" id="anamespacedomain_1_1CoordinateMaps_html"><div class="ttname"><a href="namespacedomain_1_1CoordinateMaps.html">domain::CoordinateMaps</a></div><div class="ttdoc">Contains all coordinate maps.</div><div class="ttdef"><b>Definition:</b> Affine.hpp:23</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ga0a053203d0fdd947c6414ec7a548ee2a"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ga0a053203d0fdd947c6414ec7a548ee2a">sph_wedge_coordinate_maps</a></div><div class="ttdeci">auto sph_wedge_coordinate_maps(double inner_radius, double outer_radius, double inner_sphericity, double outer_sphericity, bool use_equiangular_map, double x_coord_of_shell_center=0.0, bool use_half_wedges=false, double aspect_ratio=1.0, const std::vector&lt; double &gt; &amp;radial_partitioning={}, const std::vector&lt; domain::CoordinateMaps::Distribution &gt; &amp;radial_distribution={domain::CoordinateMaps::Distribution::Linear}, ShellWedges which_wedges=ShellWedges::All) noexcept -&gt; std::vector&lt; std::unique_ptr&lt; domain::CoordinateMapBase&lt; Frame::Logical, TargetFrame, 3 &gt;&gt;&gt;</div></div>
+<div class="ttc" id="aclassDomain_html"><div class="ttname"><a href="classDomain.html">Domain</a></div><div class="ttdoc">A wrapper around a vector of Blocks that represent the computational domain.</div><div class="ttdef"><b>Definition:</b> Domain.hpp:40</div></div>
+<div class="ttc" id="amemory_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a></div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ga800100a7e665c7fdc63549d99d14bf01"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ga800100a7e665c7fdc63549d99d14bf01">rectilinear_domain</a></div><div class="ttdeci">Domain&lt; VolumeDim &gt; rectilinear_domain(const Index&lt; VolumeDim &gt; &amp;domain_extents, const std::array&lt; std::vector&lt; double &gt;, VolumeDim &gt; &amp;block_demarcations, std::vector&lt; DirectionMap&lt; VolumeDim, std::unique_ptr&lt; domain::BoundaryConditions::BoundaryCondition &gt;&gt;&gt; boundary_conditions={}, const std::vector&lt; Index&lt; VolumeDim &gt;&gt; &amp;block_indices_to_exclude={}, const std::vector&lt; OrientationMap&lt; VolumeDim &gt;&gt; &amp;orientations_of_all_blocks={}, const std::array&lt; bool, VolumeDim &gt; &amp;dimension_is_periodic=make_array&lt; VolumeDim &gt;(false), const std::vector&lt; PairOfFaces &gt; &amp;identifications={}, bool use_equiangular_map=false) noexcept</div><div class="ttdoc">Create a rectilinear Domain of multicubes.</div></div>
+<div class="ttc" id="aclassDirectionMap_html"><div class="ttname"><a href="classDirectionMap.html">DirectionMap</a></div><div class="ttdef"><b>Definition:</b> DirectionMap.hpp:15</div></div>
+<div class="ttc" id="alimits_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/limits.html">limits</a></div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="aclassFaceCornerIterator_html"><div class="ttname"><a href="classFaceCornerIterator.html">FaceCornerIterator</a></div><div class="ttdef"><b>Definition:</b> DomainHelpers.hpp:472</div></div>
+<div class="ttc" id="anamespaceFrame_html"><div class="ttname"><a href="namespaceFrame.html">Frame</a></div><div class="ttdef"><b>Definition:</b> IndexType.hpp:36</div></div>
+<div class="ttc" id="aTensor_8hpp_html"><div class="ttname"><a href="Tensor_8hpp.html">Tensor.hpp</a></div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ga2fa6f4a3bbb32cae7c59d29c519ce4a3"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ga2fa6f4a3bbb32cae7c59d29c519ce4a3">maps_for_rectilinear_domains</a></div><div class="ttdeci">auto maps_for_rectilinear_domains(const Index&lt; VolumeDim &gt; &amp;domain_extents, const std::array&lt; std::vector&lt; double &gt;, VolumeDim &gt; &amp;block_demarcations, const std::vector&lt; Index&lt; VolumeDim &gt;&gt; &amp;block_indices_to_exclude={}, const std::vector&lt; OrientationMap&lt; VolumeDim &gt;&gt; &amp;orientations_of_all_blocks={}, bool use_equiangular_map=false) noexcept -&gt; std::vector&lt; std::unique_ptr&lt; domain::CoordinateMapBase&lt; Frame::Logical, TargetFrame, VolumeDim &gt;&gt;&gt;</div><div class="ttdoc">The CoordinateMaps for a rectilinear domain of n-cubes.</div></div>
+<div class="ttc" id="aclassVolumeCornerIterator_html"><div class="ttname"><a href="classVolumeCornerIterator.html">VolumeCornerIterator</a></div><div class="ttdef"><b>Definition:</b> DomainHelpers.hpp:389</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_gaa886a5a35d828b78feabd35ef57dfe87"><div class="ttname"><a href="group__ComputationalDomainGroup.html#gaa886a5a35d828b78feabd35ef57dfe87">cyl_wedge_coord_map_center_blocks</a></div><div class="ttdeci">auto cyl_wedge_coord_map_center_blocks(double inner_radius, double lower_bound, double upper_bound, const std::vector&lt; double &gt; &amp;height_partitioning={}, CylindricalDomainParityFlip parity_flip=CylindricalDomainParityFlip::none) noexcept -&gt; tmpl::conditional_t&lt; UseEquiangularMap, std::vector&lt; domain::CoordinateMaps::ProductOf3Maps&lt; domain::CoordinateMaps::Equiangular, domain::CoordinateMaps::Equiangular, domain::CoordinateMaps::Affine &gt;&gt;, std::vector&lt; domain::CoordinateMaps::ProductOf3Maps&lt; domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine &gt;&gt;&gt;</div></div>
+<div class="ttc" id="aDirection_8hpp_html"><div class="ttname"><a href="Direction_8hpp.html">Direction.hpp</a></div></div>
+<div class="ttc" id="amax_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/numeric_limits/max.html">std::numeric_limits::max</a></div><div class="ttdeci">T max(T... args)</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ggac672a529d9aaa6a948b8b7eb6ec9b528ae9d8dbfbf81de7cf729066f677661edb"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ggac672a529d9aaa6a948b8b7eb6ec9b528ae9d8dbfbf81de7cf729066f677661edb">ShellWedges::OneAlongMinusX</a></div><div class="ttdeci">@ OneAlongMinusX</div><div class="ttdoc">Use only the single wedge along -x.</div></div>
+<div class="ttc" id="aunique_ptr_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ga18526a75399d20dfb670b233fa55cff8"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ga18526a75399d20dfb670b233fa55cff8">corners_for_radially_layered_domains</a></div><div class="ttdeci">std::vector&lt; std::array&lt; size_t, 8 &gt; &gt; corners_for_radially_layered_domains(size_t number_of_layers, bool include_central_block, const std::array&lt; size_t, 8 &gt; &amp;central_block_corners={{1, 2, 3, 4, 5, 6, 7, 8}}, ShellWedges which_wedges=ShellWedges::All) noexcept</div><div class="ttdoc">The corners for a domain with radial layers.</div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<div class="ttc" id="aclassdomain_1_1CoordinateMaps_1_1Wedge_html"><div class="ttname"><a href="classdomain_1_1CoordinateMaps_1_1Wedge.html">domain::CoordinateMaps::Wedge</a></div><div class="ttdoc">Map from a square or cube to a wedge.</div><div class="ttdef"><b>Definition:</b> Wedge.hpp:255</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

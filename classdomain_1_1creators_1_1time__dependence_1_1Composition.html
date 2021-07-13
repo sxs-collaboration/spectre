@@ -1,0 +1,311 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::creators::time_dependence::Composition&lt; TimeDependenceCompTag0, TimeDependenceCompTags &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1creators.html">creators</a></li><li class="navelem"><a class="el" href="namespacedomain_1_1creators_1_1time__dependence.html">time_dependence</a></li><li class="navelem"><a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1Composition.html">Composition</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classdomain_1_1creators_1_1time__dependence_1_1Composition-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::creators::time_dependence::Composition&lt; TimeDependenceCompTag0, TimeDependenceCompTags &gt; Class Template Reference<span class="mlabels"><span class="mlabel">final</span></span></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html" title="The abstract base class off of which specific classes for adding time dependence into a domain creato...">TimeDependence</a> that is a composition of various other TimeDependences.  
+ <a href="classdomain_1_1creators_1_1time__dependence_1_1Composition.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Composition_8hpp_source.html">Composition.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ac3063f7e5f5d303017621e0888292926"><td class="memItemLeft" align="right" valign="top"><a id="ac3063f7e5f5d303017621e0888292926"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>CoordMap</b> = detail::generate_coordinate_map_t&lt; tmpl::flatten&lt; tmpl::list&lt; typename TimeDependenceCompTag0::time_dependence::MapForComposition::maps_list, typename TimeDependenceCompTags::time_dependence::MapForComposition::maps_list... &gt; &gt;&gt;</td></tr>
+<tr class="separator:ac3063f7e5f5d303017621e0888292926"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ab5ec1d189f5133adbc6821e95dcdcb"><td class="memItemLeft" align="right" valign="top"><a id="a3ab5ec1d189f5133adbc6821e95dcdcb"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>maps_list</b> = tmpl::list&lt; CoordMap &gt;</td></tr>
+<tr class="separator:a3ab5ec1d189f5133adbc6821e95dcdcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a99d9779f32d034ce431dbff4eb67c5f5"><td class="memItemLeft" align="right" valign="top"><a id="a99d9779f32d034ce431dbff4eb67c5f5"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; TimeDependenceCompTag0, TimeDependenceCompTags... &gt;</td></tr>
+<tr class="separator:a99d9779f32d034ce431dbff4eb67c5f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">domain::creators::time_dependence::TimeDependence&lt; TimeDependenceCompTag0::mesh_dim &gt;</a></td></tr>
+<tr class="memitem:a518a231b9f2b2beef1e2482ab07b5f31 inherit pub_types_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="a518a231b9f2b2beef1e2482ab07b5f31"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::append&lt; creatable_classes_any_dim, tmpl::conditional_t&lt; MeshDim==1, creatable_classes_1d, tmpl::conditional_t&lt; MeshDim==2, creatable_classes_2d, creatable_classes_3d &gt; &gt;&gt;</td></tr>
+<tr class="separator:a518a231b9f2b2beef1e2482ab07b5f31 inherit pub_types_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ad4203b40ea99c733846bc828032e2523"><td class="memItemLeft" align="right" valign="top"><a id="ad4203b40ea99c733846bc828032e2523"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Composition</b> (const <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1Composition.html">Composition</a> &amp;)=default</td></tr>
+<tr class="separator:ad4203b40ea99c733846bc828032e2523"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c8d457970a7c66f720702d96b01b90f"><td class="memItemLeft" align="right" valign="top"><a id="a0c8d457970a7c66f720702d96b01b90f"></a>
+<a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1Composition.html">Composition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1Composition.html">Composition</a> &amp;)=default</td></tr>
+<tr class="separator:a0c8d457970a7c66f720702d96b01b90f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a11f86ba852fd15fdd839eed78311a5cc"><td class="memItemLeft" align="right" valign="top"><a id="a11f86ba852fd15fdd839eed78311a5cc"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Composition</b> (<a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1Composition.html">Composition</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a11f86ba852fd15fdd839eed78311a5cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae770d79adf0f5f7af5f82f14b0462da9"><td class="memItemLeft" align="right" valign="top"><a id="ae770d79adf0f5f7af5f82f14b0462da9"></a>
+<a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1Composition.html">Composition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1Composition.html">Composition</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:ae770d79adf0f5f7af5f82f14b0462da9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad943881cf5fb04fa7bb6247081558aa3"><td class="memItemLeft" align="right" valign="top"><a id="ad943881cf5fb04fa7bb6247081558aa3"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Composition</b> (tmpl::type_from&lt; TimeDependenceCompTag0 &gt; first_time_dep, tmpl::type_from&lt; TimeDependenceCompTags &gt;... rest_time_dep) noexcept</td></tr>
+<tr class="separator:ad943881cf5fb04fa7bb6247081558aa3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb94a2110683a95f753dfa7fb776d558"><td class="memItemLeft" align="right" valign="top"><a id="acb94a2110683a95f753dfa7fb776d558"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1Composition.html#acb94a2110683a95f753dfa7fb776d558">Composition</a> (CoordMap coord_map, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time) noexcept</td></tr>
+<tr class="memdesc:acb94a2110683a95f753dfa7fb776d558"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for copying the composition time dependence. Internally performs all the copying necessary to deal with the functions of time. <br /></td></tr>
+<tr class="separator:acb94a2110683a95f753dfa7fb776d558"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ac1b282c414ce7ca874f9e46312557f"><td class="memItemLeft" align="right" valign="top"><a id="a3ac1b282c414ce7ca874f9e46312557f"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a>&lt; mesh_dim &gt;&gt; override</td></tr>
+<tr class="separator:a3ac1b282c414ce7ca874f9e46312557f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ccac74f899f0fc4e578fe2746f7160e"><td class="memItemLeft" align="right" valign="top"><a id="a8ccac74f899f0fc4e578fe2746f7160e"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1Composition.html#a8ccac74f899f0fc4e578fe2746f7160e">block_maps</a> (size_t number_of_blocks) const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, mesh_dim &gt;&gt;&gt; override</td></tr>
+<tr class="memdesc:a8ccac74f899f0fc4e578fe2746f7160e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the coordinate maps from the <code><a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a></code> to the <code><a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a></code> frame for each block. <br /></td></tr>
+<tr class="separator:a8ccac74f899f0fc4e578fe2746f7160e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc9a95a94f666fe9b4ec4a7f7b4401e9"><td class="memItemLeft" align="right" valign="top"><a id="acc9a95a94f666fe9b4ec4a7f7b4401e9"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>functions_of_time</b> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; override</td></tr>
+<tr class="separator:acc9a95a94f666fe9b4ec4a7f7b4401e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">domain::creators::time_dependence::TimeDependence&lt; TimeDependenceCompTag0::mesh_dim &gt;</a></td></tr>
+<tr class="memitem:af36b7b242535cf7f8413624f132f70ca inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="af36b7b242535cf7f8413624f132f70ca"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TimeDependence</b> (const <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;)=default</td></tr>
+<tr class="separator:af36b7b242535cf7f8413624f132f70ca inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ee073dd3ceeea6e9e27f1281dcdc5d6 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="a3ee073dd3ceeea6e9e27f1281dcdc5d6"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TimeDependence</b> (<a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a3ee073dd3ceeea6e9e27f1281dcdc5d6 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbbd44090636dee26dfc280098973128 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="afbbd44090636dee26dfc280098973128"></a>
+<a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;)=default</td></tr>
+<tr class="separator:afbbd44090636dee26dfc280098973128 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a513178e25e84a53826de7fec2edb78 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="a0a513178e25e84a53826de7fec2edb78"></a>
+<a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a0a513178e25e84a53826de7fec2edb78 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac017af3f12a34d66df55ab0682e1e28e inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="ac017af3f12a34d66df55ab0682e1e28e"></a>
+virtual auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html#ac017af3f12a34d66df55ab0682e1e28e">get_clone</a> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html">TimeDependence</a> &gt;=0</td></tr>
+<tr class="memdesc:ac017af3f12a34d66df55ab0682e1e28e inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></code> pointing to a copy of the <code>TimeDependence</code>. <br /></td></tr>
+<tr class="separator:ac017af3f12a34d66df55ab0682e1e28e inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af55fff9a934fceb260ce00fa08bd724c inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="af55fff9a934fceb260ce00fa08bd724c"></a>
+virtual auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html#af55fff9a934fceb260ce00fa08bd724c">functions_of_time</a> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;=0</td></tr>
+<tr class="memdesc:af55fff9a934fceb260ce00fa08bd724c inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the functions of time for the domain. <br /></td></tr>
+<tr class="separator:af55fff9a934fceb260ce00fa08bd724c inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a6b1a7c7a9d3e2c386720b314ff7d85 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memItemLeft" align="right" valign="top"><a id="a2a6b1a7c7a9d3e2c386720b314ff7d85"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html#a2a6b1a7c7a9d3e2c386720b314ff7d85">is_none</a> () const noexcept</td></tr>
+<tr class="memdesc:a2a6b1a7c7a9d3e2c386720b314ff7d85 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>true</code> if the instance is <code>None</code>, meaning no time dependence. <br /></td></tr>
+<tr class="separator:a2a6b1a7c7a9d3e2c386720b314ff7d85 inherit pub_methods_structdomain_1_1creators_1_1time__dependence_1_1TimeDependence"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:ad8bdab805a07a523e6fa4bcc44c19609"><td class="memItemLeft" align="right" valign="top"><a id="ad8bdab805a07a523e6fa4bcc44c19609"></a>
+static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b> = {&quot;A composition of TimeDependences.&quot;}</td></tr>
+<tr class="separator:ad8bdab805a07a523e6fa4bcc44c19609"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad73fb25b198dd57b92a223b557043436"><td class="memItemLeft" align="right" valign="top"><a id="ad73fb25b198dd57b92a223b557043436"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>mesh_dim</b> = TimeDependenceCompTag0::mesh_dim</td></tr>
+<tr class="separator:ad73fb25b198dd57b92a223b557043436"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename TimeDependenceCompTag0, typename... TimeDependenceCompTags&gt;<br />
+class domain::creators::time_dependence::Composition&lt; TimeDependenceCompTag0, TimeDependenceCompTags &gt;</h3>
+
+<p>A <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html" title="The abstract base class off of which specific classes for adding time dependence into a domain creato...">TimeDependence</a> that is a composition of various other TimeDependences. </p>
+<p>To create a new <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1Composition.html" title="A TimeDependence that is a composition of various other TimeDependences.">Composition</a> <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html" title="The abstract base class off of which specific classes for adding time dependence into a domain creato...">TimeDependence</a> you must create an explicit instantiation of the <code><a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1Composition.html" title="A TimeDependence that is a composition of various other TimeDependences.">Composition</a>&lt;<a class="el" href="namespacedomain_1_1Tags.html" title="Tags for the domain.">Tags</a>...&gt;</code> <a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html" title="The abstract base class off of which specific classes for adding time dependence into a domain creato...">TimeDependence</a> in a <code>.cpp</code> file. You must add the <code><a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1Composition.html" title="A TimeDependence that is a composition of various other TimeDependences.">Composition</a></code> to the <code>creatable_classes</code> list of <code><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependence.html" title="The abstract base class off of which specific classes for adding time dependence into a domain creato...">TimeDependence</a></code> in order for the new <a class="el" href="classdomain_1_1creators_1_1time__dependence_1_1Composition.html" title="A TimeDependence that is a composition of various other TimeDependences.">Composition</a> to be factory creatable.</p>
+<p>The tags in the template parameters must be <code><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependenceCompositionTag.html" title="A tag used by the Composition class to generate a TimeDependence that is a composition of existing Ti...">TimeDependenceCompositionTag</a></code>s. See the documentation of the <code><a class="el" href="structdomain_1_1creators_1_1time__dependence_1_1TimeDependenceCompositionTag.html" title="A tag used by the Composition class to generate a TimeDependence that is a composition of existing Ti...">TimeDependenceCompositionTag</a></code> class for details on the tags. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/Creators/TimeDependence/<a class="el" href="Composition_8hpp_source.html">Composition.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: observers::protocols::ReductionDataFormatter Struct Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>observers</b></li><li class="navelem"><a class="el" href="namespaceobservers_1_1protocols.html">protocols</a></li><li class="navelem"><a class="el" href="structobservers_1_1protocols_1_1ReductionDataFormatter.html">ReductionDataFormatter</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a>  </div>
+  <div class="headertitle">
+<div class="title">observers::protocols::ReductionDataFormatter Struct Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Conforming classes can create an informative message from reduction data. The message will be printed to screen when the formatter is passed to a reduction action such as <code><a class="el" href="structobservers_1_1Actions_1_1ContributeReductionData.html" title="Send reduction data to the observer group.">observers::Actions::ContributeReductionData</a></code>.  
+ <a href="structobservers_1_1protocols_1_1ReductionDataFormatter.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ReductionDataFormatter_8hpp_source.html">ReductionDataFormatter.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structobservers_1_1protocols_1_1ReductionDataFormatter_1_1test.html">test</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Conforming classes can create an informative message from reduction data. The message will be printed to screen when the formatter is passed to a reduction action such as <code><a class="el" href="structobservers_1_1Actions_1_1ContributeReductionData.html" title="Send reduction data to the observer group.">observers::Actions::ContributeReductionData</a></code>. </p>
+<p>Conforming classes must provide the following type aliases:</p><ul>
+<li><code>reduction_data</code>: The <code>Parallel::ReductionData</code> that the formatter is applicable to.</li>
+</ul>
+<p>Conforming classes must implement the following member functions:</p><ul>
+<li><code>operator()</code>: A call operator that takes the values of the reduction data and returns a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></code>. The string should be an informative message such as "Global minimum grid spacing at time 5.4 is: 0.1".</li>
+<li><code>pup</code>: A PUP function for serialization.</li>
+</ul>
+<p>Here's an example for a formatter:</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>FormatErrors</div>
+<div class="line">    : <a class="code" href="structtt_1_1ConformsTo.html">tt::ConformsTo</a>&lt;observers::protocols::ReductionDataFormatter&gt; {</div>
+<div class="line">  <span class="keyword">using</span> <a class="code" href="namespacePhaseControl.html#ae32e3c999be8835381696c3e9985f326">reduction_data</a> = helpers::reduction_data_from_doubles;</div>
+<div class="line">  <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> operator()(<span class="keyword">const</span> <span class="keywordtype">double</span> time, <span class="keyword">const</span> <span class="keywordtype">size_t</span> num_points,</div>
+<div class="line">                         <span class="keyword">const</span> <span class="keywordtype">double</span> error1, <span class="keyword">const</span> <span class="keywordtype">double</span> error2) <span class="keyword">const</span></div>
+<div class="line">      noexcept {</div>
+<div class="line">    <span class="keywordflow">return</span> <span class="stringliteral">&quot;Errors at time &quot;</span> + std::to_string(time) + <span class="stringliteral">&quot; over &quot;</span> +</div>
+<div class="line">           std::to_string(num_points) +</div>
+<div class="line">           <span class="stringliteral">&quot; grid points:\n  Field1: &quot;</span> + std::to_string(error1) +</div>
+<div class="line">           <span class="stringliteral">&quot;\n  Field2: &quot;</span> + std::to_string(error2);</div>
+<div class="line">  }</div>
+<div class="line">  <span class="comment">// NOLINTNEXTLINE</span></div>
+<div class="line">  <span class="keywordtype">void</span> pup(PUP::er&amp; <span class="comment">/*p*/</span>) noexcept {}</div>
+<div class="line">};</div>
+</div><!-- fragment --></div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/IO/Observer/Protocols/<a class="el" href="ReductionDataFormatter_8hpp_source.html">ReductionDataFormatter.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
+<div class="ttc" id="anamespacePhaseControl_html_ae32e3c999be8835381696c3e9985f326"><div class="ttname"><a href="namespacePhaseControl.html#ae32e3c999be8835381696c3e9985f326">PhaseControl::reduction_data</a></div><div class="ttdeci">Parallel::ReductionData&lt; Parallel::ReductionDatum&lt; tuples::tagged_tuple_from_typelist&lt; TagsAndCombinesPresent &gt;, TaggedTupleCombine &gt; &gt; reduction_data</div><div class="ttdoc">A Parallel::ReductionData with a single Parallel::ReductionDatum for a given tagged tuple type determ...</div><div class="ttdef"><b>Definition:</b> PhaseControlReductionHelpers.hpp:83</div></div>
+<div class="ttc" id="astructtt_1_1ConformsTo_html"><div class="ttname"><a href="structtt_1_1ConformsTo.html">tt::ConformsTo</a></div><div class="ttdoc">Indicate a class conforms to the Protocol.</div><div class="ttdef"><b>Definition:</b> ProtocolHelpers.hpp:22</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

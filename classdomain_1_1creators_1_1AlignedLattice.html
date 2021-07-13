@@ -1,0 +1,355 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::creators::AlignedLattice&lt; VolumeDim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1creators.html">creators</a></li><li class="navelem"><a class="el" href="classdomain_1_1creators_1_1AlignedLattice.html">AlignedLattice</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classdomain_1_1creators_1_1AlignedLattice-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::creators::AlignedLattice&lt; VolumeDim &gt; Class Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Create a <a class="el" href="classDomain.html" title="A wrapper around a vector of Blocks that represent the computational domain.">Domain</a> consisting of multiple aligned Blocks arrayed in a lattice.  
+ <a href="classdomain_1_1creators_1_1AlignedLattice.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="AlignedLattice_8hpp_source.html">AlignedLattice.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1AlignedLattice_1_1BlockBounds.html">BlockBounds</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1AlignedLattice_1_1BlocksToExclude.html">BlocksToExclude</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1AlignedLattice_1_1BoundaryCondition.html">BoundaryCondition</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1AlignedLattice_1_1InitialGridPoints.html">InitialGridPoints</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1AlignedLattice_1_1InitialLevels.html">InitialLevels</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1AlignedLattice_1_1IsPeriodicIn.html">IsPeriodicIn</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1AlignedLattice_1_1RefinedGridPoints.html">RefinedGridPoints</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1creators_1_1AlignedLattice_1_1RefinedLevels.html">RefinedLevels</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a9ac248b2f8e09a4360bc5f313cdb31a2"><td class="memItemLeft" align="right" valign="top"><a id="a9ac248b2f8e09a4360bc5f313cdb31a2"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>maps_list</b> = tmpl::list&lt; <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a> &gt;, <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1ProductOf2Maps.html">CoordinateMaps::ProductOf2Maps</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a> &gt; &gt;, <a class="el" href="classdomain_1_1CoordinateMap.html">domain::CoordinateMap</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1ProductOf3Maps.html">CoordinateMaps::ProductOf3Maps</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">CoordinateMaps::Affine</a> &gt; &gt;&gt;</td></tr>
+<tr class="separator:a9ac248b2f8e09a4360bc5f313cdb31a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d79733733fc73a7dd02ddc714b5b5ca"><td class="memItemLeft" align="right" valign="top"><a id="a0d79733733fc73a7dd02ddc714b5b5ca"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>common_options</b> = tmpl::list&lt; <a class="el" href="structdomain_1_1creators_1_1AlignedLattice_1_1BlockBounds.html">BlockBounds</a>, <a class="el" href="structdomain_1_1creators_1_1AlignedLattice_1_1InitialLevels.html">InitialLevels</a>, <a class="el" href="structdomain_1_1creators_1_1AlignedLattice_1_1InitialGridPoints.html">InitialGridPoints</a>, <a class="el" href="structdomain_1_1creators_1_1AlignedLattice_1_1RefinedLevels.html">RefinedLevels</a>, <a class="el" href="structdomain_1_1creators_1_1AlignedLattice_1_1RefinedGridPoints.html">RefinedGridPoints</a>, <a class="el" href="structdomain_1_1creators_1_1AlignedLattice_1_1BlocksToExclude.html">BlocksToExclude</a> &gt;</td></tr>
+<tr class="separator:a0d79733733fc73a7dd02ddc714b5b5ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4338b63ffbc54c3c0c89d2885d95f8d5"><td class="memItemLeft" align="right" valign="top"><a id="a4338b63ffbc54c3c0c89d2885d95f8d5"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options_periodic</b> = tmpl::list&lt; <a class="el" href="structdomain_1_1creators_1_1AlignedLattice_1_1IsPeriodicIn.html">IsPeriodicIn</a> &gt;</td></tr>
+<tr class="separator:a4338b63ffbc54c3c0c89d2885d95f8d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9062ad88084c863879203c1c9e481d73"><td class="memTemplParams" colspan="2"><a id="a9062ad88084c863879203c1c9e481d73"></a>
+template&lt;typename Metavariables &gt; </td></tr>
+<tr class="memitem:a9062ad88084c863879203c1c9e481d73"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>options</b> = tmpl::append&lt; common_options, tmpl::conditional_t&lt; domain::BoundaryConditions::has_boundary_conditions_base_v&lt; typename Metavariables::system &gt;, tmpl::list&lt; <a class="el" href="structdomain_1_1creators_1_1AlignedLattice_1_1BoundaryCondition.html">BoundaryCondition</a>&lt; <a class="el" href="namespacedomain_1_1BoundaryConditions.html#afd88b7d4030a22e226b734dd65e6990b">domain::BoundaryConditions::get_boundary_conditions_base</a>&lt; typename Metavariables::system &gt; &gt;&gt;, options_periodic &gt; &gt;</td></tr>
+<tr class="separator:a9062ad88084c863879203c1c9e481d73"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ae0945f5f9144a6ee1644d6ee632f9b52"><td class="memItemLeft" align="right" valign="top"><a id="ae0945f5f9144a6ee1644d6ee632f9b52"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>AlignedLattice</b> (typename <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">BlockBounds::type</a> block_bounds, typename <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">InitialLevels::type</a> <a class="el" href="classdomain_1_1creators_1_1AlignedLattice.html#aa5152a7a7f9a3e89068316c45c3ede74">initial_refinement_levels</a>, typename <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">InitialGridPoints::type</a> initial_number_of_grid_points, typename <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">RefinedLevels::type</a> refined_refinement, typename <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">RefinedGridPoints::type</a> refined_grid_points, typename <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">BlocksToExclude::type</a> blocks_to_exclude, typename <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">IsPeriodicIn::type</a> is_periodic_in, const <a class="el" href="structOptions_1_1Context.html">Options::Context</a> &amp;context={})</td></tr>
+<tr class="separator:ae0945f5f9144a6ee1644d6ee632f9b52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9c44a83539f5dce4ba05309ddbf435f"><td class="memItemLeft" align="right" valign="top"><a id="ad9c44a83539f5dce4ba05309ddbf435f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>AlignedLattice</b> (typename <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">BlockBounds::type</a> block_bounds, typename <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">InitialLevels::type</a> <a class="el" href="classdomain_1_1creators_1_1AlignedLattice.html#aa5152a7a7f9a3e89068316c45c3ede74">initial_refinement_levels</a>, typename <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">InitialGridPoints::type</a> initial_number_of_grid_points, typename <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">RefinedLevels::type</a> refined_refinement, typename <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">RefinedGridPoints::type</a> refined_grid_points, typename <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">BlocksToExclude::type</a> blocks_to_exclude, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a> &gt; boundary_condition=nullptr, const <a class="el" href="structOptions_1_1Context.html">Options::Context</a> &amp;context={})</td></tr>
+<tr class="separator:ad9c44a83539f5dce4ba05309ddbf435f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a469ba33dc156e327de0ee3a3191b786e"><td class="memItemLeft" align="right" valign="top"><a id="a469ba33dc156e327de0ee3a3191b786e"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>AlignedLattice</b> (const <a class="el" href="classdomain_1_1creators_1_1AlignedLattice.html">AlignedLattice</a> &amp;)=delete</td></tr>
+<tr class="separator:a469ba33dc156e327de0ee3a3191b786e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0f4f17fdba8a9db54d6f8b36fa789e87"><td class="memItemLeft" align="right" valign="top"><a id="a0f4f17fdba8a9db54d6f8b36fa789e87"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>AlignedLattice</b> (<a class="el" href="classdomain_1_1creators_1_1AlignedLattice.html">AlignedLattice</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a0f4f17fdba8a9db54d6f8b36fa789e87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae580d2f2731f7761066dceea4f25853b"><td class="memItemLeft" align="right" valign="top"><a id="ae580d2f2731f7761066dceea4f25853b"></a>
+<a class="el" href="classdomain_1_1creators_1_1AlignedLattice.html">AlignedLattice</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1creators_1_1AlignedLattice.html">AlignedLattice</a> &amp;)=delete</td></tr>
+<tr class="separator:ae580d2f2731f7761066dceea4f25853b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a375749fc9504a18fdf608d9ceb4a2735"><td class="memItemLeft" align="right" valign="top"><a id="a375749fc9504a18fdf608d9ceb4a2735"></a>
+<a class="el" href="classdomain_1_1creators_1_1AlignedLattice.html">AlignedLattice</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1creators_1_1AlignedLattice.html">AlignedLattice</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a375749fc9504a18fdf608d9ceb4a2735"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa912e80a5b297d56ccddededd85b7786"><td class="memItemLeft" align="right" valign="top"><a id="aa912e80a5b297d56ccddededd85b7786"></a>
+<a class="el" href="classDomain.html">Domain</a>&lt; VolumeDim &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>create_domain</b> () const noexcept override</td></tr>
+<tr class="separator:aa912e80a5b297d56ccddededd85b7786"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5204ce74ca6c137ce3c30973d509d135"><td class="memItemLeft" align="right" valign="top"><a id="a5204ce74ca6c137ce3c30973d509d135"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, VolumeDim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1creators_1_1AlignedLattice.html#a5204ce74ca6c137ce3c30973d509d135">initial_extents</a> () const noexcept override</td></tr>
+<tr class="memdesc:a5204ce74ca6c137ce3c30973d509d135"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain the initial grid extents of the <a class="el" href="classElement.html">Element</a>s in each block. <br /></td></tr>
+<tr class="separator:a5204ce74ca6c137ce3c30973d509d135"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa5152a7a7f9a3e89068316c45c3ede74"><td class="memItemLeft" align="right" valign="top"><a id="aa5152a7a7f9a3e89068316c45c3ede74"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, VolumeDim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1creators_1_1AlignedLattice.html#aa5152a7a7f9a3e89068316c45c3ede74">initial_refinement_levels</a> () const noexcept override</td></tr>
+<tr class="memdesc:aa5152a7a7f9a3e89068316c45c3ede74"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain the initial refinement levels of the blocks. <br /></td></tr>
+<tr class="separator:aa5152a7a7f9a3e89068316c45c3ede74"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classDomainCreator"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classDomainCreator')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classDomainCreator.html">DomainCreator&lt; VolumeDim &gt;</a></td></tr>
+<tr class="memitem:a7982cfa2ee131552ace2a80e372b7b1a inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a7982cfa2ee131552ace2a80e372b7b1a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>DomainCreator</b> (const <a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;)=delete</td></tr>
+<tr class="separator:a7982cfa2ee131552ace2a80e372b7b1a inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ceb4d3fea0600788dc3b4bc576ce0cb inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a5ceb4d3fea0600788dc3b4bc576ce0cb"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>DomainCreator</b> (<a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a5ceb4d3fea0600788dc3b4bc576ce0cb inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a7a8b3ba0da17d6418c0b8bcb9e58fe inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a6a7a8b3ba0da17d6418c0b8bcb9e58fe"></a>
+<a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;)=delete</td></tr>
+<tr class="separator:a6a7a8b3ba0da17d6418c0b8bcb9e58fe inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d42c312fdc02e83f685e0c6267f8192 inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a1d42c312fdc02e83f685e0c6267f8192"></a>
+<a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classDomainCreator.html">DomainCreator</a>&lt; VolumeDim &gt; &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a1d42c312fdc02e83f685e0c6267f8192 inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a686f011a0c4399253e62474e1549d8e7 inherit pub_methods_classDomainCreator"><td class="memItemLeft" align="right" valign="top"><a id="a686f011a0c4399253e62474e1549d8e7"></a>
+virtual auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDomainCreator.html#a686f011a0c4399253e62474e1549d8e7">functions_of_time</a> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt;</td></tr>
+<tr class="memdesc:a686f011a0c4399253e62474e1549d8e7 inherit pub_methods_classDomainCreator"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the functions of time used for moving meshes. <br /></td></tr>
+<tr class="separator:a686f011a0c4399253e62474e1549d8e7 inherit pub_methods_classDomainCreator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:ad627b42d245234a70ecc567ace69a421"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:ad627b42d245234a70ecc567ace69a421"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t VolumeDim&gt;<br />
+class domain::creators::AlignedLattice&lt; VolumeDim &gt;</h3>
+
+<p>Create a <a class="el" href="classDomain.html" title="A wrapper around a vector of Blocks that represent the computational domain.">Domain</a> consisting of multiple aligned Blocks arrayed in a lattice. </p>
+<p>This is useful for setting up problems with piecewise smooth initial data, problems that specify different boundary conditions on distinct parts of the boundary, or problems that need different length scales initially.</p>
+<dl class="section note"><dt>Note</dt><dd>Adaptive mesh refinement can never join <a class="el" href="classBlock.html">Block</a>s, so use the fewest number of <a class="el" href="classBlock.html">Block</a>s that your problem needs. More initial <a class="el" href="classElement.html">Element</a>s can be created by specifying a larger <code>InitialRefinement</code>. </dd></dl>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="ad627b42d245234a70ecc567ace69a421"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad627b42d245234a70ecc567ace69a421">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t VolumeDim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classdomain_1_1creators_1_1AlignedLattice.html">domain::creators::AlignedLattice</a>&lt; VolumeDim &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;AlignedLattice creates a regular lattice of blocks whose corners are\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;given by tensor products of the specified BlockBounds. Each Block in\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;the lattice is identified by a VolumeDim-tuple of zero-based indices\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;Supplying a list of these tuples to BlocksToExclude will result in\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;the domain having the corresponding Blocks excluded. See the Domain\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;Creation tutorial in the documentation for more information on Block\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;numberings in rectilinear domains. Note that if any Blocks are\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;excluded, setting the option IsPeriodicIn to `true` in any dimension\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;will trigger an error, as periodic boundary\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;conditions for this domain with holes is not supported.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/Creators/<a class="el" href="AlignedLattice_8hpp_source.html">AlignedLattice.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

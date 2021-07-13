@@ -1,0 +1,242 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: InterpolateOnElementTestHelpers::mock_interpolation_target&lt; Metavariables, InterpolationTargetTag &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceInterpolateOnElementTestHelpers.html">InterpolateOnElementTestHelpers</a></li><li class="navelem"><a class="el" href="structInterpolateOnElementTestHelpers_1_1mock__interpolation__target.html">mock_interpolation_target</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="structInterpolateOnElementTestHelpers_1_1mock__interpolation__target-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">InterpolateOnElementTestHelpers::mock_interpolation_target&lt; Metavariables, InterpolationTargetTag &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:af7e583483308b6cb87be6f5ac85ff7f9"><td class="memItemLeft" align="right" valign="top"><a id="af7e583483308b6cb87be6f5ac85ff7f9"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>metavariables</b> = Metavariables</td></tr>
+<tr class="separator:af7e583483308b6cb87be6f5ac85ff7f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a19c5bcaf9b346d4635ba1bd1a40f5520"><td class="memItemLeft" align="right" valign="top"><a id="a19c5bcaf9b346d4635ba1bd1a40f5520"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>chare_type</b> = <a class="el" href="structActionTesting_1_1MockArrayChare.html">ActionTesting::MockArrayChare</a></td></tr>
+<tr class="separator:a19c5bcaf9b346d4635ba1bd1a40f5520"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0d3136ba23e3ac51a96e550c02f9967"><td class="memItemLeft" align="right" valign="top"><a id="ae0d3136ba23e3ac51a96e550c02f9967"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>array_index</b> = size_t</td></tr>
+<tr class="separator:ae0d3136ba23e3ac51a96e550c02f9967"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4471224f4bf3b720fe2a0acf08c95bf5"><td class="memItemLeft" align="right" valign="top"><a id="a4471224f4bf3b720fe2a0acf08c95bf5"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>component_being_mocked</b> = <a class="el" href="structintrp_1_1InterpolationTarget.html">intrp::InterpolationTarget</a>&lt; Metavariables, InterpolationTargetTag &gt;</td></tr>
+<tr class="separator:a4471224f4bf3b720fe2a0acf08c95bf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1045fad4b5efe356d368c7f9b29abd8c"><td class="memItemLeft" align="right" valign="top"><a id="a1045fad4b5efe356d368c7f9b29abd8c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>simple_tags</b> = tmpl::list&lt; <a class="el" href="structInterpolateOnElementTestHelpers_1_1Tags_1_1TestTargetPoints.html">Tags::TestTargetPoints</a> &gt;</td></tr>
+<tr class="separator:a1045fad4b5efe356d368c7f9b29abd8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2319de3cd8386d646c50e80a7d00c7f"><td class="memItemLeft" align="right" valign="top"><a id="ac2319de3cd8386d646c50e80a7d00c7f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>phase_dependent_action_list</b> = tmpl::list&lt; <a class="el" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt; typename Metavariables::Phase, Metavariables::Phase::Initialization, tmpl::list&lt; ActionTesting::InitializeDataBox&lt; simple_tags &gt; &gt;&gt; &gt;</td></tr>
+<tr class="separator:ac2319de3cd8386d646c50e80a7d00c7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa7fb1fc6f3f9c41e376545138377f70"><td class="memItemLeft" align="right" valign="top"><a id="aaa7fb1fc6f3f9c41e376545138377f70"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>replace_these_simple_actions</b> = tmpl::list&lt; <a class="el" href="structintrp_1_1Actions_1_1InterpolationTargetVarsFromElement.html">intrp::Actions::InterpolationTargetVarsFromElement</a>&lt; InterpolationTargetTag &gt; &gt;</td></tr>
+<tr class="separator:aaa7fb1fc6f3f9c41e376545138377f70"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd323a506823431941392a4577dc4340"><td class="memItemLeft" align="right" valign="top"><a id="acd323a506823431941392a4577dc4340"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>with_these_simple_actions</b> = tmpl::list&lt; <a class="el" href="structInterpolateOnElementTestHelpers_1_1MockInterpolationTargetVarsFromElement.html">MockInterpolationTargetVarsFromElement</a>&lt; InterpolationTargetTag &gt; &gt;</td></tr>
+<tr class="separator:acd323a506823431941392a4577dc4340"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>tests/Unit/Helpers/NumericalAlgorithms/Interpolation/<a class="el" href="InterpolateOnElementTestHelpers_8hpp_source.html">InterpolateOnElementTestHelpers.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Limiters::Weno&lt; VolumeDim, tmpl::list&lt; Tags... &gt; &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceLimiters.html">Limiters</a></li><li class="navelem"><a class="el" href="classLimiters_1_1Weno_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html">Weno&lt; VolumeDim, tmpl::list&lt; Tags... &gt; &gt;</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classLimiters_1_1Weno_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Limiters::Weno&lt; VolumeDim, tmpl::list&lt; Tags... &gt; &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__LimitersGroup.html">Limiters</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A compact-stencil WENO limiter for DG.  
+ <a href="classLimiters_1_1Weno_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Weno_8hpp_source.html">Weno.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLimiters_1_1Weno_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1DisableForDebugging.html">DisableForDebugging</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn the limiter off.  <a href="structLimiters_1_1Weno_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1DisableForDebugging.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLimiters_1_1Weno_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1NeighborWeight.html">NeighborWeight</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The linear weight given to each neighbor.  <a href="structLimiters_1_1Weno_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1NeighborWeight.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLimiters_1_1Weno_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1PackagedData.html">PackagedData</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Data to send to neighbor elements.  <a href="structLimiters_1_1Weno_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1PackagedData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLimiters_1_1Weno_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1TvbConstant.html">TvbConstant</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The TVB constant for the minmod TCI.  <a href="structLimiters_1_1Weno_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1TvbConstant.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLimiters_1_1Weno_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1Type.html">Type</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The WenoType.  <a href="structLimiters_1_1Weno_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4_1_1Type.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ae6ad25719aaa75cd43b39deefd6afab9"><td class="memItemLeft" align="right" valign="top"><a id="ae6ad25719aaa75cd43b39deefd6afab9"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; Type, NeighborWeight, TvbConstant, DisableForDebugging &gt;</td></tr>
+<tr class="separator:ae6ad25719aaa75cd43b39deefd6afab9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a14ebcc347428154447b4d196e4155720"><td class="memItemLeft" align="right" valign="top"><a id="a14ebcc347428154447b4d196e4155720"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>package_argument_tags</b> = tmpl::list&lt; Tags..., <a class="el" href="structdomain_1_1Tags_1_1Mesh.html">domain::Tags::Mesh</a>&lt; VolumeDim &gt;, <a class="el" href="structdomain_1_1Tags_1_1SizeOfElement.html">domain::Tags::SizeOfElement</a>&lt; VolumeDim &gt; &gt;</td></tr>
+<tr class="separator:a14ebcc347428154447b4d196e4155720"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a067a43c56d6bda323cf33bbb5a1f1dcc"><td class="memItemLeft" align="right" valign="top"><a id="a067a43c56d6bda323cf33bbb5a1f1dcc"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>limit_tags</b> = tmpl::list&lt; Tags... &gt;</td></tr>
+<tr class="separator:a067a43c56d6bda323cf33bbb5a1f1dcc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77536afc4efb3c4ef4f3836454285485"><td class="memItemLeft" align="right" valign="top"><a id="a77536afc4efb3c4ef4f3836454285485"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>limit_argument_tags</b> = tmpl::list&lt; <a class="el" href="structdomain_1_1Tags_1_1Mesh.html">domain::Tags::Mesh</a>&lt; VolumeDim &gt;, <a class="el" href="structdomain_1_1Tags_1_1Element.html">domain::Tags::Element</a>&lt; VolumeDim &gt;, <a class="el" href="structdomain_1_1Tags_1_1SizeOfElement.html">domain::Tags::SizeOfElement</a>&lt; VolumeDim &gt; &gt;</td></tr>
+<tr class="separator:a77536afc4efb3c4ef4f3836454285485"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ad089d3c7ccd0a9e224fdc9cb55dea688"><td class="memItemLeft" align="right" valign="top"><a id="ad089d3c7ccd0a9e224fdc9cb55dea688"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Weno</b> (<a class="el" href="group__LimitersGroup.html#ga9579591401477fc50611bf73b93c9841">WenoType</a> weno_type, double neighbor_linear_weight, double tvb_constant, bool disable_for_debugging=false) noexcept</td></tr>
+<tr class="separator:ad089d3c7ccd0a9e224fdc9cb55dea688"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad25b55a361e5f9629d89c4f9f905d5d7"><td class="memItemLeft" align="right" valign="top"><a id="ad25b55a361e5f9629d89c4f9f905d5d7"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Weno</b> (const Weno &amp;)=default</td></tr>
+<tr class="separator:ad25b55a361e5f9629d89c4f9f905d5d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac13327c1e8aa76591dd71e68f78f5bf5"><td class="memItemLeft" align="right" valign="top"><a id="ac13327c1e8aa76591dd71e68f78f5bf5"></a>
+Weno &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const Weno &amp;)=default</td></tr>
+<tr class="separator:ac13327c1e8aa76591dd71e68f78f5bf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a898a6c8eeec8e5b3a7eb7b38325f0fe4"><td class="memItemLeft" align="right" valign="top"><a id="a898a6c8eeec8e5b3a7eb7b38325f0fe4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Weno</b> (Weno &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a898a6c8eeec8e5b3a7eb7b38325f0fe4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a56196c00b9c4c12358163895fda2ba0b"><td class="memItemLeft" align="right" valign="top"><a id="a56196c00b9c4c12358163895fda2ba0b"></a>
+Weno &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (Weno &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a56196c00b9c4c12358163895fda2ba0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2345d59e796ed37616dbd1acb4a12b0"><td class="memItemLeft" align="right" valign="top"><a id="ac2345d59e796ed37616dbd1acb4a12b0"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:ac2345d59e796ed37616dbd1acb4a12b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a281902b33721a92797ac6912f9f2eeb5"><td class="memItemLeft" align="right" valign="top"><a id="a281902b33721a92797ac6912f9f2eeb5"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLimiters_1_1Weno_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html#a281902b33721a92797ac6912f9f2eeb5">package_data</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; PackagedData * &gt; packaged_data, const typename Tags::type &amp;... tensors, const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim &gt; &amp;mesh, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, VolumeDim &gt; &amp;element_size, const <a class="el" href="classOrientationMap.html">OrientationMap</a>&lt; VolumeDim &gt; &amp;orientation_map) const noexcept</td></tr>
+<tr class="memdesc:a281902b33721a92797ac6912f9f2eeb5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Package data for sending to neighbor elements. <br /></td></tr>
+<tr class="separator:a281902b33721a92797ac6912f9f2eeb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad155b5fb0281f6019192ad8d108ba2e5"><td class="memItemLeft" align="right" valign="top"><a id="ad155b5fb0281f6019192ad8d108ba2e5"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLimiters_1_1Weno_3_01VolumeDim_00_01tmpl_1_1list_3_01Tags_8_8_8_01_4_01_4.html#ad155b5fb0281f6019192ad8d108ba2e5">operator()</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/add_pointer.html">std::add_pointer_t</a>&lt; typename Tags::type &gt;&gt;... tensors, const <a class="el" href="classMesh.html">Mesh</a>&lt; VolumeDim &gt; &amp;mesh, const <a class="el" href="classElement.html">Element</a>&lt; VolumeDim &gt; &amp;element, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, VolumeDim &gt; &amp;element_size, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt;&gt;, PackagedData, boost::hash&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; VolumeDim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; VolumeDim &gt;&gt;&gt;&gt; &amp;neighbor_data) const noexcept</td></tr>
+<tr class="memdesc:ad155b5fb0281f6019192ad8d108ba2e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Limit the solution on the element. <br /></td></tr>
+<tr class="separator:ad155b5fb0281f6019192ad8d108ba2e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a07e4b465e4402c85256a6bc69f1e15d2"><td class="memItemLeft" align="right" valign="top"><a id="a07e4b465e4402c85256a6bc69f1e15d2"></a>
+static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b> = {&quot;A WENO limiter for DG&quot;}</td></tr>
+<tr class="separator:a07e4b465e4402c85256a6bc69f1e15d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:abd7f68cc16da6c6f2d18ece687057bc6"><td class="memTemplParams" colspan="2"><a id="abd7f68cc16da6c6f2d18ece687057bc6"></a>
+template&lt;size_t LocalDim, typename LocalTagList &gt; </td></tr>
+<tr class="memitem:abd7f68cc16da6c6f2d18ece687057bc6"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const Weno&lt; LocalDim, LocalTagList &gt; &amp;lhs, const Weno&lt; LocalDim, LocalTagList &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:abd7f68cc16da6c6f2d18ece687057bc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t VolumeDim, typename... Tags&gt;<br />
+class Limiters::Weno&lt; VolumeDim, tmpl::list&lt; Tags... &gt; &gt;</h3>
+
+<p>A compact-stencil WENO limiter for DG. </p>
+<p>Implements the simple WENO limiter of <a class="el" href="citelist.html#CITEREF_Zhong2013">[111]</a> and the Hermite WENO (HWENO) limiter of <a class="el" href="citelist.html#CITEREF_Zhu2016">[112]</a>. The implementation is system-agnostic and can act on an arbitrary set of tensors.</p>
+<h4><a class="anchor" id="autotoc_md85"></a>
+Summary of the compact-stencil WENO algorithms:</h4>
+<p>The compact-stencil WENO limiters require communication only between nearest-neighbor elements, but aim to preserve the full order of the DG solution when the solution is smooth. To achieve this, full volume data is communicated between neighbors. For each tensor component to limit, the new solution is obtained by a standard WENO procedure &mdash; the new solution is a linear combination of different polynomials, with weights chosen so that the smoother (i.e., less oscillatory) polynomials contribute the most to the sum.</p>
+<p>For the simple WENO and HWENO limiters, the polynomials used are the local DG solution as well as a "modified" solution from each neighbor element. For the simple WENO limiter, the modified solution is obtained by simply extrapolating the neighbor solution onto the troubled element. For the HWENO limiter, the modified solution is obtained by a least-squares fit to the solution across multiple neighboring elements.</p>
+<h4><a class="anchor" id="autotoc_md86"></a>
+Notes on the SpECTRE implemention of the WENO limiters:</h4>
+<p>There are a few differences between the limiters as implemented in SpECTRE and as presented in the references. We list them here and discuss them further below.</p><ol type="1">
+<li>The choice of basis to represent the DG solution</li>
+<li>The system-agnostic implementation</li>
+<li>The oscillation indicator</li>
+</ol>
+<p>Finally, in 4., we will discuss the geometric limitations of the implementation (which are not a deviation from the references).</p>
+<p><a class="anchor" id="autotoc_md87"></a></p><h5>1. The choice of basis</h5>
+<p>SpECTRE uses a Legendre basis, rather than the polynomial basis that we understand to be used in the references. Because the construction of the modified neighbor solutions and the WENO sum is geometrically motivated, the overall algorithm should work similarly. However, the precise numerics may differ.</p>
+<p><a class="anchor" id="autotoc_md88"></a></p><h5>2. The system-agnostic implementation</h5>
+<p>This implementation can act on an arbitrary set of tensors. To reach this generality, our HWENO implementation uses a different troubled-cell indicator (TCI) than the reference, which instead specializes the TCI to the Newtonian Euler system of equations.</p>
+<p>This implementation uses the minmod-based TVB TCI of <a class="el" href="citelist.html#CITEREF_Cockburn1999">[28]</a> to identify elements that need limiting. The simple WENO implementation follows its reference: it checks the TCI independently for each tensor component, so that only certain tensor components may be limited. The HWENO implementation checks the TVB TCI for all tensor components, and if any single component is troubled, then all components of all tensors are limited.</p>
+<p>When the evolution system has multiple evolved variables, the recommendation of the references is to apply the limiter to the system's characteristic variables to reduce spurious post-limiting oscillations. In SpECTRE, applying the limiter to the characteristic variables requires specializing the limiter to each evolution system. The system-specific limiter can also implement a system-specific TCI (as the HWENO reference does) to more precisely trigger the limiter.</p>
+<p><a class="anchor" id="autotoc_md89"></a></p><h5>3. The oscillation indicator</h5>
+<p>We use the oscillation indicator of <a class="el" href="citelist.html#CITEREF_Dumbser2007">[38]</a>, modified for use on the square/cube grids of SpECTRE. We favor this indicator because portions of the work can be precomputed, leading to an oscillation measure that is efficient to evaluate.</p>
+<p><a class="anchor" id="autotoc_md90"></a></p><h5>4. The geometric limitations</h5>
+<p>Does not support non-Legendre bases; this is checked in DEBUG mode. In principle other bases could be supported, but this would require generalizing the many internal algorithms that assume a Legendre basis.</p>
+<p>Does not support h- or p-refinement; this is checked always. In principle this could be supported. The modified neighbor solution algorithm would need to be generalized (reasonable for simple WENO, extremely tedious for HWENO), and the sum of neighbor solutions may need to be updated as well.</p>
+<p>Does not support curved elements; this is not enforced. The code will run but we make no guarantees about the results. Specifically, the limiter acts in the <code><a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a></code> coordinates, because in these coordinates it is straightforward to formulate the algorithm. This means the limiter can operate on generic deformed grids &mdash; however, some things can start to break down, especially on strongly deformed grids:</p><ol type="1">
+<li>When the Jacobian (from <code><a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a></code> to <code><a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a></code>) varies across the element, then the limiter fails to be conservative. This is because the integral of a tensor <code>u</code> over the element will change after the limiter activates on <code>u</code>.</li>
+<li>When computing the modified neighbor solution for the WENO sum, the extrapolation or fitting procedure may not properly account for the coordinates of the source data. If the coordinate map of the neighbor differs from that of the local element, then the logical-coordinate representation of the neighbor data may be incorrect. This may be a large error at <a class="el" href="classBlock.html">Block</a> boundaries with discontinuous map changes, and may be a small error from smoothly-varying maps that are not sufficiently resolved from one element to the next. </li>
+</ol>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/DiscontinuousGalerkin/Limiters/<a class="el" href="Weno_8hpp_source.html">Weno.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

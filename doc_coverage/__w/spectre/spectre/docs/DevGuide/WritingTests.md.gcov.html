@@ -1,0 +1,368 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - 39f3c2b725318dcf91749887b1e61f477736e132 - /__w/spectre/spectre/docs/DevGuide/WritingTests.md</title>
+  <link rel="stylesheet" type="text/css" href="../../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title"> SpECTRE Documentation Coverage Report</td></tr>
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../../index.html">top level</a> - <a href="index.html">__w/spectre/spectre/docs/DevGuide</a> - WritingTests.md</td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+             <td class="headerItem">Commit:</td>
+             <td class="headerValue"><a target="_blank" href="https://github.com/sxs-collaboration/spectre/commit/39f3c2b725318dcf91749887b1e61f477736e132">39f3c2b725318dcf91749887b1e61f477736e132</a></td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2021-07-13 03:19:40</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineNoCov">          0 : \cond NEVER</span></a>
+<a name="2"><span class="lineNum">       2 </span>            : Distributed under the MIT License.</a>
+<a name="3"><span class="lineNum">       3 </span>            : See LICENSE.txt for details.</a>
+<a name="4"><span class="lineNum">       4 </span>            : \endcond</a>
+<a name="5"><span class="lineNum">       5 </span>            : # Writing Unit Tests {#writing_unit_tests}</a>
+<a name="6"><span class="lineNum">       6 </span>            : </a>
+<a name="7"><span class="lineNum">       7 </span>            : Unit tests are placed in the appropriate subdirectory of `tests/Unit`, which</a>
+<a name="8"><span class="lineNum">       8 </span>            : mirrors the directory hierarchy of `src`. The tests are all compiled into</a>
+<a name="9"><span class="lineNum">       9 </span>            : individual libraries to keep link time of testing executables low. Typically</a>
+<a name="10"><span class="lineNum">      10 </span>            : there should be one test library for each production code library. For example,</a>
+<a name="11"><span class="lineNum">      11 </span>            : we have a `DataStructures` library and a `Test_DataStructures` library. When</a>
+<a name="12"><span class="lineNum">      12 </span>            : adding a new test there are several scenarios that can occur, which are outlined</a>
+<a name="13"><span class="lineNum">      13 </span>            : below.</a>
+<a name="14"><span class="lineNum">      14 </span>            : </a>
+<a name="15"><span class="lineNum">      15 </span>            : - You are adding a new source file to an existing test library:&lt;br&gt;</a>
+<a name="16"><span class="lineNum">      16 </span>            :   If you are adding a new source file in a directory that already has a</a>
+<a name="17"><span class="lineNum">      17 </span>            :   `CMakeLists.txt` simply create the source file, which should be named</a>
+<a name="18"><span class="lineNum">      18 </span>            :   `Test_ProductionCodeFileBeingTest.cpp` and add that to the `LIBRARY_SOURCES`</a>
+<a name="19"><span class="lineNum">      19 </span>            :   in the `CMakeLists.txt` file in the same directory you are adding the `cpp`</a>
+<a name="20"><span class="lineNum">      20 </span>            :   file.&lt;br&gt;</a>
+<a name="21"><span class="lineNum">      21 </span>            :   If you are adding a new source file to a library but want to place it in a</a>
+<a name="22"><span class="lineNum">      22 </span>            :   subdirectory you must first create the subdirectory. To provide a concrete</a>
+<a name="23"><span class="lineNum">      23 </span>            :   example, say you are adding the directory `TensorEagerMath` to</a>
+<a name="24"><span class="lineNum">      24 </span>            :   `tests/Unit/DataStructures`. After creating the directory you must add a call</a>
+<a name="25"><span class="lineNum">      25 </span>            :   to `add_subdirectory(TensorEagerMath)` to</a>
+<a name="26"><span class="lineNum">      26 </span>            :   `tests/Unit/DataStructures/CMakeLists.txt` *before* the call to</a>
+<a name="27"><span class="lineNum">      27 </span>            :   `add_test_library` and *after* the `LIBRARY_SOURCES` are set. Next add the</a>
+<a name="28"><span class="lineNum">      28 </span>            :   file `tests/Unit/DataStructures/TensorEagerMath/CMakeLists.txt`, which should</a>
+<a name="29"><span class="lineNum">      29 </span>            :   add the new source files by calling `set`, e.g.</a>
+<a name="30"><span class="lineNum">      30 </span>            :   ```</a>
+<a name="31"><span class="lineNum">      31 </span>            :   set(LIBRARY_SOURCES</a>
+<a name="32"><span class="lineNum">      32 </span>            :       ${LIBRARY_SOURCES}</a>
+<a name="33"><span class="lineNum">      33 </span>            :       Test_ProductionCodeFileBeingTest.cpp</a>
+<a name="34"><span class="lineNum">      34 </span>            :       PARENT_SCOPE)</a>
+<a name="35"><span class="lineNum">      35 </span>            :   ```</a>
+<a name="36"><span class="lineNum">      36 </span>            :   The `PARENT_SCOPE` flag tells CMake to make the changes visible in the</a>
+<a name="37"><span class="lineNum">      37 </span>            :   CMakeLists.txt file that called `add_subdirectory`. You can now add the</a>
+<a name="38"><span class="lineNum">      38 </span>            :   `Test_ProductionCodeFileBeingTested.cpp` source file.</a>
+<a name="39"><span class="lineNum">      39 </span>            : - You are adding a new directory:&lt;br&gt;</a>
+<a name="40"><span class="lineNum">      40 </span>            :   If the directory is a new lowest level directory you must add a</a>
+<a name="41"><span class="lineNum">      41 </span>            :   `add_subdirectory` call to `tests/Unit/CMakeLists.txt`. If it is a new</a>
+<a name="42"><span class="lineNum">      42 </span>            :   subdirectory you must add a `add_subdirectory` call to the</a>
+<a name="43"><span class="lineNum">      43 </span>            :   `CMakeLists.txt` file in the directory where you are adding the</a>
+<a name="44"><span class="lineNum">      44 </span>            :   subdirectory. Next you should read the part on adding a new test library.</a>
+<a name="45"><span class="lineNum">      45 </span>            : - You are adding a new test library:&lt;br&gt;</a>
+<a name="46"><span class="lineNum">      46 </span>            :   After creating the subdirectory for the new test library you must add a</a>
+<a name="47"><span class="lineNum">      47 </span>            :   `CMakeLists.txt` file. See `tests/Unit/DataStructures/CMakeLists.txt` for</a>
+<a name="48"><span class="lineNum">      48 </span>            :   an example of one. The `LIBRARY` and `LIBRARY_SOURCES` variables set the name</a>
+<a name="49"><span class="lineNum">      49 </span>            :   of the test library and the source files to be compiled into it. The library</a>
+<a name="50"><span class="lineNum">      50 </span>            :   name should be of the format `Test_ProductionLibraryName`, for example</a>
+<a name="51"><span class="lineNum">      51 </span>            :   `Test_DataStructures`. The library sources should be only the source files in</a>
+<a name="52"><span class="lineNum">      52 </span>            :   the current directory. The `add_subdirectory` command can be used to add</a>
+<a name="53"><span class="lineNum">      53 </span>            :   source files in subdirectories to the same library as is done in</a>
+<a name="54"><span class="lineNum">      54 </span>            :   `tests/Unit/CMakeLists.txt`. The `CMakeLists.txt` in</a>
+<a name="55"><span class="lineNum">      55 </span>            :   `tests/Unit/DataStructures/TensorEagerMath` is an example of how to add source</a>
+<a name="56"><span class="lineNum">      56 </span>            :   files to a library from a subdirectory of the library. Note that the setting</a>
+<a name="57"><span class="lineNum">      57 </span>            :   of `LIBRARY_SOURCES` here first includes the current `LIBRARY_SOURCES` and at</a>
+<a name="58"><span class="lineNum">      58 </span>            :   the end specifies `PARENT_SCOPE`. The `PARENT_SCOPE` flag tells CMake to</a>
+<a name="59"><span class="lineNum">      59 </span>            :   modify the variable in a scope that is visible to the parent directory,</a>
+<a name="60"><span class="lineNum">      60 </span>            :   i.e. the `CMakeLists.txt` that called `add_subdirectory`.&lt;br&gt;</a>
+<a name="61"><span class="lineNum">      61 </span>            :   Finally, in the `CMakeLists.txt` of your new library you must call</a>
+<a name="62"><span class="lineNum">      62 </span>            :   `add_test_library`. Again, see `tests/Unit/DataStructures/CMakeLists.txt` for</a>
+<a name="63"><span class="lineNum">      63 </span>            :   an example. The `add_test_library` function adds a test library with the name</a>
+<a name="64"><span class="lineNum">      64 </span>            :   of the first argument and the source files of the third argument. The second</a>
+<a name="65"><span class="lineNum">      65 </span>            :   argument is the path of the library's directory relative to `tests/Unit`. For</a>
+<a name="66"><span class="lineNum">      66 </span>            :   example, for `Test_DataStructures` it is simply `DataStructures`. The fourth</a>
+<a name="67"><span class="lineNum">      67 </span>            :   and final argument to `add_test_library` are the libraries that must be</a>
+<a name="68"><span class="lineNum">      68 </span>            :   linked. Typically this should only be the production library you're</a>
+<a name="69"><span class="lineNum">      69 </span>            :   testing. For example, `Test_DataStructures` should specify only</a>
+<a name="70"><span class="lineNum">      70 </span>            :   `DataStructures` as the library to link. If you are testing a header-only</a>
+<a name="71"><span class="lineNum">      71 </span>            :   &quot;library&quot; then you do not link any libraries (they must be linked in by the</a>
+<a name="72"><span class="lineNum">      72 </span>            :   libraries actually testing your dependencies). In this case the last argument</a>
+<a name="73"><span class="lineNum">      73 </span>            :   should be `&quot;&quot; # Header-only, link dependencies included from testing lib`</a>
+<a name="74"><span class="lineNum">      74 </span>            : </a>
+<a name="75"><span class="lineNum">      75 </span>            : All tests must start with</a>
+<a name="76"><span class="lineNum">      76 </span>            : ```cpp</a>
+<a name="77"><span class="lineNum">      77 </span>            : // Distributed under the MIT License.</a>
+<a name="78"><span class="lineNum">      78 </span>            : // See LICENSE.txt for details.</a>
+<a name="79"><span class="lineNum">      79 </span>            : </a>
+<a name="80"><span class="lineNum">      80 </span>            : #include &quot;Framework/TestingFramework.hpp&quot;</a>
+<a name="81"><span class="lineNum">      81 </span>            : ```</a>
+<a name="82"><span class="lineNum">      82 </span>            : The file `tests/Unit/Framework/TestingFramework.hpp` must always be the first</a>
+<a name="83"><span class="lineNum">      83 </span>            : include in the test file and must be separated from the STL includes by a blank</a>
+<a name="84"><span class="lineNum">      84 </span>            : line. All classes and free functions should be in an anonymous/unnamed</a>
+<a name="85"><span class="lineNum">      85 </span>            : namespace, e.g.</a>
+<a name="86"><span class="lineNum">      86 </span>            : ```cpp</a>
+<a name="87"><span class="lineNum">      87 </span>            : namespace {</a>
+<a name="88"><span class="lineNum">      88 </span>            : class MyFreeClass {</a>
+<a name="89"><span class="lineNum">      89 </span>            :   /* ... */</a>
+<a name="90"><span class="lineNum">      90 </span>            : };</a>
+<a name="91"><span class="lineNum">      91 </span>            : </a>
+<a name="92"><span class="lineNum">      92 </span>            : void my_free_function() noexcept {</a>
+<a name="93"><span class="lineNum">      93 </span>            :   /* ... */</a>
+<a name="94"><span class="lineNum">      94 </span>            : }</a>
+<a name="95"><span class="lineNum">      95 </span>            : }  // namespace</a>
+<a name="96"><span class="lineNum">      96 </span>            : ```</a>
+<a name="97"><span class="lineNum">      97 </span>            : This is necessary to avoid symbol redefinition errors during linking.</a>
+<a name="98"><span class="lineNum">      98 </span>            : </a>
+<a name="99"><span class="lineNum">      99 </span>            : Test cases are added by using the `SPECTRE_TEST_CASE` macro. The first argument</a>
+<a name="100"><span class="lineNum">     100 </span>            : to the macro is the test name, e.g. `&quot;Unit.DataStructures.Tensor&quot;`, and the</a>
+<a name="101"><span class="lineNum">     101 </span>            : second argument is a list of tags. The tags list is a string where each element</a>
+<a name="102"><span class="lineNum">     102 </span>            : is in square brackets. For example, `&quot;[Unit][DataStructures]&quot;`. The tags should</a>
+<a name="103"><span class="lineNum">     103 </span>            : only be the type of test, in this case `Unit`, and the library being tested, in</a>
+<a name="104"><span class="lineNum">     104 </span>            : this case `DataStructures`. The `SPECTRE_TEST_CASE` macro should be treated as a</a>
+<a name="105"><span class="lineNum">     105 </span>            : function, which means that it should be followed by `{ /* test code */ }`. For</a>
+<a name="106"><span class="lineNum">     106 </span>            : example,</a>
+<a name="107"><span class="lineNum">     107 </span>            : \snippet Test_Tensor.cpp example_spectre_test_case</a>
+<a name="108"><span class="lineNum">     108 </span>            : From within a `SPECTRE_TEST_CASE` you are able to do all the things you would</a>
+<a name="109"><span class="lineNum">     109 </span>            : normally do in a C++ function, including calling other functions, setting</a>
+<a name="110"><span class="lineNum">     110 </span>            : variables, using lambdas, etc.</a>
+<a name="111"><span class="lineNum">     111 </span>            : </a>
+<a name="112"><span class="lineNum">     112 </span>            : The `CHECK` macro in the above example is provided by</a>
+<a name="113"><span class="lineNum">     113 </span>            : [Catch2](https://github.com/catchorg/Catch2) and is used to check conditions. We</a>
+<a name="114"><span class="lineNum">     114 </span>            : also provide the `CHECK_ITERABLE_APPROX` macro which checks if two `double`s or</a>
+<a name="115"><span class="lineNum">     115 </span>            : two iterable containers of `double`s are approximately</a>
+<a name="116"><span class="lineNum">     116 </span>            : equal. `CHECK_ITERABLE_APPROX` is especially useful for comparing `Tensor`s,</a>
+<a name="117"><span class="lineNum">     117 </span>            : `DataVector`s, and `Tensor&lt;DataVector&gt;`s since it will iterate over nested</a>
+<a name="118"><span class="lineNum">     118 </span>            : containers as well.</a>
+<a name="119"><span class="lineNum">     119 </span>            : </a>
+<a name="120"><span class="lineNum">     120 </span>            : \warning Catch's `CHECK` statement only prints numbers out to approximately 10</a>
+<a name="121"><span class="lineNum">     121 </span>            : digits at most, so you should generally prefer `CHECK_ITERABLE_APPROX` for</a>
+<a name="122"><span class="lineNum">     122 </span>            : checking double precision numbers, unless you want to check that two numbers are</a>
+<a name="123"><span class="lineNum">     123 </span>            : bitwise identical.</a>
+<a name="124"><span class="lineNum">     124 </span>            : </a>
+<a name="125"><span class="lineNum">     125 </span>            : All unit tests must finish within a few seconds, the hard limit is 5, but having</a>
+<a name="126"><span class="lineNum">     126 </span>            : unit tests that long is strongly discouraged. They should typically complete in</a>
+<a name="127"><span class="lineNum">     127 </span>            : less than half a second. Tests that are longer are often no longer testing a</a>
+<a name="128"><span class="lineNum">     128 </span>            : small enough unit of code and should either be split into several unit tests or</a>
+<a name="129"><span class="lineNum">     129 </span>            : moved to an integration test.</a>
+<a name="130"><span class="lineNum">     130 </span>            : </a>
+<a name="131"><span class="lineNum">     131 </span>            : #### Discovering New and Renamed Tests</a>
+<a name="132"><span class="lineNum">     132 </span>            : </a>
+<a name="133"><span class="lineNum">     133 </span>            : When you add a new test to a source file or rename an existing test the change</a>
+<a name="134"><span class="lineNum">     134 </span>            : needs to be discovered by the testing infrastructure. This is done by building</a>
+<a name="135"><span class="lineNum">     135 </span>            : the target `rebuild_cache`, e.g. by running `make rebuild_cache`.</a>
+<a name="136"><span class="lineNum">     136 </span>            : </a>
+<a name="137"><span class="lineNum">     137 </span>            : #### Testing Pointwise Functions</a>
+<a name="138"><span class="lineNum">     138 </span>            : </a>
+<a name="139"><span class="lineNum">     139 </span>            : Pointwise functions should generally be tested in two different ways. The first</a>
+<a name="140"><span class="lineNum">     140 </span>            : is by taking input from an analytic solution and checking that the computed</a>
+<a name="141"><span class="lineNum">     141 </span>            : result is correct. The second is to use the random number generation comparison</a>
+<a name="142"><span class="lineNum">     142 </span>            : with Python infrastructure. In this approach the C++ function being tested is</a>
+<a name="143"><span class="lineNum">     143 </span>            : re-implemented in Python and the results are compared. Please follow these</a>
+<a name="144"><span class="lineNum">     144 </span>            : guidelines:</a>
+<a name="145"><span class="lineNum">     145 </span>            : </a>
+<a name="146"><span class="lineNum">     146 </span>            : - The Python implementation should be in a file with the same name as the source</a>
+<a name="147"><span class="lineNum">     147 </span>            :   file that is being re-implemented and placed in the same directory as its</a>
+<a name="148"><span class="lineNum">     148 </span>            :   corresponding `Test_*.cpp` source file.</a>
+<a name="149"><span class="lineNum">     149 </span>            : - The functions should have the same names as the C++ functions they</a>
+<a name="150"><span class="lineNum">     150 </span>            :   re-implement.</a>
+<a name="151"><span class="lineNum">     151 </span>            : - If a function does sums over tensor indices then</a>
+<a name="152"><span class="lineNum">     152 </span>            :   [`numpy.einsum`](https://docs.scipy.org/doc/numpy/reference/generated/numpy.einsum.html)</a>
+<a name="153"><span class="lineNum">     153 </span>            :   should be used in Python to provide an alternative implementation of the loop</a>
+<a name="154"><span class="lineNum">     154 </span>            :   structure.</a>
+<a name="155"><span class="lineNum">     155 </span>            : - You can import Python functions from other re-implementations in the</a>
+<a name="156"><span class="lineNum">     156 </span>            :   `tests/Unit/` directory to reduce code duplication. Note that the path you</a>
+<a name="157"><span class="lineNum">     157 </span>            :   pass to `pypp::SetupLocalPythonEnvironment` determines the directory from</a>
+<a name="158"><span class="lineNum">     158 </span>            :   which you can import Python modules. Either import modules directly from the</a>
+<a name="159"><span class="lineNum">     159 </span>            :   `tests/Unit/` directory (e.g. `import</a>
+<a name="160"><span class="lineNum">     160 </span>            :   PointwiseFunction.GeneralRelativity.Christoffel as christoffel`) or use</a>
+<a name="161"><span class="lineNum">     161 </span>            :   relative imports like `from . import Christoffel as christoffel`. Don't assume</a>
+<a name="162"><span class="lineNum">     162 </span>            :   the Python environment is set up in a subdirectory of `tests/Unit/`.</a>
+<a name="163"><span class="lineNum">     163 </span>            : - The python code is formatted according to the `.style.yapf` file in the root</a>
+<a name="164"><span class="lineNum">     164 </span>            :   of the repository.</a>
+<a name="165"><span class="lineNum">     165 </span>            : </a>
+<a name="166"><span class="lineNum">     166 </span>            : It is possible to test C++ functions that return by value and ones that return</a>
+<a name="167"><span class="lineNum">     167 </span>            : by `gsl::not_null`. In the latter case, since it is possible to return multiple</a>
+<a name="168"><span class="lineNum">     168 </span>            : values, one Python function taking all non-`gsl::not_null` arguments must be</a>
+<a name="169"><span class="lineNum">     169 </span>            : supplied for each `gsl::not_null` argument to the C++. To perform the test the</a>
+<a name="170"><span class="lineNum">     170 </span>            : `pypp::check_with_random_values()` function must be called. For example, the</a>
+<a name="171"><span class="lineNum">     171 </span>            : following checks various C++ functions by calling into `pypp`:</a>
+<a name="172"><span class="lineNum">     172 </span>            : </a>
+<a name="173"><span class="lineNum">     173 </span>            : \snippet Test_PyppRandomValues.cpp cxx_two_not_null</a>
+<a name="174"><span class="lineNum">     174 </span>            : </a>
+<a name="175"><span class="lineNum">     175 </span>            : The corresponding Python functions are:</a>
+<a name="176"><span class="lineNum">     176 </span>            : </a>
+<a name="177"><span class="lineNum">     177 </span>            : \snippet PyppPyTests.py python_two_not_null</a>
+<a name="178"><span class="lineNum">     178 </span>            : </a>
+<a name="179"><span class="lineNum">     179 </span>            : #### Writing and Fixing Random-Value Based Tests</a>
+<a name="180"><span class="lineNum">     180 </span>            : </a>
+<a name="181"><span class="lineNum">     181 </span>            : Many tests in SpECTRE make use of randomly generated numbers in order to</a>
+<a name="182"><span class="lineNum">     182 </span>            : increase the parameter space covered by the tests. The random number generator</a>
+<a name="183"><span class="lineNum">     183 </span>            : is set up using:</a>
+<a name="184"><span class="lineNum">     184 </span>            : ```cpp</a>
+<a name="185"><span class="lineNum">     185 </span>            : MAKE_GENERATOR(gen);</a>
+<a name="186"><span class="lineNum">     186 </span>            : ```</a>
+<a name="187"><span class="lineNum">     187 </span>            : The generator `gen` can then be passed to distribution classes such as</a>
+<a name="188"><span class="lineNum">     188 </span>            : `std::uniform_real_distribution` or `UniformCustomDistribution`.</a>
+<a name="189"><span class="lineNum">     189 </span>            : </a>
+<a name="190"><span class="lineNum">     190 </span>            : Each time the test is run, a different random seed will be used.  When writing a</a>
+<a name="191"><span class="lineNum">     191 </span>            : test that uses random values, it is good practice to run the test at least</a>
+<a name="192"><span class="lineNum">     192 </span>            : \f$10^4\f$ times in order to set any tolerances on checks used in the test.</a>
+<a name="193"><span class="lineNum">     193 </span>            : This can be done by using the following command in the build directory</a>
+<a name="194"><span class="lineNum">     194 </span>            : (SPECTRE_BUILD_DIR):</a>
+<a name="195"><span class="lineNum">     195 </span>            : ```</a>
+<a name="196"><span class="lineNum">     196 </span>            : ctest --repeat-until-fail 10000 -R TEST_NAME</a>
+<a name="197"><span class="lineNum">     197 </span>            : ```</a>
+<a name="198"><span class="lineNum">     198 </span>            : where `TEST_NAME` is the test name passed to `SPECTRE_TEST_CASE`</a>
+<a name="199"><span class="lineNum">     199 </span>            : (e.g. `Unit.Evolution.Systems.CurvedScalarWave.Characteristics`).</a>
+<a name="200"><span class="lineNum">     200 </span>            : </a>
+<a name="201"><span class="lineNum">     201 </span>            : If a test case fails when using a random number generated by `MAKE_GENERATOR`,</a>
+<a name="202"><span class="lineNum">     202 </span>            : as part of the output from the failed test will be the text</a>
+<a name="203"><span class="lineNum">     203 </span>            : ```</a>
+<a name="204"><span class="lineNum">     204 </span>            : Seed is:  SEED from FILE_NAME:LINE_NUMBER</a>
+<a name="205"><span class="lineNum">     205 </span>            : ```</a>
+<a name="206"><span class="lineNum">     206 </span>            : Note that the output of tests can be found in</a>
+<a name="207"><span class="lineNum">     207 </span>            : `SPECTRE_BUILD_DIR/Testing/Temporary/LastTest.log`</a>
+<a name="208"><span class="lineNum">     208 </span>            : </a>
+<a name="209"><span class="lineNum">     209 </span>            : The failing test case can then be reproduced by changing `MAKE_GENERATOR` call</a>
+<a name="210"><span class="lineNum">     210 </span>            : at the provided line in the given file to</a>
+<a name="211"><span class="lineNum">     211 </span>            : ```cpp</a>
+<a name="212"><span class="lineNum">     212 </span>            : MAKE_GENERATOR(gen, SEED);</a>
+<a name="213"><span class="lineNum">     213 </span>            : ```</a>
+<a name="214"><span class="lineNum">     214 </span>            : If the `MAKE_GENERATOR` is within `CheckWithRandomValues.hpp`, the failing test</a>
+<a name="215"><span class="lineNum">     215 </span>            : case most likely has occurred within a call to</a>
+<a name="216"><span class="lineNum">     216 </span>            : `pypp::check_with_random_values()`.  In such a case, additional information</a>
+<a name="217"><span class="lineNum">     217 </span>            : should have been printed to help you determine which call to</a>
+<a name="218"><span class="lineNum">     218 </span>            : `pypp::check_with_random_values()` has failed.  The critical information is</a>
+<a name="219"><span class="lineNum">     219 </span>            : the line</a>
+<a name="220"><span class="lineNum">     220 </span>            : ```</a>
+<a name="221"><span class="lineNum">     221 </span>            : function:  FUNCTION_NAME</a>
+<a name="222"><span class="lineNum">     222 </span>            : ```</a>
+<a name="223"><span class="lineNum">     223 </span>            : where `FUNCTION_NAME` should correspond to the third argument of a call to</a>
+<a name="224"><span class="lineNum">     224 </span>            : `pypp::check_with_random_values()`.  The seed that caused the test to fail can</a>
+<a name="225"><span class="lineNum">     225 </span>            : then be passed as an additional argument to `pypp::check_with_random_values()`,</a>
+<a name="226"><span class="lineNum">     226 </span>            : where you may also need to pass in the default value of the comparison</a>
+<a name="227"><span class="lineNum">     227 </span>            : tolerance.</a>
+<a name="228"><span class="lineNum">     228 </span>            : </a>
+<a name="229"><span class="lineNum">     229 </span>            : Typically, you will need to adjust a tolerance used in a `CHECK` somewhere in</a>
+<a name="230"><span class="lineNum">     230 </span>            : the test in order to get the test to succeed reliably.  The function</a>
+<a name="231"><span class="lineNum">     231 </span>            : `pypp::check_with_random_values()` takes an argument that specifies the lower</a>
+<a name="232"><span class="lineNum">     232 </span>            : and upper bounds of random quantities.  Typically these should be chosen to be</a>
+<a name="233"><span class="lineNum">     233 </span>            : of order unity in order to decrease the chance of occasionally generating large</a>
+<a name="234"><span class="lineNum">     234 </span>            : numbers through multiplications which can cause an error above a reasonable</a>
+<a name="235"><span class="lineNum">     235 </span>            : tolerance.</a>
+<a name="236"><span class="lineNum">     236 </span>            : </a>
+<a name="237"><span class="lineNum">     237 </span>            : #### Testing Failure Cases</a>
+<a name="238"><span class="lineNum">     238 </span>            : </a>
+<a name="239"><span class="lineNum">     239 </span>            : Adding the &quot;attribute&quot; `// [[OutputRegex, Regular expression to</a>
+<a name="240"><span class="lineNum">     240 </span>            : match]]` before the `SPECTRE_TEST_CASE` macro will force ctest to only</a>
+<a name="241"><span class="lineNum">     241 </span>            : pass the particular test if the regular expression is found in the</a>
+<a name="242"><span class="lineNum">     242 </span>            : output of the test. This can be used to test error handling. When</a>
+<a name="243"><span class="lineNum">     243 </span>            : testing `ASSERT`s you must mark the `SPECTRE_TEST_CASE` as</a>
+<a name="244"><span class="lineNum">     244 </span>            : `[[noreturn]]`, add the macro `ASSERTION_TEST();` to the beginning of</a>
+<a name="245"><span class="lineNum">     245 </span>            : the test, and also have the test call `ERROR(&quot;Failed to trigger ASSERT</a>
+<a name="246"><span class="lineNum">     246 </span>            : in an assertion test&quot;);` at the end of the test body.  The test body</a>
+<a name="247"><span class="lineNum">     247 </span>            : should be enclosed between `#%ifdef SPECTRE_DEBUG` and an `#%endif`</a>
+<a name="248"><span class="lineNum">     248 </span>            : For example,</a>
+<a name="249"><span class="lineNum">     249 </span>            : </a>
+<a name="250"><span class="lineNum">     250 </span>            : \snippet Test_AssertAndError.cpp assertion_test_example</a>
+<a name="251"><span class="lineNum">     251 </span>            : </a>
+<a name="252"><span class="lineNum">     252 </span>            : If the `#%ifdef SPECTRE_DEBUG` block is omitted then compilers will</a>
+<a name="253"><span class="lineNum">     253 </span>            : correctly flag the code as being unreachable which results in</a>
+<a name="254"><span class="lineNum">     254 </span>            : warnings.</a>
+<a name="255"><span class="lineNum">     255 </span>            : </a>
+<a name="256"><span class="lineNum">     256 </span>            : You can also test `ERROR`s inside your code. These tests need to have</a>
+<a name="257"><span class="lineNum">     257 </span>            : the `OutputRegex`, and also call `ERROR_TEST();` at the</a>
+<a name="258"><span class="lineNum">     258 </span>            : beginning. They do not need the `#%ifdef SPECTRE_DEBUG` block, they</a>
+<a name="259"><span class="lineNum">     259 </span>            : can just call have the code that triggers an `ERROR`. For example,</a>
+<a name="260"><span class="lineNum">     260 </span>            : </a>
+<a name="261"><span class="lineNum">     261 </span>            : \snippet Test_AssertAndError.cpp error_test_example</a>
+<a name="262"><span class="lineNum">     262 </span>            : </a>
+<a name="263"><span class="lineNum">     263 </span>            : Note that a `OutputRegex` can also be specified in a test that is</a>
+<a name="264"><span class="lineNum">     264 </span>            : supposed to succeed with output that matches the regular expression.</a>
+<a name="265"><span class="lineNum">     265 </span>            : In this case, the first line of the test should call the macro</a>
+<a name="266"><span class="lineNum">     266 </span>            : `OUTPUT_TEST();`.</a>
+<a name="267"><span class="lineNum">     267 </span>            : </a>
+<a name="268"><span class="lineNum">     268 </span>            : ### Testing Actions</a>
+<a name="269"><span class="lineNum">     269 </span>            : </a>
+<a name="270"><span class="lineNum">     270 </span>            : The action testing framework is documented as part of the `ActionTesting`</a>
+<a name="271"><span class="lineNum">     271 </span>            : namespace.</a>
+<a name="272"><span class="lineNum">     272 </span>            : </a>
+<a name="273"><span class="lineNum">     273 </span>            : ### Building and Running A Single Test File</a>
+<a name="274"><span class="lineNum">     274 </span>            : </a>
+<a name="275"><span class="lineNum">     275 </span>            : In cases where low-level header files are frequently being altered and the</a>
+<a name="276"><span class="lineNum">     276 </span>            : changes need to be tested, building `RunTests` becomes extremely time</a>
+<a name="277"><span class="lineNum">     277 </span>            : consuming. The `RunSingleTest` executable in `tests/Unit/RunSingleTest` allows</a>
+<a name="278"><span class="lineNum">     278 </span>            : one to compile only a select few of the test source files and only link in the</a>
+<a name="279"><span class="lineNum">     279 </span>            : necessary libraries. To set which test file and libraries are linked into</a>
+<a name="280"><span class="lineNum">     280 </span>            : `RunSingleTest` edit the `tests/Unit/RunSingleTest/CMakeLists.txt`</a>
+<a name="281"><span class="lineNum">     281 </span>            : file. However, do not commit your changes to that file since it is meant to</a>
+<a name="282"><span class="lineNum">     282 </span>            : serve as an example. To compile `RunSingleTest` use `make RunSingleTest`, and to</a>
+<a name="283"><span class="lineNum">     283 </span>            : run it use `BUILD_DIR/bin/RunSingleTest Unit.Test.Name`.</a>
+<a name="284"><span class="lineNum">     284 </span>            : </a>
+<a name="285"><span class="lineNum">     285 </span>            : \warning</a>
+<a name="286"><span class="lineNum">     286 </span>            : `Parallel::abort` does not work correctly in the `RunSingleTest` executable</a>
+<a name="287"><span class="lineNum">     287 </span>            : because a segfault occurs inside Charm++ code after the abort message is</a>
+<a name="288"><span class="lineNum">     288 </span>            : printed.</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

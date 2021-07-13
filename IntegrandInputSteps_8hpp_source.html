@@ -1,0 +1,623 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Evolution/Systems/Cce/IntegrandInputSteps.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_d7cddb31ba741ba3a4d5be000d880a30.html">Evolution</a></li><li class="navelem"><a class="el" href="dir_ae9813db12dd9fd3f3106ad3644a1b2a.html">Systems</a></li><li class="navelem"><a class="el" href="dir_b9586a27d0e1f299c51d3004d7f0b675.html">Cce</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">IntegrandInputSteps.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cmath.html">cmath</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160; </div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Matrix_8hpp.html">DataStructures/Matrix.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;DataStructures/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/Equations.hpp&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/Cce/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Spectral/SwshTags.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160; </div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceCce.html">Cce</a> {</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment"> * The set of Bondi quantities computed by hypersurface step, in the required</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment"> * order of computation</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="keyword">using</span> <a class="code" href="namespaceCce.html#a6aa380f6f1dc1109be44f9ddbac98652">bondi_hypersurface_step_tags</a> =</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    tmpl::list&lt;Tags::BondiBeta, Tags::BondiQ, Tags::BondiU, Tags::BondiW,</div>
+<div class="line"><a name="l00023"></a><span class="lineno"><a class="line" href="namespaceCce.html#a6aa380f6f1dc1109be44f9ddbac98652">   23</a></span>&#160;               <a class="code" href="structTags_1_1dt.html">Tags::BondiH</a>&gt;;</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment"> * Metafunction that is a `tmpl::list` of the temporary tags taken by the</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment"> * `ComputeBondiIntegrand` computational struct.</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="keyword">using</span> <a class="code" href="namespaceCce.html#a393d5c196acb92779ba89acbc1fa686e">integrand_temporary_tags</a> =</div>
+<div class="line"><a name="l00031"></a><span class="lineno"><a class="line" href="namespaceCce.html#a393d5c196acb92779ba89acbc1fa686e">   31</a></span>&#160;    <span class="keyword">typename</span> <a class="code" href="structCce_1_1ComputeBondiIntegrand.html">ComputeBondiIntegrand&lt;Tag&gt;::temporary_tags</a>;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160; </div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="keyword">namespace </span>detail {</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment">// structs containing typelists for organizing the set of tags needed at each</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment">// step of the CCE hypersurface evaluation steps. These are not directly the</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment">// tags that are inputs in the `Equations.hpp`, as those would contain</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment">// redundancy, and not necessarily obtain the derivatives during the most ideal</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="comment">// steps. So, the ordering in these structs has been slightly &#39;designed&#39; in ways</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment">// that are not trivial to automate with tmpl list manipulation</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="keyword">struct </span>TagsToComputeForImpl;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160; </div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="keyword">template</span> &lt;&gt;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="keyword">struct </span>TagsToComputeForImpl&lt;Tags::BondiBeta&gt; {</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  <span class="keyword">using</span> pre_swsh_derivative_tags =</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;      tmpl::list&lt;Tags::Dy&lt;Tags::BondiJ&gt;, <a class="code" href="structCce_1_1Tags_1_1Dy.html">Tags::Dy&lt;Tags::Dy&lt;Tags::BondiJ&gt;</a>&gt;&gt;;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  <span class="keyword">using</span> second_swsh_derivative_tags = tmpl::list&lt;&gt;;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;  <span class="keyword">using</span> swsh_derivative_tags = tmpl::list&lt;&gt;;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;};</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment">// Note: Due to the order in which Jacobians for the conversion between</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment">// numerical and Bondi spin-weighted derivatives are evaluated, all of the</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment">// higher (second) spin-weighted derivatives must be computed AFTER the</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment">// eth(dy(bondi)) values (which act as inputs to the second derivative</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment">// conversions to fixed Bondi radius), so must appear later in the</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment">// `swsh_derivative_tags` typelists.</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="keyword">template</span> &lt;&gt;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="keyword">struct </span>TagsToComputeForImpl&lt;Tags::BondiQ&gt; {</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;  <span class="keyword">using</span> pre_swsh_derivative_tags =</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;      tmpl::list&lt;Tags::Dy&lt;Tags::BondiBeta&gt;, <a class="code" href="structCce_1_1Tags_1_1Dy.html">Tags::Dy&lt;Tags::Dy&lt;Tags::BondiBeta&gt;</a>&gt;,</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;                 <a class="code" href="structTags_1_1Multiplies.html">::Tags::Multiplies&lt;Tags::BondiJ, Tags::BondiJbar&gt;</a>,</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;                 <a class="code" href="structTags_1_1Multiplies.html">::Tags::Multiplies&lt;Tags::BondiJbar, Tags::Dy&lt;Tags::BondiJ&gt;</a>&gt;&gt;;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;  <span class="keyword">using</span> swsh_derivative_tags = tmpl::list&lt;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;      <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;<a class="code" href="structCce_1_1Tags_1_1BondiBeta.html">Tags::BondiBeta</a>,</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;                                       <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Eth.html">Spectral::Swsh::Tags::Eth</a>&gt;,</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;      <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative&lt;Tags::Dy&lt;Tags::BondiBeta&gt;</a>,</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;                                       <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Eth.html">Spectral::Swsh::Tags::Eth</a>&gt;,</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;      <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;          <a class="code" href="structTags_1_1Multiplies.html">::Tags::Multiplies&lt;Tags::BondiJ, Tags::BondiJbar&gt;</a>,</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;          <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Eth.html">Spectral::Swsh::Tags::Eth</a>&gt;,</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;      <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;          <a class="code" href="structTags_1_1Multiplies.html">::Tags::Multiplies&lt;Tags::BondiJbar, Tags::Dy&lt;Tags::BondiJ&gt;</a>&gt;,</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;          <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Eth.html">Spectral::Swsh::Tags::Eth</a>&gt;,</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;      <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative&lt;Tags::Dy&lt;Tags::BondiJ&gt;</a>,</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;                                       <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a>&gt;,</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;      <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;<a class="code" href="structCce_1_1Tags_1_1BondiJ.html">Tags::BondiJ</a>,</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;                                       <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a>&gt;&gt;;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;  <span class="keyword">using</span> second_swsh_derivative_tags = tmpl::list&lt;&gt;;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;};</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160; </div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="keyword">template</span> &lt;&gt;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="keyword">struct </span>TagsToComputeForImpl&lt;Tags::BondiU&gt; {</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;  <span class="keyword">using</span> pre_swsh_derivative_tags =</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;      tmpl::list&lt;Tags::Exp2Beta, Tags::Dy&lt;Tags::BondiQ&gt;,</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;                 <a class="code" href="structCce_1_1Tags_1_1Dy.html">Tags::Dy&lt;Tags::Dy&lt;Tags::BondiQ&gt;</a>&gt;&gt;;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;  <span class="keyword">using</span> second_swsh_derivative_tags = tmpl::list&lt;&gt;;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;  <span class="keyword">using</span> swsh_derivative_tags = tmpl::list&lt;&gt;;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;};</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160; </div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="keyword">template</span> &lt;&gt;</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="keyword">struct </span>TagsToComputeForImpl&lt;Tags::BondiW&gt; {</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;  <span class="keyword">using</span> pre_swsh_derivative_tags =</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;      tmpl::list&lt;Tags::Dy&lt;Tags::BondiU&gt;, <a class="code" href="structCce_1_1Tags_1_1Dy.html">Tags::Dy&lt;Tags::Dy&lt;Tags::BondiU&gt;</a>&gt;,</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;                 <a class="code" href="structCce_1_1Tags_1_1Dy.html">Tags::Dy&lt;::Tags::Multiplies&lt;Tags::BondiJ, Tags::BondiJbar&gt;</a>&gt;,</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;                 <a class="code" href="structCce_1_1Tags_1_1Dy.html">Tags::Dy</a>&lt;<a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;                     <a class="code" href="structCce_1_1Tags_1_1BondiJ.html">Tags::BondiJ</a>, <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a>&gt;&gt;&gt;;</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;  <span class="keyword">using</span> swsh_derivative_tags = tmpl::list&lt;</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;      <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative&lt;Tags::Dy&lt;Tags::BondiBeta&gt;</a>,</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;                                       <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a>&gt;,</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;      <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;          <a class="code" href="structCce_1_1Tags_1_1Dy.html">Tags::Dy&lt;::Tags::Multiplies&lt;Tags::BondiJ, Tags::BondiJbar&gt;</a>&gt;,</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;          <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a>&gt;,</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;      <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;          <a class="code" href="structCce_1_1Tags_1_1Dy.html">Tags::Dy&lt;::Tags::Multiplies&lt;Tags::BondiJ, Tags::BondiJbar&gt;</a>&gt;,</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;          <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Eth.html">Spectral::Swsh::Tags::Eth</a>&gt;,</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;      <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative&lt;Tags::Dy&lt;Tags::BondiU&gt;</a>,</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;                                       <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a>&gt;,</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;      <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;<a class="code" href="structCce_1_1Tags_1_1BondiU.html">Tags::BondiU</a>,</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;                                       <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a>&gt;&gt;;</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;  <span class="comment">// Currently, the `eth_ethbar_j` term is the single instance of a swsh</span></div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;  <span class="comment">// derivative needing nested `Spectral::Swsh::Tags::Derivatives` steps to</span></div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;  <span class="comment">// compute. The reason is that if we do not compute the derivative in two</span></div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;  <span class="comment">// steps, there are intermediate terms in the Jacobian which depend on eth_j,</span></div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;  <span class="comment">// which is a spin-weight 3 quantity and therefore cannot be computed with</span></div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;  <span class="comment">// libsharp (the SWSH library being used). If `eth_ethbar_j` becomes not</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;  <span class="comment">// needed, the remaining `second_swsh_derivative_tags` can be merged to the</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;  <span class="comment">// end of `swsh_derivative_tags` and the corresponding computational steps</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;  <span class="comment">// from `SwshDerivatives.hpp` removed.</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;  <span class="keyword">using</span> second_swsh_derivative_tags =</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;      tmpl::list&lt;<a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;<a class="code" href="structCce_1_1Tags_1_1BondiBeta.html">Tags::BondiBeta</a>,</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;                                                  <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1EthEth.html">Spectral::Swsh::Tags::EthEth</a>&gt;,</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;                 <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;                     <a class="code" href="structCce_1_1Tags_1_1BondiBeta.html">Tags::BondiBeta</a>, <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1EthEthbar.html">Spectral::Swsh::Tags::EthEthbar</a>&gt;,</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;                 <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;                     <a class="code" href="structTags_1_1Multiplies.html">::Tags::Multiplies&lt;Tags::BondiJ, Tags::BondiJbar&gt;</a>,</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;                     <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1EthEthbar.html">Spectral::Swsh::Tags::EthEthbar</a>&gt;,</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;                 <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;                     <a class="code" href="structCce_1_1Tags_1_1BondiJ.html">Tags::BondiJ</a>, <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1EthbarEthbar.html">Spectral::Swsh::Tags::EthbarEthbar</a>&gt;,</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;                 <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;                     <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;                         <a class="code" href="structCce_1_1Tags_1_1BondiJ.html">Tags::BondiJ</a>, <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a>&gt;,</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;                     <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Eth.html">Spectral::Swsh::Tags::Eth</a>&gt;&gt;;</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;};</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160; </div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;<span class="keyword">template</span> &lt;&gt;</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;<span class="keyword">struct </span>TagsToComputeForImpl&lt;Tags::BondiH&gt; {</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;  <span class="keyword">using</span> pre_swsh_derivative_tags =</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;      tmpl::list&lt;::Tags::Multiplies&lt;Tags::BondiJbar, Tags::BondiU&gt;,</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;                 <a class="code" href="structTags_1_1Multiplies.html">::Tags::Multiplies&lt;Tags::BondiUbar, Tags::Dy&lt;Tags::BondiJ&gt;</a>&gt;,</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;                 <a class="code" href="structCce_1_1Tags_1_1JbarQMinus2EthBeta.html">Tags::JbarQMinus2EthBeta</a>, <a class="code" href="structCce_1_1Tags_1_1Dy.html">Tags::Dy&lt;Tags::BondiW&gt;</a>&gt;;</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;  <span class="keyword">using</span> swsh_derivative_tags = tmpl::list&lt;</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;      <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative&lt;Tags::BondiQ, Spectral::Swsh::Tags::Eth&gt;</a>,</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;      <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative&lt;Tags::BondiU, Spectral::Swsh::Tags::Eth&gt;</a>,</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;      <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;          <a class="code" href="structTags_1_1Multiplies.html">::Tags::Multiplies&lt;Tags::BondiUbar, Tags::Dy&lt;Tags::BondiJ&gt;</a>&gt;,</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;          <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Eth.html">Spectral::Swsh::Tags::Eth</a>&gt;,</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;      <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;          <a class="code" href="structTags_1_1Multiplies.html">::Tags::Multiplies&lt;Tags::BondiJbar, Tags::Dy&lt;Tags::BondiJ&gt;</a>&gt;,</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;          <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a>&gt;,</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;      <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;<a class="code" href="structCce_1_1Tags_1_1JbarQMinus2EthBeta.html">Tags::JbarQMinus2EthBeta</a>,</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;                                       <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a>&gt;,</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;      <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;          <a class="code" href="structTags_1_1Multiplies.html">::Tags::Multiplies&lt;Tags::BondiJbar, Tags::BondiU&gt;</a>,</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;          <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a>&gt;,</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;      <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;<a class="code" href="structCce_1_1Tags_1_1BondiQ.html">Tags::BondiQ</a>,</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;                                       <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a>&gt;&gt;;</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;  <span class="keyword">using</span> second_swsh_derivative_tags = tmpl::list&lt;&gt;;</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;};</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;}  <span class="comment">// namespace detail</span></div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;<span class="comment"> * \brief A typelist for the set of `BoundaryValue` tags needed as an input to</span></div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;<span class="comment"> * any of the template specializations of `PrecomputeCceDependencies`.</span></div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;<span class="comment"> * \details This is provided for easy and maintainable</span></div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;<span class="comment"> * construction of a `Variables` or \ref DataBoxGroup with all of the quantities</span></div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;<span class="comment"> * necessary for a CCE computation or portion thereof.</span></div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;<span class="comment"> * A container of these tags should have size</span></div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;<span class="comment"> * `Spectral::Swsh::number_of_swsh_collocation_points(l_max)`.</span></div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">template</span> &lt;<span class="keyword">typename</span>&gt; <span class="keyword">class </span>BoundaryPrefix&gt;</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;<span class="keyword">using</span> <a class="code" href="namespaceCce.html#aa00307a414eb1f569706cb7d7449fa4d">pre_computation_boundary_tags</a> =</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;    tmpl::list&lt;BoundaryPrefix&lt;Tags::BondiR&gt;,</div>
+<div class="line"><a name="l00174"></a><span class="lineno"><a class="line" href="namespaceCce.html#aa00307a414eb1f569706cb7d7449fa4d">  174</a></span>&#160;               BoundaryPrefix&lt;Tags::DuRDividedByR&gt;&gt;;</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;<span class="comment"> * \brief A typelist for the set of tags computed by the set of</span></div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;<span class="comment"> * template specializations of `PrecomputeCceDepedencies`.</span></div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;<span class="comment"> * \details This is provided for easy and maintainable construction of a</span></div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;<span class="comment"> * `Variables` or \ref DataBoxGroup with all of the quantities needed for a CCE</span></div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;<span class="comment"> * computation or component. The data structures represented by these tags</span></div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;<span class="comment"> * should each have size `number_of_radial_points *</span></div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;<span class="comment"> * Spectral::Swsh::number_of_swsh_collocation_points(l_max)`. All of these tags</span></div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;<span class="comment"> * may be computed at once if using a \ref DataBoxGroup using the template</span></div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;<span class="comment"> * `mutate_all_precompute_cce_dependencies` or individually using</span></div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;<span class="comment"> * the template specializations `PrecomputeCceDependencies`.</span></div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;<span class="comment"> * \note the tag `Tags::DuRDividedByR` is omitted from this list because in the</span></div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;<span class="comment"> * case where a gauge transformation must be applied, the time derivative</span></div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;<span class="comment"> * quantities must wait until later in the computation.</span></div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;<span class="keyword">using</span> <a class="code" href="namespaceCce.html#a7a4a1a7fe54a9f77fbf034fb95f46474">pre_computation_tags</a> =</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;    tmpl::list&lt;<a class="code" href="structCce_1_1Tags_1_1EthRDividedByR.html">Tags::EthRDividedByR</a>, <a class="code" href="structCce_1_1Tags_1_1EthEthRDividedByR.html">Tags::EthEthRDividedByR</a>,</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;               <a class="code" href="structCce_1_1Tags_1_1EthEthbarRDividedByR.html">Tags::EthEthbarRDividedByR</a>, <a class="code" href="structCce_1_1Tags_1_1BondiK.html">Tags::BondiK</a>, <a class="code" href="structCce_1_1Tags_1_1OneMinusY.html">Tags::OneMinusY</a>,</div>
+<div class="line"><a name="l00196"></a><span class="lineno"><a class="line" href="namespaceCce.html#a7a4a1a7fe54a9f77fbf034fb95f46474">  196</a></span>&#160;               <a class="code" href="structCce_1_1Tags_1_1BondiR.html">Tags::BondiR</a>&gt;;</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;<span class="comment">/// @{</span></div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;<span class="comment"></span><span class="comment">/*!</span></div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;<span class="comment"> * \brief A typelist for the set of tags computed by the set of</span></div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;<span class="comment"> * template specializations of `ComputePreSwshDerivatives`.</span></div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;<span class="comment"> * \details This is provided for easy and maintainable construction of a</span></div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;<span class="comment"> * `Variables` or \ref DataBoxGroup with all of the quantities needed for a CCE</span></div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;<span class="comment"> * computation or component. The data structures represented by these tags</span></div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;<span class="comment"> * should each have size `number_of_radial_points *</span></div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;<span class="comment"> * Spectral::Swsh::number_of_swsh_collocation_points(l_max)`. All of these tags</span></div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;<span class="comment"> * (for a given integrated Bondi quantity) may be computed at once if using a</span></div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;<span class="comment"> * \ref DataBoxGroup using the template</span></div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;<span class="comment"> * `mutate_all_pre_swsh_derivatives_for_tag` or individually using the template</span></div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;<span class="comment"> * specializations of `ComputePreSwshDerivatives`. The full set of integrated</span></div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;<span class="comment"> * Bondi quantities is available from the typelist</span></div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;<span class="comment"> * `bondi_hypersurface_step_tags`.</span></div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00216"></a><span class="lineno"><a class="line" href="structCce_1_1pre__swsh__derivative__tags__to__compute__for.html">  216</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1pre__swsh__derivative__tags__to__compute__for.html">pre_swsh_derivative_tags_to_compute_for</a> {</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;  <span class="keyword">using</span> type =</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;      <span class="keyword">typename</span> detail::TagsToComputeForImpl&lt;Tag&gt;::pre_swsh_derivative_tags;</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;};</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160; </div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;<span class="keyword">using</span> pre_swsh_derivative_tags_to_compute_for_t =</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;    <span class="keyword">typename</span> pre_swsh_derivative_tags_to_compute_for&lt;Tag&gt;::type;<span class="comment"></span></div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;<span class="comment">/// @}</span></div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;<span class="comment"></span><span class="comment"></span> </div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;<span class="comment">/// @{</span></div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;<span class="comment"></span><span class="comment">/*!</span></div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;<span class="comment"> * \brief A typelist for the set of tags computed by single spin-weighted</span></div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;<span class="comment"> * differentiation using utilities from the `Swsh` namespace.</span></div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00232"></a><span class="lineno"><a class="line" href="structCce_1_1single__swsh__derivative__tags__to__compute__for.html">  232</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1single__swsh__derivative__tags__to__compute__for.html">single_swsh_derivative_tags_to_compute_for</a> {</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;  <span class="keyword">using</span> type = <span class="keyword">typename</span> detail::TagsToComputeForImpl&lt;Tag&gt;::swsh_derivative_tags;</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;};</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160; </div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;<span class="keyword">using</span> single_swsh_derivative_tags_to_compute_for_t =</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;    <span class="keyword">typename</span> single_swsh_derivative_tags_to_compute_for&lt;Tag&gt;::type;<span class="comment"></span></div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;<span class="comment">/// @}</span></div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;<span class="comment"></span><span class="comment"></span> </div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;<span class="comment">/// @{</span></div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;<span class="comment"></span><span class="comment">/*!</span></div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;<span class="comment"> * \brief A typelist for the set of tags computed by multiple spin-weighted</span></div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;<span class="comment"> * differentiation using utilities from the `Swsh` namespace.</span></div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00247"></a><span class="lineno"><a class="line" href="structCce_1_1second__swsh__derivative__tags__to__compute__for.html">  247</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1second__swsh__derivative__tags__to__compute__for.html">second_swsh_derivative_tags_to_compute_for</a> {</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;  <span class="keyword">using</span> type =</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;      <span class="keyword">typename</span> detail::TagsToComputeForImpl&lt;Tag&gt;::second_swsh_derivative_tags;</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;};</div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160; </div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;<span class="keyword">using</span> second_swsh_derivative_tags_to_compute_for_t =</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;    <span class="keyword">typename</span> second_swsh_derivative_tags_to_compute_for&lt;Tag&gt;::type;<span class="comment"></span></div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;<span class="comment">/// @}</span></div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;<span class="comment"></span><span class="comment"></span> </div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;<span class="comment">/// Typelist of steps for `SwshDerivatives` mutations called on volume</span></div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;<span class="comment">/// quantities needed for scri+ computations</span></div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;<span class="comment"></span><span class="keyword">using</span> <a class="code" href="namespaceCce.html#a4911f02776875e5d7fbb3d6f66ef5a55">all_swsh_derivative_tags_for_scri</a> = tmpl::list&lt;</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;    <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative&lt;Tags::Dy&lt;Tags::BondiU&gt;</a>,</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;                                     <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Eth.html">Spectral::Swsh::Tags::Eth</a>&gt;,</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;    <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;</div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;        <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;<a class="code" href="structCce_1_1Tags_1_1BondiBeta.html">Tags::BondiBeta</a>,</div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;                                         <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1EthEthbar.html">Spectral::Swsh::Tags::EthEthbar</a>&gt;,</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;        <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a>&gt;,</div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;    <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative&lt;Tags::Dy&lt;Tags::Du&lt;Tags::BondiJ&gt;</a>&gt;,</div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;                                     <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a>&gt;,</div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;    <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative&lt;Tags::Dy&lt;Tags::Dy&lt;Tags::BondiU&gt;</a>&gt;,</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;                                     <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a>&gt;,</div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;    <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative&lt;Tags::Dy&lt;Tags::BondiQ&gt;</a>,</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;                                     <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a>&gt;,</div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;    <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative&lt;Tags::Dy&lt;Tags::Dy&lt;Tags::BondiBeta&gt;</a>&gt;,</div>
+<div class="line"><a name="l00273"></a><span class="lineno"><a class="line" href="namespaceCce.html#a4911f02776875e5d7fbb3d6f66ef5a55">  273</a></span>&#160;                                     <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Eth.html">Spectral::Swsh::Tags::Eth</a>&gt;&gt;;</div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;<span class="comment">/// Typelist of steps for `PreSwshDerivatives` mutations called on boundary</span></div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;<span class="comment">/// (angular grid only) quantities needed for scri+ computations</span></div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;<span class="comment"></span><span class="keyword">using</span> <a class="code" href="namespaceCce.html#a82ee1fe370aef231d5c9a213f307f9cc">all_boundary_pre_swsh_derivative_tags_for_scri</a> =</div>
+<div class="line"><a name="l00278"></a><span class="lineno"><a class="line" href="namespaceCce.html#a82ee1fe370aef231d5c9a213f307f9cc">  278</a></span>&#160;    tmpl::list&lt;Tags::ComplexInertialRetardedTime&gt;;</div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;<span class="comment">/// Typelist of steps for `SwshDerivatives` mutations called on boundary</span></div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;<span class="comment">/// (angular grid only) quantities needed for scri+ computations</span></div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;<span class="comment"></span><span class="keyword">using</span> <a class="code" href="namespaceCce.html#a2f7f7d9ff20deabef15333769ea919c2">all_boundary_swsh_derivative_tags_for_scri</a> =</div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;    tmpl::list&lt;<a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;</div>
+<div class="line"><a name="l00284"></a><span class="lineno"><a class="line" href="namespaceCce.html#a2f7f7d9ff20deabef15333769ea919c2">  284</a></span>&#160;        <a class="code" href="structCce_1_1Tags_1_1ComplexInertialRetardedTime.html">Tags::ComplexInertialRetardedTime</a>, <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1EthEth.html">Spectral::Swsh::Tags::EthEth</a>&gt;&gt;;</div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;<span class="comment"> * \brief A typelist for the set of tags computed by spin-weighted</span></div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;<span class="comment"> * differentiation using utilities from the `Swsh` namespace.</span></div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;<span class="comment"> * \details This is provided for easy and maintainable construction of a</span></div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;<span class="comment"> * `Variables` or \ref DataBoxGroup with all of the quantities needed for a CCE</span></div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;<span class="comment"> * computation or component. The data structures represented by these tags</span></div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;<span class="comment"> * should each have size `number_of_radial_points *</span></div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;<span class="comment"> * Spectral::Swsh::number_of_swsh_collocation_points(l_max)`. All of these tags</span></div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;<span class="comment"> * (for a given integrated Bondi quantity) may be computed at once if using a</span></div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;<span class="comment"> * \ref DataBoxGroup using the template `mutate_all_swsh_derivatives_for_tag`.</span></div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;<span class="comment"> * Individual tag computation is not provided in a convenient interface, as</span></div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;<span class="comment"> * there is significant savings in aggregating spin-weighted differentiation</span></div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;<span class="comment"> * steps. The full set of integrated Bondi quantities is available from the</span></div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;<span class="comment"> * typelist `bondi_hypersurface_step_tags`.</span></div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;<span class="keyword">using</span> <a class="code" href="namespaceCce.html#ad8c937a1e34a4865805c5680f8f7872d">all_swsh_derivative_tags</a> =</div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;    tmpl::remove_duplicates&lt;tmpl::flatten&lt;tmpl::list&lt;</div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;        tmpl::transform&lt;</div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;            <a class="code" href="namespaceCce.html#a6aa380f6f1dc1109be44f9ddbac98652">bondi_hypersurface_step_tags</a>,</div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;            tmpl::bind&lt;tmpl::list,</div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;                       <a class="code" href="structCce_1_1single__swsh__derivative__tags__to__compute__for.html">single_swsh_derivative_tags_to_compute_for&lt;tmpl::_1&gt;</a>,</div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;                       <a class="code" href="structCce_1_1second__swsh__derivative__tags__to__compute__for.html">second_swsh_derivative_tags_to_compute_for&lt;tmpl::_1&gt;</a>&gt;&gt;,</div>
+<div class="line"><a name="l00309"></a><span class="lineno"><a class="line" href="namespaceCce.html#ad8c937a1e34a4865805c5680f8f7872d">  309</a></span>&#160;        <a class="code" href="namespaceCce.html#a4911f02776875e5d7fbb3d6f66ef5a55">all_swsh_derivative_tags_for_scri</a>&gt;&gt;&gt;;</div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;<span class="comment"> * \brief A typelist for the full set of coefficient buffers needed to process</span></div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;<span class="comment"> * all of the tags in `all_swsh_derivative_tags` using batch processing provided</span></div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;<span class="comment"> * in `mutate_all_swsh_derivatives_for_tag`.</span></div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;<span class="comment"> * \details This is provided for easy and maintainable construction of a</span></div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;<span class="comment"> * `Variables` or \ref DataBoxGroup with all of the quantities needed for a CCE</span></div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;<span class="comment"> * computation or component. The data structures represented by these tags</span></div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;<span class="comment"> * should each have size `number_of_radial_points *</span></div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;<span class="comment"> * Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)`. Providing</span></div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;<span class="comment"> * buffers associated with these tags is necessary for the use of the aggregated</span></div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;<span class="comment"> * computation `mutate_all_swsh_derivatives_for_tag`.</span></div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;<span class="keyword">using</span> <a class="code" href="namespaceCce.html#a9cbd52ad55ee87beb6abf5857c2db60a">all_transform_buffer_tags</a> =</div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;    tmpl::remove_duplicates&lt;tmpl::flatten&lt;tmpl::transform&lt;</div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;        <a class="code" href="namespaceCce.html#ad8c937a1e34a4865805c5680f8f7872d">all_swsh_derivative_tags</a>,</div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;        tmpl::bind&lt;<a class="code" href="group__SwshGroup.html#ga3a19e1d6fbdabe80a1252971f6594cfb">Spectral::Swsh::coefficient_buffer_tags_for_derivative_tag</a>,</div>
+<div class="line"><a name="l00328"></a><span class="lineno"><a class="line" href="namespaceCce.html#a9cbd52ad55ee87beb6abf5857c2db60a">  328</a></span>&#160;                   tmpl::_1&gt;&gt;&gt;&gt;;</div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160; </div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;<span class="keyword">namespace </span>detail {</div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;<span class="keyword">struct </span>additional_pre_swsh_derivative_tags_for {</div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;  <span class="keyword">using</span> type = tmpl::conditional_t&lt;std::is_same_v&lt;Tag, Tags::BondiH&gt;,</div>
+<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;                                   tmpl::list&lt;Tags::Dy&lt;Tag&gt;&gt;,</div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;                                   tmpl::list&lt;Tag, Tags::Dy&lt;Tag&gt;&gt;&gt;;</div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;};</div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;}  <span class="comment">// namespace detail</span></div>
+<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;<span class="comment">/// Typelist of steps for `PreSwshDerivatives` mutations needed for scri+</span></div>
+<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;<span class="comment">/// computations</span></div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;<span class="comment"></span><span class="keyword">using</span> <a class="code" href="namespaceCce.html#adf0ceab2533f417cc55b2430cd136046">all_pre_swsh_derivative_tags_for_scri</a> =</div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;    tmpl::list&lt;Tags::Du&lt;Tags::BondiJ&gt;, Tags::Dy&lt;Tags::Du&lt;Tags::BondiJ&gt;&gt;,</div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;               Tags::Dy&lt;Tags::Dy&lt;Tags::Du&lt;Tags::BondiJ&gt;&gt;&gt;,</div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;               Tags::Dy&lt;Tags::Dy&lt;Tags::BondiW&gt;&gt;,</div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;               Tags::Dy&lt;Tags::Dy&lt;Tags::BondiQ&gt;&gt;,</div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;               Tags::Dy&lt;Tags::Dy&lt;Tags::BondiU&gt;&gt;,</div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;               Tags::Dy&lt;Tags::Dy&lt;Tags::Dy&lt;Tags::BondiJ&gt;&gt;&gt;,</div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;               Tags::Dy&lt;Tags::Dy&lt;Tags::Dy&lt;Tags::BondiU&gt;&gt;&gt;,</div>
+<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;               Tags::Dy&lt;Tags::Dy&lt;Tags::Dy&lt;Tags::BondiBeta&gt;&gt;&gt;,</div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;               Tags::Dy&lt;<a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a>&lt;</div>
+<div class="line"><a name="l00351"></a><span class="lineno"><a class="line" href="namespaceCce.html#adf0ceab2533f417cc55b2430cd136046">  351</a></span>&#160;                   <a class="code" href="structCce_1_1Tags_1_1BondiBeta.html">Tags::BondiBeta</a>, <a class="code" href="structSpectral_1_1Swsh_1_1Tags_1_1EthEthbar.html">Spectral::Swsh::Tags::EthEthbar</a>&gt;&gt;&gt;;</div>
+<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;<span class="comment"> * \brief A typelist for the full set of tags needed as direct or indirect</span></div>
+<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;<span class="comment"> * input to any `ComputeBondiIntegrand` that are computed any specialization of</span></div>
+<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;<span class="comment"> * `ComputePreSwshDerivatives`.</span></div>
+<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;<span class="comment"> * \details This is provided for easy and maintainable construction of a</span></div>
+<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;<span class="comment"> * `Variables` or \ref DataBoxGroup with all of the quantities needed for a CCE</span></div>
+<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;<span class="comment"> * computation or component. The data structures represented by these tags</span></div>
+<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;<span class="comment"> * should each have size `number_of_radial_points *</span></div>
+<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;<span class="comment"> * Spectral::Swsh::number_of_swsh_collocation_points(l_max)`.</span></div>
+<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;<span class="keyword">using</span> <a class="code" href="namespaceCce.html#a7dd34947472e61d70007727517310500">all_pre_swsh_derivative_tags</a> =</div>
+<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;    tmpl::remove_duplicates&lt;tmpl::flatten&lt;tmpl::list&lt;</div>
+<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;        tmpl::transform&lt;</div>
+<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;            <a class="code" href="namespaceCce.html#a6aa380f6f1dc1109be44f9ddbac98652">bondi_hypersurface_step_tags</a>,</div>
+<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;            tmpl::bind&lt;</div>
+<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;                tmpl::list, <a class="code" href="structCce_1_1pre__swsh__derivative__tags__to__compute__for.html">pre_swsh_derivative_tags_to_compute_for&lt;tmpl::_1&gt;</a>,</div>
+<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;                detail::additional_pre_swsh_derivative_tags_for&lt;tmpl::_1&gt;&gt;&gt;,</div>
+<div class="line"><a name="l00371"></a><span class="lineno"><a class="line" href="namespaceCce.html#a7dd34947472e61d70007727517310500">  371</a></span>&#160;        <a class="code" href="namespaceCce.html#adf0ceab2533f417cc55b2430cd136046">all_pre_swsh_derivative_tags_for_scri</a>&gt;&gt;&gt;;</div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160; </div>
+<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160; </div>
+<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;}  <span class="comment">// namespace Cce</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="anamespaceCce_html_ad8c937a1e34a4865805c5680f8f7872d"><div class="ttname"><a href="namespaceCce.html#ad8c937a1e34a4865805c5680f8f7872d">Cce::all_swsh_derivative_tags</a></div><div class="ttdeci">tmpl::remove_duplicates&lt; tmpl::flatten&lt; tmpl::list&lt; tmpl::transform&lt; bondi_hypersurface_step_tags, tmpl::bind&lt; tmpl::list, single_swsh_derivative_tags_to_compute_for&lt; tmpl::_1 &gt;, second_swsh_derivative_tags_to_compute_for&lt; tmpl::_1 &gt; &gt;&gt;, all_swsh_derivative_tags_for_scri &gt; &gt;&gt; all_swsh_derivative_tags</div><div class="ttdoc">A typelist for the set of tags computed by spin-weighted differentiation using utilities from the Sws...</div><div class="ttdef"><b>Definition:</b> IntegrandInputSteps.hpp:309</div></div>
+<div class="ttc" id="agroup__SwshGroup_html_ga3a19e1d6fbdabe80a1252971f6594cfb"><div class="ttname"><a href="group__SwshGroup.html#ga3a19e1d6fbdabe80a1252971f6594cfb">Spectral::Swsh::coefficient_buffer_tags_for_derivative_tag</a></div><div class="ttdeci">tmpl::list&lt; Spectral::Swsh::Tags::SwshTransform&lt; typename DerivativeTag::derivative_of &gt;, Spectral::Swsh::Tags::SwshTransform&lt; DerivativeTag &gt; &gt; coefficient_buffer_tags_for_derivative_tag</div><div class="ttdoc">A metafunction for determining the coefficient buffers needed by angular_derivatives() to avoid repea...</div><div class="ttdef"><b>Definition:</b> SwshTags.hpp:253</div></div>
+<div class="ttc" id="anamespaceCce_html_aa00307a414eb1f569706cb7d7449fa4d"><div class="ttname"><a href="namespaceCce.html#aa00307a414eb1f569706cb7d7449fa4d">Cce::pre_computation_boundary_tags</a></div><div class="ttdeci">tmpl::list&lt; BoundaryPrefix&lt; Tags::BondiR &gt;, BoundaryPrefix&lt; Tags::DuRDividedByR &gt; &gt; pre_computation_boundary_tags</div><div class="ttdoc">A typelist for the set of BoundaryValue tags needed as an input to any of the template specialization...</div><div class="ttdef"><b>Definition:</b> IntegrandInputSteps.hpp:174</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1EthRDividedByR_html"><div class="ttname"><a href="structCce_1_1Tags_1_1EthRDividedByR.html">Cce::Tags::EthRDividedByR</a></div><div class="ttdoc">The value , where  is Bondi radius of the worldtube.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:274</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1BondiK_html"><div class="ttname"><a href="structCce_1_1Tags_1_1BondiK.html">Cce::Tags::BondiK</a></div><div class="ttdoc">Bondi parameter .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:73</div></div>
+<div class="ttc" id="astructSpectral_1_1Swsh_1_1Tags_1_1Eth_html"><div class="ttname"><a href="structSpectral_1_1Swsh_1_1Tags_1_1Eth.html">Spectral::Swsh::Tags::Eth</a></div><div class="ttdoc">Struct for labeling the  spin-weighted derivative in tags.</div><div class="ttdef"><b>Definition:</b> SwshTags.hpp:30</div></div>
+<div class="ttc" id="anamespaceCce_html_a7a4a1a7fe54a9f77fbf034fb95f46474"><div class="ttname"><a href="namespaceCce.html#a7a4a1a7fe54a9f77fbf034fb95f46474">Cce::pre_computation_tags</a></div><div class="ttdeci">tmpl::list&lt; Tags::EthRDividedByR, Tags::EthEthRDividedByR, Tags::EthEthbarRDividedByR, Tags::BondiK, Tags::OneMinusY, Tags::BondiR &gt; pre_computation_tags</div><div class="ttdoc">A typelist for the set of tags computed by the set of template specializations of PrecomputeCceDepede...</div><div class="ttdef"><b>Definition:</b> IntegrandInputSteps.hpp:196</div></div>
+<div class="ttc" id="anamespaceCce_html_a393d5c196acb92779ba89acbc1fa686e"><div class="ttname"><a href="namespaceCce.html#a393d5c196acb92779ba89acbc1fa686e">Cce::integrand_temporary_tags</a></div><div class="ttdeci">typename ComputeBondiIntegrand&lt; Tag &gt;::temporary_tags integrand_temporary_tags</div><div class="ttdef"><b>Definition:</b> IntegrandInputSteps.hpp:31</div></div>
+<div class="ttc" id="astructSpectral_1_1Swsh_1_1Tags_1_1EthEthbar_html"><div class="ttname"><a href="structSpectral_1_1Swsh_1_1Tags_1_1EthEthbar.html">Spectral::Swsh::Tags::EthEthbar</a></div><div class="ttdoc">Struct for labeling the  spin-weighted derivative in tags.</div><div class="ttdef"><b>Definition:</b> SwshTags.hpp:45</div></div>
+<div class="ttc" id="anamespaceCce_html_a9cbd52ad55ee87beb6abf5857c2db60a"><div class="ttname"><a href="namespaceCce.html#a9cbd52ad55ee87beb6abf5857c2db60a">Cce::all_transform_buffer_tags</a></div><div class="ttdeci">tmpl::remove_duplicates&lt; tmpl::flatten&lt; tmpl::transform&lt; all_swsh_derivative_tags, tmpl::bind&lt; Spectral::Swsh::coefficient_buffer_tags_for_derivative_tag, tmpl::_1 &gt; &gt;&gt; &gt; all_transform_buffer_tags</div><div class="ttdoc">A typelist for the full set of coefficient buffers needed to process all of the tags in all_swsh_deri...</div><div class="ttdef"><b>Definition:</b> IntegrandInputSteps.hpp:328</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1BondiBeta_html"><div class="ttname"><a href="structCce_1_1Tags_1_1BondiBeta.html">Cce::Tags::BondiBeta</a></div><div class="ttdoc">Bondi parameter .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:31</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1BondiQ_html"><div class="ttname"><a href="structCce_1_1Tags_1_1BondiQ.html">Cce::Tags::BondiQ</a></div><div class="ttdoc">Bondi parameter .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:79</div></div>
+<div class="ttc" id="anamespaceCce_html_a6aa380f6f1dc1109be44f9ddbac98652"><div class="ttname"><a href="namespaceCce.html#a6aa380f6f1dc1109be44f9ddbac98652">Cce::bondi_hypersurface_step_tags</a></div><div class="ttdeci">tmpl::list&lt; Tags::BondiBeta, Tags::BondiQ, Tags::BondiU, Tags::BondiW, Tags::BondiH &gt; bondi_hypersurface_step_tags</div><div class="ttdef"><b>Definition:</b> IntegrandInputSteps.hpp:23</div></div>
+<div class="ttc" id="astructSpectral_1_1Swsh_1_1Tags_1_1Derivative_html"><div class="ttname"><a href="structSpectral_1_1Swsh_1_1Tags_1_1Derivative.html">Spectral::Swsh::Tags::Derivative</a></div><div class="ttdoc">Prefix tag representing the spin-weighted derivative of a spin-weighted scalar.</div><div class="ttdef"><b>Definition:</b> SwshTags.hpp:152</div></div>
+<div class="ttc" id="acmath_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cmath.html">cmath</a></div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1OneMinusY_html"><div class="ttname"><a href="structCce_1_1Tags_1_1OneMinusY.html">Cce::Tags::OneMinusY</a></div><div class="ttdoc">Coordinate value , which will be cached and sent to the implementing functions.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:255</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1BondiJ_html"><div class="ttname"><a href="structCce_1_1Tags_1_1BondiJ.html">Cce::Tags::BondiJ</a></div><div class="ttdoc">Bondi parameter .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:36</div></div>
+<div class="ttc" id="anamespaceCce_html_a2f7f7d9ff20deabef15333769ea919c2"><div class="ttname"><a href="namespaceCce.html#a2f7f7d9ff20deabef15333769ea919c2">Cce::all_boundary_swsh_derivative_tags_for_scri</a></div><div class="ttdeci">tmpl::list&lt; Spectral::Swsh::Tags::Derivative&lt; Tags::ComplexInertialRetardedTime, Spectral::Swsh::Tags::EthEth &gt; &gt; all_boundary_swsh_derivative_tags_for_scri</div><div class="ttdoc">Typelist of steps for SwshDerivatives mutations called on boundary (angular grid only) quantities nee...</div><div class="ttdef"><b>Definition:</b> IntegrandInputSteps.hpp:284</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1BondiR_html"><div class="ttname"><a href="structCce_1_1Tags_1_1BondiR.html">Cce::Tags::BondiR</a></div><div class="ttdoc">The Bondi radius  is of the worldtube.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:307</div></div>
+<div class="ttc" id="astructSpectral_1_1Swsh_1_1Tags_1_1EthEth_html"><div class="ttname"><a href="structSpectral_1_1Swsh_1_1Tags_1_1EthEth.html">Spectral::Swsh::Tags::EthEth</a></div><div class="ttdoc">Struct for labeling the  spin-weighted derivative in tags.</div><div class="ttdef"><b>Definition:</b> SwshTags.hpp:37</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1Dy_html"><div class="ttname"><a href="structCce_1_1Tags_1_1Dy.html">Cce::Tags::Dy</a></div><div class="ttdoc">The derivative with respect to the numerical coordinate , where  is Bondi radius of the worldtube.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:117</div></div>
+<div class="ttc" id="astructCce_1_1ComputeBondiIntegrand_html"><div class="ttname"><a href="structCce_1_1ComputeBondiIntegrand.html">Cce::ComputeBondiIntegrand</a></div><div class="ttdoc">Computes one of the inputs for the integration of one of the Characteristic hypersurface equations.</div><div class="ttdef"><b>Definition:</b> Equations.hpp:123</div></div>
+<div class="ttc" id="anamespaceCce_html_adf0ceab2533f417cc55b2430cd136046"><div class="ttname"><a href="namespaceCce.html#adf0ceab2533f417cc55b2430cd136046">Cce::all_pre_swsh_derivative_tags_for_scri</a></div><div class="ttdeci">tmpl::list&lt; Tags::Du&lt; Tags::BondiJ &gt;, Tags::Dy&lt; Tags::Du&lt; Tags::BondiJ &gt; &gt;, Tags::Dy&lt; Tags::Dy&lt; Tags::Du&lt; Tags::BondiJ &gt; &gt;&gt;, Tags::Dy&lt; Tags::Dy&lt; Tags::BondiW &gt; &gt;, Tags::Dy&lt; Tags::Dy&lt; Tags::BondiQ &gt; &gt;, Tags::Dy&lt; Tags::Dy&lt; Tags::BondiU &gt; &gt;, Tags::Dy&lt; Tags::Dy&lt; Tags::Dy&lt; Tags::BondiJ &gt; &gt;&gt;, Tags::Dy&lt; Tags::Dy&lt; Tags::Dy&lt; Tags::BondiU &gt; &gt;&gt;, Tags::Dy&lt; Tags::Dy&lt; Tags::Dy&lt; Tags::BondiBeta &gt; &gt;&gt;, Tags::Dy&lt; Spectral::Swsh::Tags::Derivative&lt; Tags::BondiBeta, Spectral::Swsh::Tags::EthEthbar &gt; &gt;&gt; all_pre_swsh_derivative_tags_for_scri</div><div class="ttdoc">Typelist of steps for PreSwshDerivatives mutations needed for scri+ computations.</div><div class="ttdef"><b>Definition:</b> IntegrandInputSteps.hpp:351</div></div>
+<div class="ttc" id="anamespaceCce_html_a82ee1fe370aef231d5c9a213f307f9cc"><div class="ttname"><a href="namespaceCce.html#a82ee1fe370aef231d5c9a213f307f9cc">Cce::all_boundary_pre_swsh_derivative_tags_for_scri</a></div><div class="ttdeci">tmpl::list&lt; Tags::ComplexInertialRetardedTime &gt; all_boundary_pre_swsh_derivative_tags_for_scri</div><div class="ttdoc">Typelist of steps for PreSwshDerivatives mutations called on boundary (angular grid only) quantities ...</div><div class="ttdef"><b>Definition:</b> IntegrandInputSteps.hpp:278</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1EthEthRDividedByR_html"><div class="ttname"><a href="structCce_1_1Tags_1_1EthEthRDividedByR.html">Cce::Tags::EthEthRDividedByR</a></div><div class="ttdoc">The value , where  is Bondi radius of the worldtube.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:282</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1BondiU_html"><div class="ttname"><a href="structCce_1_1Tags_1_1BondiU.html">Cce::Tags::BondiU</a></div><div class="ttdoc">Bondi parameter .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:91</div></div>
+<div class="ttc" id="astructCce_1_1single__swsh__derivative__tags__to__compute__for_html"><div class="ttname"><a href="structCce_1_1single__swsh__derivative__tags__to__compute__for.html">Cce::single_swsh_derivative_tags_to_compute_for</a></div><div class="ttdoc">A typelist for the set of tags computed by single spin-weighted differentiation using utilities from ...</div><div class="ttdef"><b>Definition:</b> IntegrandInputSteps.hpp:232</div></div>
+<div class="ttc" id="astructTags_1_1dt_html"><div class="ttname"><a href="structTags_1_1dt.html">Tags::dt</a></div><div class="ttdoc">Prefix indicating a time derivative.</div><div class="ttdef"><b>Definition:</b> Prefixes.hpp:29</div></div>
+<div class="ttc" id="anamespaceCce_html"><div class="ttname"><a href="namespaceCce.html">Cce</a></div><div class="ttdoc">The set of utilities for performing Cauchy characteristic evolution and Cauchy characteristic matchin...</div><div class="ttdef"><b>Definition:</b> CharacteristicExtractFwd.hpp:6</div></div>
+<div class="ttc" id="astructSpectral_1_1Swsh_1_1Tags_1_1Ethbar_html"><div class="ttname"><a href="structSpectral_1_1Swsh_1_1Tags_1_1Ethbar.html">Spectral::Swsh::Tags::Ethbar</a></div><div class="ttdoc">Struct for labeling the  spin-weighted derivative in tags.</div><div class="ttdef"><b>Definition:</b> SwshTags.hpp:34</div></div>
+<div class="ttc" id="astructCce_1_1second__swsh__derivative__tags__to__compute__for_html"><div class="ttname"><a href="structCce_1_1second__swsh__derivative__tags__to__compute__for.html">Cce::second_swsh_derivative_tags_to_compute_for</a></div><div class="ttdoc">A typelist for the set of tags computed by multiple spin-weighted differentiation using utilities fro...</div><div class="ttdef"><b>Definition:</b> IntegrandInputSteps.hpp:247</div></div>
+<div class="ttc" id="aMatrix_8hpp_html"><div class="ttname"><a href="Matrix_8hpp.html">Matrix.hpp</a></div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1EthEthbarRDividedByR_html"><div class="ttname"><a href="structCce_1_1Tags_1_1EthEthbarRDividedByR.html">Cce::Tags::EthEthbarRDividedByR</a></div><div class="ttdoc">The value , where  is Bondi radius of the worldtube.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:290</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1ComplexInertialRetardedTime_html"><div class="ttname"><a href="structCce_1_1Tags_1_1ComplexInertialRetardedTime.html">Cce::Tags::ComplexInertialRetardedTime</a></div><div class="ttdoc">Complex storage form for the asymptotically inertial retarded time, for taking spin-weighted derivati...</div><div class="ttdef"><b>Definition:</b> Tags.hpp:182</div></div>
+<div class="ttc" id="astructCce_1_1pre__swsh__derivative__tags__to__compute__for_html"><div class="ttname"><a href="structCce_1_1pre__swsh__derivative__tags__to__compute__for.html">Cce::pre_swsh_derivative_tags_to_compute_for</a></div><div class="ttdoc">A typelist for the set of tags computed by the set of template specializations of ComputePreSwshDeriv...</div><div class="ttdef"><b>Definition:</b> IntegrandInputSteps.hpp:216</div></div>
+<div class="ttc" id="astructCce_1_1Tags_1_1JbarQMinus2EthBeta_html"><div class="ttname"><a href="structCce_1_1Tags_1_1JbarQMinus2EthBeta.html">Cce::Tags::JbarQMinus2EthBeta</a></div><div class="ttdoc">The value .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:302</div></div>
+<div class="ttc" id="anamespaceCce_html_a4911f02776875e5d7fbb3d6f66ef5a55"><div class="ttname"><a href="namespaceCce.html#a4911f02776875e5d7fbb3d6f66ef5a55">Cce::all_swsh_derivative_tags_for_scri</a></div><div class="ttdeci">tmpl::list&lt; Spectral::Swsh::Tags::Derivative&lt; Tags::Dy&lt; Tags::BondiU &gt;, Spectral::Swsh::Tags::Eth &gt;, Spectral::Swsh::Tags::Derivative&lt; Spectral::Swsh::Tags::Derivative&lt; Tags::BondiBeta, Spectral::Swsh::Tags::EthEthbar &gt;, Spectral::Swsh::Tags::Ethbar &gt;, Spectral::Swsh::Tags::Derivative&lt; Tags::Dy&lt; Tags::Du&lt; Tags::BondiJ &gt; &gt;, Spectral::Swsh::Tags::Ethbar &gt;, Spectral::Swsh::Tags::Derivative&lt; Tags::Dy&lt; Tags::Dy&lt; Tags::BondiU &gt; &gt;, Spectral::Swsh::Tags::Ethbar &gt;, Spectral::Swsh::Tags::Derivative&lt; Tags::Dy&lt; Tags::BondiQ &gt;, Spectral::Swsh::Tags::Ethbar &gt;, Spectral::Swsh::Tags::Derivative&lt; Tags::Dy&lt; Tags::Dy&lt; Tags::BondiBeta &gt; &gt;, Spectral::Swsh::Tags::Eth &gt; &gt; all_swsh_derivative_tags_for_scri</div><div class="ttdoc">Typelist of steps for SwshDerivatives mutations called on volume quantities needed for scri+ computat...</div><div class="ttdef"><b>Definition:</b> IntegrandInputSteps.hpp:273</div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="astructTags_1_1Multiplies_html"><div class="ttname"><a href="structTags_1_1Multiplies.html">Tags::Multiplies</a></div><div class="ttdoc">A prefix tag representing the product of two other tags. Note that if non-spin-weighted types are nee...</div><div class="ttdef"><b>Definition:</b> Tags.hpp:82</div></div>
+<div class="ttc" id="anamespaceCce_html_a7dd34947472e61d70007727517310500"><div class="ttname"><a href="namespaceCce.html#a7dd34947472e61d70007727517310500">Cce::all_pre_swsh_derivative_tags</a></div><div class="ttdeci">tmpl::remove_duplicates&lt; tmpl::flatten&lt; tmpl::list&lt; tmpl::transform&lt; bondi_hypersurface_step_tags, tmpl::bind&lt; tmpl::list, pre_swsh_derivative_tags_to_compute_for&lt; tmpl::_1 &gt;, detail::additional_pre_swsh_derivative_tags_for&lt; tmpl::_1 &gt; &gt;&gt;, all_pre_swsh_derivative_tags_for_scri &gt; &gt;&gt; all_pre_swsh_derivative_tags</div><div class="ttdoc">A typelist for the full set of tags needed as direct or indirect input to any ComputeBondiIntegrand t...</div><div class="ttdef"><b>Definition:</b> IntegrandInputSteps.hpp:371</div></div>
+<div class="ttc" id="astructSpectral_1_1Swsh_1_1Tags_1_1EthbarEthbar_html"><div class="ttname"><a href="structSpectral_1_1Swsh_1_1Tags_1_1EthbarEthbar.html">Spectral::Swsh::Tags::EthbarEthbar</a></div><div class="ttdoc">Struct for labeling the  spin-weighted derivative in tags.</div><div class="ttdef"><b>Definition:</b> SwshTags.hpp:49</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

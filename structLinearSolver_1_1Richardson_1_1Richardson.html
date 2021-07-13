@@ -1,0 +1,267 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: LinearSolver::Richardson::Richardson&lt; FieldsTag, OptionsGroup, SourceTag &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceLinearSolver.html">LinearSolver</a></li><li class="navelem"><a class="el" href="namespaceLinearSolver_1_1Richardson.html">Richardson</a></li><li class="navelem"><a class="el" href="structLinearSolver_1_1Richardson_1_1Richardson.html">Richardson</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="structLinearSolver_1_1Richardson_1_1Richardson-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">LinearSolver::Richardson::Richardson&lt; FieldsTag, OptionsGroup, SourceTag &gt; Struct Template Reference<div class="ingroups"><a class="el" href="group__LinearSolverGroup.html">Linear Solver</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A simple Richardson scheme for solving a system of linear equations \(Ax=b\).  
+ <a href="structLinearSolver_1_1Richardson_1_1Richardson.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Richardson_8hpp_source.html">Richardson.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ad005251b52edc9afee72e2f569243816"><td class="memItemLeft" align="right" valign="top"><a id="ad005251b52edc9afee72e2f569243816"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>fields_tag</b> = FieldsTag</td></tr>
+<tr class="separator:ad005251b52edc9afee72e2f569243816"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a96b24f9c45a962f0b4c1807793e9a2e8"><td class="memItemLeft" align="right" valign="top"><a id="a96b24f9c45a962f0b4c1807793e9a2e8"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options_group</b> = OptionsGroup</td></tr>
+<tr class="separator:a96b24f9c45a962f0b4c1807793e9a2e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad7d024a271c3a7d0bd3fc3dd6e6c8618"><td class="memItemLeft" align="right" valign="top"><a id="ad7d024a271c3a7d0bd3fc3dd6e6c8618"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>source_tag</b> = SourceTag</td></tr>
+<tr class="separator:ad7d024a271c3a7d0bd3fc3dd6e6c8618"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba1ac85b7e861d8fbdb56b0a7d5fab34"><td class="memItemLeft" align="right" valign="top"><a id="aba1ac85b7e861d8fbdb56b0a7d5fab34"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>operand_tag</b> = fields_tag</td></tr>
+<tr class="separator:aba1ac85b7e861d8fbdb56b0a7d5fab34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aae5135e385cce2568a7432c87e34813d"><td class="memItemLeft" align="right" valign="top"><a id="aae5135e385cce2568a7432c87e34813d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>component_list</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:aae5135e385cce2568a7432c87e34813d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4a2232473345e8c87f6f2cc0edc2cd8"><td class="memItemLeft" align="right" valign="top"><a id="ac4a2232473345e8c87f6f2cc0edc2cd8"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>observed_reduction_data_tags</b> = observers::make_reduction_data_tags&lt; tmpl::list&lt; async_solvers::reduction_data &gt; &gt;</td></tr>
+<tr class="separator:ac4a2232473345e8c87f6f2cc0edc2cd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a592dd10d1921acb1546db6b03977fd7a"><td class="memItemLeft" align="right" valign="top"><a id="a592dd10d1921acb1546db6b03977fd7a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>initialize_element</b> = <a class="el" href="structLinearSolver_1_1async__solvers_1_1InitializeElement.html">async_solvers::InitializeElement</a>&lt; FieldsTag, OptionsGroup, SourceTag &gt;</td></tr>
+<tr class="separator:a592dd10d1921acb1546db6b03977fd7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7e197419811ee69e3b5b4afdb46260f"><td class="memItemLeft" align="right" valign="top"><a id="ab7e197419811ee69e3b5b4afdb46260f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>register_element</b> = <a class="el" href="structobservers_1_1Actions_1_1RegisterWithObservers.html">async_solvers::RegisterElement</a>&lt; FieldsTag, OptionsGroup, SourceTag &gt;</td></tr>
+<tr class="separator:ab7e197419811ee69e3b5b4afdb46260f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73bff96f598b12713ca8f78a74235447"><td class="memTemplParams" colspan="2"><a id="a73bff96f598b12713ca8f78a74235447"></a>
+template&lt;typename ApplyOperatorActions , typename Label  = OptionsGroup&gt; </td></tr>
+<tr class="memitem:a73bff96f598b12713ca8f78a74235447"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>solve</b> = tmpl::list&lt; <a class="el" href="structLinearSolver_1_1async__solvers_1_1PrepareSolve.html">async_solvers::PrepareSolve</a>&lt; FieldsTag, OptionsGroup, SourceTag, Label &gt;, detail::UpdateFields&lt; FieldsTag, OptionsGroup, SourceTag &gt;, ApplyOperatorActions, <a class="el" href="structLinearSolver_1_1async__solvers_1_1CompleteStep.html">async_solvers::CompleteStep</a>&lt; FieldsTag, OptionsGroup, SourceTag, Label &gt; &gt;</td></tr>
+<tr class="separator:a73bff96f598b12713ca8f78a74235447"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename FieldsTag, typename OptionsGroup, typename SourceTag = db::add_tag_prefix&lt;::Tags::FixedSource, FieldsTag&gt;&gt;<br />
+struct LinearSolver::Richardson::Richardson&lt; FieldsTag, OptionsGroup, SourceTag &gt;</h3>
+
+<p>A simple Richardson scheme for solving a system of linear equations \(Ax=b\). </p>
+<dl class="section warning"><dt>Warning</dt><dd>This linear solver is useful only for basic preconditioning of another linear solver or for testing purposes. See <code><a class="el" href="structLinearSolver_1_1cg_1_1ConjugateGradient.html" title="A conjugate gradient solver for linear systems of equations  where the operator  is symmetric.">LinearSolver::cg::ConjugateGradient</a></code> or <code><a class="el" href="structLinearSolver_1_1gmres_1_1Gmres.html" title="A GMRES solver for nonsymmetric linear systems of equations .">LinearSolver::gmres::Gmres</a></code> for more useful general-purpose linear solvers.</dd></dl>
+<p>In each step the solution is updated from its initial state \(x_0\) as</p>
+<p class="formulaDsp">
+\[ x_{k+1} = x_k + \omega \left(b - Ax\right) \]
+</p>
+<p>where \(\omega\) is a <em>relaxation parameter</em> that weights the residual.</p>
+<p>The scheme converges if the spectral radius (i.e. the largest absolute eigenvalue) of the iteration operator \(G=1-\omega A\) is smaller than one. For symmetric positive definite (SPD) matrices \(A\) with largest eigenvalue \(\lambda_\mathrm{max}\) and smallest eigenvalue \(\lambda_\mathrm{min}\) choose</p>
+<p class="formulaDsp">
+\[ \omega_\mathrm{SPD,optimal} = \frac{2}{\lambda_\mathrm{max} + \lambda_\mathrm{min}} \]
+</p>
+<p>for optimal convergence. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/ParallelAlgorithms/LinearSolver/Richardson/<a class="el" href="Richardson_8hpp_source.html">Richardson.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,701 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_f794354f56b7b0ecf5e40827268a3615.html">DataStructures</a></li><li class="navelem"><a class="el" href="dir_e969dbac9dfe3edfad5e001128532f32.html">Tensor</a></li><li class="navelem"><a class="el" href="dir_64cb457a875e34b8bdbce841d3521045.html">EagerMath</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">DeterminantAndInverse.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<a href="DeterminantAndInverse_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment">/// \file</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment">/// Defines function computing the determinant and inverse of a tensor.</span></div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160; </div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataVector.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Tensor_8hpp.html">DataStructures/Tensor/Tensor.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Variables_8hpp.html">DataStructures/Variables.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Assert_8hpp.html">Utilities/ErrorHandling/Assert.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="MakeWithValue_8hpp.html">Utilities/MakeWithValue.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Requires_8hpp.html">Utilities/Requires.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;Utilities/TypeTraits/IsComplexOfFundamental.hpp&quot;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160; </div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="keyword">namespace </span>determinant_and_inverse_detail {</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment">// Helps to shorten some repeated code:</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Index0, <span class="keyword">typename</span> Index1&gt;</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="keyword">using</span> inverse_indices =</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    tmpl::list&lt;change_index_up_lo&lt;Index1&gt;, <a class="code" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo&lt;Index0&gt;</a>&gt;;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160; </div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Symm, <span class="keyword">typename</span> Index0, <span class="keyword">typename</span> Index1,</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;          <span class="keyword">typename</span> = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/nullptr_t.html">std::nullptr_t</a>&gt;</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="keyword">struct </span>DetAndInverseImpl;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Symm, <span class="keyword">typename</span> Index0, <span class="keyword">typename</span> Index1&gt;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="keyword">struct </span>DetAndInverseImpl&lt;Symm, Index0, Index1, <a class="code" href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a>&lt;Index0::dim == 1&gt;&gt; {</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;T&gt;</a>*&gt; det,</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;Tensor&lt;T, Symm, inverse_indices&lt;Index0, Index1&gt;&gt;*&gt;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;          inv,</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;      <span class="keyword">const</span> Tensor&lt;T, Symm, tmpl::list&lt;Index0, Index1&gt;&gt;&amp; tensor) noexcept {</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keyword">const</span> T&amp; t00 = get&lt;0, 0&gt;(tensor);</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="comment">// inv is non-const so that it can be moved into the std::pair:</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(*det) = t00;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    get&lt;0, 0&gt;(*inv) = 1.0 / t00;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  }</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;};</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160; </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment">// The inverse of a 2x2 tensor is computed from Cramer&#39;s rule.</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Index0, <span class="keyword">typename</span> Index1&gt;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="keyword">struct </span>DetAndInverseImpl&lt;<a class="code" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt;2, 1&gt;, Index0, Index1,</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;                         <a class="code" href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a>&lt;Index0::dim == 2&gt;&gt; {</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;T&gt;</a>*&gt; det,</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;          Tensor&lt;T, <a class="code" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry&lt;2, 1&gt;</a>, inverse_indices&lt;Index0, Index1&gt;&gt;*&gt;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;          inv,</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;      <span class="keyword">const</span> Tensor&lt;T, <a class="code" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry&lt;2, 1&gt;</a>, tmpl::list&lt;Index0, Index1&gt;&gt;&amp;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;          tensor) noexcept {</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="keyword">const</span> T&amp; t00 = get&lt;0, 0&gt;(tensor);</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <span class="keyword">const</span> T&amp; t01 = get&lt;0, 1&gt;(tensor);</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <span class="keyword">const</span> T&amp; t10 = get&lt;1, 0&gt;(tensor);</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keyword">const</span> T&amp; t11 = get&lt;1, 1&gt;(tensor);</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160; </div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(*det) = t00 * t11 - t01 * t10;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keyword">const</span> T one_over_det = make_with_value&lt;T&gt;(*det, 1.0) / <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(*det);</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    get&lt;0, 0&gt;(*inv) = t11 * one_over_det;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    get&lt;0, 1&gt;(*inv) = -t01 * one_over_det;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    get&lt;1, 0&gt;(*inv) = -t10 * one_over_det;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    get&lt;1, 1&gt;(*inv) = t00 * one_over_det;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;  }</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;};</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Index0&gt;</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="keyword">struct </span>DetAndInverseImpl&lt;<a class="code" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt;1, 1&gt;, Index0, Index0,</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;                         <a class="code" href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a>&lt;Index0::dim == 2&gt;&gt; {</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;T&gt;</a>*&gt; det,</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;          Tensor&lt;T, <a class="code" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry&lt;1, 1&gt;</a>, inverse_indices&lt;Index0, Index0&gt;&gt;*&gt;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;          inv,</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;      <span class="keyword">const</span> Tensor&lt;T, <a class="code" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry&lt;1, 1&gt;</a>, tmpl::list&lt;Index0, Index0&gt;&gt;&amp;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;          tensor) noexcept {</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="keyword">const</span> T&amp; t00 = get&lt;0, 0&gt;(tensor);</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <span class="keyword">const</span> T&amp; t01 = get&lt;0, 1&gt;(tensor);</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <span class="keyword">const</span> T&amp; t11 = get&lt;1, 1&gt;(tensor);</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160; </div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(*det) = t00 * t11 - t01 * t01;</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    <span class="keyword">const</span> T one_over_det = make_with_value&lt;T&gt;(*det, 1.0) / <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(*det);</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    get&lt;0, 0&gt;(*inv) = t11 * one_over_det;</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    get&lt;0, 1&gt;(*inv) = -t01 * one_over_det;</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    get&lt;1, 1&gt;(*inv) = t00 * one_over_det;</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;  }</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;};</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160; </div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="comment">// The inverse of a 3x3 tensor is computed from Cramer&#39;s rule. By reusing some</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment">// terms, the determinant is computed efficiently at the same time.</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Index0, <span class="keyword">typename</span> Index1&gt;</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="keyword">struct </span>DetAndInverseImpl&lt;<a class="code" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt;2, 1&gt;, Index0, Index1,</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;                         <a class="code" href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a>&lt;Index0::dim == 3&gt;&gt; {</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;T&gt;</a>*&gt; det,</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;          Tensor&lt;T, <a class="code" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry&lt;2, 1&gt;</a>, inverse_indices&lt;Index0, Index1&gt;&gt;*&gt;</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;          inv,</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;      <span class="keyword">const</span> Tensor&lt;T, <a class="code" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry&lt;2, 1&gt;</a>, tmpl::list&lt;Index0, Index1&gt;&gt;&amp;</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;          tensor) noexcept {</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    <span class="keyword">const</span> T&amp; t00 = get&lt;0, 0&gt;(tensor);</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    <span class="keyword">const</span> T&amp; t01 = get&lt;0, 1&gt;(tensor);</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    <span class="keyword">const</span> T&amp; t02 = get&lt;0, 2&gt;(tensor);</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    <span class="keyword">const</span> T&amp; t10 = get&lt;1, 0&gt;(tensor);</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    <span class="keyword">const</span> T&amp; t11 = get&lt;1, 1&gt;(tensor);</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    <span class="keyword">const</span> T&amp; t12 = get&lt;1, 2&gt;(tensor);</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    <span class="keyword">const</span> T&amp; t20 = get&lt;2, 0&gt;(tensor);</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    <span class="keyword">const</span> T&amp; t21 = get&lt;2, 1&gt;(tensor);</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    <span class="keyword">const</span> T&amp; t22 = get&lt;2, 2&gt;(tensor);</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    <span class="keyword">const</span> T a = t11 * t22 - t12 * t21;</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;    <span class="keyword">const</span> T b = t12 * t20 - t10 * t22;</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    <span class="keyword">const</span> T c = t10 * t21 - t11 * t20;</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160; </div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;    <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(*det) = t00 * a + t01 * b + t02 * c;</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;    <span class="keyword">const</span> T one_over_det = make_with_value&lt;T&gt;(*det, 1.0) / <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(*det);</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    get&lt;0, 0&gt;(*inv) = a * one_over_det;</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    get&lt;0, 1&gt;(*inv) = (t21 * t02 - t22 * t01) * one_over_det;</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    get&lt;0, 2&gt;(*inv) = (t01 * t12 - t02 * t11) * one_over_det;</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;    get&lt;1, 0&gt;(*inv) = b * one_over_det;</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    get&lt;1, 1&gt;(*inv) = (t22 * t00 - t20 * t02) * one_over_det;</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;    get&lt;1, 2&gt;(*inv) = (t02 * t10 - t00 * t12) * one_over_det;</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    get&lt;2, 0&gt;(*inv) = c * one_over_det;</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;    get&lt;2, 1&gt;(*inv) = (t20 * t01 - t21 * t00) * one_over_det;</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;    get&lt;2, 2&gt;(*inv) = (t00 * t11 - t01 * t10) * one_over_det;</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;  }</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;};</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160; </div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Index0&gt;</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;<span class="keyword">struct </span>DetAndInverseImpl&lt;<a class="code" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt;1, 1&gt;, Index0, Index0,</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;                         <a class="code" href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a>&lt;Index0::dim == 3&gt;&gt; {</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;T&gt;</a>*&gt; det,</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;          Tensor&lt;T, <a class="code" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry&lt;1, 1&gt;</a>, inverse_indices&lt;Index0, Index0&gt;&gt;*&gt;</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;          inv,</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;      <span class="keyword">const</span> Tensor&lt;T, <a class="code" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry&lt;1, 1&gt;</a>, tmpl::list&lt;Index0, Index0&gt;&gt;&amp;</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;          tensor) noexcept {</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;    <span class="keyword">const</span> T&amp; t00 = get&lt;0, 0&gt;(tensor);</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;    <span class="keyword">const</span> T&amp; t01 = get&lt;0, 1&gt;(tensor);</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;    <span class="keyword">const</span> T&amp; t02 = get&lt;0, 2&gt;(tensor);</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;    <span class="keyword">const</span> T&amp; t11 = get&lt;1, 1&gt;(tensor);</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;    <span class="keyword">const</span> T&amp; t12 = get&lt;1, 2&gt;(tensor);</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;    <span class="keyword">const</span> T&amp; t22 = get&lt;2, 2&gt;(tensor);</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;    <span class="keyword">const</span> T a = t11 * t22 - t12 * t12;</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;    <span class="keyword">const</span> T b = t12 * t02 - t01 * t22;</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;    <span class="keyword">const</span> T c = t01 * t12 - t11 * t02;</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160; </div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;    <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(*det) = t00 * a + t01 * b + t02 * c;</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;    <span class="keyword">const</span> T one_over_det = make_with_value&lt;T&gt;(*det, 1.0) / <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(*det);</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;    get&lt;0, 0&gt;(*inv) = (t11 * t22 - t12 * t12) * one_over_det;</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;    get&lt;0, 1&gt;(*inv) = (t12 * t02 - t22 * t01) * one_over_det;</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;    get&lt;0, 2&gt;(*inv) = (t01 * t12 - t02 * t11) * one_over_det;</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;    get&lt;1, 1&gt;(*inv) = (t22 * t00 - t02 * t02) * one_over_det;</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    get&lt;1, 2&gt;(*inv) = (t02 * t01 - t00 * t12) * one_over_det;</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;    get&lt;2, 2&gt;(*inv) = (t00 * t11 - t01 * t01) * one_over_det;</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;  }</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;};</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160; </div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;<span class="comment">// The 4x4 tensor inverse is implemented using the formula for inverting a</span></div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;<span class="comment">// partitioned matrix (here, partitioned into 2x2 blocks). This is more</span></div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;<span class="comment">// efficient than Cramer&#39;s rule for matrices larger than 3x3.</span></div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;<span class="comment">//</span></div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;<span class="comment">// In this algorithm, the 4x4 input matrix is partitioned into the 2x2 blocks:</span></div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;<span class="comment">//   P Q</span></div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;<span class="comment">//   R S</span></div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;<span class="comment">// The 4x4 inverse matrix is partitioned into the 2x2 blocks:</span></div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;<span class="comment">//   U V</span></div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;<span class="comment">//   W X</span></div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;<span class="comment">// Each inverse block is obtained from the blocks {P,Q,R,S} of the input matrix</span></div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;<span class="comment">// as follows:</span></div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;<span class="comment">//   X = inv[S - R inv(P) Q] (i.e. inv(X) is the Schur complement of P)</span></div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;<span class="comment">//   W = - X R inv(P)</span></div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;<span class="comment">//   V = - inv(P) Q X</span></div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;<span class="comment">//   U = inv(P) + inv(P) Q X R inv(P) = inv(P) - inv(P) Q W</span></div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Index0, <span class="keyword">typename</span> Index1&gt;</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;<span class="keyword">struct </span>DetAndInverseImpl&lt;<a class="code" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt;2, 1&gt;, Index0, Index1,</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;                         <a class="code" href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a>&lt;Index0::dim == 4&gt;&gt; {</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;T&gt;</a>*&gt; det,</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;          Tensor&lt;T, <a class="code" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry&lt;2, 1&gt;</a>, inverse_indices&lt;Index0, Index1&gt;&gt;*&gt;</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;          inv,</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;      <span class="keyword">const</span> Tensor&lt;T, <a class="code" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry&lt;2, 1&gt;</a>, tmpl::list&lt;Index0, Index1&gt;&gt;&amp;</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;          tensor) noexcept {</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;    <span class="keyword">const</span> T&amp; p00 = get&lt;0, 0&gt;(tensor);</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;    <span class="keyword">const</span> T&amp; p01 = get&lt;0, 1&gt;(tensor);</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;    <span class="keyword">const</span> T&amp; p10 = get&lt;1, 0&gt;(tensor);</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;    <span class="keyword">const</span> T&amp; p11 = get&lt;1, 1&gt;(tensor);</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;    <span class="keyword">const</span> T&amp; q00 = get&lt;0, 2&gt;(tensor);</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;    <span class="keyword">const</span> T&amp; q01 = get&lt;0, 3&gt;(tensor);</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;    <span class="keyword">const</span> T&amp; q10 = get&lt;1, 2&gt;(tensor);</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;    <span class="keyword">const</span> T&amp; q11 = get&lt;1, 3&gt;(tensor);</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;    <span class="keyword">const</span> T&amp; r00 = get&lt;2, 0&gt;(tensor);</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;    <span class="keyword">const</span> T&amp; r01 = get&lt;2, 1&gt;(tensor);</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;    <span class="keyword">const</span> T&amp; r10 = get&lt;3, 0&gt;(tensor);</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;    <span class="keyword">const</span> T&amp; r11 = get&lt;3, 1&gt;(tensor);</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;    <span class="keyword">const</span> T&amp; s00 = get&lt;2, 2&gt;(tensor);</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;    <span class="keyword">const</span> T&amp; s01 = get&lt;2, 3&gt;(tensor);</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;    <span class="keyword">const</span> T&amp; s10 = get&lt;3, 2&gt;(tensor);</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;    <span class="keyword">const</span> T&amp; s11 = get&lt;3, 3&gt;(tensor);</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160; </div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;    T&amp; u00 = get&lt;0, 0&gt;(*inv);</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;    T&amp; u01 = get&lt;0, 1&gt;(*inv);</div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;    T&amp; u10 = get&lt;1, 0&gt;(*inv);</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;    T&amp; u11 = get&lt;1, 1&gt;(*inv);</div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;    T&amp; v00 = get&lt;0, 2&gt;(*inv);</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;    T&amp; v01 = get&lt;0, 3&gt;(*inv);</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;    T&amp; v10 = get&lt;1, 2&gt;(*inv);</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;    T&amp; v11 = get&lt;1, 3&gt;(*inv);</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;    T&amp; w00 = get&lt;2, 0&gt;(*inv);</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;    T&amp; w01 = get&lt;2, 1&gt;(*inv);</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;    T&amp; w10 = get&lt;3, 0&gt;(*inv);</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;    T&amp; w11 = get&lt;3, 1&gt;(*inv);</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;    T&amp; x00 = get&lt;2, 2&gt;(*inv);</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;    T&amp; x01 = get&lt;2, 3&gt;(*inv);</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;    T&amp; x10 = get&lt;3, 2&gt;(*inv);</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;    T&amp; x11 = get&lt;3, 3&gt;(*inv);</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160; </div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;    <span class="comment">// Temporarily store det(P) in det</span></div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;    <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(*det) = p00 * p11 - p01 * p10;</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;    <span class="keyword">const</span> T&amp; det_p = <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(*det);</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;    <span class="keyword">const</span> T one_over_det_p = make_with_value&lt;T&gt;(det_p, 1.0) / det_p;</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;    <span class="keyword">const</span> T inv_p00 = p11 * one_over_det_p;</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;    <span class="keyword">const</span> T inv_p01 = -p01 * one_over_det_p;</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;    <span class="keyword">const</span> T inv_p10 = -p10 * one_over_det_p;</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;    <span class="keyword">const</span> T inv_p11 = p00 * one_over_det_p;</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160; </div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;    <span class="keyword">const</span> T r_inv_p00 = r00 * inv_p00 + r01 * inv_p10;</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;    <span class="keyword">const</span> T r_inv_p01 = r00 * inv_p01 + r01 * inv_p11;</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;    <span class="keyword">const</span> T r_inv_p10 = r10 * inv_p00 + r11 * inv_p10;</div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;    <span class="keyword">const</span> T r_inv_p11 = r10 * inv_p01 + r11 * inv_p11;</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160; </div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;    <span class="keyword">const</span> T inv_p_q00 = inv_p00 * q00 + inv_p01 * q10;</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;    <span class="keyword">const</span> T inv_p_q01 = inv_p00 * q01 + inv_p01 * q11;</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;    <span class="keyword">const</span> T inv_p_q10 = inv_p10 * q00 + inv_p11 * q10;</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;    <span class="keyword">const</span> T inv_p_q11 = inv_p10 * q01 + inv_p11 * q11;</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160; </div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;    <span class="keyword">const</span> T inv_x00 = s00 - (r_inv_p00 * q00 + r_inv_p01 * q10);</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;    <span class="keyword">const</span> T inv_x01 = s01 - (r_inv_p00 * q01 + r_inv_p01 * q11);</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;    <span class="keyword">const</span> T inv_x10 = s10 - (r_inv_p10 * q00 + r_inv_p11 * q10);</div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;    <span class="keyword">const</span> T inv_x11 = s11 - (r_inv_p10 * q01 + r_inv_p11 * q11);</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160; </div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;    <span class="keyword">const</span> T det_inv_x = inv_x00 * inv_x11 - inv_x01 * inv_x10;</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;    <span class="keyword">const</span> T one_over_det_inv_x = make_with_value&lt;T&gt;(det_inv_x, 1.0) / det_inv_x;</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;    x00 = inv_x11 * one_over_det_inv_x;</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;    x01 = -inv_x01 * one_over_det_inv_x;</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;    x10 = -inv_x10 * one_over_det_inv_x;</div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;    x11 = inv_x00 * one_over_det_inv_x;</div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160; </div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;    w00 = -x00 * r_inv_p00 - x01 * r_inv_p10;</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;    w01 = -x00 * r_inv_p01 - x01 * r_inv_p11;</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;    w10 = -x10 * r_inv_p00 - x11 * r_inv_p10;</div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;    w11 = -x10 * r_inv_p01 - x11 * r_inv_p11;</div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160; </div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;    v00 = -inv_p_q00 * x00 - inv_p_q01 * x10;</div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;    v01 = -inv_p_q00 * x01 - inv_p_q01 * x11;</div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;    v10 = -inv_p_q10 * x00 - inv_p_q11 * x10;</div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;    v11 = -inv_p_q10 * x01 - inv_p_q11 * x11;</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160; </div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;    u00 = inv_p00 - (inv_p_q00 * w00 + inv_p_q01 * w10);</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;    u01 = inv_p01 - (inv_p_q00 * w01 + inv_p_q01 * w11);</div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;    u10 = inv_p10 - (inv_p_q10 * w00 + inv_p_q11 * w10);</div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;    u11 = inv_p11 - (inv_p_q10 * w01 + inv_p_q11 * w11);</div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160; </div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;    <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(*det) *= det_inv_x;</div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;  }</div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;};</div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160; </div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Index0&gt;</div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;<span class="keyword">struct </span>DetAndInverseImpl&lt;<a class="code" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a>&lt;1, 1&gt;, Index0, Index0,</div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;                         <a class="code" href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a>&lt;Index0::dim == 4&gt;&gt; {</div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(</div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;T&gt;</a>*&gt; det,</div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;</div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;          Tensor&lt;T, <a class="code" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry&lt;1, 1&gt;</a>, inverse_indices&lt;Index0, Index0&gt;&gt;*&gt;</div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;          inv,</div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;      <span class="keyword">const</span> Tensor&lt;T, <a class="code" href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry&lt;1, 1&gt;</a>, tmpl::list&lt;Index0, Index0&gt;&gt;&amp;</div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;          tensor) noexcept {</div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;    <span class="keyword">const</span> T&amp; p00 = get&lt;0, 0&gt;(tensor);</div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;    <span class="keyword">const</span> T&amp; p01 = get&lt;0, 1&gt;(tensor);</div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;    <span class="keyword">const</span> T&amp; p11 = get&lt;1, 1&gt;(tensor);</div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;    <span class="keyword">const</span> T&amp; q00 = get&lt;0, 2&gt;(tensor);</div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;    <span class="keyword">const</span> T&amp; q01 = get&lt;0, 3&gt;(tensor);</div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;    <span class="keyword">const</span> T&amp; q10 = get&lt;1, 2&gt;(tensor);</div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;    <span class="keyword">const</span> T&amp; q11 = get&lt;1, 3&gt;(tensor);</div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;    <span class="keyword">const</span> T&amp; s00 = get&lt;2, 2&gt;(tensor);</div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;    <span class="keyword">const</span> T&amp; s01 = get&lt;2, 3&gt;(tensor);</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;    <span class="keyword">const</span> T&amp; s11 = get&lt;3, 3&gt;(tensor);</div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160; </div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;    T&amp; u00 = get&lt;0, 0&gt;(*inv);</div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;    T&amp; u01 = get&lt;0, 1&gt;(*inv);</div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;    T&amp; u11 = get&lt;1, 1&gt;(*inv);</div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;    T&amp; v00 = get&lt;0, 2&gt;(*inv);</div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;    T&amp; v01 = get&lt;0, 3&gt;(*inv);</div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;    T&amp; v10 = get&lt;1, 2&gt;(*inv);</div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;    T&amp; v11 = get&lt;1, 3&gt;(*inv);</div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;    T&amp; x00 = get&lt;2, 2&gt;(*inv);</div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;    T&amp; x01 = get&lt;2, 3&gt;(*inv);</div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;    T&amp; x11 = get&lt;3, 3&gt;(*inv);</div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160; </div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;    <span class="comment">// Temporarily store det(P) in det</span></div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;    <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(*det) = p00 * p11 - p01 * p01;</div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;    <span class="keyword">const</span> T&amp; det_p = <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(*det);</div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;    <span class="keyword">const</span> T one_over_det_p = make_with_value&lt;T&gt;(det_p, 1.0) / det_p;</div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;    <span class="keyword">const</span> T inv_p00 = p11 * one_over_det_p;</div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;    <span class="keyword">const</span> T inv_p01 = -p01 * one_over_det_p;</div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;    <span class="keyword">const</span> T inv_p11 = p00 * one_over_det_p;</div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160; </div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;    <span class="keyword">const</span> T r_inv_p00 = q00 * inv_p00 + q10 * inv_p01;</div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;    <span class="keyword">const</span> T r_inv_p01 = q00 * inv_p01 + q10 * inv_p11;</div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;    <span class="keyword">const</span> T r_inv_p10 = q01 * inv_p00 + q11 * inv_p01;</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;    <span class="keyword">const</span> T r_inv_p11 = q01 * inv_p01 + q11 * inv_p11;</div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160; </div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;    <span class="keyword">const</span> T inv_x00 = s00 - (r_inv_p00 * q00 + r_inv_p01 * q10);</div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;    <span class="keyword">const</span> T inv_x01 = s01 - (r_inv_p00 * q01 + r_inv_p01 * q11);</div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;    <span class="keyword">const</span> T inv_x11 = s11 - (r_inv_p10 * q01 + r_inv_p11 * q11);</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160; </div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;    <span class="keyword">const</span> T det_inv_x = inv_x00 * inv_x11 - inv_x01 * inv_x01;</div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;    <span class="keyword">const</span> T one_over_det_inv_x = make_with_value&lt;T&gt;(det_inv_x, 1.0) / det_inv_x;</div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;    x00 = inv_x11 * one_over_det_inv_x;</div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;    x01 = -inv_x01 * one_over_det_inv_x;</div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;    x11 = inv_x00 * one_over_det_inv_x;</div>
+<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160; </div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;    v00 = -x00 * r_inv_p00 - x01 * r_inv_p10;</div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;    v10 = -x00 * r_inv_p01 - x01 * r_inv_p11;</div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;    v01 = -x01 * r_inv_p00 - x11 * r_inv_p10;</div>
+<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;    v11 = -x01 * r_inv_p01 - x11 * r_inv_p11;</div>
+<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160; </div>
+<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;    u00 = inv_p00 - (r_inv_p00 * v00 + r_inv_p10 * v01);</div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;    u01 = inv_p01 - (r_inv_p00 * v10 + r_inv_p10 * v11);</div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;    u11 = inv_p11 - (r_inv_p01 * v10 + r_inv_p11 * v11);</div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160; </div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;    <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(*det) *= det_inv_x;</div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;  }</div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;};</div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;}  <span class="comment">// namespace determinant_and_inverse_detail</span></div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;<span class="comment">/// @{</span></div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;<span class="comment"></span><span class="comment">/*!</span></div>
+<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;<span class="comment"> * \ingroup TensorGroup</span></div>
+<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;<span class="comment"> * \brief Computes the determinant and inverse of a rank-2 Tensor.</span></div>
+<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;<span class="comment"> * Computes the determinant and inverse together, because this leads to</span></div>
+<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;<span class="comment"> * fewer operations compared to computing the determinant independently.</span></div>
+<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;<span class="comment"> * \details</span></div>
+<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;<span class="comment"> * Treats the input rank-2 tensor as a matrix. The first (second) index</span></div>
+<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;<span class="comment"> * of the tensor corresponds to the rows (columns) of the matrix. The</span></div>
+<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;<span class="comment"> * determinant is a scalar tensor. The inverse is a rank-2 tensor whose</span></div>
+<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;<span class="comment"> * indices are reversed and of opposite valence relative to the input</span></div>
+<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;<span class="comment"> * tensor, i.e. given \f$T_a^b\f$ returns \f$(Tinv)_b^a\f$.</span></div>
+<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;<span class="comment"> * \note</span></div>
+<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;<span class="comment"> * When inverting a 4x4 spacetime metric, it is typically more efficient</span></div>
+<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;<span class="comment"> * to use the 3+1 decomposition of the 4-metric in terms of lapse,</span></div>
+<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;<span class="comment"> * shift, and spatial 3-metric, in which only the spatial 3-metric needs</span></div>
+<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;<span class="comment"> * to be inverted.</span></div>
+<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> Symm, <span class="keyword">typename</span> Index0, <span class="keyword">typename</span> Index1&gt;</div>
+<div class="line"><a name="l00371"></a><span class="lineno"><a class="line" href="group__TensorGroup.html#ga51d5abd4e1bcb2e64195dcc15e2f2e5f">  371</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__TensorGroup.html#ga51d5abd4e1bcb2e64195dcc15e2f2e5f">determinant_and_inverse</a>(</div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;T&gt;</a>*&gt; det,</div>
+<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;Tensor&lt;</div>
+<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;        T, Symm,</div>
+<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;        tmpl::list&lt;<a class="code" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo&lt;Index1&gt;</a>, <a class="code" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo&lt;Index0&gt;</a>&gt;&gt;*&gt;</div>
+<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;        inv,</div>
+<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;    <span class="keyword">const</span> Tensor&lt;T, Symm, tmpl::list&lt;Index0, Index1&gt;&gt;&amp; tensor) noexcept {</div>
+<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;  static_assert(Index0::dim == Index1::dim,</div>
+<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;                <span class="stringliteral">&quot;Cannot take the inverse of a Tensor whose Indices are not &quot;</span></div>
+<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;                <span class="stringliteral">&quot;of the same dimensionality.&quot;</span>);</div>
+<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;  static_assert(Index0::index_type == Index1::index_type,</div>
+<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;                <span class="stringliteral">&quot;Taking the inverse of a mixed Spatial and Spacetime index &quot;</span></div>
+<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;                <span class="stringliteral">&quot;Tensor is not allowed since it&#39;s not clear what that means.&quot;</span>);</div>
+<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;  static_assert(not <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/is_integral.html">std::is_integral&lt;T&gt;::value</a>, <span class="stringliteral">&quot;Can&#39;t invert a Tensor&lt;int&gt;.&quot;</span>);</div>
+<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160; </div>
+<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;  <span class="keywordflow">if</span> constexpr (not tt::is_complex_or_fundamental_v&lt;T&gt;) {</div>
+<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;    <a class="code" href="group__UtilitiesGroup.html#gab9ae0c4131a2de652b81b4997e740d5a">destructive_resize_components</a>(det, get&lt;0, 0&gt;(tensor).size());</div>
+<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;    <a class="code" href="group__UtilitiesGroup.html#gab9ae0c4131a2de652b81b4997e740d5a">destructive_resize_components</a>(inv, get&lt;0, 0&gt;(tensor).size());</div>
+<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;  }</div>
+<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;  determinant_and_inverse_detail::DetAndInverseImpl&lt;Symm, Index0,</div>
+<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;                                                    Index1&gt;::apply(det, inv,</div>
+<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;                                                                   tensor);</div>
+<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;}</div>
+<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160; </div>
+<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> Symm, <span class="keyword">typename</span> Index0, <span class="keyword">typename</span> Index1&gt;</div>
+<div class="line"><a name="l00396"></a><span class="lineno"><a class="line" href="group__TensorGroup.html#ga483fc075c909d22d2d9b4dbfd1ac5bc2">  396</a></span>&#160;<span class="keyword">auto</span> <a class="code" href="group__TensorGroup.html#ga51d5abd4e1bcb2e64195dcc15e2f2e5f">determinant_and_inverse</a>(</div>
+<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;    <span class="keyword">const</span> Tensor&lt;T, Symm, tmpl::list&lt;Index0, Index1&gt;&gt;&amp; tensor) noexcept</div>
+<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;    -&gt; <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair&lt;Scalar&lt;T&gt;</a>, Tensor&lt;T, Symm,</div>
+<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;                                   tmpl::list&lt;change_index_up_lo&lt;Index1&gt;,</div>
+<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;                                              <a class="code" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo&lt;Index0&gt;</a>&gt;&gt;&gt; {</div>
+<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair&lt;Scalar&lt;T&gt;</a>, Tensor&lt;T, Symm,</div>
+<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;                              tmpl::list&lt;change_index_up_lo&lt;Index1&gt;,</div>
+<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;                                         <a class="code" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo&lt;Index0&gt;</a>&gt;&gt;&gt;</div>
+<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;      result{};</div>
+<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;  determinant_and_inverse_detail::DetAndInverseImpl&lt;</div>
+<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;      Symm, Index0, Index1&gt;::apply(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;result.first),</div>
+<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;                                   <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;result.second), tensor);</div>
+<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;  <span class="keywordflow">return</span> result;</div>
+<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;}<span class="comment"></span></div>
+<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;<span class="comment">/// @}</span></div>
+<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;<span class="comment"></span><span class="comment"></span> </div>
+<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;<span class="comment">/// @{</span></div>
+<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;<span class="comment"></span><span class="comment">/*!</span></div>
+<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;<span class="comment"> * \ingroup TensorGroup</span></div>
+<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;<span class="comment"> * \brief Computes the determinant and inverse of a rank-2 Tensor.</span></div>
+<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;<span class="comment"> * Computes the determinant and inverse together, because this leads to fewer</span></div>
+<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;<span class="comment"> * operations compared to computing the determinant independently.</span></div>
+<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;<span class="comment"> * \tparam DetTag the Tag for the determinant of input Tensor.</span></div>
+<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;<span class="comment"> * \tparam InvTag the Tag for the inverse of input Tensor.</span></div>
+<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;<span class="comment"> * \details</span></div>
+<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;<span class="comment"> * See determinant_and_inverse().</span></div>
+<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> DetTag, <span class="keyword">typename</span> InvTag, <span class="keyword">typename</span> T, <span class="keyword">typename</span> Symm,</div>
+<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;          <span class="keyword">typename</span> Index0, <span class="keyword">typename</span> Index1&gt;</div>
+<div class="line"><a name="l00428"></a><span class="lineno"><a class="line" href="group__TensorGroup.html#ga6f3c432baee84114e9518f35d0acabd7">  428</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__TensorGroup.html#ga51d5abd4e1bcb2e64195dcc15e2f2e5f">determinant_and_inverse</a>(</div>
+<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;Variables&lt;tmpl::list&lt;DetTag, InvTag&gt;&gt;*&gt; det_and_inv,</div>
+<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;    <span class="keyword">const</span> Tensor&lt;T, Symm, tmpl::list&lt;Index0, Index1&gt;&gt;&amp; tensor) noexcept {</div>
+<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;  static_assert(std::is_same_v&lt;<span class="keyword">typename</span> DetTag::type, <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;T&gt;</a>&gt;,</div>
+<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160;                <span class="stringliteral">&quot;Type of first return tag must correspond to that of input&#39;s &quot;</span></div>
+<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;                <span class="stringliteral">&quot;determinant.&quot;</span>);</div>
+<div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160;  static_assert(</div>
+<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160;      std::is_same_v&lt;<span class="keyword">typename</span> InvTag::type,</div>
+<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;                     Tensor&lt;T, Symm,</div>
+<div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160;                            tmpl::list&lt;<a class="code" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo&lt;Index1&gt;</a>,</div>
+<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160;                                       <a class="code" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo&lt;Index0&gt;</a>&gt;&gt;&gt;,</div>
+<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;      <span class="stringliteral">&quot;Type of second return tag must correspond to that of input&#39;s inverse.&quot;</span>);</div>
+<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> number_of_grid_points = get&lt;0, 0&gt;(tensor).size();</div>
+<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;  <span class="keywordflow">if</span> (<a class="code" href="group__UtilitiesGroup.html#gab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a>(number_of_grid_points != det_and_inv-&gt;number_of_grid_points())) {</div>
+<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;    det_and_inv-&gt;initialize(number_of_grid_points);</div>
+<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;  }</div>
+<div class="line"><a name="l00444"></a><span class="lineno">  444</span>&#160;  determinant_and_inverse_detail::DetAndInverseImpl&lt;</div>
+<div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160;      Symm, Index0, Index1&gt;::apply(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;get&lt;DetTag&gt;(*det_and_inv)),</div>
+<div class="line"><a name="l00446"></a><span class="lineno">  446</span>&#160;                                   <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;get&lt;InvTag&gt;(*det_and_inv)),</div>
+<div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160;                                   tensor);</div>
+<div class="line"><a name="l00448"></a><span class="lineno">  448</span>&#160;}</div>
+<div class="line"><a name="l00449"></a><span class="lineno">  449</span>&#160; </div>
+<div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> DetTag, <span class="keyword">typename</span> InvTag, <span class="keyword">typename</span> T, <span class="keyword">typename</span> Symm,</div>
+<div class="line"><a name="l00451"></a><span class="lineno">  451</span>&#160;          <span class="keyword">typename</span> Index0, <span class="keyword">typename</span> Index1&gt;</div>
+<div class="line"><a name="l00452"></a><span class="lineno"><a class="line" href="group__TensorGroup.html#ga1c28364d3baa1a93698e14ff19b6bdbb">  452</a></span>&#160;<span class="keyword">auto</span> <a class="code" href="group__TensorGroup.html#ga51d5abd4e1bcb2e64195dcc15e2f2e5f">determinant_and_inverse</a>(</div>
+<div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160;    <span class="keyword">const</span> Tensor&lt;T, Symm, tmpl::list&lt;Index0, Index1&gt;&gt;&amp; tensor) noexcept</div>
+<div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160;    -&gt; Variables&lt;tmpl::list&lt;DetTag, InvTag&gt;&gt; {</div>
+<div class="line"><a name="l00455"></a><span class="lineno">  455</span>&#160;  static_assert(std::is_same_v&lt;<span class="keyword">typename</span> DetTag::type, <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;T&gt;</a>&gt;,</div>
+<div class="line"><a name="l00456"></a><span class="lineno">  456</span>&#160;                <span class="stringliteral">&quot;Type of first return tag must correspond to that of input&#39;s &quot;</span></div>
+<div class="line"><a name="l00457"></a><span class="lineno">  457</span>&#160;                <span class="stringliteral">&quot;determinant.&quot;</span>);</div>
+<div class="line"><a name="l00458"></a><span class="lineno">  458</span>&#160;  static_assert(std::is_same_v&lt;<span class="keyword">typename</span> InvTag::type,</div>
+<div class="line"><a name="l00459"></a><span class="lineno">  459</span>&#160;                               Tensor&lt;T, Symm,</div>
+<div class="line"><a name="l00460"></a><span class="lineno">  460</span>&#160;                                      tmpl::list&lt;<a class="code" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo&lt;Index1&gt;</a>,</div>
+<div class="line"><a name="l00461"></a><span class="lineno">  461</span>&#160;                                                 <a class="code" href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo&lt;Index0&gt;</a>&gt;&gt;&gt;,</div>
+<div class="line"><a name="l00462"></a><span class="lineno">  462</span>&#160;                <span class="stringliteral">&quot;Type of second return tag must correspond to that of input&#39;s &quot;</span></div>
+<div class="line"><a name="l00463"></a><span class="lineno">  463</span>&#160;                <span class="stringliteral">&quot;inverse.&quot;</span>);</div>
+<div class="line"><a name="l00464"></a><span class="lineno">  464</span>&#160;  Variables&lt;tmpl::list&lt;DetTag, InvTag&gt;&gt; result(get&lt;0, 0&gt;(tensor).size());</div>
+<div class="line"><a name="l00465"></a><span class="lineno">  465</span>&#160;  determinant_and_inverse_detail::DetAndInverseImpl&lt;</div>
+<div class="line"><a name="l00466"></a><span class="lineno">  466</span>&#160;      Symm, Index0, Index1&gt;::apply(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;get&lt;DetTag&gt;(result)),</div>
+<div class="line"><a name="l00467"></a><span class="lineno">  467</span>&#160;                                   <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;get&lt;InvTag&gt;(result)), tensor);</div>
+<div class="line"><a name="l00468"></a><span class="lineno">  468</span>&#160;  <span class="keywordflow">return</span> result;</div>
+<div class="line"><a name="l00469"></a><span class="lineno">  469</span>&#160;}<span class="comment"></span></div>
+<div class="line"><a name="l00470"></a><span class="lineno">  470</span>&#160;<span class="comment">/// @}</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="aapply_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/apply.html">std::apply</a></div><div class="ttdeci">T apply(T... args)</div></div>
+<div class="ttc" id="autility_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a></div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_gab10d0a221f4d7a706701b806c8135fd7"><div class="ttname"><a href="group__UtilitiesGroup.html#gab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a></div><div class="ttdeci">#define UNLIKELY(x)</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:73</div></div>
+<div class="ttc" id="apair_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a></div></div>
+<div class="ttc" id="agroup__DataBoxGroup_html_gae08744824ea7df89224f128b2080c5b1"><div class="ttname"><a href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">db::get</a></div><div class="ttdeci">const auto &amp; get(const DataBox&lt; TagList &gt; &amp;box) noexcept</div><div class="ttdoc">Retrieve the item with tag Tag from the DataBox.</div><div class="ttdef"><b>Definition:</b> DataBox.hpp:791</div></div>
+<div class="ttc" id="anullptr_t_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/nullptr_t.html">std::nullptr_t</a></div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga51d5abd4e1bcb2e64195dcc15e2f2e5f"><div class="ttname"><a href="group__TensorGroup.html#ga51d5abd4e1bcb2e64195dcc15e2f2e5f">determinant_and_inverse</a></div><div class="ttdeci">void determinant_and_inverse(const gsl::not_null&lt; Scalar&lt; T &gt; * &gt; det, const gsl::not_null&lt; Tensor&lt; T, Symm, tmpl::list&lt; change_index_up_lo&lt; Index1 &gt;, change_index_up_lo&lt; Index0 &gt;&gt;&gt; * &gt; inv, const Tensor&lt; T, Symm, tmpl::list&lt; Index0, Index1 &gt;&gt; &amp;tensor) noexcept</div><div class="ttdoc">Computes the determinant and inverse of a rank-2 Tensor.</div><div class="ttdef"><b>Definition:</b> DeterminantAndInverse.hpp:371</div></div>
+<div class="ttc" id="aAssert_8hpp_html"><div class="ttname"><a href="Assert_8hpp.html">Assert.hpp</a></div></div>
+<div class="ttc" id="aMakeWithValue_8hpp_html"><div class="ttname"><a href="MakeWithValue_8hpp.html">MakeWithValue.hpp</a></div></div>
+<div class="ttc" id="ais_integral_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/is_integral.html">std::is_integral</a></div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga3b376e9167e178638a1adece2ab22ec9"><div class="ttname"><a href="group__TensorGroup.html#ga3b376e9167e178638a1adece2ab22ec9">Symmetry</a></div><div class="ttdeci">typename detail::SymmetryImpl&lt; std::make_index_sequence&lt; sizeof...(T)&gt;, tmpl::integral_list&lt; std::int32_t, T... &gt; &gt;::type Symmetry</div><div class="ttdoc">Computes the canonical symmetry from the integers T</div><div class="ttdef"><b>Definition:</b> Symmetry.hpp:80</div></div>
+<div class="ttc" id="aVariables_8hpp_html"><div class="ttname"><a href="Variables_8hpp.html">Variables.hpp</a></div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga06ebcb38a1f13c246e53378b9e8959ce"><div class="ttname"><a href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a></div><div class="ttdeci">Tensor&lt; T, Symmetry&lt;&gt;, index_list&lt;&gt; &gt; Scalar</div><div class="ttdef"><b>Definition:</b> TypeAliases.hpp:21</div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="aTensor_8hpp_html"><div class="ttname"><a href="Tensor_8hpp.html">Tensor.hpp</a></div></div>
+<div class="ttc" id="aRequires_8hpp_html"><div class="ttname"><a href="Requires_8hpp.html">Requires.hpp</a></div></div>
+<div class="ttc" id="agroup__TensorGroup_html_gacb33fd857700a3fc87b9dce8c877fee7"><div class="ttname"><a href="group__TensorGroup.html#gacb33fd857700a3fc87b9dce8c877fee7">change_index_up_lo</a></div><div class="ttdeci">Tensor_detail::TensorIndexType&lt; Index::index_type==IndexType::Spatial ? Index::value :Index::value - 1, Index::ul==UpLo::Up ? UpLo::Lo :UpLo::Up, typename Index::Frame, Index::index_type &gt; change_index_up_lo</div><div class="ttdef"><b>Definition:</b> IndexType.hpp:235</div></div>
+<div class="ttc" id="aGsl_8hpp_html_a649c6961f9146205c203e45d58fd0c4c"><div class="ttname"><a href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a></div><div class="ttdeci">gsl::not_null&lt; T * &gt; make_not_null(T *ptr) noexcept</div><div class="ttdoc">Construct a not_null from a pointer. Often this will be done as an implicit conversion,...</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:880</div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga084d535585c18d4e80f8ec6052d341a3"><div class="ttname"><a href="group__UtilitiesGroup.html#ga084d535585c18d4e80f8ec6052d341a3">Requires</a></div><div class="ttdeci">typename Requires_detail::requires_impl&lt; B &gt;::template_error_type_failed_to_meet_requirements_on_template_parameters Requires</div><div class="ttdoc">Express requirements on the template parameters of a function or class, replaces std::enable_if_t</div><div class="ttdef"><b>Definition:</b> Requires.hpp:67</div></div>
+<div class="ttc" id="atype_traits_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a></div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_gab9ae0c4131a2de652b81b4997e740d5a"><div class="ttname"><a href="group__UtilitiesGroup.html#gab9ae0c4131a2de652b81b4997e740d5a">destructive_resize_components</a></div><div class="ttdeci">void destructive_resize_components(const gsl::not_null&lt; Container * &gt; container, const size_t new_size, DestructiveResizeFunction destructive_resize=ContainerDestructiveResize{}) noexcept</div><div class="ttdoc">Checks the size of each component of the container, and resizes if necessary.</div><div class="ttdef"><b>Definition:</b> ContainerHelpers.hpp:177</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

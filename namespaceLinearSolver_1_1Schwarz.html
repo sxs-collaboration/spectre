@@ -1,0 +1,790 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: LinearSolver::Schwarz Namespace Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceLinearSolver.html">LinearSolver</a></li><li class="navelem"><a class="el" href="namespaceLinearSolver_1_1Schwarz.html">Schwarz</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">LinearSolver::Schwarz Namespace Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Items related to the Schwarz linear solver.  
+<a href="namespaceLinearSolver_1_1Schwarz.html#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceLinearSolver_1_1Schwarz_1_1Actions"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLinearSolver_1_1Schwarz_1_1Actions.html">Actions</a></td></tr>
+<tr class="memdesc:namespaceLinearSolver_1_1Schwarz_1_1Actions"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespaceLinearSolver_1_1Schwarz_1_1Actions.html" title="Actions related to the Schwarz solver.">Actions</a> related to the <a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">Schwarz</a> solver. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceLinearSolver_1_1Schwarz_1_1OptionTags"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLinearSolver_1_1Schwarz_1_1OptionTags.html">OptionTags</a></td></tr>
+<tr class="memdesc:namespaceLinearSolver_1_1Schwarz_1_1OptionTags"><td class="mdescLeft">&#160;</td><td class="mdescRight">Option tags related to the <a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">Schwarz</a> solver. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceLinearSolver_1_1Schwarz_1_1Tags"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLinearSolver_1_1Schwarz_1_1Tags.html">Tags</a></td></tr>
+<tr class="memdesc:namespaceLinearSolver_1_1Schwarz_1_1Tags"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespaceLinearSolver_1_1Schwarz_1_1Tags.html" title="Tags related to the Schwarz solver.">Tags</a> related to the <a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">Schwarz</a> solver. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Data on an element-centered subdomain.  <a href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainDataIterator.html">ElementCenteredSubdomainDataIterator</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Iterate over <code><a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html" title="Data on an element-centered subdomain.">LinearSolver::Schwarz::ElementCenteredSubdomainData</a></code>  <a href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainDataIterator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLinearSolver_1_1Schwarz_1_1OverlapIterator.html">OverlapIterator</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Iterate over grid points in a region that extends partially into the volume.  <a href="classLinearSolver_1_1Schwarz_1_1OverlapIterator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html">Schwarz</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An additive <a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">Schwarz</a> subdomain solver for linear systems of equations \(Ax=b\).  <a href="structLinearSolver_1_1Schwarz_1_1Schwarz.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLinearSolver_1_1Schwarz_1_1SubdomainOperator.html">SubdomainOperator</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Abstract base class for the subdomain operator, i.e. the linear operator restricted to an element-centered <a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">Schwarz</a> subdomain.  <a href="classLinearSolver_1_1Schwarz_1_1SubdomainOperator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a2d76a9985279a866886fb074484d5e2d"><td class="memTemplParams" colspan="2"><a id="a2d76a9985279a866886fb074484d5e2d"></a>
+template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:a2d76a9985279a866886fb074484d5e2d"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceLinearSolver_1_1Schwarz.html#a2d76a9985279a866886fb074484d5e2d">OverlapId</a> = <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; Dim &gt; &gt;</td></tr>
+<tr class="memdesc:a2d76a9985279a866886fb074484d5e2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Identifies a subdomain region that overlaps with another element. <br /></td></tr>
+<tr class="separator:a2d76a9985279a866886fb074484d5e2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f93b06273400d7ac4150c064502a047"><td class="memTemplParams" colspan="2"><a id="a2f93b06273400d7ac4150c064502a047"></a>
+template&lt;size_t Dim, typename ValueType &gt; </td></tr>
+<tr class="memitem:a2f93b06273400d7ac4150c064502a047"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceLinearSolver_1_1Schwarz.html#a2f93b06273400d7ac4150c064502a047">OverlapMap</a> = <a class="el" href="classFixedHashMap.html">FixedHashMap</a>&lt; <a class="el" href="group__ComputationalDomainGroup.html#gafa8cb44daebc8f9e080718961530be89">maximum_number_of_neighbors</a>(Dim), <a class="el" href="namespaceLinearSolver_1_1Schwarz.html#a2d76a9985279a866886fb074484d5e2d">OverlapId</a>&lt; Dim &gt;, ValueType, boost::hash&lt; <a class="el" href="namespaceLinearSolver_1_1Schwarz.html#a2d76a9985279a866886fb074484d5e2d">OverlapId</a>&lt; Dim &gt; &gt;&gt;</td></tr>
+<tr class="memdesc:a2f93b06273400d7ac4150c064502a047"><td class="mdescLeft">&#160;</td><td class="mdescRight">Data structure that can store the <code>ValueType</code> on each possible overlap of an element-centered subdomain with its neighbors. Overlaps are identified by their <code>OverlapId</code>. <br /></td></tr>
+<tr class="separator:a2f93b06273400d7ac4150c064502a047"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a6c3b7e8915d972a4654d5a97c4913ec0"><td class="memTemplParams" colspan="2"><a id="a6c3b7e8915d972a4654d5a97c4913ec0"></a>
+template&lt;size_t Dim, typename LhsTagsList , typename RhsTagsList &gt; </td></tr>
+<tr class="memitem:a6c3b7e8915d972a4654d5a97c4913ec0"><td class="memTemplItemLeft" align="right" valign="top">decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator+</b> (<a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a>&lt; Dim, LhsTagsList &gt; lhs, const <a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a>&lt; Dim, RhsTagsList &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a6c3b7e8915d972a4654d5a97c4913ec0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0de443dcfef71c5058b76ef40b85195e"><td class="memTemplParams" colspan="2"><a id="a0de443dcfef71c5058b76ef40b85195e"></a>
+template&lt;size_t Dim, typename LhsTagsList , typename RhsTagsList &gt; </td></tr>
+<tr class="memitem:a0de443dcfef71c5058b76ef40b85195e"><td class="memTemplItemLeft" align="right" valign="top">decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator-</b> (<a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a>&lt; Dim, LhsTagsList &gt; lhs, const <a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a>&lt; Dim, RhsTagsList &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a0de443dcfef71c5058b76ef40b85195e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b8ea6b0b340c5e733d7462abf76a228"><td class="memTemplParams" colspan="2"><a id="a8b8ea6b0b340c5e733d7462abf76a228"></a>
+template&lt;size_t Dim, typename TagsList &gt; </td></tr>
+<tr class="memitem:a8b8ea6b0b340c5e733d7462abf76a228"><td class="memTemplItemLeft" align="right" valign="top">decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator*</b> (const double scalar, <a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a>&lt; Dim, TagsList &gt; data) noexcept</td></tr>
+<tr class="separator:a8b8ea6b0b340c5e733d7462abf76a228"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad320378984c842791cd684954a4f8086"><td class="memTemplParams" colspan="2"><a id="ad320378984c842791cd684954a4f8086"></a>
+template&lt;size_t Dim, typename TagsList &gt; </td></tr>
+<tr class="memitem:ad320378984c842791cd684954a4f8086"><td class="memTemplItemLeft" align="right" valign="top">decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator*</b> (<a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a>&lt; Dim, TagsList &gt; data, const double scalar) noexcept</td></tr>
+<tr class="separator:ad320378984c842791cd684954a4f8086"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae58ea7b7a951bfc8403de8efd713dc0f"><td class="memTemplParams" colspan="2"><a id="ae58ea7b7a951bfc8403de8efd713dc0f"></a>
+template&lt;size_t Dim, typename TagsList &gt; </td></tr>
+<tr class="memitem:ae58ea7b7a951bfc8403de8efd713dc0f"><td class="memTemplItemLeft" align="right" valign="top">decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator/</b> (<a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a>&lt; Dim, TagsList &gt; data, const double scalar) noexcept</td></tr>
+<tr class="separator:ae58ea7b7a951bfc8403de8efd713dc0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a609d9bc2234241c6d80252fc580423a9"><td class="memTemplParams" colspan="2"><a id="a609d9bc2234241c6d80252fc580423a9"></a>
+template&lt;size_t Dim, typename TagsList &gt; </td></tr>
+<tr class="memitem:a609d9bc2234241c6d80252fc580423a9"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator&lt;&lt;</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const <a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a>&lt; Dim, TagsList &gt; &amp;subdomain_data) noexcept</td></tr>
+<tr class="separator:a609d9bc2234241c6d80252fc580423a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed99503cbca2bd12022daa70eb867ae3"><td class="memTemplParams" colspan="2"><a id="aed99503cbca2bd12022daa70eb867ae3"></a>
+template&lt;size_t Dim, typename TagsList &gt; </td></tr>
+<tr class="memitem:aed99503cbca2bd12022daa70eb867ae3"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a>&lt; Dim, TagsList &gt; &amp;lhs, const <a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a>&lt; Dim, TagsList &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:aed99503cbca2bd12022daa70eb867ae3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa6719ed4be7f9d6ad6ad84c4ced6c30b"><td class="memTemplParams" colspan="2"><a id="aa6719ed4be7f9d6ad6ad84c4ced6c30b"></a>
+template&lt;size_t Dim, typename TagsList &gt; </td></tr>
+<tr class="memitem:aa6719ed4be7f9d6ad6ad84c4ced6c30b"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a>&lt; Dim, TagsList &gt; &amp;lhs, const <a class="el" href="structLinearSolver_1_1Schwarz_1_1ElementCenteredSubdomainData.html">ElementCenteredSubdomainData</a>&lt; Dim, TagsList &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:aa6719ed4be7f9d6ad6ad84c4ced6c30b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1366a47573e66a972bda3027b35dc5cd"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a> (size_t volume_extent, size_t max_overlap) noexcept</td></tr>
+<tr class="memdesc:a1366a47573e66a972bda3027b35dc5cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of points that an overlap extends into the <code>volume_extent</code>  <a href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">More...</a><br /></td></tr>
+<tr class="separator:a1366a47573e66a972bda3027b35dc5cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab856922e3c9e70cee558b1906ed284ff"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:ab856922e3c9e70cee558b1906ed284ff"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceLinearSolver_1_1Schwarz.html#ab856922e3c9e70cee558b1906ed284ff">overlap_num_points</a> (const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;volume_extents, size_t <a class="el" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>, size_t overlap_dimension) noexcept</td></tr>
+<tr class="memdesc:ab856922e3c9e70cee558b1906ed284ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Total number of grid points in an overlap region that extends <code>overlap_extent</code> points into the <code>volume_extents</code> from either side in the <code>overlap_dimension</code>  <a href="namespaceLinearSolver_1_1Schwarz.html#ab856922e3c9e70cee558b1906ed284ff">More...</a><br /></td></tr>
+<tr class="separator:ab856922e3c9e70cee558b1906ed284ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d0aef214331418e9e3a25e9f8d47c59"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLinearSolver_1_1Schwarz.html#a7d0aef214331418e9e3a25e9f8d47c59">overlap_width</a> (size_t <a class="el" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>, const <a class="el" href="classDataVector.html">DataVector</a> &amp;collocation_points) noexcept</td></tr>
+<tr class="memdesc:a7d0aef214331418e9e3a25e9f8d47c59"><td class="mdescLeft">&#160;</td><td class="mdescRight">Width of an overlap extending <code>overlap_extent</code> points into the <code>collocation_points</code> from either side.  <a href="namespaceLinearSolver_1_1Schwarz.html#a7d0aef214331418e9e3a25e9f8d47c59">More...</a><br /></td></tr>
+<tr class="separator:a7d0aef214331418e9e3a25e9f8d47c59"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab5b5b1d6b4f185bdbd7357f28655b677"><td class="memTemplParams" colspan="2"><a id="ab5b5b1d6b4f185bdbd7357f28655b677"></a>
+template&lt;size_t Dim, typename VolumeTagsList , typename OverlapTagsList &gt; </td></tr>
+<tr class="memitem:ab5b5b1d6b4f185bdbd7357f28655b677"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceLinearSolver_1_1Schwarz.html#ab5b5b1d6b4f185bdbd7357f28655b677">add_overlap_data</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; VolumeTagsList &gt; * &gt; volume_data, const Variables&lt; OverlapTagsList &gt; &amp;overlap_data, const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;volume_extents, const size_t <a class="el" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd">overlap_extent</a>, const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; &amp;direction) noexcept</td></tr>
+<tr class="memdesc:ab5b5b1d6b4f185bdbd7357f28655b677"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add the <code>overlap_data</code> to the <code>volume_data</code> <br /></td></tr>
+<tr class="separator:ab5b5b1d6b4f185bdbd7357f28655b677"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae406c208b60393ed03c81aaf447f01cd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classDataVector.html">DataVector</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLinearSolver_1_1Schwarz.html#ae406c208b60393ed03c81aaf447f01cd">extruding_weight</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;logical_coords, double width, const <a class="el" href="group__ComputationalDomainGroup.html#ga8c0137d7160ad71b6ed265c53c99ed00">Side</a> &amp;side) noexcept</td></tr>
+<tr class="memdesc:ae406c208b60393ed03c81aaf447f01cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Weights for the solution on an element-centered subdomain, decreasing from 1 to 0.5 towards the <code>side</code> over the logical distance <code>width</code>, and further to 0 over the same distance outside the element.  <a href="namespaceLinearSolver_1_1Schwarz.html#ae406c208b60393ed03c81aaf447f01cd">More...</a><br /></td></tr>
+<tr class="separator:ae406c208b60393ed03c81aaf447f01cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a464e0577222e9f23fc152c2d520dac"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classDataVector.html">DataVector</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceLinearSolver_1_1Schwarz.html#a6a464e0577222e9f23fc152c2d520dac">intruding_weight</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;logical_coords, double width, const <a class="el" href="group__ComputationalDomainGroup.html#ga8c0137d7160ad71b6ed265c53c99ed00">Side</a> &amp;side) noexcept</td></tr>
+<tr class="memdesc:a6a464e0577222e9f23fc152c2d520dac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Weights for the intruding solution of a neighboring element-centered subdomain, increasing from 0 to 0.5 towards the <code>side</code> over the logical distance <code>width</code>, and further to 1 over the same distance outside the element.  <a href="namespaceLinearSolver_1_1Schwarz.html#a6a464e0577222e9f23fc152c2d520dac">More...</a><br /></td></tr>
+<tr class="separator:a6a464e0577222e9f23fc152c2d520dac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Items related to the Schwarz linear solver. </p>
+<dl class="section see"><dt>See also</dt><dd><code><a class="el" href="structLinearSolver_1_1Schwarz_1_1Schwarz.html" title="An additive Schwarz subdomain solver for linear systems of equations .">LinearSolver::Schwarz::Schwarz</a></code> </dd></dl>
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="a248eec7d6c87755a35aafd2c9222dc2d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a248eec7d6c87755a35aafd2c9222dc2d">&#9670;&nbsp;</a></span>element_weight() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="el" href="classDataVector.html">DataVector</a>&gt; LinearSolver::Schwarz::element_weight </td>
+          <td>(</td>
+          <td class="paramtype">const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>logical_coords</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>overlap_widths</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>external_boundaries</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Weights for data on the central element of an element-centered subdomain. </p>
+<p>Constructs the weighting field</p>
+<p class="formulaDsp">
+\begin{equation} W(\boldsymbol{\xi}) = \prod^d_{i=0} w(\xi^i) \end{equation}
+</p>
+<p>where \(w(\xi^i)\) is the one-dimensional weighting function described in <code><a class="el" href="namespaceLinearSolver_1_1Schwarz.html#ae406c208b60393ed03c81aaf447f01cd" title="Weights for the solution on an element-centered subdomain, decreasing from 1 to 0....">LinearSolver::Schwarz::extruding_weight</a></code> and \(\xi^i\) are the element-logical coordinates (see Eq. (41) in <a class="el" href="citelist.html#CITEREF_Vincent2019qpd">[107]</a>). </p>
+
+</div>
+</div>
+<a id="a8ff9561dede68f2d52687b9d6d6ee826"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8ff9561dede68f2d52687b9d6d6ee826">&#9670;&nbsp;</a></span>element_weight() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void LinearSolver::Schwarz::element_weight </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>element_weight</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>logical_coords</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>overlap_widths</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>external_boundaries</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Weights for data on the central element of an element-centered subdomain. </p>
+<p>Constructs the weighting field</p>
+<p class="formulaDsp">
+\begin{equation} W(\boldsymbol{\xi}) = \prod^d_{i=0} w(\xi^i) \end{equation}
+</p>
+<p>where \(w(\xi^i)\) is the one-dimensional weighting function described in <code><a class="el" href="namespaceLinearSolver_1_1Schwarz.html#ae406c208b60393ed03c81aaf447f01cd" title="Weights for the solution on an element-centered subdomain, decreasing from 1 to 0....">LinearSolver::Schwarz::extruding_weight</a></code> and \(\xi^i\) are the element-logical coordinates (see Eq. (41) in <a class="el" href="citelist.html#CITEREF_Vincent2019qpd">[107]</a>). </p>
+
+</div>
+</div>
+<a id="ae406c208b60393ed03c81aaf447f01cd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae406c208b60393ed03c81aaf447f01cd">&#9670;&nbsp;</a></span>extruding_weight()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classDataVector.html">DataVector</a> LinearSolver::Schwarz::extruding_weight </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>logical_coords</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__ComputationalDomainGroup.html#ga8c0137d7160ad71b6ed265c53c99ed00">Side</a> &amp;&#160;</td>
+          <td class="paramname"><em>side</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Weights for the solution on an element-centered subdomain, decreasing from 1 to 0.5 towards the <code>side</code> over the logical distance <code>width</code>, and further to 0 over the same distance outside the element. </p>
+<p>The weighting function over a full element-centered subdomain is</p>
+<p class="formulaDsp">
+\begin{equation} w(\xi) = \frac{1}{2}\left( \phi\left( \frac{\xi + 1}{\delta} \right) - \phi\left( \frac{\xi - 1}{\delta} \right) \right) \end{equation}
+</p>
+<p>where \(\phi(\xi)\) is a second-order <code><a class="el" href="group__UtilitiesGroup.html#ga8be93b92f1d0720fb1f36cb6803d71e3" title="Smoothly interpolates from 0 to 1 between lower_edge and upper_edge with a Hermite polynomial of degr...">smoothstep</a></code>, i.e. the quintic polynomial</p>
+<p class="formulaDsp">
+\begin{align*} \phi(\xi) = \begin{cases} \mathrm{sign}(\xi) \quad \text{for} \quad |\xi| &gt; 1 \\ \frac{1}{8}\left(15\xi - 10\xi^3 + 3\xi^5\right) \end{cases} \end{align*}
+</p>
+<p>(see Eq. (39) in <a class="el" href="citelist.html#CITEREF_Vincent2019qpd">[107]</a>).</p>
+<p>The <code><a class="el" href="namespaceLinearSolver_1_1Schwarz.html#ae406c208b60393ed03c81aaf447f01cd" title="Weights for the solution on an element-centered subdomain, decreasing from 1 to 0....">LinearSolver::Schwarz::extruding_weight</a></code> and <code><a class="el" href="namespaceLinearSolver_1_1Schwarz.html#a6a464e0577222e9f23fc152c2d520dac" title="Weights for the intruding solution of a neighboring element-centered subdomain, increasing from 0 to ...">LinearSolver::Schwarz::intruding_weight</a></code> functions each compute one of the two terms in \(w(\xi)\). For example, consider an element-centered subdomain <code>A</code> that overlaps with a neighboring element-centered subdomain <code>B</code>. To combine solutions on <code>A</code> and <code>B</code> to a weighted solution on <code>A</code>, multiply the solution on <code>A</code> with the <code>extruding_weight</code> and the solution on <code>B</code> with the <code>intruding_weight</code>, both evaluated at the logical coordinates in <code>A</code> and at the <code>side</code> of <code>A</code> that faces <code>B</code>. </p>
+
+</div>
+</div>
+<a id="a6a464e0577222e9f23fc152c2d520dac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6a464e0577222e9f23fc152c2d520dac">&#9670;&nbsp;</a></span>intruding_weight() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classDataVector.html">DataVector</a> LinearSolver::Schwarz::intruding_weight </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>logical_coords</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group__ComputationalDomainGroup.html#ga8c0137d7160ad71b6ed265c53c99ed00">Side</a> &amp;&#160;</td>
+          <td class="paramname"><em>side</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Weights for the intruding solution of a neighboring element-centered subdomain, increasing from 0 to 0.5 towards the <code>side</code> over the logical distance <code>width</code>, and further to 1 over the same distance outside the element. </p>
+<dl class="section see"><dt>See also</dt><dd><code><a class="el" href="namespaceLinearSolver_1_1Schwarz.html#ae406c208b60393ed03c81aaf447f01cd" title="Weights for the solution on an element-centered subdomain, decreasing from 1 to 0....">LinearSolver::Schwarz::extruding_weight</a></code> </dd></dl>
+
+</div>
+</div>
+<a id="a4753e3dbac0e5ba91d1438bcd6607c14"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4753e3dbac0e5ba91d1438bcd6607c14">&#9670;&nbsp;</a></span>intruding_weight() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="el" href="classDataVector.html">DataVector</a>&gt; LinearSolver::Schwarz::intruding_weight </td>
+          <td>(</td>
+          <td class="paramtype">const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>logical_coords</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>direction</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>overlap_widths</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>num_intruding_overlaps</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>external_boundaries</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Weights for data on overlap regions intruding into an element-centered subdomain. </p>
+<p>Constructs the weighting field \(W(\xi)\) as described in <code><a class="el" href="namespaceLinearSolver_1_1Schwarz.html#a8ff9561dede68f2d52687b9d6d6ee826" title="Weights for data on the central element of an element-centered subdomain.">LinearSolver::Schwarz::element_weight</a></code> for the data that overlaps with the central element of an element-centered subdomain. The weights are constructed in such a way that all weights at a grid point sum to one, i.e. the weight is conserved. The <code>logical_coords</code> are the element-logical coordinates of the central element.</p>
+<p>This function assumes that corner- and edge-neighbors of the central element are not part of the subdomain, which means that no contributions from those neighbors are expected although the weighting field is non-zero in overlap regions with those neighbors. Therefore, to retain conservation we must account for this missing weight by adding it to the central element, to the intruding overlaps from face-neighbors, or split it between the two. We choose to add the weight to the intruding overlaps, since that's where information from the corner- and edge-regions propagates through in a DG context. </p>
+
+</div>
+</div>
+<a id="a422a98e4713f82e2eec0ac35aa40f718"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a422a98e4713f82e2eec0ac35aa40f718">&#9670;&nbsp;</a></span>intruding_weight() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void LinearSolver::Schwarz::intruding_weight </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>weight</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>logical_coords</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>direction</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>overlap_widths</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>num_intruding_overlaps</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>external_boundaries</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Weights for data on overlap regions intruding into an element-centered subdomain. </p>
+<p>Constructs the weighting field \(W(\xi)\) as described in <code><a class="el" href="namespaceLinearSolver_1_1Schwarz.html#a8ff9561dede68f2d52687b9d6d6ee826" title="Weights for data on the central element of an element-centered subdomain.">LinearSolver::Schwarz::element_weight</a></code> for the data that overlaps with the central element of an element-centered subdomain. The weights are constructed in such a way that all weights at a grid point sum to one, i.e. the weight is conserved. The <code>logical_coords</code> are the element-logical coordinates of the central element.</p>
+<p>This function assumes that corner- and edge-neighbors of the central element are not part of the subdomain, which means that no contributions from those neighbors are expected although the weighting field is non-zero in overlap regions with those neighbors. Therefore, to retain conservation we must account for this missing weight by adding it to the central element, to the intruding overlaps from face-neighbors, or split it between the two. We choose to add the weight to the intruding overlaps, since that's where information from the corner- and edge-regions propagates through in a DG context. </p>
+
+</div>
+</div>
+<a id="a1366a47573e66a972bda3027b35dc5cd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1366a47573e66a972bda3027b35dc5cd">&#9670;&nbsp;</a></span>overlap_extent()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t LinearSolver::Schwarz::overlap_extent </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>volume_extent</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>max_overlap</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The number of points that an overlap extends into the <code>volume_extent</code> </p>
+<p>In a dimension where an element has <code>volume_extent</code> points, the overlap extent is the largest number under these constraints:</p>
+<ul>
+<li>It is at most <code>max_overlap</code>.</li>
+<li>It is smaller than the <code>volume_extent</code>.</li>
+</ul>
+<p>This means the overlap extent is always smaller than the <code>volume_extent</code>. The reason for this constraint is that we define the <em>width</em> of the overlap as the element-logical coordinate distance from the face of the element to the first collocation point <em>outside</em> the overlap extent. Therefore, even an overlap region that covers the full element in width does not include the collocation point on the opposite side of the element.</p>
+<p>Here's a few notes on the definition of the overlap extent and width:</p>
+<ul>
+<li>A typical smooth weighting function goes to zero at the overlap width, so if the grid points located at the overlap width were included in the subdomain, their solutions would not contribute to the weighted sum of subdomain solutions.</li>
+<li>Defining the overlap width as the distance to the first point <em>outside</em> the overlap extent makes it non-zero even for a single point of overlap into a Gauss-Lobatto grid (which has points located at the element face).</li>
+<li>Boundary contributions for many (but not all) discontinuous Galerkin schemes on Gauss-Lobatto grids are limited to the grid points on the element face, e.g. for a DG operator that is pre-multiplied by the mass matrix, or one where boundary contributions are lifted using the diagonal mass-matrix approximation. Not including the grid points facing away from the subdomain in the overlap allows to ignore that face altogether in the subdomain operator. </li>
+</ul>
+
+</div>
+</div>
+<a id="ab856922e3c9e70cee558b1906ed284ff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab856922e3c9e70cee558b1906ed284ff">&#9670;&nbsp;</a></span>overlap_num_points()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t LinearSolver::Schwarz::overlap_num_points </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>volume_extents</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>overlap_extent</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>overlap_dimension</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Total number of grid points in an overlap region that extends <code>overlap_extent</code> points into the <code>volume_extents</code> from either side in the <code>overlap_dimension</code> </p>
+<p>The overlap region has <code>overlap_extent</code> points in the <code>overlap_dimension</code>, and <code>volume_extents</code> points in the other dimensions. The number of grid points returned by this function is the product of these extents. </p>
+
+</div>
+</div>
+<a id="a7d0aef214331418e9e3a25e9f8d47c59"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d0aef214331418e9e3a25e9f8d47c59">&#9670;&nbsp;</a></span>overlap_width()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double LinearSolver::Schwarz::overlap_width </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>overlap_extent</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>collocation_points</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Width of an overlap extending <code>overlap_extent</code> points into the <code>collocation_points</code> from either side. </p>
+<p>The "width" of an overlap is the element-logical coordinate distance from the element boundary to the first collocation point outside the overlap region in the overlap dimension, i.e. the dimension perpendicular to the element face. See <code><a class="el" href="namespaceLinearSolver_1_1Schwarz.html#a1366a47573e66a972bda3027b35dc5cd" title="The number of points that an overlap extends into the volume_extent">LinearSolver::Schwarz::overlap_extent</a></code> for details.</p>
+<p>This function assumes the <code>collocation_points</code> are mirrored around 0. </p>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

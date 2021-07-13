@@ -1,0 +1,259 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: LeviCivitaIterator&lt; Dim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classLeviCivitaIterator-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">LeviCivitaIterator&lt; Dim &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__DataStructuresGroup.html">Data Structures</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Iterate over all nonzero index permutations for a Levi-Civita symbol.  
+ <a href="classLeviCivitaIterator.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="LeviCivitaIterator_8hpp_source.html">LeviCivitaIterator.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a7fd9fe7fd8755197587a983fe78a7db3"><td class="memItemLeft" align="right" valign="top"><a id="a7fd9fe7fd8755197587a983fe78a7db3"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>operator bool</b> () const noexcept</td></tr>
+<tr class="separator:a7fd9fe7fd8755197587a983fe78a7db3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ed3ed535550042126e135616af72e03"><td class="memItemLeft" align="right" valign="top"><a id="a6ed3ed535550042126e135616af72e03"></a>
+<a class="el" href="classLeviCivitaIterator.html">LeviCivitaIterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator++</b> () noexcept</td></tr>
+<tr class="separator:a6ed3ed535550042126e135616af72e03"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbd25f8402110a00b430ba0afcc9cd38"><td class="memItemLeft" align="right" valign="top"><a id="afbd25f8402110a00b430ba0afcc9cd38"></a>
+const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, Dim &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeviCivitaIterator.html#afbd25f8402110a00b430ba0afcc9cd38">operator()</a> () const noexcept</td></tr>
+<tr class="memdesc:afbd25f8402110a00b430ba0afcc9cd38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a></code> containing the current multi-index, an ordered list of indices for the current permutation. <br /></td></tr>
+<tr class="separator:afbd25f8402110a00b430ba0afcc9cd38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:accc10f03c3ab6502f214e9f5f5733bd0"><td class="memItemLeft" align="right" valign="top"><a id="accc10f03c3ab6502f214e9f5f5733bd0"></a>
+const size_t &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeviCivitaIterator.html#accc10f03c3ab6502f214e9f5f5733bd0">operator[]</a> (const size_t i) const noexcept</td></tr>
+<tr class="memdesc:accc10f03c3ab6502f214e9f5f5733bd0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a specific index from the multi-index of the current permutation. <br /></td></tr>
+<tr class="separator:accc10f03c3ab6502f214e9f5f5733bd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3bf7d2167028ef9be367f8bc716c8916"><td class="memItemLeft" align="right" valign="top"><a id="a3bf7d2167028ef9be367f8bc716c8916"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLeviCivitaIterator.html#a3bf7d2167028ef9be367f8bc716c8916">sign</a> () const noexcept</td></tr>
+<tr class="memdesc:a3bf7d2167028ef9be367f8bc716c8916"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the sign of the Levi-Civita symbol for the current permutation. <br /></td></tr>
+<tr class="separator:a3bf7d2167028ef9be367f8bc716c8916"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+class LeviCivitaIterator&lt; Dim &gt;</h3>
+
+<p>Iterate over all nonzero index permutations for a Levi-Civita symbol. </p>
+<h3>Details</h3>
+<p>This class provides an iterator that allows you to loop over only the nonzero index permutations of a Levi-Civita symbol of dimension <code>dimension</code>. Inside the loop, the operator <code>()</code> returns an <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a></code> containing an ordered list of the indices of this permutation, the operator <code>[]</code> returns a specific index from the same <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a></code>, and the function <code><a class="el" href="classLeviCivitaIterator.html#a3bf7d2167028ef9be367f8bc716c8916" title="Return the sign of the Levi-Civita symbol for the current permutation.">sign()</a></code> returns the sign of the Levi-Civita symbol for this permutation.</p>
+<h3>Example</h3>
+<div class="fragment"><div class="line">  <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;double, 3&gt;</a> vector_a = {{2.0, 3.0, 4.0}};</div>
+<div class="line">  <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;double, 3&gt;</a> vector_b = {{7.0, 6.0, 5.0}};</div>
+<div class="line">  <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;double, 3&gt;</a> a_cross_b_expected = {{-9.0, 18.0, -9.0}};</div>
+<div class="line"> </div>
+<div class="line">  <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;double, 3&gt;</a> a_cross_b = {{0.0, 0.0, 0.0}};</div>
+<div class="line">  <span class="keywordflow">for</span> (<a class="code" href="classLeviCivitaIterator.html">LeviCivitaIterator&lt;3&gt;</a> it; it; ++it) {</div>
+<div class="line">    <a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(a_cross_b, it[0]) +=</div>
+<div class="line">        it.sign() * <a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(vector_a, it[1]) * <a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(vector_b, it[2]);</div>
+<div class="line">  }</div>
+<div class="line">  <a class="code" href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">CHECK_ITERABLE_APPROX</a>(a_cross_b, a_cross_b_expected);</div>
+</div><!-- fragment --></div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/DataStructures/<a class="el" href="LeviCivitaIterator_8hpp_source.html">LeviCivitaIterator.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga818f101f2f8bd824a3bc7c2c2361c560"><div class="ttname"><a href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a></div><div class="ttdeci">constexpr T &amp; at(std::array&lt; T, N &gt; &amp;arr, Size index)</div><div class="ttdoc">Retrieve a entry from a container, with checks in Debug mode that the index being retrieved is valid.</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:125</div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_ga6ce5d669c94418f197e4c55c53e64a64"><div class="ttname"><a href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">CHECK_ITERABLE_APPROX</a></div><div class="ttdeci">#define CHECK_ITERABLE_APPROX(a, b)</div><div class="ttdoc">A wrapper around Catch's CHECK macro that checks approximate equality of entries in iterable containe...</div><div class="ttdef"><b>Definition:</b> TestingFramework.hpp:122</div></div>
+<div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt; double, 3 &gt;</a></div></div>
+<div class="ttc" id="aclassLeviCivitaIterator_html"><div class="ttname"><a href="classLeviCivitaIterator.html">LeviCivitaIterator</a></div><div class="ttdoc">Iterate over all nonzero index permutations for a Levi-Civita symbol.</div><div class="ttdef"><b>Definition:</b> LeviCivitaIterator.hpp:33</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

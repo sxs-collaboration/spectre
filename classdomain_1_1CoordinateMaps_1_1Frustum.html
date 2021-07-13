@@ -1,0 +1,317 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::CoordinateMaps::Frustum Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1CoordinateMaps.html">CoordinateMaps</a></li><li class="navelem"><a class="el" href="classdomain_1_1CoordinateMaps_1_1Frustum.html">Frustum</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classdomain_1_1CoordinateMaps_1_1Frustum-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::CoordinateMaps::Frustum Class Reference<div class="ingroups"><a class="el" href="group__CoordinateMapsGroup.html">Coordinate Maps</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A reorientable map from the cube to a frustum.  
+ <a href="classdomain_1_1CoordinateMaps_1_1Frustum.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Frustum_8hpp_source.html">Frustum.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a2193a9bdbff172dd024d442c28fe047f"><td class="memItemLeft" align="right" valign="top"><a id="a2193a9bdbff172dd024d442c28fe047f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Frustum</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 2 &gt;, 4 &gt; &amp;face_vertices, double lower_bound, double upper_bound, <a class="el" href="classOrientationMap.html">OrientationMap</a>&lt; 3 &gt; orientation_of_frustum, bool with_equiangular_map=false, double projective_scale_factor=1.0, bool auto_projective_scale_factor=false) noexcept</td></tr>
+<tr class="separator:a2193a9bdbff172dd024d442c28fe047f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa25e5ee032dcd3058e4d228c359fc47e"><td class="memItemLeft" align="right" valign="top"><a id="aa25e5ee032dcd3058e4d228c359fc47e"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Frustum</b> (<a class="el" href="classdomain_1_1CoordinateMaps_1_1Frustum.html">Frustum</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:aa25e5ee032dcd3058e4d228c359fc47e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3313272ab2073609a384c8bba52b7ca0"><td class="memItemLeft" align="right" valign="top"><a id="a3313272ab2073609a384c8bba52b7ca0"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Frustum</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1Frustum.html">Frustum</a> &amp;)=default</td></tr>
+<tr class="separator:a3313272ab2073609a384c8bba52b7ca0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a17d4d7263da5c5fb9c69ce7997b5d7"><td class="memItemLeft" align="right" valign="top"><a id="a6a17d4d7263da5c5fb9c69ce7997b5d7"></a>
+<a class="el" href="classdomain_1_1CoordinateMaps_1_1Frustum.html">Frustum</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1Frustum.html">Frustum</a> &amp;)=default</td></tr>
+<tr class="separator:a6a17d4d7263da5c5fb9c69ce7997b5d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6173bc81571cccb0a1ce3bcf2cb891fa"><td class="memItemLeft" align="right" valign="top"><a id="a6173bc81571cccb0a1ce3bcf2cb891fa"></a>
+<a class="el" href="classdomain_1_1CoordinateMaps_1_1Frustum.html">Frustum</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1CoordinateMaps_1_1Frustum.html">Frustum</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a6173bc81571cccb0a1ce3bcf2cb891fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f1cb7cd585479d904d0e6493d00383c"><td class="memTemplParams" colspan="2"><a id="a2f1cb7cd585479d904d0e6493d00383c"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a2f1cb7cd585479d904d0e6493d00383c"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator()</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:a2f1cb7cd585479d904d0e6493d00383c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b4e0ed346c481fa90dc1f401f912b0d"><td class="memItemLeft" align="right" valign="top"><a id="a8b4e0ed346c481fa90dc1f401f912b0d"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMaps_1_1Frustum.html#a8b4e0ed346c481fa90dc1f401f912b0d">inverse</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;target_coords) const noexcept</td></tr>
+<tr class="memdesc:a8b4e0ed346c481fa90dc1f401f912b0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns std::nullopt if \(z\) is at or beyond the \(z\)-coordinate of the apex of the pyramid, tetrahedron, or triangular prism that is formed by extending the <code><a class="el" href="classdomain_1_1CoordinateMaps_1_1Frustum.html" title="A reorientable map from the cube to a frustum.">Frustum</a></code> (for a \(z\)-oriented <code><a class="el" href="classdomain_1_1CoordinateMaps_1_1Frustum.html" title="A reorientable map from the cube to a frustum.">Frustum</a></code>). The inverse function is only callable with doubles because the inverse might fail if called for a point out of range, and it is unclear what should happen if the inverse were to succeed for some points in a <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> but fail for other points. <br /></td></tr>
+<tr class="separator:a8b4e0ed346c481fa90dc1f401f912b0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a770a7b22523a32b74bca3a7fd430c7d1"><td class="memTemplParams" colspan="2"><a id="a770a7b22523a32b74bca3a7fd430c7d1"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a770a7b22523a32b74bca3a7fd430c7d1"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:a770a7b22523a32b74bca3a7fd430c7d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aceee5462b0555af9fda2fbe6a4b0dbc2"><td class="memTemplParams" colspan="2"><a id="aceee5462b0555af9fda2fbe6a4b0dbc2"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:aceee5462b0555af9fda2fbe6a4b0dbc2"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>inv_jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:aceee5462b0555af9fda2fbe6a4b0dbc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad78e709a2820fca56e3ca936fb003762"><td class="memItemLeft" align="right" valign="top"><a id="ad78e709a2820fca56e3ca936fb003762"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:ad78e709a2820fca56e3ca936fb003762"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adaf1b28063f4e77d5178c1cbb5fdb54b"><td class="memItemLeft" align="right" valign="top"><a id="adaf1b28063f4e77d5178c1cbb5fdb54b"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_identity</b> () const noexcept</td></tr>
+<tr class="separator:adaf1b28063f4e77d5178c1cbb5fdb54b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a8619b1ff37022689008173480a903f0a"><td class="memItemLeft" align="right" valign="top"><a id="a8619b1ff37022689008173480a903f0a"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>dim</b> = 3</td></tr>
+<tr class="separator:a8619b1ff37022689008173480a903f0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a194bbc938effc7cdf72a1a9b4c2e1431"><td class="memItemLeft" align="right" valign="top"><a id="a194bbc938effc7cdf72a1a9b4c2e1431"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1Frustum.html">Frustum</a> &amp;lhs, const <a class="el" href="classdomain_1_1CoordinateMaps_1_1Frustum.html">Frustum</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a194bbc938effc7cdf72a1a9b4c2e1431"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A reorientable map from the cube to a frustum. </p>
+<div class="image">
+<img src="frustum_table1.png" alt=""/>
+<div class="caption">
+A frustum with rectangular bases.</div></div>
+<h3><a class="anchor" id="autotoc_md68"></a>
+Description and Specifiable Parameters</h3>
+<p>A map from the logical cube to the volume determined by interpolating between two parallel rectangles each perpendicular to the \(z\)-axis. A <a class="el" href="classdomain_1_1CoordinateMaps_1_1Frustum.html" title="A reorientable map from the cube to a frustum.">Frustum</a> map \(\vec{x}(\xi,\eta,\zeta)\) is determined by specifying two heights \(z_1 = \) <code>lower_bound</code> and \(z_2 = \) <code>upper_bound</code> for the positions of the rectangular bases of the frustum along the \(z-\)axis, and the sizes of the rectangles are determined by the eight values passed to <code>face_vertices</code>:</p>
+<p class="formulaDsp">
+\begin{align*} &amp;\textrm{lower x upper base} : x^{+\zeta}_{-\xi,-\eta} = x(-1,-1,1)\\ &amp;\textrm{lower x lower base} : x^{-\zeta}_{-\xi,-\eta} = x(-1,-1,-1)\\ &amp;\textrm{upper x upper base} : x^{+\zeta}_{+\xi,+\eta} = x(1,1,1)\\ &amp;\textrm{upper x lower base} : x^{-\zeta}_{+\xi,+\eta} = x(1,1,-1)\\ &amp;\textrm{lower y upper base} : y^{+\zeta}_{-\xi,-\eta} = y(-1,-1,1)\\ &amp;\textrm{lower y lower base} : y^{-\zeta}_{-\xi,-\eta} = y(-1,-1,-1)\\ &amp;\textrm{upper y upper base} : y^{+\zeta}_{+\xi,+\eta} = y(1,1,1)\\ &amp;\textrm{upper y lower base} : y^{-\zeta}_{+\xi,+\eta} = y(1,1,-1)\end{align*}
+</p>
+<dl class="section note"><dt>Note</dt><dd>As an example, consider a frustum along the z-axis, with the lower base starting at (x,y) = (-2.0,3.0) and extending to (2.0,5.0), and with the upper base extending from (0.0,1.0) to (1.0,3.0). The corresponding value for <code>face_vertices</code> is <code>{{{{-2.0,3.0}}, {{2.0,5.0}}, {{0.0,1.0}}, {{1.0,3.0}}}}</code>.</dd></dl>
+<p>In the case where the two rectangles are geometrically similar, the volume formed is a geometric frustum. However, this coordinate map generalizes to rectangles which need not be similar. The user may reorient the frustum by passing an <a class="el" href="classOrientationMap.html" title="A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of th...">OrientationMap</a> to the constructor. If <code>with_equiangular_map</code> is true, then this coordinate map applies a tangent function mapping to the logical \(\xi\) and \(\eta\) coordinates. We then refer to the generalized logical coordinates as \(\Xi\) and \(\mathrm{H}\). If <code>projective_scale_factor</code> is set to a quantity other than unity, then this coordinate map applies a rational function mapping to the logical \(\zeta\) coordinate. This generalized logical coordinate is referred to as \(\mathrm{Z}\). If <code>auto_projective_scale_factor</code> is <code>true</code>, the user-specified <code>projective_scale_factor</code> is ignored and an appropriate value for <code>projective_scale_factor</code> is computed based on the values passed to <code>face_vertices</code>. See the <a class="el" href="redistributing_gridpoints.html">page on redistributing gridpoints</a> to see more detailed information on equiangular variables and projective scaling.</p>
+<h3><a class="anchor" id="autotoc_md69"></a>
+Coordinate Map and Jacobian</h3>
+<p>In terms of the <code>face_vertices</code> variables, we define the following auxiliary variables:</p>
+<p class="formulaDsp">
+\begin{align*}\Sigma^x &amp;= \frac{1}{4}(x^{+\zeta}_{-\xi,-\eta} + x^{+\zeta}_{+\xi,+\eta} + x^{-\zeta}_{-\xi,-\eta} + x^{-\zeta}_{+\xi,+\eta}) \\ \Delta^x_{\zeta} &amp;= \frac{1}{4}(x^{+\zeta}_{-\xi,-\eta} + x^{+\zeta}_{+\xi,+\eta} - x^{-\zeta}_{-\xi,-\eta} - x^{-\zeta}_{+\xi,+\eta}) \\ \Delta^x_{\xi} &amp;= \frac{1}{4}(x^{+\zeta}_{+\xi,+\eta} - x^{+\zeta}_{-\xi,-\eta} + x^{-\zeta}_{+\xi,+\eta} - x^{-\zeta}_{-\xi,-\eta}) \\ \Delta^x_{\xi\zeta} &amp;= \frac{1}{4}(x^{+\zeta}_{+\xi,+\eta} - x^{+\zeta}_{-\xi,-\eta} - x^{-\zeta}_{+\xi,+\eta} + x^{-\zeta}_{-\xi,-\eta}) \\ \Sigma^y &amp;= \frac{1}{4}(y^{+\zeta}_{-\xi,-\eta} + y^{+\zeta}_{+\xi,+\eta} + y^{-\zeta}_{-\xi,-\eta} + y^{-\zeta}_{+\xi,+\eta}) \\ \Delta^y_{\zeta} &amp;= \frac{1}{4}(y^{+\zeta}_{-\xi,-\eta} + y^{+\zeta}_{+\xi,+\eta} - y^{-\zeta}_{-\xi,-\eta} - y^{-\zeta}_{+\xi,+\eta}) \\ \Delta^y_{\eta} &amp;= \frac{1}{4}(y^{+\zeta}_{+\xi,+\eta} - y^{+\zeta}_{-\xi,-\eta} + y^{-\zeta}_{+\xi,+\eta} - y^{-\zeta}_{-\xi,-\eta}) \\ \Delta^y_{\eta\zeta} &amp;= \frac{1}{4}(y^{+\zeta}_{+\xi,+\eta} - y^{+\zeta}_{-\xi,-\eta} - y^{-\zeta}_{+\xi,+\eta} + y^{-\zeta}_{-\xi,-\eta}) \\ \Sigma^z &amp;= \frac{z_1 + z_2}{2}\\ \Delta^z &amp;= \frac{z_2 - z_1}{2} \end{align*}
+</p>
+<p>The full map is then given by: </p><p class="formulaDsp">
+\[\vec{x}(\xi,\eta,\zeta) = \begin{bmatrix} \Sigma^x + \Delta^x_{\xi}\Xi + (\Delta^x_{\zeta} + \Delta^x_{\xi\zeta}\Xi)\mathrm{Z}\\ \Sigma^y + \Delta^y_{\eta}\mathrm{H} + (\Delta^y_{\zeta} + \Delta^y_{\eta\zeta}\mathrm{H})\mathrm{Z}\\ \Sigma^z + \Delta^z\mathrm{Z}\\ \end{bmatrix}\]
+</p>
+<p>With Jacobian: </p><p class="formulaDsp">
+\[J = \begin{bmatrix} (\Delta^x_{\xi} + \Delta^x_{\xi\zeta}\mathrm{Z})\Xi&#39; &amp; 0 &amp; (\Delta^x_{\zeta}+ \Delta^x_{\xi\zeta}\Xi)\mathrm{Z}&#39; \\ 0 &amp; (\Delta^y_{\eta} + \Delta^y_{\eta\zeta}\mathrm{Z})\mathrm{H}&#39; &amp; (\Delta^y_{\zeta} + \Delta^y_{\eta\zeta}\mathrm{H})\mathrm{Z}&#39;\\ 0 &amp; 0 &amp; \Delta^z\mathrm{Z}&#39; \\ \end{bmatrix} \]
+</p>
+<h3><a class="anchor" id="autotoc_md70"></a>
+Suggested values for the projective scale factor</h3>
+<dl class="section note"><dt>Note</dt><dd>This section assumes familiarity with projective scaling as discussed on the <a class="el" href="redistributing_gridpoints.html">page on redistributing gridpoints</a>.</dd></dl>
+<p>When constructing a <a class="el" href="classdomain_1_1CoordinateMaps_1_1Frustum.html" title="A reorientable map from the cube to a frustum.">Frustum</a> map, it is not immediately obvious what value of \(w_{\delta}\) to use in the projective map; here we present a choice of \(w_{\delta}\) that will produce minimal grid distortion. We cover two cases: the first is the special case in which the two rectangular <a class="el" href="classdomain_1_1CoordinateMaps_1_1Frustum.html" title="A reorientable map from the cube to a frustum.">Frustum</a> bases are related by a simple scale factor; the second is the general case.</p>
+<div class="image">
+<img src="ProjectionOfCube.png" alt=""/>
+<div class="caption">
+Trapezoids from squares. (Davide Cervone)</div></div>
+<p>As seen in Cervone's <a href="http://www.math.union.edu/~dpvc/math/4D/rotation/welcome.html">Cubes and Hypercubes Rotating</a>, there is a special case in which the inverse projection of a trapezoid is not another trapezoid, but a rectangle where the bases are congruent. Most often one will want to use the special value of \(w_{\delta}\) where this occurs. This value of \(w_{\delta}\) corresponds to the projective transformation mapping a rectangular prism in an ambient 4D space with congruent faces at \(w=1\) and \(w=w_{\delta}\) to the frustum in the plane \(w=1\):</p>
+<p class="formulaDsp">
+\[w_{\delta} = \frac{L_1}{L_2}\]
+</p>
+<p>where \(\frac{L_1}{L_2}\) is the ratio between any pair of corresponding side lengths of the \(z_1\) and \(z_2\)-bases of the frustum, respectively.</p>
+<p>For the general case one will want to use the value: </p><p class="formulaDsp">
+\[w_{\delta} = \frac{\sqrt{(x^{-\zeta}_{+\xi,+\eta} - x^{-\zeta}_{-\xi,+\eta}) (y^{-\zeta}_{+\xi,+\eta} - y^{-\zeta}_{+\xi,-\eta})}} {\sqrt{(x^{+\zeta}_{+\xi,+\eta} - x^{+\zeta}_{-\xi,+\eta}) (y^{+\zeta}_{+\xi,+\eta} - y^{+\zeta}_{+\xi,-\eta})}}\]
+</p>
+<p>This is the value for \(w_{\delta}\) used by this <a class="el" href="classdomain_1_1CoordinateMap.html" title="A coordinate map or composition of coordinate maps.">CoordinateMap</a> when <code>auto_projective_scale_factor</code> is <code>true</code>. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/CoordinateMaps/<a class="el" href="Frustum_8hpp_source.html">Frustum.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

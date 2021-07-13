@@ -1,0 +1,392 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Build System</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">Build System </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><h1><a class="anchor" id="cmake"></a>
+CMake</h1>
+<p>SpECTRE uses <a href="https://cmake.org/">CMake</a> for the build system. In this section of the guide we outline how to <a href="#adding_source_files">add new source files</a>, <a href="#adding_libraries">libraries</a>, <a href="#adding_unit_tests">unit tests</a>, <a href="#adding_executables">executables</a>, and <a href="#adding_external_dependencies">external dependencies</a>. We also describe <a href="#common_cmake_flags">commonly used CMake flags</a>.</p>
+<p>Note that in editing <code>CMakeLists.txt</code> files, it is conventional to indent multiline commands by two spaces (except for the first line), and to separate most commands by blank lines.</p>
+<h2><a class="anchor" id="adding_source_files"></a>
+Adding Source Files</h2>
+<p>SpECTRE organizes source files into subdirectories of <code>src</code> that are compiled into libraries. To add a new source file <code>FILE.cpp</code> to an existing library in <code>src/PATH/DIR</code>, just edit <code>src/PATH/DIR/CMakeLists.txt</code> and add <code>FILE.cpp</code> to the list of files in </p><div class="fragment"><div class="line">set(LIBRARY_SOURCES</div>
+<div class="line">  &lt;list_of_files&gt;</div>
+<div class="line">  )</div>
+</div><!-- fragment --><p>such that the resulting <code>&lt;list_of_files&gt;</code> is in alphabetical order.</p>
+<h3><a class="anchor" id="adding_libraries"></a>
+Adding Libraries</h3>
+<p>To add a source file <code>FILE.cpp</code> that is compiled into a new library <code>LIB</code> in a directory <code>src/PATH/DIR</code> (either in a new directory, or in an existing directory that either does not have a <code>CMakeLists.txt</code> file, or does not create a library in the existing <code>CMakeLists.txt</code>):</p><ul>
+<li>Create (if necessary) a <code>CMakeLists.txt</code> file in <code>DIR</code>, with the following two lines at the top: <div class="fragment"><div class="line"># Distributed under the MIT License.</div>
+<div class="line"># See LICENSE.txt for details.</div>
+</div><!-- fragment --></li>
+<li>In the parent directory (i.e. <code>src/PATH</code>), (if necessary) add the following line to its <code>CMakeLists.txt</code> file (if necessary, recursively do the previous step and this one until you reach a <code>CMakeLists.txt</code> that adds the appropriate subdirectory): <div class="fragment"><div class="line">add_subdirectory(DIR)</div>
+</div><!-- fragment --></li>
+</ul>
+<p>If there are already other <code>add_subdirectory()</code> lines in the file, place the new one so that the subdirectories are in alphabetical order.</p><ul>
+<li>Add the line: <div class="fragment"><div class="line">set(LIBRARY LIB)</div>
+</div><!-- fragment --></li>
+</ul>
+<p>where convention is that <code>LIB</code> = <code>DIR</code>. As library names must be unique, this is not always possible, in which case the convention is to prepend the parent directory to <code>DIR</code>.</p><ul>
+<li>Add the lines <div class="fragment"><div class="line">set(LIBRARY_SOURCES</div>
+<div class="line">  FILE.cpp</div>
+<div class="line">  )</div>
+<div class="line"> </div>
+<div class="line">add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})</div>
+<div class="line"> </div>
+<div class="line">target_link_libraries(</div>
+<div class="line">  ${LIBRARY}</div>
+<div class="line">  &lt;list_of_interfaces&gt;</div>
+<div class="line">  )</div>
+</div><!-- fragment --></li>
+</ul>
+<p>where <code>&lt;list_of_interfaces&gt;</code> is an alphabetized list of lines of the form </p><div class="fragment"><div class="line">INTERFACE SOME_LIBRARY</div>
+</div><!-- fragment --><p>where <code>SOME_LIBRARY</code> is a library that must be linked in order for the new library to be successfully linked in an executable.</p>
+<h2><a class="anchor" id="adding_unit_tests"></a>
+Adding Unit Tests</h2>
+<p>We use the <a href="https://github.com/philsquared/Catch">Catch</a> testing framework for unit tests. All unit tests are housed in <code>tests/Unit</code> with subdirectories for each subdirectory of <code>src</code>. Add the <code>cpp</code> file to the appropriate subdirectory and also to the <code>CMakeLists.txt</code> in that subdirectory. Inside the source file you can create a new test by adding a <code>SPECTRE_TEST_CASE("Unit.Dir.Component", "[Unit][Dir][Tag]")</code>. The <code>[Tag]</code> is optional and you can have more than one, but the tags should be used quite sparingly. The purpose of the tags is to be able to run all unit tests or all tests of a particular set of components, e.g. <code>ctest -L Data</code> to run all tests inside the <code>Data</code> directory. Please see <a class="el" href="writing_unit_tests.html">writing unit tests</a>, other unit tests and the <a href="https://github.com/philsquared/Catch">Catch documentation</a> for more help on writing tests. Unit tests should take as short a time as possible, with a goal of less than two seconds. Please also limit the number of distinct cases (by using <code>SECTION</code>s).</p>
+<p>You can check the unit test coverage of your code by installing all the optional components and then running <code>make unit-test-coverage</code> (after re-running CMake). This will create the directory <code>BUILD_DIR/docs/html/unit-test-coverage/</code> which is where the coverage information is located. Open the <code>index.html</code> file in your browser and make sure that your tests are indeed checking all lines of your code. Your pull requests might not be merged until your line coverage is over 90% (we are aiming for 100% line coverage wherever possible). Unreachable lines of code can be excluded from coverage analysis by adding the inline comment <code>LCOV_EXCL_LINE</code> or a block can be excluded using <code>LCOV_EXCL_START</code> and <code>LCOV_EXCL_STOP</code>. However, this should be used extremely sparingly since unreachable code paths should be removed from the code base altogether.</p>
+<h2><a class="anchor" id="adding_executables"></a>
+Adding Executables</h2>
+<p>All general executables are found in <code>src/Executables</code>, while those for specific evolution (elliptic) systems are found in <code>src/Evolution/Executables</code> (<code>src/Elliptic/Executables</code>). See <a class="el" href="dev_guide_creating_executables.html">how to create executables</a>.</p>
+<h2><a class="anchor" id="adding_external_dependencies"></a>
+Adding External Dependencies</h2>
+<p>To add an external dependency, first add a <code>SetupDEPENDENCY.cmake</code> file to the <code>cmake</code> directory. You should model this after one of the existing ones for <code>Catch</code> or <code>Brigand</code> if you're adding a header-only library and <code>yaml-cpp</code> if the library is not header-only. If CMake does not already support <code>find_package</code> for the library you're adding you can write your own. These should be modeled after <code>FindBrigand</code> or <code>FindCatch</code> for header-only libraries, and <code>FindYAMLCPP</code> for compiled libraries. The <code>SetupDEPENDENCY.cmake</code> file must then be included in the root <code>spectre/CMakeLists.txt</code>. Be sure to test both that setting <code>LIBRARY_ROOT</code> works correctly for your library, and also that if the library is required that CMake fails gracefully if the library is not found.</p>
+<h2><a class="anchor" id="common_cmake_flags"></a>
+Commonly Used CMake flags</h2>
+<p>The following are the most common flags used to control building with <code>CMake</code>. They are used by </p><div class="fragment"><div class="line">cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN &lt;SPECTRE_ROOT&gt;</div>
+</div><!-- fragment --><ul>
+<li>ASAN<ul>
+<li>Whether or not to turn on the address sanitizer compile flags (<code>-fsanitize=address</code>) (default is <code>OFF</code>)</li>
+</ul>
+</li>
+<li>BUILD_PYTHON_BINDINGS<ul>
+<li>Build python libraries to call SpECTRE C++ code from python (default is <code>OFF</code>)</li>
+</ul>
+</li>
+<li>BUILD_SHARED_LIBS<ul>
+<li>Whether shared libraries are built instead of static libraries (default is <code>OFF</code>)</li>
+</ul>
+</li>
+<li>CHARM_ROOT<ul>
+<li>The path to the build directory of <code>Charm++</code></li>
+</ul>
+</li>
+<li>CMAKE_BUILD_TYPE<ul>
+<li>Sets the build type. Common options:<ul>
+<li><code>Debug</code> (the default if the flag is not specified): sets flags that trigger additional error checking</li>
+<li><code>Release</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>CMAKE_C_COMPILER<ul>
+<li>The <code>C</code> compiler used (defaults to whatever is determined by <code>CMake/Modules/CMakeDetermineCCompiler.cmake</code>, usually <code>cc</code>)</li>
+</ul>
+</li>
+<li>CMAKE_CXX_COMPILER<ul>
+<li>The <code>C++</code> compiler used (defaults to whatever is determined by <code>CMake/Modules/CMakeDetermineCXXCompiler.cmake</code>, usually <code>c++</code>)</li>
+</ul>
+</li>
+<li>CMAKE_Fortran_COMPILER<ul>
+<li>The <code>Fortran</code> compiler used (defaults to whatever is determined by <code>CMake/Modules/CMakeDetermineFortranCompiler.cmake</code>)</li>
+</ul>
+</li>
+<li>CMAKE_C_FLAGS<ul>
+<li>Additional flags passed to the <code>C</code> compiler.</li>
+</ul>
+</li>
+<li>CMAKE_CXX_FLAGS<ul>
+<li>Additional flags passed to the <code>C++</code> compiler.</li>
+</ul>
+</li>
+<li>CMAKE_Fortran_FLAGS<ul>
+<li>Additional flags passed to the <code>Fortran</code> compiler.</li>
+</ul>
+</li>
+<li>CMAKE_RUNTIME_OUTPUT_DIRECTORY<ul>
+<li>Sets the directory where the library and executables are placed. By default libraries end up in <code>&lt;BUILD_DIR&gt;/lib</code> and executables in <code>&lt;BUILD_DIR&gt;/bin</code>.</li>
+</ul>
+</li>
+<li>DEBUG_SYMBOLS<ul>
+<li>Whether or not to use debug symbols (default is <code>ON</code>)</li>
+<li>Disabling debug symbols will reduce compile time and total size of the build directory.</li>
+</ul>
+</li>
+<li>ENABLE_PROFILING<ul>
+<li>Enables various options to make profiling SpECTRE easier (default is <code>OFF</code>)</li>
+</ul>
+</li>
+<li>ENABLE_WARNINGS<ul>
+<li>Whether or not warning flags are enabled (default is <code>ON</code>)</li>
+</ul>
+</li>
+<li>KEEP_FRAME_POINTER<ul>
+<li>Whether to keep the frame pointer. Needed for profiling or other cases where you need to be able to figure out what the call stack is. (default is <code>OFF</code>)</li>
+</ul>
+</li>
+<li>MEMORY_ALLOCATOR<ul>
+<li>Set which memory allocator to use. If there are unexplained segfaults or other memory issues, it would be worth setting <code>MEMORY_ALLOCATOR=SYSTEM</code> to see if that resolves the issue. It could be the case that different third-party libraries accidentally end up using different allocators, which is undefined behavior and will result in complete chaos. (default is <code>JEMALLOC</code>)</li>
+</ul>
+</li>
+<li>SPECTRE_UNIT_TEST_TIMEOUT_FACTOR, SPECTRE_INPUT_FILE_TEST_TIMEOUT_FACTOR and SPECTRE_PYTHON_TEST_TIMEOUT_FACTOR<ul>
+<li>Multiply the timeout for the respective set of tests by this factor (default is <code>1</code>).</li>
+<li>This is useful to run tests on slower machines.</li>
+</ul>
+</li>
+<li>STRIP_SYMBOLS<ul>
+<li>Whether or not to strip all symbols (default is <code>OFF</code>)</li>
+<li>If enabled strips all extraneous symbols from libraries and executables, further reducing the size of them.</li>
+</ul>
+</li>
+<li>STUB_EXECUTABLE_OBJECT_FILES<ul>
+<li>Replace object files from executables after linking with empty stubs (default is <code>OFF</code>)</li>
+<li>This is useful for drastically reducing the build size in CI, but since the object files are replaced with empty stubs will generally cause linking problems if used during development.</li>
+</ul>
+</li>
+<li>STUB_LIBRARY_OBJECT_FILES<ul>
+<li>Replace object files from libraries after linking with empty stubs (default is <code>OFF</code>)</li>
+<li>This is useful for drastically reducing the build size in CI, but since the object files are replaced with empty stubs will generally cause linking problems if used during development.</li>
+</ul>
+</li>
+<li>UBSAN_INTEGER<ul>
+<li>Whether or not to turn on the undefined behavior sanitizer <a href="https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html">unsigned integer overflow</a> flag (<code>-fsanitize=integer</code>) (default is <code>OFF</code>)</li>
+</ul>
+</li>
+<li>UBSAN_UNDEFINED<ul>
+<li>Whether or not to turn on the undefined behavior sanitizer <a href="https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html">undefined behavior</a> compile flags (<code>-fsanitize=undefined</code>) (default is <code>OFF</code>)</li>
+</ul>
+</li>
+<li>UNIT_TESTS_IN_TEST_EXECUTABLES<ul>
+<li>Whether to build the <code>unit-tests</code> target as part of the <code>test-executables</code> target. This is used to build only the non-unit tests in the CI build that doesn't use the PCH. (default is <code>ON</code>)</li>
+</ul>
+</li>
+<li>USE_CCACHE<ul>
+<li>Use ccache to cache build output so that rebuilding parts of the source tree is faster. The cache will use up space on disk, with the default being around 2-5GB. If you are performing a one time build to test something specific you should consider disabling ccache in order to avoid removing cached files that may be useful in other builds. (default is <code>ON</code>)</li>
+</ul>
+</li>
+<li>USE_FORMALINE<ul>
+<li>Write the source tree into HDF5 files written to disk in order to increase reproducibility of results. (default is <code>ON</code>)</li>
+</ul>
+</li>
+<li>USE_GIT_HOOKS<ul>
+<li>Use git hooks to perform certain sanity checks so that small goofs are caught before getting to CI. Most situations where the hooks can cause problems are handled automatically. The exception is when the build directory is inside a (Singularity) container, we use Python 2 and the host machine (where we make the commits) does not have Python 2. Except for these types of cases, we strongly encourage you to keep the hooks enabled since the same checks are performed during CI and there is a good reason why the checks exist in the first place. (default is <code>ON</code>)</li>
+</ul>
+</li>
+<li>USE_LD<ul>
+<li>Override the automatically chosen linker. The options are <code>ld</code>, <code>gold</code>, and <code>lld</code>. (default is <code>OFF</code>)</li>
+</ul>
+</li>
+<li>USE_PCH<ul>
+<li>Whether or not to use pre-compiled headers (default is <code>ON</code>)</li>
+<li>This needs to be turned <code>OFF</code> in order to use <a href="https://github.com/include-what-you-use/include-what-you-use">include-what-you-use (IWYU)</a></li>
+</ul>
+</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md139"></a>
+Checking Dependencies</h2>
+<p>Getting dependencies of libraries correct is quite difficult. SpECTRE offers the CMake function <code>check_spectre_libs_dependencies</code>, defined in <code>cmake/SpectreCheckDependencies.cmake</code>, to check the dependencies for all libraries in the <code>libs</code> target. Individual target dependencies can be checked using the <code>check_target_dependencies</code> CMake function defined in <code>cmake/SpectreCheckTargetDependencies.cmake</code>. Please see those functions in the source tree for more details on how to use them.</p>
+<h2><a class="anchor" id="autotoc_md140"></a>
+Formaline</h2>
+<p>SpECTRE's implementation of Formaline is based on, but distinct in implementation from, the original design by <a href="https://github.com/hypercott/formaline">Erik Schnetter and Christian Ott</a>, which embeds an archive of the source tree into the executable. The original design creates a C/C++ file with a function that returns an array/vector of <code>char</code>s (a byte stream). However, this results in a very large source file (50MB or more), which is very slow to compile and ends up more than doubling the link time. Instead, SpECTRE's Formaline implementation uses the linker <code>ld</code> to encode a file into an object, which means rather than creating a large source file, we can directly encode the source tree archive into the binary at the linking stage.</p>
+<p>Most of SpECTRE's Formaline is implemented inside the <code>tools/WrapExecutableLinker.sh</code> script. Function declarations are provided in <code><a class="el" href="Formaline_8hpp_source.html">Utilities/Formaline.hpp</a></code> and a small function that writes the source file to disk is defined in <code>Utilities/Formaline.cpp</code>. The first Formaline-related thing done in <code>WrapExecutableLinker.sh</code> is to archive everything in the source directory tracked by git. Once the archive is created we run <code>ld -r -b binary -o object.o src.tar.gz</code> (with unique names for <code>object.o</code> and <code>src.tar.gz</code> for each executable that is built to avoid name collisions) to generate an object file with the source file encoded from <code>_binary_src_tar_gz_start</code> to <code>_binary_src_tar_gz_end</code>. Next we write a C++ source file that defines a function <code>get_archive</code> to convert the byte stream into a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;char&gt;</code>. We also encode the output of <code>printenv</code>, the various <code>PATH</code> environment variables, and the CMake generated <code>LibraryVersions.txt</code> file into the source file. Finally, the generated source file is built during the linking phase and the object file containing the source archive is linked into the executable.</p>
+<p>To further aid in reproducibility, the <code>printenv</code> output and <code>LibraryVersions.txt</code> contents are written to HDF5 files as part of the <code><a class="el" href="classh5_1_1Header.html" title="Writes header info about the build, git commit, branch, etc.">h5::Header</a></code> object. The archive of the source tree is written using the <code><a class="el" href="classh5_1_1SourceArchive.html" title="Writes an archive of the source tree into a dataset.">h5::SourceArchive</a></code> object and can be extracted by running </p><div class="fragment"><div class="line">h5dump -d /src.tar.gz -b LE -o src.tar.gz /path/to/hdf5/file.h5</div>
+</div><!-- fragment --> </div></div><!-- contents -->
+</div><!-- PageDoc -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

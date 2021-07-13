@@ -1,0 +1,262 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox&lt; Dim &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceevolution.html">evolution</a></li><li class="navelem"><a class="el" href="namespaceevolution_1_1dg.html">dg</a></li><li class="navelem"><a class="el" href="namespaceevolution_1_1dg_1_1Tags.html">Tags</a></li><li class="navelem"><a class="el" href="structevolution_1_1dg_1_1Tags_1_1BoundaryCorrectionAndGhostCellsInbox.html">BoundaryCorrectionAndGhostCellsInbox</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="structevolution_1_1dg_1_1Tags_1_1BoundaryCorrectionAndGhostCellsInbox-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox&lt; Dim &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>The inbox tag for boundary correction communication and DG-subcell ghost zone cells.  
+ <a href="structevolution_1_1dg_1_1Tags_1_1BoundaryCorrectionAndGhostCellsInbox.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Evolution_2DiscontinuousGalerkin_2InboxTags_8hpp_source.html">InboxTags.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a1036dfe845dd060a717392727c18c96c"><td class="memItemLeft" align="right" valign="top"><a id="a1036dfe845dd060a717392727c18c96c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>stored_type</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; <a class="el" href="classMesh.html">Mesh</a>&lt; Dim - 1 &gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt; &gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt; &gt;, ::<a class="el" href="classTimeStepId.html">TimeStepId</a> &gt;</td></tr>
+<tr class="separator:a1036dfe845dd060a717392727c18c96c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64bdeffcdc0a36c9571b4e6fe228bede"><td class="memItemLeft" align="right" valign="top"><a id="a64bdeffcdc0a36c9571b4e6fe228bede"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>temporal_id</b> = <a class="el" href="classTimeStepId.html">TimeStepId</a></td></tr>
+<tr class="separator:a64bdeffcdc0a36c9571b4e6fe228bede"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ad72b74a1e2c3f7971d80163e9d6e64"><td class="memItemLeft" align="right" valign="top"><a id="a6ad72b74a1e2c3f7971d80163e9d6e64"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>type</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map</a>&lt; <a class="el" href="classTimeStepId.html">TimeStepId</a>, <a class="el" href="classFixedHashMap.html">FixedHashMap</a>&lt; <a class="el" href="group__ComputationalDomainGroup.html#gafa8cb44daebc8f9e080718961530be89">maximum_number_of_neighbors</a>(Dim), <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; Dim &gt; &gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">stored_type</a>, boost::hash&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; Dim &gt; &gt;&gt; &gt;&gt;</td></tr>
+<tr class="separator:a6ad72b74a1e2c3f7971d80163e9d6e64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a925410f8a216158b01d6f29629af5ed9"><td class="memTemplParams" colspan="2"><a id="a925410f8a216158b01d6f29629af5ed9"></a>
+template&lt;typename Inbox , typename ReceiveDataType &gt; </td></tr>
+<tr class="memitem:a925410f8a216158b01d6f29629af5ed9"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>insert_into_inbox</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Inbox * &gt; inbox, const <a class="el" href="classTimeStepId.html">temporal_id</a> &amp;time_step_id, ReceiveDataType &amp;&amp;data) noexcept</td></tr>
+<tr class="separator:a925410f8a216158b01d6f29629af5ed9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+struct evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox&lt; Dim &gt;</h3>
+
+<p>The inbox tag for boundary correction communication and DG-subcell ghost zone cells. </p>
+<p>The stored data consists of the following (in argument order of the tuple):</p>
+<ol type="1">
+<li>the mesh of the neighboring element's face (not the mortar mesh!)</li>
+<li>the variables at the ghost zone cells for finite difference/volume reconstruction</li>
+<li>the data on the mortar needed for computing the boundary corrections (e.g. fluxes, characteristic speeds, conserved variables)</li>
+<li>the <a class="el" href="classTimeStepId.html">TimeStepId</a> beyond which the boundary terms are no longer valid, when using local time stepping.</li>
+</ol>
+<p>The <a class="el" href="classTimeStepId.html">TimeStepId</a> is the neighboring element's next time step. When using local time stepping, the neighbor's boundary data is valid up until this time, which may include multiple local time steps. By receiving and storing the neighbor time step, the local element knows whether or not it should remove boundary data and expect new data to be sent from the neighbor.</p>
+<p>The ghost cell data (second element of the tuple) will be valid whenever a DG-subcell scheme is being used. Whenever a DG-subcell scheme is being used, elements using DG and not FD/FV always send both the ghost cells and boundary correction data together. Elements using FD/FV send the ghost cells first followed by the boundary correction data once the element has received all neighbor ghost cell data. Note that the second send/receive only modifies the flux and the <a class="el" href="classTimeStepId.html">TimeStepId</a> used for the flux validity range.</p>
+<p>When only a DG scheme (not a DG-subcell scheme) is used the ghost cell data will never be valid.</p>
+<p>In the DG-subcell scheme this tag is used both for communicating the ghost cell data needed for the FD/FV reconstruction step and the data needed for the boundary corrections.</p><ul>
+<li>For an element using DG, both ghost cells and boundary corrections are sent using a single communication. After receiving all neighbor boundary corrections the element can finish computing the time step. The ghost cell data from neighbors is unused.</li>
+<li>For an element using FD/FV, first the ghost cells are sent. Once all neighboring ghost cell data is received, reconstruction is done and the boundary terms are computed and sent to the neighbors. After receiving all neighbor boundary corrections the element can finish computing the time step.</li>
+<li>Whether or not an extra communication is needed when an element switches from DG to FD/FV depends on how exactly the decision to switch is implemented. If the volume terms are integrated and verified to be valid before a DG element sends ghost cell and bonudary data then no additional communication is needed when switching from DG to FD/FV. In this case a second check of the data that includes the boundary correction needs to be done. If the second check determines a switch from DG to FD/FV is needed, we can continue to use the DG fluxes since the evolution in the small was valid, thus avoiding an additional communication. However, to fully guarantee physical realizability a second communication or evolving the neighboring ghost cells needs to be done. We have not yet decided how to deal with the possible need for an additional communication since it also depends on whether or not we decide to couple to Voronoi instead of just Neumann neighbors.</li>
+<li>The data for the inbox tags is erased after the boundary correction is complete and the solution has been verified to be valid at the new time step. The ghost cells could be invalidated immediately after reconstruction, thus using the ghost cell data after reconstruction is complete is considered undefined behavior. That is, we make no guarantee as to whether or not it will work.</li>
+<li>The reason for minimizing the number of communications rather than having a more uniform implementation between DG and FD/FV is that it is the number of communications that adds the most overhead, not the size of each communication. Thus, one large communication is cheaper than several small communications. </li>
+</ul>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/DiscontinuousGalerkin/<a class="el" href="Evolution_2DiscontinuousGalerkin_2InboxTags_8hpp_source.html">InboxTags.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

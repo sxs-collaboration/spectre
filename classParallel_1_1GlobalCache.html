@@ -1,0 +1,379 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Parallel::GlobalCache&lt; Metavariables &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceParallel.html">Parallel</a></li><li class="navelem"><a class="el" href="classParallel_1_1GlobalCache.html">GlobalCache</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classParallel_1_1GlobalCache-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Parallel::GlobalCache&lt; Metavariables &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__ParallelGroup.html">Parallelization</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><code>#include &lt;<a class="el" href="GlobalCache_8hpp_source.html">GlobalCache.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a182f5ddc636b74612d98885cfd8d0181"><td class="memItemLeft" align="right" valign="top"><a id="a182f5ddc636b74612d98885cfd8d0181"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>proxy_type</b> = CProxy_GlobalCache&lt; Metavariables &gt;</td></tr>
+<tr class="separator:a182f5ddc636b74612d98885cfd8d0181"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52d72cc8d51095d9c5d51e6069889a63"><td class="memItemLeft" align="right" valign="top"><a id="a52d72cc8d51095d9c5d51e6069889a63"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>main_proxy_type</b> = CProxy_Main&lt; Metavariables &gt;</td></tr>
+<tr class="separator:a52d72cc8d51095d9c5d51e6069889a63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a949f4bd5852eda3ad3274ee321d80159"><td class="memItemLeft" align="right" valign="top"><a id="a949f4bd5852eda3ad3274ee321d80159"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classParallel_1_1GlobalCache.html#a949f4bd5852eda3ad3274ee321d80159">metavariables</a> = Metavariables</td></tr>
+<tr class="memdesc:a949f4bd5852eda3ad3274ee321d80159"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access to the Metavariables template parameter. <br /></td></tr>
+<tr class="separator:a949f4bd5852eda3ad3274ee321d80159"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1ed1928e8686247a8a18069f6966ac6"><td class="memItemLeft" align="right" valign="top"><a id="aa1ed1928e8686247a8a18069f6966ac6"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classParallel_1_1GlobalCache.html#aa1ed1928e8686247a8a18069f6966ac6">component_list</a> = typename Metavariables::component_list</td></tr>
+<tr class="memdesc:aa1ed1928e8686247a8a18069f6966ac6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Typelist of the ParallelComponents stored in the <a class="el" href="classParallel_1_1GlobalCache.html">GlobalCache</a>. <br /></td></tr>
+<tr class="separator:aa1ed1928e8686247a8a18069f6966ac6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a38dff936ea0fe305b6a2605b9b8ed3f1"><td class="memItemLeft" align="right" valign="top"><a id="a38dff936ea0fe305b6a2605b9b8ed3f1"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classParallel_1_1GlobalCache.html#a38dff936ea0fe305b6a2605b9b8ed3f1">GlobalCache</a> (tuples::tagged_tuple_from_typelist&lt; <a class="el" href="group__ParallelGroup.html#ga03e3053314568ebf144ba895c04ead0e">get_const_global_cache_tags</a>&lt; Metavariables &gt;&gt; const_global_cache, <a class="el" href="classParallel_1_1MutableGlobalCache.html">MutableGlobalCache</a>&lt; Metavariables &gt; *mutable_global_cache, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; main_proxy_type &gt; main_proxy=std::nullopt) noexcept</td></tr>
+<tr class="memdesc:a38dff936ea0fe305b6a2605b9b8ed3f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor used only by the <a class="el" href="namespaceActionTesting.html" title="Structures used for mocking the parallel components framework in order to test actions.">ActionTesting</a> framework and other non-charm++ tests that don't know about proxies. <br /></td></tr>
+<tr class="separator:a38dff936ea0fe305b6a2605b9b8ed3f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a504c4e5d684c6dd2530e29751779e892"><td class="memItemLeft" align="right" valign="top"><a id="a504c4e5d684c6dd2530e29751779e892"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classParallel_1_1GlobalCache.html#a504c4e5d684c6dd2530e29751779e892">GlobalCache</a> (tuples::tagged_tuple_from_typelist&lt; <a class="el" href="group__ParallelGroup.html#ga03e3053314568ebf144ba895c04ead0e">get_const_global_cache_tags</a>&lt; Metavariables &gt;&gt; const_global_cache, CProxy_MutableGlobalCache&lt; Metavariables &gt; mutable_global_cache_proxy, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; main_proxy_type &gt; main_proxy=std::nullopt) noexcept</td></tr>
+<tr class="memdesc:a504c4e5d684c6dd2530e29751779e892"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor used by <a class="el" href="classParallel_1_1Main.html">Main</a> and anything else that is charm++ aware. <br /></td></tr>
+<tr class="separator:a504c4e5d684c6dd2530e29751779e892"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab88ecce1c81de6fa945727770968f74c"><td class="memItemLeft" align="right" valign="top"><a id="ab88ecce1c81de6fa945727770968f74c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>GlobalCache</b> (CkMigrateMessage *msg)</td></tr>
+<tr class="separator:ab88ecce1c81de6fa945727770968f74c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ace33bb96af9b7cabda3540bbc783b7d0"><td class="memItemLeft" align="right" valign="top"><a id="ace33bb96af9b7cabda3540bbc783b7d0"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classParallel_1_1GlobalCache.html#ace33bb96af9b7cabda3540bbc783b7d0">set_parallel_components</a> (tuples::tagged_tuple_from_typelist&lt; parallel_component_tag_list &gt; &amp;&amp;parallel_components, const CkCallback &amp;callback) noexcept</td></tr>
+<tr class="memdesc:ace33bb96af9b7cabda3540bbc783b7d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Entry method to set the ParallelComponents (should only be called once) <br /></td></tr>
+<tr class="separator:ace33bb96af9b7cabda3540bbc783b7d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0b17f8b5f896d75210d97b85f8f8281"><td class="memTemplParams" colspan="2">template&lt;typename GlobalCacheTag , typename Function &gt; </td></tr>
+<tr class="memitem:ae0b17f8b5f896d75210d97b85f8f8281"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classParallel_1_1GlobalCache.html#ae0b17f8b5f896d75210d97b85f8f8281">mutable_cache_item_is_ready</a> (const Function &amp;function) noexcept</td></tr>
+<tr class="memdesc:ae0b17f8b5f896d75210d97b85f8f8281"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns whether the object referred to by <code>GlobalCacheTag</code> (which must be a mutable cache tag) is ready to be accessed by a <code>get</code> call.  <a href="classParallel_1_1GlobalCache.html#ae0b17f8b5f896d75210d97b85f8f8281">More...</a><br /></td></tr>
+<tr class="separator:ae0b17f8b5f896d75210d97b85f8f8281"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af912d6b975a5f6545bab52eb117602b3"><td class="memTemplParams" colspan="2">template&lt;typename GlobalCacheTag , typename Function , typename... Args&gt; </td></tr>
+<tr class="memitem:af912d6b975a5f6545bab52eb117602b3"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classParallel_1_1GlobalCache.html#af912d6b975a5f6545bab52eb117602b3">mutate</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; Args... &gt; &amp;args) noexcept</td></tr>
+<tr class="memdesc:af912d6b975a5f6545bab52eb117602b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mutates the non-const object identified by GlobalCacheTag.  <a href="classParallel_1_1GlobalCache.html#af912d6b975a5f6545bab52eb117602b3">More...</a><br /></td></tr>
+<tr class="separator:af912d6b975a5f6545bab52eb117602b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2787e9cf3e88becea754b216f408ddd3"><td class="memItemLeft" align="right" valign="top"><a id="a2787e9cf3e88becea754b216f408ddd3"></a>
+proxy_type&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classParallel_1_1GlobalCache.html#a2787e9cf3e88becea754b216f408ddd3">get_this_proxy</a> () noexcept</td></tr>
+<tr class="memdesc:a2787e9cf3e88becea754b216f408ddd3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the proxy to the global cache. <br /></td></tr>
+<tr class="separator:a2787e9cf3e88becea754b216f408ddd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac7cfd3e1d2b206d6cce6083648c6d028"><td class="memItemLeft" align="right" valign="top"><a id="ac7cfd3e1d2b206d6cce6083648c6d028"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:ac7cfd3e1d2b206d6cce6083648c6d028"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affa00c66ad309956b9c15c95eab481d9"><td class="memItemLeft" align="right" valign="top"><a id="affa00c66ad309956b9c15c95eab481d9"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; main_proxy_type &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classParallel_1_1GlobalCache.html#affa00c66ad309956b9c15c95eab481d9">get_main_proxy</a> () noexcept</td></tr>
+<tr class="memdesc:affa00c66ad309956b9c15c95eab481d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the proxy to the <a class="el" href="classParallel_1_1Main.html">Main</a> chare (or std::nullopt if the proxy has not been set). <br /></td></tr>
+<tr class="separator:affa00c66ad309956b9c15c95eab481d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:acd0e3e0f6ed9bb69314b623b41b3639b"><td class="memTemplParams" colspan="2"><a id="acd0e3e0f6ed9bb69314b623b41b3639b"></a>
+template&lt;typename GlobalCacheTag , typename MV &gt; </td></tr>
+<tr class="memitem:acd0e3e0f6ed9bb69314b623b41b3639b"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>get</b> (const <a class="el" href="classParallel_1_1GlobalCache.html">GlobalCache</a>&lt; MV &gt; &amp;cache) noexcept -&gt; const GlobalCache_detail::type_for_get&lt; GlobalCacheTag, MV &gt; &amp;</td></tr>
+<tr class="separator:acd0e3e0f6ed9bb69314b623b41b3639b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c89f1fcf47cac81a8bb6c9f5d9cbf52"><td class="memTemplParams" colspan="2"><a id="a1c89f1fcf47cac81a8bb6c9f5d9cbf52"></a>
+template&lt;typename ParallelComponentTag , typename MV &gt; </td></tr>
+<tr class="memitem:a1c89f1fcf47cac81a8bb6c9f5d9cbf52"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>get_parallel_component</b> (<a class="el" href="classParallel_1_1GlobalCache.html">GlobalCache</a>&lt; MV &gt; &amp;cache) noexcept -&gt; Parallel::proxy_from_parallel_component&lt; GlobalCache_detail::get_component_if_mocked&lt; typename MV::component_list, ParallelComponentTag &gt;&gt; &amp;</td></tr>
+<tr class="separator:a1c89f1fcf47cac81a8bb6c9f5d9cbf52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c558a9691a18269a763af0f7a248d75"><td class="memTemplParams" colspan="2"><a id="a3c558a9691a18269a763af0f7a248d75"></a>
+template&lt;typename ParallelComponentTag , typename MV &gt; </td></tr>
+<tr class="memitem:a3c558a9691a18269a763af0f7a248d75"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>get_parallel_component</b> (const <a class="el" href="classParallel_1_1GlobalCache.html">GlobalCache</a>&lt; MV &gt; &amp;cache) noexcept -&gt; const Parallel::proxy_from_parallel_component&lt; GlobalCache_detail::get_component_if_mocked&lt; typename MV::component_list, ParallelComponentTag &gt;&gt; &amp;</td></tr>
+<tr class="separator:a3c558a9691a18269a763af0f7a248d75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename Metavariables&gt;<br />
+class Parallel::GlobalCache&lt; Metavariables &gt;</h3>
+
+<p>A Charm++ chare that caches constant data once per Charm++ node or non-constant data once per Charm++ core.</p>
+<p><code>Metavariables</code> must define the following metavariables:</p><ul>
+<li><code>component_list</code> typelist of ParallelComponents</li>
+<li><code>const_global_cache_tags</code> (possibly empty) typelist of tags of constant data</li>
+<li><code>mutable_global_cache_tags</code> (possibly empty) typelist of tags of non-constant data</li>
+</ul>
+<p>The tag lists for the const items added to the <a class="el" href="classParallel_1_1GlobalCache.html">GlobalCache</a> is created by combining the following tag lists:</p><ul>
+<li><code>Metavariables::const_global_cache_tags</code> which should contain only those tags that cannot be added from the other tag lists below.</li>
+<li><code>Component::const_global_cache_tags</code> for each <code>Component</code> in <code>Metavariables::component_list</code> which should contain the tags needed by any simple actions called on the Component, as well as tags need by the <code>allocate_array</code> function of an array component. The type alias may be omitted for an empty list.</li>
+<li><code>Action::const_global_cache_tags</code> for each <code>Action</code> in the <code>phase_dependent_action_list</code> of each <code>Component</code> of <code>Metavariables::component_list</code> which should contain the tags needed by that Action. The type alias may be omitted for an empty list.</li>
+</ul>
+<p>The tag lists for the non-const items added to the <a class="el" href="classParallel_1_1GlobalCache.html">GlobalCache</a> is created by combining exactly the same tag lists as for the const items, except with <code>const_global_cache_tags</code> replaced by <code>mutable_global_cache_tags</code>.</p>
+<p>The tags in the <code>const_global_cache_tags</code> and <code>mutable_global_cache_tags</code> type lists are <a class="el" href="structdb_1_1SimpleTag.html" title="Mark a struct as a simple tag by inheriting from this.">db::SimpleTag</a>s that have a <code>using option_tags</code> type alias and a static function <code>create_from_options</code> that are used to create the constant data from input file options.</p>
+<p>References to const items in the <a class="el" href="classParallel_1_1GlobalCache.html">GlobalCache</a> are also added to the db::DataBox of each <code>Component</code> in the <code>Metavariables::component_list</code> with the same tag with which they were inserted into the <a class="el" href="classParallel_1_1GlobalCache.html">GlobalCache</a>. References to non-const items in the <a class="el" href="classParallel_1_1GlobalCache.html">GlobalCache</a> are not added to the db::DataBox. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="ae0b17f8b5f896d75210d97b85f8f8281"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae0b17f8b5f896d75210d97b85f8f8281">&#9670;&nbsp;</a></span>mutable_cache_item_is_ready()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Metavariables &gt; </div>
+<div class="memtemplate">
+template&lt;typename GlobalCacheTag , typename Function &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt;::mutable_cache_item_is_ready </td>
+          <td>(</td>
+          <td class="paramtype">const Function &amp;&#160;</td>
+          <td class="paramname"><em>function</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns whether the object referred to by <code>GlobalCacheTag</code> (which must be a mutable cache tag) is ready to be accessed by a <code>get</code> call. </p>
+<p><code>function</code> is a user-defined invokable that:</p><ul>
+<li>takes one argument: a const reference to the object referred to by the <code>GlobalCacheTag</code>.</li>
+<li>if the data is ready, returns a default constructed <code><a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt;CallBack&gt;</code></li>
+<li>if the data is not ready, returns a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt;CallBack&gt;</code>, where the <code><a class="el" href="classParallel_1_1Callback.html" title="An abstract base class, whose derived class holds a function that can be invoked at a later time....">Callback</a></code> will re-invoke the current action on the current parallel component. </li>
+</ul>
+
+</div>
+</div>
+<a id="af912d6b975a5f6545bab52eb117602b3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af912d6b975a5f6545bab52eb117602b3">&#9670;&nbsp;</a></span>mutate()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Metavariables &gt; </div>
+<div class="memtemplate">
+template&lt;typename GlobalCacheTag , typename Function , typename... Args&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt;::mutate </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; Args... &gt; &amp;&#160;</td>
+          <td class="paramname"><em>args</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Mutates the non-const object identified by GlobalCacheTag. </p>
+<p><em>Requires:</em> <code>GlobalCacheTag</code> is a tag in <code>mutable_global_cache_tags</code> defined by the Metavariables and in Actions.</p>
+<p>Internally calls <code>Function::apply()</code>, where <code>Function</code> is a user-defined struct and <code>Function::apply()</code> is a user-defined static function that mutates the object. <code>Function::apply()</code> takes as its first argument a <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> pointer to the object named by the GlobalCacheTag, and takes the contents of <code>args</code> as subsequent arguments. </p>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following files:<ul>
+<li>src/NumericalAlgorithms/Interpolation/Actions/<a class="el" href="ElementReceiveInterpPoints_8hpp_source.html">ElementReceiveInterpPoints.hpp</a></li>
+<li>src/Parallel/<a class="el" href="GlobalCache_8hpp_source.html">GlobalCache.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

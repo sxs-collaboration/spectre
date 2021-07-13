@@ -1,0 +1,561 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Motivation for SpECTRE&#39;s DataBox</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">Motivation for SpECTRE's DataBox </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="toc"><h3>Table of Contents</h3>
+<ul><li class="level1"><a href="#databox_introduction">Introduction</a></li>
+<li class="level1"><a href="#databox_towards_spectres_databox">Towards SpECTRE&#39;s DataBox</a><ul><li class="level2"><a href="#databox_working_without_databoxes">Working without DataBoxes</a></li>
+<li class="level2"><a href="#databox_a_std_map_databox">A std::map DataBox</a></li>
+<li class="level2"><a href="#databox_a_std_tuple_databox">A std::tuple DataBox</a></li>
+<li class="level2"><a href="#databox_a_taggedtuple_databox">A TaggedTuple DataBox</a></li>
+</ul>
+</li>
+<li class="level1"><a href="#databox_a_proper_databox">SpECTRE&#39;s DataBox</a><ul><li class="level2"><a href="#databox_documentation_for_simple_tags">SimpleTags</a></li>
+<li class="level2"><a href="#databox_documentation_for_compute_tags">ComputeTags</a></li>
+<li class="level2"><a href="#databox_documentation_for_mutate_tags">Mutating DataBox items</a></li>
+</ul>
+</li>
+<li class="level1"><a href="#databox_towards_actions">Toward SpECTRE&#39;s Actions</a><ul><li class="level2"><a href="#databox_documentation_for_mutators">Mutators</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="textblock"><h1><a class="anchor" id="databox_introduction"></a>
+Introduction</h1>
+<p>This page walks the user through the iterative process that led to SpECTRE's DataBox. At each stage, it discusses the advances and challenges that result from each improvement.</p>
+<h1><a class="anchor" id="databox_towards_spectres_databox"></a>
+Towards SpECTRE's DataBox</h1>
+<h2><a class="anchor" id="databox_working_without_databoxes"></a>
+Working without DataBoxes</h2>
+<p>In a small C++ program, it is common to use the built-in fundamental types (bool, int, double, etc.) in computations, and to give variable names to objects of these types. For example, a section of a small program may look like this:</p>
+<div class="fragment"><div class="line"><span class="comment">// Set up variables:</span></div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> velocity = 4.0;</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> radius = 2.0;</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> density = 0.5;</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> volume = 10.0;</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Use variables:</span></div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> mass = density * volume;</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> acceleration = velocity * velocity / radius;</div>
+<div class="line"><span class="keywordflow">return</span> mass * acceleration;</div>
+</div><!-- fragment --><p> What changes as our program's size increases in scale? In SpECTRE, one of our driving design goals is modularity. In other words, functionality should be easy to swap in and out as desired. These smaller modules are easier to test, and keep the code flexible. We could wrap our calculation in such a module, which would then allow us to decouple the initial setup of the variables from where they are used in calculations:</p>
+<div class="fragment"><div class="line"><span class="keywordtype">double</span> mass_compute(<span class="keyword">const</span> <span class="keywordtype">double</span> density, <span class="keyword">const</span> <span class="keywordtype">double</span> volume) noexcept {</div>
+<div class="line">  <span class="keywordflow">return</span> density * volume;</div>
+<div class="line">}</div>
+</div><!-- fragment --> <div class="fragment"><div class="line"><span class="keywordtype">double</span> acceleration_compute(</div>
+<div class="line">    <span class="keyword">const</span> <span class="keywordtype">double</span> velocity, <span class="keyword">const</span> <span class="keywordtype">double</span> radius) noexcept {</div>
+<div class="line">  <span class="keywordflow">return</span> velocity * velocity / radius;</div>
+<div class="line">}</div>
+</div><!-- fragment --><p> Our small program can now be written as:</p>
+<div class="fragment"><div class="line"><span class="comment">// Set up variables:</span></div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> velocity = 4.0;</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> radius = 2.0;</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> density = 0.5;</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> volume = 10.0;</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Use variables:</span></div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> mass = mass_compute(density, volume);</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> acceleration = acceleration_compute(velocity, radius);</div>
+<div class="line"><span class="keywordflow">return</span> mass * acceleration;</div>
+</div><!-- fragment --><p> One advantage is immediate: we are free to add other computation modules that are independently testable and reusable. As the number of routines grows, we can even begin to write routines that work on top of existing ones.</p>
+<div class="fragment"><div class="line"><span class="keywordtype">double</span> force_compute(<span class="keyword">const</span> <span class="keywordtype">double</span> velocity, <span class="keyword">const</span> <span class="keywordtype">double</span> radius,</div>
+<div class="line">                     <span class="keyword">const</span> <span class="keywordtype">double</span> density, <span class="keyword">const</span> <span class="keywordtype">double</span> volume) noexcept {</div>
+<div class="line">  <span class="keyword">const</span> <span class="keywordtype">double</span> mass = mass_compute(density, volume);</div>
+<div class="line">  <span class="keyword">const</span> <span class="keywordtype">double</span> acceleration = acceleration_compute(velocity, radius);</div>
+<div class="line">  <span class="keywordflow">return</span> mass *  acceleration;</div>
+<div class="line">}</div>
+</div><!-- fragment --><p> While we have made progress, two problems arise. Our first problem is that as the number of quantities grows, it becomes more unwieldy to have to specify each function argument in our routine. The second problem is worse: the arguments passed to functions can be transposed and the program will still compile and run, but produce incorrect output. For example, the following two lines are equally well-formed from the point of view of the program:</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> velocity = 4.0;</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> radius = 2.0;</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> acceleration = acceleration_compute(velocity, radius);</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> failed_acceleration = acceleration_compute(radius, velocity);</div>
+</div><!-- fragment --><p> Every time we call <code>acceleration_compute</code> we need to make sure we pass in the arguments in the correct order. In large programs where <code>acceleration_compute</code> is called many times, it becomes inevitable that the arguments will be accidentally transposed. We can address the two problems described above with a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map</a></code>, the first container we'll consider in this series.</p>
+<h2><a class="anchor" id="databox_a_std_map_databox"></a>
+A std::map DataBox</h2>
+<p>We can encapsulate the variables we use in a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map</a></code>, and the first half of our small program example now looks like this:</p>
+<div class="fragment"><div class="line"><span class="comment">// Set up variables:</span></div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> velocity = 4.0;</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> radius = 2.0;</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> density = 0.5;</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> volume = 10.0;</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Set up databox:</span></div>
+<div class="line"><a class="codeRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map&lt;std::string, double&gt;</a> naive_databox;</div>
+<div class="line">naive_databox[<span class="stringliteral">&quot;Velocity&quot;</span>] = velocity;</div>
+<div class="line">naive_databox[<span class="stringliteral">&quot;Radius&quot;</span>] = radius;</div>
+<div class="line">naive_databox[<span class="stringliteral">&quot;Density&quot;</span>] = density;</div>
+<div class="line">naive_databox[<span class="stringliteral">&quot;Volume&quot;</span>] = volume;</div>
+</div><!-- fragment --><p> We have not yet taken full advantage of the encapsulation that <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map</a></code> provides. We do so by rewriting our other routines to take only a single argument, i.e. the <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map</a></code> itself:</p>
+<div class="fragment"><div class="line"><span class="keywordtype">double</span> mass_compute(<span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map&lt;std::string, double&gt;</a>&amp; box) noexcept {</div>
+<div class="line">  <span class="keywordflow">return</span> box.at(<span class="stringliteral">&quot;Density&quot;</span>) * box.at(<span class="stringliteral">&quot;Volume&quot;</span>);</div>
+<div class="line">}</div>
+</div><!-- fragment --> <div class="fragment"><div class="line"><span class="keywordtype">double</span> acceleration_compute(<span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map&lt;std::string, double&gt;</a>&amp; box) noexcept {</div>
+<div class="line">  <span class="keywordflow">return</span> box.at(<span class="stringliteral">&quot;Velocity&quot;</span>) * box.at(<span class="stringliteral">&quot;Velocity&quot;</span>) / box.at(<span class="stringliteral">&quot;Radius&quot;</span>);</div>
+<div class="line">}</div>
+</div><!-- fragment --><p> Notice that this solves the problem of having to provide the arguments in the correct order to every function call of <code>acceleration_compute</code>:</p>
+<div class="fragment"><div class="line"><span class="keywordtype">double</span> force_compute(<span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map&lt;std::string, double&gt;</a>&amp; box) noexcept {</div>
+<div class="line">  <span class="keyword">const</span> <span class="keywordtype">double</span> mass = mass_compute(box);</div>
+<div class="line">  <span class="keyword">const</span> <span class="keywordtype">double</span> acceleration = acceleration_compute(box);</div>
+<div class="line">  <span class="keywordflow">return</span> mass * acceleration;</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>Our small program now looks like:</p>
+<div class="fragment"><div class="line"><span class="comment">// Set up variables:</span></div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> velocity = 4.0;</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> radius = 2.0;</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> density = 0.5;</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> volume = 10.0;</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Set up databox:</span></div>
+<div class="line"><a class="codeRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map&lt;std::string, double&gt;</a> naive_databox;</div>
+<div class="line">naive_databox[<span class="stringliteral">&quot;Velocity&quot;</span>] = velocity;</div>
+<div class="line">naive_databox[<span class="stringliteral">&quot;Radius&quot;</span>] = radius;</div>
+<div class="line">naive_databox[<span class="stringliteral">&quot;Density&quot;</span>] = density;</div>
+<div class="line">naive_databox[<span class="stringliteral">&quot;Volume&quot;</span>] = volume;</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Use variables:</span></div>
+<div class="line"><span class="keywordflow">return</span> force_compute(naive_databox);</div>
+</div><!-- fragment --><p> Within each function, we no longer need to worry about passing in the arguments in the correct order. This is a great improvement, but our reliance on proper names does leave us open to the following mistake:</p>
+<div class="fragment"><div class="line"><span class="comment">// returns 0 without emitting an error!</span></div>
+<div class="line"><span class="keywordflow">return</span> naive_databox[<span class="stringliteral">&quot;MisspelledKey&quot;</span>];</div>
+</div><!-- fragment --><p>In the above example, the map is asked to return a value given a key that does not exist! As written, however, the program is well-formed and no error is emitted. (In the case of <a class="elRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map</a>, <a href="https://en.cppreference.com/w/cpp/container/map/operator_at">a value is created.</a>) Because the keys are indistinguishable from their type alone, the mistake cannot be caught at compile time. In our example, the mistake won't even be caught at run time. The run time portion of a SpECTRE calculation will typically be much longer (up to thousands of times longer!) than the compile time portion, so it is critical to catch costly mistakes like this as early into the calculation as possible. Although names encoded as <code><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></code> cannot be distinguished by the compiler, names encoded as types <em>can</em> be. This is possible with C++'s static typing, and to take advantage of this we need a container that is <em>heterogeneous</em>, that is, capable of holding objects of different types.</p>
+<h2><a class="anchor" id="databox_a_std_tuple_databox"></a>
+A std::tuple DataBox</h2>
+<p>A well-documented example of a fixed-size heterogeneous container of types is <a href="https://en.cppreference.com/w/cpp/utility/tuple">std::tuple</a>:</p>
+<div class="fragment"><div class="line"><a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;double, size_t, bool&gt;</a> sophomore_databox =</div>
+<div class="line">  std::make_tuple(1.2, 8, <span class="keyword">true</span>);</div>
+</div><!-- fragment --><p> The contents of the <code>std_tuple</code> are obtained using <a href="https://en.cppreference.com/w/cpp/utility/tuple/get">std::get</a>:</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">bool</span> bool_quantity = std::get&lt;bool&gt;(sophomore_databox);</div>
+<div class="line"><span class="comment">// value obtained is `true`</span></div>
+</div><!-- fragment --><p> In the above, we can see that we have promoted our keys from different values all of type <code><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></code> to different types entirely. We are not limited to fundamental types, we are free to make our own structs that serve as keys. These user-created types are called <em>tags</em>.</p>
+<p>As the sole purpose of the tag is to provide the compiler with a type distinguishable from other types, they can be as simple as the following:</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>Velocity{};</div>
+<div class="line"><span class="keyword">struct </span>Radius{};</div>
+<div class="line"><span class="keyword">struct </span>Density{};</div>
+<div class="line"><span class="keyword">struct </span><a class="code" href="group__ObserversGroup.html#gga9601b9f188609201444e989ee8825b45abd7a9717d29c5ddcab1bc175eda1e298">Volume</a>{};</div>
+</div><!-- fragment --><p> Note that we have now promoted <code>Velocity</code>, <code>Radius</code>, etc. from being <em>values</em> associated with <code><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></code>s at run time, to <em>types</em> distinguishable from other types at compile time. A large portion of SpECTRE is designed with the philosophy of enlisting the help of the compiler in assuring the correctness of our programs. An example of a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a></code> making use of these tags might look like:</p>
+<div class="fragment"><div class="line"><span class="comment">// Note: This won&#39;t work!</span></div>
+<div class="line"><a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;Velocity, Radius, Density, Volume&gt;</a> sophomore_databox =</div>
+<div class="line">  std::make_tuple(4.0, 2.0, 0.5, 10.0);</div>
+</div><!-- fragment --><p>Unfortunately, this will not work. The types passed as template parameters to <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a></code> must also be the types of the arguments passed to <code>std::make_tuple</code>. Using a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a></code>, we could write the above as:</p>
+<div class="fragment"><div class="line"><a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;std::pair&lt;Velocity,double&gt;</a>,</div>
+<div class="line">           <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair&lt;Radius, double&gt;</a>, <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair&lt;Density, double&gt;</a>,</div>
+<div class="line">           <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair&lt;Volume, double&gt;</a>&gt; sophomore_databox =</div>
+<div class="line">  std::make_tuple(std::make_pair(Velocity{}, 4.0),</div>
+<div class="line">                  std::make_pair(Radius{}, 2.0), std::make_pair(Density{}, 0.5),</div>
+<div class="line">                  std::make_pair(Volume{}, 10.0));</div>
+</div><!-- fragment --><p> What remains is to rewrite our functions to use <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a></code> instead of <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map</a></code>. Note that since we are now using a heterogeneous container of potentially unknown type, our functions must be templated on the pairs used to create the <code>sophomore_databox</code>. Our functions then look like:</p>
+<div class="fragment"><div class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Pairs&gt;</div>
+<div class="line"><span class="keywordtype">double</span> mass_compute(<span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;Pairs...&gt;</a>&amp; box) noexcept {</div>
+<div class="line">  <span class="keywordflow">return</span> std::get&lt;std::pair&lt;Density, double&gt;&gt;(box).second *</div>
+<div class="line">         <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">std::get</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair&lt;Volume, double&gt;</a>&gt;(box).second;</div>
+<div class="line">}</div>
+</div><!-- fragment --> <div class="fragment"><div class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Pairs&gt;</div>
+<div class="line"><span class="keywordtype">double</span> acceleration_compute(<span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;Pairs...&gt;</a>&amp; box) noexcept {</div>
+<div class="line">  <span class="keywordflow">return</span> std::get&lt;std::pair&lt;Velocity, double&gt;&gt;(box).second *</div>
+<div class="line">         <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">std::get</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair&lt;Velocity, double&gt;</a>&gt;(box).second /</div>
+<div class="line">         std::get&lt;std::pair&lt;Radius, double&gt;&gt;(box).second;</div>
+<div class="line">}</div>
+</div><!-- fragment --> <div class="fragment"><div class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Pairs&gt;</div>
+<div class="line"><span class="keywordtype">double</span> force_compute(<span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple&lt;Pairs...&gt;</a>&amp; box) noexcept {</div>
+<div class="line">  <span class="keyword">const</span> <span class="keywordtype">double</span> mass = mass_compute(box);</div>
+<div class="line">  <span class="keyword">const</span> <span class="keywordtype">double</span> acceleration = acceleration_compute(box);</div>
+<div class="line">  <span class="keywordflow">return</span> mass * acceleration;</div>
+<div class="line">}</div>
+</div><!-- fragment --><p> Using all these <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a></code>s to get our <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a></code> to work is a bit cumbersome. There is another way to package together the tagging ability of the struct names with the type information of the values we wish to store. To do this we need to make modifications to both our tags as well as our Databox implementation. This is what is done in SpECTRE's <code><a class="el" href="classtuples_1_1TaggedTuple.html" title="An associative container that is indexed by structs.">tuples::TaggedTuple</a></code>, which is an improved implementation of <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a></code> in terms of both performance and interface.</p>
+<h2><a class="anchor" id="databox_a_taggedtuple_databox"></a>
+A TaggedTuple DataBox</h2>
+<p>TaggedTuple is an implementation of a compile time container where the keys are tags.</p>
+<p>Tags that are compatible with SpECTRE's <code><a class="el" href="classtuples_1_1TaggedTuple.html" title="An associative container that is indexed by structs.">tuples::TaggedTuple</a></code> must have the type alias <code>type</code> in their structs. This type alias carries the type information of the data we wish to store in the databox. <code><a class="el" href="classtuples_1_1TaggedTuple.html" title="An associative container that is indexed by structs.">tuples::TaggedTuple</a></code> is able to make use of this type information so we won't need auxiliary constructs such as <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a></code> to package this information together anymore. Our new tags now look like:</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>Velocity {</div>
+<div class="line">  <span class="keyword">using</span> type = double;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">struct </span>Radius {</div>
+<div class="line">  <span class="keyword">using</span> type = double;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">struct </span>Density {</div>
+<div class="line">  <span class="keyword">using</span> type = double;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">struct </span><a class="code" href="group__ObserversGroup.html#gga9601b9f188609201444e989ee8825b45abd7a9717d29c5ddcab1bc175eda1e298">Volume</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = double;</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> We are now able to create the <code>junior_databox</code> below in the same way we initially wished to create the <code>sophomore_databox</code> above:</p>
+<div class="fragment"><div class="line"><a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;Velocity, Radius, Density, Volume&gt;</a> junior_databox{</div>
+<div class="line">  4.0, 2.0, 0.5, 10.0};</div>
+</div><!-- fragment --><p> Our functions similarly simplify:</p>
+<div class="fragment"><div class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Tags&gt;</div>
+<div class="line"><span class="keywordtype">double</span> mass_compute(<span class="keyword">const</span> <a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;Tags...&gt;</a>&amp; box) noexcept {</div>
+<div class="line">  <span class="keywordflow">return</span> tuples::get&lt;Density&gt;(box) * tuples::get&lt;Volume&gt;(box);</div>
+<div class="line">}</div>
+</div><!-- fragment --> <div class="fragment"><div class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Tags&gt;</div>
+<div class="line"><span class="keywordtype">double</span> acceleration_compute(<span class="keyword">const</span> <a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;Tags...&gt;</a>&amp; box) noexcept {</div>
+<div class="line">  <span class="keywordflow">return</span> tuples::get&lt;Velocity&gt;(box) * tuples::get&lt;Velocity&gt;(box) /</div>
+<div class="line">         tuples::get&lt;Radius&gt;(box);</div>
+<div class="line">}</div>
+</div><!-- fragment --> <div class="fragment"><div class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Tags&gt;</div>
+<div class="line"><span class="keywordtype">double</span> force_compute(<span class="keyword">const</span> <a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;Tags...&gt;</a>&amp; box) noexcept {</div>
+<div class="line">  <span class="keyword">const</span> <span class="keywordtype">double</span> mass = mass_compute(box);</div>
+<div class="line">  <span class="keyword">const</span> <span class="keywordtype">double</span> acceleration = acceleration_compute(box);</div>
+<div class="line">  <span class="keywordflow">return</span> mass * acceleration;</div>
+<div class="line">}</div>
+</div><!-- fragment --><p> In each of these iterations of the Databox, we started with initial quantities and computed subsequent quantities. Let us consider again <code>force_compute</code>, in which <code>mass</code> and <code>acceleration</code> are recomputed for every call to <code>force_compute</code>. If <code>Mass</code> and <code>Acceleration</code> were tags somewhow, that is, if we could compute them once, place them in the databox, and get them back out through the use of tags, we could get around this problem. We are now ready to consider SpECTRE's DataBox, which provides the solution to this problem in the form of <code>ComputeTags</code>.</p>
+<h1><a class="anchor" id="databox_a_proper_databox"></a>
+SpECTRE's DataBox</h1>
+<p>A brief description of SpECTRE's DataBox: a TaggedTuple with compute-on-demand. For a detailed description of SpECTRE's DataBox, see the <a class="el" href="group__DataBoxGroup.html">DataBox documentation</a>.</p>
+<h2><a class="anchor" id="databox_documentation_for_simple_tags"></a>
+SimpleTags</h2>
+<p>Just as we needed to modify our tags to make them compatible with <code>TaggedTuple</code>, we need to again modify them for use with DataBox. Our ordinary tags become SpECTRE's SimpleTags:</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>Velocity : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = double;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">struct </span>Radius : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = double;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">struct </span>Density : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = double;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">struct </span><a class="code" href="group__ObserversGroup.html#gga9601b9f188609201444e989ee8825b45abd7a9717d29c5ddcab1bc175eda1e298">Volume</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = double;</div>
+<div class="line">};</div>
+<div class="line"><span class="keyword">struct </span>Mass : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = double;</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> As seen above, SimpleTags have a <code>type</code> and a <code>name</code> in their struct. When creating tags for use with a DataBox, we must make sure to the tag inherits from one of the existing DataBox tag types such as <code><a class="el" href="structdb_1_1SimpleTag.html" title="Mark a struct as a simple tag by inheriting from this.">db::SimpleTag</a></code>. We now create our first DataBox using these <code>SimpleTags</code>:</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keyword">auto</span> refined_databox = <a class="code" href="group__DataBoxGroup.html#ga190fd7a31cd2424701e03faea2d03247">db::create</a>&lt;</div>
+<div class="line">    <a class="code" href="group__DataBoxGroup.html#ga3dc674ba575ece4a8be1c23fa6c2cdcb">db::AddSimpleTags</a>&lt;</div>
+<div class="line">      Velocity, Radius, Density, <a class="code" href="group__ObserversGroup.html#gga9601b9f188609201444e989ee8825b45abd7a9717d29c5ddcab1bc175eda1e298">Volume</a>&gt;&gt;(4.0, 2.0, 0.5, 10.0);</div>
+</div><!-- fragment --><p> We can get our quantities out of the DataBox by using <code><a class="el" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1" title="Retrieve the item with tag Tag from the DataBox.">db::get</a></code>:</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">double</span> velocity = db::get&lt;Velocity&gt;(refined_databox);</div>
+</div><!-- fragment --><p> So far, the usage of DataBox has been similar to the usage of TaggedTuple. To address the desire to combine the functionality of tags with the modularity of functions, DataBox provides ComputeTags.</p>
+<h2><a class="anchor" id="databox_documentation_for_compute_tags"></a>
+ComputeTags</h2>
+<p>ComputeTags are used to tag functions that are used in conjunction with a DataBox to produce a new quantity. ComputeTags look like:</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>MassCompute : <a class="code" href="structdb_1_1ComputeTag.html">db::ComputeTag</a>, Mass {</div>
+<div class="line">  <span class="keyword">using</span> base = Mass;</div>
+<div class="line">  <span class="keyword">using</span> return_type = double;</div>
+<div class="line">  <span class="keyword">static</span> constexpr <span class="keyword">auto</span> <span class="keyword">function</span> = &amp;mass_from_density_and_volume;</div>
+<div class="line">  <span class="keyword">using</span> argument_tags = tmpl::list&lt;Density, Volume&gt;;</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> ComputeTags inherit from <code><a class="el" href="structdb_1_1ComputeTag.html" title="Mark a struct as a compute tag by inheriting from this.">db::ComputeTag</a></code>, and it is convenient to have them additionally inherit from an existing SimpleTag (in this case <code>Mass</code>) so that the quantity <code>MassCompute</code> can be obtained through the SimpleTag <code>Mass</code>. We use the naming convention <code>TagNameCompute</code> so that <code>TagNameCompute</code> and <code>TagName</code> appear next to each other in documentation that lists tags in alphabetical order.</p>
+<p>We have also added the type alias <code>argument_tags</code>, which is necessary in order to refer to the correct tagged quantities in the DataBox.</p>
+<dl class="section note"><dt>Note</dt><dd>The <code>tmpl::list</code> used in the type alias is a contiguous container only holding types. That is, there is no variable runtime data associated with it like there is for <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a></code>, which is a container associating types with values. <code>tmpl::list</code>s are useful in situations when one is working with multiple tags at once.</dd></dl>
+<p>Using nested type aliases to pass around information at compile time is a common pattern in SpECTRE. Let us see how we can compute our beloved quantity of mass times acceleration:</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>Force : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = double;</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">struct </span>ForceCompute : <a class="code" href="structdb_1_1ComputeTag.html">db::ComputeTag</a>, Force {</div>
+<div class="line">  <span class="keyword">using</span> base = Force;</div>
+<div class="line">  <span class="keyword">using</span> return_type = double;</div>
+<div class="line">  <span class="keyword">static</span> constexpr <span class="keywordtype">void</span> <span class="keyword">function</span>(<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;double*&gt;</a> result,</div>
+<div class="line">    <span class="keyword">const</span> <span class="keywordtype">double</span> mass, <span class="keyword">const</span> <span class="keywordtype">double</span> acceleration) noexcept {</div>
+<div class="line">    *result = mass * acceleration; }</div>
+<div class="line">  <span class="keyword">using</span> argument_tags = tmpl::list&lt;Mass, Acceleration&gt;;</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> And that's it! <code><a class="el" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1" title="Retrieve the item with tag Tag from the DataBox.">db::get</a></code> utilizes the <code>argument_tags</code> specified in <code>ForceCompute</code> to determine which items to get out of the <code>refined_databox</code>. With the corresponding quantities in hand, <code><a class="el" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1" title="Retrieve the item with tag Tag from the DataBox.">db::get</a></code> passes them as arguments to the <code>function</code> specified in <code>ForceCompute</code>. This is why every <code>ComputeTag</code> must have an <code>argument_tags</code> as well as a <code>function</code> specified; this is the contract with DataBox they must satisfy in order to enjoy the full benefits of DataBox's generality.</p>
+<h2><a class="anchor" id="databox_documentation_for_mutate_tags"></a>
+Mutating DataBox items</h2>
+<p>It is reasonable to expect that in a complicated calculation, we will encounter time-dependent or iteration-dependent variables. As a result, in addition to adding and retrieving items from our DataBox, we also need a way to <em>mutate</em> quantities already present in the DataBox. This can be done via <code><a class="el" href="group__DataBoxGroup.html#ga257e835a1b216b347b3e3eb429f97984" title="Apply the invokable f mutating items MutateTags and taking as additional arguments ArgumentTags and a...">db::mutate_apply</a></code> and can look like the following:</p>
+<dl class="section note"><dt>Note</dt><dd>There is an alternative to <code><a class="el" href="group__DataBoxGroup.html#ga257e835a1b216b347b3e3eb429f97984" title="Apply the invokable f mutating items MutateTags and taking as additional arguments ArgumentTags and a...">db::mutate_apply</a></code>, <code><a class="el" href="group__DataBoxGroup.html#gabd82fb36bfa1a8f987e595141cc4d44f" title="Allows changing the state of one or more non-computed elements in the DataBox.">db::mutate</a></code>. See the <a class="el" href="group__DataBoxGroup.html">DataBox documentation</a> for more details.</dd></dl>
+<div class="fragment"><div class="line"><span class="keyword">struct </span><a class="code" href="classTime.html">Time</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = double;</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">struct </span>TimeStep : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = double;</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">struct </span>EarthGravity : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = double;</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">struct </span>FallingSpeed : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = double;</div>
+<div class="line">};</div>
+</div><!-- fragment --><div class="fragment"><div class="line"><span class="keyword">auto</span> time_dependent_databox = <a class="code" href="group__DataBoxGroup.html#ga190fd7a31cd2424701e03faea2d03247">db::create</a>&lt;</div>
+<div class="line">    <a class="code" href="group__DataBoxGroup.html#ga3dc674ba575ece4a8be1c23fa6c2cdcb">db::AddSimpleTags</a>&lt;</div>
+<div class="line">      <a class="code" href="classTime.html">Time</a>, TimeStep, EarthGravity, FallingSpeed&gt;&gt;(0.0, 0.1, -9.8, -10.0);</div>
+<div class="line"><a class="code" href="group__DataBoxGroup.html#ga257e835a1b216b347b3e3eb429f97984">db::mutate_apply</a>&lt;</div>
+<div class="line">  <span class="comment">//MutateTags</span></div>
+<div class="line">  tmpl::list&lt;Time, FallingSpeed&gt;,</div>
+<div class="line">  <span class="comment">//ArgumentTags</span></div>
+<div class="line">  tmpl::list&lt;TimeStep, EarthGravity&gt;&gt;(</div>
+<div class="line">  [](<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;double*&gt;</a> <a class="codeRef" href="http://en.cppreference.com/w/cpp/chrono/c/time.html">time</a>,</div>
+<div class="line">     <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;double*&gt;</a> falling_speed,</div>
+<div class="line">     <span class="keyword">const</span> <span class="keywordtype">double</span> time_step,</div>
+<div class="line">     <span class="keyword">const</span> <span class="keywordtype">double</span> earth_gravity) {</div>
+<div class="line">    *<a class="codeRef" href="http://en.cppreference.com/w/cpp/chrono/c/time.html">time</a> += time_step;</div>
+<div class="line">    *falling_speed += time_step * earth_gravity;</div>
+<div class="line">  },</div>
+<div class="line">  <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;time_dependent_databox));</div>
+</div><!-- fragment --> <dl class="section note"><dt>Note</dt><dd>The <code>not_null</code>s here are used to give us the assurance that the pointers <code>time</code> and <code>falling_speed</code> are not null pointers. Using raw pointers alone, we risk running into segmentation faults if we dereference null pointers. With <code>not_null</code>s we instead run into a run time error that tells us what went wrong. For information on the usage of <code>not_null</code>, see the documentation for <a class="el" href="Gsl_8hpp.html">Gsl.hpp</a>.</dd></dl>
+<p>In the above <code><a class="el" href="group__DataBoxGroup.html#ga257e835a1b216b347b3e3eb429f97984" title="Apply the invokable f mutating items MutateTags and taking as additional arguments ArgumentTags and a...">db::mutate_apply</a></code> example, we are changing two values in the DataBox using four values from the DataBox. The mutated quantities must be passed in as <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code>s to the lambda. The non-mutated quantities are passed in as const references to the lambda.</p>
+<dl class="section note"><dt>Note</dt><dd>It is critical to guarantee that there is a strict demarcation between pre-<code><a class="el" href="group__DataBoxGroup.html#gabd82fb36bfa1a8f987e595141cc4d44f" title="Allows changing the state of one or more non-computed elements in the DataBox.">db::mutate</a></code> and post-<code><a class="el" href="group__DataBoxGroup.html#gabd82fb36bfa1a8f987e595141cc4d44f" title="Allows changing the state of one or more non-computed elements in the DataBox.">db::mutate</a></code> quantities. <code><a class="el" href="group__DataBoxGroup.html#gabd82fb36bfa1a8f987e595141cc4d44f" title="Allows changing the state of one or more non-computed elements in the DataBox.">db::mutate</a></code> provides this guarantee via a locking mechanism; within one mutate call, all initial pre-mutated quantities are obtained from the DataBox before performing a single mutation.</dd>
+<dd>
+The mutate functions described above are the only accepted ways to edit data in the Databox. It is technically possible to use pointers or references to edit data stored in the Databox, but this bypasses the compute tags architecture. All changes to the Databox must be made by the Databox itself via mutate functions.</dd></dl>
+<p>From the above, we can see that the different kinds of tags are provided in two different <code>tmpl::list</code>s. The <code>MutateTags</code>, also called <code>ReturnTags</code>, refer to the quantities in the DataBox we wish to mutate, and the <code>ArgumentTags</code> refer to additional quantities we need from the DataBox to complete our computation. We now return to the recurring question of how to make this construction more modular.</p>
+<p>We have now worked our way up to SpECTRE's DataBox, but as we can see in the above <code><a class="el" href="group__DataBoxGroup.html#ga257e835a1b216b347b3e3eb429f97984" title="Apply the invokable f mutating items MutateTags and taking as additional arguments ArgumentTags and a...">db::mutate_apply</a></code> example, the lambda used to perform the mutation ends up being independent of any tags or template parameters! This means we can factor it out and place it in its own module, where it can be tested independently of the DataBox.</p>
+<h1><a class="anchor" id="databox_towards_actions"></a>
+Toward SpECTRE's Actions</h1>
+<h2><a class="anchor" id="databox_documentation_for_mutators"></a>
+Mutators</h2>
+<p>These constructs that exist independently of the DataBox are the precursors to SpECTRE's <em>Actions</em>. As they are designed to be used with <code><a class="el" href="group__DataBoxGroup.html#gabd82fb36bfa1a8f987e595141cc4d44f" title="Allows changing the state of one or more non-computed elements in the DataBox.">db::mutate</a></code> and <code><a class="el" href="group__DataBoxGroup.html#ga257e835a1b216b347b3e3eb429f97984" title="Apply the invokable f mutating items MutateTags and taking as additional arguments ArgumentTags and a...">db::mutate_apply</a></code>, we give them the name <em>Mutators</em>. Here is the above lambda written as a Mutator-prototype, a struct-with-void-apply:</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>IntendedMutation {</div>
+<div class="line">  <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;double*&gt;</a> time,</div>
+<div class="line">     <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;double*&gt;</a> falling_speed,</div>
+<div class="line">     <span class="keyword">const</span> <span class="keywordtype">double</span> time_step,</div>
+<div class="line">     <span class="keyword">const</span> <span class="keywordtype">double</span> earth_gravity) {</div>
+<div class="line">    *<a class="codeRef" href="http://en.cppreference.com/w/cpp/chrono/c/time.html">time</a> += time_step;</div>
+<div class="line">    *falling_speed += time_step * earth_gravity;</div>
+<div class="line">  }</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> The call to <code><a class="el" href="group__DataBoxGroup.html#ga257e835a1b216b347b3e3eb429f97984" title="Apply the invokable f mutating items MutateTags and taking as additional arguments ArgumentTags and a...">db::mutate_apply</a></code> has now been made much simpler:</p>
+<div class="fragment"><div class="line"><a class="code" href="group__DataBoxGroup.html#ga257e835a1b216b347b3e3eb429f97984">db::mutate_apply</a>&lt;</div>
+<div class="line">  tmpl::list&lt;Time, FallingSpeed&gt;,</div>
+<div class="line">  tmpl::list&lt;TimeStep, EarthGravity&gt;&gt;(</div>
+<div class="line">    IntendedMutation{}, <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;time_dependent_databox));</div>
+</div><!-- fragment --><p> There is a key step that we take here after this point, to make our struct-with-void-apply into a proper Mutator. As we will see, this addition will allow us to entirely divorce the internal details of <code>IntendedMutation</code> from the mechanism through which we update the DataBox. The key step is to add type aliases to <code>IntendedMutation</code>:</p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span>IntendedMutation2 {</div>
+<div class="line">  <span class="keyword">using</span> return_tags = tmpl::list&lt;Time, FallingSpeed&gt;;</div>
+<div class="line">  <span class="keyword">using</span> argument_tags = tmpl::list&lt;TimeStep, EarthGravity&gt;;</div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;double*&gt;</a> time,</div>
+<div class="line">     <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;double*&gt;</a> falling_speed,</div>
+<div class="line">     <span class="keyword">const</span> <span class="keywordtype">double</span> time_step,</div>
+<div class="line">     <span class="keyword">const</span> <span class="keywordtype">double</span> earth_gravity) {</div>
+<div class="line">    *<a class="codeRef" href="http://en.cppreference.com/w/cpp/chrono/c/time.html">time</a> += time_step;</div>
+<div class="line">    *falling_speed += time_step * earth_gravity;</div>
+<div class="line">  }</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> We are now able to write our call to <code><a class="el" href="group__DataBoxGroup.html#ga257e835a1b216b347b3e3eb429f97984" title="Apply the invokable f mutating items MutateTags and taking as additional arguments ArgumentTags and a...">db::mutate_apply</a></code> in the following way:</p>
+<div class="fragment"><div class="line">db::mutate_apply&lt;IntendedMutation2&gt;(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;time_dependent_databox));</div>
+</div><!-- fragment --><p> As we saw earlier with <code>QuantityCompute</code>, we found that we were able to imbue structs with the ability to "read in" types specified in other structs, through the use of templates and member type aliases. This liberated us from having to hard-code in specific types. We notice immediately that <code>IntendedMutation</code> is a hard-coded type that we can factor out in favor of a template parameter:</p>
+<div class="fragment"><div class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Mutator&gt;</div>
+<div class="line"><span class="keyword">struct </span>MyFirstAction{</div>
+<div class="line">  <span class="keyword">template</span>&lt;<span class="keyword">typename</span> DbTagsList&gt;</div>
+<div class="line">  <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/apply.html">apply</a>(</div>
+<div class="line">    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;db::DataBox&lt;DbTagsList&gt;*&gt; time_dependent_databox)</div>
+<div class="line">      noexcept {</div>
+<div class="line">    db::mutate_apply&lt;Mutator&gt;(time_dependent_databox);</div>
+<div class="line">  }</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> Note how the <code>return_tags</code> and <code>argument_tags</code> are used as metavariables and are resolved by the compiler. Our call to <code><a class="el" href="group__DataBoxGroup.html#ga257e835a1b216b347b3e3eb429f97984" title="Apply the invokable f mutating items MutateTags and taking as additional arguments ArgumentTags and a...">db::mutate_apply</a></code> has been fully wrapped and now takes the form:</p>
+<div class="fragment"><div class="line">MyFirstAction&lt;IntendedMutation2&gt;::apply(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;time_dependent_databox));</div>
+</div><!-- fragment --><p> The details of applying Mutators to the DataBox are entirely handled by <code>MyFirstAction</code>, with the details of the specific Mutator itself entirely encapsulated in <code>IntendedMutation</code>.</p>
+<p>SpECTRE algorithms are decomposed into Actions which can depend on more things than we have considered here. Feel free to look at the existing <a class="el" href="group__ActionsGroup.html">actions that have been written.</a> The intricacies of Actions at the level that SpECTRE uses them is the subject of a future addition to the <a class="el" href="dev_guide.html">Developer's Guide.</a> </p>
+</div></div><!-- contents -->
+</div><!-- PageDoc -->
+<div class="ttc" id="aapply_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/apply.html">std::apply</a></div><div class="ttdeci">T apply(T... args)</div></div>
+<div class="ttc" id="astructdb_1_1ComputeTag_html"><div class="ttname"><a href="structdb_1_1ComputeTag.html">db::ComputeTag</a></div><div class="ttdoc">Mark a struct as a compute tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:157</div></div>
+<div class="ttc" id="apair_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a></div></div>
+<div class="ttc" id="atuple_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a></div></div>
+<div class="ttc" id="agroup__DataBoxGroup_html_gae08744824ea7df89224f128b2080c5b1"><div class="ttname"><a href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">db::get</a></div><div class="ttdeci">const auto &amp; get(const DataBox&lt; TagList &gt; &amp;box) noexcept</div><div class="ttdoc">Retrieve the item with tag Tag from the DataBox.</div><div class="ttdef"><b>Definition:</b> DataBox.hpp:791</div></div>
+<div class="ttc" id="astructdb_1_1SimpleTag_html"><div class="ttname"><a href="structdb_1_1SimpleTag.html">db::SimpleTag</a></div><div class="ttdoc">Mark a struct as a simple tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:36</div></div>
+<div class="ttc" id="agroup__DataBoxGroup_html_ga190fd7a31cd2424701e03faea2d03247"><div class="ttname"><a href="group__DataBoxGroup.html#ga190fd7a31cd2424701e03faea2d03247">db::create</a></div><div class="ttdeci">constexpr auto create(Args &amp;&amp;... args)</div><div class="ttdoc">Create a new DataBox.</div><div class="ttdef"><b>Definition:</b> DataBox.hpp:907</div></div>
+<div class="ttc" id="aclasstuples_1_1TaggedTuple_html"><div class="ttname"><a href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a></div><div class="ttdoc">An associative container that is indexed by structs.</div><div class="ttdef"><b>Definition:</b> TaggedTuple.hpp:271</div></div>
+<div class="ttc" id="amap_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/map.html">std::map</a></div></div>
+<div class="ttc" id="agroup__DataBoxGroup_html_ga3dc674ba575ece4a8be1c23fa6c2cdcb"><div class="ttname"><a href="group__DataBoxGroup.html#ga3dc674ba575ece4a8be1c23fa6c2cdcb">db::AddSimpleTags</a></div><div class="ttdeci">tmpl::flatten&lt; tmpl::list&lt; Tags... &gt; &gt; AddSimpleTags</div><div class="ttdoc">List of Tags to add to the DataBox.</div><div class="ttdef"><b>Definition:</b> DataBox.hpp:856</div></div>
+<div class="ttc" id="agroup__DataBoxGroup_html_ga257e835a1b216b347b3e3eb429f97984"><div class="ttname"><a href="group__DataBoxGroup.html#ga257e835a1b216b347b3e3eb429f97984">db::mutate_apply</a></div><div class="ttdeci">constexpr decltype(auto) mutate_apply(F &amp;&amp;f, const gsl::not_null&lt; DataBox&lt; BoxTags &gt; * &gt; box, Args &amp;&amp;... args) noexcept</div><div class="ttdoc">Apply the invokable f mutating items MutateTags and taking as additional arguments ArgumentTags and a...</div><div class="ttdef"><b>Definition:</b> DataBox.hpp:1257</div></div>
+<div class="ttc" id="aclassTime_html"><div class="ttname"><a href="classTime.html">Time</a></div><div class="ttdef"><b>Definition:</b> Time.hpp:29</div></div>
+<div class="ttc" id="agroup__ObserversGroup_html_gga9601b9f188609201444e989ee8825b45abd7a9717d29c5ddcab1bc175eda1e298"><div class="ttname"><a href="group__ObserversGroup.html#gga9601b9f188609201444e989ee8825b45abd7a9717d29c5ddcab1bc175eda1e298">observers::TypeOfObservation::Volume</a></div><div class="ttdeci">@ Volume</div><div class="ttdoc">The sender will only perform volume observations.</div></div>
+<div class="ttc" id="atime_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/chrono/c/time.html">std::time</a></div><div class="ttdeci">T time(T... args)</div></div>
+<div class="ttc" id="aGsl_8hpp_html_a649c6961f9146205c203e45d58fd0c4c"><div class="ttname"><a href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a></div><div class="ttdeci">gsl::not_null&lt; T * &gt; make_not_null(T *ptr) noexcept</div><div class="ttdoc">Construct a not_null from a pointer. Often this will be done as an implicit conversion,...</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:880</div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

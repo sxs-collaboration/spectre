@@ -1,0 +1,351 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: NewtonianEuler::BoundaryCorrections::Hll&lt; Dim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceNewtonianEuler.html">NewtonianEuler</a></li><li class="navelem"><a class="el" href="namespaceNewtonianEuler_1_1BoundaryCorrections.html">BoundaryCorrections</a></li><li class="navelem"><a class="el" href="classNewtonianEuler_1_1BoundaryCorrections_1_1Hll.html">Hll</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classNewtonianEuler_1_1BoundaryCorrections_1_1Hll-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">NewtonianEuler::BoundaryCorrections::Hll&lt; Dim &gt; Class Template Reference<span class="mlabels"><span class="mlabel">final</span></span></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>An HLL (Harten-Lax-van Leer) Riemann solver for <a class="el" href="namespaceNewtonianEuler.html" title="Items related to evolving the Newtonian Euler system.">NewtonianEuler</a> system.  
+ <a href="classNewtonianEuler_1_1BoundaryCorrections_1_1Hll.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Evolution_2Systems_2NewtonianEuler_2BoundaryCorrections_2Hll_8hpp_source.html">Hll.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1BoundaryCorrections_1_1Hll_1_1LargestIngoingCharSpeed.html">LargestIngoingCharSpeed</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1BoundaryCorrections_1_1Hll_1_1LargestOutgoingCharSpeed.html">LargestOutgoingCharSpeed</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ab6ad60850d82b7195d8ce33e28aba39b"><td class="memItemLeft" align="right" valign="top"><a id="ab6ad60850d82b7195d8ce33e28aba39b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:ab6ad60850d82b7195d8ce33e28aba39b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad59338865d24d23ad4faaaf14648b4ca"><td class="memItemLeft" align="right" valign="top"><a id="ad59338865d24d23ad4faaaf14648b4ca"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_package_field_tags</b> = tmpl::list&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1MassDensityCons.html">Tags::MassDensityCons</a>, <a class="el" href="structNewtonianEuler_1_1Tags_1_1MomentumDensity.html">Tags::MomentumDensity</a>&lt; Dim &gt;, <a class="el" href="structNewtonianEuler_1_1Tags_1_1EnergyDensity.html">Tags::EnergyDensity</a>, ::<a class="el" href="structTags_1_1NormalDotFlux.html">Tags::NormalDotFlux</a>&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1MassDensityCons.html">Tags::MassDensityCons</a> &gt;, ::<a class="el" href="structTags_1_1NormalDotFlux.html">Tags::NormalDotFlux</a>&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1MomentumDensity.html">Tags::MomentumDensity</a>&lt; Dim &gt; &gt;, ::<a class="el" href="structTags_1_1NormalDotFlux.html">Tags::NormalDotFlux</a>&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1EnergyDensity.html">Tags::EnergyDensity</a> &gt;, <a class="el" href="structNewtonianEuler_1_1BoundaryCorrections_1_1Hll_1_1LargestOutgoingCharSpeed.html">LargestOutgoingCharSpeed</a>, <a class="el" href="structNewtonianEuler_1_1BoundaryCorrections_1_1Hll_1_1LargestIngoingCharSpeed.html">LargestIngoingCharSpeed</a> &gt;</td></tr>
+<tr class="separator:ad59338865d24d23ad4faaaf14648b4ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d1615828a9ac0fc86fc4a4ec7828c83"><td class="memItemLeft" align="right" valign="top"><a id="a1d1615828a9ac0fc86fc4a4ec7828c83"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_package_data_temporary_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a1d1615828a9ac0fc86fc4a4ec7828c83"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af204c50fbce7f0951ef4e5512ff2df73"><td class="memItemLeft" align="right" valign="top"><a id="af204c50fbce7f0951ef4e5512ff2df73"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_package_data_primitive_tags</b> = tmpl::list&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1Velocity.html">NewtonianEuler::Tags::Velocity</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt;, <a class="el" href="structNewtonianEuler_1_1Tags_1_1SpecificInternalEnergy.html">NewtonianEuler::Tags::SpecificInternalEnergy</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;</td></tr>
+<tr class="separator:af204c50fbce7f0951ef4e5512ff2df73"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0bbf66a9d406d36df137c79daf7afc61"><td class="memItemLeft" align="right" valign="top"><a id="a0bbf66a9d406d36df137c79daf7afc61"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>dg_package_data_volume_tags</b> = tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1EquationOfStateBase.html">hydro::Tags::EquationOfStateBase</a> &gt;</td></tr>
+<tr class="separator:a0bbf66a9d406d36df137c79daf7afc61"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection.html">NewtonianEuler::BoundaryCorrections::BoundaryCorrection&lt; Dim &gt;</a></td></tr>
+<tr class="memitem:a2f84b916076617d35b3c13332d209125 inherit pub_types_classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="a2f84b916076617d35b3c13332d209125"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::list&lt; <a class="el" href="classNewtonianEuler_1_1BoundaryCorrections_1_1Hll.html">Hll</a>&lt; Dim &gt;, <a class="el" href="classNewtonianEuler_1_1BoundaryCorrections_1_1Hllc.html">Hllc</a>&lt; Dim &gt;, <a class="el" href="classNewtonianEuler_1_1BoundaryCorrections_1_1Rusanov.html">Rusanov</a>&lt; Dim &gt; &gt;</td></tr>
+<tr class="separator:a2f84b916076617d35b3c13332d209125 inherit pub_types_classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a6bf1a03ab80377117acb4ba55500026f"><td class="memItemLeft" align="right" valign="top"><a id="a6bf1a03ab80377117acb4ba55500026f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Hll</b> (const <a class="el" href="classNewtonianEuler_1_1BoundaryCorrections_1_1Hll.html">Hll</a> &amp;)=default</td></tr>
+<tr class="separator:a6bf1a03ab80377117acb4ba55500026f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac14ebd13f248234356536702d91342e"><td class="memItemLeft" align="right" valign="top"><a id="aac14ebd13f248234356536702d91342e"></a>
+<a class="el" href="classNewtonianEuler_1_1BoundaryCorrections_1_1Hll.html">Hll</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classNewtonianEuler_1_1BoundaryCorrections_1_1Hll.html">Hll</a> &amp;)=default</td></tr>
+<tr class="separator:aac14ebd13f248234356536702d91342e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26d8136f78e82d4bcd3f282d88a4dd7a"><td class="memItemLeft" align="right" valign="top"><a id="a26d8136f78e82d4bcd3f282d88a4dd7a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Hll</b> (<a class="el" href="classNewtonianEuler_1_1BoundaryCorrections_1_1Hll.html">Hll</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a26d8136f78e82d4bcd3f282d88a4dd7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9be42075cba4fecaaf67de8ce18d40d9"><td class="memItemLeft" align="right" valign="top"><a id="a9be42075cba4fecaaf67de8ce18d40d9"></a>
+<a class="el" href="classNewtonianEuler_1_1BoundaryCorrections_1_1Hll.html">Hll</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classNewtonianEuler_1_1BoundaryCorrections_1_1Hll.html">Hll</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a9be42075cba4fecaaf67de8ce18d40d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0e74bbe252d811056c275e1dd558d5f"><td class="memItemLeft" align="right" valign="top"><a id="aa0e74bbe252d811056c275e1dd558d5f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) override</td></tr>
+<tr class="separator:aa0e74bbe252d811056c275e1dd558d5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b5d9d4704d6cc519bf178a63d1d7155"><td class="memItemLeft" align="right" valign="top"><a id="a7b5d9d4704d6cc519bf178a63d1d7155"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a>&lt; Dim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const noexcept override</td></tr>
+<tr class="separator:a7b5d9d4704d6cc519bf178a63d1d7155"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91bfd81de6c0ceb31f4932dd6edee152"><td class="memTemplParams" colspan="2"><a id="a91bfd81de6c0ceb31f4932dd6edee152"></a>
+template&lt;size_t ThermodynamicDim&gt; </td></tr>
+<tr class="memitem:a91bfd81de6c0ceb31f4932dd6edee152"><td class="memTemplItemLeft" align="right" valign="top">double&#160;</td><td class="memTemplItemRight" valign="bottom"><b>dg_package_data</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; packaged_mass_density, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; packaged_momentum_density, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; packaged_energy_density, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; packaged_normal_dot_flux_mass_density, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; packaged_normal_dot_flux_momentum_density, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; packaged_normal_dot_flux_energy_density, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; packaged_largest_outgoing_char_speed, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; packaged_largest_ingoing_char_speed, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;mass_density, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;momentum_density, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;energy_density, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;flux_mass_density, const tnsr::IJ&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;flux_momentum_density, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;flux_energy_density, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;velocity, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;specific_internal_energy, const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;normal_covector, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt; &amp;, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt; &amp;normal_dot_mesh_velocity, const <a class="el" href="classEquationsOfState_1_1EquationOfState.html">EquationsOfState::EquationOfState</a>&lt; false, ThermodynamicDim &gt; &amp;equation_of_state) const noexcept</td></tr>
+<tr class="separator:a91bfd81de6c0ceb31f4932dd6edee152"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5afca39df4a17580b14b11a9c64ba8ec"><td class="memItemLeft" align="right" valign="top"><a id="a5afca39df4a17580b14b11a9c64ba8ec"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>dg_boundary_terms</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; boundary_correction_mass_density, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; boundary_correction_momentum_density, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; boundary_correction_energy_density, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;mass_density_int, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;momentum_density_int, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;energy_density_int, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;normal_dot_flux_mass_density_int, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;normal_dot_flux_momentum_density_int, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;normal_dot_flux_energy_density_int, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;largest_outgoing_char_speed_int, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;largest_ingoing_char_speed_int, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;mass_density_ext, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;momentum_density_ext, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;energy_density_ext, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;normal_dot_flux_mass_density_ext, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;normal_dot_flux_momentum_density_ext, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;normal_dot_flux_energy_density_ext, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;largest_outgoing_char_speed_ext, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;largest_ingoing_char_speed_ext, <a class="el" href="group__DiscontinuousGalerkinGroup.html#ga102ad013b7e4298b4c14c52a39bcd8da">dg::Formulation</a> dg_formulation) const noexcept</td></tr>
+<tr class="separator:a5afca39df4a17580b14b11a9c64ba8ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection.html">NewtonianEuler::BoundaryCorrections::BoundaryCorrection&lt; Dim &gt;</a></td></tr>
+<tr class="memitem:a43ab03729aa6501b5081fbe0bec4e679 inherit pub_methods_classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="a43ab03729aa6501b5081fbe0bec4e679"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCorrection</b> (const <a class="el" href="classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;)=default</td></tr>
+<tr class="separator:a43ab03729aa6501b5081fbe0bec4e679 inherit pub_methods_classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f3d62c0ab059b28c046f315d7a79ed8 inherit pub_methods_classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="a7f3d62c0ab059b28c046f315d7a79ed8"></a>
+<a class="el" href="classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;)=default</td></tr>
+<tr class="separator:a7f3d62c0ab059b28c046f315d7a79ed8 inherit pub_methods_classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a79d2544a31c432e4951057941ec13443 inherit pub_methods_classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="a79d2544a31c432e4951057941ec13443"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BoundaryCorrection</b> (<a class="el" href="classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a79d2544a31c432e4951057941ec13443 inherit pub_methods_classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a68ca74bddca246b0178cc61ebbd872e4 inherit pub_methods_classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memItemLeft" align="right" valign="top"><a id="a68ca74bddca246b0178cc61ebbd872e4"></a>
+<a class="el" href="classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection.html">BoundaryCorrection</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a68ca74bddca246b0178cc61ebbd872e4 inherit pub_methods_classNewtonianEuler_1_1BoundaryCorrections_1_1BoundaryCorrection"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a2e564aba9839b0715485e15aa6830e99"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a2e564aba9839b0715485e15aa6830e99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+class NewtonianEuler::BoundaryCorrections::Hll&lt; Dim &gt;</h3>
+
+<p>An HLL (Harten-Lax-van Leer) Riemann solver for <a class="el" href="namespaceNewtonianEuler.html" title="Items related to evolving the Newtonian Euler system.">NewtonianEuler</a> system. </p>
+<p>Let \(U\) be the evolved variable, \(F^i\) the flux, and \(n_i\) be the outward directed unit normal to the interface. Denoting \(F := n_i F^i\), the HLL boundary correction is <a class="el" href="citelist.html#CITEREF_Harten1983">[52]</a></p>
+<p class="formulaDsp">
+\begin{align*} G_\text{HLL} = \frac{\lambda_\text{max} F_\text{int} + \lambda_\text{min} F_\text{ext}}{\lambda_\text{max} - \lambda_\text{min}} - \frac{\lambda_\text{min}\lambda_\text{max}}{\lambda_\text{max} - \lambda_\text{min}} \left(U_\text{int} - U_\text{ext}\right) \end{align*}
+</p>
+<p>where "int" and "ext" stand for interior and exterior. \(\lambda_\text{min}\) and \(\lambda_\text{max}\) are defined as</p>
+<p class="formulaDsp">
+\begin{align*} \lambda_\text{min} &amp;= \text{min}\left(\lambda^{-}_\text{int},-\lambda^{+}_\text{ext}, 0\right) \\ \lambda_\text{max} &amp;= \text{max}\left(\lambda^{+}_\text{int},-\lambda^{-}_\text{ext}, 0\right) \end{align*}
+</p>
+<p>where \(\lambda^{+}\) ( \(\lambda^{-}\)) is the largest characteristic speed in the outgoing (ingoing) direction. Note the minus signs in front of \(\lambda^{\pm}_\text{ext}\), which is because an outgoing speed w.r.t. the neighboring element is an ingoing speed w.r.t. the local element, and vice versa. Similarly, the \(F_{\text{ext}}\) term in \(G_\text{HLL}\) has a positive sign because the outward directed normal of the neighboring element has the opposite sign, i.e. \(n_i^{\text{ext}}=-n_i^{\text{int}}\).</p>
+<p>For the <a class="el" href="namespaceNewtonianEuler.html" title="Items related to evolving the Newtonian Euler system.">NewtonianEuler</a> system, \(\lambda^\pm\) are given as</p>
+<p class="formulaDsp">
+\begin{align*} \lambda^\pm = v^in_i \pm c_s \end{align*}
+</p>
+<p>where \(v^i\) is the spatial velocity and \(c_s\) the sound speed.</p>
+<dl class="section note"><dt>Note</dt><dd><ul>
+<li>In the strong form the <code>dg_boundary_terms</code> function returns \(G - F_\text{int}\)</li>
+<li>For either \(\lambda_\text{min} = 0\) or \(\lambda_\text{max} = 0\) (i.e. all characteristics move in the same direction) the HLL boundary correction reduces to pure upwinding.</li>
+<li>Some references use \(S\) instead of \(\lambda\) for the signal/characteristic speeds </li>
+</ul>
+</dd></dl>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a2e564aba9839b0715485e15aa6830e99"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e564aba9839b0715485e15aa6830e99">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classNewtonianEuler_1_1BoundaryCorrections_1_1Hll.html">NewtonianEuler::BoundaryCorrections::Hll</a>&lt; Dim &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Computes the HLL boundary correction term for the &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;Newtonian Euler/hydrodynamics system.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/Systems/NewtonianEuler/BoundaryCorrections/<a class="el" href="Evolution_2Systems_2NewtonianEuler_2BoundaryCorrections_2Hll_8hpp_source.html">Hll.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

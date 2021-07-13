@@ -1,0 +1,380 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Options Namespace Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">Options Namespace Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Utilities for parsing input files.  
+<a href="namespaceOptions.html#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1Alternatives.html">Alternatives</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provide multiple ways to construct a class.  <a href="structOptions_1_1Alternatives.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOptions_1_1Auto.html">Auto</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A class indicating that a parsed value can be automatically computed instead of specified.  <a href="classOptions_1_1Auto.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOptions_1_1Comparator.html">Comparator</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An option-creatable mathematical comparison.  <a href="classOptions_1_1Comparator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1Context.html">Context</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml.html">create_from_yaml</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01Auto_3_01T_00_01Label_01_4_01_4.html">create_from_yaml&lt; Auto&lt; T, Label &gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01Comparator_01_4.html">create_from_yaml&lt; Comparator &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01Convergence_1_1Reason_01_4.html">create_from_yaml&lt; Convergence::Reason &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01DenseMatrix_3_01T_00_01SO_01_4_01_4.html">create_from_yaml&lt; DenseMatrix&lt; T, SO &gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01DenseTriggers_1_1Or_01_4.html">create_from_yaml&lt; DenseTriggers::Or &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01DenseTriggers_1_1Times_01_4.html">create_from_yaml&lt; DenseTriggers::Times &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01DenseVector_3_01T_00_01TF_01_4_01_4.html">create_from_yaml&lt; DenseVector&lt; T, TF &gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01domain_1_1CoordinateMaps_1_1Distribution_01_4.html">create_from_yaml&lt; domain::CoordinateMaps::Distribution &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01EventsAndTriggers_01_4.html">create_from_yaml&lt; EventsAndTriggers &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01evolution_1_1EventsAndDenseTriggers_01_4.html">create_from_yaml&lt; evolution::EventsAndDenseTriggers &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01FastFlow_1_1FlowType_01_4.html">create_from_yaml&lt; FastFlow::FlowType &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01FloatingPointType_01_4.html">create_from_yaml&lt; FloatingPointType &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><b>create_from_yaml&lt; GeneralizedHarmonic::BoundaryConditions::detail::ConstraintPreservingBjorhusType &gt;</b></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01Limiters_1_1MinmodType_01_4.html">create_from_yaml&lt; Limiters::MinmodType &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01Limiters_1_1WenoType_01_4.html">create_from_yaml&lt; Limiters::WenoType &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01NewtonianEuler_1_1Limiters_1_1VariablesToLimit_01_4.html">create_from_yaml&lt; NewtonianEuler::Limiters::VariablesToLimit &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><b>create_from_yaml&lt; Options::Options_detail::variant_parse_error&lt; T... &gt; &gt;</b></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><b>create_from_yaml&lt; ScalarWave::BoundaryConditions::detail::ConstraintPreservingSphericalRadiationType &gt;</b></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><b>create_from_yaml&lt; ScalarWave::BoundaryConditions::detail::SphericalRadiationType &gt;</b></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01ShellWedges_01_4.html">create_from_yaml&lt; ShellWedges &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><b>create_from_yaml&lt; std::complex&lt; double &gt; &gt;</b></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse complex numbers as pairs of doubles. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><b>create_from_yaml&lt; std::unique_ptr&lt; T &gt; &gt;</b></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><b>create_from_yaml&lt; std::unordered_map&lt; K, V, H, P &gt; &gt;</b></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><b>create_from_yaml&lt; std::variant&lt; T... &gt; &gt;</b></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01StepChoosers_1_1Constant_3_01StepChooserUse_01_4_01_4.html">create_from_yaml&lt; StepChoosers::Constant&lt; StepChooserUse &gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01Triggers_1_1And_01_4.html">create_from_yaml&lt; Triggers::And &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01Triggers_1_1NearTimes__enums_1_1Unit_01_4.html">create_from_yaml&lt; Triggers::NearTimes_enums::Unit &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01Triggers_1_1Not_01_4.html">create_from_yaml&lt; Triggers::Not &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01Triggers_1_1Or_01_4.html">create_from_yaml&lt; Triggers::Or &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01Triggers_1_1Slabs_01_4.html">create_from_yaml&lt; Triggers::Slabs &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01Triggers_1_1Times_01_4.html">create_from_yaml&lt; Triggers::Times &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01typename_01Triggers_1_1NearTimes__enums_1_1Direction_01_4.html">create_from_yaml&lt; typename Triggers::NearTimes_enums::Direction &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01Verbosity_01_4.html">create_from_yaml&lt; Verbosity &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01Xcts_1_1Solutions_1_1SchwarzschildCoordinates_01_4.html">create_from_yaml&lt; Xcts::Solutions::SchwarzschildCoordinates &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1InputSource.html">InputSource</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classOptions_1_1Option.html">Option</a> parser tag to retrieve the YAML source and all applied overlays. This tag can be requested without providing it as a template parameter to the <a class="el" href="classOptions_1_1Parser.html" title="Class that handles parsing an input file.">Parser</a>.  <a href="structOptions_1_1InputSource.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOptions_1_1Option.html">Option</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOptions_1_1Parser.html">Parser</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Class that handles parsing an input file.  <a href="classOptions_1_1Parser.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:ac5c3b66a4eba312fdb7c9fc24cb20ce3"><td class="memTemplParams" colspan="2">template&lt;typename FactoryClasses , typename... NewClasses&gt; </td></tr>
+<tr class="memitem:ac5c3b66a4eba312fdb7c9fc24cb20ce3"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceOptions.html#ac5c3b66a4eba312fdb7c9fc24cb20ce3">add_factory_classes</a> = typename detail::add_factory_classes&lt; FactoryClasses, NewClasses... &gt;::type</td></tr>
+<tr class="memdesc:ac5c3b66a4eba312fdb7c9fc24cb20ce3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add new factory-creatable classes to the list in a <code>factory_creation</code> struct.  <a href="namespaceOptions.html#ac5c3b66a4eba312fdb7c9fc24cb20ce3">More...</a><br /></td></tr>
+<tr class="separator:ac5c3b66a4eba312fdb7c9fc24cb20ce3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa61c7f41f21afa7646811456f673be89"><td class="memItemLeft" align="right" valign="top"><a id="aa61c7f41f21afa7646811456f673be89"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">String</a> = const char *const</td></tr>
+<tr class="memdesc:aa61c7f41f21afa7646811456f673be89"><td class="mdescLeft">&#160;</td><td class="mdescRight">The string used in option structs. <br /></td></tr>
+<tr class="separator:aa61c7f41f21afa7646811456f673be89"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:ab3a29da28a69f4c9f55ff32ab2d3af43"><td class="memItemLeft" align="right" valign="top"><a id="ab3a29da28a69f4c9f55ff32ab2d3af43"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceOptions.html#ab3a29da28a69f4c9f55ff32ab2d3af43">AutoLabel</a> { <b>Auto</b>, 
+<b>None</b>
+ }</td></tr>
+<tr class="memdesc:ab3a29da28a69f4c9f55ff32ab2d3af43"><td class="mdescLeft">&#160;</td><td class="mdescRight">The label representing the absence of a value for <code><a class="el" href="classOptions_1_1Auto.html" title="A class indicating that a parsed value can be automatically computed instead of specified.">Options::Auto</a></code> <br /></td></tr>
+<tr class="separator:ab3a29da28a69f4c9f55ff32ab2d3af43"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:adad1d2a1b26c7bbc3a46346e08fae604"><td class="memItemLeft" align="right" valign="top"><a id="adad1d2a1b26c7bbc3a46346e08fae604"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;&lt;</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, <a class="el" href="namespaceOptions.html#ab3a29da28a69f4c9f55ff32ab2d3af43">AutoLabel</a> label) noexcept</td></tr>
+<tr class="separator:adad1d2a1b26c7bbc3a46346e08fae604"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad0df81d1505369d00e6d24e3057c38d3"><td class="memTemplParams" colspan="2"><a id="ad0df81d1505369d00e6d24e3057c38d3"></a>
+template&lt;typename T , AutoLabel Label&gt; </td></tr>
+<tr class="memitem:ad0df81d1505369d00e6d24e3057c38d3"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classOptions_1_1Auto.html">Auto</a>&lt; T, Label &gt; &amp;a, const <a class="el" href="classOptions_1_1Auto.html">Auto</a>&lt; T, Label &gt; &amp;b) noexcept</td></tr>
+<tr class="separator:ad0df81d1505369d00e6d24e3057c38d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e0f602cea927e306155b84bcc077b82"><td class="memTemplParams" colspan="2"><a id="a7e0f602cea927e306155b84bcc077b82"></a>
+template&lt;typename T , AutoLabel Label&gt; </td></tr>
+<tr class="memitem:a7e0f602cea927e306155b84bcc077b82"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="classOptions_1_1Auto.html">Auto</a>&lt; T, Label &gt; &amp;a, const <a class="el" href="classOptions_1_1Auto.html">Auto</a>&lt; T, Label &gt; &amp;b) noexcept</td></tr>
+<tr class="separator:a7e0f602cea927e306155b84bcc077b82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9de7127dc366faa782312340cd1d3511"><td class="memTemplParams" colspan="2"><a id="a9de7127dc366faa782312340cd1d3511"></a>
+template&lt;typename T , AutoLabel Label&gt; </td></tr>
+<tr class="memitem:a9de7127dc366faa782312340cd1d3511"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator&lt;&lt;</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const <a class="el" href="classOptions_1_1Auto.html">Auto</a>&lt; T, Label &gt; &amp;x) noexcept</td></tr>
+<tr class="separator:a9de7127dc366faa782312340cd1d3511"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2996a44b2caa52d822eba727023c6b8"><td class="memItemLeft" align="right" valign="top"><a id="ac2996a44b2caa52d822eba727023c6b8"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;&lt;</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;s, const <a class="el" href="structOptions_1_1Context.html">Context</a> &amp;c) noexcept</td></tr>
+<tr class="separator:ac2996a44b2caa52d822eba727023c6b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3183aa332a43c70196076321fa1bf3d4"><td class="memTemplParams" colspan="2"><a id="a3183aa332a43c70196076321fa1bf3d4"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a3183aa332a43c70196076321fa1bf3d4"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><b>name</b> () noexcept</td></tr>
+<tr class="separator:a3183aa332a43c70196076321fa1bf3d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Utilities for parsing input files. </p>
+</div><h2 class="groupheader">Typedef Documentation</h2>
+<a id="ac5c3b66a4eba312fdb7c9fc24cb20ce3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac5c3b66a4eba312fdb7c9fc24cb20ce3">&#9670;&nbsp;</a></span>add_factory_classes</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename FactoryClasses , typename... NewClasses&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespaceOptions.html#ac5c3b66a4eba312fdb7c9fc24cb20ce3">Options::add_factory_classes</a> = typedef typename detail::add_factory_classes&lt;FactoryClasses, NewClasses...&gt;::type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Add new factory-creatable classes to the list in a <code>factory_creation</code> struct. </p>
+<p>For each <code>tmpl::pair&lt;Base, DerivedList&gt;</code> in the <code>NewClasses</code> parameter pack, append the classes in <code>DerivedList</code> to the list for <code>Base</code> in <code>FactoryClasses</code>. The <code>FactoryClasses</code> map need not have a preexisting entry for <code>Base</code>.</p>
+<p>This example adds three new derived classes, two for one base class and one for another.</p>
+<div class="fragment"><div class="line"><span class="keyword">using</span> new_classes = <a class="code" href="namespaceOptions.html#ac5c3b66a4eba312fdb7c9fc24cb20ce3">Options::add_factory_classes</a>&lt;</div>
+<div class="line">    original_classes,</div>
+<div class="line">    tmpl::pair&lt;Base&lt;Label&lt;0&gt;&gt;,</div>
+<div class="line">               tmpl::list&lt;Derived&lt;Label&lt;3&gt;&gt;, Derived&lt;Label&lt;4&gt;&gt;&gt;&gt;,</div>
+<div class="line">    tmpl::pair&lt;Base&lt;Label&lt;2&gt;&gt;, tmpl::list&lt;Derived&lt;Label&lt;5&gt;&gt;&gt;&gt;&gt;;</div>
+</div><!-- fragment --> <dl class="section see"><dt>See also</dt><dd><a class="el" href="structOptions_1_1protocols_1_1FactoryCreation.html" title="Compile-time information for factory-creation.">Options::protocols::FactoryCreation</a> </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
+<div class="ttc" id="anamespaceOptions_html_ac5c3b66a4eba312fdb7c9fc24cb20ce3"><div class="ttname"><a href="namespaceOptions.html#ac5c3b66a4eba312fdb7c9fc24cb20ce3">Options::add_factory_classes</a></div><div class="ttdeci">typename detail::add_factory_classes&lt; FactoryClasses, NewClasses... &gt;::type add_factory_classes</div><div class="ttdoc">Add new factory-creatable classes to the list in a factory_creation struct.</div><div class="ttdef"><b>Definition:</b> FactoryHelpers.hpp:51</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

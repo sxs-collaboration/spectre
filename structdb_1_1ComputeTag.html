@@ -1,0 +1,280 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: db::ComputeTag Struct Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacedb.html">db</a></li><li class="navelem"><a class="el" href="structdb_1_1ComputeTag.html">ComputeTag</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">db::ComputeTag Struct Reference<div class="ingroups"><a class="el" href="group__DataBoxGroup.html">DataBox</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Mark a struct as a compute tag by inheriting from this.  
+ <a href="structdb_1_1ComputeTag.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DataStructures_2DataBox_2Tag_8hpp_source.html">Tag.hpp</a>&gt;</code></p>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Mark a struct as a compute tag by inheriting from this. </p>
+<h3>Details</h3>
+<p>A compute tag is used to identify an item in a DataBox that will be computed on-demand from other items in the DataBox. A compute tag must be derived from a simple tag corresponding to the type of object that is computed. This simple tag can be used to fetch the item corresponding to the compute tag from a DataBox.</p>
+<p>A compute tag contains a member named <code>function</code> that is either a static constexpr function pointer, or a static function. The compute tag must also have a a type alias <code>argument_tags</code> that is a typelist of the tags that will be retrieved from the DataBox and whose data will be passed to the function (pointer). Compute tags must also contain a type alias named <code>return_type</code> that is the type the function is mutating. The type must be default constructible.</p>
+<p>By convention, the name of a compute tag should be the name of the simple tag that it derives from, appended by <code>Compute</code>.</p>
+<p><em>Derived Class Requires:</em></p><ul>
+<li>type alias <code>return_type</code> of the type of the item computed</li>
+<li>type alias <code>base</code> that is the simple tag from which it is derived</li>
+<li>member <code>function</code>that is either a function pointer, or a static constexpr function that is used to compute the item from the <code>argument_tags</code> fetched from the DataBox</li>
+<li>type alias <code>argument_tags</code> that is a <code>tmpl::list</code> of the tags of the items that will be passed (in order) to the function specified by <code>function</code></li>
+</ul>
+<p>A compute tag may optionally specify a static <code><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name()</code> method to override the default name produced by <a class="el" href="group__DataBoxGroup.html#ga2f660914f4e986327a7ec1a61dddb2f4" title="Get the name of a DataBox tag, including prefixes.">db::tag_name</a>.</p>
+<dl class="section warning"><dt>Warning</dt><dd>A compute tag should only be derived from a simple tag and <a class="el" href="structdb_1_1ComputeTag.html" title="Mark a struct as a compute tag by inheriting from this.">db::ComputeTag</a>.</dd></dl>
+<h3>Example</h3>
+<p>Compute tags are of the form: </p><div class="fragment"><div class="line"><span class="keyword">struct </span>MutateVariablesCompute : MutateVariables, <a class="code" href="structdb_1_1ComputeTag.html">db::ComputeTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> base = MutateVariables;</div>
+<div class="line">  <span class="keyword">static</span> constexpr <span class="keyword">auto</span> <span class="keyword">function</span> = mutate_variables;</div>
+<div class="line">  <span class="keyword">using</span> return_type = Variables&lt;</div>
+<div class="line">      tmpl::list&lt;test_databox_tags::ScalarTag, test_databox_tags::VectorTag&gt;&gt;;</div>
+<div class="line">  <span class="keyword">using</span> argument_tags = tmpl::list&lt;Tag0&gt;;</div>
+<div class="line">};</div>
+</div><!-- fragment --><p>where the function is: </p><div class="fragment"><div class="line"><span class="keywordtype">void</span> mutate_variables(</div>
+<div class="line">    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;Variables&lt;tmpl::list&lt;test_databox_tags::ScalarTag,</div>
+<div class="line">                                             test_databox_tags::VectorTag&gt;&gt;*&gt;</div>
+<div class="line">        t,</div>
+<div class="line">    <span class="keyword">const</span> <span class="keywordtype">double</span> value) {</div>
+<div class="line">  <span class="keywordflow">if</span> (t-&gt;number_of_grid_points() != 10) {</div>
+<div class="line">    *t = Variables&lt;</div>
+<div class="line">        tmpl::list&lt;test_databox_tags::ScalarTag, test_databox_tags::VectorTag&gt;&gt;(</div>
+<div class="line">        10, 0.0);</div>
+<div class="line">  }</div>
+<div class="line">  <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; p : get&lt;test_databox_tags::ScalarTag&gt;(*t)) {</div>
+<div class="line">    p = 2.0 * value;</div>
+<div class="line">  }</div>
+<div class="line">  <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; p : get&lt;test_databox_tags::VectorTag&gt;(*t)) {</div>
+<div class="line">    p = 3.0 * value;</div>
+<div class="line">  }</div>
+<div class="line">}</div>
+</div><!-- fragment --><p> You can also have <code>function</code> be a function instead of a function pointer, which offers a lot of simplicity for very simple compute items. </p><div class="fragment"><div class="line"><span class="keyword">struct </span>Lambda0 : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> type = double;</div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">struct </span>Lambda0Compute : Lambda0, <a class="code" href="structdb_1_1ComputeTag.html">db::ComputeTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> base = Lambda0;</div>
+<div class="line">  <span class="keyword">using</span> return_type = double;</div>
+<div class="line">  <span class="keyword">static</span> constexpr <span class="keywordtype">void</span> <span class="keyword">function</span>(<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;double*&gt;</a> result,</div>
+<div class="line">                                 <span class="keyword">const</span> <span class="keywordtype">double</span> a) {</div>
+<div class="line">    *result = 3.0 * a;</div>
+<div class="line">  }</div>
+<div class="line">  <span class="keyword">using</span> argument_tags = tmpl::list&lt;Tag0&gt;;</div>
+<div class="line">};</div>
+</div><!-- fragment --><p> Note that the arguments can be empty: </p><div class="fragment"><div class="line"><span class="keyword">struct </span>Lambda1Compute : Lambda1, <a class="code" href="structdb_1_1ComputeTag.html">db::ComputeTag</a> {</div>
+<div class="line">  <span class="keyword">using</span> base = Lambda1;</div>
+<div class="line">  <span class="keyword">using</span> return_type = double;</div>
+<div class="line">  <span class="keyword">static</span> constexpr <span class="keywordtype">void</span> <span class="keyword">function</span>(<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;double*&gt;</a> result) {</div>
+<div class="line">    *result = 7.0;</div>
+<div class="line">  }</div>
+<div class="line">  <span class="keyword">using</span> argument_tags = tmpl::list&lt;&gt;;</div>
+<div class="line">};</div>
+</div><!-- fragment --> <dl class="section see"><dt>See also</dt><dd><a class="el" href="group__DataBoxGroup.html" title="Documentation, functions, metafunctions, and classes necessary for using DataBox.">DataBox</a> <a class="el" href="structdb_1_1SimpleTag.html" title="Mark a struct as a simple tag by inheriting from this.">SimpleTag</a> </dd></dl>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/DataStructures/DataBox/<a class="el" href="DataStructures_2DataBox_2Tag_8hpp_source.html">Tag.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="astructdb_1_1ComputeTag_html"><div class="ttname"><a href="structdb_1_1ComputeTag.html">db::ComputeTag</a></div><div class="ttdoc">Mark a struct as a compute tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:157</div></div>
+<div class="ttc" id="astructdb_1_1SimpleTag_html"><div class="ttname"><a href="structdb_1_1SimpleTag.html">db::SimpleTag</a></div><div class="ttdoc">Mark a struct as a simple tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:36</div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

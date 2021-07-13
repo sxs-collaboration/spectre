@@ -1,0 +1,306 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: tests/Unit/Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_33df814919e476f9d56dccef9b24e276.html">tests</a></li><li class="navelem"><a class="el" href="dir_38113a4c235494bd05bb19f85d006940.html">Unit</a></li><li class="navelem"><a class="el" href="dir_b87ca7a475176b712f1482b79974072f.html">Helpers</a></li><li class="navelem"><a class="el" href="dir_62bb779b1317c9d2c45a0eaf754ff15e.html">Time</a></li><li class="navelem"><a class="el" href="dir_fdec185a54e8f70f37cb2ade4f0a5c2a.html">TimeSteppers</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">TimeStepperTestUtils.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160; </div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;Time/History.hpp&quot;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Slab_8hpp.html">Time/Slab.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Time_8hpp.html">Time/Time.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TimeStepId_8hpp.html">Time/TimeStepId.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;Time/TimeSteppers/TimeStepper.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="comment"></span><span class="keyword">class </span><a class="code" href="classLtsTimeStepper.html">LtsTimeStepper</a>;</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="keyword">class </span><a class="code" href="classTimeStepper.html">TimeStepper</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="keyword">namespace </span>TimeStepperTestUtils {</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160; </div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="keywordtype">void</span> check_multistep_properties(<span class="keyword">const</span> <a class="code" href="classTimeStepper.html">TimeStepper</a>&amp; stepper) noexcept;</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="keywordtype">void</span> check_substep_properties(<span class="keyword">const</span> <a class="code" href="classTimeStepper.html">TimeStepper</a>&amp; stepper) noexcept;</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160; </div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="keywordtype">void</span> integrate_test(<span class="keyword">const</span> <a class="code" href="classTimeStepper.html">TimeStepper</a>&amp; stepper, <span class="keywordtype">size_t</span> order,</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;                    <span class="keywordtype">size_t</span> number_of_past_steps, <span class="keywordtype">double</span> integration_time,</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;                    <span class="keywordtype">double</span> epsilon, <span class="keywordtype">bool</span> test_apply_twice = <span class="keyword">false</span>) noexcept;</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="keywordtype">void</span> integrate_test_explicit_time_dependence(const <a class="code" href="classTimeStepper.html">TimeStepper</a>&amp; stepper,</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;                                             <span class="keywordtype">size_t</span> order,</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;                                             <span class="keywordtype">size_t</span> number_of_past_steps,</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;                                             <span class="keywordtype">double</span> integration_time,</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;                                             <span class="keywordtype">double</span> epsilon) noexcept;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="keywordtype">void</span> integrate_variable_test(const <a class="code" href="classTimeStepper.html">TimeStepper</a>&amp; stepper, <span class="keywordtype">size_t</span> order,</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;                             <span class="keywordtype">size_t</span> number_of_past_steps,</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;                             <span class="keywordtype">double</span> epsilon) noexcept;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="keywordtype">void</span> integrate_error_test(const <a class="code" href="classTimeStepper.html">TimeStepper</a>&amp; stepper, <span class="keywordtype">size_t</span> order,</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;                          <span class="keywordtype">size_t</span> number_of_past_steps, <span class="keywordtype">double</span> integration_time,</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;                          <span class="keywordtype">double</span> epsilon, <span class="keywordtype">size_t</span> num_steps, <span class="keywordtype">double</span> error_factor,</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;                          <span class="keywordtype">bool</span> test_apply_twice = false) noexcept;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160; </div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;template &lt;typename F1, typename F2, typename EvolvedType&gt;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="keywordtype">void</span> initialize_history(</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <a class="code" href="classTime.html">Time</a> time,</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    const <a class="code" href="namespacegsl.html">gsl</a>::not_null&lt;<a class="code" href="namespaceTimeSteppers.html">TimeSteppers</a>::History&lt;EvolvedType, EvolvedType&gt;*&gt;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        history,</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    F1&amp;&amp; analytic, F2&amp;&amp; rhs, <a class="code" href="classTimeDelta.html">TimeDelta</a> step_size,</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    const <span class="keywordtype">size_t</span> number_of_past_steps) noexcept {</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;  int64_t slab_number = -1;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> j = 0; j &lt; number_of_past_steps; ++j) {</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(<a class="codeRef" href="http://en.cppreference.com/w/cpp/chrono/c/time.html">time</a>.slab() == step_size.slab(), <span class="stringliteral">&quot;Slab mismatch&quot;</span>);</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="keywordflow">if</span> ((step_size.is_positive() and <a class="codeRef" href="http://en.cppreference.com/w/cpp/chrono/c/time.html">time</a>.is_at_slab_start()) or</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        (not step_size.is_positive() and <a class="codeRef" href="http://en.cppreference.com/w/cpp/chrono/c/time.html">time</a>.is_at_slab_end())) {</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;      <span class="keyword">const</span> <a class="code" href="classSlab.html">Slab</a> new_slab = <a class="codeRef" href="http://en.cppreference.com/w/cpp/chrono/c/time.html">time</a>.slab().advance_towards(-step_size);</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;      <a class="codeRef" href="http://en.cppreference.com/w/cpp/chrono/c/time.html">time</a> = <a class="codeRef" href="http://en.cppreference.com/w/cpp/chrono/c/time.html">time</a>.with_slab(new_slab);</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;      step_size = step_size.with_slab(new_slab);</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;      --slab_number;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    }</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <a class="codeRef" href="http://en.cppreference.com/w/cpp/chrono/c/time.html">time</a> -= step_size;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    history-&gt;insert_initial(</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        <a class="code" href="classTimeStepId.html">TimeStepId</a>(step_size.is_positive(), slab_number, time),</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        rhs(analytic(<a class="codeRef" href="http://en.cppreference.com/w/cpp/chrono/c/time.html">time</a>.value()), <a class="codeRef" href="http://en.cppreference.com/w/cpp/chrono/c/time.html">time</a>.value()));</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="keywordflow">if</span> (j == 0) {</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;      history-&gt;most_recent_value() = analytic(<a class="codeRef" href="http://en.cppreference.com/w/cpp/chrono/c/time.html">time</a>.value());</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    }</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;  }</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;}</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160; </div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="keywordtype">void</span> stability_test(<span class="keyword">const</span> <a class="code" href="classTimeStepper.html">TimeStepper</a>&amp; stepper) noexcept;</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160; </div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="keywordtype">void</span> equal_rate_boundary(<span class="keyword">const</span> <a class="code" href="classLtsTimeStepper.html">LtsTimeStepper</a>&amp; stepper, <span class="keywordtype">size_t</span> order,</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;                         <span class="keywordtype">size_t</span> number_of_past_steps,</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;                         <span class="keywordtype">double</span> epsilon, <span class="keywordtype">bool</span> forward) noexcept;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160; </div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="keywordtype">void</span> check_convergence_order(<span class="keyword">const</span> <a class="code" href="classTimeStepper.html">TimeStepper</a>&amp; stepper) noexcept;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; </div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="keywordtype">void</span> check_dense_output(<span class="keyword">const</span> <a class="code" href="classTimeStepper.html">TimeStepper</a>&amp; stepper) noexcept;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="keywordtype">void</span> check_boundary_dense_output(<span class="keyword">const</span> <a class="code" href="classLtsTimeStepper.html">LtsTimeStepper</a>&amp; stepper) noexcept;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;}  <span class="comment">// namespace TimeStepperTestUtils</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="aclassSlab_html"><div class="ttname"><a href="classSlab.html">Slab</a></div><div class="ttdef"><b>Definition:</b> Slab.hpp:27</div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="aclassTimeStepper_html"><div class="ttname"><a href="classTimeStepper.html">TimeStepper</a></div><div class="ttdef"><b>Definition:</b> TimeStepper.hpp:47</div></div>
+<div class="ttc" id="aclassTimeDelta_html"><div class="ttname"><a href="classTimeDelta.html">TimeDelta</a></div><div class="ttdef"><b>Definition:</b> Time.hpp:88</div></div>
+<div class="ttc" id="aTime_8hpp_html"><div class="ttname"><a href="Time_8hpp.html">Time.hpp</a></div></div>
+<div class="ttc" id="aclassTimeStepId_html"><div class="ttname"><a href="classTimeStepId.html">TimeStepId</a></div><div class="ttdef"><b>Definition:</b> TimeStepId.hpp:25</div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_gaf170f3984e3d0f809b2558dbd981ca35"><div class="ttname"><a href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a></div><div class="ttdeci">#define ASSERT(a, m)</div><div class="ttdoc">Assert that an expression should be true.</div><div class="ttdef"><b>Definition:</b> Assert.hpp:49</div></div>
+<div class="ttc" id="aTimeStepId_8hpp_html"><div class="ttname"><a href="TimeStepId_8hpp.html">TimeStepId.hpp</a></div></div>
+<div class="ttc" id="anamespaceTimeSteppers_html"><div class="ttname"><a href="namespaceTimeSteppers.html">TimeSteppers</a></div><div class="ttdef"><b>Definition:</b> BoundaryHistory.hpp:23</div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="aclassTime_html"><div class="ttname"><a href="classTime.html">Time</a></div><div class="ttdef"><b>Definition:</b> Time.hpp:29</div></div>
+<div class="ttc" id="aclassLtsTimeStepper_html"><div class="ttname"><a href="classLtsTimeStepper.html">LtsTimeStepper</a></div><div class="ttdef"><b>Definition:</b> TimeStepper.hpp:159</div></div>
+<div class="ttc" id="aSlab_8hpp_html"><div class="ttname"><a href="Slab_8hpp.html">Slab.hpp</a></div></div>
+<div class="ttc" id="atime_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/chrono/c/time.html">std::time</a></div><div class="ttdeci">T time(T... args)</div></div>
+<div class="ttc" id="anamespacegsl_html"><div class="ttname"><a href="namespacegsl.html">gsl</a></div><div class="ttdoc">Implementations from the Guideline Support Library.</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:11</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

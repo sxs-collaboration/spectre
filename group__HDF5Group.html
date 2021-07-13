@@ -1,0 +1,562 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: HDF5</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#define-members">Macros</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">HDF5</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Functions and classes for manipulating HDF5 files.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceh5"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceh5.html">h5</a></td></tr>
+<tr class="memdesc:namespaceh5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains functions and classes for manipulating HDF5 files. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1Dat.html">h5::Dat</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a multicolumn dat file inside an HDF5 file.  <a href="classh5_1_1Dat.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1H5File.html">h5::H5File&lt; Access_t &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Opens an HDF5 file for access and allows manipulation of data.  <a href="classh5_1_1H5File.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1Header.html">h5::Header</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes header info about the build, git commit, branch, etc.  <a href="classh5_1_1Header.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1Object.html">h5::Object</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Abstract base class representing an object in an HDF5 file.  <a href="classh5_1_1Object.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1SourceArchive.html">h5::SourceArchive</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes an archive of the source tree into a dataset.  <a href="classh5_1_1SourceArchive.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1StellarCollapseEos.html">h5::StellarCollapseEos</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads in tabulated equation of state file from <a href="https://stellarcollapse.org">stellarcollapse.org</a>  <a href="classh5_1_1StellarCollapseEos.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1Version.html">h5::Version</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used to store the version of the file.  <a href="classh5_1_1Version.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1VolumeData.html">h5::VolumeData</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A volume data subfile written inside an H5 file.  <a href="classh5_1_1VolumeData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:ga536504a5b4799ff7888691250c36fb68"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga536504a5b4799ff7888691250c36fb68">CHECK_H5</a>(h5_status,  m)</td></tr>
+<tr class="memdesc:ga536504a5b4799ff7888691250c36fb68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if an HDF5 operation was successful.  <a href="group__HDF5Group.html#ga536504a5b4799ff7888691250c36fb68">More...</a><br /></td></tr>
+<tr class="separator:ga536504a5b4799ff7888691250c36fb68"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:gaaedbaa5ac40077153c63212879f51197"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#gaaedbaa5ac40077153c63212879f51197">h5::AccessType</a> { <a class="el" href="group__HDF5Group.html#ggaaedbaa5ac40077153c63212879f51197a70a2a84088d405a2e3f1e3accaa16723">h5::AccessType::ReadWrite</a>, 
+<a class="el" href="group__HDF5Group.html#ggaaedbaa5ac40077153c63212879f51197a131fb182a881796e7606ed6da27f1197">h5::AccessType::ReadOnly</a>
+ }</td></tr>
+<tr class="memdesc:gaaedbaa5ac40077153c63212879f51197"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the access type to the H5File.  <a href="group__HDF5Group.html#gaaedbaa5ac40077153c63212879f51197">More...</a><br /></td></tr>
+<tr class="separator:gaaedbaa5ac40077153c63212879f51197"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga242addcfdcb4bb6bb407b8229c3ae4fa"><td class="memTemplParams" colspan="2"><a id="ga242addcfdcb4bb6bb407b8229c3ae4fa"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga242addcfdcb4bb6bb407b8229c3ae4fa"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga242addcfdcb4bb6bb407b8229c3ae4fa">h5::write_data</a> (hid_t group_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; T &gt; &amp;data, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; size_t &gt; &amp;extents, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;name=&quot;scalar&quot;) noexcept</td></tr>
+<tr class="memdesc:ga242addcfdcb4bb6bb407b8229c3ae4fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a> named <code>name</code> to the group <code>group_id</code> <br /></td></tr>
+<tr class="separator:ga242addcfdcb4bb6bb407b8229c3ae4fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7ed764517407c15e484bc2560e0042c0"><td class="memItemLeft" align="right" valign="top"><a id="ga7ed764517407c15e484bc2560e0042c0"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga7ed764517407c15e484bc2560e0042c0">h5::write_data</a> (hid_t group_id, const <a class="el" href="classDataVector.html">DataVector</a> &amp;data, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;name) noexcept</td></tr>
+<tr class="memdesc:ga7ed764517407c15e484bc2560e0042c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> named <code>name</code> to the group <code>group_id</code> <br /></td></tr>
+<tr class="separator:ga7ed764517407c15e484bc2560e0042c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae590adc731e3c843635b0872efb5e338"><td class="memTemplParams" colspan="2"><a id="gae590adc731e3c843635b0872efb5e338"></a>
+template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:gae590adc731e3c843635b0872efb5e338"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#gae590adc731e3c843635b0872efb5e338">h5::write_extents</a> (hid_t group_id, const <a class="el" href="classIndex.html">Index</a>&lt; Dim &gt; &amp;extents, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;name=&quot;Extents&quot;)</td></tr>
+<tr class="memdesc:gae590adc731e3c843635b0872efb5e338"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write the extents as an attribute named <code>name</code> to the group <code>group_id</code>. <br /></td></tr>
+<tr class="separator:gae590adc731e3c843635b0872efb5e338"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga06bfc64583f9b971c0e5a1790ce34650"><td class="memTemplParams" colspan="2"><a id="ga06bfc64583f9b971c0e5a1790ce34650"></a>
+template&lt;typename Type &gt; </td></tr>
+<tr class="memitem:ga06bfc64583f9b971c0e5a1790ce34650"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga06bfc64583f9b971c0e5a1790ce34650">h5::write_to_attribute</a> (hid_t location_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;name, const Type &amp;value) noexcept</td></tr>
+<tr class="memdesc:ga06bfc64583f9b971c0e5a1790ce34650"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a value of type <code>Type</code> to an HDF5 attribute named <code>name</code> <br /></td></tr>
+<tr class="separator:ga06bfc64583f9b971c0e5a1790ce34650"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga13fda031a703efcd0b8aa00f7fc26a8b"><td class="memTemplParams" colspan="2"><a id="ga13fda031a703efcd0b8aa00f7fc26a8b"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga13fda031a703efcd0b8aa00f7fc26a8b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga13fda031a703efcd0b8aa00f7fc26a8b">h5::write_to_attribute</a> (hid_t group_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;name, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; T &gt; &amp;data) noexcept</td></tr>
+<tr class="memdesc:ga13fda031a703efcd0b8aa00f7fc26a8b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write the vector <code>data</code> to the attribute <code>attribute_name</code> in the group <code>group_id</code>. <br /></td></tr>
+<tr class="separator:ga13fda031a703efcd0b8aa00f7fc26a8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad472d5cc0229a4223d83c95b80498d82"><td class="memTemplParams" colspan="2"><a id="gad472d5cc0229a4223d83c95b80498d82"></a>
+template&lt;typename Type &gt; </td></tr>
+<tr class="memitem:gad472d5cc0229a4223d83c95b80498d82"><td class="memTemplItemLeft" align="right" valign="top">Type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#gad472d5cc0229a4223d83c95b80498d82">h5::read_value_attribute</a> (hid_t location_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;name) noexcept</td></tr>
+<tr class="memdesc:gad472d5cc0229a4223d83c95b80498d82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a value of type <code>Type</code> from an HDF5 attribute named <code>name</code> <br /></td></tr>
+<tr class="separator:gad472d5cc0229a4223d83c95b80498d82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4f54874b9ff1dd8b47e0cd8521600707"><td class="memTemplParams" colspan="2"><a id="ga4f54874b9ff1dd8b47e0cd8521600707"></a>
+template&lt;typename Type &gt; </td></tr>
+<tr class="memitem:ga4f54874b9ff1dd8b47e0cd8521600707"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; Type &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga4f54874b9ff1dd8b47e0cd8521600707">h5::read_rank1_attribute</a> (hid_t group_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;name) noexcept</td></tr>
+<tr class="memdesc:ga4f54874b9ff1dd8b47e0cd8521600707"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read rank-1 of type <code>Type</code> from an HDF5 attribute named <code>name</code> <br /></td></tr>
+<tr class="separator:ga4f54874b9ff1dd8b47e0cd8521600707"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae0019ed4463e1ae246c881f908d4d7e0"><td class="memItemLeft" align="right" valign="top"><a id="gae0019ed4463e1ae246c881f908d4d7e0"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#gae0019ed4463e1ae246c881f908d4d7e0">h5::get_attribute_names</a> (hid_t file_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;group_name)</td></tr>
+<tr class="memdesc:gae0019ed4463e1ae246c881f908d4d7e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the names of all the attributes in a group. <br /></td></tr>
+<tr class="separator:gae0019ed4463e1ae246c881f908d4d7e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga515b30f7457c26b344f3a5b3ec89a0b7"><td class="memItemLeft" align="right" valign="top"><a id="ga515b30f7457c26b344f3a5b3ec89a0b7"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga515b30f7457c26b344f3a5b3ec89a0b7">h5::write_connectivity</a> (hid_t group_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; int &gt; &amp;connectivity) noexcept</td></tr>
+<tr class="memdesc:ga515b30f7457c26b344f3a5b3ec89a0b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write the connectivity into the group in the H5 file. <br /></td></tr>
+<tr class="separator:ga515b30f7457c26b344f3a5b3ec89a0b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf5f143cb730354ecd5675aa6536d5abd"><td class="memItemLeft" align="right" valign="top"><a id="gaf5f143cb730354ecd5675aa6536d5abd"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#gaf5f143cb730354ecd5675aa6536d5abd">h5::get_group_names</a> (hid_t file_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;group_name) noexcept</td></tr>
+<tr class="memdesc:gaf5f143cb730354ecd5675aa6536d5abd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the names of all the groups and datasets in a group. <br /></td></tr>
+<tr class="separator:gaf5f143cb730354ecd5675aa6536d5abd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9aeb4b997862441df689e7315c6c5510"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga9aeb4b997862441df689e7315c6c5510">h5::contains_dataset_or_group</a> (hid_t id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;group_name, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;dataset_name) noexcept</td></tr>
+<tr class="memdesc:ga9aeb4b997862441df689e7315c6c5510"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if <code>name</code> is a dataset or group in the subgroup <code>group_name</code> of <code>id</code>.  <a href="group__HDF5Group.html#ga9aeb4b997862441df689e7315c6c5510">More...</a><br /></td></tr>
+<tr class="separator:ga9aeb4b997862441df689e7315c6c5510"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa7a07697b281b9f7f6488704cff02576"><td class="memItemLeft" align="right" valign="top"><a id="gaa7a07697b281b9f7f6488704cff02576"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#gaa7a07697b281b9f7f6488704cff02576">h5::contains_attribute</a> (hid_t file_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;group_name, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;attribute_name)</td></tr>
+<tr class="memdesc:gaa7a07697b281b9f7f6488704cff02576"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if an attribute is in a group. <br /></td></tr>
+<tr class="separator:gaa7a07697b281b9f7f6488704cff02576"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga62dc64257367dd148150ef56c2bdb095"><td class="memItemLeft" align="right" valign="top"><a id="ga62dc64257367dd148150ef56c2bdb095"></a>
+hid_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga62dc64257367dd148150ef56c2bdb095">h5::open_dataset</a> (hid_t group_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;dataset_name) noexcept</td></tr>
+<tr class="memdesc:ga62dc64257367dd148150ef56c2bdb095"><td class="mdescLeft">&#160;</td><td class="mdescRight">Open an HDF5 dataset. <br /></td></tr>
+<tr class="separator:ga62dc64257367dd148150ef56c2bdb095"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9485584e0722a0b2d64a0bde9bf2d08f"><td class="memItemLeft" align="right" valign="top"><a id="ga9485584e0722a0b2d64a0bde9bf2d08f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga9485584e0722a0b2d64a0bde9bf2d08f">h5::close_dataset</a> (hid_t dataset_id) noexcept</td></tr>
+<tr class="memdesc:ga9485584e0722a0b2d64a0bde9bf2d08f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close an HDF5 dataset. <br /></td></tr>
+<tr class="separator:ga9485584e0722a0b2d64a0bde9bf2d08f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga57429e80571d02bf81521d970d755344"><td class="memItemLeft" align="right" valign="top"><a id="ga57429e80571d02bf81521d970d755344"></a>
+hid_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga57429e80571d02bf81521d970d755344">h5::open_dataspace</a> (hid_t dataset_id) noexcept</td></tr>
+<tr class="memdesc:ga57429e80571d02bf81521d970d755344"><td class="mdescLeft">&#160;</td><td class="mdescRight">Open an HDF5 dataspace. <br /></td></tr>
+<tr class="separator:ga57429e80571d02bf81521d970d755344"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga40aac718020d9bfeec55c9301fead441"><td class="memItemLeft" align="right" valign="top"><a id="ga40aac718020d9bfeec55c9301fead441"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga40aac718020d9bfeec55c9301fead441">h5::close_dataspace</a> (hid_t dataspace_id) noexcept</td></tr>
+<tr class="memdesc:ga40aac718020d9bfeec55c9301fead441"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close an HDF5 dataspace. <br /></td></tr>
+<tr class="separator:ga40aac718020d9bfeec55c9301fead441"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad9fc06d8487fc0729e590ff9fdbba51f"><td class="memTemplParams" colspan="2">template&lt;size_t Rank, typename T &gt; </td></tr>
+<tr class="memitem:gad9fc06d8487fc0729e590ff9fdbba51f"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#gad9fc06d8487fc0729e590ff9fdbba51f">h5::read_data</a> (hid_t group_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;dataset_name) noexcept</td></tr>
+<tr class="memdesc:gad9fc06d8487fc0729e590ff9fdbba51f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read an array of rank 0-3 into an object.  <a href="group__HDF5Group.html#gad9fc06d8487fc0729e590ff9fdbba51f">More...</a><br /></td></tr>
+<tr class="separator:gad9fc06d8487fc0729e590ff9fdbba51f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf8423b2077a552d564a9cc2da79cc198"><td class="memTemplParams" colspan="2"><a id="gaf8423b2077a552d564a9cc2da79cc198"></a>
+template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:gaf8423b2077a552d564a9cc2da79cc198"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classIndex.html">Index</a>&lt; Dim &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#gaf8423b2077a552d564a9cc2da79cc198">h5::read_extents</a> (hid_t group_id, const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;extents_name=&quot;Extents&quot;)</td></tr>
+<tr class="memdesc:gaf8423b2077a552d564a9cc2da79cc198"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the HDF5 attribute representing extents from a group. <br /></td></tr>
+<tr class="separator:gaf8423b2077a552d564a9cc2da79cc198"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0cde0ac1017c8a1ff1c02da6a19e05d5"><td class="memTemplParams" colspan="2"><a id="ga0cde0ac1017c8a1ff1c02da6a19e05d5"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga0cde0ac1017c8a1ff1c02da6a19e05d5"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga0cde0ac1017c8a1ff1c02da6a19e05d5">h5::StellarCollapseEos::get_scalar_dataset</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;dataset_name) const noexcept</td></tr>
+<tr class="memdesc:ga0cde0ac1017c8a1ff1c02da6a19e05d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">reads a rank-0 dataset (contains only one element) <br /></td></tr>
+<tr class="separator:ga0cde0ac1017c8a1ff1c02da6a19e05d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8de02f31ebcc4c06560e52159510063b"><td class="memItemLeft" align="right" valign="top"><a id="ga8de02f31ebcc4c06560e52159510063b"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga8de02f31ebcc4c06560e52159510063b">h5::StellarCollapseEos::get_rank1_dataset</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;dataset_name) const noexcept</td></tr>
+<tr class="memdesc:ga8de02f31ebcc4c06560e52159510063b"><td class="mdescLeft">&#160;</td><td class="mdescRight">reads a dataset with elements along 1 dimension <br /></td></tr>
+<tr class="separator:ga8de02f31ebcc4c06560e52159510063b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4eca62f64d210c695ce287a092c170c8"><td class="memItemLeft" align="right" valign="top"><a id="ga4eca62f64d210c695ce287a092c170c8"></a>
+boost::multi_array&lt; double, 3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga4eca62f64d210c695ce287a092c170c8">h5::StellarCollapseEos::get_rank3_dataset</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;dataset_name) const noexcept</td></tr>
+<tr class="memdesc:ga4eca62f64d210c695ce287a092c170c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">reads a dataset with elements along 3 dimensions <br /></td></tr>
+<tr class="separator:ga4eca62f64d210c695ce287a092c170c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2207323f530e6e11cacf06ba373f9b34"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga2207323f530e6e11cacf06ba373f9b34"><td class="memTemplItemLeft" align="right" valign="top">hid_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#ga2207323f530e6e11cacf06ba373f9b34">h5::h5_type</a> ()</td></tr>
+<tr class="memdesc:ga2207323f530e6e11cacf06ba373f9b34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the HDF5 datatype for the corresponding type <code>T</code>  <a href="group__HDF5Group.html#ga2207323f530e6e11cacf06ba373f9b34">More...</a><br /></td></tr>
+<tr class="separator:ga2207323f530e6e11cacf06ba373f9b34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaef3c3aa3a0ad0ee2e20394c73a2016d1"><td class="memItemLeft" align="right" valign="top"><a id="gaef3c3aa3a0ad0ee2e20394c73a2016d1"></a>
+hid_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__HDF5Group.html#gaef3c3aa3a0ad0ee2e20394c73a2016d1">h5::fortran_string</a> () noexcept</td></tr>
+<tr class="memdesc:gaef3c3aa3a0ad0ee2e20394c73a2016d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an H5 FORTRAN string. <br /></td></tr>
+<tr class="separator:gaef3c3aa3a0ad0ee2e20394c73a2016d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3bbd0c0f8cb0b45cc6e92aeadb2b83c2"><td class="memItemLeft" align="right" valign="top"><a id="ga3bbd0c0f8cb0b45cc6e92aeadb2b83c2"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>h5::h5f_acc_rdonly</b> () noexcept</td></tr>
+<tr class="separator:ga3bbd0c0f8cb0b45cc6e92aeadb2b83c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga966dcf85d7135af969ec00cbf2ab7beb"><td class="memItemLeft" align="right" valign="top"><a id="ga966dcf85d7135af969ec00cbf2ab7beb"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>h5::h5f_acc_rdwr</b> () noexcept</td></tr>
+<tr class="separator:ga966dcf85d7135af969ec00cbf2ab7beb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae0aa3979ff7f6ca4bc90642029a936bb"><td class="memItemLeft" align="right" valign="top"><a id="gae0aa3979ff7f6ca4bc90642029a936bb"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>h5::h5p_default</b> () noexcept</td></tr>
+<tr class="separator:gae0aa3979ff7f6ca4bc90642029a936bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa857edf844aa729a774bcbab93ba84ee"><td class="memItemLeft" align="right" valign="top"><a id="gaa857edf844aa729a774bcbab93ba84ee"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>h5::h5s_all</b> () noexcept</td></tr>
+<tr class="separator:gaa857edf844aa729a774bcbab93ba84ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6b12ad3acc4f5b88e0e8a99eda75fb51"><td class="memItemLeft" align="right" valign="top"><a id="ga6b12ad3acc4f5b88e0e8a99eda75fb51"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>h5::h5s_unlimited</b> () noexcept</td></tr>
+<tr class="separator:ga6b12ad3acc4f5b88e0e8a99eda75fb51"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga84b704d49ce2ec1340b3a485e831c92f"><td class="memItemLeft" align="right" valign="top"><a id="ga84b704d49ce2ec1340b3a485e831c92f"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>h5::h5s_scalar</b> () noexcept</td></tr>
+<tr class="separator:ga84b704d49ce2ec1340b3a485e831c92f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>Functions and classes for manipulating HDF5 files. </p>
+<h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="ga536504a5b4799ff7888691250c36fb68"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga536504a5b4799ff7888691250c36fb68">&#9670;&nbsp;</a></span>CHECK_H5</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CHECK_H5</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">h5_status, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">m&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keywordflow">if</span> (h5_status &lt; 0) {                     <span class="comment">/*NOLINT*/</span> \</div>
+<div class="line">    ERROR(<span class="stringliteral">&quot;Failed HDF5 operation: &quot;</span> &lt;&lt; m); <span class="comment">/*NOLINT*/</span> \</div>
+<div class="line">  } else                                              \</div>
+<div class="line">    static_cast&lt;void&gt;(0)</div>
+</div><!-- fragment -->
+<p>Check if an HDF5 operation was successful. </p>
+<p><em>Requires:</em> <code>h5_status</code> is a valid HDF5 return type, <code>m</code> is a stringstream syntax error message.</p>
+<p><em>Effects:</em> if <code>h5_status</code> is set to error then aborts execution else none </p>
+
+</div>
+</div>
+<h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="gaaedbaa5ac40077153c63212879f51197"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaaedbaa5ac40077153c63212879f51197">&#9670;&nbsp;</a></span>AccessType</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="group__HDF5Group.html#gaaedbaa5ac40077153c63212879f51197">h5::AccessType</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Set the access type to the <a class="el" href="classh5_1_1H5File.html" title="Opens an HDF5 file for access and allows manipulation of data.">H5File</a>. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ggaaedbaa5ac40077153c63212879f51197a70a2a84088d405a2e3f1e3accaa16723"></a>ReadWrite&#160;</td><td class="fielddoc"><p>Allow read-write access to the file. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggaaedbaa5ac40077153c63212879f51197a131fb182a881796e7606ed6da27f1197"></a>ReadOnly&#160;</td><td class="fielddoc"><p>Allow only read access to the file. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="ga9aeb4b997862441df689e7315c6c5510"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9aeb4b997862441df689e7315c6c5510">&#9670;&nbsp;</a></span>contains_dataset_or_group()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool h5::contains_dataset_or_group </td>
+          <td>(</td>
+          <td class="paramtype">hid_t&#160;</td>
+          <td class="paramname"><em>id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td>
+          <td class="paramname"><em>group_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td>
+          <td class="paramname"><em>dataset_name</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Check if <code>name</code> is a dataset or group in the subgroup <code>group_name</code> of <code>id</code>. </p>
+<dl class="section note"><dt>Note</dt><dd>To check the current id for <code>name</code>, pass <code>""</code> as <code>group_name</code>. </dd></dl>
+
+</div>
+</div>
+<a id="ga2207323f530e6e11cacf06ba373f9b34"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2207323f530e6e11cacf06ba373f9b34">&#9670;&nbsp;</a></span>h5_type()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">hid_t h5::h5_type </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns the HDF5 datatype for the corresponding type <code>T</code> </p>
+<p><em>Requires:</em> <code>T</code> is a valid type with a corresponding HDF5 datatype, i.e. a fundamental or a <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> </p>
+<p><em>Returns:</em> the HDF5 datatype for the corresponding type <code>T</code></p>
+<dl class="section note"><dt>Note</dt><dd>For strings, the returned type must be released with H5Tclose </dd></dl>
+
+</div>
+</div>
+<a id="gad9fc06d8487fc0729e590ff9fdbba51f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad9fc06d8487fc0729e590ff9fdbba51f">&#9670;&nbsp;</a></span>read_data()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Rank, typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">T h5::read_data </td>
+          <td>(</td>
+          <td class="paramtype">hid_t&#160;</td>
+          <td class="paramname"><em>group_id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td>
+          <td class="paramname"><em>dataset_name</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Read an array of rank 0-3 into an object. </p>
+<p>For each rank, the data can be read into objects of the following types: rank 0: double or int rank 1: <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a> or <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> rank 2: boost::multiarray or <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> rank 3: boost::multiarray or <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> </p>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

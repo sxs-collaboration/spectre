@@ -1,0 +1,502 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: h5::H5File&lt; Access_t &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceh5.html">h5</a></li><li class="navelem"><a class="el" href="classh5_1_1H5File.html">H5File</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classh5_1_1H5File-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">h5::H5File&lt; Access_t &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__HDF5Group.html">HDF5</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Opens an HDF5 file for access and allows manipulation of data.  
+ <a href="classh5_1_1H5File.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="File_8hpp_source.html">File.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a63efc51b917cab7fa47a01eac36c43b9"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1H5File.html#a63efc51b917cab7fa47a01eac36c43b9">H5File</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> file_name, bool append_to_file=false)</td></tr>
+<tr class="separator:a63efc51b917cab7fa47a01eac36c43b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad50212db5b0ec4141f328ee146a0b995"><td class="memItemLeft" align="right" valign="top"><a id="ad50212db5b0ec4141f328ee146a0b995"></a>
+const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1H5File.html#ad50212db5b0ec4141f328ee146a0b995">name</a> () const noexcept</td></tr>
+<tr class="memdesc:ad50212db5b0ec4141f328ee146a0b995"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get name of the H5 file. <br /></td></tr>
+<tr class="separator:ad50212db5b0ec4141f328ee146a0b995"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae43e54c6f83ca580459f583c75bfc14f"><td class="memItemLeft" align="right" valign="top"><a id="ae43e54c6f83ca580459f583c75bfc14f"></a>
+const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1H5File.html#ae43e54c6f83ca580459f583c75bfc14f">groups</a> () const noexcept</td></tr>
+<tr class="memdesc:ae43e54c6f83ca580459f583c75bfc14f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a> of the names of all immediate subgroups of the file. <br /></td></tr>
+<tr class="separator:ae43e54c6f83ca580459f583c75bfc14f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d08cecb7a4b3c5f0edc3fae810de00a"><td class="memTemplParams" colspan="2">template&lt;typename ObjectType , typename... Args&gt; </td></tr>
+<tr class="memitem:a0d08cecb7a4b3c5f0edc3fae810de00a"><td class="memTemplItemLeft" align="right" valign="top">ObjectType &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classh5_1_1H5File.html#a0d08cecb7a4b3c5f0edc3fae810de00a">insert</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;path, Args &amp;&amp;... args)</td></tr>
+<tr class="memdesc:a0d08cecb7a4b3c5f0edc3fae810de00a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert an object into an H5 file.  <a href="classh5_1_1H5File.html#a0d08cecb7a4b3c5f0edc3fae810de00a">More...</a><br /></td></tr>
+<tr class="separator:a0d08cecb7a4b3c5f0edc3fae810de00a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85c2b34accc553ce09b3281868391c86"><td class="memTemplParams" colspan="2"><a id="a85c2b34accc553ce09b3281868391c86"></a>
+template&lt;typename ObjectType , typename... Args&gt; </td></tr>
+<tr class="memitem:a85c2b34accc553ce09b3281868391c86"><td class="memTemplItemLeft" align="right" valign="top">ObjectType &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classh5_1_1H5File.html#a85c2b34accc553ce09b3281868391c86">try_insert</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;path, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:a85c2b34accc553ce09b3281868391c86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts an object like <code>insert</code> if it does not exist, returns the object if it does. <br /></td></tr>
+<tr class="separator:a85c2b34accc553ce09b3281868391c86"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0f7dd1e8f15fd2c261669b1a9e1e21c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1H5File.html#ae0f7dd1e8f15fd2c261669b1a9e1e21c">close_current_object</a> () const noexcept</td></tr>
+<tr class="separator:ae0f7dd1e8f15fd2c261669b1a9e1e21c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c1e1dcd072e5df8584ef556a1997c56"><td class="memTemplParams" colspan="2"><a id="a1c1e1dcd072e5df8584ef556a1997c56"></a>
+template&lt;typename ObjectType &gt; </td></tr>
+<tr class="memitem:a1c1e1dcd072e5df8584ef556a1997c56"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>exists</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;path) const noexcept</td></tr>
+<tr class="separator:a1c1e1dcd072e5df8584ef556a1997c56"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:af9dcf4b1ee5cea6b52b93d169a0bbdff"><td class="memItemLeft" align="right" valign="top"><a id="af9dcf4b1ee5cea6b52b93d169a0bbdff"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1H5File.html#af9dcf4b1ee5cea6b52b93d169a0bbdff">H5File</a> (const <a class="el" href="classh5_1_1H5File.html">H5File</a> &amp;)=delete</td></tr>
+<tr class="memdesc:af9dcf4b1ee5cea6b52b93d169a0bbdff"><td class="mdescLeft">&#160;</td><td class="mdescRight">It does not make sense to copy an object referring to a file, only to move it. <br /></td></tr>
+<tr class="separator:af9dcf4b1ee5cea6b52b93d169a0bbdff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e8285fa6e758f3e774e1d8d945fb460"><td class="memItemLeft" align="right" valign="top"><a id="a3e8285fa6e758f3e774e1d8d945fb460"></a>
+<a class="el" href="classh5_1_1H5File.html">H5File</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh5_1_1H5File.html#a3e8285fa6e758f3e774e1d8d945fb460">operator=</a> (const <a class="el" href="classh5_1_1H5File.html">H5File</a> &amp;)=delete</td></tr>
+<tr class="memdesc:a3e8285fa6e758f3e774e1d8d945fb460"><td class="mdescLeft">&#160;</td><td class="mdescRight">It does not make sense to copy an object referring to a file, only to move it. <br /></td></tr>
+<tr class="separator:a3e8285fa6e758f3e774e1d8d945fb460"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a9cc569025940746147a773c6ae283157"><td class="memTemplParams" colspan="2">template&lt;typename ObjectType , typename... Args, typename std::enable_if_t&lt;((void) sizeof(ObjectType), Access_t==AccessType::ReadWrite)&gt; *  = nullptr&gt; </td></tr>
+<tr class="memitem:a9cc569025940746147a773c6ae283157"><td class="memTemplItemLeft" align="right" valign="top">ObjectType &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classh5_1_1H5File.html#a9cc569025940746147a773c6ae283157">get</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;path, Args &amp;&amp;... args)</td></tr>
+<tr class="separator:a9cc569025940746147a773c6ae283157"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a543ba8d713fe832e312f4e54159a790e"><td class="memTemplParams" colspan="2">template&lt;typename ObjectType , typename... Args&gt; </td></tr>
+<tr class="memitem:a543ba8d713fe832e312f4e54159a790e"><td class="memTemplItemLeft" align="right" valign="top">const ObjectType &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classh5_1_1H5File.html#a543ba8d713fe832e312f4e54159a790e">get</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;path, Args &amp;&amp;... args) const</td></tr>
+<tr class="separator:a543ba8d713fe832e312f4e54159a790e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;AccessType Access_t&gt;<br />
+class h5::H5File&lt; Access_t &gt;</h3>
+
+<p>Opens an HDF5 file for access and allows manipulation of data. </p>
+<p>Opens an HDF5 file either in ReadOnly or ReadWrite mode depending on the template parameter <code>Access_t</code>. In ReadWrite mode <a class="el" href="classh5_1_1Object.html" title="Abstract base class representing an object in an HDF5 file.">h5::Object</a>'s can be inserted into the file, and objects can be retrieved to have their data manipulated. Example objects are dat files, text files, and volume data files. A single <a class="el" href="classh5_1_1H5File.html" title="Opens an HDF5 file for access and allows manipulation of data.">H5File</a> can contain many different objects so that the number of files stored during a simulation is reduced.</p>
+<p>When an h5::object inside an <a class="el" href="classh5_1_1H5File.html" title="Opens an HDF5 file for access and allows manipulation of data.">H5File</a> is opened or created the <a class="el" href="classh5_1_1H5File.html" title="Opens an HDF5 file for access and allows manipulation of data.">H5File</a> object holds a copy of the h5::object. Only one object can be open at a time, which means if a reference to the object is kept around after the <a class="el" href="classh5_1_1H5File.html" title="Opens an HDF5 file for access and allows manipulation of data.">H5File</a>'s current object is closed there is a dangling reference.</p>
+<h3>Example</h3>
+<p>To open a file for read-write access: </p><div class="fragment"><div class="line">    <a class="code" href="classh5_1_1H5File.html">h5::H5File&lt;h5::AccessType::ReadWrite&gt;</a> my_file(file_name);</div>
+</div><!-- fragment --> <dl class="section note"><dt>Note</dt><dd>The dangling reference issue could be fixed by having a function in addition to <code>get</code> that takes a lambda. The lambda takes exactly one parameter of the type of the <a class="el" href="classh5_1_1Object.html" title="Abstract base class representing an object in an HDF5 file.">h5::Object</a> it will be operating on. While this approach is likely to be syntactically strange for many users it will most likely be more performant than the <code>shared_ptr</code> solution.</dd></dl>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Access_t</td><td>either <a class="el" href="group__HDF5Group.html#ggaaedbaa5ac40077153c63212879f51197a70a2a84088d405a2e3f1e3accaa16723" title="Allow read-write access to the file.">h5::AccessType::ReadWrite</a> or <a class="el" href="group__HDF5Group.html#ggaaedbaa5ac40077153c63212879f51197a131fb182a881796e7606ed6da27f1197" title="Allow only read access to the file.">h5::AccessType::ReadOnly</a> </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a63efc51b917cab7fa47a01eac36c43b9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a63efc51b917cab7fa47a01eac36c43b9">&#9670;&nbsp;</a></span>H5File()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;AccessType Access_t&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classh5_1_1H5File.html">h5::H5File</a>&lt; Access_t &gt;::<a class="el" href="classh5_1_1H5File.html">H5File</a> </td>
+          <td>(</td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td>
+          <td class="paramname"><em>file_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>append_to_file</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">explicit</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p><em>Requires:</em> <code>file_name</code> is a valid path and ends in <code>.<a class="el" href="namespaceh5.html" title="Contains functions and classes for manipulating HDF5 files.">h5</a></code>. </p>
+<p><em>Effects:</em> On object creation opens the HDF5 file at <code>file_name</code></p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">file_name</td><td>the path to the file to open or create </td></tr>
+    <tr><td class="paramname">append_to_file</td><td>if true allow appending to the file, otherwise abort the simulation if the file exists </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="ae0f7dd1e8f15fd2c261669b1a9e1e21c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae0f7dd1e8f15fd2c261669b1a9e1e21c">&#9670;&nbsp;</a></span>close_current_object()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;AccessType Access_t&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classh5_1_1H5File.html">h5::H5File</a>&lt; Access_t &gt;::close_current_object </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p><em>Effects:</em> Closes the current object, if there is none then has no effect </p>
+
+</div>
+</div>
+<a id="a9cc569025940746147a773c6ae283157"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9cc569025940746147a773c6ae283157">&#9670;&nbsp;</a></span>get() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;AccessType Access_t&gt; </div>
+<div class="memtemplate">
+template&lt;typename ObjectType , typename... Args, typename std::enable_if_t&lt;((void) sizeof(ObjectType), Access_t==AccessType::ReadWrite)&gt; * &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">ObjectType &amp; <a class="el" href="classh5_1_1H5File.html">h5::H5File</a>&lt; Access_t &gt;::get </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Args &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><em>Requires:</em> <code>ObjectType</code> is a valid <a class="el" href="classh5_1_1Object.html" title="Abstract base class representing an object in an HDF5 file.">h5::Object</a> derived class, <code>path</code> is a valid path in the HDF5 file </p>
+<p><em>Returns:</em> a reference to the object inside the HDF5 file.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">ObjectType</td><td>the type of the <a class="el" href="classh5_1_1Object.html" title="Abstract base class representing an object in an HDF5 file.">h5::Object</a> to be retrieved, e.g. <a class="el" href="classh5_1_1Dat.html" title="Represents a multicolumn dat file inside an HDF5 file.">Dat</a> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>the path of the retrieved object </td></tr>
+    <tr><td class="paramname">args</td><td>arguments forwarded to the ObjectType constructor </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a543ba8d713fe832e312f4e54159a790e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a543ba8d713fe832e312f4e54159a790e">&#9670;&nbsp;</a></span>get() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;AccessType Access_t&gt; </div>
+<div class="memtemplate">
+template&lt;typename ObjectType , typename... Args&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">const ObjectType &amp; <a class="el" href="classh5_1_1H5File.html">h5::H5File</a>&lt; Access_t &gt;::get </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Args &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p><em>Requires:</em> <code>ObjectType</code> is a valid <a class="el" href="classh5_1_1Object.html" title="Abstract base class representing an object in an HDF5 file.">h5::Object</a> derived class, <code>path</code> is a valid path in the HDF5 file </p>
+<p><em>Returns:</em> a reference to the object inside the HDF5 file.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">ObjectType</td><td>the type of the <a class="el" href="classh5_1_1Object.html" title="Abstract base class representing an object in an HDF5 file.">h5::Object</a> to be retrieved, e.g. <a class="el" href="classh5_1_1Dat.html" title="Represents a multicolumn dat file inside an HDF5 file.">Dat</a> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>the path of the retrieved object </td></tr>
+    <tr><td class="paramname">args</td><td>arguments forwarded to the ObjectType constructor </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a0d08cecb7a4b3c5f0edc3fae810de00a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d08cecb7a4b3c5f0edc3fae810de00a">&#9670;&nbsp;</a></span>insert()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;AccessType Access_t&gt; </div>
+<div class="memtemplate">
+template&lt;typename ObjectType , typename... Args&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">ObjectType &amp; <a class="el" href="classh5_1_1H5File.html">h5::H5File</a>&lt; Access_t &gt;::insert </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &amp;&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Args &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Insert an object into an H5 file. </p>
+<p><em>Requires:</em> <code>ObjectType</code> is a valid <a class="el" href="classh5_1_1Object.html" title="Abstract base class representing an object in an HDF5 file.">h5::Object</a> derived class, <code>path</code> is a valid path in the HDF5 file, and <code>args</code> are valid arguments to be forwarded to the constructor of <code>ObjectType</code>. </p>
+<p><em>Effects:</em> Creates a new H5 object of type <code>ObjectType</code> at the location <code>path</code> in the HDF5 file.</p>
+<p><em>Returns:</em> a reference the created object.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">ObjectType</td><td>the type of the <a class="el" href="classh5_1_1Object.html" title="Abstract base class representing an object in an HDF5 file.">h5::Object</a> to be inserted, e.g. <a class="el" href="classh5_1_1Dat.html" title="Represents a multicolumn dat file inside an HDF5 file.">Dat</a> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>the path of the inserted object </td></tr>
+    <tr><td class="paramname">args</td><td>additional arguments to be passed to the constructor of the object </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/IO/H5/<a class="el" href="File_8hpp_source.html">File.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="aclassh5_1_1H5File_html"><div class="ttname"><a href="classh5_1_1H5File.html">h5::H5File&lt; h5::AccessType::ReadWrite &gt;</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

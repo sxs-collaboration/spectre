@@ -1,0 +1,435 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: ActionTesting::MockRuntimeSystem&lt; Metavariables &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceActionTesting.html">ActionTesting</a></li><li class="navelem"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classActionTesting_1_1MockRuntimeSystem-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">ActionTesting::MockRuntimeSystem&lt; Metavariables &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__TestingFrameworkGroup.html">Testing Framework</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><code>#include &lt;<a class="el" href="MockRuntimeSystem_8hpp_source.html">MockRuntimeSystem.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActionTesting_1_1MockRuntimeSystem_1_1InboxesTag.html">InboxesTag</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActionTesting_1_1MockRuntimeSystem_1_1MockDistributedObjectsTag.html">MockDistributedObjectsTag</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a43b5650906f13bb1e807637378516274"><td class="memItemLeft" align="right" valign="top"><a id="a43b5650906f13bb1e807637378516274"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>GlobalCache</b> = <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt;</td></tr>
+<tr class="separator:a43b5650906f13bb1e807637378516274"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac17b91f9ee7c55835a8cb7957de987e2"><td class="memItemLeft" align="right" valign="top"><a id="ac17b91f9ee7c55835a8cb7957de987e2"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>CacheTuple</b> = tuples::tagged_tuple_from_typelist&lt; <a class="el" href="group__ParallelGroup.html#ga03e3053314568ebf144ba895c04ead0e">Parallel::get_const_global_cache_tags</a>&lt; Metavariables &gt; &gt;</td></tr>
+<tr class="separator:ac17b91f9ee7c55835a8cb7957de987e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4bdbf3431fb032d1625577f65e5593c4"><td class="memItemLeft" align="right" valign="top"><a id="a4bdbf3431fb032d1625577f65e5593c4"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>MutableCacheTuple</b> = tuples::tagged_tuple_from_typelist&lt; <a class="el" href="group__ParallelGroup.html#gab10d351ad8ecf07b1ec23dbad2e70a3d">Parallel::get_mutable_global_cache_tags</a>&lt; Metavariables &gt; &gt;</td></tr>
+<tr class="separator:a4bdbf3431fb032d1625577f65e5593c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a83ff24b0da6dd25d66c82ac3e9026484"><td class="memItemLeft" align="right" valign="top"><a id="a83ff24b0da6dd25d66c82ac3e9026484"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>mock_objects_tags</b> = tmpl::transform&lt; typename Metavariables::component_list, tmpl::bind&lt; <a class="el" href="structActionTesting_1_1MockRuntimeSystem_1_1MockDistributedObjectsTag.html">MockDistributedObjectsTag</a>, tmpl::_1 &gt; &gt;</td></tr>
+<tr class="separator:a83ff24b0da6dd25d66c82ac3e9026484"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18a6fd2f8e6da72958795348701acfe3"><td class="memItemLeft" align="right" valign="top"><a id="a18a6fd2f8e6da72958795348701acfe3"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>CollectionOfMockDistributedObjects</b> = tuples::tagged_tuple_from_typelist&lt; mock_objects_tags &gt;</td></tr>
+<tr class="separator:a18a6fd2f8e6da72958795348701acfe3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f1d39516796e387e256437277229114"><td class="memItemLeft" align="right" valign="top"><a id="a1f1d39516796e387e256437277229114"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>Inboxes</b> = tuples::tagged_tuple_from_typelist&lt; tmpl::transform&lt; typename Metavariables::component_list, tmpl::bind&lt; <a class="el" href="structActionTesting_1_1MockRuntimeSystem_1_1InboxesTag.html">InboxesTag</a>, tmpl::_1 &gt; &gt;&gt;</td></tr>
+<tr class="separator:a1f1d39516796e387e256437277229114"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a6c1e9f09378818c4b20b78fd4a15fa54"><td class="memItemLeft" align="right" valign="top"><a id="a6c1e9f09378818c4b20b78fd4a15fa54"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MockRuntimeSystem</b> (const <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a> &amp;)=delete</td></tr>
+<tr class="separator:a6c1e9f09378818c4b20b78fd4a15fa54"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5dcf02951b0c4a2814b362f6c7ff0f45"><td class="memItemLeft" align="right" valign="top"><a id="a5dcf02951b0c4a2814b362f6c7ff0f45"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MockRuntimeSystem</b> (<a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a> &amp;&amp;)=delete</td></tr>
+<tr class="separator:a5dcf02951b0c4a2814b362f6c7ff0f45"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a609da92b24b0bb019eedd3c50475cc6c"><td class="memItemLeft" align="right" valign="top"><a id="a609da92b24b0bb019eedd3c50475cc6c"></a>
+<a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a> &amp;)=delete</td></tr>
+<tr class="separator:a609da92b24b0bb019eedd3c50475cc6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab1639876572174ccc30ac38142ffc41f"><td class="memItemLeft" align="right" valign="top"><a id="ab1639876572174ccc30ac38142ffc41f"></a>
+<a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classActionTesting_1_1MockRuntimeSystem.html">MockRuntimeSystem</a> &amp;&amp;)=delete</td></tr>
+<tr class="separator:ab1639876572174ccc30ac38142ffc41f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb177bc04f2d9fd5621f0d5f7334157a"><td class="memItemLeft" align="right" valign="top"><a id="adb177bc04f2d9fd5621f0d5f7334157a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#adb177bc04f2d9fd5621f0d5f7334157a">MockRuntimeSystem</a> (CacheTuple cache_contents, MutableCacheTuple mutable_cache_contents={}, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; size_t &gt; &amp;number_of_mock_cores_on_each_mock_node={1})</td></tr>
+<tr class="memdesc:adb177bc04f2d9fd5621f0d5f7334157a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct from the tuple of GlobalCache objects. <br /></td></tr>
+<tr class="separator:adb177bc04f2d9fd5621f0d5f7334157a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aae874331efa016dba24753dc2979632c"><td class="memTemplParams" colspan="2"><a id="aae874331efa016dba24753dc2979632c"></a>
+template&lt;typename... CacheTags, typename... MutableCacheTags&gt; </td></tr>
+<tr class="memitem:aae874331efa016dba24753dc2979632c"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#aae874331efa016dba24753dc2979632c">MockRuntimeSystem</a> (<a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; CacheTags... &gt; cache_contents, <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; MutableCacheTags... &gt; mutable_cache_contents={}, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; size_t &gt; &amp;number_of_mock_cores_on_each_mock_node={1})</td></tr>
+<tr class="memdesc:aae874331efa016dba24753dc2979632c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct from the tuple of GlobalCache and MutableGlobalCache objects that might be in a different order. <br /></td></tr>
+<tr class="separator:aae874331efa016dba24753dc2979632c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94abe8467990076e9aaa54154779f12e"><td class="memTemplParams" colspan="2"><a id="a94abe8467990076e9aaa54154779f12e"></a>
+template&lt;typename Component , typename... Options&gt; </td></tr>
+<tr class="memitem:a94abe8467990076e9aaa54154779f12e"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#a94abe8467990076e9aaa54154779f12e">emplace_array_component</a> (const <a class="el" href="structActionTesting_1_1NodeId.html">NodeId</a> node_id, const <a class="el" href="structActionTesting_1_1LocalCoreId.html">LocalCoreId</a> local_core_id, const typename Component::array_index &amp;array_index, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a94abe8467990076e9aaa54154779f12e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplace an array component that does not need to be initialized. <br /></td></tr>
+<tr class="separator:a94abe8467990076e9aaa54154779f12e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ab8eefd57169dc4566de657b294b976"><td class="memTemplParams" colspan="2"><a id="a7ab8eefd57169dc4566de657b294b976"></a>
+template&lt;typename Component , typename... Options&gt; </td></tr>
+<tr class="memitem:a7ab8eefd57169dc4566de657b294b976"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#a7ab8eefd57169dc4566de657b294b976">emplace_singleton_component</a> (const <a class="el" href="structActionTesting_1_1NodeId.html">NodeId</a> node_id, const <a class="el" href="structActionTesting_1_1LocalCoreId.html">LocalCoreId</a> local_core_id, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a7ab8eefd57169dc4566de657b294b976"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplace a singleton component that does not need to be initialized. <br /></td></tr>
+<tr class="separator:a7ab8eefd57169dc4566de657b294b976"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a55afa89d585885461f5bb84191f88ffb"><td class="memTemplParams" colspan="2"><a id="a55afa89d585885461f5bb84191f88ffb"></a>
+template&lt;typename Component , typename... Options&gt; </td></tr>
+<tr class="memitem:a55afa89d585885461f5bb84191f88ffb"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#a55afa89d585885461f5bb84191f88ffb">emplace_group_component</a> (Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a55afa89d585885461f5bb84191f88ffb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplace a group component that does not need to be initialized. <br /></td></tr>
+<tr class="separator:a55afa89d585885461f5bb84191f88ffb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8cadd6a145ff3e1a5b388091444fbc72"><td class="memTemplParams" colspan="2"><a id="a8cadd6a145ff3e1a5b388091444fbc72"></a>
+template&lt;typename Component , typename... Options&gt; </td></tr>
+<tr class="memitem:a8cadd6a145ff3e1a5b388091444fbc72"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#a8cadd6a145ff3e1a5b388091444fbc72">emplace_nodegroup_component</a> (Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a8cadd6a145ff3e1a5b388091444fbc72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplace a nodegroup component that does not need to be initialized. <br /></td></tr>
+<tr class="separator:a8cadd6a145ff3e1a5b388091444fbc72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d918d386cd73b4d66491b40498bdb5f"><td class="memTemplParams" colspan="2"><a id="a6d918d386cd73b4d66491b40498bdb5f"></a>
+template&lt;typename Component , typename... Options&gt; </td></tr>
+<tr class="memitem:a6d918d386cd73b4d66491b40498bdb5f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#a6d918d386cd73b4d66491b40498bdb5f">emplace_component</a> (const typename Component::array_index &amp;array_index, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a6d918d386cd73b4d66491b40498bdb5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplace a component that does not need to be initialized. emplace_component is deprecated in favor of emplace_array_component, emplace_singleton_component, emplace_group_component, and emplace_nodegroup_component. <br /></td></tr>
+<tr class="separator:a6d918d386cd73b4d66491b40498bdb5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a8c88e7422e473cb95bf0bdefe8f78e"><td class="memTemplParams" colspan="2"><a id="a8a8c88e7422e473cb95bf0bdefe8f78e"></a>
+template&lt;typename Component , typename... Options&gt; </td></tr>
+<tr class="memitem:a8a8c88e7422e473cb95bf0bdefe8f78e"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#a8a8c88e7422e473cb95bf0bdefe8f78e">emplace_array_component_and_initialize</a> (const <a class="el" href="structActionTesting_1_1NodeId.html">NodeId</a> node_id, const <a class="el" href="structActionTesting_1_1LocalCoreId.html">LocalCoreId</a> local_core_id, const typename Component::array_index &amp;array_index, const typename detail::get_initialization&lt; Component &gt;::InitialValues &amp;initial_values, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a8a8c88e7422e473cb95bf0bdefe8f78e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplace an array component that needs to be initialized. <br /></td></tr>
+<tr class="separator:a8a8c88e7422e473cb95bf0bdefe8f78e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7a6e43cae9a674674e5604dd6655a97a"><td class="memTemplParams" colspan="2"><a id="a7a6e43cae9a674674e5604dd6655a97a"></a>
+template&lt;typename Component , typename... Options&gt; </td></tr>
+<tr class="memitem:a7a6e43cae9a674674e5604dd6655a97a"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#a7a6e43cae9a674674e5604dd6655a97a">emplace_singleton_component_and_initialize</a> (const <a class="el" href="structActionTesting_1_1NodeId.html">NodeId</a> node_id, const <a class="el" href="structActionTesting_1_1LocalCoreId.html">LocalCoreId</a> local_core_id, const typename detail::get_initialization&lt; Component &gt;::InitialValues &amp;initial_values, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a7a6e43cae9a674674e5604dd6655a97a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplace a singleton component that needs to be initialized. <br /></td></tr>
+<tr class="separator:a7a6e43cae9a674674e5604dd6655a97a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a749d84d01fd0ecccb751c21905dd342c"><td class="memTemplParams" colspan="2"><a id="a749d84d01fd0ecccb751c21905dd342c"></a>
+template&lt;typename Component , typename... Options&gt; </td></tr>
+<tr class="memitem:a749d84d01fd0ecccb751c21905dd342c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#a749d84d01fd0ecccb751c21905dd342c">emplace_group_component_and_initialize</a> (const typename detail::get_initialization&lt; Component &gt;::InitialValues &amp;initial_values, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a749d84d01fd0ecccb751c21905dd342c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplace a group component that needs to be initialized. <br /></td></tr>
+<tr class="separator:a749d84d01fd0ecccb751c21905dd342c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04189d002fe643beb6c79c90292b6b2c"><td class="memTemplParams" colspan="2"><a id="a04189d002fe643beb6c79c90292b6b2c"></a>
+template&lt;typename Component , typename... Options&gt; </td></tr>
+<tr class="memitem:a04189d002fe643beb6c79c90292b6b2c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#a04189d002fe643beb6c79c90292b6b2c">emplace_nodegroup_component_and_initialize</a> (const typename detail::get_initialization&lt; Component &gt;::InitialValues &amp;initial_values, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a04189d002fe643beb6c79c90292b6b2c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplace a nodegroup component that needs to be initialized. <br /></td></tr>
+<tr class="separator:a04189d002fe643beb6c79c90292b6b2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24157329b86e0d15406ad828deffa044"><td class="memTemplParams" colspan="2"><a id="a24157329b86e0d15406ad828deffa044"></a>
+template&lt;typename Component , typename... Options, typename Metavars  = Metavariables, Requires&lt; detail::has_initialization_phase_v&lt; Metavars &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a24157329b86e0d15406ad828deffa044"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#a24157329b86e0d15406ad828deffa044">emplace_component_and_initialize</a> (const typename Component::array_index &amp;array_index, const typename detail::get_initialization&lt; Component &gt;::InitialValues &amp;initial_values, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a24157329b86e0d15406ad828deffa044"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplace a component that needs to be initialized. emplace_component_and_initialize is deprecated in favor of emplace_array_component_and_initialize, emplace_singleton_component_and_initialize, emplace_group_component_and_initialize, and emplace_nodegroup_component_and_initialize. <br /></td></tr>
+<tr class="separator:a24157329b86e0d15406ad828deffa044"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeeb6c10591fdea951bc206ffed80d7bc"><td class="memTemplParams" colspan="2"><a id="aeeb6c10591fdea951bc206ffed80d7bc"></a>
+template&lt;typename Component &gt; </td></tr>
+<tr class="memitem:aeeb6c10591fdea951bc206ffed80d7bc"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#aeeb6c10591fdea951bc206ffed80d7bc">is_simple_action_queue_empty</a> (const typename Component::array_index &amp;array_index) const noexcept</td></tr>
+<tr class="memdesc:aeeb6c10591fdea951bc206ffed80d7bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if there are no queued simple actions on the <code>Component</code> labeled by <code>array_index</code>. <br /></td></tr>
+<tr class="separator:aeeb6c10591fdea951bc206ffed80d7bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a56741cd2d7743f42ac36cdf0d788a942"><td class="memTemplParams" colspan="2"><a id="a56741cd2d7743f42ac36cdf0d788a942"></a>
+template&lt;typename Component &gt; </td></tr>
+<tr class="memitem:a56741cd2d7743f42ac36cdf0d788a942"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#a56741cd2d7743f42ac36cdf0d788a942">number_of_queued_simple_actions</a> (const typename Component::array_index &amp;array_index) const noexcept</td></tr>
+<tr class="memdesc:a56741cd2d7743f42ac36cdf0d788a942"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the number of queued simple actions on the <code>Component</code> labeled by <code>array_index</code>. <br /></td></tr>
+<tr class="separator:a56741cd2d7743f42ac36cdf0d788a942"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac08a3724790470a3a8a379c3aff52903"><td class="memTemplParams" colspan="2"><a id="ac08a3724790470a3a8a379c3aff52903"></a>
+template&lt;typename Component &gt; </td></tr>
+<tr class="memitem:ac08a3724790470a3a8a379c3aff52903"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#ac08a3724790470a3a8a379c3aff52903">invoke_queued_simple_action</a> (const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:ac08a3724790470a3a8a379c3aff52903"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke the next queued simple action on the <code>Component</code> labeled by <code>array_index</code>. <br /></td></tr>
+<tr class="separator:ac08a3724790470a3a8a379c3aff52903"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8115bd2e974c3dfe7d932f68a69b2cd1"><td class="memTemplParams" colspan="2"><a id="a8115bd2e974c3dfe7d932f68a69b2cd1"></a>
+template&lt;typename Component &gt; </td></tr>
+<tr class="memitem:a8115bd2e974c3dfe7d932f68a69b2cd1"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#a8115bd2e974c3dfe7d932f68a69b2cd1">is_threaded_action_queue_empty</a> (const typename Component::array_index &amp;array_index) const noexcept</td></tr>
+<tr class="memdesc:a8115bd2e974c3dfe7d932f68a69b2cd1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if there are no queued threaded actions on the <code>Component</code> labeled by <code>array_index</code>. <br /></td></tr>
+<tr class="separator:a8115bd2e974c3dfe7d932f68a69b2cd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a334150310051bab9f18e410839f39837"><td class="memTemplParams" colspan="2"><a id="a334150310051bab9f18e410839f39837"></a>
+template&lt;typename Component &gt; </td></tr>
+<tr class="memitem:a334150310051bab9f18e410839f39837"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#a334150310051bab9f18e410839f39837">number_of_queued_threaded_actions</a> (const typename Component::array_index &amp;array_index) const noexcept</td></tr>
+<tr class="memdesc:a334150310051bab9f18e410839f39837"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the number of queued threaded actions on the <code>Component</code> labeled by <code>array_index</code>. <br /></td></tr>
+<tr class="separator:a334150310051bab9f18e410839f39837"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a0bd5cbc30a6e24d81a2a92653774ef"><td class="memTemplParams" colspan="2"><a id="a4a0bd5cbc30a6e24d81a2a92653774ef"></a>
+template&lt;typename Component &gt; </td></tr>
+<tr class="memitem:a4a0bd5cbc30a6e24d81a2a92653774ef"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#a4a0bd5cbc30a6e24d81a2a92653774ef">invoke_queued_threaded_action</a> (const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a4a0bd5cbc30a6e24d81a2a92653774ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke the next queued threaded action on the <code>Component</code> labeled by <code>array_index</code>. <br /></td></tr>
+<tr class="separator:a4a0bd5cbc30a6e24d81a2a92653774ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe29a8f091aeb9e5c01f0733fd00dfd5"><td class="memTemplParams" colspan="2"><a id="abe29a8f091aeb9e5c01f0733fd00dfd5"></a>
+template&lt;typename Component , typename Action &gt; </td></tr>
+<tr class="memitem:abe29a8f091aeb9e5c01f0733fd00dfd5"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#abe29a8f091aeb9e5c01f0733fd00dfd5">force_next_action_to_be</a> (const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:abe29a8f091aeb9e5c01f0733fd00dfd5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instead of the next call to <code>next_action</code> applying the next action in the action list, force the next action to be <code>Action</code> <br /></td></tr>
+<tr class="separator:abe29a8f091aeb9e5c01f0733fd00dfd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af013cd1953643239fbaacbb47ab200ca"><td class="memTemplParams" colspan="2"><a id="af013cd1953643239fbaacbb47ab200ca"></a>
+template&lt;typename Component &gt; </td></tr>
+<tr class="memitem:af013cd1953643239fbaacbb47ab200ca"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#af013cd1953643239fbaacbb47ab200ca">get_next_action_index</a> (const typename Component::array_index &amp;array_index) const noexcept</td></tr>
+<tr class="memdesc:af013cd1953643239fbaacbb47ab200ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain the index into the action list of the next action. <br /></td></tr>
+<tr class="separator:af013cd1953643239fbaacbb47ab200ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a499ad8eadbca9ec2caa4b59a3ec1b7a8"><td class="memTemplParams" colspan="2"><a id="a499ad8eadbca9ec2caa4b59a3ec1b7a8"></a>
+template&lt;typename Component &gt; </td></tr>
+<tr class="memitem:a499ad8eadbca9ec2caa4b59a3ec1b7a8"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#a499ad8eadbca9ec2caa4b59a3ec1b7a8">next_action</a> (const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a499ad8eadbca9ec2caa4b59a3ec1b7a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke the next action in the ActionList on the parallel component <code>Component</code> on the component labeled by <code>array_index</code>, failing if it was not ready. <br /></td></tr>
+<tr class="separator:a499ad8eadbca9ec2caa4b59a3ec1b7a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1d96cbf847d956e200af1127d726635"><td class="memTemplParams" colspan="2"><a id="ac1d96cbf847d956e200af1127d726635"></a>
+template&lt;typename Component &gt; </td></tr>
+<tr class="memitem:ac1d96cbf847d956e200af1127d726635"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#ac1d96cbf847d956e200af1127d726635">next_action_if_ready</a> (const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:ac1d96cbf847d956e200af1127d726635"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke the next action in the ActionList on the parallel component <code>Component</code> on the component labeled by <code>array_index</code>, returning whether it was ready. <br /></td></tr>
+<tr class="separator:ac1d96cbf847d956e200af1127d726635"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad53fc2f2992022cf6866ca38a0b35b92"><td class="memTemplParams" colspan="2"><a id="ad53fc2f2992022cf6866ca38a0b35b92"></a>
+template&lt;typename Component , typename InboxTag &gt; </td></tr>
+<tr class="memitem:ad53fc2f2992022cf6866ca38a0b35b92"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#ad53fc2f2992022cf6866ca38a0b35b92">nonempty_inboxes</a> () noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set</a>&lt; typename Component::array_index &gt;</td></tr>
+<tr class="memdesc:ad53fc2f2992022cf6866ca38a0b35b92"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find the set of array indices on Component where the specified inbox is not empty. <br /></td></tr>
+<tr class="separator:ad53fc2f2992022cf6866ca38a0b35b92"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d752ed3d57d29e871ec8351381531e3"><td class="memTemplParams" colspan="2"><a id="a9d752ed3d57d29e871ec8351381531e3"></a>
+template&lt;typename Component &gt; </td></tr>
+<tr class="memitem:a9d752ed3d57d29e871ec8351381531e3"><td class="memTemplItemLeft" align="right" valign="top">auto &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#a9d752ed3d57d29e871ec8351381531e3">mock_distributed_objects</a> () noexcept</td></tr>
+<tr class="memdesc:a9d752ed3d57d29e871ec8351381531e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the mocked distributed objects for a component, indexed by array index. <br /></td></tr>
+<tr class="separator:a9d752ed3d57d29e871ec8351381531e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31950c64a7cced9131d8d40dd1d4a01d"><td class="memTemplParams" colspan="2"><a id="a31950c64a7cced9131d8d40dd1d4a01d"></a>
+template&lt;typename Component &gt; </td></tr>
+<tr class="memitem:a31950c64a7cced9131d8d40dd1d4a01d"><td class="memTemplItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>mock_distributed_objects</b> () const noexcept</td></tr>
+<tr class="separator:a31950c64a7cced9131d8d40dd1d4a01d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae306f3e1cf94e630bbd54b030aae103f"><td class="memItemLeft" align="right" valign="top"><a id="ae306f3e1cf94e630bbd54b030aae103f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#ae306f3e1cf94e630bbd54b030aae103f">set_phase</a> (const typename Metavariables::Phase next_phase) noexcept</td></tr>
+<tr class="memdesc:ae306f3e1cf94e630bbd54b030aae103f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the phase of all parallel components to <code>next_phase</code> <br /></td></tr>
+<tr class="separator:ae306f3e1cf94e630bbd54b030aae103f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a947faa31b5a674df992e4d447c1ff176"><td class="memItemLeft" align="right" valign="top"><a id="a947faa31b5a674df992e4d447c1ff176"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#a947faa31b5a674df992e4d447c1ff176">num_global_cores</a> () const noexcept</td></tr>
+<tr class="memdesc:a947faa31b5a674df992e4d447c1ff176"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return number of (mock) global cores. <br /></td></tr>
+<tr class="separator:a947faa31b5a674df992e4d447c1ff176"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1e9030340dc0605509ef8f41c8859cac"><td class="memItemLeft" align="right" valign="top"><a id="a1e9030340dc0605509ef8f41c8859cac"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#a1e9030340dc0605509ef8f41c8859cac">num_nodes</a> () const noexcept</td></tr>
+<tr class="memdesc:a1e9030340dc0605509ef8f41c8859cac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return number of (mock) nodes. <br /></td></tr>
+<tr class="separator:a1e9030340dc0605509ef8f41c8859cac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:af6f98fe1d9efedbe03fa15b1ad7fec9d"><td class="memTemplParams" colspan="2"><a id="af6f98fe1d9efedbe03fa15b1ad7fec9d"></a>
+template&lt;typename Component , typename Action , typename Arg0 , typename... Args&gt; </td></tr>
+<tr class="memitem:af6f98fe1d9efedbe03fa15b1ad7fec9d"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#af6f98fe1d9efedbe03fa15b1ad7fec9d">simple_action</a> (const typename Component::array_index &amp;array_index, Arg0 &amp;&amp;arg0, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:af6f98fe1d9efedbe03fa15b1ad7fec9d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke the simple action <code>Action</code> on the <code>Component</code> labeled by <code>array_index</code> immediately. <br /></td></tr>
+<tr class="separator:af6f98fe1d9efedbe03fa15b1ad7fec9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa53ffccc0ae01a17b953b4605171fd7b"><td class="memTemplParams" colspan="2"><a id="aa53ffccc0ae01a17b953b4605171fd7b"></a>
+template&lt;typename Component , typename Action &gt; </td></tr>
+<tr class="memitem:aa53ffccc0ae01a17b953b4605171fd7b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#aa53ffccc0ae01a17b953b4605171fd7b">simple_action</a> (const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:aa53ffccc0ae01a17b953b4605171fd7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke the simple action <code>Action</code> on the <code>Component</code> labeled by <code>array_index</code> immediately. <br /></td></tr>
+<tr class="separator:aa53ffccc0ae01a17b953b4605171fd7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a8461d9372c0cf837cca2742993f04d13"><td class="memTemplParams" colspan="2"><a id="a8461d9372c0cf837cca2742993f04d13"></a>
+template&lt;typename Component , typename Action , typename Arg0 , typename... Args&gt; </td></tr>
+<tr class="memitem:a8461d9372c0cf837cca2742993f04d13"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#a8461d9372c0cf837cca2742993f04d13">threaded_action</a> (const typename Component::array_index &amp;array_index, Arg0 &amp;&amp;arg0, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:a8461d9372c0cf837cca2742993f04d13"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke the threaded action <code>Action</code> on the <code>Component</code> labeled by <code>array_index</code> immediately. <br /></td></tr>
+<tr class="separator:a8461d9372c0cf837cca2742993f04d13"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af18c7aba445e3f01c5c5058940ef234d"><td class="memTemplParams" colspan="2"><a id="af18c7aba445e3f01c5c5058940ef234d"></a>
+template&lt;typename Component , typename Action &gt; </td></tr>
+<tr class="memitem:af18c7aba445e3f01c5c5058940ef234d"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#af18c7aba445e3f01c5c5058940ef234d">threaded_action</a> (const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:af18c7aba445e3f01c5c5058940ef234d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke the threaded action <code>Action</code> on the <code>Component</code> labeled by <code>array_index</code> immediately. <br /></td></tr>
+<tr class="separator:af18c7aba445e3f01c5c5058940ef234d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ab3de6b8a548630cf7b29532009694a0a"><td class="memTemplParams" colspan="2"><a id="ab3de6b8a548630cf7b29532009694a0a"></a>
+template&lt;typename Component &gt; </td></tr>
+<tr class="memitem:ab3de6b8a548630cf7b29532009694a0a"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#ab3de6b8a548630cf7b29532009694a0a">inboxes</a> () noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; typename Component::array_index, tuples::tagged_tuple_from_typelist&lt; typename <a class="el" href="classActionTesting_1_1MockDistributedObject.html">MockDistributedObject</a>&lt; Component &gt;::inbox_tags_list &gt;&gt; &amp;</td></tr>
+<tr class="memdesc:ab3de6b8a548630cf7b29532009694a0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the inboxes for a given component. <br /></td></tr>
+<tr class="separator:ab3de6b8a548630cf7b29532009694a0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd06bb66246d248b7ba22a79dec34af0"><td class="memTemplParams" colspan="2"><a id="abd06bb66246d248b7ba22a79dec34af0"></a>
+template&lt;typename Component &gt; </td></tr>
+<tr class="memitem:abd06bb66246d248b7ba22a79dec34af0"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classActionTesting_1_1MockRuntimeSystem.html#abd06bb66246d248b7ba22a79dec34af0">inboxes</a> () const noexcept -&gt; const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; typename Component::array_index, tuples::tagged_tuple_from_typelist&lt; typename <a class="el" href="classActionTesting_1_1MockDistributedObject.html">MockDistributedObject</a>&lt; Component &gt;::inbox_tags_list &gt;&gt; &amp;</td></tr>
+<tr class="memdesc:abd06bb66246d248b7ba22a79dec34af0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the inboxes for a given component. <br /></td></tr>
+<tr class="separator:abd06bb66246d248b7ba22a79dec34af0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename Metavariables&gt;<br />
+class ActionTesting::MockRuntimeSystem&lt; Metavariables &gt;</h3>
+
+<p>A class that mocks the infrastructure needed to run actions. It simulates message passing using the inbox infrastructure and handles most of the arguments to the apply method. This mocks the Charm++ runtime system as well as the layer built on top of it as part of SpECTRE. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>tests/Unit/Framework/<a class="el" href="MockRuntimeSystem_8hpp_source.html">MockRuntimeSystem.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,474 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Utilities/Gsl.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_703734d551dc6f7d643184484c894e35.html">Utilities</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#define-members">Macros</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
+  <div class="headertitle">
+<div class="title">Gsl.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/algorithm.html">algorithm</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/array.html">array</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/iterator.html">iterator</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/limits.html">limits</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/stdexcept.html">stdexcept</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</code><br />
+<code>#include &quot;<a class="el" href="ExpectsAndEnsures_8hpp_source.html">Utilities/ErrorHandling/ExpectsAndEnsures.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="ForceInline_8hpp_source.html">Utilities/ForceInline.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="Literals_8hpp_source.html">Utilities/Literals.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="PrettyType_8hpp_source.html">Utilities/PrettyType.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="Requires_8hpp_source.html">Utilities/Requires.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="TMPL_8hpp_source.html">Utilities/TMPL.hpp</a>&quot;</code><br />
+</div>
+<p><a href="Gsl_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null&lt; T &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Require a pointer to not be a <code>nullptr</code>  <a href="classgsl_1_1not__null.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgsl_1_1span.html">gsl::span&lt; ElementType, Extent &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a span/view on a range, which is cheap to copy (one pointer).  <a href="classgsl_1_1span.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgsl_1_1span.html">gsl::span&lt; ElementType, Extent &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a span/view on a range, which is cheap to copy (one pointer).  <a href="classgsl_1_1span.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespacegsl"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegsl.html">gsl</a></td></tr>
+<tr class="memdesc:namespacegsl"><td class="mdescLeft">&#160;</td><td class="mdescRight">Implementations from the Guideline Support Library. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:gaffde14445f49f65ff4f5b592e44ee71a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gaffde14445f49f65ff4f5b592e44ee71a">LIKELY</a>(x)&#160;&#160;&#160;(x)</td></tr>
+<tr class="separator:gaffde14445f49f65ff4f5b592e44ee71a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab10d0a221f4d7a706701b806c8135fd7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a>(x)&#160;&#160;&#160;(x)</td></tr>
+<tr class="separator:gab10d0a221f4d7a706701b806c8135fd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:gae57946a2ff8730c87f1e47d636dd5b57"><td class="memTemplParams" colspan="2">template&lt;class T , Requires&lt; std::is_pointer&lt; T &gt;::value &gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:gae57946a2ff8730c87f1e47d636dd5b57"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gae57946a2ff8730c87f1e47d636dd5b57">gsl::owner</a> = typename detail::owner_impl&lt; T &gt;::type</td></tr>
+<tr class="memdesc:gae57946a2ff8730c87f1e47d636dd5b57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mark a raw pointer as owning its data.  <a href="group__UtilitiesGroup.html#gae57946a2ff8730c87f1e47d636dd5b57">More...</a><br /></td></tr>
+<tr class="separator:gae57946a2ff8730c87f1e47d636dd5b57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga2da8b404f35c108209c4ce27c8d50e1c"><td class="memTemplParams" colspan="2">
+template&lt;class T , class U &gt; </td></tr>
+<tr class="memitem:ga2da8b404f35c108209c4ce27c8d50e1c"><td class="memTemplItemLeft" align="right" valign="top">constexpr T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga2da8b404f35c108209c4ce27c8d50e1c">gsl::narrow_cast</a> (U &amp;&amp;u) noexcept</td></tr>
+<tr class="memdesc:ga2da8b404f35c108209c4ce27c8d50e1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cast <code>u</code> to a type <code>T</code> where the cast may result in narrowing. <br /></td></tr>
+<tr class="separator:ga2da8b404f35c108209c4ce27c8d50e1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafaf6db75ede2a9bc2fa4b6b17b8ef128"><td class="memTemplParams" colspan="2">
+template&lt;class T , class U &gt; </td></tr>
+<tr class="memitem:gafaf6db75ede2a9bc2fa4b6b17b8ef128"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gafaf6db75ede2a9bc2fa4b6b17b8ef128">gsl::narrow</a> (U u)</td></tr>
+<tr class="memdesc:gafaf6db75ede2a9bc2fa4b6b17b8ef128"><td class="mdescLeft">&#160;</td><td class="mdescRight">A checked version of <a class="el" href="group__UtilitiesGroup.html#ga2da8b404f35c108209c4ce27c8d50e1c" title="Cast u to a type T where the cast may result in narrowing.">narrow_cast()</a> that ERRORs if the cast changed the value. <br /></td></tr>
+<tr class="separator:gafaf6db75ede2a9bc2fa4b6b17b8ef128"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af556bb2cc7eb4a32844b4eeeb2c07282"><td class="memTemplParams" colspan="2"><a id="af556bb2cc7eb4a32844b4eeeb2c07282"></a>
+template&lt;class T &gt; </td></tr>
+<tr class="memitem:af556bb2cc7eb4a32844b4eeeb2c07282"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gsl::operator&lt;&lt;</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const not_null&lt; T &gt; &amp;val) noexcept</td></tr>
+<tr class="separator:af556bb2cc7eb4a32844b4eeeb2c07282"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a773feb84b64c2530a04d6138301a9d62"><td class="memTemplParams" colspan="2"><a id="a773feb84b64c2530a04d6138301a9d62"></a>
+template&lt;class T , class U &gt; </td></tr>
+<tr class="memitem:a773feb84b64c2530a04d6138301a9d62"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gsl::operator==</b> (const not_null&lt; T &gt; &amp;lhs, const not_null&lt; U &gt; &amp;rhs) -&gt; decltype(<a class="el" href="group__DataStructuresGroup.html#ga15f646be5767f7105455b04aa4c00b1b">lhs.get</a>()==<a class="el" href="group__DataStructuresGroup.html#ga15f646be5767f7105455b04aa4c00b1b">rhs.get</a>())</td></tr>
+<tr class="separator:a773feb84b64c2530a04d6138301a9d62"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a323d83175a12259d8ddc526eca17de75"><td class="memTemplParams" colspan="2"><a id="a323d83175a12259d8ddc526eca17de75"></a>
+template&lt;class T , class U &gt; </td></tr>
+<tr class="memitem:a323d83175a12259d8ddc526eca17de75"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gsl::operator!=</b> (const not_null&lt; T &gt; &amp;lhs, const not_null&lt; U &gt; &amp;rhs) -&gt; decltype(<a class="el" href="group__DataStructuresGroup.html#ga15f646be5767f7105455b04aa4c00b1b">lhs.get</a>() !=<a class="el" href="group__DataStructuresGroup.html#ga15f646be5767f7105455b04aa4c00b1b">rhs.get</a>())</td></tr>
+<tr class="separator:a323d83175a12259d8ddc526eca17de75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af34b354d5fb778ae0ba0604eb7253f09"><td class="memTemplParams" colspan="2"><a id="af34b354d5fb778ae0ba0604eb7253f09"></a>
+template&lt;class T , class U &gt; </td></tr>
+<tr class="memitem:af34b354d5fb778ae0ba0604eb7253f09"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gsl::operator&lt;</b> (const not_null&lt; T &gt; &amp;lhs, const not_null&lt; U &gt; &amp;rhs) -&gt; decltype(<a class="el" href="group__DataStructuresGroup.html#ga15f646be5767f7105455b04aa4c00b1b">lhs.get</a>()&lt; <a class="el" href="group__DataStructuresGroup.html#ga15f646be5767f7105455b04aa4c00b1b">rhs.get</a>())</td></tr>
+<tr class="separator:af34b354d5fb778ae0ba0604eb7253f09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2026223071918e2eb101307e6fb98ab"><td class="memTemplParams" colspan="2"><a id="af2026223071918e2eb101307e6fb98ab"></a>
+template&lt;class T , class U &gt; </td></tr>
+<tr class="memitem:af2026223071918e2eb101307e6fb98ab"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gsl::operator&lt;=</b> (const not_null&lt; T &gt; &amp;lhs, const not_null&lt; U &gt; &amp;rhs) -&gt; decltype(<a class="el" href="group__DataStructuresGroup.html#ga15f646be5767f7105455b04aa4c00b1b">lhs.get</a>()&lt;=<a class="el" href="group__DataStructuresGroup.html#ga15f646be5767f7105455b04aa4c00b1b">rhs.get</a>())</td></tr>
+<tr class="separator:af2026223071918e2eb101307e6fb98ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a19ee416f40f5e2d7a5e93dbdb6738023"><td class="memTemplParams" colspan="2"><a id="a19ee416f40f5e2d7a5e93dbdb6738023"></a>
+template&lt;class T , class U &gt; </td></tr>
+<tr class="memitem:a19ee416f40f5e2d7a5e93dbdb6738023"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gsl::operator&gt;</b> (const not_null&lt; T &gt; &amp;lhs, const not_null&lt; U &gt; &amp;rhs) -&gt; decltype(<a class="el" href="group__DataStructuresGroup.html#ga15f646be5767f7105455b04aa4c00b1b">lhs.get</a>() &gt; <a class="el" href="group__DataStructuresGroup.html#ga15f646be5767f7105455b04aa4c00b1b">rhs.get</a>())</td></tr>
+<tr class="separator:a19ee416f40f5e2d7a5e93dbdb6738023"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81ce746fecaa6c3668f422fef382eabd"><td class="memTemplParams" colspan="2"><a id="a81ce746fecaa6c3668f422fef382eabd"></a>
+template&lt;class T , class U &gt; </td></tr>
+<tr class="memitem:a81ce746fecaa6c3668f422fef382eabd"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gsl::operator&gt;=</b> (const not_null&lt; T &gt; &amp;lhs, const not_null&lt; U &gt; &amp;rhs) -&gt; decltype(<a class="el" href="group__DataStructuresGroup.html#ga15f646be5767f7105455b04aa4c00b1b">lhs.get</a>() &gt;=<a class="el" href="group__DataStructuresGroup.html#ga15f646be5767f7105455b04aa4c00b1b">rhs.get</a>())</td></tr>
+<tr class="separator:a81ce746fecaa6c3668f422fef382eabd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2bd1fda01707d84e7bcd6663058f69e"><td class="memTemplParams" colspan="2"><a id="ac2bd1fda01707d84e7bcd6663058f69e"></a>
+template&lt;class T , class U &gt; </td></tr>
+<tr class="memitem:ac2bd1fda01707d84e7bcd6663058f69e"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/types/ptrdiff_t.html">std::ptrdiff_t</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gsl::operator-</b> (const not_null&lt; T &gt; &amp;, const not_null&lt; U &gt; &amp;)=delete</td></tr>
+<tr class="separator:ac2bd1fda01707d84e7bcd6663058f69e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a43c338ed4eedd00c95d8cc1ff5ff2a11"><td class="memTemplParams" colspan="2"><a id="a43c338ed4eedd00c95d8cc1ff5ff2a11"></a>
+template&lt;class T &gt; </td></tr>
+<tr class="memitem:a43c338ed4eedd00c95d8cc1ff5ff2a11"><td class="memTemplItemLeft" align="right" valign="top">not_null&lt; T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gsl::operator-</b> (const not_null&lt; T &gt; &amp;, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/ptrdiff_t.html">std::ptrdiff_t</a>)=delete</td></tr>
+<tr class="separator:a43c338ed4eedd00c95d8cc1ff5ff2a11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad6e954994edc47de5f000dfe8faf856b"><td class="memTemplParams" colspan="2"><a id="ad6e954994edc47de5f000dfe8faf856b"></a>
+template&lt;class T &gt; </td></tr>
+<tr class="memitem:ad6e954994edc47de5f000dfe8faf856b"><td class="memTemplItemLeft" align="right" valign="top">not_null&lt; T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gsl::operator+</b> (const not_null&lt; T &gt; &amp;, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/ptrdiff_t.html">std::ptrdiff_t</a>)=delete</td></tr>
+<tr class="separator:ad6e954994edc47de5f000dfe8faf856b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a0e3b39cd436aad0e69cec2eba20bdb"><td class="memTemplParams" colspan="2"><a id="a6a0e3b39cd436aad0e69cec2eba20bdb"></a>
+template&lt;class T &gt; </td></tr>
+<tr class="memitem:a6a0e3b39cd436aad0e69cec2eba20bdb"><td class="memTemplItemLeft" align="right" valign="top">not_null&lt; T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gsl::operator+</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/types/ptrdiff_t.html">std::ptrdiff_t</a>, const not_null&lt; T &gt; &amp;)=delete</td></tr>
+<tr class="separator:a6a0e3b39cd436aad0e69cec2eba20bdb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad81b892aad022af4829544fede9a5b1d"><td class="memTemplParams" colspan="2"><a id="ad81b892aad022af4829544fede9a5b1d"></a>
+template&lt;class ElementType , std::ptrdiff_t FirstExtent, std::ptrdiff_t SecondExtent&gt; </td></tr>
+<tr class="memitem:ad81b892aad022af4829544fede9a5b1d"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gsl::operator==</b> (span&lt; ElementType, FirstExtent &gt; l, span&lt; ElementType, SecondExtent &gt; r)</td></tr>
+<tr class="separator:ad81b892aad022af4829544fede9a5b1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d954f661e3bc25986f72631b5fb941d"><td class="memTemplParams" colspan="2"><a id="a2d954f661e3bc25986f72631b5fb941d"></a>
+template&lt;class ElementType , std::ptrdiff_t Extent&gt; </td></tr>
+<tr class="memitem:a2d954f661e3bc25986f72631b5fb941d"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gsl::operator!=</b> (span&lt; ElementType, Extent &gt; l, span&lt; ElementType, Extent &gt; r)</td></tr>
+<tr class="separator:a2d954f661e3bc25986f72631b5fb941d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38aa9590a4de2b676b1491dc6bc7a99d"><td class="memTemplParams" colspan="2"><a id="a38aa9590a4de2b676b1491dc6bc7a99d"></a>
+template&lt;class ElementType , std::ptrdiff_t Extent&gt; </td></tr>
+<tr class="memitem:a38aa9590a4de2b676b1491dc6bc7a99d"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gsl::operator&lt;</b> (span&lt; ElementType, Extent &gt; l, span&lt; ElementType, Extent &gt; r)</td></tr>
+<tr class="separator:a38aa9590a4de2b676b1491dc6bc7a99d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73e4ee0db62adf946f416fcbd60385e1"><td class="memTemplParams" colspan="2"><a id="a73e4ee0db62adf946f416fcbd60385e1"></a>
+template&lt;class ElementType , std::ptrdiff_t Extent&gt; </td></tr>
+<tr class="memitem:a73e4ee0db62adf946f416fcbd60385e1"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gsl::operator&lt;=</b> (span&lt; ElementType, Extent &gt; l, span&lt; ElementType, Extent &gt; r)</td></tr>
+<tr class="separator:a73e4ee0db62adf946f416fcbd60385e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa8be9a703a6b093fcac133dadae8e200"><td class="memTemplParams" colspan="2"><a id="aa8be9a703a6b093fcac133dadae8e200"></a>
+template&lt;class ElementType , std::ptrdiff_t Extent&gt; </td></tr>
+<tr class="memitem:aa8be9a703a6b093fcac133dadae8e200"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gsl::operator&gt;</b> (span&lt; ElementType, Extent &gt; l, span&lt; ElementType, Extent &gt; r)</td></tr>
+<tr class="separator:aa8be9a703a6b093fcac133dadae8e200"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa05218a958c920eb7838d300de145ef4"><td class="memTemplParams" colspan="2"><a id="aa05218a958c920eb7838d300de145ef4"></a>
+template&lt;class ElementType , std::ptrdiff_t Extent&gt; </td></tr>
+<tr class="memitem:aa05218a958c920eb7838d300de145ef4"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gsl::operator&gt;=</b> (span&lt; ElementType, Extent &gt; l, span&lt; ElementType, Extent &gt; r)</td></tr>
+<tr class="separator:aa05218a958c920eb7838d300de145ef4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc3d312bba0901a9ac8b15b1c779c9b6"><td class="memTemplParams" colspan="2"><a id="adc3d312bba0901a9ac8b15b1c779c9b6"></a>
+template&lt;class ElementType , std::ptrdiff_t Extent&gt; </td></tr>
+<tr class="memitem:adc3d312bba0901a9ac8b15b1c779c9b6"><td class="memTemplItemLeft" align="right" valign="top">constexpr ElementType &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gsl::at</b> (span&lt; ElementType, Extent &gt; s, typename span&lt; ElementType, Extent &gt;::index_type i)</td></tr>
+<tr class="separator:adc3d312bba0901a9ac8b15b1c779c9b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25653120b15d96475c95fb9d53e20ea0"><td class="memTemplParams" colspan="2"><a id="a25653120b15d96475c95fb9d53e20ea0"></a>
+template&lt;class ElementType , std::ptrdiff_t Extent&gt; </td></tr>
+<tr class="memitem:a25653120b15d96475c95fb9d53e20ea0"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>gsl::operator&lt;&lt;</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const span&lt; ElementType, Extent &gt; t) noexcept</td></tr>
+<tr class="separator:a25653120b15d96475c95fb9d53e20ea0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a649c6961f9146205c203e45d58fd0c4c"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a649c6961f9146205c203e45d58fd0c4c"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; T * &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a> (T *ptr) noexcept</td></tr>
+<tr class="memdesc:a649c6961f9146205c203e45d58fd0c4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a not_null from a pointer. Often this will be done as an implicit conversion, but it may be necessary to perform the conversion explicitly when type deduction is desired.  <a href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">More...</a><br /></td></tr>
+<tr class="separator:a649c6961f9146205c203e45d58fd0c4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ga818f101f2f8bd824a3bc7c2c2361c560"><td class="memTemplParams" colspan="2">
+template&lt;class T , std::size_t N, typename Size &gt; </td></tr>
+<tr class="memitem:ga818f101f2f8bd824a3bc7c2c2361c560"><td class="memTemplItemLeft" align="right" valign="top">constexpr T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, N &gt; &amp;arr, Size index)</td></tr>
+<tr class="memdesc:ga818f101f2f8bd824a3bc7c2c2361c560"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a entry from a container, with checks in Debug mode that the index being retrieved is valid. <br /></td></tr>
+<tr class="separator:ga818f101f2f8bd824a3bc7c2c2361c560"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1648d283e2a226cd398dbea1de84e88d"><td class="memTemplParams" colspan="2">
+template&lt;class Cont , typename Size &gt; </td></tr>
+<tr class="memitem:ga1648d283e2a226cd398dbea1de84e88d"><td class="memTemplItemLeft" align="right" valign="top">constexpr const Cont::value_type &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga1648d283e2a226cd398dbea1de84e88d">gsl::at</a> (const Cont &amp;cont, Size index)</td></tr>
+<tr class="memdesc:ga1648d283e2a226cd398dbea1de84e88d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a entry from a container, with checks in Debug mode that the index being retrieved is valid. <br /></td></tr>
+<tr class="separator:ga1648d283e2a226cd398dbea1de84e88d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac75622e2034e12763b1e3989b813376b"><td class="memTemplParams" colspan="2">
+template&lt;class T , typename Size &gt; </td></tr>
+<tr class="memitem:gac75622e2034e12763b1e3989b813376b"><td class="memTemplItemLeft" align="right" valign="top">constexpr const T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gac75622e2034e12763b1e3989b813376b">gsl::at</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/initializer_list.html">std::initializer_list</a>&lt; T &gt; cont, Size index)</td></tr>
+<tr class="memdesc:gac75622e2034e12763b1e3989b813376b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a entry from a container, with checks in Debug mode that the index being retrieved is valid. <br /></td></tr>
+<tr class="separator:gac75622e2034e12763b1e3989b813376b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ga188c2766e601fb537e7d34ae70c6ff9d"><td class="memTemplParams" colspan="2">template&lt;class ElementType &gt; </td></tr>
+<tr class="memitem:ga188c2766e601fb537e7d34ae70c6ff9d"><td class="memTemplItemLeft" align="right" valign="top">constexpr span&lt; ElementType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga188c2766e601fb537e7d34ae70c6ff9d">gsl::make_span</a> (ElementType *ptr, typename span&lt; ElementType &gt;::index_type count)</td></tr>
+<tr class="separator:ga188c2766e601fb537e7d34ae70c6ff9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4b26515778522172aa69721654581af6"><td class="memTemplParams" colspan="2">template&lt;class ElementType &gt; </td></tr>
+<tr class="memitem:ga4b26515778522172aa69721654581af6"><td class="memTemplItemLeft" align="right" valign="top">constexpr span&lt; ElementType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga4b26515778522172aa69721654581af6">gsl::make_span</a> (ElementType *firstElem, ElementType *lastElem)</td></tr>
+<tr class="separator:ga4b26515778522172aa69721654581af6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaea82317d779dc195f035fbbd889cbced"><td class="memTemplParams" colspan="2">template&lt;class ElementType , std::size_t N&gt; </td></tr>
+<tr class="memitem:gaea82317d779dc195f035fbbd889cbced"><td class="memTemplItemLeft" align="right" valign="top">constexpr span&lt; ElementType, N &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gaea82317d779dc195f035fbbd889cbced">gsl::make_span</a> (ElementType(&amp;arr)[N]) noexcept</td></tr>
+<tr class="separator:gaea82317d779dc195f035fbbd889cbced"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadaf8c43f20f7081418b2a6fd2a09c50b"><td class="memTemplParams" colspan="2">template&lt;class Container &gt; </td></tr>
+<tr class="memitem:gadaf8c43f20f7081418b2a6fd2a09c50b"><td class="memTemplItemLeft" align="right" valign="top">constexpr span&lt; typename Container::value_type &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gadaf8c43f20f7081418b2a6fd2a09c50b">gsl::make_span</a> (Container &amp;cont)</td></tr>
+<tr class="separator:gadaf8c43f20f7081418b2a6fd2a09c50b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga16295ee8d149a148c1dabfec4db7296e"><td class="memTemplParams" colspan="2">template&lt;class Container &gt; </td></tr>
+<tr class="memitem:ga16295ee8d149a148c1dabfec4db7296e"><td class="memTemplItemLeft" align="right" valign="top">constexpr span&lt; const typename Container::value_type &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga16295ee8d149a148c1dabfec4db7296e">gsl::make_span</a> (const Container &amp;cont)</td></tr>
+<tr class="separator:ga16295ee8d149a148c1dabfec4db7296e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga48cb68f66f88db82805021dab069eac9"><td class="memTemplParams" colspan="2">template&lt;class Ptr &gt; </td></tr>
+<tr class="memitem:ga48cb68f66f88db82805021dab069eac9"><td class="memTemplItemLeft" align="right" valign="top">constexpr span&lt; typename Ptr::element_type &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga48cb68f66f88db82805021dab069eac9">gsl::make_span</a> (Ptr &amp;cont, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/ptrdiff_t.html">std::ptrdiff_t</a> count)</td></tr>
+<tr class="separator:ga48cb68f66f88db82805021dab069eac9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaefcc84ce82c06b2fa3658fffa2cc2133"><td class="memTemplParams" colspan="2">template&lt;class Ptr &gt; </td></tr>
+<tr class="memitem:gaefcc84ce82c06b2fa3658fffa2cc2133"><td class="memTemplItemLeft" align="right" valign="top">constexpr span&lt; typename Ptr::element_type &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gaefcc84ce82c06b2fa3658fffa2cc2133">gsl::make_span</a> (Ptr &amp;cont)</td></tr>
+<tr class="separator:gaefcc84ce82c06b2fa3658fffa2cc2133"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ga818f101f2f8bd824a3bc7c2c2361c560"><td class="memTemplParams" colspan="2">
+template&lt;class T , std::size_t N, typename Size &gt; </td></tr>
+<tr class="memitem:ga818f101f2f8bd824a3bc7c2c2361c560"><td class="memTemplItemLeft" align="right" valign="top">constexpr T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, N &gt; &amp;arr, Size index)</td></tr>
+<tr class="memdesc:ga818f101f2f8bd824a3bc7c2c2361c560"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a entry from a container, with checks in Debug mode that the index being retrieved is valid. <br /></td></tr>
+<tr class="separator:ga818f101f2f8bd824a3bc7c2c2361c560"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1648d283e2a226cd398dbea1de84e88d"><td class="memTemplParams" colspan="2">
+template&lt;class Cont , typename Size &gt; </td></tr>
+<tr class="memitem:ga1648d283e2a226cd398dbea1de84e88d"><td class="memTemplItemLeft" align="right" valign="top">constexpr const Cont::value_type &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga1648d283e2a226cd398dbea1de84e88d">gsl::at</a> (const Cont &amp;cont, Size index)</td></tr>
+<tr class="memdesc:ga1648d283e2a226cd398dbea1de84e88d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a entry from a container, with checks in Debug mode that the index being retrieved is valid. <br /></td></tr>
+<tr class="separator:ga1648d283e2a226cd398dbea1de84e88d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac75622e2034e12763b1e3989b813376b"><td class="memTemplParams" colspan="2">
+template&lt;class T , typename Size &gt; </td></tr>
+<tr class="memitem:gac75622e2034e12763b1e3989b813376b"><td class="memTemplItemLeft" align="right" valign="top">constexpr const T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gac75622e2034e12763b1e3989b813376b">gsl::at</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/initializer_list.html">std::initializer_list</a>&lt; T &gt; cont, Size index)</td></tr>
+<tr class="memdesc:gac75622e2034e12763b1e3989b813376b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a entry from a container, with checks in Debug mode that the index being retrieved is valid. <br /></td></tr>
+<tr class="separator:gac75622e2034e12763b1e3989b813376b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ga188c2766e601fb537e7d34ae70c6ff9d"><td class="memTemplParams" colspan="2">template&lt;class ElementType &gt; </td></tr>
+<tr class="memitem:ga188c2766e601fb537e7d34ae70c6ff9d"><td class="memTemplItemLeft" align="right" valign="top">constexpr span&lt; ElementType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga188c2766e601fb537e7d34ae70c6ff9d">gsl::make_span</a> (ElementType *ptr, typename span&lt; ElementType &gt;::index_type count)</td></tr>
+<tr class="separator:ga188c2766e601fb537e7d34ae70c6ff9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4b26515778522172aa69721654581af6"><td class="memTemplParams" colspan="2">template&lt;class ElementType &gt; </td></tr>
+<tr class="memitem:ga4b26515778522172aa69721654581af6"><td class="memTemplItemLeft" align="right" valign="top">constexpr span&lt; ElementType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga4b26515778522172aa69721654581af6">gsl::make_span</a> (ElementType *firstElem, ElementType *lastElem)</td></tr>
+<tr class="separator:ga4b26515778522172aa69721654581af6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaea82317d779dc195f035fbbd889cbced"><td class="memTemplParams" colspan="2">template&lt;class ElementType , std::size_t N&gt; </td></tr>
+<tr class="memitem:gaea82317d779dc195f035fbbd889cbced"><td class="memTemplItemLeft" align="right" valign="top">constexpr span&lt; ElementType, N &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gaea82317d779dc195f035fbbd889cbced">gsl::make_span</a> (ElementType(&amp;arr)[N]) noexcept</td></tr>
+<tr class="separator:gaea82317d779dc195f035fbbd889cbced"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadaf8c43f20f7081418b2a6fd2a09c50b"><td class="memTemplParams" colspan="2">template&lt;class Container &gt; </td></tr>
+<tr class="memitem:gadaf8c43f20f7081418b2a6fd2a09c50b"><td class="memTemplItemLeft" align="right" valign="top">constexpr span&lt; typename Container::value_type &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gadaf8c43f20f7081418b2a6fd2a09c50b">gsl::make_span</a> (Container &amp;cont)</td></tr>
+<tr class="separator:gadaf8c43f20f7081418b2a6fd2a09c50b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga16295ee8d149a148c1dabfec4db7296e"><td class="memTemplParams" colspan="2">template&lt;class Container &gt; </td></tr>
+<tr class="memitem:ga16295ee8d149a148c1dabfec4db7296e"><td class="memTemplItemLeft" align="right" valign="top">constexpr span&lt; const typename Container::value_type &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga16295ee8d149a148c1dabfec4db7296e">gsl::make_span</a> (const Container &amp;cont)</td></tr>
+<tr class="separator:ga16295ee8d149a148c1dabfec4db7296e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga48cb68f66f88db82805021dab069eac9"><td class="memTemplParams" colspan="2">template&lt;class Ptr &gt; </td></tr>
+<tr class="memitem:ga48cb68f66f88db82805021dab069eac9"><td class="memTemplItemLeft" align="right" valign="top">constexpr span&lt; typename Ptr::element_type &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga48cb68f66f88db82805021dab069eac9">gsl::make_span</a> (Ptr &amp;cont, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/ptrdiff_t.html">std::ptrdiff_t</a> count)</td></tr>
+<tr class="separator:ga48cb68f66f88db82805021dab069eac9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaefcc84ce82c06b2fa3658fffa2cc2133"><td class="memTemplParams" colspan="2">template&lt;class Ptr &gt; </td></tr>
+<tr class="memitem:gaefcc84ce82c06b2fa3658fffa2cc2133"><td class="memTemplItemLeft" align="right" valign="top">constexpr span&lt; typename Ptr::element_type &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gaefcc84ce82c06b2fa3658fffa2cc2133">gsl::make_span</a> (Ptr &amp;cont)</td></tr>
+<tr class="separator:gaefcc84ce82c06b2fa3658fffa2cc2133"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:adf9705421ae462177e6c54dc359f0bfe"><td class="memItemLeft" align="right" valign="top"><a id="adf9705421ae462177e6c54dc359f0bfe"></a>
+constexpr const <a class="elRef" href="http://en.cppreference.com/w/cpp/types/ptrdiff_t.html">std::ptrdiff_t</a>&#160;</td><td class="memItemRight" valign="bottom"><b>gsl::dynamic_extent</b> = -1</td></tr>
+<tr class="separator:adf9705421ae462177e6c54dc359f0bfe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Defines functions and classes from the GSL </p>
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="a649c6961f9146205c203e45d58fd0c4c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a649c6961f9146205c203e45d58fd0c4c">&#9670;&nbsp;</a></span>make_not_null()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;T*&gt; make_not_null </td>
+          <td>(</td>
+          <td class="paramtype">T *&#160;</td>
+          <td class="paramname"><em>ptr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Construct a not_null from a pointer. Often this will be done as an implicit conversion, but it may be necessary to perform the conversion explicitly when type deduction is desired. </p>
+<dl class="section note"><dt>Note</dt><dd>This is not a standard GSL function, and so is not in the gsl namespace. </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

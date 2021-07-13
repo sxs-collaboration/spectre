@@ -1,0 +1,400 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: NewtonianEuler::fd::MonotisedCentralPrim&lt; Dim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceNewtonianEuler.html">NewtonianEuler</a></li><li class="navelem"><a class="el" href="namespaceNewtonianEuler_1_1fd.html">fd</a></li><li class="navelem"><a class="el" href="classNewtonianEuler_1_1fd_1_1MonotisedCentralPrim.html">MonotisedCentralPrim</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classNewtonianEuler_1_1fd_1_1MonotisedCentralPrim-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">NewtonianEuler::fd::MonotisedCentralPrim&lt; Dim &gt; Class Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Monotised central reconstruction. See <code><a class="el" href="group__FiniteDifferenceGroup.html#gaf4791bdc4f3d449879be39371630ebec" title="Performs monotised central-difference reconstruction on the vars in each direction.">fd::reconstruction::monotised_central()</a></code> for details.  
+ <a href="classNewtonianEuler_1_1fd_1_1MonotisedCentralPrim.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Evolution_2Systems_2NewtonianEuler_2FiniteDifference_2MonotisedCentral_8hpp_source.html">MonotisedCentral.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a81bd8c1ea6090326b89a3723f7a13f72"><td class="memItemLeft" align="right" valign="top"><a id="a81bd8c1ea6090326b89a3723f7a13f72"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a81bd8c1ea6090326b89a3723f7a13f72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7724ca582f4075200f4485f402c3f592"><td class="memItemLeft" align="right" valign="top"><a id="a7724ca582f4075200f4485f402c3f592"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>reconstruction_argument_tags</b> = tmpl::list&lt;::<a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt; prims_tags &gt;, <a class="el" href="structhydro_1_1Tags_1_1EquationOfStateBase.html">hydro::Tags::EquationOfStateBase</a>, <a class="el" href="structdomain_1_1Tags_1_1Element.html">domain::Tags::Element</a>&lt; Dim &gt;, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1NeighborDataForReconstructionAndRdmpTci.html">evolution::dg::subcell::Tags::NeighborDataForReconstructionAndRdmpTci</a>&lt; Dim &gt;, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Mesh.html">evolution::dg::subcell::Tags::Mesh</a>&lt; Dim &gt; &gt;</td></tr>
+<tr class="separator:a7724ca582f4075200f4485f402c3f592"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classNewtonianEuler_1_1fd_1_1Reconstructor"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classNewtonianEuler_1_1fd_1_1Reconstructor')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classNewtonianEuler_1_1fd_1_1Reconstructor.html">NewtonianEuler::fd::Reconstructor&lt; Dim &gt;</a></td></tr>
+<tr class="memitem:abb30806f71e99a0ed56adb149a87cd56 inherit pub_types_classNewtonianEuler_1_1fd_1_1Reconstructor"><td class="memItemLeft" align="right" valign="top"><a id="abb30806f71e99a0ed56adb149a87cd56"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = tmpl::list&lt; <a class="el" href="classNewtonianEuler_1_1fd_1_1AoWeno53Prim.html">AoWeno53Prim</a>&lt; Dim &gt;, <a class="el" href="classNewtonianEuler_1_1fd_1_1MonotisedCentralPrim.html">MonotisedCentralPrim</a>&lt; Dim &gt; &gt;</td></tr>
+<tr class="separator:abb30806f71e99a0ed56adb149a87cd56 inherit pub_types_classNewtonianEuler_1_1fd_1_1Reconstructor"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a4eaecab89f8fedb8b8355c71217f6dd0"><td class="memItemLeft" align="right" valign="top"><a id="a4eaecab89f8fedb8b8355c71217f6dd0"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MonotisedCentralPrim</b> (<a class="el" href="classNewtonianEuler_1_1fd_1_1MonotisedCentralPrim.html">MonotisedCentralPrim</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a4eaecab89f8fedb8b8355c71217f6dd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a33f5b3cb050fdf8f73a7b4d632c3d320"><td class="memItemLeft" align="right" valign="top"><a id="a33f5b3cb050fdf8f73a7b4d632c3d320"></a>
+<a class="el" href="classNewtonianEuler_1_1fd_1_1MonotisedCentralPrim.html">MonotisedCentralPrim</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classNewtonianEuler_1_1fd_1_1MonotisedCentralPrim.html">MonotisedCentralPrim</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a33f5b3cb050fdf8f73a7b4d632c3d320"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a23b82d08213158bc1a4cdcfe8a19d241"><td class="memItemLeft" align="right" valign="top"><a id="a23b82d08213158bc1a4cdcfe8a19d241"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MonotisedCentralPrim</b> (const <a class="el" href="classNewtonianEuler_1_1fd_1_1MonotisedCentralPrim.html">MonotisedCentralPrim</a> &amp;)=default</td></tr>
+<tr class="separator:a23b82d08213158bc1a4cdcfe8a19d241"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6df11595df4d18d3e12f16811c795779"><td class="memItemLeft" align="right" valign="top"><a id="a6df11595df4d18d3e12f16811c795779"></a>
+<a class="el" href="classNewtonianEuler_1_1fd_1_1MonotisedCentralPrim.html">MonotisedCentralPrim</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classNewtonianEuler_1_1fd_1_1MonotisedCentralPrim.html">MonotisedCentralPrim</a> &amp;)=default</td></tr>
+<tr class="separator:a6df11595df4d18d3e12f16811c795779"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe07f2512ab4bd414b84ef0ad292044e"><td class="memItemLeft" align="right" valign="top"><a id="afe07f2512ab4bd414b84ef0ad292044e"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MonotisedCentralPrim</b> (CkMigrateMessage *msg) noexcept</td></tr>
+<tr class="separator:afe07f2512ab4bd414b84ef0ad292044e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afd8db190f93e68c3bcb45a01f197d5a6"><td class="memItemLeft" align="right" valign="top"><a id="afd8db190f93e68c3bcb45a01f197d5a6"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_base_template</b> (<a class="el" href="classNewtonianEuler_1_1fd_1_1Reconstructor.html">Reconstructor</a>&lt; Dim &gt;, <a class="el" href="classNewtonianEuler_1_1fd_1_1MonotisedCentralPrim.html">MonotisedCentralPrim</a>)</td></tr>
+<tr class="separator:afd8db190f93e68c3bcb45a01f197d5a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31348b084abdfa798bc5e77018eab748"><td class="memItemLeft" align="right" valign="top"><a id="a31348b084abdfa798bc5e77018eab748"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>get_clone</b> () const noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classNewtonianEuler_1_1fd_1_1Reconstructor.html">Reconstructor</a>&lt; Dim &gt;&gt; override</td></tr>
+<tr class="separator:a31348b084abdfa798bc5e77018eab748"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad852cb9d1789ecdce5ed302f0f7e8c84"><td class="memItemLeft" align="right" valign="top"><a id="ad852cb9d1789ecdce5ed302f0f7e8c84"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) override</td></tr>
+<tr class="separator:ad852cb9d1789ecdce5ed302f0f7e8c84"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a856720fe2e2e915205abbea11dbde92f"><td class="memItemLeft" align="right" valign="top"><a id="a856720fe2e2e915205abbea11dbde92f"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>ghost_zone_size</b> () const noexcept override</td></tr>
+<tr class="separator:a856720fe2e2e915205abbea11dbde92f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3755eca8ed43a86f16f5c8f13d4cd21"><td class="memTemplParams" colspan="2"><a id="ac3755eca8ed43a86f16f5c8f13d4cd21"></a>
+template&lt;size_t ThermodynamicDim, typename TagsList &gt; </td></tr>
+<tr class="memitem:ac3755eca8ed43a86f16f5c8f13d4cd21"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>reconstruct</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; Variables&lt; TagsList &gt;, Dim &gt; * &gt; vars_on_lower_face, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; Variables&lt; TagsList &gt;, Dim &gt; * &gt; vars_on_upper_face, const Variables&lt; prims_tags &gt; &amp;volume_prims, const <a class="el" href="classEquationsOfState_1_1EquationOfState.html">EquationsOfState::EquationOfState</a>&lt; false, ThermodynamicDim &gt; &amp;eos, const <a class="el" href="classElement.html">Element</a>&lt; Dim &gt; &amp;element, const <a class="el" href="classFixedHashMap.html">FixedHashMap</a>&lt; <a class="el" href="group__ComputationalDomainGroup.html#gafa8cb44daebc8f9e080718961530be89">maximum_number_of_neighbors</a>(Dim)+1, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; Dim &gt;&gt;, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1NeighborData.html">evolution::dg::subcell::NeighborData</a>, boost::hash&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; Dim &gt;&gt;&gt;&gt; &amp;neighbor_data, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;subcell_mesh) const noexcept</td></tr>
+<tr class="separator:ac3755eca8ed43a86f16f5c8f13d4cd21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd1bff06cc659a906ba215665f02f8c7"><td class="memTemplParams" colspan="2">template&lt;size_t ThermodynamicDim, typename TagsList &gt; </td></tr>
+<tr class="memitem:acd1bff06cc659a906ba215665f02f8c7"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classNewtonianEuler_1_1fd_1_1MonotisedCentralPrim.html#acd1bff06cc659a906ba215665f02f8c7">reconstruct_fd_neighbor</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; TagsList &gt; * &gt; vars_on_face, const Variables&lt; prims_tags &gt; &amp;subcell_volume_prims, const <a class="el" href="classEquationsOfState_1_1EquationOfState.html">EquationsOfState::EquationOfState</a>&lt; false, ThermodynamicDim &gt; &amp;eos, const <a class="el" href="classElement.html">Element</a>&lt; Dim &gt; &amp;element, const <a class="el" href="classFixedHashMap.html">FixedHashMap</a>&lt; <a class="el" href="group__ComputationalDomainGroup.html#gafa8cb44daebc8f9e080718961530be89">maximum_number_of_neighbors</a>(Dim)+1, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; Dim &gt;&gt;, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1NeighborData.html">evolution::dg::subcell::NeighborData</a>, boost::hash&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; Dim &gt;&gt;&gt;&gt; &amp;neighbor_data, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;subcell_mesh, const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; direction_to_reconstruct) const noexcept</td></tr>
+<tr class="memdesc:acd1bff06cc659a906ba215665f02f8c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called by an element doing DG when the neighbor is doing subcell.  <a href="classNewtonianEuler_1_1fd_1_1MonotisedCentralPrim.html#acd1bff06cc659a906ba215665f02f8c7">More...</a><br /></td></tr>
+<tr class="separator:acd1bff06cc659a906ba215665f02f8c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classNewtonianEuler_1_1fd_1_1Reconstructor"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classNewtonianEuler_1_1fd_1_1Reconstructor')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classNewtonianEuler_1_1fd_1_1Reconstructor.html">NewtonianEuler::fd::Reconstructor&lt; Dim &gt;</a></td></tr>
+<tr class="memitem:a91469bb88c3c48a6726a63dbdd8bdfd4 inherit pub_methods_classNewtonianEuler_1_1fd_1_1Reconstructor"><td class="memItemLeft" align="right" valign="top"><a id="a91469bb88c3c48a6726a63dbdd8bdfd4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Reconstructor</b> (const <a class="el" href="classNewtonianEuler_1_1fd_1_1Reconstructor.html">Reconstructor</a> &amp;)=default</td></tr>
+<tr class="separator:a91469bb88c3c48a6726a63dbdd8bdfd4 inherit pub_methods_classNewtonianEuler_1_1fd_1_1Reconstructor"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21f60875ebd7694cc8dd6fdcb0d08cf9 inherit pub_methods_classNewtonianEuler_1_1fd_1_1Reconstructor"><td class="memItemLeft" align="right" valign="top"><a id="a21f60875ebd7694cc8dd6fdcb0d08cf9"></a>
+<a class="el" href="classNewtonianEuler_1_1fd_1_1Reconstructor.html">Reconstructor</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classNewtonianEuler_1_1fd_1_1Reconstructor.html">Reconstructor</a> &amp;)=default</td></tr>
+<tr class="separator:a21f60875ebd7694cc8dd6fdcb0d08cf9 inherit pub_methods_classNewtonianEuler_1_1fd_1_1Reconstructor"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a706c16ec1bc3587fbc5615aa3a5112d4 inherit pub_methods_classNewtonianEuler_1_1fd_1_1Reconstructor"><td class="memItemLeft" align="right" valign="top"><a id="a706c16ec1bc3587fbc5615aa3a5112d4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Reconstructor</b> (<a class="el" href="classNewtonianEuler_1_1fd_1_1Reconstructor.html">Reconstructor</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a706c16ec1bc3587fbc5615aa3a5112d4 inherit pub_methods_classNewtonianEuler_1_1fd_1_1Reconstructor"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adbdb240f4d8296d987566bd643e70f1b inherit pub_methods_classNewtonianEuler_1_1fd_1_1Reconstructor"><td class="memItemLeft" align="right" valign="top"><a id="adbdb240f4d8296d987566bd643e70f1b"></a>
+<a class="el" href="classNewtonianEuler_1_1fd_1_1Reconstructor.html">Reconstructor</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classNewtonianEuler_1_1fd_1_1Reconstructor.html">Reconstructor</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:adbdb240f4d8296d987566bd643e70f1b inherit pub_methods_classNewtonianEuler_1_1fd_1_1Reconstructor"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4fe1c271950853549c02d4b5109ebb3b inherit pub_methods_classNewtonianEuler_1_1fd_1_1Reconstructor"><td class="memItemLeft" align="right" valign="top"><a id="a4fe1c271950853549c02d4b5109ebb3b"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) override</td></tr>
+<tr class="separator:a4fe1c271950853549c02d4b5109ebb3b inherit pub_methods_classNewtonianEuler_1_1fd_1_1Reconstructor"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a4f95bd779ae142acb3206e42990e30f3"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a4f95bd779ae142acb3206e42990e30f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+class NewtonianEuler::fd::MonotisedCentralPrim&lt; Dim &gt;</h3>
+
+<p>Monotised central reconstruction. See <code><a class="el" href="group__FiniteDifferenceGroup.html#gaf4791bdc4f3d449879be39371630ebec" title="Performs monotised central-difference reconstruction on the vars in each direction.">fd::reconstruction::monotised_central()</a></code> for details. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="acd1bff06cc659a906ba215665f02f8c7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acd1bff06cc659a906ba215665f02f8c7">&#9670;&nbsp;</a></span>reconstruct_fd_neighbor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<div class="memtemplate">
+template&lt;size_t ThermodynamicDim, typename TagsList &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classNewtonianEuler_1_1fd_1_1MonotisedCentralPrim.html">NewtonianEuler::fd::MonotisedCentralPrim</a>&lt; Dim &gt;::reconstruct_fd_neighbor </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; TagsList &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>vars_on_face</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variables&lt; prims_tags &gt; &amp;&#160;</td>
+          <td class="paramname"><em>subcell_volume_prims</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classEquationsOfState_1_1EquationOfState.html">EquationsOfState::EquationOfState</a>&lt; false, ThermodynamicDim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>eos</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classElement.html">Element</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>element</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classFixedHashMap.html">FixedHashMap</a>&lt; <a class="el" href="group__ComputationalDomainGroup.html#gafa8cb44daebc8f9e080718961530be89">maximum_number_of_neighbors</a>(Dim)+1, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; Dim &gt;&gt;, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1NeighborData.html">evolution::dg::subcell::NeighborData</a>, boost::hash&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt;, <a class="el" href="classElementId.html">ElementId</a>&lt; Dim &gt;&gt;&gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>neighbor_data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>subcell_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt;&#160;</td>
+          <td class="paramname"><em>direction_to_reconstruct</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Called by an element doing DG when the neighbor is doing subcell. </p>
+<p>This is used to reconstruct the fluxes on the mortar that the subcell neighbor would have sent had we instead used a two a two-communication subcell solver (first communication for reconstruction, second for fluxes). </p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="a4f95bd779ae142acb3206e42990e30f3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4f95bd779ae142acb3206e42990e30f3">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classNewtonianEuler_1_1fd_1_1MonotisedCentralPrim.html">NewtonianEuler::fd::MonotisedCentralPrim</a>&lt; Dim &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      <span class="stringliteral">&quot;Monotised central reconstruction scheme using primitive variables.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/Systems/NewtonianEuler/FiniteDifference/<a class="el" href="Evolution_2Systems_2NewtonianEuler_2FiniteDifference_2MonotisedCentral_8hpp_source.html">MonotisedCentral.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

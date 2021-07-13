@@ -1,0 +1,365 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/ApparentHorizons/SpherepackIterator.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_b49888a1c2e64716f9d5bb4c78b4edb8.html">ApparentHorizons</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">SpherepackIterator.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<a href="SpherepackIterator_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment">///</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment">/// \file</span></div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment">/// Defines class SpherepackIterator.</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160; </div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cmath.html">cmath</a>&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/ostream.html">ostream</a>&gt;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a>&gt;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160; </div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Assert_8hpp.html">Utilities/ErrorHandling/Assert.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment"> * \ingroup SpectralGroup</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment"> * \brief</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment"> * Iterates over spectral coefficients stored in SPHEREPACK format.</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment"> * \details</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment"> * The internal SPHEREPACK ordering is not intuitive, so</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment"> * SpherepackIterator exists for the purpose of iterating over an</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment"> * array containing SPHEREPACK coefficients and determining the</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment"> * (l,m) of each entry in the array.</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment"> * SPHEREPACK expands \f$f(\theta,\phi)\f$ as</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment"> * \f[</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment"> * f(\theta,\phi) =</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment"> * \frac{1}{2} \sum_{l=0}^{l_{max}} \bar{P}_l^0 a(0,l)</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="comment"> *   + \sum_{m=1}^{m_{max}} \sum_{l=m}^{l_{max}} \bar{P}_l^m</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment"> *         \left(  a(m,l) \cos(m \phi) - b(m,l) \sin(m \phi)\right)</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment"> * \f]</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment"> * where \f$a(m,l)\f$ and \f$b(m,l)\f$ are the SPHEREPACK</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment"> * spectral coefficients, and \f$\bar{P}_l^m\f$ are</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment"> * unit-orthonormal associated Legendre polynomials:</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="comment"> * \f[</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment"> * \bar{P}_l^m =</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment"> * (-1)^m \sqrt{\frac{(2l+1)(l-m)!}{2(l+m)!}} P_l^m,</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment"> * \f]</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment"> * where \f$P_l^m\f$ are the associated Legendre polynomials as defined</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment"> * for example in Jackson &quot;Classical Electrodynamics&quot;.</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment"> * \example</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment"> * \snippet Test_SpherepackIterator.cpp spherepack_iterator_example</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno"><a class="line" href="classSpherepackIterator.html">   47</a></span>&#160;<span class="keyword">class </span><a class="code" href="classSpherepackIterator.html">SpherepackIterator</a> {</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; <span class="keyword">public</span>:<span class="comment"></span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment">  /// SPHEREPACK has two coefficient variables, &#39;a&#39; and &#39;b&#39;, that hold</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment">  /// the cos(m*phi) and sin(m*phi) parts of the spectral</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment">  /// coefficients.</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno"><a class="line" href="classSpherepackIterator.html#a9b252462a7127029f01892e051b21d98">   52</a></span>&#160;<span class="comment"></span>  <span class="keyword">enum class</span> <a class="code" href="classSpherepackIterator.html#a9b252462a7127029f01892e051b21d98">CoefficientArray</a> { a, b };</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  <a class="code" href="classSpherepackIterator.html">SpherepackIterator</a>(<span class="keywordtype">size_t</span> l_max_input, <span class="keywordtype">size_t</span> m_max_input, <span class="keywordtype">size_t</span> stride = 1);</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160; </div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;  <span class="keywordtype">size_t</span> l_max() const noexcept { <span class="keywordflow">return</span> l_max_; }</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;  <span class="keywordtype">size_t</span> m_max() const noexcept { <span class="keywordflow">return</span> m_max_; }</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;  <span class="keywordtype">size_t</span> n_th() const noexcept { <span class="keywordflow">return</span> n_th_; }</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;  <span class="keywordtype">size_t</span> n_ph() const noexcept { <span class="keywordflow">return</span> n_ph_; }</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;  <span class="keywordtype">size_t</span> stride() const noexcept { <span class="keywordflow">return</span> stride_; }</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment">  /// Size of a SPHEREPACK coefficient array (a and b combined), not</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">  /// counting stride.  For non-unit stride, the size of the array</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment">  /// should be spherepack_array_size()*stride.</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno"><a class="line" href="classSpherepackIterator.html#a4a161ddd552a542d7f6377f2495e8d8a">   65</a></span>&#160;<span class="comment"></span>  <span class="keywordtype">size_t</span> <a class="code" href="classSpherepackIterator.html#a4a161ddd552a542d7f6377f2495e8d8a">spherepack_array_size</a>() const noexcept {</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="keywordflow">return</span> (l_max_ + 1) * (m_max_ + 1) * 2;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;  }</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;  <a class="code" href="classSpherepackIterator.html">SpherepackIterator</a>&amp; operator++() noexcept {</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(current_compact_index_ != offset_into_spherepack_array.size(),</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;           <span class="stringliteral">&quot;Incrementing an invalid iterator: &quot;</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;               &lt;&lt; current_compact_index_ &lt;&lt; <span class="stringliteral">&quot; &quot;</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;               &lt;&lt; offset_into_spherepack_array.size());</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    ++current_compact_index_;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;  }</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160; </div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;  <span class="keyword">explicit</span> <span class="keyword">operator</span> bool() const noexcept {</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keywordflow">return</span> current_compact_index_ &lt; offset_into_spherepack_array.size();</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;  }</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment">  /// Current index into a SPHEREPACK coefficient array.</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno"><a class="line" href="classSpherepackIterator.html#a4ec7c6b1f7779502a341c7444d0cfb09">   83</a></span>&#160;<span class="comment"></span>  <span class="keywordtype">size_t</span> <a class="code" href="classSpherepackIterator.html#a4ec7c6b1f7779502a341c7444d0cfb09">operator()</a>() const noexcept {</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="keywordflow">return</span> offset_into_spherepack_array[current_compact_index_];</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;  }</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment">  /// Current values of l and m.</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno"><a class="line" href="classSpherepackIterator.html#aba4dd93add917002393cc109e104a3df">   88</a></span>&#160;<span class="comment"></span>  <span class="keywordtype">size_t</span> <a class="code" href="classSpherepackIterator.html#aba4dd93add917002393cc109e104a3df">l</a>() const noexcept { <span class="keywordflow">return</span> compact_l_[current_compact_index_]; }</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;  <span class="keywordtype">size_t</span> m() const noexcept { <span class="keywordflow">return</span> compact_m_[current_compact_index_]; }<span class="comment"></span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment">  ///  Whether the iterator points to an element of &#39;a&#39; or &#39;b&#39;,</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment">  ///  i.e. points to the cos(m*phi) or sin(m*phi) part of a spectral</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment">  ///  coefficient.</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno"><a class="line" href="classSpherepackIterator.html#ae8955437043e7f975172c8bb5792f75f">   93</a></span>&#160;<span class="comment"></span>  <a class="code" href="classSpherepackIterator.html#a9b252462a7127029f01892e051b21d98">CoefficientArray</a> <a class="code" href="classSpherepackIterator.html#ae8955437043e7f975172c8bb5792f75f">coefficient_array</a>() const noexcept {</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keywordflow">return</span> (current_compact_index_ &lt; number_of_valid_entries_in_a_</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;                ? CoefficientArray::a</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;                : CoefficientArray::b);</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;  }</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="comment">  /// Reset iterator back to beginning value. Returns *this.</span></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="comment"></span>  <a class="code" href="classSpherepackIterator.html">SpherepackIterator</a>&amp; <a class="code" href="classSpherepackIterator.html#a7eb1a2a22482e8c48b8b00370765a9cf">reset</a>() noexcept;</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="comment">  /// Set iterator to specific value of l, m, array.  Returns *this.</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="comment"></span>  <a class="code" href="classSpherepackIterator.html">SpherepackIterator</a>&amp; <a class="code" href="classSpherepackIterator.html#a6e96cba335c01028fb744d832a04970e">set</a>(<span class="keywordtype">size_t</span> l_input, <span class="keywordtype">size_t</span> m_input,</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;                          <a class="code" href="classSpherepackIterator.html#a9b252462a7127029f01892e051b21d98">CoefficientArray</a> coefficient_array_input) noexcept;</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="comment">  /// Same as &#39;set&#39; above, but assumes CoefficientArray is &#39;a&#39; for m&gt;=0 and</span></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="comment">  /// &#39;b&#39; for m&lt;0.  This is useful when converting between true</span></div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="comment">  /// spherical harmonics (which allow negative values of m) and</span></div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="comment">  /// SPHEREPACK coefficients (which have only positive values of m,</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="comment">  /// but two arrays for sin(m*phi) and cos(m*phi) parts).</span></div>
+<div class="line"><a name="l00111"></a><span class="lineno"><a class="line" href="classSpherepackIterator.html#a0ef65854073d9f2f51dc1f75ec71075e">  111</a></span>&#160;<span class="comment"></span>  <a class="code" href="classSpherepackIterator.html">SpherepackIterator</a>&amp; <a class="code" href="classSpherepackIterator.html#a6e96cba335c01028fb744d832a04970e">set</a>(<span class="keywordtype">size_t</span> l_input, <span class="keywordtype">int</span> m_input) noexcept {</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="classSpherepackIterator.html#a6e96cba335c01028fb744d832a04970e">set</a>(l_input, <span class="keywordtype">size_t</span>(abs(m_input)),</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;               m_input &gt;= 0 ? CoefficientArray::a : CoefficientArray::b);</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;  }</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160; </div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;  <span class="keywordtype">size_t</span> l_max_, m_max_, n_th_, n_ph_, stride_;</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;  <span class="keywordtype">size_t</span> number_of_valid_entries_in_a_;</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;  <span class="keywordtype">size_t</span> current_compact_index_;</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;size_t&gt;</a> offset_into_spherepack_array;</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;size_t&gt;</a> compact_l_, compact_m_;</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;};</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160; </div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">bool</span> operator==(<span class="keyword">const</span> <a class="code" href="classSpherepackIterator.html">SpherepackIterator</a>&amp; lhs,</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;                       <span class="keyword">const</span> <a class="code" href="classSpherepackIterator.html">SpherepackIterator</a>&amp; rhs) {</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;  <span class="keywordflow">return</span> lhs.l_max() == rhs.l_max() and lhs.m_max() == rhs.m_max() and</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;         lhs.stride() == rhs.stride() and lhs() == rhs();</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;}</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160; </div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/rel_ops/operator_cmp.html">operator!=</a>(<span class="keyword">const</span> <a class="code" href="classSpherepackIterator.html">SpherepackIterator</a>&amp; lhs,</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;                       <span class="keyword">const</span> <a class="code" href="classSpherepackIterator.html">SpherepackIterator</a>&amp; rhs) {</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;  <span class="keywordflow">return</span> not(lhs == rhs);</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;}</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160; </div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;<span class="keyword">inline</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a>&amp; operator&lt;&lt;(</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;    <a class="codeRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a>&amp; os,</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;    <span class="keyword">const</span> <a class="code" href="classSpherepackIterator.html#a9b252462a7127029f01892e051b21d98">SpherepackIterator::CoefficientArray</a>&amp; coefficient_array) noexcept {</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;  <span class="keywordflow">return</span> os &lt;&lt; (coefficient_array == SpherepackIterator::CoefficientArray::a</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;                    ? <span class="charliteral">&#39;a&#39;</span></div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;                    : <span class="charliteral">&#39;b&#39;</span>);</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;}</div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="aclassSpherepackIterator_html_a7eb1a2a22482e8c48b8b00370765a9cf"><div class="ttname"><a href="classSpherepackIterator.html#a7eb1a2a22482e8c48b8b00370765a9cf">SpherepackIterator::reset</a></div><div class="ttdeci">SpherepackIterator &amp; reset() noexcept</div><div class="ttdoc">Reset iterator back to beginning value. Returns *this.</div></div>
+<div class="ttc" id="aclassSpherepackIterator_html_aba4dd93add917002393cc109e104a3df"><div class="ttname"><a href="classSpherepackIterator.html#aba4dd93add917002393cc109e104a3df">SpherepackIterator::l</a></div><div class="ttdeci">size_t l() const noexcept</div><div class="ttdoc">Current values of l and m.</div><div class="ttdef"><b>Definition:</b> SpherepackIterator.hpp:88</div></div>
+<div class="ttc" id="aclassSpherepackIterator_html_a4ec7c6b1f7779502a341c7444d0cfb09"><div class="ttname"><a href="classSpherepackIterator.html#a4ec7c6b1f7779502a341c7444d0cfb09">SpherepackIterator::operator()</a></div><div class="ttdeci">size_t operator()() const noexcept</div><div class="ttdoc">Current index into a SPHEREPACK coefficient array.</div><div class="ttdef"><b>Definition:</b> SpherepackIterator.hpp:83</div></div>
+<div class="ttc" id="aoperator_cmp_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/rel_ops/operator_cmp.html">std::rel_ops::operator!=</a></div><div class="ttdeci">T operator!=(T... args)</div></div>
+<div class="ttc" id="aclassSpherepackIterator_html_ae8955437043e7f975172c8bb5792f75f"><div class="ttname"><a href="classSpherepackIterator.html#ae8955437043e7f975172c8bb5792f75f">SpherepackIterator::coefficient_array</a></div><div class="ttdeci">CoefficientArray coefficient_array() const noexcept</div><div class="ttdoc">Whether the iterator points to an element of 'a' or 'b', i.e. points to the cos(m*phi) or sin(m*phi) ...</div><div class="ttdef"><b>Definition:</b> SpherepackIterator.hpp:93</div></div>
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a></div></div>
+<div class="ttc" id="acmath_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cmath.html">cmath</a></div></div>
+<div class="ttc" id="aclassSpherepackIterator_html_a9b252462a7127029f01892e051b21d98"><div class="ttname"><a href="classSpherepackIterator.html#a9b252462a7127029f01892e051b21d98">SpherepackIterator::CoefficientArray</a></div><div class="ttdeci">CoefficientArray</div><div class="ttdoc">SPHEREPACK has two coefficient variables, 'a' and 'b', that hold the cos(m*phi) and sin(m*phi) parts ...</div><div class="ttdef"><b>Definition:</b> SpherepackIterator.hpp:52</div></div>
+<div class="ttc" id="abasic_ostream_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a></div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="aAssert_8hpp_html"><div class="ttname"><a href="Assert_8hpp.html">Assert.hpp</a></div></div>
+<div class="ttc" id="aclassSpherepackIterator_html_a4a161ddd552a542d7f6377f2495e8d8a"><div class="ttname"><a href="classSpherepackIterator.html#a4a161ddd552a542d7f6377f2495e8d8a">SpherepackIterator::spherepack_array_size</a></div><div class="ttdeci">size_t spherepack_array_size() const noexcept</div><div class="ttdoc">Size of a SPHEREPACK coefficient array (a and b combined), not counting stride. For non-unit stride,...</div><div class="ttdef"><b>Definition:</b> SpherepackIterator.hpp:65</div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_gaf170f3984e3d0f809b2558dbd981ca35"><div class="ttname"><a href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a></div><div class="ttdeci">#define ASSERT(a, m)</div><div class="ttdoc">Assert that an expression should be true.</div><div class="ttdef"><b>Definition:</b> Assert.hpp:49</div></div>
+<div class="ttc" id="aclassSpherepackIterator_html_a6e96cba335c01028fb744d832a04970e"><div class="ttname"><a href="classSpherepackIterator.html#a6e96cba335c01028fb744d832a04970e">SpherepackIterator::set</a></div><div class="ttdeci">SpherepackIterator &amp; set(size_t l_input, size_t m_input, CoefficientArray coefficient_array_input) noexcept</div><div class="ttdoc">Set iterator to specific value of l, m, array. Returns *this.</div></div>
+<div class="ttc" id="aostream_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/ostream.html">ostream</a></div></div>
+<div class="ttc" id="aclassSpherepackIterator_html"><div class="ttname"><a href="classSpherepackIterator.html">SpherepackIterator</a></div><div class="ttdoc">Iterates over spectral coefficients stored in SPHEREPACK format.</div><div class="ttdef"><b>Definition:</b> SpherepackIterator.hpp:47</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

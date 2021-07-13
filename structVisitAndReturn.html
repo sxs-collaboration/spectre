@@ -1,0 +1,308 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: VisitAndReturn&lt; Metavariables, TargetPhase, PhaseChangeRegistrars &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structVisitAndReturn-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">VisitAndReturn&lt; Metavariables, TargetPhase, PhaseChangeRegistrars &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Phase control object for temporarily visiting <code>TargetPhase</code>, until the algorithm halts again, then returning to the original phase.  
+ <a href="structVisitAndReturn.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="VisitAndReturn_8hpp_source.html">VisitAndReturn.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ae9da5b305c44a65941748e85f7569844"><td class="memItemLeft" align="right" valign="top"><a id="ae9da5b305c44a65941748e85f7569844"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:ae9da5b305c44a65941748e85f7569844"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc2f36e018f77ab51fe3e6e2ec8caaa6"><td class="memItemLeft" align="right" valign="top"><a id="abc2f36e018f77ab51fe3e6e2ec8caaa6"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:abc2f36e018f77ab51fe3e6e2ec8caaa6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21880527ff10377ebd9b3c75e69e056a"><td class="memItemLeft" align="right" valign="top"><a id="a21880527ff10377ebd9b3c75e69e056a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a21880527ff10377ebd9b3c75e69e056a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe8014736278b3ca58c020f94ce4326f"><td class="memItemLeft" align="right" valign="top"><a id="abe8014736278b3ca58c020f94ce4326f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>phase_change_tags_and_combines</b> = tmpl::list&lt; <a class="el" href="structTags_1_1ReturnPhase.html">Tags::ReturnPhase</a>&lt; TargetPhase &gt;, <a class="el" href="structTags_1_1TemporaryPhaseRequested.html">Tags::TemporaryPhaseRequested</a>&lt; TargetPhase &gt; &gt;</td></tr>
+<tr class="separator:abe8014736278b3ca58c020f94ce4326f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a563e3da14feddaf5e59bba43e9372d4b"><td class="memTemplParams" colspan="2"><a id="a563e3da14feddaf5e59bba43e9372d4b"></a>
+template&lt;typename LocalMetavariables &gt; </td></tr>
+<tr class="memitem:a563e3da14feddaf5e59bba43e9372d4b"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>participating_components</b> = typename LocalMetavariables::component_list</td></tr>
+<tr class="separator:a563e3da14feddaf5e59bba43e9372d4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:afb2de4eff74dc61f0b074fdaa6e46fac"><td class="memTemplParams" colspan="2"><a id="afb2de4eff74dc61f0b074fdaa6e46fac"></a>
+template&lt;typename... DecisionTags&gt; </td></tr>
+<tr class="memitem:afb2de4eff74dc61f0b074fdaa6e46fac"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>initialize_phase_data_impl</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; DecisionTags... &gt; * &gt; phase_change_decision_data) const noexcept</td></tr>
+<tr class="separator:afb2de4eff74dc61f0b074fdaa6e46fac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8465888fb2fcd695a97a7830a25e1507"><td class="memTemplParams" colspan="2"><a id="a8465888fb2fcd695a97a7830a25e1507"></a>
+template&lt;typename ParallelComponent , typename ArrayIndex , typename LocalMetavariables &gt; </td></tr>
+<tr class="memitem:a8465888fb2fcd695a97a7830a25e1507"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>contribute_phase_data_impl</b> (<a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; LocalMetavariables &gt; &amp;cache, const ArrayIndex &amp;array_index) const noexcept</td></tr>
+<tr class="separator:a8465888fb2fcd695a97a7830a25e1507"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a118fc1be1be7c7e3f02bc205db01e408"><td class="memTemplParams" colspan="2"><a id="a118fc1be1be7c7e3f02bc205db01e408"></a>
+template&lt;typename... DecisionTags, typename LocalMetavariables &gt; </td></tr>
+<tr class="memitem:a118fc1be1be7c7e3f02bc205db01e408"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; typename Metavariables::Phase, ArbitrationStrategy &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>arbitrate_phase_change_impl</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; DecisionTags... &gt; * &gt; phase_change_decision_data, const typename LocalMetavariables::Phase current_phase, const <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; LocalMetavariables &gt; &amp;) const noexcept</td></tr>
+<tr class="separator:a118fc1be1be7c7e3f02bc205db01e408"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69be2bf928e3dbb8f984c0bfb34f2552"><td class="memItemLeft" align="right" valign="top"><a id="a69be2bf928e3dbb8f984c0bfb34f2552"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;) noexcept override</td></tr>
+<tr class="separator:a69be2bf928e3dbb8f984c0bfb34f2552"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a0ed0de23ddb3d6d2062a323019178d01"><td class="memItemLeft" align="right" valign="top"><a id="a0ed0de23ddb3d6d2062a323019178d01"></a>
+static <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memItemRight" valign="bottom"><b>name</b> () noexcept</td></tr>
+<tr class="separator:a0ed0de23ddb3d6d2062a323019178d01"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a29edd40088ca84720a05522d26532db3"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a29edd40088ca84720a05522d26532db3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename Metavariables, typename Metavariables::Phase TargetPhase, typename PhaseChangeRegistrars = tmpl::list&lt;              Registrars::VisitAndReturn&lt;Metavariables, TargetPhase&gt;&gt;&gt;<br />
+struct VisitAndReturn&lt; Metavariables, TargetPhase, PhaseChangeRegistrars &gt;</h3>
+
+<p>Phase control object for temporarily visiting <code>TargetPhase</code>, until the algorithm halts again, then returning to the original phase. </p>
+<p>The motivation for this type of procedure is e.g. load balancing, checkpointing, and other maintenance tasks that should be performed periodically during a lengthy evolution. Once triggered, this will cause a change to <code>TargetPhase</code>, but store the current phase to resume execution when the tasks in <code>TargetPhase</code> are completed.</p>
+<p>Any parallel component can participate in the associated phase change reduction data contribution, and if any component requests the temporary phase, it will execute.</p>
+<p>To determine which specialization of this template is requested from the input file, the <code>Metavariables</code> must define a <code>phase_name(Phase)</code> static member function that returns a string for each phase that will be used in <code><a class="el" href="structVisitAndReturn.html" title="Phase control object for temporarily visiting TargetPhase, until the algorithm halts again,...">VisitAndReturn</a></code>s.</p>
+<dl class="section note"><dt>Note</dt><dd>If multiple such methods are specified (with different <code>TargetPhase</code>s), then the order of phase jumps depends on their order in the list.<ul>
+<li>If multiple <code><a class="el" href="structVisitAndReturn.html" title="Phase control object for temporarily visiting TargetPhase, until the algorithm halts again,...">VisitAndReturn</a></code>s trigger simultaneously, then they will visit in sequence specified by the input file: first going to the first <code>TargetPhase</code> until that phase resolves, then immediately entering the second <code>TargetPhase</code> (without yet returning to the original phase), then finally returning to the original phase.</li>
+<li>If a <code><a class="el" href="structVisitAndReturn.html" title="Phase control object for temporarily visiting TargetPhase, until the algorithm halts again,...">VisitAndReturn</a></code> is triggered in a phase that is already a <code>TargetPhase</code> of another <code><a class="el" href="structVisitAndReturn.html" title="Phase control object for temporarily visiting TargetPhase, until the algorithm halts again,...">VisitAndReturn</a></code>, it will be executed, and following completion, control will return to the original phase from before the first <code><a class="el" href="structVisitAndReturn.html" title="Phase control object for temporarily visiting TargetPhase, until the algorithm halts again,...">VisitAndReturn</a></code>. </li>
+</ul>
+</dd></dl>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a29edd40088ca84720a05522d26532db3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a29edd40088ca84720a05522d26532db3">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Metavariables , typename Metavariables::Phase TargetPhase, typename PhaseChangeRegistrars  = tmpl::list&lt;              Registrars::VisitAndReturn&lt;Metavariables, TargetPhase&gt;&gt;&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="structVisitAndReturn.html">VisitAndReturn</a>&lt; Metavariables, TargetPhase, PhaseChangeRegistrars &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      <span class="stringliteral">&quot;Temporarily jump to the phase given by `TargetPhase`, returning to the &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;previously executing phase when complete.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Parallel/PhaseControl/<a class="el" href="VisitAndReturn_8hpp_source.html">VisitAndReturn.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

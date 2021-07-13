@@ -1,0 +1,329 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: TimeSteppers::RungeKutta3 Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceTimeSteppers.html">TimeSteppers</a></li><li class="navelem"><a class="el" href="classTimeSteppers_1_1RungeKutta3.html">RungeKutta3</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classTimeSteppers_1_1RungeKutta3-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">TimeSteppers::RungeKutta3 Class Reference<div class="ingroups"><a class="el" href="group__TimeSteppersGroup.html">Time Steppers</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><code>#include &lt;<a class="el" href="RungeKutta3_8hpp_source.html">RungeKutta3.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a6c549abcd1c559cc11d928b3821e2cf2"><td class="memItemLeft" align="right" valign="top"><a id="a6c549abcd1c559cc11d928b3821e2cf2"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a6c549abcd1c559cc11d928b3821e2cf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a6322ee90b0e0f28a58f71351bdedfe27"><td class="memItemLeft" align="right" valign="top"><a id="a6322ee90b0e0f28a58f71351bdedfe27"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RungeKutta3</b> (const <a class="el" href="classTimeSteppers_1_1RungeKutta3.html">RungeKutta3</a> &amp;) noexcept=default</td></tr>
+<tr class="separator:a6322ee90b0e0f28a58f71351bdedfe27"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97b23e21ca4449e6e2e3f43165143d50"><td class="memItemLeft" align="right" valign="top"><a id="a97b23e21ca4449e6e2e3f43165143d50"></a>
+<a class="el" href="classTimeSteppers_1_1RungeKutta3.html">RungeKutta3</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classTimeSteppers_1_1RungeKutta3.html">RungeKutta3</a> &amp;) noexcept=default</td></tr>
+<tr class="separator:a97b23e21ca4449e6e2e3f43165143d50"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94550e4e21aee427b217c6545f783429"><td class="memItemLeft" align="right" valign="top"><a id="a94550e4e21aee427b217c6545f783429"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RungeKutta3</b> (<a class="el" href="classTimeSteppers_1_1RungeKutta3.html">RungeKutta3</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a94550e4e21aee427b217c6545f783429"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6408bfb2ad84b2880c58ce0469eb045f"><td class="memItemLeft" align="right" valign="top"><a id="a6408bfb2ad84b2880c58ce0469eb045f"></a>
+<a class="el" href="classTimeSteppers_1_1RungeKutta3.html">RungeKutta3</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classTimeSteppers_1_1RungeKutta3.html">RungeKutta3</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a6408bfb2ad84b2880c58ce0469eb045f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2362f1d7222e8ecd74f5567c62eccdce"><td class="memTemplParams" colspan="2"><a id="a2362f1d7222e8ecd74f5567c62eccdce"></a>
+template&lt;typename Vars , typename DerivVars &gt; </td></tr>
+<tr class="memitem:a2362f1d7222e8ecd74f5567c62eccdce"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>update_u</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Vars * &gt; u, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classTimeSteppers_1_1History.html">History</a>&lt; Vars, DerivVars &gt; * &gt; history, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;time_step) const noexcept</td></tr>
+<tr class="separator:a2362f1d7222e8ecd74f5567c62eccdce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94096438bb794d4310250d3a0aad8aca"><td class="memTemplParams" colspan="2"><a id="a94096438bb794d4310250d3a0aad8aca"></a>
+template&lt;typename Vars , typename ErrVars , typename DerivVars &gt; </td></tr>
+<tr class="memitem:a94096438bb794d4310250d3a0aad8aca"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>update_u</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Vars * &gt; u, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; ErrVars * &gt; u_error, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classTimeSteppers_1_1History.html">History</a>&lt; Vars, DerivVars &gt; * &gt; history, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;time_step) const noexcept</td></tr>
+<tr class="separator:a94096438bb794d4310250d3a0aad8aca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc054fc85acda65ab0f4c8646ae11efd"><td class="memTemplParams" colspan="2"><a id="afc054fc85acda65ab0f4c8646ae11efd"></a>
+template&lt;typename Vars , typename DerivVars &gt; </td></tr>
+<tr class="memitem:afc054fc85acda65ab0f4c8646ae11efd"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>dense_update_u</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Vars * &gt; u, const <a class="el" href="classTimeSteppers_1_1History.html">History</a>&lt; Vars, DerivVars &gt; &amp;history, double time) const noexcept</td></tr>
+<tr class="separator:afc054fc85acda65ab0f4c8646ae11efd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa66e3b8a1e45aa138652d0a5c3306677"><td class="memItemLeft" align="right" valign="top"><a id="aa66e3b8a1e45aa138652d0a5c3306677"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>order</b> () const noexcept override</td></tr>
+<tr class="separator:aa66e3b8a1e45aa138652d0a5c3306677"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c3ac1baf69e3568f86c3fb8a4e20ea6"><td class="memItemLeft" align="right" valign="top"><a id="a1c3ac1baf69e3568f86c3fb8a4e20ea6"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>error_estimate_order</b> () const noexcept override</td></tr>
+<tr class="separator:a1c3ac1baf69e3568f86c3fb8a4e20ea6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a49e0144e3b01fa64a39b687c850d4515"><td class="memItemLeft" align="right" valign="top"><a id="a49e0144e3b01fa64a39b687c850d4515"></a>
+uint64_t&#160;</td><td class="memItemRight" valign="bottom"><b>number_of_substeps</b> () const noexcept override</td></tr>
+<tr class="separator:a49e0144e3b01fa64a39b687c850d4515"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e1ebaf21e3eedf97e9955b05a4342ed"><td class="memItemLeft" align="right" valign="top"><a id="a4e1ebaf21e3eedf97e9955b05a4342ed"></a>
+uint64_t&#160;</td><td class="memItemRight" valign="bottom"><b>number_of_substeps_for_error</b> () const noexcept override</td></tr>
+<tr class="separator:a4e1ebaf21e3eedf97e9955b05a4342ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a46ddbf6d4c8f741dabf2f82a7db35b28"><td class="memItemLeft" align="right" valign="top"><a id="a46ddbf6d4c8f741dabf2f82a7db35b28"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>number_of_past_steps</b> () const noexcept override</td></tr>
+<tr class="separator:a46ddbf6d4c8f741dabf2f82a7db35b28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd7abb905d105d366885d2a6d9f07d9f"><td class="memItemLeft" align="right" valign="top"><a id="acd7abb905d105d366885d2a6d9f07d9f"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>stable_step</b> () const noexcept override</td></tr>
+<tr class="separator:acd7abb905d105d366885d2a6d9f07d9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac6c6b275ac50e1d82310992fdeb4707e"><td class="memItemLeft" align="right" valign="top"><a id="ac6c6b275ac50e1d82310992fdeb4707e"></a>
+<a class="el" href="classTimeStepId.html">TimeStepId</a>&#160;</td><td class="memItemRight" valign="bottom"><b>next_time_id</b> (const <a class="el" href="classTimeStepId.html">TimeStepId</a> &amp;current_id, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;time_step) const noexcept override</td></tr>
+<tr class="separator:ac6c6b275ac50e1d82310992fdeb4707e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a716aa7a5b9e41a0e9034c62b33ec4077"><td class="memItemLeft" align="right" valign="top"><a id="a716aa7a5b9e41a0e9034c62b33ec4077"></a>
+<a class="el" href="classTimeStepId.html">TimeStepId</a>&#160;</td><td class="memItemRight" valign="bottom"><b>next_time_id_for_error</b> (const <a class="el" href="classTimeStepId.html">TimeStepId</a> &amp;current_id, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;time_step) const noexcept override</td></tr>
+<tr class="separator:a716aa7a5b9e41a0e9034c62b33ec4077"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c63ea020ca10de509115cf1c50e111f"><td class="memTemplParams" colspan="2"><a id="a5c63ea020ca10de509115cf1c50e111f"></a>
+template&lt;typename Vars , typename DerivVars &gt; </td></tr>
+<tr class="memitem:a5c63ea020ca10de509115cf1c50e111f"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>can_change_step_size</b> (const <a class="el" href="classTimeStepId.html">TimeStepId</a> &amp;time_id, const <a class="el" href="classTimeSteppers_1_1History.html">TimeSteppers::History</a>&lt; Vars, DerivVars &gt; &amp;) const noexcept</td></tr>
+<tr class="separator:a5c63ea020ca10de509115cf1c50e111f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64f87da52634e1831b31df66cc84d48a"><td class="memItemLeft" align="right" valign="top"><a id="a64f87da52634e1831b31df66cc84d48a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_template</b> (<a class="el" href="classTimeSteppers_1_1RungeKutta3.html">RungeKutta3</a>)</td></tr>
+<tr class="separator:a64f87da52634e1831b31df66cc84d48a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0c11aca80076f6f836172bbfcc6d6f4"><td class="memItemLeft" align="right" valign="top"><a id="ae0c11aca80076f6f836172bbfcc6d6f4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RungeKutta3</b> (CkMigrateMessage *) noexcept</td></tr>
+<tr class="separator:ae0c11aca80076f6f836172bbfcc6d6f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59b93abddbd9eb595790d09078724d9d"><td class="memItemLeft" align="right" valign="top"><a id="a59b93abddbd9eb595790d09078724d9d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:a59b93abddbd9eb595790d09078724d9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6455174054fa61bb2e87dcfdadab6c59"><td class="memTemplParams" colspan="2"><a id="a6455174054fa61bb2e87dcfdadab6c59"></a>
+template&lt;typename Vars , typename DerivVars &gt; </td></tr>
+<tr class="memitem:a6455174054fa61bb2e87dcfdadab6c59"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>update_u</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Vars * &gt; u, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classTimeSteppers_1_1History.html">History</a>&lt; Vars, DerivVars &gt; * &gt; history, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;time_step) const noexcept</td></tr>
+<tr class="separator:a6455174054fa61bb2e87dcfdadab6c59"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a243d308a510ac2352292651cbb8c082a"><td class="memTemplParams" colspan="2"><a id="a243d308a510ac2352292651cbb8c082a"></a>
+template&lt;typename Vars , typename ErrVars , typename DerivVars &gt; </td></tr>
+<tr class="memitem:a243d308a510ac2352292651cbb8c082a"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>update_u</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Vars * &gt; u, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; ErrVars * &gt; u_error, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classTimeSteppers_1_1History.html">History</a>&lt; Vars, DerivVars &gt; * &gt; history, const <a class="el" href="classTimeDelta.html">TimeDelta</a> &amp;time_step) const noexcept</td></tr>
+<tr class="separator:a243d308a510ac2352292651cbb8c082a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:af629ac7d776b54e93afce7563f3e895c"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:af629ac7d776b54e93afce7563f3e895c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A "strong stability-preserving" 3rd-order Runge-Kutta time-stepper, as described in <a class="el" href="citelist.html#CITEREF_HesthavenWarburton">[56]</a> section 5.7. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="af629ac7d776b54e93afce7563f3e895c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af629ac7d776b54e93afce7563f3e895c">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> TimeSteppers::RungeKutta3::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;A third-order strong stability-preserving Runge-Kutta time-stepper.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Time/TimeSteppers/<a class="el" href="RungeKutta3_8hpp_source.html">RungeKutta3.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

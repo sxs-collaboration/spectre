@@ -1,0 +1,247 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: GeneralizedHarmonic::TimeDerivative&lt; Dim &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceGeneralizedHarmonic.html">GeneralizedHarmonic</a></li><li class="navelem"><a class="el" href="structGeneralizedHarmonic_1_1TimeDerivative.html">TimeDerivative</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="structGeneralizedHarmonic_1_1TimeDerivative-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">GeneralizedHarmonic::TimeDerivative&lt; Dim &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Compute the RHS of the Generalized Harmonic formulation of Einstein's equations.  
+ <a href="structGeneralizedHarmonic_1_1TimeDerivative.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="GeneralizedHarmonic_2TimeDerivative_8hpp_source.html">TimeDerivative.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ab6ec5f98b364f71c375d02de0537d40b"><td class="memItemLeft" align="right" valign="top"><a id="ab6ec5f98b364f71c375d02de0537d40b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>temporary_tags</b> = tmpl::list&lt; ::<a class="el" href="structGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1ConstraintGamma1.html">GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1</a>, ::<a class="el" href="structGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1ConstraintGamma2.html">GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2</a>, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1GaugeH.html">Tags::GaugeH</a>&lt; Dim &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1SpacetimeDerivGaugeH.html">Tags::SpacetimeDerivGaugeH</a>&lt; Dim &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Gamma1Gamma2.html">Tags::Gamma1Gamma2</a>, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1PiTwoNormals.html">Tags::PiTwoNormals</a>, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1NormalDotOneIndexConstraint.html">Tags::NormalDotOneIndexConstraint</a>, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Gamma1Plus1.html">Tags::Gamma1Plus1</a>, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1PiOneNormal.html">Tags::PiOneNormal</a>&lt; Dim &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1GaugeConstraint.html">Tags::GaugeConstraint</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1PhiTwoNormals.html">Tags::PhiTwoNormals</a>&lt; Dim &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1ShiftDotThreeIndexConstraint.html">Tags::ShiftDotThreeIndexConstraint</a>&lt; Dim &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1PhiOneNormal.html">Tags::PhiOneNormal</a>&lt; Dim &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1PiSecondIndexUp.html">Tags::PiSecondIndexUp</a>&lt; Dim &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1ThreeIndexConstraint.html">Tags::ThreeIndexConstraint</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1PhiFirstIndexUp.html">Tags::PhiFirstIndexUp</a>&lt; Dim &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1PhiThirdIndexUp.html">Tags::PhiThirdIndexUp</a>&lt; Dim &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1SpacetimeChristoffelFirstKindThirdIndexUp.html">Tags::SpacetimeChristoffelFirstKindThirdIndexUp</a>&lt; Dim &gt;, <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1InverseSpatialMetric.html">gr::Tags::InverseSpatialMetric</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1DetSpatialMetric.html">gr::Tags::DetSpatialMetric</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1InverseSpacetimeMetric.html">gr::Tags::InverseSpacetimeMetric</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1SpacetimeChristoffelFirstKind.html">gr::Tags::SpacetimeChristoffelFirstKind</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1SpacetimeChristoffelSecondKind.html">gr::Tags::SpacetimeChristoffelSecondKind</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1TraceSpacetimeChristoffelFirstKind.html">gr::Tags::TraceSpacetimeChristoffelFirstKind</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1SpacetimeNormalVector.html">gr::Tags::SpacetimeNormalVector</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1SpacetimeNormalOneForm.html">gr::Tags::SpacetimeNormalOneForm</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1DerivativesOfSpacetimeMetric.html">gr::Tags::DerivativesOfSpacetimeMetric</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;</td></tr>
+<tr class="separator:ab6ec5f98b364f71c375d02de0537d40b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5944c543c37800979f19a4c847a66866"><td class="memItemLeft" align="right" valign="top"><a id="a5944c543c37800979f19a4c847a66866"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt; <a class="el" href="structgr_1_1Tags_1_1SpacetimeMetric.html">gr::Tags::SpacetimeMetric</a>&lt; Dim &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Pi.html">Tags::Pi</a>&lt; Dim &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Phi.html">Tags::Phi</a>&lt; Dim &gt;, ::<a class="el" href="structGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1ConstraintGamma0.html">GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0</a>, ::<a class="el" href="structGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1ConstraintGamma1.html">GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1</a>, ::<a class="el" href="structGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1ConstraintGamma2.html">GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2</a>, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1GaugeH.html">Tags::GaugeH</a>&lt; Dim &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1SpacetimeDerivGaugeH.html">Tags::SpacetimeDerivGaugeH</a>&lt; Dim &gt; &gt;</td></tr>
+<tr class="separator:a5944c543c37800979f19a4c847a66866"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a18c2195b6be4270f0b75a231bfddc0ea"><td class="memItemLeft" align="right" valign="top"><a id="a18c2195b6be4270f0b75a231bfddc0ea"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>apply</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; dt_spacetime_metric, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; dt_pi, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; dt_phi, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; temp_gamma1, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; temp_gamma2, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::a&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; temp_gauge_function, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ab&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; temp_spacetime_deriv_gauge_function, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; gamma1gamma2, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; pi_two_normals, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; normal_dot_gauge_constraint, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; gamma1_plus_1, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::a&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; pi_one_normal, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::a&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; <a class="el" href="namespaceGeneralizedHarmonic.html#aad3632815f12e933610f407ad4bfa7e0">gauge_constraint</a>, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; phi_two_normals, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; shift_dot_three_index_constraint, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ia&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; phi_one_normal, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::aB&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; pi_2_up, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; <a class="el" href="namespaceGeneralizedHarmonic.html#ad9710cd1684a03fae39eb3126ef4bc35">three_index_constraint</a>, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::Iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; phi_1_up, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::iaB&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; phi_3_up, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::abC&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; christoffel_first_kind_3_up, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; lapse, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; shift, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; spatial_metric, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::II&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; inverse_spatial_metric, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; det_spatial_metric, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::AA&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; inverse_spacetime_metric, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::abb&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; christoffel_first_kind, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::Abb&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; <a class="el" href="group__GeneralRelativityGroup.html#ga90706f0d98a97fff146013022c1aeff3">christoffel_second_kind</a>, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::a&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; trace_christoffel, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::A&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; normal_spacetime_vector, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::a&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; normal_spacetime_one_form, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::abb&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; da_spacetime_metric, const tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;d_spacetime_metric, const tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;d_pi, const tnsr::ijaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;d_phi, const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;spacetime_metric, const tnsr::aa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;<a class="el" href="group__GeneralRelativityGroup.html#ga0f8ea77b898950a2a3ab6a5feea01935">pi</a>, const tnsr::iaa&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;<a class="el" href="group__GeneralRelativityGroup.html#gaecccadb6658f3735cfb7344c780abd97">phi</a>, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;gamma0, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;gamma1, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;gamma2, const tnsr::a&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;gauge_function, const tnsr::ab&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;spacetime_deriv_gauge_function) noexcept</td></tr>
+<tr class="separator:a18c2195b6be4270f0b75a231bfddc0ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+struct GeneralizedHarmonic::TimeDerivative&lt; Dim &gt;</h3>
+
+<p>Compute the RHS of the Generalized Harmonic formulation of Einstein's equations. </p>
+<p>The evolved variables are the spacetime metric \(g_{ab}\), its spatial derivative \(\Phi_{iab}=\partial_i g_{ab}\), and conjugate momentum \(\Pi_{ab}=n^c\partial_c g_{ab}\), where \(n^a\) is the spacetime unit normal vector. The evolution equations are (Eqs. 35-57 of <a class="el" href="citelist.html#CITEREF_Lindblom2005qh">[70]</a>)</p>
+<p class="formulaDsp">
+\begin{align} \partial_t g_{ab}- &amp;\left(1+\gamma_1\right)\beta^k\partial_k g_{ab} = -\alpha \Pi_{ab}-\gamma_1\beta^i\Phi_{iab}, \\ \partial_t\Pi_{ab}- &amp;\beta^k\partial_k\Pi_{ab} + \alpha \gamma^{ki}\partial_k\Phi_{iab} - \gamma_1\gamma_2\beta^k\partial_kg_{ab} \notag \\ =&amp;2\alpha g^{cd}\left(\gamma^{ij}\Phi_{ica}\Phi_{jdb} - \Pi_{ca}\Pi_{db} - g^{ef}\Gamma_{ace}\Gamma_{bdf}\right) \notag \\ &amp;-2\alpha \nabla_{(a}H_{b)} - \frac{1}{2}\alpha n^c n^d\Pi_{cd}\Pi_{ab} - \alpha n^c \Pi_{ci}\gamma^{ij}\Phi_{jab} \notag \\ &amp;+\alpha \gamma_0\left(2\delta^c{}_{(a} n_{b)} - (1 + \gamma_3)g_{ab}n^c\right)\mathcal{C}_c \notag \\ &amp;+ 2 \gamma_4 \alpha \Pi_{ab} n^c \mathcal{C}_c \notag \\ &amp;- \gamma_5\alpha n^c\mathcal{C}_c \left(\frac{\mathcal{C}_a\mathcal{C}_b - \frac{1}{2} g_{ab} \mathcal{C}_d \mathcal{C}^d} {\epsilon_{5} + 2 n^d \mathcal{C}_d n^e \mathcal{C}_e + \mathcal{C}_d \mathcal{C}^d} \right) \notag \\ &amp;-\gamma_1\gamma_2 \beta^i\Phi_{iab} \notag \\ &amp;-16\pi \alpha \left(T_{ab} - \frac{1}{2}g_{ab}T^c{}_c\right),\\ \partial_t\Phi_{iab}- &amp;\beta^k\partial_k\Phi_{iab} + \alpha \partial_i\Pi_{ab} - \alpha \gamma_2\partial_ig_{ab} \notag \\ =&amp;\frac{1}{2}\alpha n^c n^d\Phi_{icd}\Pi_{ab} + \alpha \gamma^{jk}n^c\Phi_{ijc}\Phi_{kab} \notag \\ &amp;-\alpha \gamma_2\Phi_{iab}, \end{align}
+</p>
+<p>where \(H_a\) is the gauge source function and \(\mathcal{C}_a=H_a+\Gamma_a\) is the gauge constraint. The constraint damping parameters \(\gamma_0\) \(\gamma_1\), \(\gamma_2\), \(\gamma_3\), \(\gamma_4\), and \(\gamma_5\) have units of inverse time and control the time scales on which the constraints are damped to zero.</p>
+<dl class="section note"><dt>Note</dt><dd>We have not coded up the constraint damping terms for \(\gamma_3\), \(\gamma_4\), and \(\gamma_5\). \(\gamma_3\) was found to be essential for evolutions of black strings by Pretorius and Lehner <a class="el" href="citelist.html#CITEREF_Lehner2010pn">[69]</a>. </dd></dl>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/Systems/GeneralizedHarmonic/<a class="el" href="GeneralizedHarmonic_2TimeDerivative_8hpp_source.html">TimeDerivative.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

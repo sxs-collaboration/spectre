@@ -1,0 +1,257 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Evolution/Systems/Burgers/BoundaryConditions/BoundaryCondition.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_d7cddb31ba741ba3a4d5be000d880a30.html">Evolution</a></li><li class="navelem"><a class="el" href="dir_ae9813db12dd9fd3f3106ad3644a1b2a.html">Systems</a></li><li class="navelem"><a class="el" href="dir_93fe5432d057cf829b1f04de539290b7.html">Burgers</a></li><li class="navelem"><a class="el" href="dir_cd0efb27ac7416c234389442ccf4d0aa.html">BoundaryConditions</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">BoundaryCondition.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;pup.h&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160; </div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;Domain/BoundaryConditions/BoundaryCondition.hpp&quot;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;Domain/BoundaryConditions/Periodic.hpp&quot;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="comment"></span><span class="keyword">namespace </span><a class="code" href="namespaceBurgers_1_1BoundaryConditions.html">Burgers::BoundaryConditions</a> {</div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="keyword">class </span><a class="code" href="namespaceelliptic.html#af6d0ee338cc58bc9669207626dd17e4cabac152b762896edff34ed668ae1a546f">Dirichlet</a>;</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="keyword">class </span>DirichletAnalytic;</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="keyword">class </span>Outflow;</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;}  <span class="comment">// namespace Burgers::BoundaryConditions</span><span class="comment"></span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment"></span><span class="comment"></span> </div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment">/// \brief Boundary conditions for the Burgers system</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno"><a class="line" href="namespaceBurgers_1_1BoundaryConditions.html">   21</a></span>&#160;<span class="comment"></span><span class="keyword">namespace </span><a class="code" href="namespaceBurgers_1_1BoundaryConditions.html">Burgers::BoundaryConditions</a> {<span class="comment"></span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment">/// \brief The base class off of which all boundary conditions must inherit</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno"><a class="line" href="classBurgers_1_1BoundaryConditions_1_1BoundaryCondition.html">   23</a></span>&#160;<span class="comment"></span><span class="keyword">class </span><a class="code" href="classBurgers_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a> : <span class="keyword">public</span> <a class="code" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a> {</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;  <span class="keyword">using</span> creatable_classes =</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;      tmpl::list&lt;<a class="code" href="classBurgers_1_1BoundaryConditions_1_1Dirichlet.html">Dirichlet</a>, <a class="code" href="classBurgers_1_1BoundaryConditions_1_1DirichletAnalytic.html">DirichletAnalytic</a>, <a class="code" href="classBurgers_1_1BoundaryConditions_1_1Outflow.html">Outflow</a>,</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;                 <a class="code" href="structdomain_1_1BoundaryConditions_1_1Periodic.html">domain::BoundaryConditions::Periodic&lt;BoundaryCondition&gt;</a>&gt;;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;  <a class="code" href="classBurgers_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <a class="code" href="classBurgers_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a>(<a class="code" href="classBurgers_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a>&amp;&amp;) noexcept = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  <a class="code" href="classBurgers_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a>&amp; operator=(<a class="code" href="classBurgers_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a>&amp;&amp;) noexcept = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  <a class="code" href="classBurgers_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a>(<span class="keyword">const</span> <a class="code" href="classBurgers_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a>&amp;) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  <a class="code" href="classBurgers_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classBurgers_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a>&amp;) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  ~<a class="code" href="classBurgers_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a>() <span class="keyword">override</span> = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  <span class="keyword">explicit</span> <a class="code" href="classBurgers_1_1BoundaryConditions_1_1BoundaryCondition.html">BoundaryCondition</a>(CkMigrateMessage* msg) noexcept;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160; </div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  <span class="keywordtype">void</span> pup(PUP::er&amp; p) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;};</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;}  <span class="comment">// namespace Burgers::BoundaryConditions</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="aclassBurgers_1_1BoundaryConditions_1_1Dirichlet_html"><div class="ttname"><a href="classBurgers_1_1BoundaryConditions_1_1Dirichlet.html">Burgers::BoundaryConditions::Dirichlet</a></div><div class="ttdef"><b>Definition:</b> Dirichlet.hpp:35</div></div>
+<div class="ttc" id="aclassdomain_1_1BoundaryConditions_1_1BoundaryCondition_html"><div class="ttname"><a href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a></div><div class="ttdoc">Base class from which all system-specific base classes must inherit.</div><div class="ttdef"><b>Definition:</b> BoundaryCondition.hpp:18</div></div>
+<div class="ttc" id="anamespaceBurgers_1_1BoundaryConditions_html"><div class="ttname"><a href="namespaceBurgers_1_1BoundaryConditions.html">Burgers::BoundaryConditions</a></div><div class="ttdoc">Boundary conditions for the Burgers system.</div><div class="ttdef"><b>Definition:</b> BoundaryCondition.hpp:21</div></div>
+<div class="ttc" id="anamespaceelliptic_html_af6d0ee338cc58bc9669207626dd17e4cabac152b762896edff34ed668ae1a546f"><div class="ttname"><a href="namespaceelliptic.html#af6d0ee338cc58bc9669207626dd17e4cabac152b762896edff34ed668ae1a546f">elliptic::BoundaryConditionType::Dirichlet</a></div><div class="ttdeci">@ Dirichlet</div><div class="ttdoc">Dirichlet boundary conditions like .</div></div>
+<div class="ttc" id="astructdomain_1_1BoundaryConditions_1_1Periodic_html"><div class="ttname"><a href="structdomain_1_1BoundaryConditions_1_1Periodic.html">domain::BoundaryConditions::Periodic</a></div><div class="ttdoc">Periodic boundary conditions.</div><div class="ttdef"><b>Definition:</b> Periodic.hpp:47</div></div>
+<div class="ttc" id="aclassBurgers_1_1BoundaryConditions_1_1DirichletAnalytic_html"><div class="ttname"><a href="classBurgers_1_1BoundaryConditions_1_1DirichletAnalytic.html">Burgers::BoundaryConditions::DirichletAnalytic</a></div><div class="ttdef"><b>Definition:</b> DirichletAnalytic.hpp:35</div></div>
+<div class="ttc" id="aclassBurgers_1_1BoundaryConditions_1_1BoundaryCondition_html"><div class="ttname"><a href="classBurgers_1_1BoundaryConditions_1_1BoundaryCondition.html">Burgers::BoundaryConditions::BoundaryCondition</a></div><div class="ttdoc">The base class off of which all boundary conditions must inherit.</div><div class="ttdef"><b>Definition:</b> BoundaryCondition.hpp:23</div></div>
+<div class="ttc" id="aclassBurgers_1_1BoundaryConditions_1_1Outflow_html"><div class="ttname"><a href="classBurgers_1_1BoundaryConditions_1_1Outflow.html">Burgers::BoundaryConditions::Outflow</a></div><div class="ttdef"><b>Definition:</b> Outflow.hpp:24</div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

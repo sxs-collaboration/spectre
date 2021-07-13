@@ -1,0 +1,332 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: VariableFixing::FixToAtmosphere&lt; Dim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceVariableFixing.html">VariableFixing</a></li><li class="navelem"><a class="el" href="classVariableFixing_1_1FixToAtmosphere.html">FixToAtmosphere</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classVariableFixing_1_1FixToAtmosphere-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">VariableFixing::FixToAtmosphere&lt; Dim &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__VariableFixingGroup.html">Variable Fixing</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Fix the primitive variables to an atmosphere in low density regions.  
+ <a href="classVariableFixing_1_1FixToAtmosphere.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="FixToAtmosphere_8hpp_source.html">FixToAtmosphere.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structVariableFixing_1_1FixToAtmosphere_1_1DensityCutoff.html">DensityCutoff</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rest mass density at which to impose the atmosphere. Should be greater than or equal to the density of the atmosphere.  <a href="structVariableFixing_1_1FixToAtmosphere_1_1DensityCutoff.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structVariableFixing_1_1FixToAtmosphere_1_1DensityOfAtmosphere.html">DensityOfAtmosphere</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rest mass density of the atmosphere.  <a href="structVariableFixing_1_1FixToAtmosphere_1_1DensityOfAtmosphere.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structVariableFixing_1_1FixToAtmosphere_1_1MaxVelocityMagnitude.html">MaxVelocityMagnitude</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The maximum magnitude of the velocity when the density is below <code><a class="el" href="structVariableFixing_1_1FixToAtmosphere_1_1TransitionDensityCutoff.html" title="For densities between DensityOfAtmosphere and TransitionDensityCutoff the velocity is transitioned aw...">TransitionDensityCutoff</a></code>  <a href="structVariableFixing_1_1FixToAtmosphere_1_1MaxVelocityMagnitude.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structVariableFixing_1_1FixToAtmosphere_1_1TransitionDensityCutoff.html">TransitionDensityCutoff</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">For densities between <a class="el" href="structVariableFixing_1_1FixToAtmosphere_1_1DensityOfAtmosphere.html" title="Rest mass density of the atmosphere.">DensityOfAtmosphere</a> and <a class="el" href="structVariableFixing_1_1FixToAtmosphere_1_1TransitionDensityCutoff.html" title="For densities between DensityOfAtmosphere and TransitionDensityCutoff the velocity is transitioned aw...">TransitionDensityCutoff</a> the velocity is transitioned away from atmosphere to avoid abrupt cutoffs.  <a href="structVariableFixing_1_1FixToAtmosphere_1_1TransitionDensityCutoff.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a948915d6188630a1ec2b23cc7b35f8fc"><td class="memItemLeft" align="right" valign="top"><a id="a948915d6188630a1ec2b23cc7b35f8fc"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structVariableFixing_1_1FixToAtmosphere_1_1DensityOfAtmosphere.html">DensityOfAtmosphere</a>, <a class="el" href="structVariableFixing_1_1FixToAtmosphere_1_1DensityCutoff.html">DensityCutoff</a>, <a class="el" href="structVariableFixing_1_1FixToAtmosphere_1_1TransitionDensityCutoff.html">TransitionDensityCutoff</a>, <a class="el" href="structVariableFixing_1_1FixToAtmosphere_1_1MaxVelocityMagnitude.html">MaxVelocityMagnitude</a> &gt;</td></tr>
+<tr class="separator:a948915d6188630a1ec2b23cc7b35f8fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d1aa0a26de773fe9c8d005b3ab429ba"><td class="memItemLeft" align="right" valign="top"><a id="a9d1aa0a26de773fe9c8d005b3ab429ba"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_tags</b> = tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1RestMassDensity.html">hydro::Tags::RestMassDensity</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structhydro_1_1Tags_1_1SpecificInternalEnergy.html">hydro::Tags::SpecificInternalEnergy</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt;, <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structhydro_1_1Tags_1_1Pressure.html">hydro::Tags::Pressure</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structhydro_1_1Tags_1_1SpecificEnthalpy.html">hydro::Tags::SpecificEnthalpy</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;</td></tr>
+<tr class="separator:a9d1aa0a26de773fe9c8d005b3ab429ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c692e1afec442584fe14de89c67ab56"><td class="memItemLeft" align="right" valign="top"><a id="a0c692e1afec442584fe14de89c67ab56"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structhydro_1_1Tags_1_1EquationOfStateBase.html">hydro::Tags::EquationOfStateBase</a> &gt;</td></tr>
+<tr class="separator:a0c692e1afec442584fe14de89c67ab56"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:adf6f1c565274dc562dc1125fb550e77c"><td class="memItemLeft" align="right" valign="top"><a id="adf6f1c565274dc562dc1125fb550e77c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FixToAtmosphere</b> (double density_of_atmosphere, double density_cutoff, double transition_density_cutoff, double max_velocity_magnitude, const <a class="el" href="structOptions_1_1Context.html">Options::Context</a> &amp;context={})</td></tr>
+<tr class="separator:adf6f1c565274dc562dc1125fb550e77c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af78f2758af679b13be10389216dadcf7"><td class="memItemLeft" align="right" valign="top"><a id="af78f2758af679b13be10389216dadcf7"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FixToAtmosphere</b> (const <a class="el" href="classVariableFixing_1_1FixToAtmosphere.html">FixToAtmosphere</a> &amp;)=default</td></tr>
+<tr class="separator:af78f2758af679b13be10389216dadcf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc247d34b92799f2be9a47f47360f6a6"><td class="memItemLeft" align="right" valign="top"><a id="afc247d34b92799f2be9a47f47360f6a6"></a>
+<a class="el" href="classVariableFixing_1_1FixToAtmosphere.html">FixToAtmosphere</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classVariableFixing_1_1FixToAtmosphere.html">FixToAtmosphere</a> &amp;)=default</td></tr>
+<tr class="separator:afc247d34b92799f2be9a47f47360f6a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac65baf9045cc93418c430e8c1f084e50"><td class="memItemLeft" align="right" valign="top"><a id="ac65baf9045cc93418c430e8c1f084e50"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FixToAtmosphere</b> (<a class="el" href="classVariableFixing_1_1FixToAtmosphere.html">FixToAtmosphere</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:ac65baf9045cc93418c430e8c1f084e50"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ba8703e76fa4cfbb0316db6611507c7"><td class="memItemLeft" align="right" valign="top"><a id="a5ba8703e76fa4cfbb0316db6611507c7"></a>
+<a class="el" href="classVariableFixing_1_1FixToAtmosphere.html">FixToAtmosphere</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classVariableFixing_1_1FixToAtmosphere.html">FixToAtmosphere</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a5ba8703e76fa4cfbb0316db6611507c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c134c72b941a18ca8ce8c797d60dc83"><td class="memItemLeft" align="right" valign="top"><a id="a8c134c72b941a18ca8ce8c797d60dc83"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a8c134c72b941a18ca8ce8c797d60dc83"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3da4561e1a39899c9e6d01d954563323"><td class="memTemplParams" colspan="2"><a id="a3da4561e1a39899c9e6d01d954563323"></a>
+template&lt;size_t ThermodynamicDim&gt; </td></tr>
+<tr class="memitem:a3da4561e1a39899c9e6d01d954563323"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; rest_mass_density, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; specific_internal_energy, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; spatial_velocity, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; lorentz_factor, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; pressure, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; specific_enthalpy, const tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;spatial_metric, const <a class="el" href="classEquationsOfState_1_1EquationOfState.html">EquationsOfState::EquationOfState</a>&lt; true, ThermodynamicDim &gt; &amp;equation_of_state) const noexcept</td></tr>
+<tr class="separator:a3da4561e1a39899c9e6d01d954563323"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a273afc4e8ff9de8871bf20dd1406edb3"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a273afc4e8ff9de8871bf20dd1406edb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a87569ba4bb33a44dc67a067cc4020389"><td class="memTemplParams" colspan="2"><a id="a87569ba4bb33a44dc67a067cc4020389"></a>
+template&lt;size_t SpatialDim&gt; </td></tr>
+<tr class="memitem:a87569ba4bb33a44dc67a067cc4020389"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classVariableFixing_1_1FixToAtmosphere.html">FixToAtmosphere</a>&lt; SpatialDim &gt; &amp;lhs, const <a class="el" href="classVariableFixing_1_1FixToAtmosphere.html">FixToAtmosphere</a>&lt; SpatialDim &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a87569ba4bb33a44dc67a067cc4020389"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+class VariableFixing::FixToAtmosphere&lt; Dim &gt;</h3>
+
+<p>Fix the primitive variables to an atmosphere in low density regions. </p>
+<p>If the rest mass density is below \(\rho_{\textrm{cutoff}}\) (<a class="el" href="structVariableFixing_1_1FixToAtmosphere_1_1DensityCutoff.html" title="Rest mass density at which to impose the atmosphere. Should be greater than or equal to the density o...">DensityCutoff</a>), it is set to \(\rho_{\textrm{atm}}\) (<a class="el" href="structVariableFixing_1_1FixToAtmosphere_1_1DensityOfAtmosphere.html" title="Rest mass density of the atmosphere.">DensityOfAtmosphere</a>), and the pressure, specific internal energy (for one-dimensional equations of state), and specific enthalpy are adjusted to satisfy the equation of state. For a two-dimensional equation of state, the specific internal energy is set to zero. In addition, the spatial velocity is set to zero, and the Lorentz factor is set to one.</p>
+<p>If the rest mass density is above \(\rho_{\textrm{cutoff}}\) but below \(\rho_{\textrm{transition}}\) (<a class="el" href="structVariableFixing_1_1FixToAtmosphere_1_1TransitionDensityCutoff.html" title="For densities between DensityOfAtmosphere and TransitionDensityCutoff the velocity is transitioned aw...">TransitionDensityCutoff</a>) then the velocity is rescaled such that</p>
+<p class="formulaDsp">
+\begin{align*} \sqrt{v^i v_i}\le \frac{(\rho-\rho_{\textrm{cutoff}})} {(\rho_{\textrm{transition}} - \rho_{\textrm{cutoff}})} v_{\max} \end{align*}
+</p>
+<p>where \(v_{\max}\) (<a class="el" href="structVariableFixing_1_1FixToAtmosphere_1_1MaxVelocityMagnitude.html" title="The maximum magnitude of the velocity when the density is below TransitionDensityCutoff">MaxVelocityMagnitude</a>) is the maximum allowed magnitude of the velocity. This prescription follows Appendix 2.d of <a class="el" href="citelist.html#CITEREF_Muhlberger2014pja">[81]</a> Note that we require \(\rho_{\textrm{transition}}\in(\rho_{\textrm{cutoff}}, 10\rho_{\textrm{atm}}]\) </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a273afc4e8ff9de8871bf20dd1406edb3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a273afc4e8ff9de8871bf20dd1406edb3">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classVariableFixing_1_1FixToAtmosphere.html">VariableFixing::FixToAtmosphere</a>&lt; Dim &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;If the rest mass density is below DensityCutoff, it is set\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;to DensityOfAtmosphere, and the pressure, specific internal energy\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;(for one-dimensional equations of state), and specific enthalpy are\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;adjusted to satisfy the equation of state. For a two-dimensional\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;equation of state, the specific internal energy is set to zero.\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;In addition, the spatial velocity is set to zero, and the Lorentz\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;factor is set to one.\n&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/VariableFixing/<a class="el" href="FixToAtmosphere_8hpp_source.html">FixToAtmosphere.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

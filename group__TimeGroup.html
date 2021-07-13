@@ -1,0 +1,507 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Time</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">Time</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Code related to the representation of time during simulations.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceSelfStart"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceSelfStart.html">SelfStart</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceStepChoosers"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceStepChoosers.html">StepChoosers</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceTimeSequences"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceTimeSequences.html">TimeSequences</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDenseTriggers_1_1Times.html">DenseTriggers::Times</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActions_1_1AdvanceTime.html">Actions::AdvanceTime</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Advance time one substep.  <a href="structActions_1_1AdvanceTime.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActions_1_1ChangeSlabSize.html">Actions::ChangeSlabSize</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEvents_1_1ChangeSlabSize.html">Events::ChangeSlabSize</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActions_1_1ChangeStepSize.html">Actions::ChangeStepSize</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adjust the step size for local time stepping.  <a href="structActions_1_1ChangeStepSize.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActions_1_1RecordTimeStepperData.html">Actions::RecordTimeStepperData&lt; VariablesTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Records the variables and their time derivatives in the time stepper history.  <a href="structActions_1_1RecordTimeStepperData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSelfStart_1_1Tags_1_1InitialValue.html">SelfStart::Tags::InitialValue&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSelfStart_1_1Actions_1_1Initialize.html">SelfStart::Actions::Initialize&lt; System &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSelfStart_1_1Actions_1_1CheckForCompletion.html">SelfStart::Actions::CheckForCompletion&lt; ExitTag, System &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSelfStart_1_1Actions_1_1CheckForOrderIncrease.html">SelfStart::Actions::CheckForOrderIncrease</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSelfStart_1_1Actions_1_1Cleanup.html">SelfStart::Actions::Cleanup</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActions_1_1UpdateU.html">Actions::UpdateU&lt; VariablesTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform variable updates for one substep.  <a href="structActions_1_1UpdateU.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structevolution__comparator.html">evolution_comparator&lt; T, Comparator &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSlab.html">Slab</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1IsUsingTimeSteppingErrorControl.html">Tags::IsUsingTimeSteppingErrorControl</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A tag that is true if the <code>ErrorControl</code> step chooser is one of the option-created <code><a class="el" href="classEvent.html">Event</a></code>s.  <a href="structTags_1_1IsUsingTimeSteppingErrorControl.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classStepChooser.html">StepChooser&lt; StepChooserUse &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespaceStepChoosers.html">StepChoosers</a> suggest upper bounds on step sizes.  <a href="classStepChooser.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1TimeStepId.html">Tags::TimeStepId</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for <a class="el" href="classTimeStepId.html">TimeStepId</a> for the algorithm state.  <a href="structTags_1_1TimeStepId.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1TimeStep.html">Tags::TimeStep</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for step size.  <a href="structTags_1_1TimeStep.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1SubstepTime.html">Tags::SubstepTime</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for <a class="el" href="classTime.html">Time</a> of the current substep.  <a href="structTags_1_1SubstepTime.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1SubstepTimeCompute.html">Tags::SubstepTimeCompute</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for computing the substep time from (from <code><a class="el" href="structTags_1_1TimeStepId.html" title="Tag for TimeStepId for the algorithm state.">Tags::TimeStepId</a></code>)  <a href="structTags_1_1SubstepTimeCompute.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1Time.html">Tags::Time</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for the current time as a double.  <a href="structTags_1_1Time.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1HistoryEvolvedVariables.html">Tags::HistoryEvolvedVariables&lt; Tag &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1StepperError.html">Tags::StepperError&lt; Tag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for the stepper error measure.  <a href="structTags_1_1StepperError.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1StepperErrorUpdated.html">Tags::StepperErrorUpdated</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag indicating whether the stepper error has been updated on the current step.  <a href="structTags_1_1StepperErrorUpdated.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1BoundaryHistory.html">Tags::BoundaryHistory&lt; LocalVars, RemoteVars, CouplingResult &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptionTags_1_1TimeStepper.html">OptionTags::TimeStepper&lt; StepperType &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptionTags_1_1StepChoosers.html">OptionTags::StepChoosers</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptionTags_1_1StepController.html">OptionTags::StepController</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptionTags_1_1InitialTime.html">OptionTags::InitialTime</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The time at which to start the simulation.  <a href="structOptionTags_1_1InitialTime.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptionTags_1_1InitialTimeStep.html">OptionTags::InitialTimeStep</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The initial time step taken by the time stepper. This may be overridden by an adaptive stepper.  <a href="structOptionTags_1_1InitialTimeStep.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptionTags_1_1InitialSlabSize.html">OptionTags::InitialSlabSize</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The initial slab size.  <a href="structOptionTags_1_1InitialSlabSize.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1TimeStepper.html">Tags::TimeStepper&lt; StepperType &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for a <a class="el" href="classTimeStepper.html">TimeStepper</a> of type <code>StepperType</code>.  <a href="structTags_1_1TimeStepper.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1StepChoosers.html">Tags::StepChoosers</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for a vector of <a class="el" href="classStepChooser.html" title="StepChoosers suggest upper bounds on step sizes.">StepChooser</a>s.  <a href="structTags_1_1StepChoosers.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1StepController.html">Tags::StepController</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag for a <a class="el" href="classStepController.html">StepController</a>.  <a href="structTags_1_1StepController.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTime.html">Time</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeDelta.html">TimeDelta</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeStepId.html">TimeStepId</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTriggers_1_1NearTimes.html">Triggers::NearTimes</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTriggers_1_1SlabCompares.html">Triggers::SlabCompares</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTriggers_1_1Slabs.html">Triggers::Slabs</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTriggers_1_1TimeCompares.html">Triggers::TimeCompares</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTriggers_1_1Times.html">Triggers::Times</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:ga0bbd34a55715a5635e82a5a22b81fff0"><td class="memTemplParams" colspan="2">template&lt;typename StepActions , typename System &gt; </td></tr>
+<tr class="memitem:ga0bbd34a55715a5635e82a5a22b81fff0"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TimeGroup.html#ga0bbd34a55715a5635e82a5a22b81fff0">SelfStart::self_start_procedure</a> = tmpl::flatten&lt; tmpl::list&lt; <a class="el" href="structSelfStart_1_1Actions_1_1Initialize.html">SelfStart::Actions::Initialize</a>&lt; System &gt;, ::<a class="el" href="structActions_1_1Label.html">Actions::Label</a>&lt; detail::PhaseStart &gt;, <a class="el" href="structSelfStart_1_1Actions_1_1CheckForCompletion.html">SelfStart::Actions::CheckForCompletion</a>&lt; detail::PhaseEnd, System &gt;, ::<a class="el" href="structActions_1_1AdvanceTime.html">Actions::AdvanceTime</a>, <a class="el" href="structSelfStart_1_1Actions_1_1CheckForOrderIncrease.html">SelfStart::Actions::CheckForOrderIncrease</a>, StepActions, ::<a class="el" href="structActions_1_1Goto.html">Actions::Goto</a>&lt; detail::PhaseStart &gt;, ::<a class="el" href="structActions_1_1Label.html">Actions::Label</a>&lt; detail::PhaseEnd &gt;, <a class="el" href="structSelfStart_1_1Actions_1_1Cleanup.html">SelfStart::Actions::Cleanup</a>, ::<a class="el" href="structActions_1_1AdvanceTime.html">Actions::AdvanceTime</a>, <a class="el" href="structParallel_1_1Actions_1_1TerminatePhase.html">Parallel::Actions::TerminatePhase</a> &gt; &gt;</td></tr>
+<tr class="separator:ga0bbd34a55715a5635e82a5a22b81fff0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga117675161b7751ae05541e919785bb82"><td class="memTemplParams" colspan="2">template&lt;typename T  = void&gt; </td></tr>
+<tr class="memitem:ga117675161b7751ae05541e919785bb82"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TimeGroup.html#ga117675161b7751ae05541e919785bb82">evolution_less</a> = <a class="el" href="structevolution__comparator.html">evolution_comparator</a>&lt; T, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/functional/less.html">std::less</a> &gt;</td></tr>
+<tr class="separator:ga117675161b7751ae05541e919785bb82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga67bc5b0fecfa9ae60d696fc3d9151511"><td class="memTemplParams" colspan="2">template&lt;typename T  = void&gt; </td></tr>
+<tr class="memitem:ga67bc5b0fecfa9ae60d696fc3d9151511"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TimeGroup.html#ga67bc5b0fecfa9ae60d696fc3d9151511">evolution_greater</a> = <a class="el" href="structevolution__comparator.html">evolution_comparator</a>&lt; T, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/functional/greater.html">std::greater</a> &gt;</td></tr>
+<tr class="separator:ga67bc5b0fecfa9ae60d696fc3d9151511"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2280b6578dc71409984abd63b4aca238"><td class="memTemplParams" colspan="2">template&lt;typename T  = void&gt; </td></tr>
+<tr class="memitem:ga2280b6578dc71409984abd63b4aca238"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TimeGroup.html#ga2280b6578dc71409984abd63b4aca238">evolution_less_equal</a> = <a class="el" href="structevolution__comparator.html">evolution_comparator</a>&lt; T, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/functional/less_equal.html">std::less_equal</a> &gt;</td></tr>
+<tr class="separator:ga2280b6578dc71409984abd63b4aca238"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga434d64581f87ea68cc93155104722667"><td class="memTemplParams" colspan="2">template&lt;typename T  = void&gt; </td></tr>
+<tr class="memitem:ga434d64581f87ea68cc93155104722667"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TimeGroup.html#ga434d64581f87ea68cc93155104722667">evolution_greater_equal</a> = <a class="el" href="structevolution__comparator.html">evolution_comparator</a>&lt; T, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/functional/greater_equal.html">std::greater_equal</a> &gt;</td></tr>
+<tr class="separator:ga434d64581f87ea68cc93155104722667"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga99566b7817bc3e354f3cfa07a524e814"><td class="memTemplParams" colspan="2">template&lt;typename TagList &gt; </td></tr>
+<tr class="memitem:ga99566b7817bc3e354f3cfa07a524e814"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TimeGroup.html#ga99566b7817bc3e354f3cfa07a524e814">Tags::get_all_history_tags</a> = tmpl::filter&lt; TagList, tt::is_a_lambda&lt;::<a class="el" href="structTags_1_1HistoryEvolvedVariables.html">Tags::HistoryEvolvedVariables</a>, tmpl::_1 &gt; &gt;</td></tr>
+<tr class="separator:ga99566b7817bc3e354f3cfa07a524e814"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:gacf88b8eef8a93446e63711301f391e33"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TimeGroup.html#gacf88b8eef8a93446e63711301f391e33">slab_rounding_error</a> (const <a class="el" href="classTime.html">Time</a> &amp;time) noexcept</td></tr>
+<tr class="separator:gacf88b8eef8a93446e63711301f391e33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>Code related to the representation of time during simulations. </p>
+<p>The time covered by a simulation is divided up into a sequence of adjacent, non-overlapping (except at endpoints) intervals referred to as "slabs". The boundaries between slabs can be placed at arbitrary times. Slabs, as represented in the code as the <a class="el" href="classSlab.html">Slab</a> class, provide comparison operators comparing slabs agreeing with the definition as a sequence of intervals. Slabs that do not jointly belong to any such sequence should not be compared.</p>
+<p>The specific time is represented by the <a class="el" href="classTime.html">Time</a> class, which encodes the slab containing the time and the fraction of the slab that has elapsed as an exact rational. Times are comparable according to their natural time ordering, except for times belonging to incomparable slabs.</p>
+<p>Differences in time within a slab are represented as exact fractions of that slab by the <a class="el" href="classTimeDelta.html">TimeDelta</a> class. TimeDeltas are only meaningful within a single slab, with the exception that the ratio of objects with different slabs may be taken, resulting in an inexact floating-point result. Longer intervals of time are represented using floating-point values. </p>
+<h2 class="groupheader">Typedef Documentation</h2>
+<a id="ga67bc5b0fecfa9ae60d696fc3d9151511"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga67bc5b0fecfa9ae60d696fc3d9151511">&#9670;&nbsp;</a></span>evolution_greater</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T  = void&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TimeGroup.html#ga67bc5b0fecfa9ae60d696fc3d9151511">evolution_greater</a> =  <a class="el" href="structevolution__comparator.html">evolution_comparator</a>&lt;T, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/functional/greater.html">std::greater</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p></p>
+<p>Ordering functors that reverse their order when time runs backwards. See <a class="el" href="structevolution__comparator.html">evolution_comparator</a> and <a class="el" href="structevolution__comparator_3_01void_00_01Comparator_01_4.html">evolution_comparator&lt;void,Comparator&gt;</a> for the provided interface.</p>
+<dl class="section see"><dt>See also</dt><dd><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/functional/less.html">std::less</a> </dd></dl>
+
+</div>
+</div>
+<a id="ga434d64581f87ea68cc93155104722667"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga434d64581f87ea68cc93155104722667">&#9670;&nbsp;</a></span>evolution_greater_equal</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T  = void&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TimeGroup.html#ga434d64581f87ea68cc93155104722667">evolution_greater_equal</a> =  <a class="el" href="structevolution__comparator.html">evolution_comparator</a>&lt;T, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/functional/greater_equal.html">std::greater_equal</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p></p>
+<p>Ordering functors that reverse their order when time runs backwards. See <a class="el" href="structevolution__comparator.html">evolution_comparator</a> and <a class="el" href="structevolution__comparator_3_01void_00_01Comparator_01_4.html">evolution_comparator&lt;void,Comparator&gt;</a> for the provided interface.</p>
+<dl class="section see"><dt>See also</dt><dd><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/functional/less.html">std::less</a> </dd></dl>
+
+</div>
+</div>
+<a id="ga117675161b7751ae05541e919785bb82"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga117675161b7751ae05541e919785bb82">&#9670;&nbsp;</a></span>evolution_less</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T  = void&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TimeGroup.html#ga117675161b7751ae05541e919785bb82">evolution_less</a> =  <a class="el" href="structevolution__comparator.html">evolution_comparator</a>&lt;T, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/functional/less.html">std::less</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Ordering functors that reverse their order when time runs backwards. See <a class="el" href="structevolution__comparator.html">evolution_comparator</a> and <a class="el" href="structevolution__comparator_3_01void_00_01Comparator_01_4.html">evolution_comparator&lt;void,Comparator&gt;</a> for the provided interface.</p>
+<dl class="section see"><dt>See also</dt><dd><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/functional/less.html">std::less</a> </dd></dl>
+
+</div>
+</div>
+<a id="ga2280b6578dc71409984abd63b4aca238"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2280b6578dc71409984abd63b4aca238">&#9670;&nbsp;</a></span>evolution_less_equal</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T  = void&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TimeGroup.html#ga2280b6578dc71409984abd63b4aca238">evolution_less_equal</a> =  <a class="el" href="structevolution__comparator.html">evolution_comparator</a>&lt;T, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/functional/less_equal.html">std::less_equal</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p></p>
+<p>Ordering functors that reverse their order when time runs backwards. See <a class="el" href="structevolution__comparator.html">evolution_comparator</a> and <a class="el" href="structevolution__comparator_3_01void_00_01Comparator_01_4.html">evolution_comparator&lt;void,Comparator&gt;</a> for the provided interface.</p>
+<dl class="section see"><dt>See also</dt><dd><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/functional/less.html">std::less</a> </dd></dl>
+
+</div>
+</div>
+<a id="ga99566b7817bc3e354f3cfa07a524e814"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga99566b7817bc3e354f3cfa07a524e814">&#9670;&nbsp;</a></span>get_all_history_tags</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename TagList &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TimeGroup.html#ga99566b7817bc3e354f3cfa07a524e814">Tags::get_all_history_tags</a> = typedef tmpl::filter&lt;TagList, tt::is_a_lambda&lt;::<a class="el" href="structTags_1_1HistoryEvolvedVariables.html">Tags::HistoryEvolvedVariables</a>, tmpl::_1&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>From a list of tags <code>TagList</code>, extract all tags that are template specializations of <code><a class="el" href="structTags_1_1HistoryEvolvedVariables.html">HistoryEvolvedVariables</a></code>. </p>
+
+</div>
+</div>
+<a id="ga0bbd34a55715a5635e82a5a22b81fff0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0bbd34a55715a5635e82a5a22b81fff0">&#9670;&nbsp;</a></span>self_start_procedure</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename StepActions , typename System &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="group__TimeGroup.html#ga0bbd34a55715a5635e82a5a22b81fff0">SelfStart::self_start_procedure</a> = typedef tmpl::flatten&lt;tmpl::list&lt; <a class="el" href="structSelfStart_1_1Actions_1_1Initialize.html">SelfStart::Actions::Initialize</a>&lt;System&gt;, ::<a class="el" href="structActions_1_1Label.html">Actions::Label</a>&lt;detail::PhaseStart&gt;, <a class="el" href="structSelfStart_1_1Actions_1_1CheckForCompletion.html">SelfStart::Actions::CheckForCompletion</a>&lt;detail::PhaseEnd, System&gt;, ::<a class="el" href="structActions_1_1AdvanceTime.html">Actions::AdvanceTime</a>, <a class="el" href="structSelfStart_1_1Actions_1_1CheckForOrderIncrease.html">SelfStart::Actions::CheckForOrderIncrease</a>, StepActions, ::<a class="el" href="structActions_1_1Goto.html">Actions::Goto</a>&lt;detail::PhaseStart&gt;, ::<a class="el" href="structActions_1_1Label.html">Actions::Label</a>&lt;detail::PhaseEnd&gt;, <a class="el" href="structSelfStart_1_1Actions_1_1Cleanup.html">SelfStart::Actions::Cleanup</a>, ::<a class="el" href="structActions_1_1AdvanceTime.html">Actions::AdvanceTime</a>, <a class="el" href="structParallel_1_1Actions_1_1TerminatePhase.html">Parallel::Actions::TerminatePhase</a>&gt; &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>The list of actions required to self-start an integrator.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">StepActions</td><td>List of actions computing and recording the system derivative and updating the evolved variables (but not the time).</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="namespaceSelfStart.html">SelfStart</a> </dd></dl>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="gacf88b8eef8a93446e63711301f391e33"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gacf88b8eef8a93446e63711301f391e33">&#9670;&nbsp;</a></span>slab_rounding_error()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double slab_rounding_error </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classTime.html">Time</a> &amp;&#160;</td>
+          <td class="paramname"><em>time</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Scale of the roundoff error incurred from inexact slab operations near the given time. </p>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

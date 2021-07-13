@@ -1,0 +1,248 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: grmhd::ValenciaDivClean::subcell::ResizeAndComputePrims&lt; OrderedListOfRecoverySchemes &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacegrmhd.html">grmhd</a></li><li class="navelem"><a class="el" href="namespacegrmhd_1_1ValenciaDivClean.html">ValenciaDivClean</a></li><li class="navelem"><a class="el" href="namespacegrmhd_1_1ValenciaDivClean_1_1subcell.html">subcell</a></li><li class="navelem"><a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1subcell_1_1ResizeAndComputePrims.html">ResizeAndComputePrims</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="structgrmhd_1_1ValenciaDivClean_1_1subcell_1_1ResizeAndComputePrims-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">grmhd::ValenciaDivClean::subcell::ResizeAndComputePrims&lt; OrderedListOfRecoverySchemes &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Mutator that, if the active mesh is subcell, resizes the primitive variables to have the size of the subcell and then computes the primitive variables.  
+ <a href="structgrmhd_1_1ValenciaDivClean_1_1subcell_1_1ResizeAndComputePrims.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="GrMhd_2ValenciaDivClean_2Subcell_2ResizeAndComputePrimitives_8hpp_source.html">ResizeAndComputePrimitives.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ae48edf0fe773ba430a2619b23a2f8101"><td class="memItemLeft" align="right" valign="top"><a id="ae48edf0fe773ba430a2619b23a2f8101"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_tags</b> = tmpl::list&lt;::<a class="el" href="structTags_1_1Variables.html">Tags::Variables</a>&lt; hydro::grmhd_tags&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;&gt;</td></tr>
+<tr class="separator:ae48edf0fe773ba430a2619b23a2f8101"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc1d9a28eb327abd72495489b3de044a"><td class="memItemLeft" align="right" valign="top"><a id="adc1d9a28eb327abd72495489b3de044a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt; <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1ActiveGrid.html">evolution::dg::subcell::Tags::ActiveGrid</a>, <a class="el" href="structdomain_1_1Tags_1_1Mesh.html">domain::Tags::Mesh</a>&lt; 3 &gt;, <a class="el" href="structevolution_1_1dg_1_1subcell_1_1Tags_1_1Mesh.html">evolution::dg::subcell::Tags::Mesh</a>&lt; 3 &gt;, <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1Tags_1_1TildeD.html">grmhd::ValenciaDivClean::Tags::TildeD</a>, <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1Tags_1_1TildeTau.html">grmhd::ValenciaDivClean::Tags::TildeTau</a>, <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1Tags_1_1TildeS.html">grmhd::ValenciaDivClean::Tags::TildeS</a>&lt;&gt;, <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1Tags_1_1TildeB.html">grmhd::ValenciaDivClean::Tags::TildeB</a>&lt;&gt;, <a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1Tags_1_1TildePhi.html">grmhd::ValenciaDivClean::Tags::TildePhi</a>, <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; 3 &gt;, <a class="el" href="structgr_1_1Tags_1_1InverseSpatialMetric.html">gr::Tags::InverseSpatialMetric</a>&lt; 3 &gt;, <a class="el" href="structgr_1_1Tags_1_1SqrtDetSpatialMetric.html">gr::Tags::SqrtDetSpatialMetric</a>&lt;&gt;, <a class="el" href="structhydro_1_1Tags_1_1EquationOfStateBase.html">hydro::Tags::EquationOfStateBase</a> &gt;</td></tr>
+<tr class="separator:adc1d9a28eb327abd72495489b3de044a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:aedcf000c64db2aefd64832b1cebcf2ef"><td class="memTemplParams" colspan="2"><a id="aedcf000c64db2aefd64832b1cebcf2ef"></a>
+template&lt;size_t ThermodynamicDim&gt; </td></tr>
+<tr class="memitem:aedcf000c64db2aefd64832b1cebcf2ef"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>apply</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; hydro::grmhd_tags&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&gt; * &gt; prim_vars, <a class="el" href="group__DgSubcellGroup.html#ga97fbd926840d2508e331694db731e18a">evolution::dg::subcell::ActiveGrid</a> active_grid, const <a class="el" href="classMesh.html">Mesh</a>&lt; 3 &gt; &amp;dg_mesh, const <a class="el" href="classMesh.html">Mesh</a>&lt; 3 &gt; &amp;subcell_mesh, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;tilde_d, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;tilde_tau, const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;tilde_s, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;tilde_b, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;tilde_phi, const tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;spatial_metric, const tnsr::II&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;inv_spatial_metric, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;sqrt_det_spatial_metric, const <a class="el" href="classEquationsOfState_1_1EquationOfState.html">EquationsOfState::EquationOfState</a>&lt; true, ThermodynamicDim &gt; &amp;eos) noexcept</td></tr>
+<tr class="separator:aedcf000c64db2aefd64832b1cebcf2ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename OrderedListOfRecoverySchemes&gt;<br />
+struct grmhd::ValenciaDivClean::subcell::ResizeAndComputePrims&lt; OrderedListOfRecoverySchemes &gt;</h3>
+
+<p>Mutator that, if the active mesh is subcell, resizes the primitive variables to have the size of the subcell and then computes the primitive variables. </p>
+<p>In the DG-subcell <code>step_actions</code> list this will normally be called using the <code><a class="el" href="structActions_1_1MutateApply.html" title="Apply the function Mutator::apply to the DataBox.">Actions::MutateApply</a></code> action in the following way in the action list:</p><ul>
+<li><code>TciAndSwitchToDg&lt;<a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1subcell_1_1TciOnFdGrid.html" title="The troubled-cell indicator run on the FD grid to check if the corresponding DG solution is admissibl...">TciOnFdGrid</a>&gt;</code></li>
+<li><code><a class="el" href="structActions_1_1MutateApply.html" title="Apply the function Mutator::apply to the DataBox.">Actions::MutateApply</a>&lt;<a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1subcell_1_1SwapGrTags.html" title="Swaps the inactive and active GR variables.">grmhd::ValenciaDivClean::subcell::SwapGrTags</a>&gt;</code></li>
+<li><code><a class="el" href="structActions_1_1MutateApply.html" title="Apply the function Mutator::apply to the DataBox.">Actions::MutateApply</a>&lt;<a class="el" href="structgrmhd_1_1ValenciaDivClean_1_1subcell_1_1ResizeAndComputePrims.html" title="Mutator that, if the active mesh is subcell, resizes the primitive variables to have the size of the ...">ResizeAndComputePrims</a>&lt;primitive_recovery_schemes&gt;&gt;</code> Note that the GR tags are swapped before this action is called.</li>
+</ul>
+<p>If the active grid is DG (we are switching from subcell back to DG) then this mutator computes the primitive variables on the active grid. We reconstruct the pressure to the DG grid to give a high-order initial guess for the primitive recovery. A possible future optimization would be to avoid this reconstruction when all recovery schemes don't need an initial guess. Finally, we perform the primitive recovery on the DG grid. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/<a class="el" href="GrMhd_2ValenciaDivClean_2Subcell_2ResizeAndComputePrimitives_8hpp_source.html">ResizeAndComputePrimitives.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

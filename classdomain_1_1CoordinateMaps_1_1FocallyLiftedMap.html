@@ -1,0 +1,380 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::CoordinateMaps::FocallyLiftedMap&lt; InnerMap &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1CoordinateMaps.html">CoordinateMaps</a></li><li class="navelem"><a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html">FocallyLiftedMap</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::CoordinateMaps::FocallyLiftedMap&lt; InnerMap &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__CoordinateMapsGroup.html">Coordinate Maps</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Map from \((\bar{x},\bar{y},\bar{z})\) to the volume contained between a 2D surface and the surface of a 2-sphere.  
+ <a href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="FocallyLiftedMap_8hpp_source.html">FocallyLiftedMap.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a264cbce01062f7a9a054c3c6cbda51f9"><td class="memItemLeft" align="right" valign="top"><a id="a264cbce01062f7a9a054c3c6cbda51f9"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FocallyLiftedMap</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;center, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;proj_center, double radius, bool source_is_between_focus_and_target, InnerMap inner_map) noexcept</td></tr>
+<tr class="separator:a264cbce01062f7a9a054c3c6cbda51f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a92ccef8955b4f0c6bdfd5a775fe62ec5"><td class="memItemLeft" align="right" valign="top"><a id="a92ccef8955b4f0c6bdfd5a775fe62ec5"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FocallyLiftedMap</b> (<a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html">FocallyLiftedMap</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a92ccef8955b4f0c6bdfd5a775fe62ec5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a9c0b27681b71c0b2ff898fc4aa0bb4"><td class="memItemLeft" align="right" valign="top"><a id="a3a9c0b27681b71c0b2ff898fc4aa0bb4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>FocallyLiftedMap</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html">FocallyLiftedMap</a> &amp;)=default</td></tr>
+<tr class="separator:a3a9c0b27681b71c0b2ff898fc4aa0bb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6177aa0c4cd2cff6b4a0885a54258f7a"><td class="memItemLeft" align="right" valign="top"><a id="a6177aa0c4cd2cff6b4a0885a54258f7a"></a>
+<a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html">FocallyLiftedMap</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html">FocallyLiftedMap</a> &amp;)=default</td></tr>
+<tr class="separator:a6177aa0c4cd2cff6b4a0885a54258f7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c8918a06c59fc283c48b6371abd4055"><td class="memItemLeft" align="right" valign="top"><a id="a4c8918a06c59fc283c48b6371abd4055"></a>
+<a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html">FocallyLiftedMap</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html">FocallyLiftedMap</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a4c8918a06c59fc283c48b6371abd4055"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a497fb77eef68da8c2bc4f42888252cb8"><td class="memTemplParams" colspan="2"><a id="a497fb77eef68da8c2bc4f42888252cb8"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a497fb77eef68da8c2bc4f42888252cb8"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator()</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:a497fb77eef68da8c2bc4f42888252cb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac42ddbf4705829c7dcdb5c85a6a864ab"><td class="memItemLeft" align="right" valign="top"><a id="ac42ddbf4705829c7dcdb5c85a6a864ab"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html#ac42ddbf4705829c7dcdb5c85a6a864ab">inverse</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;target_coords) const noexcept</td></tr>
+<tr class="memdesc:ac42ddbf4705829c7dcdb5c85a6a864ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">The inverse function is only callable with doubles because the inverse might fail if called for a point out of range, and it is unclear what should happen if the inverse were to succeed for some points in a <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> but fail for other points. <br /></td></tr>
+<tr class="separator:ac42ddbf4705829c7dcdb5c85a6a864ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab132e13d914339e63db9edbb6f633bc7"><td class="memTemplParams" colspan="2"><a id="ab132e13d914339e63db9edbb6f633bc7"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ab132e13d914339e63db9edbb6f633bc7"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:ab132e13d914339e63db9edbb6f633bc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9706ed88fd58e2c77e763db9839ef4e3"><td class="memTemplParams" colspan="2"><a id="a9706ed88fd58e2c77e763db9839ef4e3"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a9706ed88fd58e2c77e763db9839ef4e3"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>inv_jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:a9706ed88fd58e2c77e763db9839ef4e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b44c276a7f5d5be60cdecf8691d89a2"><td class="memItemLeft" align="right" valign="top"><a id="a3b44c276a7f5d5be60cdecf8691d89a2"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a3b44c276a7f5d5be60cdecf8691d89a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a9925d4046a88be3dcc9247069aa74aad"><td class="memItemLeft" align="right" valign="top"><a id="a9925d4046a88be3dcc9247069aa74aad"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_identity</b> () noexcept</td></tr>
+<tr class="separator:a9925d4046a88be3dcc9247069aa74aad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a0018c58ae6a1b7c450e0faba2027b3e5"><td class="memItemLeft" align="right" valign="top"><a id="a0018c58ae6a1b7c450e0faba2027b3e5"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>dim</b> = 3</td></tr>
+<tr class="separator:a0018c58ae6a1b7c450e0faba2027b3e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a35f70695adf0cc3eb2297dc85b16c7d7"><td class="memItemLeft" align="right" valign="top"><a id="a35f70695adf0cc3eb2297dc85b16c7d7"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html">FocallyLiftedMap</a>&lt; InnerMap &gt; &amp;lhs, const <a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html">FocallyLiftedMap</a>&lt; InnerMap &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a35f70695adf0cc3eb2297dc85b16c7d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename InnerMap&gt;<br />
+class domain::CoordinateMaps::FocallyLiftedMap&lt; InnerMap &gt;</h3>
+
+<p>Map from \((\bar{x},\bar{y},\bar{z})\) to the volume contained between a 2D surface and the surface of a 2-sphere. </p>
+<div class="image">
+<object type="image/svg+xml" data="FocallyLifted.svg" style="pointer-events: none;"></object>
+<div class="caption">
+2D representation of focally lifted map.</div></div>
+<h3>Details</h3>
+<p>We are given the radius \(R\) and center \(C^i\) of a sphere, and a projection point \(P^i\). Also, through the class defined by the <code>InnerMap</code> template parameter, we are given the functions \(f^i(\bar{x},\bar{y},\bar{z})\) and \(\sigma(\bar{x},\bar{y},\bar{z})\) defined below; these functions define the mapping from \((\bar{x},\bar{y},\bar{z})\) to the 2D surface.</p>
+<p>The above figure is a 2D representation of the focally lifted map, where the shaded region in \(\bar{x}^i\) coordinates on the left is mapped to the shaded region in the \(x^i\) coordinates on the right. Shown is an arbitrary point \(\bar{x}^i\) that is mapped to \(x^i\); for that point, the corresponding \(x_0^i\) and \(x_1^i\) (defined below) are shown on the right, as is the projection point \(P^i\). Also shown are the level surfaces \(\sigma=0\) and \(\sigma=1\).</p>
+<p>The input coordinates are labeled \((\bar{x},\bar{y},\bar{z})\). Let \(x_0^i = f^i(\bar{x},\bar{y},\bar{z})\) be the three coordinates of the 2D surface in 3D space.</p>
+<p>Now let \(x_1^i\) be a point on the surface of the sphere, constructed so that \(P^i\), \(x_0^i\), and \(x_1^i\) are co-linear. In particular, \(x_1^i\) is determined by the equation</p>
+<p class="formulaDsp">
+\begin{align} x_1^i = P^i + (x_0^i - P^i) \lambda,\end{align}
+</p>
+<p>where \(\lambda\) is a scalar factor that depends on \(x_0^i\) and that can be computed by solving a quadratic equation. This quadratic equation is derived by demanding that \(x_1^i\) lies on the sphere:</p>
+<p class="formulaDsp">
+\begin{align} |P^i + (x_0^i - P^i) \lambda - C^i |^2 - R^2 = 0, \end{align}
+</p>
+<p>where \(|A^i|^2\) means \(\delta_{ij} A^i A^j\).</p>
+<p>The quadratic equation, Eq. (2), takes the usual form \(a\lambda^2+b\lambda+c=0\), with</p>
+<p class="formulaDsp">
+\begin{align*} a &amp;= |x_0^i-P^i|^2,\\ b &amp;= 2(x_0^i-P^i)(P^j-C^j)\delta_{ij},\\ c &amp;= |P^i-C^i|^2 - R^2. \end{align*}
+</p>
+<p>Now assume that \(x_0^i\) lies on a level surface defined by some scalar function \(\sigma(\bar{x}^i)=0\), where \(\sigma\) is normalized so that \(\sigma=1\) on the sphere. Then, once \(\lambda\) has been computed and \(x_1^i\) has been determined, the map is given by</p>
+<p class="formulaDsp">
+\begin{align}x^i = x_0^i + (x_1^i - x_0^i) \sigma(\bar{x}^i).\end{align}
+</p>
+<p>Note that classes using <a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html" title="Map from  to the volume contained between a 2D surface and the surface of a 2-sphere.">FocallyLiftedMap</a> will place restrictions on \(P^i\), \(C^i\), \(x_0^i\), and \(R\). For example, we demand that \(P^i\) does not lie on either the \(\sigma=0\) or \(\sigma=1\) surfaces depicted in the right panel of the figure, and we demand that the \(\sigma=0\) and \(\sigma=1\) surfaces do not intersect; otherwise the map is singular.</p>
+<p>Also note that the quadratic Eq. (2) typically has more than one root, corresponding to two intersections of the sphere. The boolean parameter <code>source_is_between_focus_and_target</code> that is passed into the constructor of <code><a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html" title="Map from  to the volume contained between a 2D surface and the surface of a 2-sphere.">FocallyLiftedMap</a></code> is used to choose the appropriate root, or to error if a suitable root is not found. <code>source_is_between_focus_and_target</code> should be true if the source point lies between the projection point \(P^i\) and the sphere. <code>source_is_between_focus_and_target</code> is known only by each particular <code><a class="el" href="classdomain_1_1CoordinateMap.html" title="A coordinate map or composition of coordinate maps.">CoordinateMap</a></code> that uses <code><a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html" title="Map from  to the volume contained between a 2D surface and the surface of a 2-sphere.">FocallyLiftedMap</a></code>.</p>
+<h3><a class="anchor" id="autotoc_md54"></a>
+Jacobian</h3>
+<p>Differentiating Eq. (1) above yields</p>
+<p class="formulaDsp">
+\begin{align} \frac{\partial x_1^i}{\partial x_0^j} = \lambda \delta^i_j + (x_0^i - P^i) \frac{\partial \lambda}{\partial x_0^j}. \end{align}
+</p>
+<p>and differentiating Eq. (2) and then inserting Eq. (1) yields</p>
+<p class="formulaDsp">
+\begin{align} \frac{\partial\lambda}{\partial x_0^j} &amp;= \lambda^2 \frac{C_j - x_1^j}{|x_1^i - P^i|^2 + (x_1^i - P^i)(P_i - C_{i})}. \end{align}
+</p>
+<p>The Jacobian can be found by differentiating Eq. (3) above and using the chain rule, recognizing that \(x_1^i\) depends on \(\bar{x}^i\) only through its dependence on \(x_0^i\); this is because there is no explicit dependence on \(\bar{x}^i\) in Eq. (1) (which determines \(x_1^i\)) or Eq. (2) (which determines \(\lambda\)).</p>
+<p class="formulaDsp">
+\begin{align} \frac{\partial x^i}{\partial \bar{x}^j} &amp;= \sigma \frac{\partial x_1^i}{\partial x_0^k} \frac{\partial x_0^k}{\partial \bar{x}^j} + (1-\sigma)\frac{\partial x_0^i}{\partial \bar{x}^j} + \frac{\partial \sigma}{\partial \bar{x}^j} (x_1^i - x_0^i), \nonumber \\ &amp;= (1-\sigma+\lambda\sigma) \frac{\partial x_0^i}{\partial \bar{x}^j} + \sigma (x_0^i - P^i) \frac{\partial \lambda}{\partial x_0^k} \frac{\partial x_0^k}{\partial \bar{x}^j} + \frac{\partial \sigma}{\partial \bar{x}^j} (x_1^i - x_0^i), \end{align}
+</p>
+<p> where in the last line we have substituted Eq. (4).</p>
+<p>The class defined by the <code>InnerMap</code> template parameter provides the function <code>deriv_sigma</code>, which returns \(\partial \sigma/\partial \bar{x}^j\), and the function <code>jacobian</code>, which returns \(\partial x_0^k/\partial \bar{x}^j\).</p>
+<h3><a class="anchor" id="autotoc_md55"></a>
+Inverse map.</h3>
+<p>Given \(x^i\), we wish to compute \(\bar{x}^i\).</p>
+<p>We first find the coordinates \(x_0^i\) that lie on the 2-surface and are defined such that \(P^i\), \(x_0^i\), and \(x^i\) are co-linear. See the right panel of the above figure. \(x_0^i\) is determined by the equation</p>
+<p class="formulaDsp">
+\begin{align} x_0^i = P^i + (x^i - P^i) \tilde{\lambda},\end{align}
+</p>
+<p>where \(\tilde{\lambda}\) is a scalar factor that depends on \(x^i\) and is determined by the class defined by the <code>InnerMap</code> template parameter. <code>InnerMap</code> provides a function <code>lambda_tilde</code> that takes \(x^i\) and \(P^i\) as arguments and returns \(\tilde{\lambda}\) (or a default-constructed <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a></code> if the appropriate \(\tilde{\lambda}\) cannot be found; this default-constructed value indicates that the point \(x^i\) is outside the range of the map).</p>
+<p>Now consider the coordinates \(x_1^i\) that lie on the sphere and are defined such that \(P^i\), \(x_1^i\), and \(x^i\) are co-linear. See the right panel of the figure. \(x_1^i\) is determined by the equation</p>
+<p class="formulaDsp">
+\begin{align} x_1^i = P^i + (x^i - P^i) \bar{\lambda},\end{align}
+</p>
+<p>where \(\bar{\lambda}\) is a scalar factor that depends on \(x^i\) and is the solution of a quadratic that is derived by demanding that \(x_1^i\) lies on the sphere:</p>
+<p class="formulaDsp">
+\begin{align} |P^i + (x^i - P^i) \bar{\lambda} - C^i |^2 - R^2 = 0. \end{align}
+</p>
+<p>Eq. (9) is a quadratic equation that takes the usual form \(a\bar{\lambda}^2+b\bar{\lambda}+c=0\), with</p>
+<p class="formulaDsp">
+\begin{align*} a &amp;= |x^i-P^i|^2,\\ b &amp;= 2(x^i-P^i)(P^j-C^j)\delta_{ij},\\ c &amp;= |P^i-C^i|^2 - R^2. \end{align*}
+</p>
+<p>Note that we don't actually need to compute \(x_1^i\). Instead, we can determine \(\sigma\) by the relation (obtained by solving Eq. (3) for \(\sigma\) and then inserting Eqs. (7) and (8) to eliminate \(x_1^i\) and \(x_0^i\))</p>
+<p class="formulaDsp">
+\begin{align} \sigma = \frac{\tilde{\lambda}-1}{\tilde{\lambda}-\bar{\lambda}}. \end{align}
+</p>
+<p>The denominator of Eq. (10) is nonzero for nonsingular maps: From Eqs. (7) and (8), \(\bar{\lambda}=\tilde{\lambda}\) means that \(x_1^i=x_0^i\), which means that the \(\sigma=0\) and \(\sigma=1\) surfaces intersect, i.e. the map is singular.</p>
+<p>Once we have \(x_0^i\) and \(\sigma\), the point \((\bar{x},\bar{y},\bar{z})\) is uniquely determined by <code>InnerMap</code>. The <code>inverse</code> function of <code>InnerMap</code> takes \(x_0^i\) and \(\sigma\) as arguments, and returns \((\bar{x},\bar{y},\bar{z})\), or a default-constructed <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a></code> if \(x_0^i\) or \(\sigma\) are outside the range of the map.</p>
+<h4><a class="anchor" id="autotoc_md56"></a>
+Root polishing</h4>
+<p>The inverse function described above will sometimes have errors that are noticeably larger than roundoff. Therefore we apply a single Newton-Raphson iteration to refine the result of the inverse map: Suppose we are given \(x^i\), and we have computed \(\bar{x}^i\) by the above procedure. We then correct \(\bar{x}^i\) by adding</p>
+<p class="formulaDsp">
+\begin{align} \delta \bar{x}^i = \left(x^j - x^j(\bar{x})\right) \frac{\partial \bar{x}^i}{\partial x^j}, \end{align}
+</p>
+<p>where \(x^j(\bar{x})\) is the result of applying the forward map to \(\bar{x}^i\) and \(\partial \bar{x}^i/\partial x^j\) is the inverse jacobian.</p>
+<h3><a class="anchor" id="autotoc_md57"></a>
+Inverse jacobian</h3>
+<p>We write the inverse Jacobian as</p>
+<p class="formulaDsp">
+\begin{align} \frac{\partial \bar{x}^i}{\partial x^j} = \frac{\partial \bar{x}^i}{\partial x_0^k} \frac{\partial x_0^k}{\partial x^j} + \frac{\partial \bar{x}^i}{\partial \sigma} \frac{\partial \sigma}{\partial x^j}, \end{align}
+</p>
+<p>where we have recognized that \(\bar{x}^i\) depends both on \(x_0^k\) (the corresponding point on the 2-surface) and on \(\sigma\) (encoding the distance away from the 2-surface).</p>
+<p>We now evaluate Eq. (12). The <code>InnerMap</code> class provides a function <code>inv_jacobian</code> that returns \(\partial \bar{x}^i/\partial x_0^k\) (where \(\sigma\) is held fixed), and a function <code>dxbar_dsigma</code> that returns \(\partial \bar{x}^i/\partial \sigma\) (where \(x_0^i\) is held fixed). The factor \(\partial x_0^j/\partial x^i\) can be computed by differentiating Eq. (7), which yields</p>
+<p class="formulaDsp">
+\begin{align} \frac{\partial x_0^j}{\partial x^i} &amp;= \tilde{\lambda} \delta_i^j + \frac{x_0^j-P^j}{\tilde{\lambda}} \frac{\partial\tilde{\lambda}}{\partial x^i}, \end{align}
+</p>
+<p>where \(\partial \tilde{\lambda}/\partial x^i\) is provided by the <code>deriv_lambda_tilde</code> function of <code>InnerMap</code>. Note that for nonsingular maps there is no worry that \(\tilde{\lambda}\) is zero in the denominator of the second term of Eq. (13); if \(\tilde{\lambda}=0\) then \(x_0^i=P^i\) by Eq. (7), and therefore the map is singular.</p>
+<p>To evaluate the remaining unknown factor in Eq. (12), \(\partial \sigma/\partial x^j\), note that [combining Eqs. (1), (7), and (8)] \(\bar{\lambda}=\tilde{\lambda}\lambda\). Therefore Eq. (10) is equivalent to</p>
+<p class="formulaDsp">
+\begin{align} \sigma &amp;= \frac{\tilde{\lambda}-1}{\tilde{\lambda}(1-\lambda)}. \end{align}
+</p>
+<p>Differentiating this expression yields</p>
+<p class="formulaDsp">
+\begin{align} \frac{\partial \sigma}{\partial x^i} &amp;= \frac{\partial \sigma}{\partial \lambda} \frac{\partial \lambda}{\partial x_0^j} \frac{\partial x_0^j}{\partial x^i} + \frac{\partial \sigma}{\partial \tilde\lambda} \frac{\partial \tilde\lambda}{\partial x^i}\\ &amp;= \frac{\sigma}{1-\lambda} \frac{\partial \lambda}{\partial x_0^j} \frac{\partial x_0^j}{\partial x^i} + \frac{1}{\tilde{\lambda}^2(1-\lambda)} \frac{\partial \tilde\lambda}{\partial x^i}, \end{align}
+</p>
+<p>where the second factor in the first term can be evaluated using Eq. (5), the third factor in the first term can be evaluated using Eq. (13), and the second factor in the second term is provided by <code>InnerMap</code>s function <code>deriv_lambda_tilde</code>. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/CoordinateMaps/<a class="el" href="FocallyLiftedMap_8hpp_source.html">FocallyLiftedMap.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

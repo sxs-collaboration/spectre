@@ -1,0 +1,314 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Domain/DomainHelpers.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_2b2489ccd21aa27a14d4bfff471515cd.html">Domain</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">DomainHelpers.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/array.html">array</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/iosfwd.html">iosfwd</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/limits.html">limits</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a>&gt;</code><br />
+<code>#include &quot;<a class="el" href="Index_8hpp_source.html">DataStructures/Index.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="Tensor_8hpp_source.html">DataStructures/Tensor/Tensor.hpp</a>&quot;</code><br />
+<code>#include &quot;Domain/BoundaryConditions/BoundaryCondition.hpp&quot;</code><br />
+<code>#include &quot;Domain/CoordinateMaps/Distribution.hpp&quot;</code><br />
+<code>#include &quot;<a class="el" href="Direction_8hpp_source.html">Domain/Structure/Direction.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="Side_8hpp_source.html">Domain/Structure/Side.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="ConstantExpressions_8hpp_source.html">Utilities/ConstantExpressions.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="Gsl_8hpp_source.html">Utilities/Gsl.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="MakeArray_8hpp_source.html">Utilities/MakeArray.hpp</a>&quot;</code><br />
+</div>
+<p><a href="DomainHelpers_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structPairOfFaces.html">PairOfFaces</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classVolumeCornerIterator.html">VolumeCornerIterator&lt; VolumeDim &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFaceCornerIterator.html">FaceCornerIterator&lt; VolumeDim &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOptions_1_1create__from__yaml_3_01ShellWedges_01_4.html">Options::create_from_yaml&lt; ShellWedges &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:gac672a529d9aaa6a948b8b7eb6ec9b528"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#gac672a529d9aaa6a948b8b7eb6ec9b528">ShellWedges</a> { <a class="el" href="group__ComputationalDomainGroup.html#ggac672a529d9aaa6a948b8b7eb6ec9b528ab1c94ca2fbc3e78fc30069c8d0f01680">ShellWedges::All</a>, 
+<a class="el" href="group__ComputationalDomainGroup.html#ggac672a529d9aaa6a948b8b7eb6ec9b528ace553534ea34f25db4b4a8b5bd29cf45">ShellWedges::FourOnEquator</a>, 
+<a class="el" href="group__ComputationalDomainGroup.html#ggac672a529d9aaa6a948b8b7eb6ec9b528ae9d8dbfbf81de7cf729066f677661edb">ShellWedges::OneAlongMinusX</a>
+ }</td></tr>
+<tr class="separator:gac672a529d9aaa6a948b8b7eb6ec9b528"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a576c71f7a1cb936862f626e5de233c2c"><td class="memItemLeft" align="right" valign="top"><a id="a576c71f7a1cb936862f626e5de233c2c"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>CylindricalDomainParityFlip</b> { <b>none</b>, 
+<b>z_direction</b>
+ }</td></tr>
+<tr class="separator:a576c71f7a1cb936862f626e5de233c2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga352a96e2ad69bb9fd2d71d412a4fc8b7"><td class="memTemplParams" colspan="2">template&lt;size_t VolumeDim&gt; </td></tr>
+<tr class="memitem:ga352a96e2ad69bb9fd2d71d412a4fc8b7"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#ga352a96e2ad69bb9fd2d71d412a4fc8b7">set_internal_boundaries</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="classDirectionMap.html">DirectionMap</a>&lt; VolumeDim, <a class="el" href="classBlockNeighbor.html">BlockNeighbor</a>&lt; VolumeDim &gt;&gt;&gt; * &gt; neighbors_of_all_blocks, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, <a class="el" href="group__ConstantExpressionsGroup.html#ga6c01ded3973bb4b9973e5381c32c0807">two_to_the</a>(VolumeDim)&gt;&gt; &amp;corners_of_all_blocks) noexcept</td></tr>
+<tr class="separator:ga352a96e2ad69bb9fd2d71d412a4fc8b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa7a70c8db5cee22de8f4d074b2b1a92a"><td class="memTemplParams" colspan="2">template&lt;size_t VolumeDim&gt; </td></tr>
+<tr class="memitem:gaa7a70c8db5cee22de8f4d074b2b1a92a"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#gaa7a70c8db5cee22de8f4d074b2b1a92a">set_internal_boundaries</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="classDirectionMap.html">DirectionMap</a>&lt; VolumeDim, <a class="el" href="classBlockNeighbor.html">BlockNeighbor</a>&lt; VolumeDim &gt;&gt;&gt; * &gt; neighbors_of_all_blocks, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, VolumeDim &gt;&gt;&gt; &amp;maps) noexcept</td></tr>
+<tr class="separator:gaa7a70c8db5cee22de8f4d074b2b1a92a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5640402fc85ec353685c6914a9750459"><td class="memTemplParams" colspan="2">template&lt;size_t VolumeDim&gt; </td></tr>
+<tr class="memitem:ga5640402fc85ec353685c6914a9750459"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#ga5640402fc85ec353685c6914a9750459">set_identified_boundaries</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="structPairOfFaces.html">PairOfFaces</a> &gt; &amp;identifications, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, <a class="el" href="group__ConstantExpressionsGroup.html#ga6c01ded3973bb4b9973e5381c32c0807">two_to_the</a>(VolumeDim)&gt;&gt; &amp;corners_of_all_blocks, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="classDirectionMap.html">DirectionMap</a>&lt; VolumeDim, <a class="el" href="classBlockNeighbor.html">BlockNeighbor</a>&lt; VolumeDim &gt;&gt;&gt; * &gt; neighbors_of_all_blocks) noexcept</td></tr>
+<tr class="separator:ga5640402fc85ec353685c6914a9750459"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaba91825909e9aa842eb091df693e919e"><td class="memTemplParams" colspan="2">
+template&lt;size_t VolumeDim&gt; </td></tr>
+<tr class="memitem:gaba91825909e9aa842eb091df693e919e"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#gaba91825909e9aa842eb091df693e919e">indices_for_rectilinear_domains</a> (const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;domain_extents, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt;&gt; &amp;block_indices_to_exclude={}) noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt;&gt;</td></tr>
+<tr class="memdesc:gaba91825909e9aa842eb091df693e919e"><td class="mdescLeft">&#160;</td><td class="mdescRight">The multi-indices that identify the individual Blocks in the lattice. <br /></td></tr>
+<tr class="separator:gaba91825909e9aa842eb091df693e919e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga18341ca86191b511f92daf2d8c69302c"><td class="memTemplParams" colspan="2">template&lt;size_t VolumeDim&gt; </td></tr>
+<tr class="memitem:ga18341ca86191b511f92daf2d8c69302c"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#ga18341ca86191b511f92daf2d8c69302c">corners_for_rectilinear_domains</a> (const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;domain_extents, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt;&gt; &amp;block_indices_to_exclude={}) noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, <a class="el" href="group__ConstantExpressionsGroup.html#ga6c01ded3973bb4b9973e5381c32c0807">two_to_the</a>(VolumeDim)&gt;&gt;</td></tr>
+<tr class="memdesc:ga18341ca86191b511f92daf2d8c69302c"><td class="mdescLeft">&#160;</td><td class="mdescRight">The corners for a rectilinear domain made of n-cubes.  <a href="group__ComputationalDomainGroup.html#ga18341ca86191b511f92daf2d8c69302c">More...</a><br /></td></tr>
+<tr class="separator:ga18341ca86191b511f92daf2d8c69302c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0a053203d0fdd947c6414ec7a548ee2a"><td class="memTemplParams" colspan="2">template&lt;typename TargetFrame &gt; </td></tr>
+<tr class="memitem:ga0a053203d0fdd947c6414ec7a548ee2a"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#ga0a053203d0fdd947c6414ec7a548ee2a">sph_wedge_coordinate_maps</a> (double inner_radius, double outer_radius, double inner_sphericity, double outer_sphericity, bool use_equiangular_map, double x_coord_of_shell_center=0.0, bool use_half_wedges=false, double aspect_ratio=1.0, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt; &amp;radial_partitioning={}, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="namespacedomain_1_1CoordinateMaps.html#af1d0db78c5b853bb6b4870b87cd91053">domain::CoordinateMaps::Distribution</a> &gt; &amp;radial_distribution={domain::CoordinateMaps::Distribution::Linear}, <a class="el" href="group__ComputationalDomainGroup.html#gac672a529d9aaa6a948b8b7eb6ec9b528">ShellWedges</a> which_wedges=<a class="el" href="group__ComputationalDomainGroup.html#ggac672a529d9aaa6a948b8b7eb6ec9b528ab1c94ca2fbc3e78fc30069c8d0f01680">ShellWedges::All</a>) noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, TargetFrame, 3 &gt;&gt;&gt;</td></tr>
+<tr class="separator:ga0a053203d0fdd947c6414ec7a548ee2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga86534fcfbcabd6acc079b6fc38cdfbea"><td class="memTemplParams" colspan="2">template&lt;typename TargetFrame &gt; </td></tr>
+<tr class="memitem:ga86534fcfbcabd6acc079b6fc38cdfbea"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#ga86534fcfbcabd6acc079b6fc38cdfbea">frustum_coordinate_maps</a> (double length_inner_cube, double length_outer_cube, bool use_equiangular_map, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;origin_preimage={{0.0, 0.0, 0.0}}, double projective_scale_factor=1.0) noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, TargetFrame, 3 &gt;&gt;&gt;</td></tr>
+<tr class="separator:ga86534fcfbcabd6acc079b6fc38cdfbea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga18526a75399d20dfb670b233fa55cff8"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, 8 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#ga18526a75399d20dfb670b233fa55cff8">corners_for_radially_layered_domains</a> (size_t number_of_layers, bool include_central_block, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, 8 &gt; &amp;central_block_corners={{1, 2, 3, 4, 5, 6, 7, 8}}, <a class="el" href="group__ComputationalDomainGroup.html#gac672a529d9aaa6a948b8b7eb6ec9b528">ShellWedges</a> which_wedges=<a class="el" href="group__ComputationalDomainGroup.html#ggac672a529d9aaa6a948b8b7eb6ec9b528ab1c94ca2fbc3e78fc30069c8d0f01680">ShellWedges::All</a>) noexcept</td></tr>
+<tr class="memdesc:ga18526a75399d20dfb670b233fa55cff8"><td class="mdescLeft">&#160;</td><td class="mdescRight">The corners for a domain with radial layers.  <a href="group__ComputationalDomainGroup.html#ga18526a75399d20dfb670b233fa55cff8">More...</a><br /></td></tr>
+<tr class="separator:ga18526a75399d20dfb670b233fa55cff8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa76c0e8c51614f3393118e403ed35a5f"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, 8 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#gaa76c0e8c51614f3393118e403ed35a5f">corners_for_biradially_layered_domains</a> (size_t number_of_radial_layers, size_t number_of_biradial_layers, bool include_central_block_lhs, bool include_central_block_rhs, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, 8 &gt; &amp;central_block_corners_lhs={ {1, 2, 3, 4, 5, 6, 7, 8}}) noexcept</td></tr>
+<tr class="memdesc:gaa76c0e8c51614f3393118e403ed35a5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">The corners for a domain with biradial layers.  <a href="group__ComputationalDomainGroup.html#gaa76c0e8c51614f3393118e403ed35a5f">More...</a><br /></td></tr>
+<tr class="separator:gaa76c0e8c51614f3393118e403ed35a5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4b379cede89e5711f5f973edd5e0d548"><td class="memTemplParams" colspan="2">template&lt;typename TargetFrame &gt; </td></tr>
+<tr class="memitem:ga4b379cede89e5711f5f973edd5e0d548"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#ga4b379cede89e5711f5f973edd5e0d548">cyl_wedge_coordinate_maps</a> (double inner_radius, double outer_radius, double lower_bound, double upper_bound, bool use_equiangular_map, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt; &amp;radial_partitioning={}, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt; &amp;height_partitioning={}, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="namespacedomain_1_1CoordinateMaps.html#af1d0db78c5b853bb6b4870b87cd91053">domain::CoordinateMaps::Distribution</a> &gt; &amp;radial_distribution={domain::CoordinateMaps::Distribution::Linear}) noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, TargetFrame, 3 &gt;&gt;&gt;</td></tr>
+<tr class="separator:ga4b379cede89e5711f5f973edd5e0d548"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa886a5a35d828b78feabd35ef57dfe87"><td class="memTemplParams" colspan="2">template&lt;bool UseEquiangularMap&gt; </td></tr>
+<tr class="memitem:gaa886a5a35d828b78feabd35ef57dfe87"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#gaa886a5a35d828b78feabd35ef57dfe87">cyl_wedge_coord_map_center_blocks</a> (double inner_radius, double lower_bound, double upper_bound, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt; &amp;height_partitioning={}, CylindricalDomainParityFlip parity_flip=CylindricalDomainParityFlip::none) noexcept -&gt; tmpl::conditional_t&lt; UseEquiangularMap, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1ProductOf3Maps.html">domain::CoordinateMaps::ProductOf3Maps</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">domain::CoordinateMaps::Equiangular</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Equiangular.html">domain::CoordinateMaps::Equiangular</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">domain::CoordinateMaps::Affine</a> &gt;&gt;, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1ProductOf3Maps.html">domain::CoordinateMaps::ProductOf3Maps</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">domain::CoordinateMaps::Affine</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">domain::CoordinateMaps::Affine</a>, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">domain::CoordinateMaps::Affine</a> &gt;&gt;&gt;</td></tr>
+<tr class="separator:gaa886a5a35d828b78feabd35ef57dfe87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac97e959e577e9d546ef7cb167ba9de5e"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#gac97e959e577e9d546ef7cb167ba9de5e">cyl_wedge_coord_map_surrounding_blocks</a> (double inner_radius, double outer_radius, double lower_bound, double upper_bound, bool use_equiangular_map, double inner_circularity, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt; &amp;radial_partitioning={}, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt; &amp;height_partitioning={}, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="namespacedomain_1_1CoordinateMaps.html#af1d0db78c5b853bb6b4870b87cd91053">domain::CoordinateMaps::Distribution</a> &gt; &amp;radial_distribution={domain::CoordinateMaps::Distribution::Linear}, CylindricalDomainParityFlip parity_flip=CylindricalDomainParityFlip::none) noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1ProductOf2Maps.html">domain::CoordinateMaps::ProductOf2Maps</a>&lt; <a class="el" href="classdomain_1_1CoordinateMaps_1_1Wedge.html">domain::CoordinateMaps::Wedge</a>&lt; 2 &gt;, <a class="el" href="classdomain_1_1CoordinateMaps_1_1Affine.html">domain::CoordinateMaps::Affine</a> &gt;&gt;</td></tr>
+<tr class="separator:gac97e959e577e9d546ef7cb167ba9de5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga25fa2b3f359fdcd8fd7d15c7b0ce1dbc"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, 8 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#ga25fa2b3f359fdcd8fd7d15c7b0ce1dbc">corners_for_cylindrical_layered_domains</a> (size_t number_of_shells, size_t number_of_discs) noexcept</td></tr>
+<tr class="memdesc:ga25fa2b3f359fdcd8fd7d15c7b0ce1dbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">The corners for a cylindrical domain split into discs with radial shells.  <a href="group__ComputationalDomainGroup.html#ga25fa2b3f359fdcd8fd7d15c7b0ce1dbc">More...</a><br /></td></tr>
+<tr class="separator:ga25fa2b3f359fdcd8fd7d15c7b0ce1dbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8c80443a66a28ba3cd542cf5f2d223c5"><td class="memTemplParams" colspan="2">template&lt;size_t VolumeDim&gt; </td></tr>
+<tr class="memitem:ga8c80443a66a28ba3cd542cf5f2d223c5"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, <a class="el" href="group__ConstantExpressionsGroup.html#ga6c01ded3973bb4b9973e5381c32c0807">two_to_the</a>(VolumeDim)&gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#ga8c80443a66a28ba3cd542cf5f2d223c5">discrete_rotation</a> (const <a class="el" href="classOrientationMap.html">OrientationMap</a>&lt; VolumeDim &gt; &amp;orientation, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, <a class="el" href="group__ConstantExpressionsGroup.html#ga6c01ded3973bb4b9973e5381c32c0807">two_to_the</a>(VolumeDim)&gt; &amp;corners_of_aligned) noexcept</td></tr>
+<tr class="memdesc:ga8c80443a66a28ba3cd542cf5f2d223c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Permutes the corner numbers of an n-cube.  <a href="group__ComputationalDomainGroup.html#ga8c80443a66a28ba3cd542cf5f2d223c5">More...</a><br /></td></tr>
+<tr class="separator:ga8c80443a66a28ba3cd542cf5f2d223c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2fa6f4a3bbb32cae7c59d29c519ce4a3"><td class="memTemplParams" colspan="2">template&lt;typename TargetFrame , size_t VolumeDim&gt; </td></tr>
+<tr class="memitem:ga2fa6f4a3bbb32cae7c59d29c519ce4a3"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#ga2fa6f4a3bbb32cae7c59d29c519ce4a3">maps_for_rectilinear_domains</a> (const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;domain_extents, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt;, VolumeDim &gt; &amp;block_demarcations, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt;&gt; &amp;block_indices_to_exclude={}, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="classOrientationMap.html">OrientationMap</a>&lt; VolumeDim &gt;&gt; &amp;orientations_of_all_blocks={}, bool use_equiangular_map=false) noexcept -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, TargetFrame, VolumeDim &gt;&gt;&gt;</td></tr>
+<tr class="memdesc:ga2fa6f4a3bbb32cae7c59d29c519ce4a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">The CoordinateMaps for a rectilinear domain of n-cubes.  <a href="group__ComputationalDomainGroup.html#ga2fa6f4a3bbb32cae7c59d29c519ce4a3">More...</a><br /></td></tr>
+<tr class="separator:ga2fa6f4a3bbb32cae7c59d29c519ce4a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga800100a7e665c7fdc63549d99d14bf01"><td class="memTemplParams" colspan="2">template&lt;size_t VolumeDim&gt; </td></tr>
+<tr class="memitem:ga800100a7e665c7fdc63549d99d14bf01"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classDomain.html">Domain</a>&lt; VolumeDim &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ComputationalDomainGroup.html#ga800100a7e665c7fdc63549d99d14bf01">rectilinear_domain</a> (const <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt; &amp;domain_extents, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt;, VolumeDim &gt; &amp;block_demarcations, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="classDirectionMap.html">DirectionMap</a>&lt; VolumeDim, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1BoundaryConditions_1_1BoundaryCondition.html">domain::BoundaryConditions::BoundaryCondition</a> &gt;&gt;&gt; boundary_conditions={}, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="classIndex.html">Index</a>&lt; VolumeDim &gt;&gt; &amp;block_indices_to_exclude={}, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="classOrientationMap.html">OrientationMap</a>&lt; VolumeDim &gt;&gt; &amp;orientations_of_all_blocks={}, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; bool, VolumeDim &gt; &amp;dimension_is_periodic=<a class="el" href="group__UtilitiesGroup.html#gaea51ad2c5ef8f8f99279545e1389d056">make_array</a>&lt; VolumeDim &gt;(false), const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="structPairOfFaces.html">PairOfFaces</a> &gt; &amp;identifications={}, bool use_equiangular_map=false) noexcept</td></tr>
+<tr class="memdesc:ga800100a7e665c7fdc63549d99d14bf01"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a rectilinear <a class="el" href="classDomain.html" title="A wrapper around a vector of Blocks that represent the computational domain.">Domain</a> of multicubes.  <a href="group__ComputationalDomainGroup.html#ga800100a7e665c7fdc63549d99d14bf01">More...</a><br /></td></tr>
+<tr class="separator:ga800100a7e665c7fdc63549d99d14bf01"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a456837aa52be4a7fa1d4a4a039cc40bd"><td class="memItemLeft" align="right" valign="top"><a id="a456837aa52be4a7fa1d4a4a039cc40bd"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;&lt;</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const <a class="el" href="group__ComputationalDomainGroup.html#gac672a529d9aaa6a948b8b7eb6ec9b528">ShellWedges</a> &amp;which_wedges) noexcept</td></tr>
+<tr class="separator:a456837aa52be4a7fa1d4a4a039cc40bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Defines DomainHelper functions </p>
+</div></div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

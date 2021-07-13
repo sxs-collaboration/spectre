@@ -1,0 +1,361 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::ExpandOverBlocks&lt; T, Dim &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="structdomain_1_1ExpandOverBlocks.html">ExpandOverBlocks</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="structdomain_1_1ExpandOverBlocks-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::ExpandOverBlocks&lt; T, Dim &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Produce a distribution of type <code>T</code> over all blocks and dimensions in the domain, based on values <code>T</code> of variable isotropy and homogeneity.  
+ <a href="structdomain_1_1ExpandOverBlocks.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ExpandOverBlocks_8hpp_source.html">ExpandOverBlocks.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a8025e0ed0cb3ac0a74f6eb949a7514a1"><td class="memItemLeft" align="right" valign="top"><a id="a8025e0ed0cb3ac0a74f6eb949a7514a1"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ExpandOverBlocks</b> (size_t num_blocks) noexcept</td></tr>
+<tr class="separator:a8025e0ed0cb3ac0a74f6eb949a7514a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d98676721fcf4514de4492dad7c82ca"><td class="memItemLeft" align="right" valign="top"><a id="a4d98676721fcf4514de4492dad7c82ca"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ExpandOverBlocks</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt; block_names, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> &gt;&gt; block_groups={}) noexcept</td></tr>
+<tr class="separator:a4d98676721fcf4514de4492dad7c82ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a787ce9d92982959d3994af0376950b90"><td class="memItemLeft" align="right" valign="top"><a id="a787ce9d92982959d3994af0376950b90"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1ExpandOverBlocks.html#a787ce9d92982959d3994af0376950b90">operator()</a> (const T &amp;value) const</td></tr>
+<tr class="memdesc:a787ce9d92982959d3994af0376950b90"><td class="mdescLeft">&#160;</td><td class="mdescRight">Repeat over all blocks and dimensions (isotropic and homogeneous) <br /></td></tr>
+<tr class="separator:a787ce9d92982959d3994af0376950b90"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab491d4a7521958707728757c883961ce"><td class="memItemLeft" align="right" valign="top"><a id="ab491d4a7521958707728757c883961ce"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1ExpandOverBlocks.html#ab491d4a7521958707728757c883961ce">operator()</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt; &amp;value) const</td></tr>
+<tr class="memdesc:ab491d4a7521958707728757c883961ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Repeat over all blocks (homogeneous) <br /></td></tr>
+<tr class="separator:ab491d4a7521958707728757c883961ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04fd203fccfcb1697b25b1eb684a8991"><td class="memItemLeft" align="right" valign="top"><a id="a04fd203fccfcb1697b25b1eb684a8991"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1ExpandOverBlocks.html#a04fd203fccfcb1697b25b1eb684a8991">operator()</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt;&gt; value) const</td></tr>
+<tr class="memdesc:a04fd203fccfcb1697b25b1eb684a8991"><td class="mdescLeft">&#160;</td><td class="mdescRight">Only check if the size matches the number of blocks, throwing a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/error/length_error.html">std::length_error</a></code> if it doesn't. <br /></td></tr>
+<tr class="separator:a04fd203fccfcb1697b25b1eb684a8991"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a311f409ff6b72da37f0e8c96f9e3463a"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdomain_1_1ExpandOverBlocks.html#a311f409ff6b72da37f0e8c96f9e3463a">operator()</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt;&gt; &amp;value) const</td></tr>
+<tr class="memdesc:a311f409ff6b72da37f0e8c96f9e3463a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Map block names, or names of block groups, to values. The map must cover all blocks once the groups are expanded. To use this option you must pass the list of block names and groups to the constructor. Here's an example:  <a href="structdomain_1_1ExpandOverBlocks.html#a311f409ff6b72da37f0e8c96f9e3463a">More...</a><br /></td></tr>
+<tr class="separator:a311f409ff6b72da37f0e8c96f9e3463a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename T, size_t Dim&gt;<br />
+struct domain::ExpandOverBlocks&lt; T, Dim &gt;</h3>
+
+<p>Produce a distribution of type <code>T</code> over all blocks and dimensions in the domain, based on values <code>T</code> of variable isotropy and homogeneity. </p>
+<p>This class is useful to option-create values for e.g. the initial refinement level or initial number of grid points for domain creators. It can be used with <code>std::visit</code> and a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/variant.html">std::variant</a></code> with (a subset of) these types:</p>
+<ul>
+<li><code>T</code>: Repeat over all blocks and dimensions (isotropic and homogeneous).</li>
+<li><code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;T, Dim&gt;</code>: Repeat over all blocks (homogeneous).</li>
+<li><code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;T, Dim&gt;&gt;&gt;</code>: Only check if the size matches the number of blocks, throwing a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/error/length_error.html">std::length_error</a></code> if it doesn't.</li>
+<li><code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;T, Dim&gt;&gt;</code>: Map block names, or names of block groups, to values. The map must cover all blocks once the groups are expanded. To use this option you must pass the list of block names and groups to the constructor.</li>
+</ul>
+<p>Note that the call-operators <code>throw</code> when they encounter errors, such as mismatches in the number of blocks. The exceptions can be used to output user-facing error messages in an option-parsing context.</p>
+<p>Here's an example for using this class:</p>
+<div class="fragment"><div class="line">    <span class="keyword">static</span> constexpr <span class="keywordtype">size_t</span> Dim = 3;</div>
+<div class="line">    <span class="keyword">const</span> <span class="keywordtype">size_t</span> num_blocks = 3;</div>
+<div class="line">    <span class="comment">// This is an example for a variant that represents the distribution of</span></div>
+<div class="line">    <span class="comment">// initial refinement levels, which might be parsed from options:</span></div>
+<div class="line">    <span class="keyword">using</span> InitialRefinementOptionType =</div>
+<div class="line">        <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/variant.html">std::variant&lt;size_t, std::array&lt;size_t, Dim&gt;</a>,</div>
+<div class="line">                     <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;std::array&lt;size_t, Dim&gt;</a>&gt;&gt;;</div>
+<div class="line">    <span class="comment">// In this example the user specified a single number:</span></div>
+<div class="line">    <span class="keyword">const</span> InitialRefinementOptionType initial_refinement_from_options{</div>
+<div class="line">        <span class="keywordtype">size_t</span>{2}};</div>
+<div class="line">    <span class="keywordflow">try</span> {</div>
+<div class="line">      <span class="comment">// Invoke `ExpandOverBlocks`:</span></div>
+<div class="line">      <span class="keyword">const</span> <span class="keyword">auto</span> initial_refinement =</div>
+<div class="line">          std::visit(ExpandOverBlocks&lt;size_t, Dim&gt;{num_blocks},</div>
+<div class="line">                     initial_refinement_from_options);</div>
+<div class="line">      <span class="comment">// Since a single number was specified, we expect the vector over blocks</span></div>
+<div class="line">      <span class="comment">// is homogeneously and isotropically filled with that number:</span></div>
+<div class="line">      <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;std::array&lt;size_t, Dim&gt;</a>&gt; expected_initial_refinement{</div>
+<div class="line">          num_blocks, {2, 2, 2}};</div>
+<div class="line">      CHECK(initial_refinement == expected_initial_refinement);</div>
+<div class="line">    } <span class="keywordflow">catch</span> (<span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/error/length_error.html">std::length_error</a>&amp; error) {</div>
+<div class="line">      <span class="comment">// This would be a `PARSE_ERROR` in an option-parsing context</span></div>
+<div class="line">      <a class="code" href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a>(<span class="stringliteral">&quot;Invalid &#39;InitialRefinement&#39;: &quot;</span> &lt;&lt; error.what());</div>
+<div class="line">    }</div>
+</div><!-- fragment --><p> Here's an example using block names and groups:</p>
+<div class="fragment"><div class="line">    <span class="keyword">static</span> constexpr <span class="keywordtype">size_t</span> Dim = 2;</div>
+<div class="line">    <span class="comment">// In this example we name the blocks, representing a cubed-sphere domain:</span></div>
+<div class="line">    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;std::string&gt;</a> block_names{<span class="stringliteral">&quot;InnerCube&quot;</span>, <span class="stringliteral">&quot;East&quot;</span>, <span class="stringliteral">&quot;North&quot;</span>,</div>
+<div class="line">                                               <span class="stringliteral">&quot;West&quot;</span>, <span class="stringliteral">&quot;South&quot;</span>};</div>
+<div class="line">    <span class="comment">// The blocks can also be grouped:</span></div>
+<div class="line">    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map&lt;std::string, std::unordered_set&lt;std::string&gt;</a>&gt;</div>
+<div class="line">        block_groups{{<span class="stringliteral">&quot;Wedges&quot;</span>, {<span class="stringliteral">&quot;East&quot;</span>, <span class="stringliteral">&quot;North&quot;</span>, <span class="stringliteral">&quot;West&quot;</span>, <span class="stringliteral">&quot;South&quot;</span>}}};</div>
+<div class="line">    <span class="comment">// Now we can expand values over blocks by giving their names. This can also</span></div>
+<div class="line">    <span class="comment">// be used with a std::variant like in the other example.</span></div>
+<div class="line">    ExpandOverBlocks&lt;size_t, Dim&gt; expand{block_names, block_groups};</div>
+<div class="line">    CHECK(expand({{<span class="stringliteral">&quot;West&quot;</span>, {{3, 4}}},</div>
+<div class="line">                  {<span class="stringliteral">&quot;InnerCube&quot;</span>, {{2, 3}}},</div>
+<div class="line">                  {<span class="stringliteral">&quot;South&quot;</span>, {{3, 4}}},</div>
+<div class="line">                  {<span class="stringliteral">&quot;North&quot;</span>, {{5, 6}}},</div>
+<div class="line">                  {<span class="stringliteral">&quot;East&quot;</span>, {{1, 2}}}}) ==</div>
+<div class="line">          <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;size_t, Dim&gt;</a>&gt;{</div>
+<div class="line">              {{2, 3}}, {{1, 2}}, {{5, 6}}, {{3, 4}}, {{3, 4}}});</div>
+<div class="line">    <span class="comment">// Instead of naming all blocks individually we can also name groups:</span></div>
+<div class="line">    CHECK(expand({{<span class="stringliteral">&quot;InnerCube&quot;</span>, {{2, 3}}}, {<span class="stringliteral">&quot;Wedges&quot;</span>, {{3, 4}}}}) ==</div>
+<div class="line">          <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;size_t, Dim&gt;</a>&gt;{</div>
+<div class="line">              {{2, 3}}, {{3, 4}}, {{3, 4}}, {{3, 4}}, {{3, 4}}});</div>
+</div><!-- fragment --> <dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>The type distributed over the domain </td></tr>
+    <tr><td class="paramname">Dim</td><td>The number of spatial dimensions </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a311f409ff6b72da37f0e8c96f9e3463a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a311f409ff6b72da37f0e8c96f9e3463a">&#9670;&nbsp;</a></span>operator()()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , size_t Dim&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;T, Dim&gt; &gt; <a class="el" href="structdomain_1_1ExpandOverBlocks.html">domain::ExpandOverBlocks</a>&lt; T, Dim &gt;::operator() </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Dim &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>value</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Map block names, or names of block groups, to values. The map must cover all blocks once the groups are expanded. To use this option you must pass the list of block names and groups to the constructor. Here's an example: </p>
+<div class="fragment"><div class="line">    <span class="keyword">static</span> constexpr <span class="keywordtype">size_t</span> Dim = 2;</div>
+<div class="line">    <span class="comment">// In this example we name the blocks, representing a cubed-sphere domain:</span></div>
+<div class="line">    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;std::string&gt;</a> block_names{<span class="stringliteral">&quot;InnerCube&quot;</span>, <span class="stringliteral">&quot;East&quot;</span>, <span class="stringliteral">&quot;North&quot;</span>,</div>
+<div class="line">                                               <span class="stringliteral">&quot;West&quot;</span>, <span class="stringliteral">&quot;South&quot;</span>};</div>
+<div class="line">    <span class="comment">// The blocks can also be grouped:</span></div>
+<div class="line">    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map&lt;std::string, std::unordered_set&lt;std::string&gt;</a>&gt;</div>
+<div class="line">        block_groups{{<span class="stringliteral">&quot;Wedges&quot;</span>, {<span class="stringliteral">&quot;East&quot;</span>, <span class="stringliteral">&quot;North&quot;</span>, <span class="stringliteral">&quot;West&quot;</span>, <span class="stringliteral">&quot;South&quot;</span>}}};</div>
+<div class="line">    <span class="comment">// Now we can expand values over blocks by giving their names. This can also</span></div>
+<div class="line">    <span class="comment">// be used with a std::variant like in the other example.</span></div>
+<div class="line">    ExpandOverBlocks&lt;size_t, Dim&gt; expand{block_names, block_groups};</div>
+<div class="line">    CHECK(expand({{<span class="stringliteral">&quot;West&quot;</span>, {{3, 4}}},</div>
+<div class="line">                  {<span class="stringliteral">&quot;InnerCube&quot;</span>, {{2, 3}}},</div>
+<div class="line">                  {<span class="stringliteral">&quot;South&quot;</span>, {{3, 4}}},</div>
+<div class="line">                  {<span class="stringliteral">&quot;North&quot;</span>, {{5, 6}}},</div>
+<div class="line">                  {<span class="stringliteral">&quot;East&quot;</span>, {{1, 2}}}}) ==</div>
+<div class="line">          <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;size_t, Dim&gt;</a>&gt;{</div>
+<div class="line">              {{2, 3}}, {{1, 2}}, {{5, 6}}, {{3, 4}}, {{3, 4}}});</div>
+<div class="line">    <span class="comment">// Instead of naming all blocks individually we can also name groups:</span></div>
+<div class="line">    CHECK(expand({{<span class="stringliteral">&quot;InnerCube&quot;</span>, {{2, 3}}}, {<span class="stringliteral">&quot;Wedges&quot;</span>, {{3, 4}}}}) ==</div>
+<div class="line">          <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;size_t, Dim&gt;</a>&gt;{</div>
+<div class="line">              {{2, 3}}, {{3, 4}}, {{3, 4}}, {{3, 4}}, {{3, 4}}});</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Domain/Creators/<a class="el" href="ExpandOverBlocks_8hpp_source.html">ExpandOverBlocks.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a></div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_ga1d27028c1827976007fe9d29ad3a2f66"><div class="ttname"><a href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a></div><div class="ttdeci">#define ERROR(m)</div><div class="ttdoc">prints an error message to the standard error stream and aborts the program.</div><div class="ttdef"><b>Definition:</b> Error.hpp:37</div></div>
+<div class="ttc" id="alength_error_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/error/length_error.html">std::length_error</a></div></div>
+<div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt; size_t, Dim &gt;</a></div></div>
+<div class="ttc" id="aunordered_map_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a></div></div>
+<div class="ttc" id="avariant_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/variant.html">std::variant</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

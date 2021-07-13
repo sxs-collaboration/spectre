@@ -1,0 +1,397 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/DataStructures/Tensor/EagerMath/Norms.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_f794354f56b7b0ecf5e40827268a3615.html">DataStructures</a></li><li class="navelem"><a class="el" href="dir_e969dbac9dfe3edfad5e001128532f32.html">Tensor</a></li><li class="navelem"><a class="el" href="dir_64cb457a875e34b8bdbce841d3521045.html">EagerMath</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">Norms.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160; </div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataBox/Tag.hpp&quot;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataBox/TagName.hpp&quot;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataVector.hpp&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Tensor_8hpp.html">DataStructures/Tensor/Tensor.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;Utilities/ContainerHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;Utilities/Functional.hpp&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;Utilities/Numeric.hpp&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160; </div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="keyword">namespace </span>L2Norm_detail {</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> DataType, <span class="keyword">typename</span> Symm, <span class="keyword">typename</span> IndexList&gt;</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;DataType&gt;</a> pointwise_l2_norm_square(</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    <span class="keyword">const</span> Tensor&lt;DataType, Symm, IndexList&gt;&amp; tensor) noexcept {</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;  <span class="keyword">auto</span> pointwise_l2_normsq = make_with_value&lt;Scalar&lt;DataType&gt;&gt;(tensor, 0.);</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;  <span class="keywordflow">for</span> (<span class="keyword">auto</span> tensor_element = tensor.begin(); tensor_element != tensor.end();</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;       ++tensor_element) {</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    <span class="comment">// In order to handle tensory symmetries, we multiply the square of each</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <span class="comment">// stored component with its multiplicity</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(pointwise_l2_normsq) +=</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;        tensor.multiplicity(tensor_element) * <a class="code" href="group__ConstantExpressionsGroup.html#gaef1fe82faee8c46e9706f252a5a00937">square</a>(*tensor_element);</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;  }</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <span class="keywordflow">return</span> pointwise_l2_normsq;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;}</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;}  <span class="comment">// namespace L2Norm_detail</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment">/// @{</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment"></span><span class="comment">/*!</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment"> * \ingroup TensorGroup</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment"> * \brief Compute point-wise Euclidean \f$L^2\f$-norm of arbitrary Tensors.</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment"> * \details</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment"> * At each grid point \f$p\f$ in the element, this function computes the</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment"> * point-wise Frobenius norm of a given Tensor with arbitrary rank. If the</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment"> * Tensor \f$A\f$ has rank \f$n\f$ and dimensionality \f$D\f$, then its</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment"> * Frobenius norm at point \f$p\f$ is computed as:</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment"> * \f{equation}</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment"> * ||A||_2(p) =</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment"> *    \left(\sum^{D-1}_{i_1=0}\sum^{D-1}_{i_2=0}\cdots \sum^{D-1}_{i_n=0}</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment"> *          |A_{i_1 i_2 \cdots i_n}(p)|^2 \right)^{1/2},</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment"> * \f}</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment"> * where both contra-variant and co-variant indices are shown as lower indices.</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> DataType, <span class="keyword">typename</span> Symm, <span class="keyword">typename</span> IndexList&gt;</div>
+<div class="line"><a name="l00054"></a><span class="lineno"><a class="line" href="group__TensorGroup.html#ga6592d16678e66e96868a2dd3fa6cbd1a">   54</a></span>&#160;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;DataType&gt;</a> <a class="code" href="group__TensorGroup.html#ga6592d16678e66e96868a2dd3fa6cbd1a">pointwise_l2_norm</a>(</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="keyword">const</span> Tensor&lt;DataType, Symm, IndexList&gt;&amp; tensor) noexcept {</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;  <span class="keywordflow">return</span> <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;DataType&gt;</a>{</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;      <a class="code" href="group__TensorExpressionsGroup.html#gaf9042e362077610ab68fd91c2dd55e18">sqrt</a>(<a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(L2Norm_detail::pointwise_l2_norm_square(tensor)))};</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;}</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> DataType, <span class="keyword">typename</span> Symm, <span class="keyword">typename</span> IndexList&gt;</div>
+<div class="line"><a name="l00060"></a><span class="lineno"><a class="line" href="group__TensorGroup.html#ga6cbf665eec8181bbec4ab07c5694b7fb">   60</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__TensorGroup.html#ga6592d16678e66e96868a2dd3fa6cbd1a">pointwise_l2_norm</a>(</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;DataType&gt;</a>*&gt; norm,</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keyword">const</span> Tensor&lt;DataType, Symm, IndexList&gt;&amp; tensor) noexcept {</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;  <a class="code" href="group__UtilitiesGroup.html#gab9ae0c4131a2de652b81b4997e740d5a">destructive_resize_components</a>(norm, <a class="code" href="group__UtilitiesGroup.html#ga48f1ae622586a451d95b26daaac2378e">get_size</a>(tensor[0].size()));</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;  <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(*norm) = <a class="code" href="group__TensorExpressionsGroup.html#gaf9042e362077610ab68fd91c2dd55e18">sqrt</a>(<a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(L2Norm_detail::pointwise_l2_norm_square(tensor)));</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;}<span class="comment"></span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment">/// @}</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment"></span><span class="comment"></span> </div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment"> * \ingroup TensorGroup</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment"> * \brief Compute Euclidean \f$L^2\f$-norm of arbitrary Tensors reduced over an</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment"> * element.</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment"> * \details</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment"> * Computes the RMS value of the point-wise Frobenius norm of a given Tensor</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment"> * with arbitrary rank over all grid points in an element. If the Tensor \f$A\f$</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment"> * has rank \f$n\f$ and dimensionality \f$D\f$, and the element (of order</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment"> * \f$N\f$) has \f$N+1\f$ points, then its element-reduced Frobenius norm is</span></div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment"> * computed as:</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment"> * \f{equation}</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment"> *  ||A||_2 =</span></div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment"> *     \left(\frac{1}{N+1}\sum^{N}_{p=0}</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment"> *          \left(\sum^{D-1}_{i_1=0}\sum^{D-1}_{i_2=0}\cdots</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment"> *                \sum^{D-1}_{i_n=0} |A^p_{i_1 i_2 \cdots i_n}|^2 \right)</span></div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="comment"> * \right)^{1/2},</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment"> * \f}</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment"> * where both contra-variant and co-variant indices are shown as lower indices,</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment"> * and \f$p\f$ indexes grid points in the element.</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment"> * \warning This function reduces the Frobenius norm over the element, not the</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment"> * whole domain.</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> DataType, <span class="keyword">typename</span> Symm, <span class="keyword">typename</span> IndexList&gt;</div>
+<div class="line"><a name="l00095"></a><span class="lineno"><a class="line" href="group__TensorGroup.html#ga17182cc25cfff1775433013fb80781f8">   95</a></span>&#160;<span class="keywordtype">double</span> <a class="code" href="group__TensorGroup.html#ga17182cc25cfff1775433013fb80781f8">l2_norm</a>(<span class="keyword">const</span> Tensor&lt;DataType, Symm, IndexList&gt;&amp; tensor) noexcept {</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> pointwise_l2_normsq =</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;      L2Norm_detail::pointwise_l2_norm_square(tensor);</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;  <span class="keyword">using</span> Plus = <a class="code" href="structfuncl_1_1Plus.html">funcl::Plus&lt;funcl::Identity&gt;</a>;</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;  <span class="keywordflow">return</span> <a class="code" href="group__TensorExpressionsGroup.html#gaf9042e362077610ab68fd91c2dd55e18">sqrt</a>(<a class="code" href="namespacealg.html#a8703411e55aa3c52a516319d58fba22b">alg::accumulate</a>(<a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(pointwise_l2_normsq), 0., Plus{}) /</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;              tensor.begin()-&gt;size());</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;}</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160; </div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="keyword">namespace </span>Tags {<span class="comment"></span></div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="comment"> * \ingroup DataBoxTagsGroup</span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="comment"> * \ingroup DataStructuresGroup</span></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="comment"> * Point-wise Euclidean \f$L^2\f$-norm of a Tensor.</span></div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="comment"> * \see `pointwise_l2_norm()` for details.</span></div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00111"></a><span class="lineno"><a class="line" href="structTags_1_1PointwiseL2Norm.html">  111</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structTags_1_1PointwiseL2Norm.html">PointwiseL2Norm</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;  <span class="keyword">using</span> type = <a class="code" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar&lt;typename Tag::type::type&gt;</a>;</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept {</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    <span class="keywordflow">return</span> <span class="stringliteral">&quot;PointwiseL2Norm(&quot;</span> + db::tag_name&lt;Tag&gt;() + <span class="stringliteral">&quot;)&quot;</span>;</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;  }</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;};</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="comment"> * \ingroup DataBoxTagsGroup</span></div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="comment"> * \ingroup DataStructuresGroup</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="comment"> * Computes the point-wise Euclidean \f$L^2\f$-norm of a Tensor.</span></div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="comment"> * \see `pointwise_l2_norm()` for details.</span></div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00125"></a><span class="lineno"><a class="line" href="structTags_1_1PointwiseL2NormCompute.html">  125</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structTags_1_1PointwiseL2NormCompute.html">PointwiseL2NormCompute</a> : <a class="code" href="structTags_1_1PointwiseL2Norm.html">PointwiseL2Norm</a>&lt;Tag&gt;, <a class="code" href="structdb_1_1ComputeTag.html">db::ComputeTag</a> {</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;  <span class="keyword">using</span> <a class="code" href="structTags_1_1PointwiseL2Norm.html">base</a> = <a class="code" href="structTags_1_1PointwiseL2Norm.html">PointwiseL2Norm&lt;Tag&gt;</a>;</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;  <span class="keyword">using</span> return_type = <span class="keyword">typename</span> base::type;</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;  <span class="keyword">static</span> constexpr <span class="keyword">auto</span> <span class="keyword">function</span> = <span class="keyword">static_cast&lt;</span><span class="keywordtype">void</span> (*)(</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;      <span class="keyword">const </span><a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;return_type*&gt;</a>, <span class="keyword">const </span>typename Tag::type&amp;) noexcept<span class="keyword">&gt;</span>(</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;      &amp;<a class="code" href="group__TensorGroup.html#ga6592d16678e66e96868a2dd3fa6cbd1a">pointwise_l2_norm</a>);</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;  <span class="keyword">using</span> argument_tags = tmpl::list&lt;Tag&gt;;</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;};</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;<span class="comment"> * \ingroup DataBoxTagsGroup</span></div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;<span class="comment"> * \ingroup DataStructuresGroup</span></div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;<span class="comment"> * Euclidean \f$L^2\f$-norm of a Tensor, RMS over grid points in element.</span></div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;<span class="comment"> * \see `l2_norm()` for details.</span></div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00141"></a><span class="lineno"><a class="line" href="structTags_1_1L2Norm.html">  141</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structTags_1_1L2Norm.html">L2Norm</a> : <a class="code" href="structdb_1_1SimpleTag.html">db::SimpleTag</a> {</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;  <span class="keyword">using</span> type = double;</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept {</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;    <span class="keywordflow">return</span> <span class="stringliteral">&quot;L2Norm(&quot;</span> + db::tag_name&lt;Tag&gt;() + <span class="stringliteral">&quot;)&quot;</span>;</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;  }</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;};</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;<span class="comment"> * \ingroup DataBoxTagsGroup</span></div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;<span class="comment"> * \ingroup DataStructuresGroup</span></div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;<span class="comment"> * Computes the Euclidean \f$L^2\f$-norm of a Tensor, RMS over grid points in</span></div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;<span class="comment"> * element. \see `l2_norm()` for details.</span></div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;<span class="comment"> * \warning This compute tag reduces the Frobenius norm over the element, not</span></div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;<span class="comment"> * the whole domain.</span></div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00158"></a><span class="lineno"><a class="line" href="structTags_1_1L2NormCompute.html">  158</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structTags_1_1L2NormCompute.html">L2NormCompute</a> : <a class="code" href="structTags_1_1L2Norm.html">L2Norm</a>&lt;Tag&gt;, <a class="code" href="structdb_1_1ComputeTag.html">db::ComputeTag</a> {</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;  <span class="keyword">using</span> <a class="code" href="structTags_1_1L2Norm.html">base</a> = <a class="code" href="structTags_1_1L2Norm.html">L2Norm&lt;Tag&gt;</a>;</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;  <span class="keyword">using</span> return_type = <span class="keyword">typename</span> base::type;</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">void</span> <span class="keyword">function</span>(<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;return_type*&gt;</a> norm,</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;                       <span class="keyword">const</span> <span class="keyword">typename</span> Tag::type&amp; tensor) {</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    *norm = <a class="code" href="group__TensorGroup.html#ga17182cc25cfff1775433013fb80781f8">l2_norm</a>(tensor);</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;  }</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;  <span class="keyword">using</span> argument_tags = tmpl::list&lt;Tag&gt;;</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;};</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;}  <span class="comment">// namespace Tags</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="astructdb_1_1ComputeTag_html"><div class="ttname"><a href="structdb_1_1ComputeTag.html">db::ComputeTag</a></div><div class="ttdoc">Mark a struct as a compute tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:157</div></div>
+<div class="ttc" id="astructTags_1_1PointwiseL2Norm_html"><div class="ttname"><a href="structTags_1_1PointwiseL2Norm.html">Tags::PointwiseL2Norm</a></div><div class="ttdef"><b>Definition:</b> Norms.hpp:111</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga6592d16678e66e96868a2dd3fa6cbd1a"><div class="ttname"><a href="group__TensorGroup.html#ga6592d16678e66e96868a2dd3fa6cbd1a">pointwise_l2_norm</a></div><div class="ttdeci">Scalar&lt; DataType &gt; pointwise_l2_norm(const Tensor&lt; DataType, Symm, IndexList &gt; &amp;tensor) noexcept</div><div class="ttdoc">Compute point-wise Euclidean -norm of arbitrary Tensors.</div><div class="ttdef"><b>Definition:</b> Norms.hpp:54</div></div>
+<div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
+<div class="ttc" id="agroup__TensorExpressionsGroup_html_gaf9042e362077610ab68fd91c2dd55e18"><div class="ttname"><a href="group__TensorExpressionsGroup.html#gaf9042e362077610ab68fd91c2dd55e18">sqrt</a></div><div class="ttdeci">auto sqrt(const TensorExpression&lt; T, typename T::type, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;, tmpl::list&lt;&gt;&gt; &amp;t)</div><div class="ttdoc">Returns the tensor expression representing the square root of a tensor expression that evaluates to a...</div><div class="ttdef"><b>Definition:</b> SquareRoot.hpp:83</div></div>
+<div class="ttc" id="agroup__ConstantExpressionsGroup_html_gaef1fe82faee8c46e9706f252a5a00937"><div class="ttname"><a href="group__ConstantExpressionsGroup.html#gaef1fe82faee8c46e9706f252a5a00937">square</a></div><div class="ttdeci">constexpr decltype(auto) square(const T &amp;x)</div><div class="ttdoc">Compute the square of x</div><div class="ttdef"><b>Definition:</b> ConstantExpressions.hpp:55</div></div>
+<div class="ttc" id="agroup__DataBoxGroup_html_gae08744824ea7df89224f128b2080c5b1"><div class="ttname"><a href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">db::get</a></div><div class="ttdeci">const auto &amp; get(const DataBox&lt; TagList &gt; &amp;box) noexcept</div><div class="ttdoc">Retrieve the item with tag Tag from the DataBox.</div><div class="ttdef"><b>Definition:</b> DataBox.hpp:791</div></div>
+<div class="ttc" id="astructdb_1_1SimpleTag_html"><div class="ttname"><a href="structdb_1_1SimpleTag.html">db::SimpleTag</a></div><div class="ttdoc">Mark a struct as a simple tag by inheriting from this.</div><div class="ttdef"><b>Definition:</b> Tag.hpp:36</div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga48f1ae622586a451d95b26daaac2378e"><div class="ttname"><a href="group__UtilitiesGroup.html#ga48f1ae622586a451d95b26daaac2378e">get_size</a></div><div class="ttdeci">decltype(auto) get_size(const T &amp;t, SizeFunction size=GetContainerSize{}) noexcept</div><div class="ttdoc">Retrieve the size of t if t.size() is a valid expression, otherwise if T is fundamental or a std::com...</div><div class="ttdef"><b>Definition:</b> ContainerHelpers.hpp:145</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga17182cc25cfff1775433013fb80781f8"><div class="ttname"><a href="group__TensorGroup.html#ga17182cc25cfff1775433013fb80781f8">l2_norm</a></div><div class="ttdeci">double l2_norm(const Tensor&lt; DataType, Symm, IndexList &gt; &amp;tensor) noexcept</div><div class="ttdoc">Compute Euclidean -norm of arbitrary Tensors reduced over an element.</div><div class="ttdef"><b>Definition:</b> Norms.hpp:95</div></div>
+<div class="ttc" id="astructTags_1_1L2NormCompute_html"><div class="ttname"><a href="structTags_1_1L2NormCompute.html">Tags::L2NormCompute</a></div><div class="ttdef"><b>Definition:</b> Norms.hpp:158</div></div>
+<div class="ttc" id="astructfuncl_1_1Plus_html"><div class="ttname"><a href="structfuncl_1_1Plus.html">funcl::Plus</a></div><div class="ttdoc">Functional for computing + of two objects.</div><div class="ttdef"><b>Definition:</b> Functional.hpp:238</div></div>
+<div class="ttc" id="astructTags_1_1L2Norm_html"><div class="ttname"><a href="structTags_1_1L2Norm.html">Tags::L2Norm</a></div><div class="ttdef"><b>Definition:</b> Norms.hpp:141</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga06ebcb38a1f13c246e53378b9e8959ce"><div class="ttname"><a href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a></div><div class="ttdeci">Tensor&lt; T, Symmetry&lt;&gt;, index_list&lt;&gt; &gt; Scalar</div><div class="ttdef"><b>Definition:</b> TypeAliases.hpp:21</div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="aTensor_8hpp_html"><div class="ttname"><a href="Tensor_8hpp.html">Tensor.hpp</a></div></div>
+<div class="ttc" id="astructTags_1_1PointwiseL2NormCompute_html"><div class="ttname"><a href="structTags_1_1PointwiseL2NormCompute.html">Tags::PointwiseL2NormCompute</a></div><div class="ttdef"><b>Definition:</b> Norms.hpp:125</div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="anamespacealg_html_a8703411e55aa3c52a516319d58fba22b"><div class="ttname"><a href="namespacealg.html#a8703411e55aa3c52a516319d58fba22b">alg::accumulate</a></div><div class="ttdeci">decltype(auto) accumulate(const Container &amp;c, T init)</div><div class="ttdoc">Convenience wrapper around std::accumulate, returns std::accumulate(begin(c), end(c),...</div><div class="ttdef"><b>Definition:</b> Numeric.hpp:54</div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_gab9ae0c4131a2de652b81b4997e740d5a"><div class="ttname"><a href="group__UtilitiesGroup.html#gab9ae0c4131a2de652b81b4997e740d5a">destructive_resize_components</a></div><div class="ttdeci">void destructive_resize_components(const gsl::not_null&lt; Container * &gt; container, const size_t new_size, DestructiveResizeFunction destructive_resize=ContainerDestructiveResize{}) noexcept</div><div class="ttdoc">Checks the size of each component of the container, and resizes if necessary.</div><div class="ttdef"><b>Definition:</b> ContainerHelpers.hpp:177</div></div>
+<div class="ttc" id="astring_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/string.html">string</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

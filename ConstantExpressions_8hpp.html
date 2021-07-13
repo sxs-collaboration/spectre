@@ -1,0 +1,314 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Utilities/ConstantExpressions.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_703734d551dc6f7d643184484c894e35.html">Utilities</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">ConstantExpressions.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/algorithm.html">algorithm</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/array.html">array</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/cassert.html">cassert</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/cstdint.html">cstdint</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/functional.html">functional</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/initializer_list.html">initializer_list</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</code><br />
+<code>#include &quot;<a class="el" href="ForceInline_8hpp_source.html">Utilities/ForceInline.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="MakeWithValue_8hpp_source.html">Utilities/MakeWithValue.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="Requires_8hpp_source.html">Utilities/Requires.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="TMPL_8hpp_source.html">Utilities/TMPL.hpp</a>&quot;</code><br />
+<code>#include &quot;Utilities/TypeTraits.hpp&quot;</code><br />
+<code>#include &quot;Utilities/TypeTraits/GetFundamentalType.hpp&quot;</code><br />
+<code>#include &quot;Utilities/TypeTraits/IsA.hpp&quot;</code><br />
+<code>#include &quot;Utilities/TypeTraits/IsInteger.hpp&quot;</code><br />
+</div>
+<p><a href="ConstantExpressions_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga6c01ded3973bb4b9973e5381c32c0807"><td class="memTemplParams" colspan="2">template&lt;typename T , Requires&lt; tt::is_integer_v&lt; T &gt; and std::is_unsigned_v&lt; T &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:ga6c01ded3973bb4b9973e5381c32c0807"><td class="memTemplItemLeft" align="right" valign="top">constexpr T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ConstantExpressionsGroup.html#ga6c01ded3973bb4b9973e5381c32c0807">two_to_the</a> (T n)</td></tr>
+<tr class="separator:ga6c01ded3973bb4b9973e5381c32c0807"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6081cdd84b199ef868569b149f3e7256"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ConstantExpressionsGroup.html#ga6081cdd84b199ef868569b149f3e7256">get_nth_bit</a> (const size_t i, const size_t N)</td></tr>
+<tr class="separator:ga6081cdd84b199ef868569b149f3e7256"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaef1fe82faee8c46e9706f252a5a00937"><td class="memTemplParams" colspan="2">
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:gaef1fe82faee8c46e9706f252a5a00937"><td class="memTemplItemLeft" align="right" valign="top">constexpr decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ConstantExpressionsGroup.html#gaef1fe82faee8c46e9706f252a5a00937">square</a> (const T &amp;x)</td></tr>
+<tr class="memdesc:gaef1fe82faee8c46e9706f252a5a00937"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the square of <code>x</code> <br /></td></tr>
+<tr class="separator:gaef1fe82faee8c46e9706f252a5a00937"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga309e8687e65972dcc37a5ff6e9902d56"><td class="memTemplParams" colspan="2">
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga309e8687e65972dcc37a5ff6e9902d56"><td class="memTemplItemLeft" align="right" valign="top">constexpr decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ConstantExpressionsGroup.html#ga309e8687e65972dcc37a5ff6e9902d56">cube</a> (const T &amp;x)</td></tr>
+<tr class="memdesc:ga309e8687e65972dcc37a5ff6e9902d56"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the cube of <code>x</code> <br /></td></tr>
+<tr class="separator:ga309e8687e65972dcc37a5ff6e9902d56"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2021fd3b36fdbf6fcbcf3340f98be1c6"><td class="memItemLeft" align="right" valign="top">constexpr uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ConstantExpressionsGroup.html#ga2021fd3b36fdbf6fcbcf3340f98be1c6">falling_factorial</a> (const uint64_t x, const uint64_t n) noexcept</td></tr>
+<tr class="memdesc:ga2021fd3b36fdbf6fcbcf3340f98be1c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the falling factorial of \((x)_{n}\).  <a href="group__ConstantExpressionsGroup.html#ga2021fd3b36fdbf6fcbcf3340f98be1c6">More...</a><br /></td></tr>
+<tr class="separator:ga2021fd3b36fdbf6fcbcf3340f98be1c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac8147ed2396495e9c9a2d80508587590"><td class="memItemLeft" align="right" valign="top">
+constexpr uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ConstantExpressionsGroup.html#gac8147ed2396495e9c9a2d80508587590">factorial</a> (const uint64_t n) noexcept</td></tr>
+<tr class="memdesc:gac8147ed2396495e9c9a2d80508587590"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the factorial of \(n!\). <br /></td></tr>
+<tr class="separator:gac8147ed2396495e9c9a2d80508587590"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadf69ca3cb47ba6b0059769286c87cdc3"><td class="memTemplParams" colspan="2">template&lt;int N, typename T &gt; </td></tr>
+<tr class="memitem:gadf69ca3cb47ba6b0059769286c87cdc3"><td class="memTemplItemLeft" align="right" valign="top">constexpr decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ConstantExpressionsGroup.html#gadf69ca3cb47ba6b0059769286c87cdc3">pow</a> (const T &amp;t) noexcept</td></tr>
+<tr class="memdesc:gadf69ca3cb47ba6b0059769286c87cdc3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute t^N where N is an integer (positive or negative)  <a href="group__ConstantExpressionsGroup.html#gadf69ca3cb47ba6b0059769286c87cdc3">More...</a><br /></td></tr>
+<tr class="separator:gadf69ca3cb47ba6b0059769286c87cdc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga690d0500b1f38314a147b045667125c1"><td class="memTemplParams" colspan="2">template&lt;typename T , Requires&lt; tt::is_integer_v&lt; T &gt; or std::is_floating_point_v&lt; T &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:ga690d0500b1f38314a147b045667125c1"><td class="memTemplItemLeft" align="right" valign="top">constexpr T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ConstantExpressionsGroup.html#ga690d0500b1f38314a147b045667125c1">ce_abs</a> (const T &amp;x) noexcept(noexcept(x&lt; 0 ? -x :x))</td></tr>
+<tr class="memdesc:ga690d0500b1f38314a147b045667125c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the absolute value of of its argument.  <a href="group__ConstantExpressionsGroup.html#ga690d0500b1f38314a147b045667125c1">More...</a><br /></td></tr>
+<tr class="separator:ga690d0500b1f38314a147b045667125c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga15cc16860a1195210b924d6a9029179e"><td class="memItemLeft" align="right" valign="top">
+constexpr double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ConstantExpressionsGroup.html#ga15cc16860a1195210b924d6a9029179e">ce_fabs</a> (const double x) noexcept</td></tr>
+<tr class="memdesc:ga15cc16860a1195210b924d6a9029179e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the absolute value of its argument. <br /></td></tr>
+<tr class="separator:ga15cc16860a1195210b924d6a9029179e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67a296508cdc1cd6e2f29fa18171374b"><td class="memItemLeft" align="right" valign="top"><a id="a67a296508cdc1cd6e2f29fa18171374b"></a>
+constexpr float&#160;</td><td class="memItemRight" valign="bottom"><b>ce_fabs</b> (const float x) noexcept</td></tr>
+<tr class="separator:a67a296508cdc1cd6e2f29fa18171374b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga930a2f8bee91aa3221aacd0871e4162e"><td class="memTemplParams" colspan="2">template&lt;size_t NumTerms, typename Function , Requires&lt; NumTerms==1 &gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:ga930a2f8bee91aa3221aacd0871e4162e"><td class="memTemplItemLeft" align="right" valign="top">constexpr decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ConstantExpressionsGroup.html#ga930a2f8bee91aa3221aacd0871e4162e">constexpr_sum</a> (Function &amp;&amp;f) noexcept</td></tr>
+<tr class="memdesc:ga930a2f8bee91aa3221aacd0871e4162e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>f(ic&lt;0&gt;{}) + f(ic&lt;1&gt;{}) + ... + f(ic&lt;NumTerms-1&gt;{})</code> where <code>ic&lt;N&gt;</code> stands for <code><a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::integral_constant</a>&lt;size_t, N&gt;</code>. This function allows the result types of each operation to be different, and so works efficiently with expression templates.  <a href="group__ConstantExpressionsGroup.html#ga930a2f8bee91aa3221aacd0871e4162e">More...</a><br /></td></tr>
+<tr class="separator:ga930a2f8bee91aa3221aacd0871e4162e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf36b785a386a50e5127f5667a5d109a5"><td class="memTemplParams" colspan="2">template&lt;typename List , Requires&lt; not tt::is_a_v&lt; tmpl::list, tmpl::front&lt; List &gt;&gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:gaf36b785a386a50e5127f5667a5d109a5"><td class="memTemplItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ConstantExpressionsGroup.html#gaf36b785a386a50e5127f5667a5d109a5">make_array_from_list</a> () -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/decay.html">std::decay_t</a>&lt; decltype(tmpl::front&lt; List &gt;::value)&gt;, tmpl::size&lt; List &gt;::value &gt;</td></tr>
+<tr class="separator:gaf36b785a386a50e5127f5667a5d109a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9c63793d5a8986fb6f9013033c4a2991"><td class="memTemplParams" colspan="2"><a id="a9c63793d5a8986fb6f9013033c4a2991"></a>
+template&lt;typename TypeForZero , Requires&lt; not tt::is_a_v&lt; tmpl::list, TypeForZero &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a9c63793d5a8986fb6f9013033c4a2991"><td class="memTemplItemLeft" align="right" valign="top">constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/decay.html">std::decay_t</a>&lt; TypeForZero &gt;, 0 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>make_array_from_list</b> ()</td></tr>
+<tr class="separator:a9c63793d5a8986fb6f9013033c4a2991"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga86291f00ac1c63ccb6c8135d89416c46"><td class="memItemLeft" align="right" valign="top">
+constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ConstantExpressionsGroup.html#ga86291f00ac1c63ccb6c8135d89416c46">cstring_length</a> (const char *str) noexcept</td></tr>
+<tr class="memdesc:ga86291f00ac1c63ccb6c8135d89416c46"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the length of a const char* at compile time. <br /></td></tr>
+<tr class="separator:ga86291f00ac1c63ccb6c8135d89416c46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab925d824ee9991214c82e77ce1aebd9a"><td class="memItemLeft" align="right" valign="top">
+constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ConstantExpressionsGroup.html#gab925d824ee9991214c82e77ce1aebd9a">cstring_hash</a> (const char *str) noexcept</td></tr>
+<tr class="memdesc:gab925d824ee9991214c82e77ce1aebd9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute a hash of a const char* at compile time. <br /></td></tr>
+<tr class="separator:gab925d824ee9991214c82e77ce1aebd9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga67df32bbc36ce9e80f16019b14345ba8"><td class="memTemplParams" colspan="2">template&lt;size_t I, typename T , size_t Size&gt; </td></tr>
+<tr class="memitem:ga67df32bbc36ce9e80f16019b14345ba8"><td class="memTemplItemLeft" align="right" valign="top">constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/decay.html">std::decay_t</a>&lt; T &gt;, Size &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ConstantExpressionsGroup.html#ga67df32bbc36ce9e80f16019b14345ba8">replace_at</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Size &gt; &amp;arr, T value)</td></tr>
+<tr class="separator:ga67df32bbc36ce9e80f16019b14345ba8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0ea880e99a7630ae00b9f5ab31f58183"><td class="memTemplParams" colspan="2">template&lt;typename T , typename S , size_t size&gt; </td></tr>
+<tr class="memitem:ga0ea880e99a7630ae00b9f5ab31f58183"><td class="memTemplItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ConstantExpressionsGroup.html#ga0ea880e99a7630ae00b9f5ab31f58183">array_equal</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, size &gt; &amp;lhs, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; S, size &gt; &amp;rhs, const size_t i=0) noexcept</td></tr>
+<tr class="separator:ga0ea880e99a7630ae00b9f5ab31f58183"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ga821c3b16761006411643b7be7a58ed67"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga821c3b16761006411643b7be7a58ed67"><td class="memTemplItemLeft" align="right" valign="top">constexpr const T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ConstantExpressionsGroup.html#ga821c3b16761006411643b7be7a58ed67">max_by_magnitude</a> (const T &amp;a, const T &amp;b)</td></tr>
+<tr class="memdesc:ga821c3b16761006411643b7be7a58ed67"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the argument with the largest magnitude.  <a href="group__ConstantExpressionsGroup.html#ga821c3b16761006411643b7be7a58ed67">More...</a><br /></td></tr>
+<tr class="separator:ga821c3b16761006411643b7be7a58ed67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadf397722789ef708318d8cdbe1b9f5c8"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:gadf397722789ef708318d8cdbe1b9f5c8"><td class="memTemplItemLeft" align="right" valign="top">constexpr T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ConstantExpressionsGroup.html#gadf397722789ef708318d8cdbe1b9f5c8">max_by_magnitude</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/initializer_list.html">std::initializer_list</a>&lt; T &gt; ilist)</td></tr>
+<tr class="memdesc:gadf397722789ef708318d8cdbe1b9f5c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the argument with the largest magnitude.  <a href="group__ConstantExpressionsGroup.html#gadf397722789ef708318d8cdbe1b9f5c8">More...</a><br /></td></tr>
+<tr class="separator:gadf397722789ef708318d8cdbe1b9f5c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:gae6af61fcfcea06548b5c85211be5d608"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:gae6af61fcfcea06548b5c85211be5d608"><td class="memTemplItemLeft" align="right" valign="top">constexpr const T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ConstantExpressionsGroup.html#gae6af61fcfcea06548b5c85211be5d608">min_by_magnitude</a> (const T &amp;a, const T &amp;b)</td></tr>
+<tr class="memdesc:gae6af61fcfcea06548b5c85211be5d608"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the argument with the smallest magnitude.  <a href="group__ConstantExpressionsGroup.html#gae6af61fcfcea06548b5c85211be5d608">More...</a><br /></td></tr>
+<tr class="separator:gae6af61fcfcea06548b5c85211be5d608"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga39c5b14ba57b5ce2593af82d09e3ab1a"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga39c5b14ba57b5ce2593af82d09e3ab1a"><td class="memTemplItemLeft" align="right" valign="top">constexpr T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ConstantExpressionsGroup.html#ga39c5b14ba57b5ce2593af82d09e3ab1a">min_by_magnitude</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/initializer_list.html">std::initializer_list</a>&lt; T &gt; ilist)</td></tr>
+<tr class="memdesc:ga39c5b14ba57b5ce2593af82d09e3ab1a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the argument with the smallest magnitude.  <a href="group__ConstantExpressionsGroup.html#ga39c5b14ba57b5ce2593af82d09e3ab1a">More...</a><br /></td></tr>
+<tr class="separator:ga39c5b14ba57b5ce2593af82d09e3ab1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Define simple functions for constant expressions. </p>
+</div></div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

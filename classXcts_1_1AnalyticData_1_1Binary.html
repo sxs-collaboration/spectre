@@ -1,0 +1,340 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Xcts::AnalyticData::Binary&lt; IsolatedObjectRegistrars, Registrars &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceXcts.html">Xcts</a></li><li class="navelem"><a class="el" href="namespaceXcts_1_1AnalyticData.html">AnalyticData</a></li><li class="navelem"><a class="el" href="classXcts_1_1AnalyticData_1_1Binary.html">Binary</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classXcts_1_1AnalyticData_1_1Binary-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Xcts::AnalyticData::Binary&lt; IsolatedObjectRegistrars, Registrars &gt; Class Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><a class="el" href="classXcts_1_1AnalyticData_1_1Binary.html" title="Binary compact-object data in general relativity, constructed from superpositions of two isolated obj...">Binary</a> compact-object data in general relativity, constructed from superpositions of two isolated objects.  
+ <a href="classXcts_1_1AnalyticData_1_1Binary.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Binary_8hpp_source.html">Binary.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structXcts_1_1AnalyticData_1_1Binary_1_1AngularVelocity.html">AngularVelocity</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structXcts_1_1AnalyticData_1_1Binary_1_1FalloffWidths.html">FalloffWidths</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structXcts_1_1AnalyticData_1_1Binary_1_1ObjectA.html">ObjectA</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structXcts_1_1AnalyticData_1_1Binary_1_1ObjectB.html">ObjectB</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structXcts_1_1AnalyticData_1_1Binary_1_1XCoords.html">XCoords</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:abbfec24d8929675b64fd6d7b56f0d9d3"><td class="memItemLeft" align="right" valign="top"><a id="abbfec24d8929675b64fd6d7b56f0d9d3"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>IsolatedObjectBase</b> = <a class="el" href="classXcts_1_1Solutions_1_1AnalyticSolution.html">Xcts::Solutions::AnalyticSolution</a>&lt; IsolatedObjectRegistrars &gt;</td></tr>
+<tr class="separator:abbfec24d8929675b64fd6d7b56f0d9d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c21587f399aadd17cf1f3a949e4e4e6"><td class="memItemLeft" align="right" valign="top"><a id="a7c21587f399aadd17cf1f3a949e4e4e6"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structXcts_1_1AnalyticData_1_1Binary_1_1XCoords.html">XCoords</a>, <a class="el" href="structXcts_1_1AnalyticData_1_1Binary_1_1ObjectA.html">ObjectA</a>, <a class="el" href="structXcts_1_1AnalyticData_1_1Binary_1_1ObjectB.html">ObjectB</a>, <a class="el" href="structXcts_1_1AnalyticData_1_1Binary_1_1AngularVelocity.html">AngularVelocity</a>, <a class="el" href="structXcts_1_1AnalyticData_1_1Binary_1_1FalloffWidths.html">FalloffWidths</a> &gt;</td></tr>
+<tr class="separator:a7c21587f399aadd17cf1f3a949e4e4e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a5dee450b0e17bd63b113e455fc5db55c"><td class="memItemLeft" align="right" valign="top"><a id="a5dee450b0e17bd63b113e455fc5db55c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Binary</b> (const <a class="el" href="classXcts_1_1AnalyticData_1_1Binary.html">Binary</a> &amp;)=delete</td></tr>
+<tr class="separator:a5dee450b0e17bd63b113e455fc5db55c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a399a8f2905ae19d30185bffab7eb4da1"><td class="memItemLeft" align="right" valign="top"><a id="a399a8f2905ae19d30185bffab7eb4da1"></a>
+<a class="el" href="classXcts_1_1AnalyticData_1_1Binary.html">Binary</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classXcts_1_1AnalyticData_1_1Binary.html">Binary</a> &amp;)=delete</td></tr>
+<tr class="separator:a399a8f2905ae19d30185bffab7eb4da1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8051f8028945ce0eec67d2162e1af1da"><td class="memItemLeft" align="right" valign="top"><a id="a8051f8028945ce0eec67d2162e1af1da"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Binary</b> (<a class="el" href="classXcts_1_1AnalyticData_1_1Binary.html">Binary</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a8051f8028945ce0eec67d2162e1af1da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d56e902d57d99e055016b76f27081a6"><td class="memItemLeft" align="right" valign="top"><a id="a8d56e902d57d99e055016b76f27081a6"></a>
+<a class="el" href="classXcts_1_1AnalyticData_1_1Binary.html">Binary</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classXcts_1_1AnalyticData_1_1Binary.html">Binary</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a8d56e902d57d99e055016b76f27081a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c33f7296f05b551340c2632a040f5c2"><td class="memItemLeft" align="right" valign="top"><a id="a2c33f7296f05b551340c2632a040f5c2"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Binary</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 2 &gt; xcoords, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classXcts_1_1Solutions_1_1AnalyticSolution.html">IsolatedObjectBase</a> &gt; object_a, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classXcts_1_1Solutions_1_1AnalyticSolution.html">IsolatedObjectBase</a> &gt; object_b, double angular_velocity, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 2 &gt;&gt; falloff_widths) noexcept</td></tr>
+<tr class="separator:a2c33f7296f05b551340c2632a040f5c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d6863bca6e1a6a50afa5d97eae18e9b"><td class="memItemLeft" align="right" valign="top"><a id="a4d6863bca6e1a6a50afa5d97eae18e9b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Binary</b> (CkMigrateMessage *m) noexcept</td></tr>
+<tr class="separator:a4d6863bca6e1a6a50afa5d97eae18e9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a703ef4233cf12e97d245b928cd12823d"><td class="memItemLeft" align="right" valign="top"><a id="a703ef4233cf12e97d245b928cd12823d"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_template</b> (<a class="el" href="classXcts_1_1AnalyticData_1_1Binary.html">Binary</a>)</td></tr>
+<tr class="separator:a703ef4233cf12e97d245b928cd12823d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a036b7920690306d671691b57607844f3"><td class="memTemplParams" colspan="2"><a id="a036b7920690306d671691b57607844f3"></a>
+template&lt;typename DataType , typename... RequestedTags&gt; </td></tr>
+<tr class="memitem:a036b7920690306d671691b57607844f3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; RequestedTags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;x, tmpl::list&lt; RequestedTags... &gt;) const noexcept</td></tr>
+<tr class="separator:a036b7920690306d671691b57607844f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa6199d815b320c19fcbeae6269adde31"><td class="memTemplParams" colspan="2"><a id="aa6199d815b320c19fcbeae6269adde31"></a>
+template&lt;typename... RequestedTags&gt; </td></tr>
+<tr class="memitem:aa6199d815b320c19fcbeae6269adde31"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; RequestedTags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;x, const <a class="el" href="classMesh.html">Mesh</a>&lt; 3 &gt; &amp;mesh, const InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;inv_jacobian, tmpl::list&lt; RequestedTags... &gt;) const noexcept</td></tr>
+<tr class="separator:aa6199d815b320c19fcbeae6269adde31"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab13e1aaf5dbec0a5c8b5823ed64dad40"><td class="memItemLeft" align="right" valign="top"><a id="ab13e1aaf5dbec0a5c8b5823ed64dad40"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:ab13e1aaf5dbec0a5c8b5823ed64dad40"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a573f8f1a5f6bc3ac667a83e7933c8a"><td class="memItemLeft" align="right" valign="top"><a id="a1a573f8f1a5f6bc3ac667a83e7933c8a"></a>
+const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 2 &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>x_coords</b> () const noexcept</td></tr>
+<tr class="separator:a1a573f8f1a5f6bc3ac667a83e7933c8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b60187ce9b3c346e10eed77ff093963"><td class="memItemLeft" align="right" valign="top"><a id="a3b60187ce9b3c346e10eed77ff093963"></a>
+const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classXcts_1_1Solutions_1_1AnalyticSolution.html">IsolatedObjectBase</a> &gt;, 2 &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>superposed_objects</b> () const noexcept</td></tr>
+<tr class="separator:a3b60187ce9b3c346e10eed77ff093963"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1e66d4e120eaa681ad75b72ad412b087"><td class="memItemLeft" align="right" valign="top"><a id="a1e66d4e120eaa681ad75b72ad412b087"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>angular_velocity</b> () const noexcept</td></tr>
+<tr class="separator:a1e66d4e120eaa681ad75b72ad412b087"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a273863a56a04b65799e072d43822d252"><td class="memItemLeft" align="right" valign="top"><a id="a273863a56a04b65799e072d43822d252"></a>
+const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 2 &gt; &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>falloff_widths</b> () const noexcept</td></tr>
+<tr class="separator:a273863a56a04b65799e072d43822d252"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:afbc06afd48aed8a70cbc4140a3ae6bd8"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:afbc06afd48aed8a70cbc4140a3ae6bd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename IsolatedObjectRegistrars, typename Registrars = tmpl::list&lt;              Xcts::AnalyticData::Registrars::Binary&lt;IsolatedObjectRegistrars&gt;&gt;&gt;<br />
+class Xcts::AnalyticData::Binary&lt; IsolatedObjectRegistrars, Registrars &gt;</h3>
+
+<p><a class="el" href="classXcts_1_1AnalyticData_1_1Binary.html" title="Binary compact-object data in general relativity, constructed from superpositions of two isolated obj...">Binary</a> compact-object data in general relativity, constructed from superpositions of two isolated objects. </p>
+<p>This class implements background data for the XCTS equations describing two objects in a quasi-equilibrium orbit, i.e. with \(\bar{u}=0\) and \(\partial_t K=0\). Both objects can be chosen from the list of <code>IsolatedObjectRegistrars</code>, e.g. they can be black-hole or neutron-star solutions in different coordinates. Most quantities are constructed by superposing the two isolated solutions (see e.g. Eq. (8-9) in <a class="el" href="citelist.html#CITEREF_Varma2018sqd">[106]</a> or Eq. (45-46) in <a class="el" href="citelist.html#CITEREF_Lovelace2008tw">[73]</a>):</p>
+<p class="formulaDsp">
+\begin{align} \bar{\gamma}_{ij} &amp;= f_{ij} + \sum_{\alpha=1}^2 e^{-r_\alpha^2 / w_\alpha^2}\left(\gamma^\alpha_{ij} - f_{ij}\right) \\ K &amp;= \sum_{\alpha=1}^2 e^{-r_\alpha^2 / w_\alpha^2}K^\alpha \end{align}
+</p>
+<p>where \(\gamma^\alpha_{ij}\) and \(K^\alpha\) denote the spatial metric and extrinsic-curvature trace of the two individual solutions, \(r_\alpha\) is the Euclidean coordinate-distance from the center of each object and \(w_\alpha\) are parameters describing Gaussian falloff-widths. The Gaussian falloffs facilitate that the influence of either of the two objects at the position of the other is strongly damped, and they also avoid logarithmic scaling of the solution at large distances where we would typically employ an inverse-radial coordinate map and asymptotically-flat boundary conditions. The falloff-widths are chosen in terms of the Newtonian Lagrange points of the two objects in <a class="el" href="citelist.html#CITEREF_Varma2018sqd">[106]</a> and <a class="el" href="citelist.html#CITEREF_Lovelace2008tw">[73]</a>, and they are input parameters in this implementation. The falloff can be disabled by passing <code>std::nullopt</code> to the constructor, or <code>None</code> in the input file.</p>
+<p>The remaining quantities that this class implements relate to the orbital motion of the two objects. To obtain initial data in "co-rotating" coordinates where the two objects are initially at rest we prescribe the background shift</p>
+<p class="formulaDsp">
+\begin{equation} \beta^i_\mathrm{background} = (-\Omega y, \Omega x, 0) \end{equation}
+</p>
+<p>where \(\Omega\) is the angular-velocity parameter. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="afbc06afd48aed8a70cbc4140a3ae6bd8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afbc06afd48aed8a70cbc4140a3ae6bd8">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename IsolatedObjectRegistrars , typename Registrars  = tmpl::list&lt;              Xcts::AnalyticData::Registrars::Binary&lt;IsolatedObjectRegistrars&gt;&gt;&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classXcts_1_1AnalyticData_1_1Binary.html">Xcts::AnalyticData::Binary</a>&lt; IsolatedObjectRegistrars, Registrars &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      <span class="stringliteral">&quot;Binary compact-object data in general relativity, constructed from &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;superpositions of two isolated objects.&quot;</span></div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticData/Xcts/<a class="el" href="Binary_8hpp_source.html">Binary.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,347 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - 39f3c2b725318dcf91749887b1e61f477736e132 - /__w/spectre/spectre/docs/DevGuide/QuickStartDockerVSCode.md</title>
+  <link rel="stylesheet" type="text/css" href="../../../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title"> SpECTRE Documentation Coverage Report</td></tr>
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../../../index.html">top level</a> - <a href="index.html">__w/spectre/spectre/docs/DevGuide</a> - QuickStartDockerVSCode.md</td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+             <td class="headerItem">Commit:</td>
+             <td class="headerValue"><a target="_blank" href="https://github.com/sxs-collaboration/spectre/commit/39f3c2b725318dcf91749887b1e61f477736e132">39f3c2b725318dcf91749887b1e61f477736e132</a></td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2021-07-13 03:19:40</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineNoCov">          0 : \cond NEVER</span></a>
+<a name="2"><span class="lineNum">       2 </span>            : Distributed under the MIT License.</a>
+<a name="3"><span class="lineNum">       3 </span>            : See LICENSE.txt for details.</a>
+<a name="4"><span class="lineNum">       4 </span>            : \endcond</a>
+<a name="5"><span class="lineNum">       5 </span>            : # Code development quick-start with Docker and Visual Studio Code {#dev_guide_quick_start_docker_vscode}</a>
+<a name="6"><span class="lineNum">       6 </span>            : </a>
+<a name="7"><span class="lineNum">       7 </span>            : This page describes how to get started developing SpECTRE on Mac, Linux, or</a>
+<a name="8"><span class="lineNum">       8 </span>            : Windows using [Docker](https://docker.com) and the [Visual Studio</a>
+<a name="9"><span class="lineNum">       9 </span>            : Code](https://code.visualstudio.com) editor. This is a particularly quick way to</a>
+<a name="10"><span class="lineNum">      10 </span>            : get up and running with SpECTRE code development, though of course not the only</a>
+<a name="11"><span class="lineNum">      11 </span>            : way. If you prefer setting up your development environment differently, we</a>
+<a name="12"><span class="lineNum">      12 </span>            : suggest you read the \ref installation &quot;Installation&quot; page. If you would like to</a>
+<a name="13"><span class="lineNum">      13 </span>            : jump right into a working development environment, read on!</a>
+<a name="14"><span class="lineNum">      14 </span>            : </a>
+<a name="15"><span class="lineNum">      15 </span>            : ## Fork the SpECTRE repository on GitHub</a>
+<a name="16"><span class="lineNum">      16 </span>            : </a>
+<a name="17"><span class="lineNum">      17 </span>            : The SpECTRE code lives on GitHub in the</a>
+<a name="18"><span class="lineNum">      18 </span>            : [sxs-collaboration/spectre](https://github.com/sxs-collaboration/spectre)</a>
+<a name="19"><span class="lineNum">      19 </span>            : repository. Developers work on their own copy (or</a>
+<a name="20"><span class="lineNum">      20 </span>            : [&quot;fork&quot;](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-forks))</a>
+<a name="21"><span class="lineNum">      21 </span>            : of the repository and contribute back to</a>
+<a name="22"><span class="lineNum">      22 </span>            : [sxs-collaboration/spectre](https://github.com/sxs-collaboration/spectre)</a>
+<a name="23"><span class="lineNum">      23 </span>            : through [pull requests](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests).</a>
+<a name="24"><span class="lineNum">      24 </span>            : Fork the repository to your own account:</a>
+<a name="25"><span class="lineNum">      25 </span>            : </a>
+<a name="26"><span class="lineNum">      26 </span>            : - [Fork sxs-collaboration/spectre on GitHub](https://github.com/sxs-collaboration/spectre/fork)</a>
+<a name="27"><span class="lineNum">      27 </span>            : </a>
+<a name="28"><span class="lineNum">      28 </span>            : ## Clone the SpECTRE repository to your computer</a>
+<a name="29"><span class="lineNum">      29 </span>            : </a>
+<a name="30"><span class="lineNum">      30 </span>            : To work on SpECTRE code you will need a local copy (or &quot;clone&quot;) of the</a>
+<a name="31"><span class="lineNum">      31 </span>            : repository on your computer. We use SSH to communicate with GitHub, so you need</a>
+<a name="32"><span class="lineNum">      32 </span>            : to set up your SSH keys first. Follow GitHub's instructions to generate an SSH</a>
+<a name="33"><span class="lineNum">      33 </span>            : key and add it to your GitHub account:</a>
+<a name="34"><span class="lineNum">      34 </span>            : </a>
+<a name="35"><span class="lineNum">      35 </span>            : - [Generating an SSH key and adding to to GitHub](https://docs.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)</a>
+<a name="36"><span class="lineNum">      36 </span>            : </a>
+<a name="37"><span class="lineNum">      37 </span>            : Now you can download the repository via SSH. Navigate to **your fork** of the</a>
+<a name="38"><span class="lineNum">      38 </span>            : SpECTRE repository (i.e. the repository at the URL</a>
+<a name="39"><span class="lineNum">      39 </span>            : https://github.com/YOURNAME/spectre). Follow GitHub's instructions to clone the</a>
+<a name="40"><span class="lineNum">      40 </span>            : repository to your computer, selecting the SSH option:</a>
+<a name="41"><span class="lineNum">      41 </span>            : </a>
+<a name="42"><span class="lineNum">      42 </span>            : - [Cloning a repository](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository)</a>
+<a name="43"><span class="lineNum">      43 </span>            : </a>
+<a name="44"><span class="lineNum">      44 </span>            : ## Enable the development environment in the repository</a>
+<a name="45"><span class="lineNum">      45 </span>            : </a>
+<a name="46"><span class="lineNum">      46 </span>            : The development environment is included in the repository, but not enabled by</a>
+<a name="47"><span class="lineNum">      47 </span>            : default. To enable it, copy or symlink the directory</a>
+<a name="48"><span class="lineNum">      48 </span>            : `support/DevEnvironments/.devcontainer` to the repository root. This is easiest</a>
+<a name="49"><span class="lineNum">      49 </span>            : done with the command line. Navigate into the repository that you just cloned to</a>
+<a name="50"><span class="lineNum">      50 </span>            : your computer:</a>
+<a name="51"><span class="lineNum">      51 </span>            : </a>
+<a name="52"><span class="lineNum">      52 </span>            : ```</a>
+<a name="53"><span class="lineNum">      53 </span>            : cd spectre</a>
+<a name="54"><span class="lineNum">      54 </span>            : ```</a>
+<a name="55"><span class="lineNum">      55 </span>            : </a>
+<a name="56"><span class="lineNum">      56 </span>            : Now symlink the development environment:</a>
+<a name="57"><span class="lineNum">      57 </span>            : </a>
+<a name="58"><span class="lineNum">      58 </span>            : ```</a>
+<a name="59"><span class="lineNum">      59 </span>            : ln -s support/DevEnvironments/.devcontainer .devcontainer</a>
+<a name="60"><span class="lineNum">      60 </span>            : ```</a>
+<a name="61"><span class="lineNum">      61 </span>            : </a>
+<a name="62"><span class="lineNum">      62 </span>            : ## Install Docker</a>
+<a name="63"><span class="lineNum">      63 </span>            : </a>
+<a name="64"><span class="lineNum">      64 </span>            : On your computer you will need Docker to run the containerized development</a>
+<a name="65"><span class="lineNum">      65 </span>            : environment. Install and start Docker:</a>
+<a name="66"><span class="lineNum">      66 </span>            : </a>
+<a name="67"><span class="lineNum">      67 </span>            : - [Get Docker](https://docs.docker.com/get-docker/)</a>
+<a name="68"><span class="lineNum">      68 </span>            : </a>
+<a name="69"><span class="lineNum">      69 </span>            : If you're new to Docker, you can read through Docker's [Getting</a>
+<a name="70"><span class="lineNum">      70 </span>            : started](https://docs.docker.com/get-started/) documentation to learn about</a>
+<a name="71"><span class="lineNum">      71 </span>            : their basic concepts. We will use Docker to download and jump into a prebuilt</a>
+<a name="72"><span class="lineNum">      72 </span>            : development environment that has everything installed to compile and run</a>
+<a name="73"><span class="lineNum">      73 </span>            : SpECTRE.</a>
+<a name="74"><span class="lineNum">      74 </span>            : </a>
+<a name="75"><span class="lineNum">      75 </span>            : ## Install Visual Studio Code</a>
+<a name="76"><span class="lineNum">      76 </span>            : </a>
+<a name="77"><span class="lineNum">      77 </span>            : We will use the Visual Studio Code editor to jump into the containerized</a>
+<a name="78"><span class="lineNum">      78 </span>            : development environment, edit code, compile executables and run them. Download</a>
+<a name="79"><span class="lineNum">      79 </span>            : and install Visual Studio Code:</a>
+<a name="80"><span class="lineNum">      80 </span>            : </a>
+<a name="81"><span class="lineNum">      81 </span>            : - [Get Visual Studio Code](https://code.visualstudio.com)</a>
+<a name="82"><span class="lineNum">      82 </span>            : </a>
+<a name="83"><span class="lineNum">      83 </span>            : Microsoft maintains [extensive</a>
+<a name="84"><span class="lineNum">      84 </span>            : documentation](https://code.visualstudio.com/docs) for Visual Studio Code that</a>
+<a name="85"><span class="lineNum">      85 </span>            : you can read to get started using the editor. We recommend you take a look</a>
+<a name="86"><span class="lineNum">      86 </span>            : through the [Tips and</a>
+<a name="87"><span class="lineNum">      87 </span>            : Tricks](https://code.visualstudio.com/docs/getstarted/tips-and-tricks) to get an</a>
+<a name="88"><span class="lineNum">      88 </span>            : idea of the editor's features.</a>
+<a name="89"><span class="lineNum">      89 </span>            : </a>
+<a name="90"><span class="lineNum">      90 </span>            : ## Install the &quot;Remote - Containers&quot; extension</a>
+<a name="91"><span class="lineNum">      91 </span>            : </a>
+<a name="92"><span class="lineNum">      92 </span>            : Visual Studio Code's &quot;Remote - Containers&quot; extension lets you run the editor in</a>
+<a name="93"><span class="lineNum">      93 </span>            : a Docker container. Install the extension:</a>
+<a name="94"><span class="lineNum">      94 </span>            : </a>
+<a name="95"><span class="lineNum">      95 </span>            : - [Install the &quot;Remote - Containers&quot;</a>
+<a name="96"><span class="lineNum">      96 </span>            :   extension](vscode:extension/ms-vscode-remote.remote-containers)</a>
+<a name="97"><span class="lineNum">      97 </span>            : </a>
+<a name="98"><span class="lineNum">      98 </span>            : ## Open the SpECTRE repository in Visual Studio Code</a>
+<a name="99"><span class="lineNum">      99 </span>            : </a>
+<a name="100"><span class="lineNum">     100 </span>            : Now open the SpECTRE repository that you have cloned to your computer in Visual</a>
+<a name="101"><span class="lineNum">     101 </span>            : Studio Code. Depending on your operating system you can select `File &gt; Open`,</a>
+<a name="102"><span class="lineNum">     102 </span>            : type `Cmd+O` (macOS) or `Ctrl+O` (Linux or Windows), drag the repository folder</a>
+<a name="103"><span class="lineNum">     103 </span>            : onto the Visual Studio Code icon or any other means to open the folder in Visual</a>
+<a name="104"><span class="lineNum">     104 </span>            : Studio Code.</a>
+<a name="105"><span class="lineNum">     105 </span>            : </a>
+<a name="106"><span class="lineNum">     106 </span>            : Now is also time to learn how to use the single most important tool in Visual</a>
+<a name="107"><span class="lineNum">     107 </span>            : Studio Code, the command palette. Try it now: Hit `Cmd+P` (macOS) or `Ctrl+P`</a>
+<a name="108"><span class="lineNum">     108 </span>            : (Linux or Windows) and start typing the name of any file, for example</a>
+<a name="109"><span class="lineNum">     109 </span>            : `QuickStart.md`. Hit `Enter` to open the file. This is how you can quickly open</a>
+<a name="110"><span class="lineNum">     110 </span>            : any file in the repository. Note that the search is fuzzy, so you can type any</a>
+<a name="111"><span class="lineNum">     111 </span>            : few letters in the path to the file. In addition to opening files, you can hit</a>
+<a name="112"><span class="lineNum">     112 </span>            : `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Linux or Windows) and type the name of</a>
+<a name="113"><span class="lineNum">     113 </span>            : any command that Visual Studio Code supports (or parts of it), for example</a>
+<a name="114"><span class="lineNum">     114 </span>            : `Preferences: Open User Settings`.</a>
+<a name="115"><span class="lineNum">     115 </span>            : </a>
+<a name="116"><span class="lineNum">     116 </span>            : ## Reopen the SpECTRE repository in the development container</a>
+<a name="117"><span class="lineNum">     117 </span>            : </a>
+<a name="118"><span class="lineNum">     118 </span>            : Open the command palette by hitting `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P`</a>
+<a name="119"><span class="lineNum">     119 </span>            : (Linux or Windows) and run the command `Remote-Containers: Reopen in container`</a>
+<a name="120"><span class="lineNum">     120 </span>            : by starting to type a few letters of this command and then hitting `Enter`.</a>
+<a name="121"><span class="lineNum">     121 </span>            : </a>
+<a name="122"><span class="lineNum">     122 </span>            : Visual Studio Code will download and run the container and drop you into a fully</a>
+<a name="123"><span class="lineNum">     123 </span>            : configured environment where you can proceed to compile and run SpECTRE.</a>
+<a name="124"><span class="lineNum">     124 </span>            : </a>
+<a name="125"><span class="lineNum">     125 </span>            : If you are interested to learn more about this feature works you can</a>
+<a name="126"><span class="lineNum">     126 </span>            : read through the [VS Code documentation on remote containers](https://code.visualstudio.com/docs/remote/containers)</a>
+<a name="127"><span class="lineNum">     127 </span>            : and inspect the `.devcontainer/devcontainer.json` file that's included in the</a>
+<a name="128"><span class="lineNum">     128 </span>            : SpECTRE repository.</a>
+<a name="129"><span class="lineNum">     129 </span>            : </a>
+<a name="130"><span class="lineNum">     130 </span>            : ## Configure, compile and run SpECTRE</a>
+<a name="131"><span class="lineNum">     131 </span>            : </a>
+<a name="132"><span class="lineNum">     132 </span>            : With Visual Studio Code running in the development container you can now</a>
+<a name="133"><span class="lineNum">     133 </span>            : configure, compile and run SpECTRE with no additional setup. Hit `Cmd+Shift+P`</a>
+<a name="134"><span class="lineNum">     134 </span>            : (macOS) or `Ctrl+Shift+P` (Linux or Windows) to open the command palette and run</a>
+<a name="135"><span class="lineNum">     135 </span>            : the command `CMake: Configure`. It will set up a build directory. You can open</a>
+<a name="136"><span class="lineNum">     136 </span>            : Visual Studio Code's [integrated</a>
+<a name="137"><span class="lineNum">     137 </span>            : terminal](https://code.visualstudio.com/docs/editor/integrated-terminal) with</a>
+<a name="138"><span class="lineNum">     138 </span>            : the keyboard shortcut ``Ctrl+` `` and navigate to the newly created build</a>
+<a name="139"><span class="lineNum">     139 </span>            : directory to inspect it:</a>
+<a name="140"><span class="lineNum">     140 </span>            : </a>
+<a name="141"><span class="lineNum">     141 </span>            : ```</a>
+<a name="142"><span class="lineNum">     142 </span>            : cd build-Default-Debug</a>
+<a name="143"><span class="lineNum">     143 </span>            : ```</a>
+<a name="144"><span class="lineNum">     144 </span>            : </a>
+<a name="145"><span class="lineNum">     145 </span>            : For compiling and running SpECTRE you can either use Visual Studio Code's CMake</a>
+<a name="146"><span class="lineNum">     146 </span>            : integration by looking up further commands in the command palette, or use the</a>
+<a name="147"><span class="lineNum">     147 </span>            : terminal. We will be using the terminal from now on. Try compiling an</a>
+<a name="148"><span class="lineNum">     148 </span>            : executable, for example:</a>
+<a name="149"><span class="lineNum">     149 </span>            : </a>
+<a name="150"><span class="lineNum">     150 </span>            : ```</a>
+<a name="151"><span class="lineNum">     151 </span>            : make -j4 ExportCoordinates3D</a>
+<a name="152"><span class="lineNum">     152 </span>            : ```</a>
+<a name="153"><span class="lineNum">     153 </span>            : </a>
+<a name="154"><span class="lineNum">     154 </span>            : Once the executable has compiled successfully you can try running it:</a>
+<a name="155"><span class="lineNum">     155 </span>            : </a>
+<a name="156"><span class="lineNum">     156 </span>            : ```</a>
+<a name="157"><span class="lineNum">     157 </span>            : ./bin/ExportCoordinates3D \</a>
+<a name="158"><span class="lineNum">     158 </span>            :   --input-file $SPECTRE_HOME/tests/InputFiles/ExportCoordinates/Input3D.yaml</a>
+<a name="159"><span class="lineNum">     159 </span>            : ```</a>
+<a name="160"><span class="lineNum">     160 </span>            : </a>
+<a name="161"><span class="lineNum">     161 </span>            : This executable produced a volume data file that we can visualize in ParaView.</a>
+<a name="162"><span class="lineNum">     162 </span>            : Generate an XMF file from the volume data file that ParaView understands:</a>
+<a name="163"><span class="lineNum">     163 </span>            : </a>
+<a name="164"><span class="lineNum">     164 </span>            : ```</a>
+<a name="165"><span class="lineNum">     165 </span>            : $SPECTRE_HOME/src/Visualization/Python/GenerateXdmf.py \</a>
+<a name="166"><span class="lineNum">     166 </span>            :   --file-prefix ExportCoordinates3DVolume --subfile-name element_data \</a>
+<a name="167"><span class="lineNum">     167 </span>            :   --output ExportCoordinates3DVolume</a>
+<a name="168"><span class="lineNum">     168 </span>            : ```</a>
+<a name="169"><span class="lineNum">     169 </span>            : </a>
+<a name="170"><span class="lineNum">     170 </span>            : Since the build directory is shared with the host file system you can now open</a>
+<a name="171"><span class="lineNum">     171 </span>            : ParaView on your computer and load the generated XMF file as described in the</a>
+<a name="172"><span class="lineNum">     172 </span>            : \ref tutorial_visualization &quot;visualization tutorial&quot;.</a>
+<a name="173"><span class="lineNum">     173 </span>            : </a>
+<a name="174"><span class="lineNum">     174 </span>            : ## Edit and contribute code to SpECTRE with VS Code</a>
+<a name="175"><span class="lineNum">     175 </span>            : </a>
+<a name="176"><span class="lineNum">     176 </span>            : You are now ready to code! The other \ref dev_guide &quot;dev guides&quot; will teach you</a>
+<a name="177"><span class="lineNum">     177 </span>            : how to write SpECTRE code. Return to the [Visual Studio Code</a>
+<a name="178"><span class="lineNum">     178 </span>            : documentation](https://code.visualstudio.com/docs) to learn more about editing</a>
+<a name="179"><span class="lineNum">     179 </span>            : code with Visual Studio Code.</a>
+<a name="180"><span class="lineNum">     180 </span>            : </a>
+<a name="181"><span class="lineNum">     181 </span>            : In particular, the Visual Studio Code documentation can teach you how to use Git</a>
+<a name="182"><span class="lineNum">     182 </span>            : to commit your code changes to your repository:</a>
+<a name="183"><span class="lineNum">     183 </span>            : </a>
+<a name="184"><span class="lineNum">     184 </span>            : - [Git support in Visual Studio Code](https://code.visualstudio.com/docs/editor/versioncontrol#_git-support)</a>
+<a name="185"><span class="lineNum">     185 </span>            : </a>
+<a name="186"><span class="lineNum">     186 </span>            : SpECTRE code development follows a pull-request model. You can learn more about</a>
+<a name="187"><span class="lineNum">     187 </span>            : this process in our contributing guide:</a>
+<a name="188"><span class="lineNum">     188 </span>            : </a>
+<a name="189"><span class="lineNum">     189 </span>            : - [Contributing to SpECTRE through pull requests](https://spectre-code.org/contributing_to_spectre.html#pull-requests)</a>
+<a name="190"><span class="lineNum">     190 </span>            : </a>
+<a name="191"><span class="lineNum">     191 </span>            : Visual Studio Code can also help you create and review pull requests:</a>
+<a name="192"><span class="lineNum">     192 </span>            : </a>
+<a name="193"><span class="lineNum">     193 </span>            : - [Working with pull requests in VS Code](https://code.visualstudio.com/docs/editor/github#_pull-requests)</a>
+<a name="194"><span class="lineNum">     194 </span>            : </a>
+<a name="195"><span class="lineNum">     195 </span>            : ## Interactively debug a SpECTRE test with VS Code</a>
+<a name="196"><span class="lineNum">     196 </span>            : </a>
+<a name="197"><span class="lineNum">     197 </span>            : To track down an issue with your code it can be very useful to interactively</a>
+<a name="198"><span class="lineNum">     198 </span>            : debug it. First, make sure you have written a test case where the issue occurs.</a>
+<a name="199"><span class="lineNum">     199 </span>            : If you have not written a test yet, this is a great time to do it. Refer to the</a>
+<a name="200"><span class="lineNum">     200 </span>            : \ref writing_unit_tests &quot;Writing Unit Tests&quot; dev guide to learn how to write</a>
+<a name="201"><span class="lineNum">     201 </span>            : tests.</a>
+<a name="202"><span class="lineNum">     202 </span>            : </a>
+<a name="203"><span class="lineNum">     203 </span>            : Now configure the `RunSingleTest` executable to run your particular test so you</a>
+<a name="204"><span class="lineNum">     204 </span>            : don't have to repeatedly compile the extensive `RunTests` executable. Also refer</a>
+<a name="205"><span class="lineNum">     205 </span>            : to the \ref writing_unit_tests &quot;Writing Unit Tests&quot; dev guide for this.</a>
+<a name="206"><span class="lineNum">     206 </span>            : </a>
+<a name="207"><span class="lineNum">     207 </span>            : To launch the interactive debugger, hit `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P`</a>
+<a name="208"><span class="lineNum">     208 </span>            : (Linux or Windows) to open the command palette, run the command `CMake: Set</a>
+<a name="209"><span class="lineNum">     209 </span>            : Debug Target` and select `RunSingleTest`. Then run the command `CMake: Debug`.</a>
+<a name="210"><span class="lineNum">     210 </span>            : The test executable will compile, run and stop on any breakpoints. Follow the</a>
+<a name="211"><span class="lineNum">     211 </span>            : Visual Studio Code documentation to learn how to set breakpoints in your code</a>
+<a name="212"><span class="lineNum">     212 </span>            : and inspect the state of your variables:</a>
+<a name="213"><span class="lineNum">     213 </span>            : </a>
+<a name="214"><span class="lineNum">     214 </span>            : - [Debug actions in VS Code](https://code.visualstudio.com/docs/editor/debugging#_debug-actions)</a>
+<a name="215"><span class="lineNum">     215 </span>            : </a>
+<a name="216"><span class="lineNum">     216 </span>            : ## Real-time collaboration with Live Share</a>
+<a name="217"><span class="lineNum">     217 </span>            : </a>
+<a name="218"><span class="lineNum">     218 </span>            : You can use the [Live</a>
+<a name="219"><span class="lineNum">     219 </span>            : Share](https://docs.microsoft.com/en-us/visualstudio/liveshare/) extension to</a>
+<a name="220"><span class="lineNum">     220 </span>            : work together with others and edit code simultaneously. Live Share can be very</a>
+<a name="221"><span class="lineNum">     221 </span>            : useful to debug code together. Follow these instructions to share a link to your</a>
+<a name="222"><span class="lineNum">     222 </span>            : current Visual Studio Code workspace:</a>
+<a name="223"><span class="lineNum">     223 </span>            : </a>
+<a name="224"><span class="lineNum">     224 </span>            : - [Live Share Quickstart: Share your first project](https://docs.microsoft.com/en-us/visualstudio/liveshare/quickstart/share)</a>
+<a name="225"><span class="lineNum">     225 </span>            : </a>
+<a name="226"><span class="lineNum">     226 </span>            : </a>
+<a name="227"><span class="lineNum">     227 </span>            : ## Tips and tricks</a>
+<a name="228"><span class="lineNum">     228 </span>            : </a>
+<a name="229"><span class="lineNum">     229 </span>            : - The [**GitLens extension**](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens)</a>
+<a name="230"><span class="lineNum">     230 </span>            :   is very useful to browse your repository. Select the &quot;Source Control&quot; icon and</a>
+<a name="231"><span class="lineNum">     231 </span>            :   explore the various panels.</a>
+<a name="232"><span class="lineNum">     232 </span>            : </a>
+<a name="233"><span class="lineNum">     233 </span>            : - When you build the **documentation** (e.g. with `make doc`), you can open it</a>
+<a name="234"><span class="lineNum">     234 </span>            :   in a web server within VS Code:</a>
+<a name="235"><span class="lineNum">     235 </span>            : </a>
+<a name="236"><span class="lineNum">     236 </span>            :   ```</a>
+<a name="237"><span class="lineNum">     237 </span>            :   python3 -m http.server -d docs/html</a>
+<a name="238"><span class="lineNum">     238 </span>            :   ```</a>
+<a name="239"><span class="lineNum">     239 </span>            : </a>
+<a name="240"><span class="lineNum">     240 </span>            :   The web server launches on port 8000 by default, which is being forwarded</a>
+<a name="241"><span class="lineNum">     241 </span>            :   outside the container, so you can just open http://127.0.0.1:8000 in your</a>
+<a name="242"><span class="lineNum">     242 </span>            :   browser to view the documentation.</a>
+<a name="243"><span class="lineNum">     243 </span>            : </a>
+<a name="244"><span class="lineNum">     244 </span>            : - Instead of working in the Docker container, you can use the [Remote - SSH](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh)</a>
+<a name="245"><span class="lineNum">     245 </span>            :   extension to **work on a remote machine** such as your local supercomputing</a>
+<a name="246"><span class="lineNum">     246 </span>            :   cluster. Ask the cluster administrators or users for suggestions concerning</a>
+<a name="247"><span class="lineNum">     247 </span>            :   installing and running SpECTRE on the particular supercomputer.</a>
+<a name="248"><span class="lineNum">     248 </span>            : </a>
+<a name="249"><span class="lineNum">     249 </span>            : - You can work with **Jupyter notebooks in Visual Studio Code**. First, install</a>
+<a name="250"><span class="lineNum">     250 </span>            :   Jupyter and all other Python packages you want to work with in the container:</a>
+<a name="251"><span class="lineNum">     251 </span>            : </a>
+<a name="252"><span class="lineNum">     252 </span>            :   ```</a>
+<a name="253"><span class="lineNum">     253 </span>            :   pip3 install jupyter matplotlib</a>
+<a name="254"><span class="lineNum">     254 </span>            :   ```</a>
+<a name="255"><span class="lineNum">     255 </span>            : </a>
+<a name="256"><span class="lineNum">     256 </span>            :   Any `.ipynb` notebook files you create or open will be displayed in VS Code's</a>
+<a name="257"><span class="lineNum">     257 </span>            :   notebook editor. This is very useful for quickly plotting data from SpECTRE</a>
+<a name="258"><span class="lineNum">     258 </span>            :   runs or using SpECTRE's Python bindings. Refer to the [VS Code documentation</a>
+<a name="259"><span class="lineNum">     259 </span>            :   on Jupyter support](https://code.visualstudio.com/docs/python/jupyter-support)</a>
+<a name="260"><span class="lineNum">     260 </span>            :   for more information.</a>
+<a name="261"><span class="lineNum">     261 </span>            : </a>
+<a name="262"><span class="lineNum">     262 </span>            : - Docker can quickly use up a lot of disk space. From time to time you</a>
+<a name="263"><span class="lineNum">     263 </span>            :   can &quot;prune&quot; unneeded images and containers to reclaim disk space:</a>
+<a name="264"><span class="lineNum">     264 </span>            : </a>
+<a name="265"><span class="lineNum">     265 </span>            :   - [Prune unused Docker objects](https://docs.docker.com/config/pruning/)</a>
+<a name="266"><span class="lineNum">     266 </span>            : </a>
+<a name="267"><span class="lineNum">     267 </span>            :   When pruning containers, make sure no data is deleted that you care about!</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

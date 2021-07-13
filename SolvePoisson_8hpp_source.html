@@ -1,0 +1,527 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Elliptic/Executables/Poisson/SolvePoisson.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_102e4bda8d511a2139aab1e5fe5a004e.html">Elliptic</a></li><li class="navelem"><a class="el" href="dir_5be7e9f3f8ad8fa1ae89943318c68b21.html">Executables</a></li><li class="navelem"><a class="el" href="dir_8d0401edcd9515ea40fd7e205072ec2d.html">Poisson</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">SolvePoisson.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160; </div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataBox/PrefixHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;Domain/Creators/Factory1D.hpp&quot;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;Domain/Creators/Factory2D.hpp&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;Domain/Creators/Factory3D.hpp&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;Domain/Creators/RegisterDerivedWithCharm.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Domain_2Tags_8hpp.html">Domain/Tags.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;Elliptic/Actions/InitializeAnalyticSolution.hpp&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;Elliptic/Actions/InitializeFields.hpp&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;Elliptic/Actions/InitializeFixedSources.hpp&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;Elliptic/DiscontinuousGalerkin/Actions/ApplyOperator.hpp&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;Elliptic/DiscontinuousGalerkin/DgElementArray.hpp&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="src_2Elliptic_2Systems_2Poisson_2FirstOrderSystem_8hpp.html">Elliptic/Systems/Poisson/FirstOrderSystem.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &quot;Elliptic/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;Elliptic/Triggers/EveryNIterations.hpp&quot;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;IO/Observer/Actions/RegisterEvents.hpp&quot;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;IO/Observer/Helpers.hpp&quot;</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;IO/Observer/ObserverComponent.hpp&quot;</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Convergence/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Options_8hpp.html">Options/Options.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#include &quot;Options/Protocols/FactoryCreation.hpp&quot;</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#include &quot;Parallel/Actions/SetupDataBox.hpp&quot;</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#include &quot;Parallel/Actions/TerminatePhase.hpp&quot;</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="GlobalCache_8hpp.html">Parallel/GlobalCache.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#include &quot;Parallel/InitializationFunctions.hpp&quot;</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="preprocessor">#include &quot;Parallel/PhaseDependentActionList.hpp&quot;</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">#include &quot;Parallel/Reduction.hpp&quot;</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="RegisterDerivedClassesWithCharm_8hpp.html">Parallel/RegisterDerivedClassesWithCharm.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="preprocessor">#include &quot;ParallelAlgorithms/Events/Factory.hpp&quot;</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="preprocessor">#include &quot;ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp&quot;</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="preprocessor">#include &quot;ParallelAlgorithms/EventsAndTriggers/Completion.hpp&quot;</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="preprocessor">#include &quot;ParallelAlgorithms/EventsAndTriggers/Event.hpp&quot;</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="preprocessor">#include &quot;ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp&quot;</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ParallelAlgorithms_2EventsAndTriggers_2Tags_8hpp.html">ParallelAlgorithms/EventsAndTriggers/Tags.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor">#include &quot;ParallelAlgorithms/EventsAndTriggers/Trigger.hpp&quot;</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="preprocessor">#include &quot;ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp&quot;</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="preprocessor">#include &quot;ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp&quot;</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ParallelAlgorithms_2LinearSolver_2Tags_8hpp.html">ParallelAlgorithms/LinearSolver/Tags.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/AnalyticData/AnalyticData.hpp&quot;</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/AnalyticSolutions/Poisson/AnalyticSolution.hpp&quot;</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/AnalyticSolutions/Poisson/Lorentzian.hpp&quot;</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/AnalyticSolutions/Poisson/Moustache.hpp&quot;</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp&quot;</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/AnalyticSolutions/Poisson/Zero.hpp&quot;</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/AnalyticSolutions/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Blas_8hpp.html">Utilities/Blas.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="FloatingPointExceptions_8hpp.html">Utilities/ErrorHandling/FloatingPointExceptions.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="preprocessor">#include &quot;Utilities/Functional.hpp&quot;</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="preprocessor">#include &quot;Utilities/MemoryHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="preprocessor">#include &quot;Utilities/ProtocolHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment"></span><span class="keyword">namespace </span>PUP {</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="keyword">class </span>er;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;}  <span class="comment">// namespace PUP</span><span class="comment"></span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="keyword">namespace </span>SolvePoisson::OptionTags {</div>
+<div class="line"><a name="l00067"></a><span class="lineno"><a class="line" href="structSolvePoisson_1_1OptionTags_1_1LinearSolverGroup.html">   67</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structSolvePoisson_1_1OptionTags_1_1LinearSolverGroup.html">LinearSolverGroup</a> {</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> <span class="stringliteral">&quot;LinearSolver&quot;</span>; }</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help =</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;      <span class="stringliteral">&quot;The iterative Krylov-subspace linear solver&quot;</span>;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;};</div>
+<div class="line"><a name="l00072"></a><span class="lineno"><a class="line" href="structSolvePoisson_1_1OptionTags_1_1GmresGroup.html">   72</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structSolvePoisson_1_1OptionTags_1_1GmresGroup.html">GmresGroup</a> {</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;  <span class="keyword">static</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> name() noexcept { <span class="keywordflow">return</span> <span class="stringliteral">&quot;GMRES&quot;</span>; }</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = <span class="stringliteral">&quot;Options for the GMRES linear solver&quot;</span>;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;  <span class="keyword">using</span> <a class="code" href="structSolvePoisson_1_1OptionTags_1_1LinearSolverGroup.html">group</a> = <a class="code" href="structSolvePoisson_1_1OptionTags_1_1LinearSolverGroup.html">LinearSolverGroup</a>;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;};</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;}  <span class="comment">// namespace SolvePoisson::OptionTags</span></div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="keyword">struct </span>Metavariables {</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;  <span class="keyword">static</span> constexpr <span class="keywordtype">size_t</span> volume_dim = Dim;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;  <span class="keyword">using</span> system =</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;      <a class="code" href="structPoisson_1_1FirstOrderSystem.html">Poisson::FirstOrderSystem&lt;Dim, Poisson::Geometry::FlatCartesian&gt;</a>;</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;  <span class="comment">// List the possible backgrounds, i.e. the variable-independent part of the</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;  <span class="comment">// equations that define the problem to solve (along with the boundary</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;  <span class="comment">// conditions). We&#39;ll probably always have an analytic solution for Poisson</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;  <span class="comment">// problems, so we don&#39;t bother supporting non-solution backgrounds for now.</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;  <span class="keyword">using</span> analytic_solution_registrars = tmpl::flatten&lt;tmpl::list&lt;</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;      Poisson::Solutions::Registrars::ProductOfSinusoids&lt;Dim&gt;,</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;      tmpl::conditional_t&lt;Dim == 1 or Dim == 2,</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;                          Poisson::Solutions::Registrars::Moustache&lt;Dim&gt;,</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;                          tmpl::list&lt;&gt;&gt;,</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;      tmpl::conditional_t&lt;Dim == 3,</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;                          Poisson::Solutions::Registrars::Lorentzian&lt;Dim&gt;,</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;                          tmpl::list&lt;&gt;&gt;&gt;&gt;;</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;  <span class="keyword">using</span> analytic_solution_tag = <a class="code" href="structelliptic_1_1Tags_1_1Background.html">elliptic::Tags::Background</a>&lt;</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;      <a class="code" href="classPoisson_1_1Solutions_1_1AnalyticSolution.html">Poisson::Solutions::AnalyticSolution&lt;Dim, analytic_solution_registrars&gt;</a>&gt;;</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160; </div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;  <span class="comment">// List the possible initial guesses</span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;  <span class="keyword">using</span> initial_guess_registrars =</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;      tmpl::append&lt;tmpl::list&lt;Poisson::Solutions::Registrars::Zero&lt;Dim&gt;&gt;,</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;                   analytic_solution_registrars&gt;;</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;  <span class="keyword">using</span> initial_guess_tag = <a class="code" href="structelliptic_1_1Tags_1_1InitialGuess.html">elliptic::Tags::InitialGuess</a>&lt;</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;      <a class="code" href="classAnalyticData.html">::AnalyticData&lt;Dim, initial_guess_registrars&gt;</a>&gt;;</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160; </div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help{</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;      <span class="stringliteral">&quot;Find the solution to a Poisson problem.&quot;</span>};</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160; </div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;  <span class="comment">// These are the fields we solve for</span></div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;  <span class="keyword">using</span> fields_tag = <a class="code" href="structTags_1_1Variables.html">::Tags::Variables&lt;typename system::primal_fields&gt;</a>;</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;  <span class="comment">// These are the fixed sources, i.e. the RHS of the equations</span></div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;  <span class="keyword">using</span> fixed_sources_tag = <a class="code" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix&lt;::Tags::FixedSource, fields_tag&gt;</a>;</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;  <span class="comment">// This is the linear operator applied to the fields. We&#39;ll only use it to</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;  <span class="comment">// apply the operator to the initial guess, so an optimization would be to</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;  <span class="comment">// re-use the `operator_applied_to_vars_tag` below. This optimization needs a</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;  <span class="comment">// few minor changes to the parallel linear solver algorithm.</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;  <span class="keyword">using</span> operator_applied_to_fields_tag =</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;      <a class="code" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix&lt;LinearSolver::Tags::OperatorAppliedTo, fields_tag&gt;</a>;</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160; </div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;  <span class="comment">// The linear solver algorithm. We must use GMRES since the operator is</span></div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;  <span class="comment">// not guaranteed to be symmetric. It can be made symmetric by multiplying by</span></div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;  <span class="comment">// the DG mass matrix.</span></div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;  <span class="keyword">using</span> linear_solver =</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;      <a class="code" href="structLinearSolver_1_1gmres_1_1Gmres.html">LinearSolver::gmres::Gmres</a>&lt;Metavariables, fields_tag,</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;                                 <a class="code" href="structSolvePoisson_1_1OptionTags_1_1LinearSolverGroup.html">SolvePoisson::OptionTags::LinearSolverGroup</a>,</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;                                 <span class="keyword">false</span>&gt;;</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;  <span class="keyword">using</span> linear_solver_iteration_id =</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;      <a class="code" href="structConvergence_1_1Tags_1_1IterationId.html">Convergence::Tags::IterationId&lt;typename linear_solver::options_group&gt;</a>;</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;  <span class="comment">// For the GMRES linear solver we need to apply the DG operator to its</span></div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;  <span class="comment">// internal &quot;operand&quot; in every iteration of the algorithm.</span></div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;  <span class="keyword">using</span> vars_tag = <span class="keyword">typename</span> linear_solver::operand_tag;</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;  <span class="keyword">using</span> operator_applied_to_vars_tag =</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;      <a class="code" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix&lt;LinearSolver::Tags::OperatorAppliedTo, vars_tag&gt;</a>;</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;  <span class="comment">// We&#39;ll buffer the corresponding fluxes in this tag, but won&#39;t actually need</span></div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;  <span class="comment">// to access them outside applying the operator</span></div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;  <span class="keyword">using</span> fluxes_vars_tag =</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;      <a class="code" href="structTags_1_1Variables.html">::Tags::Variables</a>&lt;<a class="code" href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e">db::wrap_tags_in</a>&lt;<a class="code" href="structLinearSolver_1_1Tags_1_1Operand.html">LinearSolver::Tags::Operand</a>,</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;                                         <span class="keyword">typename</span> system::primal_fluxes&gt;&gt;;</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160; </div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;  <span class="keyword">using</span> analytic_solution_fields = <span class="keyword">typename</span> system::primal_fields;</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;  <span class="keyword">using</span> observe_fields = analytic_solution_fields;</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160; </div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;  <span class="comment">// Collect all items to store in the cache.</span></div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;  <span class="keyword">using</span> const_global_cache_tags =</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;      tmpl::list&lt;analytic_solution_tag, initial_guess_tag,</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;                 <a class="code" href="structTags_1_1EventsAndTriggers.html">Tags::EventsAndTriggers</a>&gt;;</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160; </div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;  <span class="keyword">struct </span>factory_creation</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;      : <a class="code" href="structtt_1_1ConformsTo.html">tt::ConformsTo</a>&lt;Options::protocols::FactoryCreation&gt; {</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;    <span class="keyword">using</span> factory_classes = tmpl::map&lt;</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;        tmpl::pair&lt;DomainCreator&lt;volume_dim&gt;, domain_creators&lt;volume_dim&gt;&gt;,</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;        tmpl::pair&lt;<a class="code" href="classEvent.html">Event</a>, tmpl::flatten&lt;tmpl::list&lt;</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;                              <a class="code" href="classEvents_1_1Completion.html">Events::Completion</a>,</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;                              dg::Events::field_observations&lt;</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;                                  volume_dim, linear_solver_iteration_id,</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;                                  observe_fields, analytic_solution_fields&gt;&gt;&gt;&gt;,</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;        tmpl::pair&lt;<a class="code" href="classTrigger.html">Trigger</a>,</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;                   <a class="code" href="group__ComputationalDomainGroup.html#ga398bdce722c9ba655f479a7712f1a0e5">tmpl::push_back</a>&lt;Triggers::logical_triggers,</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;                                   <a class="code" href="classelliptic_1_1Triggers_1_1EveryNIterations.html">elliptic::Triggers::EveryNIterations</a>&lt;</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;                                       linear_solver_iteration_id&gt;&gt;&gt;&gt;;</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;  };</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160; </div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;  <span class="comment">// Collect all reduction tags for observers</span></div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;  <span class="keyword">using</span> observed_reduction_data_tags =</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;      observers::collect_reduction_data_tags&lt;tmpl::flatten&lt;tmpl::list&lt;</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;          tmpl::at&lt;typename factory_creation::factory_classes, Event&gt;,</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;          linear_solver&gt;&gt;&gt;;</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160; </div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;  <span class="comment">// Specify all global synchronization points.</span></div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;  <span class="keyword">enum class</span> Phase { Initialization, RegisterWithObserver, Solve, Exit };</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160; </div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;  <span class="keyword">using</span> initialization_actions = tmpl::list&lt;</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;      <a class="code" href="structActions_1_1SetupDataBox.html">Actions::SetupDataBox</a>,</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;      <a class="code" href="structelliptic_1_1dg_1_1Actions_1_1InitializeDomain.html">elliptic::dg::Actions::InitializeDomain&lt;volume_dim&gt;</a>,</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;      <span class="keyword">typename</span> linear_solver::initialize_element,</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;      <a class="code" href="structelliptic_1_1Actions_1_1InitializeFields.html">elliptic::Actions::InitializeFields&lt;system, initial_guess_tag&gt;</a>,</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;      <a class="code" href="structelliptic_1_1Actions_1_1InitializeFixedSources.html">elliptic::Actions::InitializeFixedSources&lt;system, analytic_solution_tag&gt;</a>,</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;      <a class="code" href="structelliptic_1_1Actions_1_1InitializeAnalyticSolution.html">elliptic::Actions::InitializeAnalyticSolution</a>&lt;</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;          analytic_solution_tag, tmpl::append&lt;<span class="keyword">typename</span> system::primal_fields,</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;                                              <span class="keyword">typename</span> system::primal_fluxes&gt;&gt;,</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;      <a class="code" href="namespaceelliptic_1_1dg_1_1Actions.html#a1fdabf2e2a3fc25648c3ec33243a3fb0">elliptic::dg::Actions::initialize_operator&lt;system&gt;</a>,</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;      <a class="code" href="structelliptic_1_1dg_1_1Actions_1_1ImposeInhomogeneousBoundaryConditionsOnSource.html">elliptic::dg::Actions::ImposeInhomogeneousBoundaryConditionsOnSource</a>&lt;</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;          <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/program/system.html">system</a>, fixed_sources_tag&gt;,</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;      <span class="comment">// Apply the DG operator to the initial guess</span></div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;      <a class="code" href="namespaceelliptic_1_1dg_1_1Actions.html#acee91348d607459f936cdd944b03c27c">elliptic::dg::Actions::apply_operator</a>&lt;</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;          <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/program/system.html">system</a>, <span class="keyword">true</span>, linear_solver_iteration_id, fields_tag, fluxes_vars_tag,</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;          operator_applied_to_fields_tag, vars_tag, fluxes_vars_tag&gt;,</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;      <a class="code" href="structInitialization_1_1Actions_1_1RemoveOptionsAndTerminatePhase.html">Initialization::Actions::RemoveOptionsAndTerminatePhase</a>&gt;;</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160; </div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;  <span class="keyword">using</span> build_linear_operator_actions = <a class="code" href="namespaceelliptic_1_1dg_1_1Actions.html#acee91348d607459f936cdd944b03c27c">elliptic::dg::Actions::apply_operator</a>&lt;</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;      <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/program/system.html">system</a>, <span class="keyword">true</span>, linear_solver_iteration_id, vars_tag, fluxes_vars_tag,</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;      operator_applied_to_vars_tag&gt;;</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160; </div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;  <span class="keyword">using</span> register_actions =</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;      tmpl::list&lt;<a class="code" href="structobservers_1_1Actions_1_1RegisterEventsWithObservers.html">observers::Actions::RegisterEventsWithObservers</a>,</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;                 <a class="code" href="structParallel_1_1Actions_1_1TerminatePhase.html">Parallel::Actions::TerminatePhase</a>&gt;;</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160; </div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;  <span class="keyword">using</span> solve_actions = tmpl::list&lt;</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;      <span class="keyword">typename</span> linear_solver::template solve&lt;tmpl::list&lt;</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;          <a class="code" href="structActions_1_1RunEventsAndTriggers.html">Actions::RunEventsAndTriggers</a>, build_linear_operator_actions&gt;&gt;,</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;      <a class="code" href="structActions_1_1RunEventsAndTriggers.html">Actions::RunEventsAndTriggers</a>, <a class="code" href="structParallel_1_1Actions_1_1TerminatePhase.html">Parallel::Actions::TerminatePhase</a>&gt;;</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160; </div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;  <span class="keyword">using</span> dg_element_array = <a class="code" href="structelliptic_1_1DgElementArray.html">elliptic::DgElementArray</a>&lt;</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;      Metavariables,</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;      tmpl::list&lt;<a class="code" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt;Phase, Phase::Initialization,</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;                                        initialization_actions&gt;,</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;                 <a class="code" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a>&lt;Phase, Phase::RegisterWithObserver,</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;                                        register_actions&gt;,</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;                 <a class="code" href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions&lt;Phase, Phase::Solve, solve_actions&gt;</a>&gt;&gt;;</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160; </div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;  <span class="comment">// Specify all parallel components that will execute actions at some point.</span></div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;  <span class="keyword">using</span> component_list = tmpl::flatten&lt;</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;      tmpl::list&lt;dg_element_array, <span class="keyword">typename</span> linear_solver::component_list,</div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;                 <a class="code" href="structobservers_1_1Observer.html">observers::Observer&lt;Metavariables&gt;</a>,</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;                 <a class="code" href="structobservers_1_1ObserverWriter.html">observers::ObserverWriter&lt;Metavariables&gt;</a>&gt;&gt;;</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160; </div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;  <span class="comment">// Specify the transitions between phases.</span></div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Tags&gt;</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;  <span class="keyword">static</span> Phase determine_next_phase(</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;      <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;          <a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;Tags...&gt;</a>*&gt; <span class="comment">/*phase_change_decision_data*/</span>,</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;      <span class="keyword">const</span> Phase&amp; current_phase,</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;      <span class="keyword">const</span> Parallel::CProxy_GlobalCache&lt;</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;          Metavariables&gt;&amp; <span class="comment">/*cache_proxy*/</span>) noexcept {</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;    <span class="keywordflow">switch</span> (current_phase) {</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;      <span class="keywordflow">case</span> Phase::Initialization:</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;        <span class="keywordflow">return</span> Phase::RegisterWithObserver;</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;      <span class="keywordflow">case</span> Phase::RegisterWithObserver:</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;        <span class="keywordflow">return</span> Phase::Solve;</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;      <span class="keywordflow">case</span> Phase::Solve:</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;        <span class="keywordflow">return</span> Phase::Exit;</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;      <span class="keywordflow">case</span> Phase::Exit:</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;        <a class="code" href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a>(</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;            <span class="stringliteral">&quot;Should never call determine_next_phase with the current phase &quot;</span></div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;            <span class="stringliteral">&quot;being &#39;Exit&#39;&quot;</span>);</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;      <span class="keywordflow">default</span>:</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;        <a class="code" href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a>(</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;            <span class="stringliteral">&quot;Unknown type of phase. Did you static_cast&lt;Phase&gt; an integral &quot;</span></div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;            <span class="stringliteral">&quot;value?&quot;</span>);</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;    }</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;  }</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160; </div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;  <span class="comment">// NOLINTNEXTLINE(google-runtime-references)</span></div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;  <span class="keywordtype">void</span> pup(PUP::er&amp; <span class="comment">/*p*/</span>) noexcept {}</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;};</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160; </div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;<span class="keyword">static</span> <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;void (*)()&gt; charm_init_node_funcs{</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;    &amp;setup_error_handling, &amp;setup_memory_allocation_failure_reporting,</div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;    &amp;<a class="code" href="Blas_8hpp.html#a5b54f526fe76418288fdf2dd79b0828e">disable_openblas_multithreading</a>,</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;    &amp;domain::creators::register_derived_with_charm,</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;    &amp;<a class="code" href="namespaceParallel.html#a61571416f61cc9de70c8e6e2b1508fc6">Parallel::register_derived_classes_with_charm</a>&lt;</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;        metavariables::analytic_solution_tag::type::element_type&gt;,</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;    &amp;<a class="code" href="namespaceParallel.html#a61571416f61cc9de70c8e6e2b1508fc6">Parallel::register_derived_classes_with_charm</a>&lt;</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;        metavariables::initial_guess_tag::type::element_type&gt;,</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;    &amp;<a class="code" href="namespaceParallel.html#a61571416f61cc9de70c8e6e2b1508fc6">Parallel::register_derived_classes_with_charm</a>&lt;</div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;        metavariables::system::boundary_conditions_base&gt;,</div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;    &amp;Parallel::register_factory_classes_with_charm&lt;metavariables&gt;};</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;<span class="keyword">static</span> <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;void (*)()&gt; charm_init_proc_funcs{</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;    &amp;<a class="code" href="group__ErrorHandlingGroup.html#gac5fde843ca62e1d4288f4a4e6d480aa0">enable_floating_point_exceptions</a>};<span class="comment"></span></div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;<span class="comment">/// \endcond</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="aFloatingPointExceptions_8hpp_html"><div class="ttname"><a href="FloatingPointExceptions_8hpp.html">FloatingPointExceptions.hpp</a></div></div>
+<div class="ttc" id="aRegisterDerivedClassesWithCharm_8hpp_html"><div class="ttname"><a href="RegisterDerivedClassesWithCharm_8hpp.html">RegisterDerivedClassesWithCharm.hpp</a></div></div>
+<div class="ttc" id="astructActions_1_1SetupDataBox_html"><div class="ttname"><a href="structActions_1_1SetupDataBox.html">Actions::SetupDataBox</a></div><div class="ttdoc">Add into the DataBox default constructed items for the collection of tags requested by any of the act...</div><div class="ttdef"><b>Definition:</b> SetupDataBox.hpp:102</div></div>
+<div class="ttc" id="astructLinearSolver_1_1gmres_1_1Gmres_html"><div class="ttname"><a href="structLinearSolver_1_1gmres_1_1Gmres.html">LinearSolver::gmres::Gmres</a></div><div class="ttdoc">A GMRES solver for nonsymmetric linear systems of equations .</div><div class="ttdef"><b>Definition:</b> Gmres.hpp:87</div></div>
+<div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
+<div class="ttc" id="astructSolvePoisson_1_1OptionTags_1_1GmresGroup_html"><div class="ttname"><a href="structSolvePoisson_1_1OptionTags_1_1GmresGroup.html">SolvePoisson::OptionTags::GmresGroup</a></div><div class="ttdef"><b>Definition:</b> SolvePoisson.hpp:72</div></div>
+<div class="ttc" id="astructobservers_1_1Actions_1_1RegisterEventsWithObservers_html"><div class="ttname"><a href="structobservers_1_1Actions_1_1RegisterEventsWithObservers.html">observers::Actions::RegisterEventsWithObservers</a></div><div class="ttdoc">Registers this element of a parallel component with the local Observer parallel component for each tr...</div><div class="ttdef"><b>Definition:</b> RegisterEvents.hpp:114</div></div>
+<div class="ttc" id="aParallelAlgorithms_2EventsAndTriggers_2Tags_8hpp_html"><div class="ttname"><a href="ParallelAlgorithms_2EventsAndTriggers_2Tags_8hpp.html">Tags.hpp</a></div></div>
+<div class="ttc" id="astructelliptic_1_1dg_1_1Actions_1_1ImposeInhomogeneousBoundaryConditionsOnSource_html"><div class="ttname"><a href="structelliptic_1_1dg_1_1Actions_1_1ImposeInhomogeneousBoundaryConditionsOnSource.html">elliptic::dg::Actions::ImposeInhomogeneousBoundaryConditionsOnSource</a></div><div class="ttdoc">For linear systems, impose inhomogeneous boundary conditions as contributions to the fixed sources (i...</div><div class="ttdef"><b>Definition:</b> ApplyOperator.hpp:500</div></div>
+<div class="ttc" id="aGlobalCache_8hpp_html"><div class="ttname"><a href="GlobalCache_8hpp.html">GlobalCache.hpp</a></div></div>
+<div class="ttc" id="aOptions_8hpp_html"><div class="ttname"><a href="Options_8hpp.html">Options.hpp</a></div></div>
+<div class="ttc" id="astructLinearSolver_1_1Tags_1_1Operand_html"><div class="ttname"><a href="structLinearSolver_1_1Tags_1_1Operand.html">LinearSolver::Tags::Operand</a></div><div class="ttdoc">The operand that the local linear operator  is applied to.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:40</div></div>
+<div class="ttc" id="aDomain_2Tags_8hpp_html"><div class="ttname"><a href="Domain_2Tags_8hpp.html">Tags.hpp</a></div></div>
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a></div></div>
+<div class="ttc" id="asystem_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/program/system.html">std::system</a></div><div class="ttdeci">T system(T... args)</div></div>
+<div class="ttc" id="aclasselliptic_1_1Triggers_1_1EveryNIterations_html"><div class="ttname"><a href="classelliptic_1_1Triggers_1_1EveryNIterations.html">elliptic::Triggers::EveryNIterations</a></div><div class="ttdef"><b>Definition:</b> EveryNIterations.hpp:19</div></div>
+<div class="ttc" id="astructelliptic_1_1Actions_1_1InitializeAnalyticSolution_html"><div class="ttname"><a href="structelliptic_1_1Actions_1_1InitializeAnalyticSolution.html">elliptic::Actions::InitializeAnalyticSolution</a></div><div class="ttdoc">Place the analytic solution of the system fields in the DataBox.</div><div class="ttdef"><b>Definition:</b> InitializeAnalyticSolution.hpp:58</div></div>
+<div class="ttc" id="agroup__DataBoxTagsGroup_html_gafeeced2a7fb41fdced8c55e76343f63c"><div class="ttname"><a href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a></div><div class="ttdeci">typename detail::add_tag_prefix_impl&lt; Prefix, Tag, Args... &gt;::type add_tag_prefix</div><div class="ttdef"><b>Definition:</b> PrefixHelpers.hpp:51</div></div>
+<div class="ttc" id="astructTags_1_1Variables_html"><div class="ttname"><a href="structTags_1_1Variables.html">Tags::Variables</a></div><div class="ttdef"><b>Definition:</b> VariablesTag.hpp:21</div></div>
+<div class="ttc" id="astructInitialization_1_1Actions_1_1RemoveOptionsAndTerminatePhase_html"><div class="ttname"><a href="structInitialization_1_1Actions_1_1RemoveOptionsAndTerminatePhase.html">Initialization::Actions::RemoveOptionsAndTerminatePhase</a></div><div class="ttdef"><b>Definition:</b> RemoveOptionsAndTerminatePhase.hpp:27</div></div>
+<div class="ttc" id="astructParallel_1_1Actions_1_1TerminatePhase_html"><div class="ttname"><a href="structParallel_1_1Actions_1_1TerminatePhase.html">Parallel::Actions::TerminatePhase</a></div><div class="ttdoc">Terminate the algorithm to proceed to the next phase.</div><div class="ttdef"><b>Definition:</b> TerminatePhase.hpp:26</div></div>
+<div class="ttc" id="astructelliptic_1_1Tags_1_1Background_html"><div class="ttname"><a href="structelliptic_1_1Tags_1_1Background.html">elliptic::Tags::Background</a></div><div class="ttdoc">The variable-independent part of the elliptic equations, e.g. the fixed-sources  in a Poisson equatio...</div><div class="ttdef"><b>Definition:</b> Tags.hpp:44</div></div>
+<div class="ttc" id="astructSolvePoisson_1_1OptionTags_1_1LinearSolverGroup_html"><div class="ttname"><a href="structSolvePoisson_1_1OptionTags_1_1LinearSolverGroup.html">SolvePoisson::OptionTags::LinearSolverGroup</a></div><div class="ttdef"><b>Definition:</b> SolvePoisson.hpp:67</div></div>
+<div class="ttc" id="aBlas_8hpp_html_a5b54f526fe76418288fdf2dd79b0828e"><div class="ttname"><a href="Blas_8hpp.html#a5b54f526fe76418288fdf2dd79b0828e">disable_openblas_multithreading</a></div><div class="ttdeci">void disable_openblas_multithreading() noexcept</div><div class="ttdoc">Disable OpenBLAS multithreading since it conflicts with Charm++ parallelism.</div></div>
+<div class="ttc" id="aParallelAlgorithms_2LinearSolver_2Tags_8hpp_html"><div class="ttname"><a href="ParallelAlgorithms_2LinearSolver_2Tags_8hpp.html">Tags.hpp</a></div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ga398bdce722c9ba655f479a7712f1a0e5"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ga398bdce722c9ba655f479a7712f1a0e5">domain::push_back</a></div><div class="ttdeci">CoordinateMap&lt; SourceFrame, TargetFrame, Maps..., NewMap &gt; push_back(CoordinateMap&lt; SourceFrame, TargetFrame, Maps... &gt; old_map, NewMap new_map) noexcept</div><div class="ttdoc">Creates a CoordinateMap by appending the new map to the end of the old maps.</div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_gac5fde843ca62e1d4288f4a4e6d480aa0"><div class="ttname"><a href="group__ErrorHandlingGroup.html#gac5fde843ca62e1d4288f4a4e6d480aa0">enable_floating_point_exceptions</a></div><div class="ttdeci">void enable_floating_point_exceptions()</div></div>
+<div class="ttc" id="astructPoisson_1_1FirstOrderSystem_html"><div class="ttname"><a href="structPoisson_1_1FirstOrderSystem.html">Poisson::FirstOrderSystem</a></div><div class="ttdoc">The Poisson equation formulated as a set of coupled first-order PDEs.</div><div class="ttdef"><b>Definition:</b> FirstOrderSystem.hpp:77</div></div>
+<div class="ttc" id="aclassEvents_1_1Completion_html"><div class="ttname"><a href="classEvents_1_1Completion.html">Events::Completion</a></div><div class="ttdef"><b>Definition:</b> Completion.hpp:15</div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_ga1d27028c1827976007fe9d29ad3a2f66"><div class="ttname"><a href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a></div><div class="ttdeci">#define ERROR(m)</div><div class="ttdoc">prints an error message to the standard error stream and aborts the program.</div><div class="ttdef"><b>Definition:</b> Error.hpp:37</div></div>
+<div class="ttc" id="astructParallel_1_1PhaseActions_html"><div class="ttname"><a href="structParallel_1_1PhaseActions.html">Parallel::PhaseActions</a></div><div class="ttdoc">List of all the actions to be executed in the specified phase.</div><div class="ttdef"><b>Definition:</b> PhaseDependentActionList.hpp:16</div></div>
+<div class="ttc" id="astructobservers_1_1ObserverWriter_html"><div class="ttname"><a href="structobservers_1_1ObserverWriter.html">observers::ObserverWriter</a></div><div class="ttdoc">The nodegroup parallel component that is responsible for writing data to disk.</div><div class="ttdef"><b>Definition:</b> ObserverComponent.hpp:51</div></div>
+<div class="ttc" id="asrc_2Elliptic_2Systems_2Poisson_2FirstOrderSystem_8hpp_html"><div class="ttname"><a href="src_2Elliptic_2Systems_2Poisson_2FirstOrderSystem_8hpp.html">FirstOrderSystem.hpp</a></div></div>
+<div class="ttc" id="aclassEvent_html"><div class="ttname"><a href="classEvent.html">Event</a></div><div class="ttdef"><b>Definition:</b> Event.hpp:19</div></div>
+<div class="ttc" id="astructelliptic_1_1DgElementArray_html"><div class="ttname"><a href="structelliptic_1_1DgElementArray.html">elliptic::DgElementArray</a></div><div class="ttdoc">The parallel component responsible for managing the DG elements that compose the computational domain...</div><div class="ttdef"><b>Definition:</b> DgElementArray.hpp:37</div></div>
+<div class="ttc" id="anamespaceelliptic_1_1dg_1_1Actions_html_acee91348d607459f936cdd944b03c27c"><div class="ttname"><a href="namespaceelliptic_1_1dg_1_1Actions.html#acee91348d607459f936cdd944b03c27c">elliptic::dg::Actions::apply_operator</a></div><div class="ttdeci">tmpl::list&lt; detail::PrepareAndSendMortarData&lt; System, Linearized, TemporalIdTag, PrimalFieldsTag, PrimalFluxesTag, OperatorAppliedToFieldsTag, PrimalMortarFieldsTag, PrimalMortarFluxesTag &gt;, detail::ReceiveMortarDataAndApplyOperator&lt; System, Linearized, TemporalIdTag, PrimalFieldsTag, PrimalFluxesTag, OperatorAppliedToFieldsTag, PrimalMortarFieldsTag, PrimalMortarFluxesTag &gt; &gt; apply_operator</div><div class="ttdoc">Apply the DG operator to the PrimalFieldsTag and write the result to the OperatorAppliedToFieldsTag</div><div class="ttdef"><b>Definition:</b> ApplyOperator.hpp:488</div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="astructActions_1_1RunEventsAndTriggers_html"><div class="ttname"><a href="structActions_1_1RunEventsAndTriggers.html">Actions::RunEventsAndTriggers</a></div><div class="ttdoc">Run the events and triggers.</div><div class="ttdef"><b>Definition:</b> RunEventsAndTriggers.hpp:27</div></div>
+<div class="ttc" id="aclasstuples_1_1TaggedTuple_html"><div class="ttname"><a href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt; Tags... &gt;</a></div></div>
+<div class="ttc" id="astructobservers_1_1Observer_html"><div class="ttname"><a href="structobservers_1_1Observer.html">observers::Observer</a></div><div class="ttdoc">The group parallel component that is responsible for reducing data to be observed.</div><div class="ttdef"><b>Definition:</b> ObserverComponent.hpp:29</div></div>
+<div class="ttc" id="aclassTrigger_html"><div class="ttname"><a href="classTrigger.html">Trigger</a></div><div class="ttdef"><b>Definition:</b> Trigger.hpp:17</div></div>
+<div class="ttc" id="aclassPoisson_1_1Solutions_1_1AnalyticSolution_html"><div class="ttname"><a href="classPoisson_1_1Solutions_1_1AnalyticSolution.html">Poisson::Solutions::AnalyticSolution</a></div><div class="ttdoc">Base class for analytic solutions of the Poisson equation.</div><div class="ttdef"><b>Definition:</b> AnalyticSolution.hpp:32</div></div>
+<div class="ttc" id="anamespaceelliptic_1_1dg_1_1Actions_html_a1fdabf2e2a3fc25648c3ec33243a3fb0"><div class="ttname"><a href="namespaceelliptic_1_1dg_1_1Actions.html#a1fdabf2e2a3fc25648c3ec33243a3fb0">elliptic::dg::Actions::initialize_operator</a></div><div class="ttdeci">tmpl::list&lt; detail::InitializeFacesMortarsAndBackground&lt; System, BackgroundTag &gt; &gt; initialize_operator</div><div class="ttdoc">Initialize geometric and background quantities for the elliptic DG operator.</div><div class="ttdef"><b>Definition:</b> ApplyOperator.hpp:450</div></div>
+<div class="ttc" id="aclassAnalyticData_html"><div class="ttname"><a href="classAnalyticData.html">AnalyticData</a></div><div class="ttdoc">Provides analytic tensor data as a function of the spatial coordinates.</div><div class="ttdef"><b>Definition:</b> AnalyticData.hpp:34</div></div>
+<div class="ttc" id="astructelliptic_1_1Actions_1_1InitializeFields_html"><div class="ttname"><a href="structelliptic_1_1Actions_1_1InitializeFields.html">elliptic::Actions::InitializeFields</a></div><div class="ttdoc">Initialize the dynamic fields of the elliptic system, i.e. those we solve for.</div><div class="ttdef"><b>Definition:</b> InitializeFields.hpp:43</div></div>
+<div class="ttc" id="astructConvergence_1_1Tags_1_1IterationId_html"><div class="ttname"><a href="structConvergence_1_1Tags_1_1IterationId.html">Convergence::Tags::IterationId</a></div><div class="ttdoc">Identifies a step in an iterative algorithm.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:74</div></div>
+<div class="ttc" id="astructTags_1_1EventsAndTriggers_html"><div class="ttname"><a href="structTags_1_1EventsAndTriggers.html">Tags::EventsAndTriggers</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:51</div></div>
+<div class="ttc" id="astructelliptic_1_1dg_1_1Actions_1_1InitializeDomain_html"><div class="ttname"><a href="structelliptic_1_1dg_1_1Actions_1_1InitializeDomain.html">elliptic::dg::Actions::InitializeDomain</a></div><div class="ttdoc">Initialize items related to the basic structure of the element.</div><div class="ttdef"><b>Definition:</b> InitializeDomain.hpp:53</div></div>
+<div class="ttc" id="anamespaceOptions_html_aa61c7f41f21afa7646811456f673be89"><div class="ttname"><a href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a></div><div class="ttdeci">const char *const String</div><div class="ttdoc">The string used in option structs.</div><div class="ttdef"><b>Definition:</b> Options.hpp:32</div></div>
+<div class="ttc" id="agroup__DataBoxTagsGroup_html_ga3dda5a16c7f6baccd115de2c8f12394e"><div class="ttname"><a href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e">db::wrap_tags_in</a></div><div class="ttdeci">tmpl::transform&lt; TagList, tmpl::bind&lt; Wrapper, tmpl::_1, tmpl::pin&lt; Args &gt;... &gt; &gt; wrap_tags_in</div><div class="ttdoc">Create a new tmpl::list of tags by wrapping each tag in TagList in Wrapper&lt;_, Args....</div><div class="ttdef"><b>Definition:</b> PrefixHelpers.hpp:30</div></div>
+<div class="ttc" id="astructelliptic_1_1Tags_1_1InitialGuess_html"><div class="ttname"><a href="structelliptic_1_1Tags_1_1InitialGuess.html">elliptic::Tags::InitialGuess</a></div><div class="ttdoc">The initial guess for the elliptic solve.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:56</div></div>
+<div class="ttc" id="anamespaceParallel_html_a61571416f61cc9de70c8e6e2b1508fc6"><div class="ttname"><a href="namespaceParallel.html#a61571416f61cc9de70c8e6e2b1508fc6">Parallel::register_derived_classes_with_charm</a></div><div class="ttdeci">void register_derived_classes_with_charm() noexcept</div><div class="ttdoc">Register derived classes of the Base class.</div><div class="ttdef"><b>Definition:</b> RegisterDerivedClassesWithCharm.hpp:35</div></div>
+<div class="ttc" id="aBlas_8hpp_html"><div class="ttname"><a href="Blas_8hpp.html">Blas.hpp</a></div></div>
+<div class="ttc" id="astructtt_1_1ConformsTo_html"><div class="ttname"><a href="structtt_1_1ConformsTo.html">tt::ConformsTo</a></div><div class="ttdoc">Indicate a class conforms to the Protocol.</div><div class="ttdef"><b>Definition:</b> ProtocolHelpers.hpp:22</div></div>
+<div class="ttc" id="astructelliptic_1_1Actions_1_1InitializeFixedSources_html"><div class="ttname"><a href="structelliptic_1_1Actions_1_1InitializeFixedSources.html">elliptic::Actions::InitializeFixedSources</a></div><div class="ttdoc">Initialize the &quot;fixed sources&quot; of the elliptic equations, i.e. their variable-independent source term...</div><div class="ttdef"><b>Definition:</b> InitializeFixedSources.hpp:54</div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

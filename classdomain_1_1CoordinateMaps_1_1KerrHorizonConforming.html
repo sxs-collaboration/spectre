@@ -1,0 +1,322 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::CoordinateMaps::KerrHorizonConforming Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1CoordinateMaps.html">CoordinateMaps</a></li><li class="navelem"><a class="el" href="classdomain_1_1CoordinateMaps_1_1KerrHorizonConforming.html">KerrHorizonConforming</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classdomain_1_1CoordinateMaps_1_1KerrHorizonConforming-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::CoordinateMaps::KerrHorizonConforming Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Distorts cartesian coordinates \(x^i\) such that a coordinate sphere \(\delta_{ij}x^ix^j=C\) is mapped to an ellipsoid of constant Kerr-Schild radius \(r=C\).  
+ <a href="classdomain_1_1CoordinateMaps_1_1KerrHorizonConforming.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="KerrHorizonConforming_8hpp_source.html">KerrHorizonConforming.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a78a174573f17df2d1d9edcc30947d988"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdomain_1_1CoordinateMaps_1_1KerrHorizonConforming.html#a78a174573f17df2d1d9edcc30947d988">KerrHorizonConforming</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; spin)</td></tr>
+<tr class="separator:a78a174573f17df2d1d9edcc30947d988"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeae59c47891bc5ffe930d5ac4b783ece"><td class="memTemplParams" colspan="2"><a id="aeae59c47891bc5ffe930d5ac4b783ece"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:aeae59c47891bc5ffe930d5ac4b783ece"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator()</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:aeae59c47891bc5ffe930d5ac4b783ece"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a78787b9938f128ad236d0c322680276c"><td class="memItemLeft" align="right" valign="top"><a id="a78787b9938f128ad236d0c322680276c"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>inverse</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;target_coords) const noexcept</td></tr>
+<tr class="separator:a78787b9938f128ad236d0c322680276c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b99a25fb5a388acd0baf03c321b9c9b"><td class="memTemplParams" colspan="2"><a id="a7b99a25fb5a388acd0baf03c321b9c9b"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a7b99a25fb5a388acd0baf03c321b9c9b"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:a7b99a25fb5a388acd0baf03c321b9c9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38746e70d8a3be3b8b390895d35bb171"><td class="memTemplParams" colspan="2"><a id="a38746e70d8a3be3b8b390895d35bb171"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a38746e70d8a3be3b8b390895d35bb171"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>inv_jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:a38746e70d8a3be3b8b390895d35bb171"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b7ff8620cb0fca44523b6109c60763b"><td class="memItemLeft" align="right" valign="top"><a id="a0b7ff8620cb0fca44523b6109c60763b"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_identity</b> () const noexcept</td></tr>
+<tr class="separator:a0b7ff8620cb0fca44523b6109c60763b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51a33cfb13ff79d711afeab0f83f3ecf"><td class="memItemLeft" align="right" valign="top"><a id="a51a33cfb13ff79d711afeab0f83f3ecf"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p)</td></tr>
+<tr class="separator:a51a33cfb13ff79d711afeab0f83f3ecf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a1ab1bd1627bf749fe306eeec19ca4d4e"><td class="memItemLeft" align="right" valign="top"><a id="a1ab1bd1627bf749fe306eeec19ca4d4e"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>dim</b> = 3</td></tr>
+<tr class="separator:a1ab1bd1627bf749fe306eeec19ca4d4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a211ced657116c639c71d4f90dcb4ed9b"><td class="memItemLeft" align="right" valign="top"><a id="a211ced657116c639c71d4f90dcb4ed9b"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1KerrHorizonConforming.html">KerrHorizonConforming</a> &amp;lhs, const <a class="el" href="classdomain_1_1CoordinateMaps_1_1KerrHorizonConforming.html">KerrHorizonConforming</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a211ced657116c639c71d4f90dcb4ed9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Distorts cartesian coordinates \(x^i\) such that a coordinate sphere \(\delta_{ij}x^ix^j=C\) is mapped to an ellipsoid of constant Kerr-Schild radius \(r=C\). </p>
+<p>The Kerr-Schild radius \(r\) is defined as the largest positive root of</p>
+<p class="formulaDsp">
+\begin{equation*} r^4 - r^2 (x^2 - a^2) - (\vec{a}\cdot \vec{x})^2 = 0. \end{equation*}
+</p>
+<p>In this equation, \(\vec{x}\) are the coordinates of the (distorted) surface, and \(\vec{a}=\vec{S}/M\) is the spin-parameter of the black hole. This is equivalent to the implicit definition of \(r\) in Eq. (47) of <a class="el" href="citelist.html#CITEREF_Lovelace2008tw">[73]</a>. The black hole is assumed to be at the origin.</p>
+<h3>Details</h3>
+<p>Given a spin vector \(\vec{a}\), we define the Kerr-Schild radius:</p>
+<p class="formulaDsp">
+\begin{equation}r(\vec{x}) = \sqrt{\frac{x^2 - a^2 + \sqrt{(x^2 - a^2)^2 + 4 (\vec{x} \cdot \vec{a})^2}}{2}} \end{equation}
+</p>
+<p>We also define the auxiliary variable:</p>
+<p class="formulaDsp">
+\begin{equation}s(\vec{x}) = \frac{x^2(x^2 + a^2)}{x^4 + (\vec{x} \cdot \vec{a})^2} \end{equation}
+</p>
+<p>The map is then given by:</p>
+<p class="formulaDsp">
+\begin{equation}\vec{x}(\vec{\xi}) = \vec{\xi} \sqrt{s(\vec{\xi})} \end{equation}
+</p>
+<p>The inverse map is given by: </p><p class="formulaDsp">
+\begin{equation}\vec{\xi}(\vec{x}) = \vec{x} \frac{r(\vec{x})}{|\vec{x}|} \end{equation}
+</p>
+<p>The jacobian is: </p><p class="formulaDsp">
+\begin{equation} \frac{\partial \xi^i}{\partial x^j} = \delta_{ij} \sqrt{s(\vec{\xi})} + \frac{\xi_j}{2 \sqrt{s(\vec{\xi})}} \frac{4\xi^2(1 - s(\vec{\xi})) \xi_j + 2a^2\xi_i + 2 s(\vec{\xi}) (\vec{\xi} \cdot \vec{a}) a_i}{\xi^4 + (\vec{\xi} \cdot \vec{a})^2} \end{equation}
+</p>
+<p>The inverse jacobian is: </p><p class="formulaDsp">
+\begin{equation}\frac{\partial x^i}{\partial \xi^j} = \delta_{ij}\frac{r(\vec{x})}{|\vec{x}|} + \frac{r(\vec{x})^2 x_i + (\vec{x} \cdot \vec{a})a_i}{2r(\vec{x})^3 - r(\vec{x}) (x^2 - a^2)}\frac{x_j}{|\vec{x}|} - \frac{r(\vec{x}) x_i x_j}{x^3} \end{equation}
+</p>
+ </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a78a174573f17df2d1d9edcc30947d988"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a78a174573f17df2d1d9edcc30947d988">&#9670;&nbsp;</a></span>KerrHorizonConforming()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">domain::CoordinateMaps::KerrHorizonConforming::KerrHorizonConforming </td>
+          <td>(</td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt;&#160;</td>
+          <td class="paramname"><em>spin</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">explicit</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>constructs a Kerr horizon conforming map. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">spin</td><td>: the dimensionless spin </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/CoordinateMaps/<a class="el" href="KerrHorizonConforming_8hpp_source.html">KerrHorizonConforming.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

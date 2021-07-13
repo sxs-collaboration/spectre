@@ -1,0 +1,313 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: VariableFixing::LimitLorentzFactor Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceVariableFixing.html">VariableFixing</a></li><li class="navelem"><a class="el" href="classVariableFixing_1_1LimitLorentzFactor.html">LimitLorentzFactor</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classVariableFixing_1_1LimitLorentzFactor-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">VariableFixing::LimitLorentzFactor Class Reference<div class="ingroups"><a class="el" href="group__VariableFixingGroup.html">Variable Fixing</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Limit the maximum Lorentz factor to <a class="el" href="structVariableFixing_1_1LimitLorentzFactor_1_1LorentzFactorCap.html" title="Largest Lorentz factor allowed. If a larger one is found, normalize velocity to have the Lorentz fact...">LorentzFactorCap</a> in regions where the density is below <a class="el" href="structVariableFixing_1_1LimitLorentzFactor_1_1MaxDensityCutoff.html" title="Do not apply the Lorentz factor cap above this density.">MaxDensityCutoff</a>.  
+ <a href="classVariableFixing_1_1LimitLorentzFactor.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="LimitLorentzFactor_8hpp_source.html">LimitLorentzFactor.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structVariableFixing_1_1LimitLorentzFactor_1_1LorentzFactorCap.html">LorentzFactorCap</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Largest Lorentz factor allowed. If a larger one is found, normalize velocity to have the Lorentz factor be this value.  <a href="structVariableFixing_1_1LimitLorentzFactor_1_1LorentzFactorCap.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structVariableFixing_1_1LimitLorentzFactor_1_1MaxDensityCutoff.html">MaxDensityCutoff</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Do not apply the Lorentz factor cap above this density.  <a href="structVariableFixing_1_1LimitLorentzFactor_1_1MaxDensityCutoff.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:af9b733bafbdae9c7757a13dc6f4e253b"><td class="memItemLeft" align="right" valign="top"><a id="af9b733bafbdae9c7757a13dc6f4e253b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structVariableFixing_1_1LimitLorentzFactor_1_1MaxDensityCutoff.html">MaxDensityCutoff</a>, <a class="el" href="structVariableFixing_1_1LimitLorentzFactor_1_1LorentzFactorCap.html">LorentzFactorCap</a> &gt;</td></tr>
+<tr class="separator:af9b733bafbdae9c7757a13dc6f4e253b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a02a8c8da90120d30ff045d4b94748f5f"><td class="memItemLeft" align="right" valign="top"><a id="a02a8c8da90120d30ff045d4b94748f5f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_tags</b> = tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1LorentzFactor.html">hydro::Tags::LorentzFactor</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structhydro_1_1Tags_1_1SpatialVelocity.html">hydro::Tags::SpatialVelocity</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &gt;</td></tr>
+<tr class="separator:a02a8c8da90120d30ff045d4b94748f5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a017c526c1089c98d165fc88c20576c57"><td class="memItemLeft" align="right" valign="top"><a id="a017c526c1089c98d165fc88c20576c57"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1RestMassDensity.html">hydro::Tags::RestMassDensity</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &gt;</td></tr>
+<tr class="separator:a017c526c1089c98d165fc88c20576c57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a2cf6e219324f880c859c41354f5f42e6"><td class="memItemLeft" align="right" valign="top"><a id="a2cf6e219324f880c859c41354f5f42e6"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>LimitLorentzFactor</b> (double max_density_cutoff, double lorentz_factor_cap) noexcept</td></tr>
+<tr class="separator:a2cf6e219324f880c859c41354f5f42e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a725d4ae32ef5ccb50b9f6537d9cce6c8"><td class="memItemLeft" align="right" valign="top"><a id="a725d4ae32ef5ccb50b9f6537d9cce6c8"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>LimitLorentzFactor</b> (const <a class="el" href="classVariableFixing_1_1LimitLorentzFactor.html">LimitLorentzFactor</a> &amp;)=default</td></tr>
+<tr class="separator:a725d4ae32ef5ccb50b9f6537d9cce6c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1738f7e7cdfc81968fe9f9df296ad252"><td class="memItemLeft" align="right" valign="top"><a id="a1738f7e7cdfc81968fe9f9df296ad252"></a>
+<a class="el" href="classVariableFixing_1_1LimitLorentzFactor.html">LimitLorentzFactor</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classVariableFixing_1_1LimitLorentzFactor.html">LimitLorentzFactor</a> &amp;)=default</td></tr>
+<tr class="separator:a1738f7e7cdfc81968fe9f9df296ad252"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a456d792a52da1497668557ac6921e2c4"><td class="memItemLeft" align="right" valign="top"><a id="a456d792a52da1497668557ac6921e2c4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>LimitLorentzFactor</b> (<a class="el" href="classVariableFixing_1_1LimitLorentzFactor.html">LimitLorentzFactor</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a456d792a52da1497668557ac6921e2c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1297fadef465c2c853f9fff8154305d"><td class="memItemLeft" align="right" valign="top"><a id="af1297fadef465c2c853f9fff8154305d"></a>
+<a class="el" href="classVariableFixing_1_1LimitLorentzFactor.html">LimitLorentzFactor</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classVariableFixing_1_1LimitLorentzFactor.html">LimitLorentzFactor</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:af1297fadef465c2c853f9fff8154305d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac761ad8334e7241af83b814eaec78541"><td class="memItemLeft" align="right" valign="top"><a id="ac761ad8334e7241af83b814eaec78541"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:ac761ad8334e7241af83b814eaec78541"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a209bb585af3ce13fd41377b21d29a812"><td class="memItemLeft" align="right" valign="top"><a id="a209bb585af3ce13fd41377b21d29a812"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; lorentz_factor, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; spatial_velocity, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;rest_mass_density) const noexcept</td></tr>
+<tr class="separator:a209bb585af3ce13fd41377b21d29a812"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a1b0a0b9a62a4143d11592b000d5c75ff"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a1b0a0b9a62a4143d11592b000d5c75ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a4c9b9e96f3346b49afb3b7ba388c5bfa"><td class="memItemLeft" align="right" valign="top"><a id="a4c9b9e96f3346b49afb3b7ba388c5bfa"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classVariableFixing_1_1LimitLorentzFactor.html">LimitLorentzFactor</a> &amp;lhs, const <a class="el" href="classVariableFixing_1_1LimitLorentzFactor.html">LimitLorentzFactor</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a4c9b9e96f3346b49afb3b7ba388c5bfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Limit the maximum Lorentz factor to <a class="el" href="structVariableFixing_1_1LimitLorentzFactor_1_1LorentzFactorCap.html" title="Largest Lorentz factor allowed. If a larger one is found, normalize velocity to have the Lorentz fact...">LorentzFactorCap</a> in regions where the density is below <a class="el" href="structVariableFixing_1_1LimitLorentzFactor_1_1MaxDensityCutoff.html" title="Do not apply the Lorentz factor cap above this density.">MaxDensityCutoff</a>. </p>
+<p>The Lorentz factor is set to <a class="el" href="structVariableFixing_1_1LimitLorentzFactor_1_1LorentzFactorCap.html" title="Largest Lorentz factor allowed. If a larger one is found, normalize velocity to have the Lorentz fact...">LorentzFactorCap</a> and the spatial velocity is adjusted according to: </p><p class="formulaDsp">
+\begin{align} v^i_{(\textrm{new})} = \sqrt{\left(1 - \frac{1}{W_{(\textrm{new})}^2}\right) \left(1 - \frac{1}{W_{(\textrm{old})}^2}\right)^{-1}} v^i_{(\textrm{old})} \end{align}
+</p>
+ </div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a1b0a0b9a62a4143d11592b000d5c75ff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1b0a0b9a62a4143d11592b000d5c75ff">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> VariableFixing::LimitLorentzFactor::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Limit the maximum Lorentz factor to LorentzFactorCap in regions where &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;the\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;density is below MaxDensityCutoff. The Lorentz factor is set to\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;LorentzFactorCap and the spatial velocity is adjusted accordingly.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Evolution/VariableFixing/<a class="el" href="LimitLorentzFactor_8hpp_source.html">LimitLorentzFactor.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

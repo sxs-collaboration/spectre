@@ -1,0 +1,263 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - 39f3c2b725318dcf91749887b1e61f477736e132 - Domain/CoordinateMaps/CylindricalEndcap.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title"> SpECTRE Documentation Coverage Report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">Domain/CoordinateMaps</a> - CylindricalEndcap.hpp</td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+             <td class="headerItem">Commit:</td>
+             <td class="headerValue"><a target="_blank" href="https://github.com/sxs-collaboration/spectre/commit/39f3c2b725318dcf91749887b1e61f477736e132">39f3c2b725318dcf91749887b1e61f477736e132</a></td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntry">19</td>
+            <td class="headerCovTableEntryLo">15.8 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2021-07-13 03:19:40</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span><span class="lineCov">          1 : // Distributed under the MIT License.</span></a>
+<a name="2"><span class="lineNum">       2 </span>            : // See LICENSE.txt for details.</a>
+<a name="3"><span class="lineNum">       3 </span>            : </a>
+<a name="4"><span class="lineNum">       4 </span>            : /// \file</a>
+<a name="5"><span class="lineNum">       5 </span>            : /// Defines the class CylindricalEndcap.</a>
+<a name="6"><span class="lineNum">       6 </span>            : </a>
+<a name="7"><span class="lineNum">       7 </span>            : #pragma once</a>
+<a name="8"><span class="lineNum">       8 </span>            : </a>
+<a name="9"><span class="lineNum">       9 </span>            : #include &lt;array&gt;</a>
+<a name="10"><span class="lineNum">      10 </span>            : #include &lt;cstddef&gt;</a>
+<a name="11"><span class="lineNum">      11 </span>            : #include &lt;limits&gt;</a>
+<a name="12"><span class="lineNum">      12 </span>            : #include &lt;optional&gt;</a>
+<a name="13"><span class="lineNum">      13 </span>            : </a>
+<a name="14"><span class="lineNum">      14 </span>            : #include &quot;DataStructures/Tensor/TypeAliases.hpp&quot;</a>
+<a name="15"><span class="lineNum">      15 </span>            : #include &quot;Domain/CoordinateMaps/FocallyLiftedEndcap.hpp&quot;</a>
+<a name="16"><span class="lineNum">      16 </span>            : #include &quot;Domain/CoordinateMaps/FocallyLiftedMap.hpp&quot;</a>
+<a name="17"><span class="lineNum">      17 </span>            : #include &quot;Utilities/TypeTraits/RemoveReferenceWrapper.hpp&quot;</a>
+<a name="18"><span class="lineNum">      18 </span>            : </a>
+<a name="19"><span class="lineNum">      19 </span>            : /// \cond</a>
+<a name="20"><span class="lineNum">      20 </span>            : namespace PUP {</a>
+<a name="21"><span class="lineNum">      21 </span>            : class er;</a>
+<a name="22"><span class="lineNum">      22 </span>            : }  // namespace PUP</a>
+<a name="23"><span class="lineNum">      23 </span>            : /// \endcond</a>
+<a name="24"><span class="lineNum">      24 </span>            : </a>
+<a name="25"><span class="lineNum">      25 </span>            : namespace domain::CoordinateMaps {</a>
+<a name="26"><span class="lineNum">      26 </span>            : </a>
+<a name="27"><span class="lineNum">      27 </span>            : /*!</a>
+<a name="28"><span class="lineNum">      28 </span>            :  * \ingroup CoordinateMapsGroup</a>
+<a name="29"><span class="lineNum">      29 </span>            :  *</a>
+<a name="30"><span class="lineNum">      30 </span>            :  * \brief Map from 3D unit right cylinder to a volume that connects</a>
+<a name="31"><span class="lineNum">      31 </span>            :  *  portions of two spherical surfaces.</a>
+<a name="32"><span class="lineNum">      32 </span>            :  *</a>
+<a name="33"><span class="lineNum">      33 </span>            :  * \image html CylindricalEndcap.svg &quot;A cylinder maps to the shaded region.&quot;</a>
+<a name="34"><span class="lineNum">      34 </span>            :  *</a>
+<a name="35"><span class="lineNum">      35 </span>            :  * \details Consider two spheres with centers \f$C_1\f$ and \f$C_2\f$,</a>
+<a name="36"><span class="lineNum">      36 </span>            :  * and radii \f$R_1\f$ and \f$R_2\f$. Let sphere 1 be intersected by a</a>
+<a name="37"><span class="lineNum">      37 </span>            :  * plane normal to the \f$z\f$ axis and located at \f$z = z_\mathrm{P}\f$.</a>
+<a name="38"><span class="lineNum">      38 </span>            :  * Also let there be a projection point \f$P\f$.</a>
+<a name="39"><span class="lineNum">      39 </span>            :  *</a>
+<a name="40"><span class="lineNum">      40 </span>            :  * CylindricalEndcap maps a 3D unit right cylinder (with coordinates</a>
+<a name="41"><span class="lineNum">      41 </span>            :  * \f$(\bar{x},\bar{y},\bar{z})\f$ such that \f$-1\leq\bar{z}\leq 1\f$</a>
+<a name="42"><span class="lineNum">      42 </span>            :  * and \f$\bar{x}^2+\bar{y}^2 \leq 1\f$) to the shaded area</a>
+<a name="43"><span class="lineNum">      43 </span>            :  * in the figure above (with coordinates \f$(x,y,z)\f$).  The &quot;bottom&quot;</a>
+<a name="44"><span class="lineNum">      44 </span>            :  * of the cylinder \f$\bar{z}=-1\f$ is mapped to the portion of sphere</a>
+<a name="45"><span class="lineNum">      45 </span>            :  * 1 that has \f$z \geq z_\mathrm{P}\f$.  Curves of constant</a>
+<a name="46"><span class="lineNum">      46 </span>            :  * \f$(\bar{x},\bar{y})\f$ are mapped to portions of lines that pass</a>
+<a name="47"><span class="lineNum">      47 </span>            :  * through \f$P\f$. Along each of these curves, \f$\bar{z}=-1\f$ is</a>
+<a name="48"><span class="lineNum">      48 </span>            :  * mapped to a point on sphere 1 and \f$\bar{z}=+1\f$ is mapped to a</a>
+<a name="49"><span class="lineNum">      49 </span>            :  * point on sphere 2.</a>
+<a name="50"><span class="lineNum">      50 </span>            :  *</a>
+<a name="51"><span class="lineNum">      51 </span>            :  * Note that Sphere 1 and Sphere 2 are not equivalent, because the</a>
+<a name="52"><span class="lineNum">      52 </span>            :  * mapped portion of Sphere 1 is bounded by a plane of constant</a>
+<a name="53"><span class="lineNum">      53 </span>            :  * \f$z\f$ but the mapped portion of Sphere 2 is not (except for</a>
+<a name="54"><span class="lineNum">      54 </span>            :  * special choices of \f$C_1\f$, \f$C_2\f$, and \f$P\f$).</a>
+<a name="55"><span class="lineNum">      55 </span>            :  *</a>
+<a name="56"><span class="lineNum">      56 </span>            :  * CylindricalEndcap is intended to be composed with `Wedge&lt;2&gt;` maps to</a>
+<a name="57"><span class="lineNum">      57 </span>            :  * construct a portion of a cylindrical domain for a binary system.</a>
+<a name="58"><span class="lineNum">      58 </span>            :  *</a>
+<a name="59"><span class="lineNum">      59 </span>            :  * CylindricalEndcap is described briefly in the Appendix of</a>
+<a name="60"><span class="lineNum">      60 </span>            :  * \cite Buchman:2012dw.</a>
+<a name="61"><span class="lineNum">      61 </span>            :  * CylindricalEndcap is used to construct the blocks labeled 'CA</a>
+<a name="62"><span class="lineNum">      62 </span>            :  * wedge', 'EA wedge', 'CB wedge', 'EE wedge', and 'EB wedge' in</a>
+<a name="63"><span class="lineNum">      63 </span>            :  * Figure 20 of that paper.  Note that 'CA wedge', 'CB wedge', and</a>
+<a name="64"><span class="lineNum">      64 </span>            :  * 'EE wedge' have Sphere 1 contained in Sphere 2, and 'EA wedge'</a>
+<a name="65"><span class="lineNum">      65 </span>            :  * and 'EB wedge' have Sphere 2 contained in Sphere 1.</a>
+<a name="66"><span class="lineNum">      66 </span>            :  *</a>
+<a name="67"><span class="lineNum">      67 </span>            :  * CylindricalEndcap is implemented using `FocallyLiftedMap`</a>
+<a name="68"><span class="lineNum">      68 </span>            :  * and `FocallyLiftedInnerMaps::Endcap`; see those classes for details.</a>
+<a name="69"><span class="lineNum">      69 </span>            :  *</a>
+<a name="70"><span class="lineNum">      70 </span>            :  * ### Restrictions on map parameters.</a>
+<a name="71"><span class="lineNum">      71 </span>            :  *</a>
+<a name="72"><span class="lineNum">      72 </span>            :  * We demand that either Sphere 1 is fully contained inside Sphere 2, or</a>
+<a name="73"><span class="lineNum">      73 </span>            :  * that Sphere 2 is fully contained inside Sphere 1. It is</a>
+<a name="74"><span class="lineNum">      74 </span>            :  * possible to construct a valid map without this assumption, but the</a>
+<a name="75"><span class="lineNum">      75 </span>            :  * assumption simplifies the code, and the expected use cases obey</a>
+<a name="76"><span class="lineNum">      76 </span>            :  * this restriction.</a>
+<a name="77"><span class="lineNum">      77 </span>            :  *</a>
+<a name="78"><span class="lineNum">      78 </span>            :  * We also demand that \f$z_\mathrm{P} &gt; C_1^2\f$, that is, the plane</a>
+<a name="79"><span class="lineNum">      79 </span>            :  * in the above and below figures lies to the right of \f$C_1^2\f$.</a>
+<a name="80"><span class="lineNum">      80 </span>            :  * This restriction not strictly necessary but is made for simplicity.</a>
+<a name="81"><span class="lineNum">      81 </span>            :  *</a>
+<a name="82"><span class="lineNum">      82 </span>            :  * The map is invertible only for some choices of the projection point</a>
+<a name="83"><span class="lineNum">      83 </span>            :  * \f$P\f$.  Given the above restrictions, the allowed values of</a>
+<a name="84"><span class="lineNum">      84 </span>            :  * \f$P\f$ are illustrated by the following diagram:</a>
+<a name="85"><span class="lineNum">      85 </span>            :  *</a>
+<a name="86"><span class="lineNum">      86 </span>            :  * \image html CylindricalEndcap_Allowed.svg &quot;Allowed region for P.&quot; width=75%</a>
+<a name="87"><span class="lineNum">      87 </span>            :  *</a>
+<a name="88"><span class="lineNum">      88 </span>            :  * The plane \f$z=z_\mathrm{P}\f$ intersects sphere 1 on a circle. The</a>
+<a name="89"><span class="lineNum">      89 </span>            :  * cone with apex \f$C_1\f$ that intersects that circle has opening</a>
+<a name="90"><span class="lineNum">      90 </span>            :  * angle \f$2\theta\f$ as shown in the above figure. Construct another</a>
+<a name="91"><span class="lineNum">      91 </span>            :  * cone, the &quot;invertibility cone&quot;, with apex \f$S\f$ chosen such that</a>
+<a name="92"><span class="lineNum">      92 </span>            :  * the two cones intersect at right angles on the circle; thus the</a>
+<a name="93"><span class="lineNum">      93 </span>            :  * opening angle of the invertibility cone is \f$\pi-2\theta\f$.  A</a>
+<a name="94"><span class="lineNum">      94 </span>            :  * necessary condition for invertibility is that the projection point</a>
+<a name="95"><span class="lineNum">      95 </span>            :  * \f$P\f$ lies inside the invertibility cone, but not between \f$S\f$</a>
+<a name="96"><span class="lineNum">      96 </span>            :  * and sphere 1.  (If \f$P\f$ does not obey this condition, then from the</a>
+<a name="97"><span class="lineNum">      97 </span>            :  * diagram one can find at least one line through \f$P\f$</a>
+<a name="98"><span class="lineNum">      98 </span>            :  * that twice intersects the surface of sphere 1 with \f$z&gt;z_\mathrm{P}\f$;</a>
+<a name="99"><span class="lineNum">      99 </span>            :  * the inverse map is thus double-valued at those intersection points.)</a>
+<a name="100"><span class="lineNum">     100 </span>            :  * Placing the projection point \f$P\f$ to the</a>
+<a name="101"><span class="lineNum">     101 </span>            :  * right of \f$S\f$ (but inside the invertibility cone) is ok for</a>
+<a name="102"><span class="lineNum">     102 </span>            :  * invertibility.</a>
+<a name="103"><span class="lineNum">     103 </span>            :  *</a>
+<a name="104"><span class="lineNum">     104 </span>            :  * In addition to invertibility and the two additional restrictions</a>
+<a name="105"><span class="lineNum">     105 </span>            :  * already mentioned above, we demand a few more restrictions on the</a>
+<a name="106"><span class="lineNum">     106 </span>            :  * map parameters to simplify the logic for the expected use cases and</a>
+<a name="107"><span class="lineNum">     107 </span>            :  * to ensure that jacobians do not get too large. The numbers in the</a>
+<a name="108"><span class="lineNum">     108 </span>            :  * restrictions below were chosen empirically so that the unit tests pass</a>
+<a name="109"><span class="lineNum">     109 </span>            :  * with errors less than 100 times machine roundoff; we do not expect to</a>
+<a name="110"><span class="lineNum">     110 </span>            :  * run into these restrictions in normal usage. We demand:</a>
+<a name="111"><span class="lineNum">     111 </span>            :  *</a>
+<a name="112"><span class="lineNum">     112 </span>            :  * - \f$P\f$ is not too close to the edge of the invertibility cone.</a>
+<a name="113"><span class="lineNum">     113 </span>            :  *   Here we demand that the angle between \f$P\f$ and \f$S\f$</a>
+<a name="114"><span class="lineNum">     114 </span>            :  *   is less than \f$0.85 (\pi/2-\theta)\f$ (note that if this</a>
+<a name="115"><span class="lineNum">     115 </span>            :  *   angle is exactly \f$\pi/2-\theta\f$ it is exactly on the</a>
+<a name="116"><span class="lineNum">     116 </span>            :  *   invertibility cone); The 0.85 was chosen empirically based on</a>
+<a name="117"><span class="lineNum">     117 </span>            :  *   unit tests.</a>
+<a name="118"><span class="lineNum">     118 </span>            :  * - \f$z_\mathrm{P}\f$ is not too close to the center or the edge of sphere 1.</a>
+<a name="119"><span class="lineNum">     119 </span>            :  *   Here we demand that \f$0.15 \leq \cos(\theta) \leq 0.95\f$, where</a>
+<a name="120"><span class="lineNum">     120 </span>            :  *   the values 0.15 and 0.95 were chosen empirically based on unit tests.</a>
+<a name="121"><span class="lineNum">     121 </span>            :  * - \f$P\f$ is contained in sphere 2.</a>
+<a name="122"><span class="lineNum">     122 </span>            :  * - If sphere 2 is contained in sphere 1, then</a>
+<a name="123"><span class="lineNum">     123 </span>            :  *   - \f$0.1 R_1 \leq R_2 \leq 0.85 (R_1 - |C_1-C_2|)\f$,</a>
+<a name="124"><span class="lineNum">     124 </span>            :  *     This prevents the two spheres from having a very narrow space between</a>
+<a name="125"><span class="lineNum">     125 </span>            :  *     them, and it prevents sphere 2 from being very small.</a>
+<a name="126"><span class="lineNum">     126 </span>            :  *   - \f$|P - C_2| &lt; 0.1 R_2\f$, i.e. \f$P\f$ is near the center of sphere 2.</a>
+<a name="127"><span class="lineNum">     127 </span>            :  * - If sphere 1 is contained in sphere 2, then</a>
+<a name="128"><span class="lineNum">     128 </span>            :  *   - \f$ R_2 \geq 1.01 (R_1 + |C_1-C_2|)\f$, where the 1.01</a>
+<a name="129"><span class="lineNum">     129 </span>            :  *     prevents the spheres from (barely) touching.</a>
+<a name="130"><span class="lineNum">     130 </span>            :  *   - If a line segment is drawn between \f$P\f$ and any point on the</a>
+<a name="131"><span class="lineNum">     131 </span>            :  *     intersection circle (the circle where sphere 1 intersects the</a>
+<a name="132"><span class="lineNum">     132 </span>            :  *     plane \f$z=z_\mathrm{P}\f$), the angle between the line segment</a>
+<a name="133"><span class="lineNum">     133 </span>            :  *     and the z-axis is smaller than \f$\pi/3\f$.</a>
+<a name="134"><span class="lineNum">     134 </span>            :  */</a>
+<a name="135"><span class="lineNum">     135 </span><span class="lineCov">          1 : class CylindricalEndcap {</span></a>
+<a name="136"><span class="lineNum">     136 </span>            :  public:</a>
+<a name="137"><span class="lineNum">     137 </span><span class="lineNoCov">          0 :   static constexpr size_t dim = 3;</span></a>
+<a name="138"><span class="lineNum">     138 </span><span class="lineNoCov">          0 :   CylindricalEndcap(const std::array&lt;double, 3&gt;&amp; center_one,</span></a>
+<a name="139"><span class="lineNum">     139 </span>            :                        const std::array&lt;double, 3&gt;&amp; center_two,</a>
+<a name="140"><span class="lineNum">     140 </span>            :                        const std::array&lt;double, 3&gt;&amp; proj_center,</a>
+<a name="141"><span class="lineNum">     141 </span>            :                        double radius_one, double radius_two,</a>
+<a name="142"><span class="lineNum">     142 </span>            :                        double z_plane) noexcept;</a>
+<a name="143"><span class="lineNum">     143 </span>            : </a>
+<a name="144"><span class="lineNum">     144 </span><span class="lineNoCov">          0 :   CylindricalEndcap() = default;</span></a>
+<a name="145"><span class="lineNum">     145 </span><span class="lineNoCov">          0 :   ~CylindricalEndcap() = default;</span></a>
+<a name="146"><span class="lineNum">     146 </span><span class="lineNoCov">          0 :   CylindricalEndcap(CylindricalEndcap&amp;&amp;) = default;</span></a>
+<a name="147"><span class="lineNum">     147 </span><span class="lineNoCov">          0 :   CylindricalEndcap(const CylindricalEndcap&amp;) = default;</span></a>
+<a name="148"><span class="lineNum">     148 </span><span class="lineNoCov">          0 :   CylindricalEndcap&amp; operator=(const CylindricalEndcap&amp;) = default;</span></a>
+<a name="149"><span class="lineNum">     149 </span><span class="lineNoCov">          0 :   CylindricalEndcap&amp; operator=(CylindricalEndcap&amp;&amp;) = default;</span></a>
+<a name="150"><span class="lineNum">     150 </span>            : </a>
+<a name="151"><span class="lineNum">     151 </span>            :   template &lt;typename T&gt;</a>
+<a name="152"><span class="lineNum">     152 </span><span class="lineNoCov">          0 :   std::array&lt;tt::remove_cvref_wrap_t&lt;T&gt;, 3&gt; operator()(</span></a>
+<a name="153"><span class="lineNum">     153 </span>            :       const std::array&lt;T, 3&gt;&amp; source_coords) const noexcept;</a>
+<a name="154"><span class="lineNum">     154 </span>            : </a>
+<a name="155"><span class="lineNum">     155 </span>            :   /// The inverse function is only callable with doubles because the inverse</a>
+<a name="156"><span class="lineNum">     156 </span>            :   /// might fail if called for a point out of range, and it is unclear</a>
+<a name="157"><span class="lineNum">     157 </span>            :   /// what should happen if the inverse were to succeed for some points in a</a>
+<a name="158"><span class="lineNum">     158 </span>            :   /// DataVector but fail for other points.</a>
+<a name="159"><span class="lineNum">     159 </span><span class="lineCov">          1 :   std::optional&lt;std::array&lt;double, 3&gt;&gt; inverse(</span></a>
+<a name="160"><span class="lineNum">     160 </span>            :       const std::array&lt;double, 3&gt;&amp; target_coords) const noexcept;</a>
+<a name="161"><span class="lineNum">     161 </span>            : </a>
+<a name="162"><span class="lineNum">     162 </span>            :   template &lt;typename T&gt;</a>
+<a name="163"><span class="lineNum">     163 </span><span class="lineNoCov">          0 :   tnsr::Ij&lt;tt::remove_cvref_wrap_t&lt;T&gt;, 3, Frame::NoFrame&gt; jacobian(</span></a>
+<a name="164"><span class="lineNum">     164 </span>            :       const std::array&lt;T, 3&gt;&amp; source_coords) const noexcept;</a>
+<a name="165"><span class="lineNum">     165 </span>            : </a>
+<a name="166"><span class="lineNum">     166 </span>            :   template &lt;typename T&gt;</a>
+<a name="167"><span class="lineNum">     167 </span><span class="lineNoCov">          0 :   tnsr::Ij&lt;tt::remove_cvref_wrap_t&lt;T&gt;, 3, Frame::NoFrame&gt; inv_jacobian(</span></a>
+<a name="168"><span class="lineNum">     168 </span>            :       const std::array&lt;T, 3&gt;&amp; source_coords) const noexcept;</a>
+<a name="169"><span class="lineNum">     169 </span>            : </a>
+<a name="170"><span class="lineNum">     170 </span>            :   // clang-tidy: google runtime references</a>
+<a name="171"><span class="lineNum">     171 </span><span class="lineNoCov">          0 :   void pup(PUP::er&amp; p) noexcept;  // NOLINT</span></a>
+<a name="172"><span class="lineNum">     172 </span>            : </a>
+<a name="173"><span class="lineNum">     173 </span><span class="lineNoCov">          0 :   static bool is_identity() noexcept { return false; }</span></a>
+<a name="174"><span class="lineNum">     174 </span>            : </a>
+<a name="175"><span class="lineNum">     175 </span>            :  private:</a>
+<a name="176"><span class="lineNum">     176 </span><span class="lineNoCov">          0 :   friend bool operator==(const CylindricalEndcap&amp; lhs,</span></a>
+<a name="177"><span class="lineNum">     177 </span>            :                          const CylindricalEndcap&amp; rhs) noexcept;</a>
+<a name="178"><span class="lineNum">     178 </span><span class="lineNoCov">          0 :   FocallyLiftedMap&lt;FocallyLiftedInnerMaps::Endcap&gt; impl_;</span></a>
+<a name="179"><span class="lineNum">     179 </span>            : };</a>
+<a name="180"><span class="lineNum">     180 </span><span class="lineNoCov">          0 : bool operator!=(const CylindricalEndcap&amp; lhs,</span></a>
+<a name="181"><span class="lineNum">     181 </span>            :                 const CylindricalEndcap&amp; rhs) noexcept;</a>
+<a name="182"><span class="lineNum">     182 </span>            : </a>
+<a name="183"><span class="lineNum">     183 </span>            : }  // namespace domain::CoordinateMaps</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

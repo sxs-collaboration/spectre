@@ -1,0 +1,308 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Utilities/StlStreamDeclarations.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_703734d551dc6f7d643184484c894e35.html">Utilities</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">StlStreamDeclarations.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/array.html">array</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/deque.html">deque</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/list.html">list</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/map.html">map</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/optional.html">optional</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/set.html">set</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/tuple.html">tuple</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/unordered_map.html">unordered_map</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/unordered_set.html">unordered_set</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a>&gt;</code><br />
+<code>#include &quot;<a class="el" href="Requires_8hpp_source.html">Utilities/Requires.hpp</a>&quot;</code><br />
+</div>
+<p><a href="StlStreamDeclarations_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtt_1_1is__streamable.html">tt::is_streamable&lt; S, T, typename &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if type <code>T</code> has operator&lt;&lt;(<code>S</code>, <code>T</code>) defined.  <a href="structtt_1_1is__streamable.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespacett"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacett.html">tt</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga5a857ea4c010222258f6b7043e7ca5ea"><td class="memTemplParams" colspan="2">
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga5a857ea4c010222258f6b7043e7ca5ea"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga5a857ea4c010222258f6b7043e7ca5ea">operator&lt;&lt;</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/list.html">std::list</a>&lt; T &gt; &amp;v) noexcept</td></tr>
+<tr class="memdesc:ga5a857ea4c010222258f6b7043e7ca5ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Output the items of a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/list.html">std::list</a>. <br /></td></tr>
+<tr class="separator:ga5a857ea4c010222258f6b7043e7ca5ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9b79de8b7fc5ce9e82abcfb3462c9ec5"><td class="memTemplParams" colspan="2">
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga9b79de8b7fc5ce9e82abcfb3462c9ec5"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga9b79de8b7fc5ce9e82abcfb3462c9ec5">operator&lt;&lt;</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; T &gt; &amp;v) noexcept</td></tr>
+<tr class="memdesc:ga9b79de8b7fc5ce9e82abcfb3462c9ec5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Output the items of a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>. <br /></td></tr>
+<tr class="separator:ga9b79de8b7fc5ce9e82abcfb3462c9ec5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga89764c6408c1f5cd42bc200486d69242"><td class="memTemplParams" colspan="2">
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga89764c6408c1f5cd42bc200486d69242"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga89764c6408c1f5cd42bc200486d69242">operator&lt;&lt;</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/deque.html">std::deque</a>&lt; T &gt; &amp;v) noexcept</td></tr>
+<tr class="memdesc:ga89764c6408c1f5cd42bc200486d69242"><td class="mdescLeft">&#160;</td><td class="mdescRight">Output the items of a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/deque.html">std::deque</a>. <br /></td></tr>
+<tr class="separator:ga89764c6408c1f5cd42bc200486d69242"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga80caef68489ec044291edee80f908449"><td class="memTemplParams" colspan="2">
+template&lt;typename T , size_t N&gt; </td></tr>
+<tr class="memitem:ga80caef68489ec044291edee80f908449"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga80caef68489ec044291edee80f908449">operator&lt;&lt;</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, N &gt; &amp;a) noexcept</td></tr>
+<tr class="memdesc:ga80caef68489ec044291edee80f908449"><td class="mdescLeft">&#160;</td><td class="mdescRight">Output the items of a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>. <br /></td></tr>
+<tr class="separator:ga80caef68489ec044291edee80f908449"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga325c1aa4e0b973a0c2d5e06e520f9f12"><td class="memTemplParams" colspan="2">
+template&lt;typename... Args&gt; </td></tr>
+<tr class="memitem:ga325c1aa4e0b973a0c2d5e06e520f9f12"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga325c1aa4e0b973a0c2d5e06e520f9f12">operator&lt;&lt;</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; Args... &gt; &amp;t) noexcept</td></tr>
+<tr class="memdesc:ga325c1aa4e0b973a0c2d5e06e520f9f12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stream operator for tuples. <br /></td></tr>
+<tr class="separator:ga325c1aa4e0b973a0c2d5e06e520f9f12"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga59ccc440263d8ac121421332824a6f6c"><td class="memTemplParams" colspan="2">
+template&lt;typename K , typename V , typename H &gt; </td></tr>
+<tr class="memitem:ga59ccc440263d8ac121421332824a6f6c"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga59ccc440263d8ac121421332824a6f6c">operator&lt;&lt;</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; K, V, H &gt; &amp;m) noexcept</td></tr>
+<tr class="memdesc:ga59ccc440263d8ac121421332824a6f6c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Output all the key, value pairs of a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>. <br /></td></tr>
+<tr class="separator:ga59ccc440263d8ac121421332824a6f6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabc2ee6d0503fea7bcbb6de4a3460a077"><td class="memTemplParams" colspan="2">
+template&lt;typename K , typename V , typename C &gt; </td></tr>
+<tr class="memitem:gabc2ee6d0503fea7bcbb6de4a3460a077"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gabc2ee6d0503fea7bcbb6de4a3460a077">operator&lt;&lt;</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map</a>&lt; K, V, C &gt; &amp;m) noexcept</td></tr>
+<tr class="memdesc:gabc2ee6d0503fea7bcbb6de4a3460a077"><td class="mdescLeft">&#160;</td><td class="mdescRight">Output all the key, value pairs of a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/map.html">std::map</a>. <br /></td></tr>
+<tr class="separator:gabc2ee6d0503fea7bcbb6de4a3460a077"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga12f928f2f24f35c2283fb3a3471f5e80"><td class="memTemplParams" colspan="2">
+template&lt;typename T , typename H &gt; </td></tr>
+<tr class="memitem:ga12f928f2f24f35c2283fb3a3471f5e80"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga12f928f2f24f35c2283fb3a3471f5e80">operator&lt;&lt;</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set</a>&lt; T, H &gt; &amp;v) noexcept</td></tr>
+<tr class="memdesc:ga12f928f2f24f35c2283fb3a3471f5e80"><td class="mdescLeft">&#160;</td><td class="mdescRight">Output the items of a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_set.html">std::unordered_set</a>. <br /></td></tr>
+<tr class="separator:ga12f928f2f24f35c2283fb3a3471f5e80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad9c5288383a6353698fd9630bbb0f234"><td class="memTemplParams" colspan="2">
+template&lt;typename T , typename C &gt; </td></tr>
+<tr class="memitem:gad9c5288383a6353698fd9630bbb0f234"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gad9c5288383a6353698fd9630bbb0f234">operator&lt;&lt;</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/set.html">std::set</a>&lt; T, C &gt; &amp;v) noexcept</td></tr>
+<tr class="memdesc:gad9c5288383a6353698fd9630bbb0f234"><td class="mdescLeft">&#160;</td><td class="mdescRight">Output the items of a <a class="elRef" href="http://en.cppreference.com/w/cpp/container/set.html">std::set</a>. <br /></td></tr>
+<tr class="separator:gad9c5288383a6353698fd9630bbb0f234"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5af8fce009b5c67f11a00a5949c028f4"><td class="memTemplParams" colspan="2">
+template&lt;typename T , Requires&lt; tt::is_streamable&lt; std::ostream, T, void &gt;::value &gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:ga5af8fce009b5c67f11a00a5949c028f4"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga5af8fce009b5c67f11a00a5949c028f4">operator&lt;&lt;</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; T &gt; &amp;t) noexcept</td></tr>
+<tr class="memdesc:ga5af8fce009b5c67f11a00a5949c028f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stream operator for <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>. <br /></td></tr>
+<tr class="separator:ga5af8fce009b5c67f11a00a5949c028f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9045d540ebe626ccae39ff049e4f4c37"><td class="memTemplParams" colspan="2">
+template&lt;typename T , Requires&lt; tt::is_streamable&lt; std::ostream, T, void &gt;::value &gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:ga9045d540ebe626ccae39ff049e4f4c37"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga9045d540ebe626ccae39ff049e4f4c37">operator&lt;&lt;</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/shared_ptr.html">std::shared_ptr</a>&lt; T &gt; &amp;t) noexcept</td></tr>
+<tr class="memdesc:ga9045d540ebe626ccae39ff049e4f4c37"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stream operator for <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/shared_ptr.html">std::shared_ptr</a>. <br /></td></tr>
+<tr class="separator:ga9045d540ebe626ccae39ff049e4f4c37"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae7a2ab86b466642aa383a85ead968cf5"><td class="memTemplParams" colspan="2">
+template&lt;typename T , typename U &gt; </td></tr>
+<tr class="memitem:gae7a2ab86b466642aa383a85ead968cf5"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#gae7a2ab86b466642aa383a85ead968cf5">operator&lt;&lt;</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; T, U &gt; &amp;t) noexcept</td></tr>
+<tr class="memdesc:gae7a2ab86b466642aa383a85ead968cf5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stream operator for <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>. <br /></td></tr>
+<tr class="separator:gae7a2ab86b466642aa383a85ead968cf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7762b3fbc4cc8153d36fdf78094d3ad7"><td class="memTemplParams" colspan="2">
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ga7762b3fbc4cc8153d36fdf78094d3ad7"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__UtilitiesGroup.html#ga7762b3fbc4cc8153d36fdf78094d3ad7">operator&lt;&lt;</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a> &amp;os, const <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; T &gt; &amp;t) noexcept</td></tr>
+<tr class="memdesc:ga7762b3fbc4cc8153d36fdf78094d3ad7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stream operator for <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>. <br /></td></tr>
+<tr class="separator:ga7762b3fbc4cc8153d36fdf78094d3ad7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Declares stream operators for STL containers </p>
+</div></div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

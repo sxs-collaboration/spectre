@@ -1,0 +1,325 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Writing Unit Tests</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">Writing Unit Tests </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><p>Unit tests are placed in the appropriate subdirectory of <code>tests/Unit</code>, which mirrors the directory hierarchy of <code>src</code>. The tests are all compiled into individual libraries to keep link time of testing executables low. Typically there should be one test library for each production code library. For example, we have a <code>DataStructures</code> library and a <code>Test_DataStructures</code> library. When adding a new test there are several scenarios that can occur, which are outlined below.</p>
+<ul>
+<li><p class="startli">You are adding a new source file to an existing test library:<br  />
+ If you are adding a new source file in a directory that already has a <code>CMakeLists.txt</code> simply create the source file, which should be named <code>Test_ProductionCodeFileBeingTest.cpp</code> and add that to the <code>LIBRARY_SOURCES</code> in the <code>CMakeLists.txt</code> file in the same directory you are adding the <code>cpp</code> file.<br  />
+ If you are adding a new source file to a library but want to place it in a subdirectory you must first create the subdirectory. To provide a concrete example, say you are adding the directory <code>TensorEagerMath</code> to <code>tests/Unit/DataStructures</code>. After creating the directory you must add a call to <code>add_subdirectory(TensorEagerMath)</code> to <code>tests/Unit/DataStructures/CMakeLists.txt</code> <em>before</em> the call to <code>add_test_library</code> and <em>after</em> the <code>LIBRARY_SOURCES</code> are set. Next add the file <code>tests/Unit/DataStructures/TensorEagerMath/CMakeLists.txt</code>, which should add the new source files by calling <code>set</code>, e.g. </p><div class="fragment"><div class="line">set(LIBRARY_SOURCES</div>
+<div class="line">    ${LIBRARY_SOURCES}</div>
+<div class="line">    Test_ProductionCodeFileBeingTest.cpp</div>
+<div class="line">    PARENT_SCOPE)</div>
+</div><!-- fragment --><p class="startli">The <code>PARENT_SCOPE</code> flag tells CMake to make the changes visible in the CMakeLists.txt file that called <code>add_subdirectory</code>. You can now add the <code>Test_ProductionCodeFileBeingTested.cpp</code> source file.</p>
+</li>
+<li>You are adding a new directory:<br  />
+ If the directory is a new lowest level directory you must add a <code>add_subdirectory</code> call to <code>tests/Unit/CMakeLists.txt</code>. If it is a new subdirectory you must add a <code>add_subdirectory</code> call to the <code>CMakeLists.txt</code> file in the directory where you are adding the subdirectory. Next you should read the part on adding a new test library.</li>
+<li>You are adding a new test library:<br  />
+ After creating the subdirectory for the new test library you must add a <code>CMakeLists.txt</code> file. See <code>tests/Unit/DataStructures/CMakeLists.txt</code> for an example of one. The <code>LIBRARY</code> and <code>LIBRARY_SOURCES</code> variables set the name of the test library and the source files to be compiled into it. The library name should be of the format <code>Test_ProductionLibraryName</code>, for example <code>Test_DataStructures</code>. The library sources should be only the source files in the current directory. The <code>add_subdirectory</code> command can be used to add source files in subdirectories to the same library as is done in <code>tests/Unit/CMakeLists.txt</code>. The <code>CMakeLists.txt</code> in <code>tests/Unit/DataStructures/TensorEagerMath</code> is an example of how to add source files to a library from a subdirectory of the library. Note that the setting of <code>LIBRARY_SOURCES</code> here first includes the current <code>LIBRARY_SOURCES</code> and at the end specifies <code>PARENT_SCOPE</code>. The <code>PARENT_SCOPE</code> flag tells CMake to modify the variable in a scope that is visible to the parent directory, i.e. the <code>CMakeLists.txt</code> that called <code>add_subdirectory</code>.<br  />
+ Finally, in the <code>CMakeLists.txt</code> of your new library you must call <code>add_test_library</code>. Again, see <code>tests/Unit/DataStructures/CMakeLists.txt</code> for an example. The <code>add_test_library</code> function adds a test library with the name of the first argument and the source files of the third argument. The second argument is the path of the library's directory relative to <code>tests/Unit</code>. For example, for <code>Test_DataStructures</code> it is simply <code>DataStructures</code>. The fourth and final argument to <code>add_test_library</code> are the libraries that must be linked. Typically this should only be the production library you're testing. For example, <code>Test_DataStructures</code> should specify only <code>DataStructures</code> as the library to link. If you are testing a header-only "library" then you do not link any libraries (they must be linked in by the libraries actually testing your dependencies). In this case the last argument should be <code>"" # Header-only, link dependencies included from testing lib</code></li>
+</ul>
+<p>All tests must start with </p><div class="fragment"><div class="line"><span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"> </div>
+<div class="line"><span class="preprocessor">#include &quot;<a class="code" href="TestingFramework_8hpp.html">Framework/TestingFramework.hpp</a>&quot;</span></div>
+</div><!-- fragment --><p>The file <code><a class="el" href="TestingFramework_8hpp.html">tests/Unit/Framework/TestingFramework.hpp</a></code> must always be the first include in the test file and must be separated from the STL includes by a blank line. All classes and free functions should be in an anonymous/unnamed namespace, e.g. </p><div class="fragment"><div class="line"><span class="keyword">namespace </span>{</div>
+<div class="line"><span class="keyword">class </span>MyFreeClass {</div>
+<div class="line">  <span class="comment">/* ... */</span></div>
+<div class="line">};</div>
+<div class="line"> </div>
+<div class="line"><span class="keywordtype">void</span> my_free_function() noexcept {</div>
+<div class="line">  <span class="comment">/* ... */</span></div>
+<div class="line">}</div>
+<div class="line">}  <span class="comment">// namespace</span></div>
+</div><!-- fragment --><p>This is necessary to avoid symbol redefinition errors during linking.</p>
+<p>Test cases are added by using the <code>SPECTRE_TEST_CASE</code> macro. The first argument to the macro is the test name, e.g. <code>"Unit.DataStructures.Tensor"</code>, and the second argument is a list of tags. The tags list is a string where each element is in square brackets. For example, <code>"[Unit][DataStructures]"</code>. The tags should only be the type of test, in this case <code>Unit</code>, and the library being tested, in this case <code>DataStructures</code>. The <code>SPECTRE_TEST_CASE</code> macro should be treated as a function, which means that it should be followed by <code>{ /* test code */ }</code>. For example, </p><div class="fragment"><div class="line">SPECTRE_TEST_CASE(<span class="stringliteral">&quot;Unit.DataStructures.Tensor.Frames&quot;</span>,</div>
+<div class="line">                  <span class="stringliteral">&quot;[Unit][DataStructures]&quot;</span>) {</div>
+<div class="line">  CHECK(<span class="stringliteral">&quot;Logical&quot;</span> == <a class="code" href="group__UtilitiesGroup.html#gae1b1a8fbda55342653e23c0806e0ee7b">get_output</a>(<a class="code" href="structFrame_1_1Logical.html">Frame::Logical</a>{}));</div>
+<div class="line">  CHECK(<span class="stringliteral">&quot;Grid&quot;</span> == <a class="code" href="group__UtilitiesGroup.html#gae1b1a8fbda55342653e23c0806e0ee7b">get_output</a>(<a class="code" href="structFrame_1_1Grid.html">Frame::Grid</a>{}));</div>
+<div class="line">  CHECK(<span class="stringliteral">&quot;Inertial&quot;</span> == <a class="code" href="group__UtilitiesGroup.html#gae1b1a8fbda55342653e23c0806e0ee7b">get_output</a>(<a class="code" href="structFrame_1_1Inertial.html">Frame::Inertial</a>{}));</div>
+<div class="line">  CHECK(<span class="stringliteral">&quot;Distorted&quot;</span> == <a class="code" href="group__UtilitiesGroup.html#gae1b1a8fbda55342653e23c0806e0ee7b">get_output</a>(<a class="code" href="structFrame_1_1Distorted.html">Frame::Distorted</a>{}));</div>
+<div class="line">  CHECK(<span class="stringliteral">&quot;NoFrame&quot;</span> == <a class="code" href="group__UtilitiesGroup.html#gae1b1a8fbda55342653e23c0806e0ee7b">get_output</a>(<a class="code" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a>{}));</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>From within a <code>SPECTRE_TEST_CASE</code> you are able to do all the things you would normally do in a C++ function, including calling other functions, setting variables, using lambdas, etc.</p>
+<p>The <code>CHECK</code> macro in the above example is provided by <a href="https://github.com/catchorg/Catch2">Catch2</a> and is used to check conditions. We also provide the <code>CHECK_ITERABLE_APPROX</code> macro which checks if two <code>double</code>s or two iterable containers of <code>double</code>s are approximately equal. <code>CHECK_ITERABLE_APPROX</code> is especially useful for comparing <code>Tensor</code>s, <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>s, and <code>Tensor&lt;<a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a>&gt;</code>s since it will iterate over nested containers as well.</p>
+<dl class="section warning"><dt>Warning</dt><dd>Catch's <code>CHECK</code> statement only prints numbers out to approximately 10 digits at most, so you should generally prefer <code>CHECK_ITERABLE_APPROX</code> for checking double precision numbers, unless you want to check that two numbers are bitwise identical.</dd></dl>
+<p>All unit tests must finish within a few seconds, the hard limit is 5, but having unit tests that long is strongly discouraged. They should typically complete in less than half a second. Tests that are longer are often no longer testing a small enough unit of code and should either be split into several unit tests or moved to an integration test.</p>
+<h3><a class="anchor" id="autotoc_md218"></a>
+Discovering New and Renamed Tests</h3>
+<p>When you add a new test to a source file or rename an existing test the change needs to be discovered by the testing infrastructure. This is done by building the target <code>rebuild_cache</code>, e.g. by running <code>make rebuild_cache</code>.</p>
+<h3><a class="anchor" id="autotoc_md219"></a>
+Testing Pointwise Functions</h3>
+<p>Pointwise functions should generally be tested in two different ways. The first is by taking input from an analytic solution and checking that the computed result is correct. The second is to use the random number generation comparison with Python infrastructure. In this approach the C++ function being tested is re-implemented in Python and the results are compared. Please follow these guidelines:</p>
+<ul>
+<li>The Python implementation should be in a file with the same name as the source file that is being re-implemented and placed in the same directory as its corresponding <code>Test_*.cpp</code> source file.</li>
+<li>The functions should have the same names as the C++ functions they re-implement.</li>
+<li>If a function does sums over tensor indices then <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.einsum.html"><code>numpy.einsum</code></a> should be used in Python to provide an alternative implementation of the loop structure.</li>
+<li>You can import Python functions from other re-implementations in the <code>tests/Unit/</code> directory to reduce code duplication. Note that the path you pass to <code><a class="el" href="structpypp_1_1SetupLocalPythonEnvironment.html" title="Enable calling of python in the local scope, and add directory(ies) to the front of the search path f...">pypp::SetupLocalPythonEnvironment</a></code> determines the directory from which you can import Python modules. Either import modules directly from the <code>tests/Unit/</code> directory (e.g. <code>import PointwiseFunction.GeneralRelativity.Christoffel as christoffel</code>) or use relative imports like <code>from . import Christoffel as christoffel</code>. Don't assume the Python environment is set up in a subdirectory of <code>tests/Unit/</code>.</li>
+<li>The python code is formatted according to the <code>.style.yapf</code> file in the root of the repository.</li>
+</ul>
+<p>It is possible to test C++ functions that return by value and ones that return by <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code>. In the latter case, since it is possible to return multiple values, one Python function taking all non-<code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> arguments must be supplied for each <code><a class="el" href="classgsl_1_1not__null.html" title="Require a pointer to not be a nullptr">gsl::not_null</a></code> argument to the C++. To perform the test the <code><a class="el" href="namespacepypp.html#a796819ebc4f228d875772c6d40cc021a" title="Tests a C++ function returning by value by comparing the result to a python function.">pypp::check_with_random_values()</a></code> function must be called. For example, the following checks various C++ functions by calling into <code>pypp</code>:</p>
+<div class="fragment"><div class="line">  pypp::check_with_random_values&lt;2&gt;(</div>
+<div class="line">      &amp;check_double_not_null2&lt;T&gt;, <span class="stringliteral">&quot;PyppPyTests&quot;</span>,</div>
+<div class="line">      {<span class="stringliteral">&quot;check_double_not_null2_result0&quot;</span>, <span class="stringliteral">&quot;check_double_not_null2_result1&quot;</span>},</div>
+<div class="line">      {{{0.0, 10.0}, {-10.0, 0.0}}}, value);</div>
+</div><!-- fragment --><p> The corresponding Python functions are:</p>
+<div class="fragment"><div class="line">def check_double_not_null2_result0(t0, t1):</div>
+<div class="line">    <span class="keywordflow">return</span> np.sqrt(t0) + 1.0 / np.sqrt(-t1)</div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">def </span>check_double_not_null2_result1(t0, t1):</div>
+<div class="line">    <span class="keywordflow">return</span> 2.0 * t0 + t1</div>
+</div><!-- fragment --> <h3><a class="anchor" id="autotoc_md220"></a>
+Writing and Fixing Random-Value Based Tests</h3>
+<p>Many tests in SpECTRE make use of randomly generated numbers in order to increase the parameter space covered by the tests. The random number generator is set up using: </p><div class="fragment"><div class="line"><a class="code" href="group__TestingFrameworkGroup.html#gad7f766439113f958bf4f8ba0f53c4881">MAKE_GENERATOR</a>(gen);</div>
+</div><!-- fragment --><p>The generator <code>gen</code> can then be passed to distribution classes such as <code><a class="elRef" href="http://en.cppreference.com/w/cpp/numeric/random/uniform_real_distribution.html">std::uniform_real_distribution</a></code> or <code><a class="el" href="classUniformCustomDistribution.html" title="A uniform distribution function object which redirects appropriately to either the std::uniform_int_d...">UniformCustomDistribution</a></code>.</p>
+<p>Each time the test is run, a different random seed will be used. When writing a test that uses random values, it is good practice to run the test at least \(10^4\) times in order to set any tolerances on checks used in the test. This can be done by using the following command in the build directory (SPECTRE_BUILD_DIR): </p><div class="fragment"><div class="line">ctest --repeat-until-fail 10000 -R TEST_NAME</div>
+</div><!-- fragment --><p>where <code>TEST_NAME</code> is the test name passed to <code>SPECTRE_TEST_CASE</code> (e.g. <code>Unit.Evolution.Systems.CurvedScalarWave.Characteristics</code>).</p>
+<p>If a test case fails when using a random number generated by <code>MAKE_GENERATOR</code>, as part of the output from the failed test will be the text </p><div class="fragment"><div class="line">Seed is:  SEED from FILE_NAME:LINE_NUMBER</div>
+</div><!-- fragment --><p>Note that the output of tests can be found in <code>SPECTRE_BUILD_DIR/Testing/Temporary/LastTest.log</code></p>
+<p>The failing test case can then be reproduced by changing <code>MAKE_GENERATOR</code> call at the provided line in the given file to </p><div class="fragment"><div class="line"><a class="code" href="group__TestingFrameworkGroup.html#gad7f766439113f958bf4f8ba0f53c4881">MAKE_GENERATOR</a>(gen, SEED);</div>
+</div><!-- fragment --><p>If the <code>MAKE_GENERATOR</code> is within <code><a class="el" href="CheckWithRandomValues_8hpp_source.html">CheckWithRandomValues.hpp</a></code>, the failing test case most likely has occurred within a call to <code><a class="el" href="namespacepypp.html#a796819ebc4f228d875772c6d40cc021a" title="Tests a C++ function returning by value by comparing the result to a python function.">pypp::check_with_random_values()</a></code>. In such a case, additional information should have been printed to help you determine which call to <code><a class="el" href="namespacepypp.html#a796819ebc4f228d875772c6d40cc021a" title="Tests a C++ function returning by value by comparing the result to a python function.">pypp::check_with_random_values()</a></code> has failed. The critical information is the line </p><div class="fragment"><div class="line">function:  FUNCTION_NAME</div>
+</div><!-- fragment --><p>where <code>FUNCTION_NAME</code> should correspond to the third argument of a call to <code><a class="el" href="namespacepypp.html#a796819ebc4f228d875772c6d40cc021a" title="Tests a C++ function returning by value by comparing the result to a python function.">pypp::check_with_random_values()</a></code>. The seed that caused the test to fail can then be passed as an additional argument to <code><a class="el" href="namespacepypp.html#a796819ebc4f228d875772c6d40cc021a" title="Tests a C++ function returning by value by comparing the result to a python function.">pypp::check_with_random_values()</a></code>, where you may also need to pass in the default value of the comparison tolerance.</p>
+<p>Typically, you will need to adjust a tolerance used in a <code>CHECK</code> somewhere in the test in order to get the test to succeed reliably. The function <code><a class="el" href="namespacepypp.html#a796819ebc4f228d875772c6d40cc021a" title="Tests a C++ function returning by value by comparing the result to a python function.">pypp::check_with_random_values()</a></code> takes an argument that specifies the lower and upper bounds of random quantities. Typically these should be chosen to be of order unity in order to decrease the chance of occasionally generating large numbers through multiplications which can cause an error above a reasonable tolerance.</p>
+<h3><a class="anchor" id="autotoc_md221"></a>
+Testing Failure Cases</h3>
+<p>Adding the "attribute" <code>// [[OutputRegex, Regular expression to match]]</code> before the <code>SPECTRE_TEST_CASE</code> macro will force ctest to only pass the particular test if the regular expression is found in the output of the test. This can be used to test error handling. When testing <code>ASSERT</code>s you must mark the <code>SPECTRE_TEST_CASE</code> as <code>[[noreturn]]</code>, add the macro <code><a class="el" href="group__TestingFrameworkGroup.html#ga4439208ed8accb2887ff47388e91e58b" title="Mark a test to be checking an ASSERT.">ASSERTION_TEST()</a>;</code> to the beginning of the test, and also have the test call <code>ERROR("Failed to trigger ASSERT
+in an assertion test");</code> at the end of the test body. The test body should be enclosed between <code>#ifdef SPECTRE_DEBUG</code> and an <code>#endif</code> For example,</p>
+<div class="fragment"><div class="line"><span class="comment">// [[OutputRegex, Testing assert]]</span></div>
+<div class="line">[[noreturn]] SPECTRE_TEST_CASE(<span class="stringliteral">&quot;Unit.ErrorHandling.Assert&quot;</span>,</div>
+<div class="line">                               <span class="stringliteral">&quot;[Unit][ErrorHandling]&quot;</span>) {</div>
+<div class="line">  <a class="code" href="group__TestingFrameworkGroup.html#ga4439208ed8accb2887ff47388e91e58b">ASSERTION_TEST</a>();</div>
+<div class="line"><span class="preprocessor">#ifdef SPECTRE_DEBUG</span></div>
+<div class="line">  <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(<span class="keyword">false</span>, <span class="stringliteral">&quot;Testing assert&quot;</span>);</div>
+<div class="line">  <a class="code" href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a>(<span class="stringliteral">&quot;Failed to trigger ASSERT in an assertion test&quot;</span>);</div>
+<div class="line"><span class="preprocessor">#endif</span></div>
+<div class="line">}</div>
+</div><!-- fragment --><p> If the <code>#ifdef SPECTRE_DEBUG</code> block is omitted then compilers will correctly flag the code as being unreachable which results in warnings.</p>
+<p>You can also test <code>ERROR</code>s inside your code. These tests need to have the <code>OutputRegex</code>, and also call <code><a class="el" href="group__TestingFrameworkGroup.html#gaf962c28abc1a1f014f2a6b32c6f01680" title="Mark a test as checking a call to ERROR.">ERROR_TEST()</a>;</code> at the beginning. They do not need the <code>#ifdef SPECTRE_DEBUG</code> block, they can just call have the code that triggers an <code>ERROR</code>. For example,</p>
+<div class="fragment"><div class="line"><span class="comment">// [[OutputRegex, Testing error]]</span></div>
+<div class="line">[[noreturn]] SPECTRE_TEST_CASE(<span class="stringliteral">&quot;Unit.ErrorHandling.Error&quot;</span>,</div>
+<div class="line">                               <span class="stringliteral">&quot;[Unit][ErrorHandling]&quot;</span>) {</div>
+<div class="line">  <a class="code" href="group__TestingFrameworkGroup.html#gaf962c28abc1a1f014f2a6b32c6f01680">ERROR_TEST</a>();</div>
+<div class="line">  <a class="code" href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a>(<span class="stringliteral">&quot;Testing error&quot;</span>);</div>
+<div class="line">}</div>
+</div><!-- fragment --><p> Note that a <code>OutputRegex</code> can also be specified in a test that is supposed to succeed with output that matches the regular expression. In this case, the first line of the test should call the macro <code><a class="el" href="group__TestingFrameworkGroup.html#gacd515a98a97cf7fc82e722274b17e7ce" title="Mark a test as checking the output with a regular expression.">OUTPUT_TEST()</a>;</code>.</p>
+<h2><a class="anchor" id="autotoc_md222"></a>
+Testing Actions</h2>
+<p>The action testing framework is documented as part of the <code><a class="el" href="namespaceActionTesting.html" title="Structures used for mocking the parallel components framework in order to test actions.">ActionTesting</a></code> namespace.</p>
+<h2><a class="anchor" id="autotoc_md223"></a>
+Building and Running A Single Test File</h2>
+<p>In cases where low-level header files are frequently being altered and the changes need to be tested, building <code>RunTests</code> becomes extremely time consuming. The <code>RunSingleTest</code> executable in <code>tests/Unit/RunSingleTest</code> allows one to compile only a select few of the test source files and only link in the necessary libraries. To set which test file and libraries are linked into <code>RunSingleTest</code> edit the <code>tests/Unit/RunSingleTest/CMakeLists.txt</code> file. However, do not commit your changes to that file since it is meant to serve as an example. To compile <code>RunSingleTest</code> use <code>make RunSingleTest</code>, and to run it use <code>BUILD_DIR/bin/RunSingleTest Unit.Test.Name</code>.</p>
+<dl class="section warning"><dt>Warning</dt><dd><code>Parallel::abort</code> does not work correctly in the <code>RunSingleTest</code> executable because a segfault occurs inside Charm++ code after the abort message is printed. </dd></dl>
+</div></div><!-- contents -->
+</div><!-- PageDoc -->
+<div class="ttc" id="astructFrame_1_1Inertial_html"><div class="ttname"><a href="structFrame_1_1Inertial.html">Frame::Inertial</a></div><div class="ttdef"><b>Definition:</b> IndexType.hpp:44</div></div>
+<div class="ttc" id="astructFrame_1_1Grid_html"><div class="ttname"><a href="structFrame_1_1Grid.html">Frame::Grid</a></div><div class="ttdef"><b>Definition:</b> IndexType.hpp:43</div></div>
+<div class="ttc" id="aTestingFramework_8hpp_html"><div class="ttname"><a href="TestingFramework_8hpp.html">TestingFramework.hpp</a></div></div>
+<div class="ttc" id="astructFrame_1_1NoFrame_html"><div class="ttname"><a href="structFrame_1_1NoFrame.html">Frame::NoFrame</a></div><div class="ttdoc">Represents an index that is not in a known frame, e.g. some internal intermediate frame that is irrel...</div><div class="ttdef"><b>Definition:</b> IndexType.hpp:48</div></div>
+<div class="ttc" id="astructFrame_1_1Distorted_html"><div class="ttname"><a href="structFrame_1_1Distorted.html">Frame::Distorted</a></div><div class="ttdef"><b>Definition:</b> IndexType.hpp:45</div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_gaf962c28abc1a1f014f2a6b32c6f01680"><div class="ttname"><a href="group__TestingFrameworkGroup.html#gaf962c28abc1a1f014f2a6b32c6f01680">ERROR_TEST</a></div><div class="ttdeci">#define ERROR_TEST()</div><div class="ttdoc">Mark a test as checking a call to ERROR.</div><div class="ttdef"><b>Definition:</b> TestingFramework.hpp:308</div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_gae1b1a8fbda55342653e23c0806e0ee7b"><div class="ttname"><a href="group__UtilitiesGroup.html#gae1b1a8fbda55342653e23c0806e0ee7b">get_output</a></div><div class="ttdeci">std::string get_output(const T &amp;t) noexcept</div><div class="ttdoc">Get the streamed output of t as a std::string</div><div class="ttdef"><b>Definition:</b> GetOutput.hpp:14</div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_ga4439208ed8accb2887ff47388e91e58b"><div class="ttname"><a href="group__TestingFrameworkGroup.html#ga4439208ed8accb2887ff47388e91e58b">ASSERTION_TEST</a></div><div class="ttdeci">#define ASSERTION_TEST()</div><div class="ttdoc">Mark a test to be checking an ASSERT.</div><div class="ttdef"><b>Definition:</b> TestingFramework.hpp:338</div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_ga1d27028c1827976007fe9d29ad3a2f66"><div class="ttname"><a href="group__ErrorHandlingGroup.html#ga1d27028c1827976007fe9d29ad3a2f66">ERROR</a></div><div class="ttdeci">#define ERROR(m)</div><div class="ttdoc">prints an error message to the standard error stream and aborts the program.</div><div class="ttdef"><b>Definition:</b> Error.hpp:37</div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_gad7f766439113f958bf4f8ba0f53c4881"><div class="ttname"><a href="group__TestingFrameworkGroup.html#gad7f766439113f958bf4f8ba0f53c4881">MAKE_GENERATOR</a></div><div class="ttdeci">#define MAKE_GENERATOR(...)</div><div class="ttdoc">MAKE_GENERATOR(NAME [, SEED]) declares a variable of name NAME containing a generator of type std::mt...</div><div class="ttdef"><b>Definition:</b> TestHelpers.hpp:433</div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_gaf170f3984e3d0f809b2558dbd981ca35"><div class="ttname"><a href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a></div><div class="ttdeci">#define ASSERT(a, m)</div><div class="ttdoc">Assert that an expression should be true.</div><div class="ttdef"><b>Definition:</b> Assert.hpp:49</div></div>
+<div class="ttc" id="astructFrame_1_1Logical_html"><div class="ttname"><a href="structFrame_1_1Logical.html">Frame::Logical</a></div><div class="ttdef"><b>Definition:</b> IndexType.hpp:42</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: ScalarWave::Solutions::RegularSphericalWave Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceScalarWave.html">ScalarWave</a></li><li class="navelem"><a class="el" href="namespaceScalarWave_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="classScalarWave_1_1Solutions_1_1RegularSphericalWave.html">RegularSphericalWave</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classScalarWave_1_1Solutions_1_1RegularSphericalWave-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">ScalarWave::Solutions::RegularSphericalWave Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A 3D spherical wave solution to the Euclidean wave equation that is regular at the origin.  
+ <a href="classScalarWave_1_1Solutions_1_1RegularSphericalWave.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="RegularSphericalWave_8hpp_source.html">RegularSphericalWave.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structScalarWave_1_1Solutions_1_1RegularSphericalWave_1_1Profile.html">Profile</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:ad2b45a1a019d53346d31ded6cbc62372"><td class="memItemLeft" align="right" valign="top"><a id="ad2b45a1a019d53346d31ded6cbc62372"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structScalarWave_1_1Solutions_1_1RegularSphericalWave_1_1Profile.html">Profile</a> &gt;</td></tr>
+<tr class="separator:ad2b45a1a019d53346d31ded6cbc62372"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a55f85ce81ec46a642005b99ce5fc099f"><td class="memItemLeft" align="right" valign="top"><a id="a55f85ce81ec46a642005b99ce5fc099f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RegularSphericalWave</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classMathFunction.html">MathFunction</a>&lt; 1, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt; profile) noexcept</td></tr>
+<tr class="separator:a55f85ce81ec46a642005b99ce5fc099f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6b5540dd35b665b30ff94864c17c48b6"><td class="memItemLeft" align="right" valign="top"><a id="a6b5540dd35b665b30ff94864c17c48b6"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RegularSphericalWave</b> (const <a class="el" href="classScalarWave_1_1Solutions_1_1RegularSphericalWave.html">RegularSphericalWave</a> &amp;) noexcept=delete</td></tr>
+<tr class="separator:a6b5540dd35b665b30ff94864c17c48b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad3eb477abdaf2d50699714ee13bb043f"><td class="memItemLeft" align="right" valign="top"><a id="ad3eb477abdaf2d50699714ee13bb043f"></a>
+<a class="el" href="classScalarWave_1_1Solutions_1_1RegularSphericalWave.html">RegularSphericalWave</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classScalarWave_1_1Solutions_1_1RegularSphericalWave.html">RegularSphericalWave</a> &amp;) noexcept=delete</td></tr>
+<tr class="separator:ad3eb477abdaf2d50699714ee13bb043f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9cb78ecd53f371cf7753d2581622c673"><td class="memItemLeft" align="right" valign="top"><a id="a9cb78ecd53f371cf7753d2581622c673"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RegularSphericalWave</b> (<a class="el" href="classScalarWave_1_1Solutions_1_1RegularSphericalWave.html">RegularSphericalWave</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a9cb78ecd53f371cf7753d2581622c673"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2433be94f0690c6b51dd4a02688be753"><td class="memItemLeft" align="right" valign="top"><a id="a2433be94f0690c6b51dd4a02688be753"></a>
+<a class="el" href="classScalarWave_1_1Solutions_1_1RegularSphericalWave.html">RegularSphericalWave</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classScalarWave_1_1Solutions_1_1RegularSphericalWave.html">RegularSphericalWave</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a2433be94f0690c6b51dd4a02688be753"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad5a572feea59bf441e72dfafc7148ef"><td class="memItemLeft" align="right" valign="top"><a id="aad5a572feea59bf441e72dfafc7148ef"></a>
+<a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structScalarWave_1_1Pi.html">ScalarWave::Pi</a>, <a class="el" href="structScalarWave_1_1Phi.html">ScalarWave::Phi</a>&lt; 3 &gt;, <a class="el" href="structScalarWave_1_1Psi.html">ScalarWave::Psi</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;x, double t, tmpl::list&lt; <a class="el" href="structScalarWave_1_1Pi.html">ScalarWave::Pi</a>, <a class="el" href="structScalarWave_1_1Phi.html">ScalarWave::Phi</a>&lt; 3 &gt;, <a class="el" href="structScalarWave_1_1Psi.html">ScalarWave::Psi</a> &gt;) const noexcept</td></tr>
+<tr class="separator:aad5a572feea59bf441e72dfafc7148ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ed4bc54b1194092be869a9a847f0505"><td class="memItemLeft" align="right" valign="top"><a id="a8ed4bc54b1194092be869a9a847f0505"></a>
+<a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structScalarWave_1_1Pi.html">ScalarWave::Pi</a> &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structScalarWave_1_1Phi.html">ScalarWave::Phi</a>&lt; 3 &gt; &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structScalarWave_1_1Psi.html">ScalarWave::Psi</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3 &gt; &amp;x, double t, tmpl::list&lt;::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structScalarWave_1_1Pi.html">ScalarWave::Pi</a> &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structScalarWave_1_1Phi.html">ScalarWave::Phi</a>&lt; 3 &gt;&gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structScalarWave_1_1Psi.html">ScalarWave::Psi</a> &gt;&gt;) const noexcept</td></tr>
+<tr class="separator:a8ed4bc54b1194092be869a9a847f0505"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afad25d1ca8dd7348a191deada41b6571"><td class="memItemLeft" align="right" valign="top"><a id="afad25d1ca8dd7348a191deada41b6571"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:afad25d1ca8dd7348a191deada41b6571"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a36dc1c8066198174397b6585db4543c8"><td class="memItemLeft" align="right" valign="top"><a id="a36dc1c8066198174397b6585db4543c8"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = 3</td></tr>
+<tr class="separator:a36dc1c8066198174397b6585db4543c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a03ce9e464b86b063ef16a09282ed6f66"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a03ce9e464b86b063ef16a09282ed6f66"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A 3D spherical wave solution to the Euclidean wave equation that is regular at the origin. </p>
+<p>The solution is given by \(\Psi(\vec{x},t) = \Psi(r,t) = \frac{F(r-t)-F(-r-t)}{r}\) describing an outgoing and an ingoing wave with profile \(F(u)\). For small \(r\) the solution is approximated by its Taylor expansion \(\Psi(r,t)=2 F^\prime(-t) + \mathcal{O}(r^2)\). The outgoing and ingoing waves meet at the origin (and cancel each other) when \(F^\prime(-t)=0\).</p>
+<p>The expansion is employed where \(r\) lies within the cubic root of the machine epsilon. Inside this radius we expect the error due to the truncation of the Taylor expansion to be smaller than the numerical error made when evaluating the full \(\Psi(r,t)\). This is because the truncation error scales as \(r^2\) (since we keep the zeroth order, and the linear order vanishes as all odd orders do) and the numerical error scales as \(\frac{\epsilon}{r}\), so they are comparable at \(r\propto\epsilon^\frac{1}{3}\).</p>
+<p><em>Requires:</em> the profile \(F(u)\) to have a length scale of order unity so that "small" \(r\) means \(r\ll 1\). This is without loss of generality because of the scale invariance of the wave equation. The profile could be a Gausssian centered at 0 with width 1, for instance. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a03ce9e464b86b063ef16a09282ed6f66"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a03ce9e464b86b063ef16a09282ed6f66">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> ScalarWave::Solutions::RegularSphericalWave::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;A spherical wave solution of the Euclidean wave equation that is &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;regular at the origin&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticSolutions/WaveEquation/<a class="el" href="RegularSphericalWave_8hpp_source.html">RegularSphericalWave.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,357 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: gr::Solutions::GaugeWave&lt; Dim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacegr.html">gr</a></li><li class="navelem"><a class="el" href="namespacegr_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="classgr_1_1Solutions_1_1GaugeWave.html">GaugeWave</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classgr_1_1Solutions_1_1GaugeWave-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">gr::Solutions::GaugeWave&lt; Dim &gt; Class Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Gauge wave in flat spacetime.  
+ <a href="classgr_1_1Solutions_1_1GaugeWave.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="PointwiseFunctions_2AnalyticSolutions_2GeneralRelativity_2GaugeWave_8hpp_source.html">GaugeWave.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgr_1_1Solutions_1_1GaugeWave_1_1Amplitude.html">Amplitude</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgr_1_1Solutions_1_1GaugeWave_1_1Wavelength.html">Wavelength</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a527e20665f2bb896df0acf18dc444f32"><td class="memItemLeft" align="right" valign="top"><a id="a527e20665f2bb896df0acf18dc444f32"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structgr_1_1Solutions_1_1GaugeWave_1_1Amplitude.html">Amplitude</a>, <a class="el" href="structgr_1_1Solutions_1_1GaugeWave_1_1Wavelength.html">Wavelength</a> &gt;</td></tr>
+<tr class="separator:a527e20665f2bb896df0acf18dc444f32"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a22b34d95d1e48c26c0a9306967c31b"><td class="memTemplParams" colspan="2"><a id="a4a22b34d95d1e48c26c0a9306967c31b"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a4a22b34d95d1e48c26c0a9306967c31b"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>DerivLapse</b> = ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; DataType &gt;, tmpl::size_t&lt; volume_dim &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;</td></tr>
+<tr class="separator:a4a22b34d95d1e48c26c0a9306967c31b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3963d52c5d97ead63dc86030e6b6b074"><td class="memTemplParams" colspan="2"><a id="a3963d52c5d97ead63dc86030e6b6b074"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a3963d52c5d97ead63dc86030e6b6b074"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>DerivShift</b> = ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; volume_dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, DataType &gt;, tmpl::size_t&lt; volume_dim &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;</td></tr>
+<tr class="separator:a3963d52c5d97ead63dc86030e6b6b074"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae47fd3b80baf755623450cfd1abff731"><td class="memTemplParams" colspan="2"><a id="ae47fd3b80baf755623450cfd1abff731"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:ae47fd3b80baf755623450cfd1abff731"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>DerivSpatialMetric</b> = ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; volume_dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, DataType &gt;, tmpl::size_t&lt; volume_dim &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;</td></tr>
+<tr class="separator:ae47fd3b80baf755623450cfd1abff731"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb89dbe05bcd71b0b68b2ac0a9b40da0"><td class="memTemplParams" colspan="2"><a id="aeb89dbe05bcd71b0b68b2ac0a9b40da0"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:aeb89dbe05bcd71b0b68b2ac0a9b40da0"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>tags</b> = tmpl::list&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; DataType &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; DataType &gt; &gt;, <a class="el" href="structTags_1_1deriv.html">DerivLapse</a>&lt; DataType &gt;, <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; volume_dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, DataType &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; volume_dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, DataType &gt; &gt;, <a class="el" href="structTags_1_1deriv.html">DerivShift</a>&lt; DataType &gt;, <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; volume_dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, DataType &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; volume_dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, DataType &gt; &gt;, <a class="el" href="structTags_1_1deriv.html">DerivSpatialMetric</a>&lt; DataType &gt;, <a class="el" href="structgr_1_1Tags_1_1SqrtDetSpatialMetric.html">gr::Tags::SqrtDetSpatialMetric</a>&lt; DataType &gt;, <a class="el" href="structgr_1_1Tags_1_1ExtrinsicCurvature.html">gr::Tags::ExtrinsicCurvature</a>&lt; volume_dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, DataType &gt;, <a class="el" href="structgr_1_1Tags_1_1InverseSpatialMetric.html">gr::Tags::InverseSpatialMetric</a>&lt; volume_dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, DataType &gt; &gt;</td></tr>
+<tr class="separator:aeb89dbe05bcd71b0b68b2ac0a9b40da0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_structgr_1_1AnalyticSolution"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structgr_1_1AnalyticSolution')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structgr_1_1AnalyticSolution.html">gr::AnalyticSolution&lt; Dim &gt;</a></td></tr>
+<tr class="memitem:a01ebfa926cdac437de642a3d71291079 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memTemplParams" colspan="2"><a id="a01ebfa926cdac437de642a3d71291079"></a>
+template&lt;typename DataType , typename Frame  = ::Frame::Inertial&gt; </td></tr>
+<tr class="memitem:a01ebfa926cdac437de642a3d71291079 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>DerivLapse</b> = ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; DataType &gt;, tmpl::size_t&lt; volume_dim &gt;, Frame &gt;</td></tr>
+<tr class="separator:a01ebfa926cdac437de642a3d71291079 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f751afb8f2bbf566d6e94064a272c98 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memTemplParams" colspan="2"><a id="a5f751afb8f2bbf566d6e94064a272c98"></a>
+template&lt;typename DataType , typename Frame  = ::Frame::Inertial&gt; </td></tr>
+<tr class="memitem:a5f751afb8f2bbf566d6e94064a272c98 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>DerivShift</b> = ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; volume_dim, Frame, DataType &gt;, tmpl::size_t&lt; volume_dim &gt;, Frame &gt;</td></tr>
+<tr class="separator:a5f751afb8f2bbf566d6e94064a272c98 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a134c9ecf2c5a4bc3f18fa10b1adcaaab inherit pub_types_structgr_1_1AnalyticSolution"><td class="memTemplParams" colspan="2"><a id="a134c9ecf2c5a4bc3f18fa10b1adcaaab"></a>
+template&lt;typename DataType , typename Frame  = ::Frame::Inertial&gt; </td></tr>
+<tr class="memitem:a134c9ecf2c5a4bc3f18fa10b1adcaaab inherit pub_types_structgr_1_1AnalyticSolution"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>DerivSpatialMetric</b> = ::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; volume_dim, Frame, DataType &gt;, tmpl::size_t&lt; volume_dim &gt;, Frame &gt;</td></tr>
+<tr class="separator:a134c9ecf2c5a4bc3f18fa10b1adcaaab inherit pub_types_structgr_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b907b96b69eebd67298c9da7a913388 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memTemplParams" colspan="2"><a id="a4b907b96b69eebd67298c9da7a913388"></a>
+template&lt;typename DataType , typename Frame  = ::Frame::Inertial&gt; </td></tr>
+<tr class="memitem:a4b907b96b69eebd67298c9da7a913388 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>tags</b> = tmpl::list&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; DataType &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Lapse.html">gr::Tags::Lapse</a>&lt; DataType &gt; &gt;, <a class="el" href="structTags_1_1deriv.html">DerivLapse</a>&lt; DataType, Frame &gt;, <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; volume_dim, Frame, DataType &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1Shift.html">gr::Tags::Shift</a>&lt; volume_dim, Frame, DataType &gt; &gt;, <a class="el" href="structTags_1_1deriv.html">DerivShift</a>&lt; DataType, Frame &gt;, <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; volume_dim, Frame, DataType &gt;, ::<a class="el" href="structTags_1_1dt.html">Tags::dt</a>&lt; <a class="el" href="structgr_1_1Tags_1_1SpatialMetric.html">gr::Tags::SpatialMetric</a>&lt; volume_dim, Frame, DataType &gt; &gt;, <a class="el" href="structTags_1_1deriv.html">DerivSpatialMetric</a>&lt; DataType, Frame &gt;, <a class="el" href="structgr_1_1Tags_1_1SqrtDetSpatialMetric.html">gr::Tags::SqrtDetSpatialMetric</a>&lt; DataType &gt;, <a class="el" href="structgr_1_1Tags_1_1ExtrinsicCurvature.html">gr::Tags::ExtrinsicCurvature</a>&lt; volume_dim, Frame, DataType &gt;, <a class="el" href="structgr_1_1Tags_1_1InverseSpatialMetric.html">gr::Tags::InverseSpatialMetric</a>&lt; volume_dim, Frame, DataType &gt; &gt;</td></tr>
+<tr class="separator:a4b907b96b69eebd67298c9da7a913388 inherit pub_types_structgr_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a76a96d89d8859bc36ff590ed0bcb980b"><td class="memItemLeft" align="right" valign="top"><a id="a76a96d89d8859bc36ff590ed0bcb980b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>GaugeWave</b> (double amplitude, double wavelength, const <a class="el" href="structOptions_1_1Context.html">Options::Context</a> &amp;context={})</td></tr>
+<tr class="separator:a76a96d89d8859bc36ff590ed0bcb980b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74ee0eedd46b631d3e44f89b310b23ad"><td class="memItemLeft" align="right" valign="top"><a id="a74ee0eedd46b631d3e44f89b310b23ad"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>GaugeWave</b> (const <a class="el" href="classgr_1_1Solutions_1_1GaugeWave.html">GaugeWave</a> &amp;)=default</td></tr>
+<tr class="separator:a74ee0eedd46b631d3e44f89b310b23ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba4bdc8e9e3c6e9c811794571b9af3d2"><td class="memItemLeft" align="right" valign="top"><a id="aba4bdc8e9e3c6e9c811794571b9af3d2"></a>
+<a class="el" href="classgr_1_1Solutions_1_1GaugeWave.html">GaugeWave</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classgr_1_1Solutions_1_1GaugeWave.html">GaugeWave</a> &amp;)=default</td></tr>
+<tr class="separator:aba4bdc8e9e3c6e9c811794571b9af3d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c244188f651fddc583b83b5729063b8"><td class="memItemLeft" align="right" valign="top"><a id="a7c244188f651fddc583b83b5729063b8"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>GaugeWave</b> (<a class="el" href="classgr_1_1Solutions_1_1GaugeWave.html">GaugeWave</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a7c244188f651fddc583b83b5729063b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a86c490b320d98d4e46fcd5c9090e8500"><td class="memItemLeft" align="right" valign="top"><a id="a86c490b320d98d4e46fcd5c9090e8500"></a>
+<a class="el" href="classgr_1_1Solutions_1_1GaugeWave.html">GaugeWave</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classgr_1_1Solutions_1_1GaugeWave.html">GaugeWave</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a86c490b320d98d4e46fcd5c9090e8500"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a171d7cbcd5bee5c78b1f88085c193675"><td class="memTemplParams" colspan="2"><a id="a171d7cbcd5bee5c78b1f88085c193675"></a>
+template&lt;typename DataType , typename... Tags&gt; </td></tr>
+<tr class="memitem:a171d7cbcd5bee5c78b1f88085c193675"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, volume_dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;x, double t, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="separator:a171d7cbcd5bee5c78b1f88085c193675"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb37c2791f4fe1a812f1bb75936f41c3"><td class="memTemplParams" colspan="2"><a id="adb37c2791f4fe1a812f1bb75936f41c3"></a>
+template&lt;typename DataType , typename... Tags&gt; </td></tr>
+<tr class="memitem:adb37c2791f4fe1a812f1bb75936f41c3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, volume_dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;x, double t, const IntermediateVars&lt; DataType &gt; &amp;vars, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="separator:adb37c2791f4fe1a812f1bb75936f41c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a917b6f8bf7b0a08b77d7bfcf5e3f0ba1"><td class="memItemLeft" align="right" valign="top"><a id="a917b6f8bf7b0a08b77d7bfcf5e3f0ba1"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a917b6f8bf7b0a08b77d7bfcf5e3f0ba1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7fab57c73dd7e43979b11a552ff53240"><td class="memItemLeft" align="right" valign="top"><a id="a7fab57c73dd7e43979b11a552ff53240"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>amplitude</b> () const noexcept</td></tr>
+<tr class="separator:a7fab57c73dd7e43979b11a552ff53240"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8baa334bfcec9693141f90ebfd0d052c"><td class="memItemLeft" align="right" valign="top"><a id="a8baa334bfcec9693141f90ebfd0d052c"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>wavelength</b> () const noexcept</td></tr>
+<tr class="separator:a8baa334bfcec9693141f90ebfd0d052c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a01988b211726f5d4267b0c6f54433108"><td class="memItemLeft" align="right" valign="top"><a id="a01988b211726f5d4267b0c6f54433108"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = Dim</td></tr>
+<tr class="separator:a01988b211726f5d4267b0c6f54433108"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae55dc132bf799e599e149e1c7ec24c9c"><td class="memItemLeft" align="right" valign="top"><a id="ae55dc132bf799e599e149e1c7ec24c9c"></a>
+static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b> {&quot;Gauge wave in flat spacetime&quot;}</td></tr>
+<tr class="separator:ae55dc132bf799e599e149e1c7ec24c9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_static_attribs_structgr_1_1AnalyticSolution"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_structgr_1_1AnalyticSolution')"><img src="closed.png" alt="-"/>&#160;Static Public Attributes inherited from <a class="el" href="structgr_1_1AnalyticSolution.html">gr::AnalyticSolution&lt; Dim &gt;</a></td></tr>
+<tr class="memitem:ae5b357444661e278b8bbad8c96b6b666 inherit pub_static_attribs_structgr_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="ae5b357444661e278b8bbad8c96b6b666"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = Dim</td></tr>
+<tr class="separator:ae5b357444661e278b8bbad8c96b6b666 inherit pub_static_attribs_structgr_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+class gr::Solutions::GaugeWave&lt; Dim &gt;</h3>
+
+<p>Gauge wave in flat spacetime. </p>
+<h3>Details</h3>
+<p>This solution is <a class="el" href="classgr_1_1Solutions_1_1Minkowski.html" title="The Minkowski solution for flat space in Dim spatial dimensions.">Minkowski</a> space in coordinates chosen to contain a gauge wave. The spacetime metric is given by Eq. (4.3) of <a class="el" href="citelist.html#CITEREF_Alcubierre2003pc">[1]</a> :</p>
+<p class="formulaDsp">
+\begin{equation} ds^2 = -H dt^2 + H dx^2 + dy^2 + dz^2, \end{equation}
+</p>
+<p>where</p>
+<p class="formulaDsp">
+\begin{equation} H = H(x-t) = 1 - A \sin\left(\frac{2\pi(x-t)}{d}\right). \end{equation}
+</p>
+<p>The gauge wave has amplitude \(A\), wavelength \(d\), and propagates along the x axis.</p>
+<p>In these coordinates, the spatial metric \(\gamma_{ij}\) and inverse spatial metric \(\gamma^{ij}\) are diagonal, with the diagonal elements equal to unity except for</p>
+<p class="formulaDsp">
+\begin{align} \gamma_{xx} &amp; = H,\\ \gamma^{xx} &amp; = 1/H. \end{align}
+</p>
+<p>The components of the derivatives of \(\gamma_{ij}\) vanish except for</p>
+<p class="formulaDsp">
+\begin{align} \partial_t \gamma_{xx} &amp; = \partial_t H = - \partial_x H,\\ \partial_x \gamma_{xx} &amp; = \partial_x H. \end{align}
+</p>
+<p>The square root of the spatial metric determinant is</p>
+<p class="formulaDsp">
+\begin{align} \sqrt{\gamma} &amp; = \sqrt{H}. \end{align}
+</p>
+<p>The lapse and its derivatives are</p>
+<p class="formulaDsp">
+\begin{align} \alpha &amp; = \sqrt{H},\\ \partial_t \alpha &amp; = -\frac{\partial_x H}{2\sqrt{H}},\\ \partial_x \alpha &amp; = \frac{\partial_x H}{2\sqrt{H}},\\ \partial_y \alpha &amp; = \partial_z \alpha = 0. \end{align}
+</p>
+<p>The shift \(\beta^i\) and its derivatives vanish.</p>
+<p>The extrinsic curvature's components vanish, except for</p>
+<p class="formulaDsp">
+\begin{align} K_{xx} &amp; = \frac{\partial_x H}{2 \sqrt{H}}. \end{align}
+</p>
+<p>The following are input file options that can be specified:</p><ul>
+<li><a class="el" href="structgr_1_1Solutions_1_1GaugeWave_1_1Amplitude.html">Amplitude</a></li>
+<li><a class="el" href="structgr_1_1Solutions_1_1GaugeWave_1_1Wavelength.html">Wavelength</a> </li>
+</ul>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticSolutions/GeneralRelativity/<a class="el" href="PointwiseFunctions_2AnalyticSolutions_2GeneralRelativity_2GaugeWave_8hpp_source.html">GaugeWave.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

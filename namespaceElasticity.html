@@ -1,0 +1,624 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Elasticity Namespace Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">Elasticity Namespace Reference<div class="ingroups"><a class="el" href="group__EllipticSystemsGroup.html">Elliptic Systems</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Items related to solving elasticity problems.  
+<a href="namespaceElasticity.html#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceElasticity_1_1AnalyticData"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceElasticity_1_1AnalyticData.html">AnalyticData</a></td></tr>
+<tr class="memdesc:namespaceElasticity_1_1AnalyticData"><td class="mdescLeft">&#160;</td><td class="mdescRight">Analytic data for the <a class="el" href="namespaceElasticity.html" title="Items related to solving elasticity problems.">Elasticity</a> system. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceElasticity_1_1ConstitutiveRelations"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceElasticity_1_1ConstitutiveRelations.html">ConstitutiveRelations</a></td></tr>
+<tr class="memdesc:namespaceElasticity_1_1ConstitutiveRelations"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constitutive (stress-strain) relations that characterize the elastic properties of a material. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceElasticity_1_1Solutions"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceElasticity_1_1Solutions.html">Solutions</a></td></tr>
+<tr class="memdesc:namespaceElasticity_1_1Solutions"><td class="mdescLeft">&#160;</td><td class="mdescRight">Analytic solutions of the linear <a class="el" href="namespaceElasticity.html" title="Items related to solving elasticity problems.">Elasticity</a> equations. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structElasticity_1_1FirstOrderSystem.html">FirstOrderSystem</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The linear elasticity equation formulated as a set of coupled first-order PDEs.  <a href="structElasticity_1_1FirstOrderSystem.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structElasticity_1_1Fluxes.html">Fluxes</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the fluxes \(F^i_A\) for the <a class="el" href="namespaceElasticity.html" title="Items related to solving elasticity problems.">Elasticity</a> equation on a flat metric in Cartesian coordinates.  <a href="structElasticity_1_1Fluxes.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structElasticity_1_1Sources.html">Sources</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add the sources \(S_A\) for the <a class="el" href="namespaceElasticity.html" title="Items related to solving elasticity problems.">Elasticity</a> equation.  <a href="structElasticity_1_1Sources.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a2cc98687467796967492323ae8e9c269"><td class="memTemplParams" colspan="2"><a id="a2cc98687467796967492323ae8e9c269"></a>
+template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:a2cc98687467796967492323ae8e9c269"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceElasticity.html#a2cc98687467796967492323ae8e9c269">primal_fluxes</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::II&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; flux_for_displacement, const tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;<a class="el" href="namespaceElasticity.html#aab79291d11b2199c03936ef9a760d988">strain</a>, const <a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation.html">ConstitutiveRelations::ConstitutiveRelation</a>&lt; Dim &gt; &amp;constitutive_relation, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;coordinates) noexcept</td></tr>
+<tr class="memdesc:a2cc98687467796967492323ae8e9c269"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the fluxes \(F^{ij}=Y^{ijkl}(x) S_{kl}(x)=-T^{ij}\) for the <a class="el" href="namespaceElasticity.html" title="Items related to solving elasticity problems.">Elasticity</a> equation. <br /></td></tr>
+<tr class="separator:a2cc98687467796967492323ae8e9c269"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a377b49454e61ded068fa3ed608b0e095"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:a377b49454e61ded068fa3ed608b0e095"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceElasticity.html#a377b49454e61ded068fa3ed608b0e095">add_curved_sources</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; source_for_displacement, const tnsr::Ijj&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;christoffel_second_kind, const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;christoffel_contracted, const tnsr::II&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;stress) noexcept</td></tr>
+<tr class="memdesc:a377b49454e61ded068fa3ed608b0e095"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add the contribution \(-\Gamma^i_{ik}T^{kj} - \Gamma^j_{ik}T^{ik}\) to the displacement source for the curved-space elasticity equations on a metric \(\gamma_{ij}\).  <a href="namespaceElasticity.html#a377b49454e61ded068fa3ed608b0e095">More...</a><br /></td></tr>
+<tr class="separator:a377b49454e61ded068fa3ed608b0e095"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6555289f8b3c184eaaba0affae47eb20"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:a6555289f8b3c184eaaba0affae47eb20"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceElasticity.html#a6555289f8b3c184eaaba0affae47eb20">auxiliary_fluxes</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::Ijj&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; flux_for_strain, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;displacement) noexcept</td></tr>
+<tr class="memdesc:a6555289f8b3c184eaaba0affae47eb20"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the fluxes \(F^i_{jk}=\delta^{i}_{(j} \xi_{k)}\) for the auxiliary (strain) field in the first-order formulation of the <a class="el" href="namespaceElasticity.html" title="Items related to solving elasticity problems.">Elasticity</a> equation.  <a href="namespaceElasticity.html#a6555289f8b3c184eaaba0affae47eb20">More...</a><br /></td></tr>
+<tr class="separator:a6555289f8b3c184eaaba0affae47eb20"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a99be49688315d4b585c79881e839da54"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:a99be49688315d4b585c79881e839da54"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceElasticity.html#a99be49688315d4b585c79881e839da54">curved_auxiliary_fluxes</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::Ijj&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; flux_for_strain, const tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;metric, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;displacement) noexcept</td></tr>
+<tr class="memdesc:a99be49688315d4b585c79881e839da54"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the fluxes \(F^i_{jk}=\delta^{i}_{(j}\gamma_{k)l}\xi^l\) for the auxiliary (strain) field in the first-order formulation of the curved-space elasticity equations on a metric \(\gamma_{ij}\).  <a href="namespaceElasticity.html#a99be49688315d4b585c79881e839da54">More...</a><br /></td></tr>
+<tr class="separator:a99be49688315d4b585c79881e839da54"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afd8a435c7c068d95d2b9c780071feac9"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:afd8a435c7c068d95d2b9c780071feac9"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceElasticity.html#afd8a435c7c068d95d2b9c780071feac9">add_curved_auxiliary_sources</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; source_for_strain, const tnsr::ijj&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;christoffel_first_kind, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;displacement) noexcept</td></tr>
+<tr class="memdesc:afd8a435c7c068d95d2b9c780071feac9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add the contribution \(\Gamma_{ijk}\xi^i\) to the strain source for the curved-space elasticity equations on a metric \(\gamma_{ij}\).  <a href="namespaceElasticity.html#afd8a435c7c068d95d2b9c780071feac9">More...</a><br /></td></tr>
+<tr class="separator:afd8a435c7c068d95d2b9c780071feac9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab79291d11b2199c03936ef9a760d988"><td class="memTemplParams" colspan="2"><a id="aab79291d11b2199c03936ef9a760d988"></a>
+template&lt;typename DataType , size_t Dim&gt; </td></tr>
+<tr class="memitem:aab79291d11b2199c03936ef9a760d988"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceElasticity.html#aab79291d11b2199c03936ef9a760d988">strain</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; DataType, Dim &gt; * &gt; strain, const tnsr::iJ&lt; DataType, Dim &gt; &amp;deriv_displacement) noexcept</td></tr>
+<tr class="memdesc:aab79291d11b2199c03936ef9a760d988"><td class="mdescLeft">&#160;</td><td class="mdescRight">The symmetric strain \(S_{ij} = \partial_{(i} \xi_{j)}\) on a flat background in Cartesian coordinates. <br /></td></tr>
+<tr class="separator:aab79291d11b2199c03936ef9a760d988"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63ddddc1c9c62f9f1c4e6ffa5b3338d8"><td class="memTemplParams" colspan="2"><a id="a63ddddc1c9c62f9f1c4e6ffa5b3338d8"></a>
+template&lt;typename DataType , size_t Dim&gt; </td></tr>
+<tr class="memitem:a63ddddc1c9c62f9f1c4e6ffa5b3338d8"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceElasticity.html#a63ddddc1c9c62f9f1c4e6ffa5b3338d8">strain</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; DataType, Dim &gt; * &gt; strain, const tnsr::iJ&lt; DataType, Dim &gt; &amp;deriv_displacement, const tnsr::ii&lt; DataType, Dim &gt; &amp;metric, const tnsr::ijj&lt; DataType, Dim &gt; &amp;deriv_metric, const tnsr::ijj&lt; DataType, Dim &gt; &amp;christoffel_first_kind, const tnsr::I&lt; DataType, Dim &gt; &amp;displacement) noexcept</td></tr>
+<tr class="memdesc:a63ddddc1c9c62f9f1c4e6ffa5b3338d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">The symmetric strain \(S_{ij} = \nabla_{(i} \gamma_{j)k} \xi^k = \partial_{(i} \gamma_{j)k} \xi^k - \Gamma_{kij} \xi^k\) on a background metric \(\gamma_{ij}\). <br /></td></tr>
+<tr class="separator:a63ddddc1c9c62f9f1c4e6ffa5b3338d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a838a263ce7cf31f40520d0e581867da3"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:a838a263ce7cf31f40520d0e581867da3"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceElasticity.html#a838a263ce7cf31f40520d0e581867da3">strain</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt; strain, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;displacement, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh, const InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;inv_jacobian) noexcept</td></tr>
+<tr class="memdesc:a838a263ce7cf31f40520d0e581867da3"><td class="mdescLeft">&#160;</td><td class="mdescRight">The symmetric strain \(S_{ij} = \partial_{(i} \xi_{j)}\) on a flat background in Cartesian coordinates.  <a href="namespaceElasticity.html#a838a263ce7cf31f40520d0e581867da3">More...</a><br /></td></tr>
+<tr class="separator:a838a263ce7cf31f40520d0e581867da3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Items related to solving elasticity problems. </p>
+<h3>Details</h3>
+<p>In elasticity problems we solve for the displacement vector field \(\boldsymbol{\xi}\) in an elastic material that responds to external forces, stresses or deformations. In this static approximation the equations of motion reduce to the elliptic equations</p>
+<p class="formulaDsp">
+\[ \nabla_i T^{ij} = f_\mathrm{ext}^j \]
+</p>
+<p>that describes a state of equilibrium between the stresses \(T^{ij}\) within the material and the external body forces \(\boldsymbol{f}_\mathrm{ext}\) (Eqns. 11.13 and 11.14 in <a class="el" href="citelist.html#CITEREF_ThorneBlandford2017">[103]</a> with the counteracting internal forces \(\boldsymbol{f} = -\boldsymbol{f}_\mathrm{ext}\)). For small deformations (see e.g. <a class="el" href="citelist.html#CITEREF_ThorneBlandford2017">[103]</a>, Section 11.3.2 for a discussion) the stress is related to the strain \(S_{ij}=\nabla_{(i}\xi_{j)}\) by a linear constitutive relation \(T^{ij}=-Y^{ijkl}S_{kl}\) (Eq. 11.17 in <a class="el" href="citelist.html#CITEREF_ThorneBlandford2017">[103]</a>) that describes the elastic properties of the material (see <code><a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation.html" title="Base class for constitutive (stress-strain) relations that characterize the elastic properties of a m...">Elasticity::ConstitutiveRelations::ConstitutiveRelation</a></code>). </p>
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="afd8a435c7c068d95d2b9c780071feac9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afd8a435c7c068d95d2b9c780071feac9">&#9670;&nbsp;</a></span>add_curved_auxiliary_sources()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Elasticity::add_curved_auxiliary_sources </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>source_for_strain</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::ijj&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>christoffel_first_kind</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>displacement</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Add the contribution \(\Gamma_{ijk}\xi^i\) to the strain source for the curved-space elasticity equations on a metric \(\gamma_{ij}\). </p>
+<p>These sources arise from the non-principal part of the divergence on a curved background. </p>
+
+</div>
+</div>
+<a id="a377b49454e61ded068fa3ed608b0e095"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a377b49454e61ded068fa3ed608b0e095">&#9670;&nbsp;</a></span>add_curved_sources()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Elasticity::add_curved_sources </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>source_for_displacement</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::Ijj&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>christoffel_second_kind</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>christoffel_contracted</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::II&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>stress</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Add the contribution \(-\Gamma^i_{ik}T^{kj} - \Gamma^j_{ik}T^{ik}\) to the displacement source for the curved-space elasticity equations on a metric \(\gamma_{ij}\). </p>
+<p>These sources arise from the non-principal part of the divergence on a curved background. </p>
+
+</div>
+</div>
+<a id="a6555289f8b3c184eaaba0affae47eb20"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6555289f8b3c184eaaba0affae47eb20">&#9670;&nbsp;</a></span>auxiliary_fluxes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Elasticity::auxiliary_fluxes </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::Ijj&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>flux_for_strain</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>displacement</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the fluxes \(F^i_{jk}=\delta^{i}_{(j} \xi_{k)}\) for the auxiliary (strain) field in the first-order formulation of the <a class="el" href="namespaceElasticity.html" title="Items related to solving elasticity problems.">Elasticity</a> equation. </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structElasticity_1_1FirstOrderSystem.html" title="The linear elasticity equation formulated as a set of coupled first-order PDEs.">Elasticity::FirstOrderSystem</a> </dd></dl>
+
+</div>
+</div>
+<a id="a99be49688315d4b585c79881e839da54"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a99be49688315d4b585c79881e839da54">&#9670;&nbsp;</a></span>curved_auxiliary_fluxes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Elasticity::curved_auxiliary_fluxes </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::Ijj&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>flux_for_strain</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>metric</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>displacement</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the fluxes \(F^i_{jk}=\delta^{i}_{(j}\gamma_{k)l}\xi^l\) for the auxiliary (strain) field in the first-order formulation of the curved-space elasticity equations on a metric \(\gamma_{ij}\). </p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structElasticity_1_1FirstOrderSystem.html" title="The linear elasticity equation formulated as a set of coupled first-order PDEs.">Elasticity::FirstOrderSystem</a> </dd></dl>
+
+</div>
+</div>
+<a id="aa4d7d4b6d8b781c183af91e14f4c45d0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa4d7d4b6d8b781c183af91e14f4c45d0">&#9670;&nbsp;</a></span>potential_energy_density() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt;<a class="el" href="classDataVector.html">DataVector</a>&gt; Elasticity::potential_energy_density </td>
+          <td>(</td>
+          <td class="paramtype">const tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>strain</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>coordinates</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation.html">ConstitutiveRelations::ConstitutiveRelation</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>constitutive_relation</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The potential energy density \(U=-\frac{1}{2}S_{ij}T^{ij}\) stored in the deformation of the elastic material (see Eq. (11.25) in <a class="el" href="citelist.html#CITEREF_ThorneBlandford2017">[103]</a>) </p>
+<p>Note that the two-dimensional instantiation of this function assumes that only the terms of \(S_{ij}T^{ij}\) where both \(i\) and \(j\) correspond to one of the computational dimensions contribute to the sum. This is the case for the plane-stress approximation employed in the two-dimensional <code><a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html" title="An isotropic and homogeneous material.">Elasticity::ConstitutiveRelations::IsotropicHomogeneous</a></code>, for example, where \(T^{i3}=0=T^{3i}\). </p>
+
+</div>
+</div>
+<a id="a77a35ffb7dc583d42982f2c73f078d7d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a77a35ffb7dc583d42982f2c73f078d7d">&#9670;&nbsp;</a></span>potential_energy_density() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Elasticity::potential_energy_density </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>potential_energy_density</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>strain</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>coordinates</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation.html">ConstitutiveRelations::ConstitutiveRelation</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>constitutive_relation</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The potential energy density \(U=-\frac{1}{2}S_{ij}T^{ij}\) stored in the deformation of the elastic material (see Eq. (11.25) in <a class="el" href="citelist.html#CITEREF_ThorneBlandford2017">[103]</a>) </p>
+<p>Note that the two-dimensional instantiation of this function assumes that only the terms of \(S_{ij}T^{ij}\) where both \(i\) and \(j\) correspond to one of the computational dimensions contribute to the sum. This is the case for the plane-stress approximation employed in the two-dimensional <code><a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html" title="An isotropic and homogeneous material.">Elasticity::ConstitutiveRelations::IsotropicHomogeneous</a></code>, for example, where \(T^{i3}=0=T^{3i}\). </p>
+
+</div>
+</div>
+<a id="a838a263ce7cf31f40520d0e581867da3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a838a263ce7cf31f40520d0e581867da3">&#9670;&nbsp;</a></span>strain()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Elasticity::strain </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::ii&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>strain</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>displacement</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>inv_jacobian</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The symmetric strain \(S_{ij} = \partial_{(i} \xi_{j)}\) on a flat background in Cartesian coordinates. </p>
+<p>Note that this function involves a numeric differentiation of the displacement vector. </p>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,422 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Evolution/DgSubcell/CorrectPackagedData.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_d7cddb31ba741ba3a4d5be000d880a30.html">Evolution</a></li><li class="navelem"><a class="el" href="dir_4a23561a75228e2a7c81cfb0f2f95b3b.html">DgSubcell</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">CorrectPackagedData.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/algorithm.html">algorithm</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;boost/functional/hash.hpp&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/unordered_map.html">unordered_map</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataVector.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Index_8hpp.html">DataStructures/Index.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;DataStructures/SliceIterator.hpp&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Tensor_8hpp.html">DataStructures/Tensor/Tensor.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Variables_8hpp.html">DataStructures/Variables.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Direction_8hpp.html">Domain/Structure/Direction.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Element_8hpp.html">Domain/Structure/Element.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ElementId_8hpp.html">Domain/Structure/ElementId.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;Evolution/DgSubcell/Projection.hpp&quot;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &quot;Evolution/DiscontinuousGalerkin/MortarData.hpp&quot;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="NumericalAlgorithms_2Spectral_2Mesh_8hpp.html">NumericalAlgorithms/Spectral/Mesh.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Assert_8hpp.html">Utilities/ErrorHandling/Assert.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160; </div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceevolution_1_1dg_1_1subcell.html">evolution::dg::subcell</a> {<span class="comment"></span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment"> * \brief Project the DG package data to the subcells. Data received from a</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment"> * neighboring element doing DG is always projected, while the data we sent to</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment"> * our neighbors before doing a rollback from DG to subcell is only projected if</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="comment"> * `OverwriteInternalMortarData` is `true`.</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment"> * In order for the hybrid DG-FD/FV scheme to be conservative between elements</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment"> * using DG and elements using subcell, the boundary terms must be the same on</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment"> * both elements. In practice this means the boundary corrections \f$G+D\f$ must</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment"> * be computed on the same grid. Consider the element doing subcell which</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="comment"> * receives data from an element doing DG. In this case the DG element&#39;s</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment"> * ingredients going into \f$G+D\f$ are projected to the subcells and then</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment"> * \f$G+D\f$ are computed on the subcells. Similarly, for strict conservation</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment"> * the element doing DG must first project the data it sent to the neighbor to</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment"> * the subcells, then compute \f$G+D\f$ on the subcells, and finally reconstrct</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment"> * \f$G+D\f$ back to the DG grid before lifting \f$G+D\f$ to the volume.</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment"> * This function updates the `packaged_data` (ingredients into \f$G+D\f$)</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment"> * received by an element doing subcell by projecting the neighbor&#39;s DG data</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment"> * onto the subcells. Note that this is only half of what is required for strict</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment"> * conservation, the DG element must also compute \f$G+D\f$ on the subcells.</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment"> * Note that we currently do not perform the other half of the correction</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment"> * needed to be strictly conservative.</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment"> * If we are retaking a time step after the DG step failed then maintaining</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment"> * conservation requires additional care. If `OverwriteInternalMortarData` is</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment"> * `true` then the local (the element switching from DG to subcell) ingredients</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment"> * into \f$G+D\f$ are projected and overwrite the data computed from</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment"> * the FD reconstruction to the interface. However, even this is insufficient to</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment"> * guarantee conservation. To guarantee conservation (which we do not currently</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment"> * do) the correction \f$G+D\f$ must be computed on the DG grid and then</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment"> * projected to the subcells.</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment"> * Note that our practical experience shows that since the DG-subcell hybrid</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment"> * scheme switches to the subcell solver _before_ the local solution contains</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment"> * discontinuities, strict conservation is not necessary between DG and FD/FV</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment"> * regions. This was also observed with a block-adaptive finite difference AMR</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment"> * code \cite CHEN2016604</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">bool</span> OverwriteInternalMortarData, <span class="keywordtype">size_t</span> Dim,</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;          <span class="keyword">typename</span> DgPackageFieldTags&gt;</div>
+<div class="line"><a name="l00069"></a><span class="lineno"><a class="line" href="namespaceevolution_1_1dg_1_1subcell.html#a37e0e8506da63babd7e700ffce64aeae">   69</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="namespaceevolution_1_1dg_1_1subcell.html#a37e0e8506da63babd7e700ffce64aeae">correct_package_data</a>(</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;Variables&lt;DgPackageFieldTags&gt;*&gt; lower_packaged_data,</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;Variables&lt;DgPackageFieldTags&gt;*&gt; upper_packaged_data,</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">size_t</span> logical_dimension_to_operate_in, <span class="keyword">const</span> <a class="code" href="classElement.html">Element&lt;Dim&gt;</a>&amp; element,</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a>&amp; subcell_volume_mesh,</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt;<a class="code" href="classDirection.html">Direction&lt;Dim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;Dim&gt;</a>&gt;,</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        <a class="code" href="classevolution_1_1dg_1_1MortarData.html">evolution::dg::MortarData&lt;Dim&gt;</a>,</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        boost::hash&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt;<a class="code" href="classDirection.html">Direction&lt;Dim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;Dim&gt;</a>&gt;&gt;&gt;&amp;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        mortar_data) noexcept {</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;  <span class="keyword">const</span> <a class="code" href="classDirection.html">Direction&lt;Dim&gt;</a> upper_direction{logical_dimension_to_operate_in,</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;                                       Side::Upper};</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;  <span class="keyword">const</span> <a class="code" href="classDirection.html">Direction&lt;Dim&gt;</a> lower_direction{logical_dimension_to_operate_in,</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;                                       Side::Lower};</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;  <span class="keyword">const</span> <span class="keywordtype">bool</span> has_upper_neighbor = element.neighbors().contains(upper_direction);</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;  <span class="keyword">const</span> <span class="keywordtype">bool</span> has_lower_neighbor = element.neighbors().contains(lower_direction);</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;  <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a> upper_mortar_id =</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;      has_upper_neighbor</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;          ? <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>{upper_direction,</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;                      *element.neighbors().at(upper_direction).begin()}</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;          : <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair&lt;Direction&lt;Dim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;Dim&gt;</a>&gt;{};</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;  <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a> lower_mortar_id =</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;      has_lower_neighbor</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;          ? <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>{lower_direction,</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;                      *element.neighbors().at(lower_direction).begin()}</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;          : <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair&lt;Direction&lt;Dim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;Dim&gt;</a>&gt;{};</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160; </div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;  <a class="code" href="classIndex.html">Index&lt;Dim&gt;</a> subcell_extents_with_faces = subcell_volume_mesh.extents();</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;  ++subcell_extents_with_faces[logical_dimension_to_operate_in];</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;  <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh</a>&lt;Dim - 1&gt;&amp; subcell_face_mesh =</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;      subcell_volume_mesh.<a class="code" href="classMesh.html#a7c7ec56a25f0e3a3e49733ef699e0e37">slice_away</a>(logical_dimension_to_operate_in);</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160; </div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> project_dg_data_to_subcells =</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;      [logical_dimension_to_operate_in, &amp;subcell_extents_with_faces,</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;       &amp;subcell_face_mesh](<span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;Variables&lt;DgPackageFieldTags&gt;</a>*&gt;</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;                               subcell_packaged_data,</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;                           <span class="keyword">const</span> <span class="keywordtype">size_t</span> subcell_index,</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;                           <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh</a>&lt;Dim - 1&gt;&amp; neighbor_face_mesh,</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;                           <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a>&amp; neighbor_data) noexcept {</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;        <span class="keyword">const</span> <span class="keywordtype">double</span>* <a class="code" href="namespaceevolution_1_1dg_1_1subcell.html#a7e1abe6a77a20e0d4762ea8261212b95">slice_data</a> = neighbor_data.data();</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;        <span class="comment">// Warning: projected_data can&#39;t be inside the `if constexpr` since that</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;        <span class="comment">// would lead to a dangling pointer.</span></div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a> projected_data{};</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;        <span class="keywordflow">if</span> constexpr (Dim &gt; 1) {</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;          projected_data.resize(</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;              Variables&lt;DgPackageFieldTags&gt;::number_of_independent_components *</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;              subcell_face_mesh.number_of_grid_points());</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;          evolution::dg::subcell::fd::detail::project_impl(</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;              <a class="code" href="group__UtilitiesGroup.html#ga188c2766e601fb537e7d34ae70c6ff9d">gsl::make_span</a>(projected_data.data(), projected_data.size()),</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;              <a class="code" href="group__UtilitiesGroup.html#ga188c2766e601fb537e7d34ae70c6ff9d">gsl::make_span</a>(neighbor_data.data(), neighbor_data.size()),</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;              neighbor_face_mesh, subcell_face_mesh.extents());</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;          <a class="code" href="namespaceevolution_1_1dg_1_1subcell.html#a7e1abe6a77a20e0d4762ea8261212b95">slice_data</a> = projected_data.data();</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;        } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;          (void)subcell_face_mesh;</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;          (void)projected_data;</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;        }</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;        <span class="keyword">const</span> <span class="keywordtype">size_t</span> volume_grid_points = subcell_extents_with_faces.product();</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;        <span class="keyword">const</span> <span class="keywordtype">size_t</span> slice_grid_points =</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;            subcell_extents_with_faces</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;                .slice_away(logical_dimension_to_operate_in)</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;                .product();</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;        <span class="keywordtype">double</span>* <span class="keyword">const</span> volume_data = subcell_packaged_data-&gt;data();</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;        <span class="keywordflow">for</span> (<a class="code" href="classSliceIterator.html">SliceIterator</a> si(subcell_extents_with_faces,</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;                              logical_dimension_to_operate_in, subcell_index);</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;             si; ++si) {</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;          <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0;</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;               i &lt;</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;               Variables&lt;DgPackageFieldTags&gt;::number_of_independent_components;</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;               ++i) {</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;            <span class="comment">// clang-tidy: do not use pointer arithmetic</span></div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;            volume_data[si.volume_offset() +</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;                        i * volume_grid_points] =  <span class="comment">// NOLINT</span></div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;                <a class="code" href="namespaceevolution_1_1dg_1_1subcell.html#a7e1abe6a77a20e0d4762ea8261212b95">slice_data</a>[si.slice_offset() +</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;                           i * slice_grid_points];  <span class="comment">// NOLINT</span></div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;          }</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;        }</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;      };</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160; </div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;  <span class="comment">// Project DG data to the subcells</span></div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;  <span class="keywordflow">if</span> (<span class="keyword">auto</span> neighbor_mortar_data_it = mortar_data.find(upper_mortar_id);</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;      has_upper_neighbor and neighbor_mortar_data_it != mortar_data.end()) {</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;    <span class="keywordflow">if</span> (neighbor_mortar_data_it-&gt;second.neighbor_mortar_data().has_value()) {</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;      project_dg_data_to_subcells(</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;          upper_packaged_data,</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;          subcell_extents_with_faces[logical_dimension_to_operate_in] - 1,</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;          neighbor_mortar_data_it-&gt;second.neighbor_mortar_data()-&gt;first,</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;          neighbor_mortar_data_it-&gt;second.neighbor_mortar_data()-&gt;second);</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;    }</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;    <span class="keywordflow">if</span> constexpr (OverwriteInternalMortarData) {</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;      <span class="keywordflow">if</span> (neighbor_mortar_data_it-&gt;second.local_mortar_data().has_value()) {</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;        project_dg_data_to_subcells(</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;            lower_packaged_data,</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;            subcell_extents_with_faces[logical_dimension_to_operate_in] - 1,</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;            neighbor_mortar_data_it-&gt;second.local_mortar_data()-&gt;first,</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;            neighbor_mortar_data_it-&gt;second.local_mortar_data()-&gt;second);</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;      }</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;    }</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;  }</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;  <span class="keywordflow">if</span> (<span class="keyword">auto</span> neighbor_mortar_data_it = mortar_data.find(lower_mortar_id);</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;      has_lower_neighbor and neighbor_mortar_data_it != mortar_data.end()) {</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;    <span class="keywordflow">if</span> (neighbor_mortar_data_it-&gt;second.neighbor_mortar_data().has_value()) {</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;      project_dg_data_to_subcells(</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;          lower_packaged_data, 0,</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;          neighbor_mortar_data_it-&gt;second.neighbor_mortar_data()-&gt;first,</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;          neighbor_mortar_data_it-&gt;second.neighbor_mortar_data()-&gt;second);</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;    }</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;    <span class="keywordflow">if</span> constexpr (OverwriteInternalMortarData) {</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;      <span class="keywordflow">if</span> (neighbor_mortar_data_it-&gt;second.local_mortar_data().has_value()) {</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;        project_dg_data_to_subcells(</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;            upper_packaged_data, 0,</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;            neighbor_mortar_data_it-&gt;second.local_mortar_data()-&gt;first,</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;            neighbor_mortar_data_it-&gt;second.local_mortar_data()-&gt;second);</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;      }</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;    }</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;  }</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;}</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;}  <span class="comment">// namespace evolution::dg::subcell</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="autility_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a></div></div>
+<div class="ttc" id="apair_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a></div></div>
+<div class="ttc" id="anamespaceevolution_1_1dg_1_1subcell_html_a37e0e8506da63babd7e700ffce64aeae"><div class="ttname"><a href="namespaceevolution_1_1dg_1_1subcell.html#a37e0e8506da63babd7e700ffce64aeae">evolution::dg::subcell::correct_package_data</a></div><div class="ttdeci">void correct_package_data(const gsl::not_null&lt; Variables&lt; DgPackageFieldTags &gt; * &gt; lower_packaged_data, const gsl::not_null&lt; Variables&lt; DgPackageFieldTags &gt; * &gt; upper_packaged_data, const size_t logical_dimension_to_operate_in, const Element&lt; Dim &gt; &amp;element, const Mesh&lt; Dim &gt; &amp;subcell_volume_mesh, const std::unordered_map&lt; std::pair&lt; Direction&lt; Dim &gt;, ElementId&lt; Dim &gt;&gt;, evolution::dg::MortarData&lt; Dim &gt;, boost::hash&lt; std::pair&lt; Direction&lt; Dim &gt;, ElementId&lt; Dim &gt;&gt;&gt;&gt; &amp;mortar_data) noexcept</div><div class="ttdoc">Project the DG package data to the subcells. Data received from a neighboring element doing DG is alw...</div><div class="ttdef"><b>Definition:</b> CorrectPackagedData.hpp:69</div></div>
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt; double &gt;</a></div></div>
+<div class="ttc" id="aclassIndex_html"><div class="ttname"><a href="classIndex.html">Index</a></div><div class="ttdef"><b>Definition:</b> Index.hpp:31</div></div>
+<div class="ttc" id="aalgorithm_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/algorithm.html">algorithm</a></div></div>
+<div class="ttc" id="aclassDirection_html"><div class="ttname"><a href="classDirection.html">Direction&lt; Dim &gt;</a></div></div>
+<div class="ttc" id="aclassElement_html"><div class="ttname"><a href="classElement.html">Element</a></div><div class="ttdef"><b>Definition:</b> Element.hpp:29</div></div>
+<div class="ttc" id="aclassElementId_html"><div class="ttname"><a href="classElementId.html">ElementId&lt; Dim &gt;</a></div></div>
+<div class="ttc" id="aElementId_8hpp_html"><div class="ttname"><a href="ElementId_8hpp.html">ElementId.hpp</a></div></div>
+<div class="ttc" id="aclassevolution_1_1dg_1_1MortarData_html"><div class="ttname"><a href="classevolution_1_1dg_1_1MortarData.html">evolution::dg::MortarData</a></div><div class="ttdoc">Data on the mortar used to compute the boundary correction for the DG scheme.</div><div class="ttdef"><b>Definition:</b> MortarData.hpp:50</div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="aAssert_8hpp_html"><div class="ttname"><a href="Assert_8hpp.html">Assert.hpp</a></div></div>
+<div class="ttc" id="aclassSliceIterator_html"><div class="ttname"><a href="classSliceIterator.html">SliceIterator</a></div><div class="ttdoc">Iterate over a (dim-1)-dimensional slice.</div><div class="ttdef"><b>Definition:</b> SliceIterator.hpp:23</div></div>
+<div class="ttc" id="aIndex_8hpp_html"><div class="ttname"><a href="Index_8hpp.html">Index.hpp</a></div></div>
+<div class="ttc" id="aVariables_8hpp_html"><div class="ttname"><a href="Variables_8hpp.html">Variables.hpp</a></div></div>
+<div class="ttc" id="aElement_8hpp_html"><div class="ttname"><a href="Element_8hpp.html">Element.hpp</a></div></div>
+<div class="ttc" id="aclassMesh_html"><div class="ttname"><a href="classMesh.html">Mesh</a></div><div class="ttdoc">Holds the number of grid points, basis, and quadrature in each direction of the computational grid.</div><div class="ttdef"><b>Definition:</b> Mesh.hpp:49</div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga188c2766e601fb537e7d34ae70c6ff9d"><div class="ttname"><a href="group__UtilitiesGroup.html#ga188c2766e601fb537e7d34ae70c6ff9d">gsl::make_span</a></div><div class="ttdeci">constexpr span&lt; ElementType &gt; make_span(ElementType *ptr, typename span&lt; ElementType &gt;::index_type count)</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:801</div></div>
+<div class="ttc" id="anamespaceevolution_1_1dg_1_1subcell_html"><div class="ttname"><a href="namespaceevolution_1_1dg_1_1subcell.html">evolution::dg::subcell</a></div><div class="ttdoc">Implementation of a generic finite volume/conservative finite difference subcell limiter.</div><div class="ttdef"><b>Definition:</b> Actions.hpp:6</div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="aTensor_8hpp_html"><div class="ttname"><a href="Tensor_8hpp.html">Tensor.hpp</a></div></div>
+<div class="ttc" id="anamespaceevolution_1_1dg_1_1subcell_html_a7e1abe6a77a20e0d4762ea8261212b95"><div class="ttname"><a href="namespaceevolution_1_1dg_1_1subcell.html#a7e1abe6a77a20e0d4762ea8261212b95">evolution::dg::subcell::slice_data</a></div><div class="ttdeci">DirectionMap&lt; Dim, std::vector&lt; double &gt; &gt; slice_data(const Variables&lt; TagList &gt; &amp;volume_subcell_vars, const Index&lt; Dim &gt; &amp;subcell_extents, const size_t number_of_ghost_points, const DirectionMap&lt; Dim, bool &gt; &amp;directions_to_slice) noexcept</div><div class="ttdoc">Slice the subcell variables needed for neighbors to perform reconstruction.</div><div class="ttdef"><b>Definition:</b> SliceData.hpp:45</div></div>
+<div class="ttc" id="aDirection_8hpp_html"><div class="ttname"><a href="Direction_8hpp.html">Direction.hpp</a></div></div>
+<div class="ttc" id="aclassMesh_html_a7c7ec56a25f0e3a3e49733ef699e0e37"><div class="ttname"><a href="classMesh.html#a7c7ec56a25f0e3a3e49733ef699e0e37">Mesh::slice_away</a></div><div class="ttdeci">Mesh&lt; Dim - 1 &gt; slice_away(size_t d) const noexcept</div><div class="ttdoc">Returns a Mesh with dimension d removed (zero-indexed).</div></div>
+<div class="ttc" id="aunordered_map_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/unordered_map.html">unordered_map</a></div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="aNumericalAlgorithms_2Spectral_2Mesh_8hpp_html"><div class="ttname"><a href="NumericalAlgorithms_2Spectral_2Mesh_8hpp.html">Mesh.hpp</a></div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

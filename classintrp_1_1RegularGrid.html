@@ -1,0 +1,421 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: intrp::RegularGrid&lt; Dim &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceintrp.html">intrp</a></li><li class="navelem"><a class="el" href="classintrp_1_1RegularGrid.html">RegularGrid</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classintrp_1_1RegularGrid-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">intrp::RegularGrid&lt; Dim &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__NumericalAlgorithmsGroup.html">Numerical Algorithms</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Interpolate data from a <a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a> onto a regular grid of points.  
+ <a href="classintrp_1_1RegularGrid.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="RegularGridInterpolant_8hpp_source.html">RegularGridInterpolant.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a3564e4f01999aa3229a69ce3cbc75084"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classintrp_1_1RegularGrid.html#a3564e4f01999aa3229a69ce3cbc75084">RegularGrid</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;source_mesh, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;target_mesh, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;override_target_mesh_with_1d_logical_coords={}) noexcept</td></tr>
+<tr class="memdesc:a3564e4f01999aa3229a69ce3cbc75084"><td class="mdescLeft">&#160;</td><td class="mdescRight">An interpolator between two regular grids.  <a href="classintrp_1_1RegularGrid.html#a3564e4f01999aa3229a69ce3cbc75084">More...</a><br /></td></tr>
+<tr class="separator:a3564e4f01999aa3229a69ce3cbc75084"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae980b35b6eacc306cf9dedcb2eeb6bcb"><td class="memItemLeft" align="right" valign="top"><a id="ae980b35b6eacc306cf9dedcb2eeb6bcb"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:ae980b35b6eacc306cf9dedcb2eeb6bcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae147bc9b977e06142c42034836b0950a"><td class="memItemLeft" align="right" valign="top">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classMatrix.html">Matrix</a>, Dim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classintrp_1_1RegularGrid.html#ae147bc9b977e06142c42034836b0950a">interpolation_matrices</a> () const noexcept</td></tr>
+<tr class="memdesc:ae147bc9b977e06142c42034836b0950a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the internally-stored matrices that interpolate from the source grid to the target grid.  <a href="classintrp_1_1RegularGrid.html#ae147bc9b977e06142c42034836b0950a">More...</a><br /></td></tr>
+<tr class="separator:ae147bc9b977e06142c42034836b0950a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a58d9182c196823d58329ae0a737dbb91"><td class="memTemplParams" colspan="2"><a id="a58d9182c196823d58329ae0a737dbb91"></a>
+template&lt;typename TagsList &gt; </td></tr>
+<tr class="memitem:a58d9182c196823d58329ae0a737dbb91"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>interpolate</b> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; TagsList &gt; * &gt; result, const Variables&lt; TagsList &gt; &amp;vars) const noexcept</td></tr>
+<tr class="separator:a58d9182c196823d58329ae0a737dbb91"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:aea8bf32b9042ba600cea623d59ad31e2"><td class="memTemplParams" colspan="2"><a id="aea8bf32b9042ba600cea623d59ad31e2"></a>
+template&lt;typename TagsList &gt; </td></tr>
+<tr class="memitem:aea8bf32b9042ba600cea623d59ad31e2"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classintrp_1_1RegularGrid.html#aea8bf32b9042ba600cea623d59ad31e2">interpolate</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; TagsList &gt; * &gt; result, const Variables&lt; TagsList &gt; &amp;vars) const noexcept</td></tr>
+<tr class="memdesc:aea8bf32b9042ba600cea623d59ad31e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interpolate a Variables onto the target points. <br /></td></tr>
+<tr class="separator:aea8bf32b9042ba600cea623d59ad31e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2f3604386de3a68fb57ed11a315d311"><td class="memTemplParams" colspan="2"><a id="ac2f3604386de3a68fb57ed11a315d311"></a>
+template&lt;typename TagsList &gt; </td></tr>
+<tr class="memitem:ac2f3604386de3a68fb57ed11a315d311"><td class="memTemplItemLeft" align="right" valign="top">Variables&lt; TagsList &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classintrp_1_1RegularGrid.html#ac2f3604386de3a68fb57ed11a315d311">interpolate</a> (const Variables&lt; TagsList &gt; &amp;vars) const noexcept</td></tr>
+<tr class="memdesc:ac2f3604386de3a68fb57ed11a315d311"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interpolate a Variables onto the target points. <br /></td></tr>
+<tr class="separator:ac2f3604386de3a68fb57ed11a315d311"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a33e396a0b1ff09134da73b65083353df"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classintrp_1_1RegularGrid.html#a33e396a0b1ff09134da73b65083353df">interpolate</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt; result, const <a class="el" href="classDataVector.html">DataVector</a> &amp;input) const noexcept</td></tr>
+<tr class="memdesc:a33e396a0b1ff09134da73b65083353df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interpolate a <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> onto the target points.  <a href="classintrp_1_1RegularGrid.html#a33e396a0b1ff09134da73b65083353df">More...</a><br /></td></tr>
+<tr class="separator:a33e396a0b1ff09134da73b65083353df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe9c1778b0a29588b16491e2d4f611d7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classDataVector.html">DataVector</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classintrp_1_1RegularGrid.html#afe9c1778b0a29588b16491e2d4f611d7">interpolate</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;input) const noexcept</td></tr>
+<tr class="memdesc:afe9c1778b0a29588b16491e2d4f611d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interpolate a <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> onto the target points.  <a href="classintrp_1_1RegularGrid.html#afe9c1778b0a29588b16491e2d4f611d7">More...</a><br /></td></tr>
+<tr class="separator:afe9c1778b0a29588b16491e2d4f611d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a6f03006eef5c71aa18c8fca2b45ba584"><td class="memTemplParams" colspan="2"><a id="a6f03006eef5c71aa18c8fca2b45ba584"></a>
+template&lt;size_t LocalDim&gt; </td></tr>
+<tr class="memitem:a6f03006eef5c71aa18c8fca2b45ba584"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classintrp_1_1RegularGrid.html">RegularGrid</a>&lt; LocalDim &gt; &amp;lhs, const <a class="el" href="classintrp_1_1RegularGrid.html">RegularGrid</a>&lt; LocalDim &gt; &amp;rhs) noexcept</td></tr>
+<tr class="separator:a6f03006eef5c71aa18c8fca2b45ba584"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+class intrp::RegularGrid&lt; Dim &gt;</h3>
+
+<p>Interpolate data from a <a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a> onto a regular grid of points. </p>
+<p>The target points must lie on a tensor-product grid that is aligned with the source <a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a>. In any direction where the source and target points share an identical <a class="el" href="classMesh.html" title="Holds the number of grid points, basis, and quadrature in each direction of the computational grid.">Mesh</a> (i.e., where the underlying 1-dimensional meshes share the same extent, basis, and quadrature), the code is optimized to avoid performing identity interpolations.</p>
+<p>Note, however, that in each dimension of the target grid, the points can be freely distributed; in particular, the grid points need not be the collocation points corresponding to a particular basis and quadrature. Note also that the target grid need not overlap the source grid. In this case, polynomial extrapolation is performed, with order set by the order of the basis in the source grid. The extrapolation will be correct but may suffer from reduced accuracy, especially for higher-order polynomials. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a3564e4f01999aa3229a69ce3cbc75084"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3564e4f01999aa3229a69ce3cbc75084">&#9670;&nbsp;</a></span>RegularGrid()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classintrp_1_1RegularGrid.html">intrp::RegularGrid</a>&lt; Dim &gt;::<a class="el" href="classintrp_1_1RegularGrid.html">RegularGrid</a> </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>source_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>target_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>override_target_mesh_with_1d_logical_coords</em> = <code>{}</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>An interpolator between two regular grids. </p>
+<p>When the optional third argument is NOT passed, creates an interpolator between two regular meshes.</p>
+<p>The optional third argument allows the caller to override the distribution of grid points in any dimension(s) of the target grid. Each non-empty element of <code>override_target_mesh_with_1d_logical_coords</code> gives the logical coordinates which will override the default coordinates of <code>target_mesh</code>. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="afe9c1778b0a29588b16491e2d4f611d7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe9c1778b0a29588b16491e2d4f611d7">&#9670;&nbsp;</a></span>interpolate() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classDataVector.html">DataVector</a> <a class="el" href="classintrp_1_1RegularGrid.html">intrp::RegularGrid</a>&lt; Dim &gt;::interpolate </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>input</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Interpolate a <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> onto the target points. </p>
+<dl class="section note"><dt>Note</dt><dd>When interpolating multiple tensors, the Variables interface is more efficient. However, this <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> interface is useful for applications where only some components of a Tensor or Variables need to be interpolated. </dd></dl>
+
+</div>
+</div>
+<a id="a33e396a0b1ff09134da73b65083353df"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a33e396a0b1ff09134da73b65083353df">&#9670;&nbsp;</a></span>interpolate() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classintrp_1_1RegularGrid.html">intrp::RegularGrid</a>&lt; Dim &gt;::interpolate </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt;&#160;</td>
+          <td class="paramname"><em>result</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>input</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Interpolate a <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> onto the target points. </p>
+<dl class="section note"><dt>Note</dt><dd>When interpolating multiple tensors, the Variables interface is more efficient. However, this <a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a> interface is useful for applications where only some components of a Tensor or Variables need to be interpolated. </dd></dl>
+
+</div>
+</div>
+<a id="ae147bc9b977e06142c42034836b0950a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae147bc9b977e06142c42034836b0950a">&#9670;&nbsp;</a></span>interpolation_matrices()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;<a class="el" href="classMatrix.html">Matrix</a>, Dim&gt;&amp; <a class="el" href="classintrp_1_1RegularGrid.html">intrp::RegularGrid</a>&lt; Dim &gt;::interpolation_matrices </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return the internally-stored matrices that interpolate from the source grid to the target grid. </p>
+<p>Each matrix interpolates in one logical direction, and can be empty if the interpolation in that direction is the identity (i.e., if the source and target grids have the same logical coordinates in this direction). </p>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/NumericalAlgorithms/Interpolation/<a class="el" href="RegularGridInterpolant_8hpp_source.html">RegularGridInterpolant.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

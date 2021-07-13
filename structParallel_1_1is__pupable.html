@@ -1,0 +1,247 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Parallel::is_pupable&lt; T, U &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceParallel.html">Parallel</a></li><li class="navelem"><a class="el" href="structParallel_1_1is__pupable.html">is_pupable</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">Parallel::is_pupable&lt; T, U &gt; Struct Template Reference<div class="ingroups"><a class="el" href="group__ParallelGroup.html">Parallelization</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Check if type <code>T</code> has operator| defined for Charm++ serialization.  
+ <a href="structParallel_1_1is__pupable.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Parallel_2TypeTraits_8hpp_source.html">TypeTraits.hpp</a>&gt;</code></p>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename T, typename U = void&gt;<br />
+struct Parallel::is_pupable&lt; T, U &gt;</h3>
+
+<p>Check if type <code>T</code> has operator| defined for Charm++ serialization. </p>
+<h3>Details</h3>
+<p>Inherits from <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a> if the type <code>T</code> has operator| defined, otherwise inherits from <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::false_type</a></p>
+<h3>Usage</h3>
+<p>For any type <code>T</code>, </p><div class="fragment"><div class="line"><span class="keyword">using</span> result = tt::is_pupable&lt;T&gt;;</div>
+</div><!-- fragment --><p><em>Returns:</em> <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::bool_constant</a></p>
+<p><em>Semantics:</em> If the type <code>T</code> has operator| defined, then </p><div class="fragment"><div class="line"><span class="keyword">typename</span> result::type = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a>;</div>
+</div><!-- fragment --><p> otherwise </p><div class="fragment"><div class="line"><span class="keyword">typename</span> result::type = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::false_type</a>;</div>
+</div><!-- fragment --><h3>Example</h3>
+<div class="fragment"><div class="line">static_assert(<a class="code" href="structParallel_1_1is__pupable.html">Parallel::is_pupable&lt;PupableClass&gt;::value</a>,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing type trait is_pupable&quot;</span>);</div>
+<div class="line">static_assert(<a class="code" href="namespaceParallel.html#af9f8a5f10d370ff570bb623bf858b6ed">Parallel::is_pupable_t&lt;PupableClass&gt;::value</a>,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing type trait is_pupable&quot;</span>);</div>
+<div class="line">static_assert(Parallel::is_pupable_v&lt;PupableClass&gt;,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing type trait is_pupable&quot;</span>);</div>
+<div class="line">static_assert(not <a class="code" href="structParallel_1_1is__pupable.html">Parallel::is_pupable&lt;NonpupableClass&gt;::value</a>,</div>
+<div class="line">              <span class="stringliteral">&quot;Failed testing type trait is_pupable&quot;</span>);</div>
+</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="structParallel_1_1has__pup__member.html" title="Check if T has a pup member function.">has_pup_member</a> </dd></dl>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>the type to check </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Parallel/<a class="el" href="Parallel_2TypeTraits_8hpp_source.html">TypeTraits.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="anamespaceParallel_html_af9f8a5f10d370ff570bb623bf858b6ed"><div class="ttname"><a href="namespaceParallel.html#af9f8a5f10d370ff570bb623bf858b6ed">Parallel::is_pupable_t</a></div><div class="ttdeci">typename is_pupable&lt; T &gt;::type is_pupable_t</div><div class="ttdef"><b>Definition:</b> TypeTraits.hpp:142</div></div>
+<div class="ttc" id="aintegral_constant_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a></div></div>
+<div class="ttc" id="astructParallel_1_1is__pupable_html"><div class="ttname"><a href="structParallel_1_1is__pupable.html">Parallel::is_pupable</a></div><div class="ttdoc">Check if type T has operator| defined for Charm++ serialization.</div><div class="ttdef"><b>Definition:</b> TypeTraits.hpp:129</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

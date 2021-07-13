@@ -1,0 +1,276 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: ScalarWave::Tags::TwoIndexConstraintCompute&lt; SpatialDim &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceScalarWave.html">ScalarWave</a></li><li class="navelem"><a class="el" href="namespaceScalarWave_1_1Tags.html">Tags</a></li><li class="navelem"><a class="el" href="structScalarWave_1_1Tags_1_1TwoIndexConstraintCompute.html">TwoIndexConstraintCompute</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structScalarWave_1_1Tags_1_1TwoIndexConstraintCompute-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">ScalarWave::Tags::TwoIndexConstraintCompute&lt; SpatialDim &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Compute item to get the two-index constraint for the scalar-wave evolution system.  
+ <a href="structScalarWave_1_1Tags_1_1TwoIndexConstraintCompute.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ScalarWave_2Constraints_8hpp_source.html">Constraints.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a78bff404f451ce93a6172a560846482b"><td class="memItemLeft" align="right" valign="top"><a id="a78bff404f451ce93a6172a560846482b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt;::<a class="el" href="structTags_1_1deriv.html">Tags::deriv</a>&lt; <a class="el" href="structScalarWave_1_1Phi.html">Phi</a>&lt; SpatialDim &gt;, tmpl::size_t&lt; SpatialDim &gt;, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;</td></tr>
+<tr class="separator:a78bff404f451ce93a6172a560846482b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5fcb16508f32beb9c00403900e8928d6"><td class="memItemLeft" align="right" valign="top"><a id="a5fcb16508f32beb9c00403900e8928d6"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_type</b> = tnsr::ij&lt; <a class="el" href="classDataVector.html">DataVector</a>, SpatialDim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;</td></tr>
+<tr class="separator:a5fcb16508f32beb9c00403900e8928d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af24766ebce1adaae87263533039176e4"><td class="memItemLeft" align="right" valign="top"><a id="af24766ebce1adaae87263533039176e4"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>base</b> = <a class="el" href="structScalarWave_1_1Tags_1_1TwoIndexConstraint.html">TwoIndexConstraint</a>&lt; SpatialDim &gt;</td></tr>
+<tr class="separator:af24766ebce1adaae87263533039176e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_structScalarWave_1_1Tags_1_1TwoIndexConstraint"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structScalarWave_1_1Tags_1_1TwoIndexConstraint')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structScalarWave_1_1Tags_1_1TwoIndexConstraint.html">ScalarWave::Tags::TwoIndexConstraint&lt; SpatialDim &gt;</a></td></tr>
+<tr class="memitem:abb164b68208c243ea0afff18c08be88a inherit pub_types_structScalarWave_1_1Tags_1_1TwoIndexConstraint"><td class="memItemLeft" align="right" valign="top"><a id="abb164b68208c243ea0afff18c08be88a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>type</b> = tnsr::ij&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;</td></tr>
+<tr class="separator:abb164b68208c243ea0afff18c08be88a inherit pub_types_structScalarWave_1_1Tags_1_1TwoIndexConstraint"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a1e491e67972fa0c360120949a58540d0"><td class="memItemLeft" align="right" valign="top">static constexpr void(*&#160;</td><td class="memItemRight" valign="bottom"><b>function</b> )(const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; return_type * &gt; result, const tnsr::ij&lt; <a class="el" href="classDataVector.html">DataVector</a>, SpatialDim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;)</td></tr>
+<tr class="separator:a1e491e67972fa0c360120949a58540d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t SpatialDim&gt;<br />
+struct ScalarWave::Tags::TwoIndexConstraintCompute&lt; SpatialDim &gt;</h3>
+
+<p>Compute item to get the two-index constraint for the scalar-wave evolution system. </p>
+<h3>Details</h3>
+<p>See <code><a class="el" href="namespaceScalarWave.html#ad6bb71aac3f86b8b1070e1ddaff8f881" title="Compute the scalar-wave 2-index constraint.">two_index_constraint()</a></code>. Can be retrieved using <code><a class="el" href="structScalarWave_1_1Tags_1_1TwoIndexConstraint.html" title="Tag for the two-index constraint of the ScalarWave system.">ScalarWave::Tags::TwoIndexConstraint</a></code>. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a1e491e67972fa0c360120949a58540d0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1e491e67972fa0c360120949a58540d0">&#9670;&nbsp;</a></span>function</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t SpatialDim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr void(* <a class="el" href="structScalarWave_1_1Tags_1_1TwoIndexConstraintCompute.html">ScalarWave::Tags::TwoIndexConstraintCompute</a>&lt; SpatialDim &gt;::function) (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; return_type * &gt; result, const tnsr::ij&lt; <a class="el" href="classDataVector.html">DataVector</a>, SpatialDim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      &amp;two_index_constraint&lt;SpatialDim&gt;</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/Systems/ScalarWave/<a class="el" href="ScalarWave_2Constraints_8hpp_source.html">Constraints.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

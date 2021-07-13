@@ -1,0 +1,378 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: gsl::span&lt; ElementType, Extent &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacegsl.html">gsl</a></li><li class="navelem"><a class="el" href="classgsl_1_1span.html">span</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classgsl_1_1span-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">gsl::span&lt; ElementType, Extent &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__UtilitiesGroup.html">Utilities</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Create a span/view on a range, which is cheap to copy (one pointer).  
+ <a href="classgsl_1_1span.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Gsl_8hpp_source.html">Gsl.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a944ccc57394feeb83563ad436696e64f"><td class="memItemLeft" align="right" valign="top"><a id="a944ccc57394feeb83563ad436696e64f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>element_type</b> = ElementType</td></tr>
+<tr class="separator:a944ccc57394feeb83563ad436696e64f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2ecccd5ec04467e85b230a84f49ae571"><td class="memItemLeft" align="right" valign="top"><a id="a2ecccd5ec04467e85b230a84f49ae571"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>value_type</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/remove_cv.html">std::remove_cv_t</a>&lt; ElementType &gt;</td></tr>
+<tr class="separator:a2ecccd5ec04467e85b230a84f49ae571"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a07656b64882925aa552d193394ec1f84"><td class="memItemLeft" align="right" valign="top"><a id="a07656b64882925aa552d193394ec1f84"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>index_type</b> = size_t</td></tr>
+<tr class="separator:a07656b64882925aa552d193394ec1f84"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7757ad962f31089ad26e22b385ce9e7"><td class="memItemLeft" align="right" valign="top"><a id="ab7757ad962f31089ad26e22b385ce9e7"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>pointer</b> = element_type *</td></tr>
+<tr class="separator:ab7757ad962f31089ad26e22b385ce9e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a7c671d9e22b75456e43db4e2020fd4"><td class="memItemLeft" align="right" valign="top"><a id="a6a7c671d9e22b75456e43db4e2020fd4"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>reference</b> = element_type &amp;</td></tr>
+<tr class="separator:a6a7c671d9e22b75456e43db4e2020fd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2bbe59e03d4f4127968094d519bc841c"><td class="memItemLeft" align="right" valign="top"><a id="a2bbe59e03d4f4127968094d519bc841c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>iterator</b> = detail::span_iterator&lt; <a class="el" href="classgsl_1_1span.html">span</a>&lt; ElementType, Extent &gt;, false &gt;</td></tr>
+<tr class="separator:a2bbe59e03d4f4127968094d519bc841c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad51eb53c9a9b90aa148c229046ccc7c1"><td class="memItemLeft" align="right" valign="top"><a id="ad51eb53c9a9b90aa148c229046ccc7c1"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>const_iterator</b> = detail::span_iterator&lt; <a class="el" href="classgsl_1_1span.html">span</a>&lt; ElementType, Extent &gt;, true &gt;</td></tr>
+<tr class="separator:ad51eb53c9a9b90aa148c229046ccc7c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4dab5e1ea8e28dcaeeed4908cef7ff5d"><td class="memItemLeft" align="right" valign="top"><a id="a4dab5e1ea8e28dcaeeed4908cef7ff5d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>reverse_iterator</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/iterator/reverse_iterator.html">std::reverse_iterator</a>&lt; iterator &gt;</td></tr>
+<tr class="separator:a4dab5e1ea8e28dcaeeed4908cef7ff5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab944a19e6c60d442266794aa06450f1b"><td class="memItemLeft" align="right" valign="top"><a id="ab944a19e6c60d442266794aa06450f1b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>const_reverse_iterator</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/iterator/reverse_iterator.html">std::reverse_iterator</a>&lt; const_iterator &gt;</td></tr>
+<tr class="separator:ab944a19e6c60d442266794aa06450f1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9196903cc76d8472ee614daf4c400490"><td class="memItemLeft" align="right" valign="top"><a id="a9196903cc76d8472ee614daf4c400490"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>size_type</b> = index_type</td></tr>
+<tr class="separator:a9196903cc76d8472ee614daf4c400490"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ad383c35c6fd40921050fbd00beb04b3e"><td class="memItemLeft" align="right" valign="top"><a id="ad383c35c6fd40921050fbd00beb04b3e"></a>
+constexpr&#160;</td><td class="memItemRight" valign="bottom"><b>span</b> (pointer ptr, index_type count)</td></tr>
+<tr class="separator:ad383c35c6fd40921050fbd00beb04b3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5746c813e5e17f2a91bfcf7f853581d5"><td class="memItemLeft" align="right" valign="top"><a id="a5746c813e5e17f2a91bfcf7f853581d5"></a>
+constexpr&#160;</td><td class="memItemRight" valign="bottom"><b>span</b> (pointer firstElem, pointer lastElem)</td></tr>
+<tr class="separator:a5746c813e5e17f2a91bfcf7f853581d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af19a0771d2b42a3b61037109ba3b4361"><td class="memTemplParams" colspan="2"><a id="af19a0771d2b42a3b61037109ba3b4361"></a>
+template&lt;std::size_t N&gt; </td></tr>
+<tr class="memitem:af19a0771d2b42a3b61037109ba3b4361"><td class="memTemplItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memTemplItemRight" valign="bottom"><b>span</b> (element_type(&amp;arr)[N]) noexcept</td></tr>
+<tr class="separator:af19a0771d2b42a3b61037109ba3b4361"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9f8402eca80d80df633b548ab303f24"><td class="memTemplParams" colspan="2"><a id="aa9f8402eca80d80df633b548ab303f24"></a>
+template&lt;std::size_t N, Requires&lt;(N &gt; 0)&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:aa9f8402eca80d80df633b548ab303f24"><td class="memTemplItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memTemplItemRight" valign="bottom"><b>span</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/remove_cv.html">std::remove_const_t</a>&lt; element_type &gt;, N &gt; &amp;arr) noexcept</td></tr>
+<tr class="separator:aa9f8402eca80d80df633b548ab303f24"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f66325a1e923b9f13c43c55203c5085"><td class="memItemLeft" align="right" valign="top"><a id="a7f66325a1e923b9f13c43c55203c5085"></a>
+constexpr&#160;</td><td class="memItemRight" valign="bottom"><b>span</b> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/remove_cv.html">std::remove_const_t</a>&lt; element_type &gt;, 0 &gt; &amp;) noexcept</td></tr>
+<tr class="separator:a7f66325a1e923b9f13c43c55203c5085"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad07cccbe8c1ad5c9630b1d1f40c3a304"><td class="memTemplParams" colspan="2"><a id="ad07cccbe8c1ad5c9630b1d1f40c3a304"></a>
+template&lt;std::size_t N, Requires&lt;(N &gt; 0)&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:ad07cccbe8c1ad5c9630b1d1f40c3a304"><td class="memTemplItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memTemplItemRight" valign="bottom"><b>span</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/remove_cv.html">std::remove_const_t</a>&lt; element_type &gt;, N &gt; &amp;arr) noexcept</td></tr>
+<tr class="separator:ad07cccbe8c1ad5c9630b1d1f40c3a304"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2ccca3cb6a86a2f154007f518c8915d"><td class="memItemLeft" align="right" valign="top"><a id="ac2ccca3cb6a86a2f154007f518c8915d"></a>
+constexpr&#160;</td><td class="memItemRight" valign="bottom"><b>span</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/remove_cv.html">std::remove_const_t</a>&lt; element_type &gt;, 0 &gt; &amp;) noexcept</td></tr>
+<tr class="separator:ac2ccca3cb6a86a2f154007f518c8915d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8eda8f86d5458651e037aac9d881c8f"><td class="memTemplParams" colspan="2"><a id="ac8eda8f86d5458651e037aac9d881c8f"></a>
+template&lt;class Container , Requires&lt; !detail::is_span&lt; Container &gt;::value &amp;&amp;!detail::is_std_array&lt; Container &gt;::value &amp;&amp;std::is_convertible&lt; typename Container::pointer, pointer &gt;::value &amp;&amp;std::is_convertible&lt; typename Container::pointer, decltype(std::declval&lt; Container &gt;().data())&gt;::value &gt; </td></tr>
+<tr class="memitem:ac8eda8f86d5458651e037aac9d881c8f"><td class="memTemplItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memTemplItemRight" valign="bottom"><b>span</b> (Container &amp;cont)</td></tr>
+<tr class="separator:ac8eda8f86d5458651e037aac9d881c8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a61de89345d2eb984653ebf5a2702e7"><td class="memTemplParams" colspan="2"><a id="a2a61de89345d2eb984653ebf5a2702e7"></a>
+template&lt;class Container , Requires&lt; std::is_const&lt; element_type &gt;::value &amp;&amp;!detail::is_span&lt; Container &gt;::value &amp;&amp;std::is_convertible&lt; typename Container::pointer, pointer &gt;::value &amp;&amp;std::is_convertible&lt; typename Container::pointer, decltype(std::declval&lt; Container &gt;().data())&gt;::value &gt; </td></tr>
+<tr class="memitem:a2a61de89345d2eb984653ebf5a2702e7"><td class="memTemplItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memTemplItemRight" valign="bottom"><b>span</b> (const Container &amp;cont)</td></tr>
+<tr class="separator:a2a61de89345d2eb984653ebf5a2702e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa48ca3cefbc08eedcb217509ef3255a6"><td class="memItemLeft" align="right" valign="top"><a id="aa48ca3cefbc08eedcb217509ef3255a6"></a>
+constexpr&#160;</td><td class="memItemRight" valign="bottom"><b>span</b> (const <a class="el" href="classgsl_1_1span.html">span</a> &amp;other) noexcept=default</td></tr>
+<tr class="separator:aa48ca3cefbc08eedcb217509ef3255a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab24b8f07286e1a7b8683e7bc2db03a26"><td class="memTemplParams" colspan="2"><a id="ab24b8f07286e1a7b8683e7bc2db03a26"></a>
+template&lt;class OtherElementType , std::ptrdiff_t OtherExtent, Requires&lt; detail::is_allowed_extent_conversion&lt; OtherExtent, Extent &gt;::value &amp;&amp;detail::is_allowed_element_type_conversion&lt; OtherElementType, element_type &gt;::value &gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:ab24b8f07286e1a7b8683e7bc2db03a26"><td class="memTemplItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memTemplItemRight" valign="bottom"><b>span</b> (const <a class="el" href="classgsl_1_1span.html">span</a>&lt; OtherElementType, OtherExtent &gt; &amp;other)</td></tr>
+<tr class="separator:ab24b8f07286e1a7b8683e7bc2db03a26"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c86f1b92055b2b5fe9956d8341a7cd0"><td class="memItemLeft" align="right" valign="top"><a id="a5c86f1b92055b2b5fe9956d8341a7cd0"></a>
+constexpr <a class="el" href="classgsl_1_1span.html">span</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classgsl_1_1span.html">span</a> &amp;other) noexcept=default</td></tr>
+<tr class="separator:a5c86f1b92055b2b5fe9956d8341a7cd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a035a684af01c11140716bbf6fa7d96af"><td class="memTemplParams" colspan="2"><a id="a035a684af01c11140716bbf6fa7d96af"></a>
+template&lt;std::ptrdiff_t Count&gt; </td></tr>
+<tr class="memitem:a035a684af01c11140716bbf6fa7d96af"><td class="memTemplItemLeft" align="right" valign="top">constexpr <a class="el" href="classgsl_1_1span.html">span</a>&lt; element_type, Count &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>first</b> () const</td></tr>
+<tr class="separator:a035a684af01c11140716bbf6fa7d96af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf4c038ce2436b1922266ec2883a835d"><td class="memTemplParams" colspan="2"><a id="aaf4c038ce2436b1922266ec2883a835d"></a>
+template&lt;std::ptrdiff_t Count&gt; </td></tr>
+<tr class="memitem:aaf4c038ce2436b1922266ec2883a835d"><td class="memTemplItemLeft" align="right" valign="top">constexpr <a class="el" href="classgsl_1_1span.html">span</a>&lt; element_type, Count &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>last</b> () const</td></tr>
+<tr class="separator:aaf4c038ce2436b1922266ec2883a835d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab86ecf4334ae86719bf026f3cc0aeaea"><td class="memTemplParams" colspan="2"><a id="ab86ecf4334ae86719bf026f3cc0aeaea"></a>
+template&lt;std::ptrdiff_t Offset, std::ptrdiff_t Count = dynamic_extent&gt; </td></tr>
+<tr class="memitem:ab86ecf4334ae86719bf026f3cc0aeaea"><td class="memTemplItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>subspan</b> () const -&gt; typename detail::calculate_subspan_type&lt; ElementType, Extent, Offset, Count &gt;::type</td></tr>
+<tr class="separator:ab86ecf4334ae86719bf026f3cc0aeaea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd4d41d3d3e2e3ae65027df16ffa0c80"><td class="memItemLeft" align="right" valign="top"><a id="abd4d41d3d3e2e3ae65027df16ffa0c80"></a>
+constexpr <a class="el" href="classgsl_1_1span.html">span</a>&lt; element_type, dynamic_extent &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>first</b> (index_type count) const</td></tr>
+<tr class="separator:abd4d41d3d3e2e3ae65027df16ffa0c80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa55d6c5c40d9c7d650f6448536e4f75e"><td class="memItemLeft" align="right" valign="top"><a id="aa55d6c5c40d9c7d650f6448536e4f75e"></a>
+constexpr <a class="el" href="classgsl_1_1span.html">span</a>&lt; element_type, dynamic_extent &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>last</b> (index_type count) const</td></tr>
+<tr class="separator:aa55d6c5c40d9c7d650f6448536e4f75e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84bd4f0012956d15bcd103dee7d816ae"><td class="memItemLeft" align="right" valign="top"><a id="a84bd4f0012956d15bcd103dee7d816ae"></a>
+constexpr <a class="el" href="classgsl_1_1span.html">span</a>&lt; element_type, dynamic_extent &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>subspan</b> (index_type offset, index_type count=dynamic_extent) const</td></tr>
+<tr class="separator:a84bd4f0012956d15bcd103dee7d816ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a49b3b36216c5ba77487b4e45bec97caf"><td class="memItemLeft" align="right" valign="top"><a id="a49b3b36216c5ba77487b4e45bec97caf"></a>
+constexpr index_type&#160;</td><td class="memItemRight" valign="bottom"><b>size</b> () const noexcept</td></tr>
+<tr class="separator:a49b3b36216c5ba77487b4e45bec97caf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a748ec701709b2dda663b4a053873d7c2"><td class="memItemLeft" align="right" valign="top"><a id="a748ec701709b2dda663b4a053873d7c2"></a>
+constexpr index_type&#160;</td><td class="memItemRight" valign="bottom"><b>size_bytes</b> () const noexcept</td></tr>
+<tr class="separator:a748ec701709b2dda663b4a053873d7c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa477abbe4e4a3fd928828c09234dc53c"><td class="memItemLeft" align="right" valign="top"><a id="aa477abbe4e4a3fd928828c09234dc53c"></a>
+constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><b>empty</b> () const noexcept</td></tr>
+<tr class="separator:aa477abbe4e4a3fd928828c09234dc53c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad0d0e6b4ec90999865270c9d94a2182"><td class="memItemLeft" align="right" valign="top"><a id="aad0d0e6b4ec90999865270c9d94a2182"></a>
+constexpr reference&#160;</td><td class="memItemRight" valign="bottom"><b>operator[]</b> (index_type idx) const</td></tr>
+<tr class="separator:aad0d0e6b4ec90999865270c9d94a2182"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af82b30b287b3148c7cd58874f507bc7a"><td class="memItemLeft" align="right" valign="top"><a id="af82b30b287b3148c7cd58874f507bc7a"></a>
+constexpr reference&#160;</td><td class="memItemRight" valign="bottom"><b>at</b> (index_type idx) const</td></tr>
+<tr class="separator:af82b30b287b3148c7cd58874f507bc7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab5e36f41b84c028631176506964448ad"><td class="memItemLeft" align="right" valign="top"><a id="ab5e36f41b84c028631176506964448ad"></a>
+constexpr reference&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (index_type idx) const</td></tr>
+<tr class="separator:ab5e36f41b84c028631176506964448ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e16e42638bf79fb4f2d53bd24523599"><td class="memItemLeft" align="right" valign="top"><a id="a4e16e42638bf79fb4f2d53bd24523599"></a>
+constexpr pointer&#160;</td><td class="memItemRight" valign="bottom"><b>data</b> () const noexcept</td></tr>
+<tr class="separator:a4e16e42638bf79fb4f2d53bd24523599"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0df57a46dcb57dae62809ef7ad901785"><td class="memItemLeft" align="right" valign="top"><a id="a0df57a46dcb57dae62809ef7ad901785"></a>
+constexpr iterator&#160;</td><td class="memItemRight" valign="bottom"><b>begin</b> () const noexcept</td></tr>
+<tr class="separator:a0df57a46dcb57dae62809ef7ad901785"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a016aa386deed691ee3bb9e780ae853db"><td class="memItemLeft" align="right" valign="top"><a id="a016aa386deed691ee3bb9e780ae853db"></a>
+constexpr iterator&#160;</td><td class="memItemRight" valign="bottom"><b>end</b> () const noexcept</td></tr>
+<tr class="separator:a016aa386deed691ee3bb9e780ae853db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a93ad8113f9b5253f8dfc6e938a138ac4"><td class="memItemLeft" align="right" valign="top"><a id="a93ad8113f9b5253f8dfc6e938a138ac4"></a>
+constexpr const_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>cbegin</b> () const noexcept</td></tr>
+<tr class="separator:a93ad8113f9b5253f8dfc6e938a138ac4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab81a6cee5137b66ca5f8f53f90495b41"><td class="memItemLeft" align="right" valign="top"><a id="ab81a6cee5137b66ca5f8f53f90495b41"></a>
+constexpr const_iterator&#160;</td><td class="memItemRight" valign="bottom"><b>cend</b> () const noexcept</td></tr>
+<tr class="separator:ab81a6cee5137b66ca5f8f53f90495b41"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abbcb43959243d048fe60c70ec121cca8"><td class="memItemLeft" align="right" valign="top"><a id="abbcb43959243d048fe60c70ec121cca8"></a>
+constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/iterator/reverse_iterator.html">reverse_iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><b>rbegin</b> () const noexcept</td></tr>
+<tr class="separator:abbcb43959243d048fe60c70ec121cca8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af31945c3a937b0bfee1472229289a744"><td class="memItemLeft" align="right" valign="top"><a id="af31945c3a937b0bfee1472229289a744"></a>
+constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/iterator/reverse_iterator.html">reverse_iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><b>rend</b> () const noexcept</td></tr>
+<tr class="separator:af31945c3a937b0bfee1472229289a744"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a990eb31d3297d9248ba0853616659b62"><td class="memItemLeft" align="right" valign="top"><a id="a990eb31d3297d9248ba0853616659b62"></a>
+constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/iterator/reverse_iterator.html">const_reverse_iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><b>crbegin</b> () const noexcept</td></tr>
+<tr class="separator:a990eb31d3297d9248ba0853616659b62"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1cdebc1bb63cf8be4cc9c18156d8dc58"><td class="memItemLeft" align="right" valign="top"><a id="a1cdebc1bb63cf8be4cc9c18156d8dc58"></a>
+constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/iterator/reverse_iterator.html">const_reverse_iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><b>crend</b> () const noexcept</td></tr>
+<tr class="separator:a1cdebc1bb63cf8be4cc9c18156d8dc58"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a53989af173d2b9bdf5a7cd00f38f55e3"><td class="memItemLeft" align="right" valign="top"><a id="a53989af173d2b9bdf5a7cd00f38f55e3"></a>
+static constexpr index_type&#160;</td><td class="memItemRight" valign="bottom"><b>extent</b> {Extent}</td></tr>
+<tr class="separator:a53989af173d2b9bdf5a7cd00f38f55e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;class ElementType, std::ptrdiff_t Extent&gt;<br />
+class gsl::span&lt; ElementType, Extent &gt;</h3>
+
+<p>Create a span/view on a range, which is cheap to copy (one pointer). </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Utilities/<a class="el" href="Gsl_8hpp_source.html">Gsl.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

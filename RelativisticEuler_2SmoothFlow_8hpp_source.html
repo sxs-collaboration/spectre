@@ -1,0 +1,356 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/PointwiseFunctions/AnalyticSolutions/RelativisticEuler/SmoothFlow.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_5af74f315b2a84c0171c7133321f1381.html">PointwiseFunctions</a></li><li class="navelem"><a class="el" href="dir_d93e8149823fa91d7841f9be0ed87c77.html">AnalyticSolutions</a></li><li class="navelem"><a class="el" href="dir_2a10d3cf2d78ce89ce27554f2c053eeb.html">RelativisticEuler</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">SmoothFlow.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/array.html">array</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/limits.html">limits</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;pup.h&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160; </div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TypeAliases_8hpp.html">DataStructures/Tensor/TypeAliases.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Options_8hpp.html">Options/Options.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/AnalyticSolutions/Hydro/SmoothFlow.hpp&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Solutions.hpp&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/Hydro/TagsDeclarations.hpp&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="MakeArray_8hpp.html">Utilities/MakeArray.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;Utilities/TaggedTuple.hpp&quot;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160; </div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceRelativisticEuler_1_1Solutions.html">RelativisticEuler::Solutions</a> {</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment"> * \brief Smooth wave propagating in Minkowski spacetime.</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment"> * The relativistic Euler equations in Minkowski spacetime accept a</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment"> * solution with constant pressure and uniform spatial velocity provided</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment"> * that the rest mass density satisfies the advection equation</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment"> * \f{align*}{</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="comment"> * \partial_t\rho + v^i\partial_i\rho = 0,</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment"> * \f}</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment"> * and the specific internal energy is a function of the rest mass density only,</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment"> * \f$\epsilon = \epsilon(\rho)\f$. For testing purposes, this class implements</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment"> * this solution for the case where \f$\rho\f$ is a sine wave. The user</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="comment"> * specifies the mean flow velocity of the fluid, the wavevector of the density</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment"> * profile, and the amplitude \f$A\f$ of the density profile. In Cartesian</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment"> * coordinates \f$(x, y, z)\f$, and using dimensionless units, the primitive</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment"> * variables at a given time \f$t\f$ are then</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment"> * \f{align*}{</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment"> * \rho(\vec{x},t) &amp;= 1 + A \sin(\vec{k}\cdot(\vec{x} - \vec{v}t)) \\</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment"> * \vec{v}(\vec{x},t) &amp;= [v_x, v_y, v_z]^{T},\\</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment"> * P(\vec{x},t) &amp;= P, \\</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment"> * \epsilon(\vec{x}, t) &amp;= \frac{P}{(\gamma - 1)\rho}\\</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment"> * \f}</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment"> * where we have assumed \f$\epsilon\f$ and \f$\rho\f$ to be related through an</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment"> * equation mathematically equivalent to the equation of state of an ideal gas,</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment"> * where the pressure is held constant.</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="keyword">class </span>SmoothFlow : <span class="keyword">virtual</span> <span class="keyword">public</span> MarkAsAnalyticSolution,</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;                   <span class="keyword">public</span> AnalyticSolution&lt;Dim&gt;,</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;                   <span class="keyword">private</span> <a class="code" href="classhydro_1_1Solutions_1_1SmoothFlow.html">hydro::Solutions::SmoothFlow</a>&lt;Dim, true&gt; {</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;  <span class="keyword">using</span> smooth_flow = <a class="code" href="classhydro_1_1Solutions_1_1SmoothFlow.html">hydro::Solutions::SmoothFlow&lt;Dim, true&gt;</a>;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160; </div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;  <span class="keyword">using</span> options = <span class="keyword">typename</span> smooth_flow::options;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160; </div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help = {</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;      <span class="stringliteral">&quot;Smooth flow in Minkowski spacetime.&quot;</span>};</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160; </div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;  SmoothFlow() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;  SmoothFlow(<span class="keyword">const</span> SmoothFlow&amp; <span class="comment">/*rhs*/</span>) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;  SmoothFlow&amp; operator=(<span class="keyword">const</span> SmoothFlow&amp; <span class="comment">/*rhs*/</span>) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;  SmoothFlow(SmoothFlow&amp;&amp; <span class="comment">/*rhs*/</span>) noexcept = default;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;  SmoothFlow&amp; operator=(SmoothFlow&amp;&amp; <span class="comment">/*rhs*/</span>) noexcept = default;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;  ~SmoothFlow() = default;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;  SmoothFlow(const std::array&lt;<span class="keywordtype">double</span>, Dim&gt;&amp; mean_velocity,</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;             const std::array&lt;<span class="keywordtype">double</span>, Dim&gt;&amp; wavevector, <span class="keywordtype">double</span> pressure,</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;             <span class="keywordtype">double</span> adiabatic_index, <span class="keywordtype">double</span> perturbation_size) noexcept;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;  explicit SmoothFlow(CkMigrateMessage* msg) noexcept;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160; </div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;  using smooth_flow::equation_of_state;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;  using typename smooth_flow::equation_of_state_type;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;  <span class="comment">// Overload the variables function from the base class.</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;  using smooth_flow::<a class="code" href="classRelativisticEuler_1_1Solutions_1_1SmoothFlow.html#ade124ae55a1a19f74808fa472bff0f5a">variables</a>;</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="comment">  /// Retrieve a collection of hydro variables at `(x, t)`</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment"></span>  template &lt;typename DataType, typename... Tags&gt;</div>
+<div class="line"><a name="l00087"></a><span class="lineno"><a class="line" href="classRelativisticEuler_1_1Solutions_1_1SmoothFlow.html#ade124ae55a1a19f74808fa472bff0f5a">   87</a></span>&#160;  tuples::TaggedTuple&lt;Tags...&gt; <a class="code" href="classRelativisticEuler_1_1Solutions_1_1SmoothFlow.html#ade124ae55a1a19f74808fa472bff0f5a">variables</a>(</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;      const <a class="code" href="namespacetnsr.html">tnsr</a>::I&lt;DataType, Dim&gt;&amp; x, const <span class="keywordtype">double</span> t,</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;      tmpl::list&lt;Tags...&gt; <span class="comment">/*meta*/</span>) const noexcept {</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    static_assert(<span class="keyword">sizeof</span>...(Tags) &gt; 1,</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;                  <span class="stringliteral">&quot;The generic template will recurse infinitely if only one &quot;</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;                  <span class="stringliteral">&quot;tag is being retrieved.&quot;</span>);</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    <span class="keywordflow">return</span> {get&lt;Tags&gt;(<a class="code" href="classRelativisticEuler_1_1Solutions_1_1SmoothFlow.html#ade124ae55a1a19f74808fa472bff0f5a">variables</a>(x, t, tmpl::list&lt;Tags&gt;{}))...};</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;  }</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="comment">  /// Retrieve the metric variables</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment"></span>  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> DataType, <span class="keyword">typename</span> Tag&gt;</div>
+<div class="line"><a name="l00098"></a><span class="lineno"><a class="line" href="classRelativisticEuler_1_1Solutions_1_1SmoothFlow.html#a9319ed7fe4a984ced3025ed7046a502c">   98</a></span>&#160;  <a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;Tag&gt;</a> <a class="code" href="classRelativisticEuler_1_1Solutions_1_1SmoothFlow.html#a9319ed7fe4a984ced3025ed7046a502c">variables</a>(<span class="keyword">const</span> tnsr::I&lt;DataType, Dim&gt;&amp; x, <span class="keywordtype">double</span> t,</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;                                     tmpl::list&lt;Tag&gt; <span class="comment">/*meta*/</span>) <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    <span class="keywordflow">return</span> background_spacetime_.variables(x, t, tmpl::list&lt;Tag&gt;{});</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;  }</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160; </div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> DataType&gt;</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;  <a class="code" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple&lt;hydro::Tags::MagneticField&lt;DataType, Dim&gt;</a>&gt; <a class="code" href="classRelativisticEuler_1_1Solutions_1_1SmoothFlow.html#ade124ae55a1a19f74808fa472bff0f5a">variables</a>(</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;      <span class="keyword">const</span> tnsr::I&lt;DataType, Dim&gt;&amp; x, <span class="keywordtype">double</span> t,</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;      tmpl::list&lt;<a class="code" href="structhydro_1_1Tags_1_1MagneticField.html">hydro::Tags::MagneticField&lt;DataType, Dim&gt;</a>&gt; <span class="comment">/*meta*/</span>)</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;      const noexcept;</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160; </div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;  template &lt;typename DataType&gt;</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;  tuples::TaggedTuple&lt;<a class="code" href="namespacehydro.html">hydro</a>::Tags::DivergenceCleaningField&lt;DataType&gt;&gt; <a class="code" href="classRelativisticEuler_1_1Solutions_1_1SmoothFlow.html#ade124ae55a1a19f74808fa472bff0f5a">variables</a>(</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;      const <a class="code" href="namespacetnsr.html">tnsr</a>::I&lt;DataType, Dim&gt;&amp; x, <span class="keywordtype">double</span> t,</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;      tmpl::list&lt;<a class="code" href="namespacehydro.html">hydro</a>::Tags::DivergenceCleaningField&lt;DataType&gt;&gt; <span class="comment">/*meta*/</span>)</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;      const noexcept;</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;  <span class="comment">// clang-tidy: no runtime references</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;  <span class="keywordtype">void</span> pup(PUP::er&amp; <span class="comment">/*p*/</span>) noexcept;  <span class="comment">//  NOLINT</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160; </div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160; private:</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;  template &lt;<span class="keywordtype">size_t</span> SpatialDim&gt;</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;  friend <span class="keywordtype">bool</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;  operator==(  <span class="comment">// NOLINT (clang-tidy: readability-redundant-declaration)</span></div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;      const <a class="code" href="classRelativisticEuler_1_1Solutions_1_1SmoothFlow.html">SmoothFlow</a>&lt;SpatialDim&gt;&amp; lhs,</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;      const <a class="code" href="classRelativisticEuler_1_1Solutions_1_1SmoothFlow.html">SmoothFlow</a>&lt;SpatialDim&gt;&amp; rhs) noexcept;</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160; </div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;  <a class="code" href="namespacegr.html">gr</a>::Solutions::Minkowski&lt;Dim&gt; background_spacetime_{};</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;};</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160; </div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;<span class="keywordtype">bool</span> operator!=(<span class="keyword">const</span> SmoothFlow&lt;Dim&gt;&amp; lhs,</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;                <span class="keyword">const</span> SmoothFlow&lt;Dim&gt;&amp; rhs) noexcept;</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;}  <span class="comment">// namespace RelativisticEuler::Solutions</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="aclassRelativisticEuler_1_1Solutions_1_1SmoothFlow_html_a9319ed7fe4a984ced3025ed7046a502c"><div class="ttname"><a href="classRelativisticEuler_1_1Solutions_1_1SmoothFlow.html#a9319ed7fe4a984ced3025ed7046a502c">RelativisticEuler::Solutions::SmoothFlow::variables</a></div><div class="ttdeci">tuples::TaggedTuple&lt; Tag &gt; variables(const tnsr::I&lt; DataType, Dim &gt; &amp;x, double t, tmpl::list&lt; Tag &gt;) const noexcept</div><div class="ttdoc">Retrieve the metric variables.</div><div class="ttdef"><b>Definition:</b> SmoothFlow.hpp:98</div></div>
+<div class="ttc" id="aclassRelativisticEuler_1_1Solutions_1_1SmoothFlow_html"><div class="ttname"><a href="classRelativisticEuler_1_1Solutions_1_1SmoothFlow.html">RelativisticEuler::Solutions::SmoothFlow</a></div><div class="ttdoc">Smooth wave propagating in Minkowski spacetime.</div><div class="ttdef"><b>Definition:</b> EvolveValenciaFwd.hpp:11</div></div>
+<div class="ttc" id="aOptions_8hpp_html"><div class="ttname"><a href="Options_8hpp.html">Options.hpp</a></div></div>
+<div class="ttc" id="aMakeArray_8hpp_html"><div class="ttname"><a href="MakeArray_8hpp.html">MakeArray.hpp</a></div></div>
+<div class="ttc" id="aclasshydro_1_1Solutions_1_1SmoothFlow_html"><div class="ttname"><a href="classhydro_1_1Solutions_1_1SmoothFlow.html">hydro::Solutions::SmoothFlow</a></div><div class="ttdoc">Smooth sinusoidal density wave.</div><div class="ttdef"><b>Definition:</b> SmoothFlow.hpp:52</div></div>
+<div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/array.html">array</a></div></div>
+<div class="ttc" id="aclasstuples_1_1TaggedTuple_html"><div class="ttname"><a href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a></div><div class="ttdoc">An associative container that is indexed by structs.</div><div class="ttdef"><b>Definition:</b> TaggedTuple.hpp:271</div></div>
+<div class="ttc" id="anamespacehydro_html"><div class="ttname"><a href="namespacehydro.html">hydro</a></div><div class="ttdoc">Items related to hydrodynamic systems.</div><div class="ttdef"><b>Definition:</b> SmoothFlow.hpp:19</div></div>
+<div class="ttc" id="anamespacetnsr_html"><div class="ttname"><a href="namespacetnsr.html">tnsr</a></div><div class="ttdoc">Type aliases to construct common Tensors.</div><div class="ttdef"><b>Definition:</b> TypeAliases.hpp:31</div></div>
+<div class="ttc" id="alimits_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/limits.html">limits</a></div></div>
+<div class="ttc" id="aTypeAliases_8hpp_html"><div class="ttname"><a href="TypeAliases_8hpp.html">TypeAliases.hpp</a></div></div>
+<div class="ttc" id="anamespaceOptions_html_aa61c7f41f21afa7646811456f673be89"><div class="ttname"><a href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a></div><div class="ttdeci">const char *const String</div><div class="ttdoc">The string used in option structs.</div><div class="ttdef"><b>Definition:</b> Options.hpp:32</div></div>
+<div class="ttc" id="astructhydro_1_1Tags_1_1MagneticField_html"><div class="ttname"><a href="structhydro_1_1Tags_1_1MagneticField.html">hydro::Tags::MagneticField</a></div><div class="ttdoc">The magnetic field  measured by an Eulerian observer, where  is the normal to the spatial hypersurfac...</div><div class="ttdef"><b>Definition:</b> Tags.hpp:80</div></div>
+<div class="ttc" id="anamespacegr_html"><div class="ttname"><a href="namespacegr.html">gr</a></div><div class="ttdef"><b>Definition:</b> GaugeWave.hpp:28</div></div>
+<div class="ttc" id="aclassRelativisticEuler_1_1Solutions_1_1SmoothFlow_html_ade124ae55a1a19f74808fa472bff0f5a"><div class="ttname"><a href="classRelativisticEuler_1_1Solutions_1_1SmoothFlow.html#ade124ae55a1a19f74808fa472bff0f5a">RelativisticEuler::Solutions::SmoothFlow::variables</a></div><div class="ttdeci">tuples::TaggedTuple&lt; Tags... &gt; variables(const tnsr::I&lt; DataType, Dim &gt; &amp;x, const double t, tmpl::list&lt; Tags... &gt;) const noexcept</div><div class="ttdoc">Retrieve a collection of hydro variables at (x, t)</div><div class="ttdef"><b>Definition:</b> SmoothFlow.hpp:87</div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="anamespaceRelativisticEuler_1_1Solutions_html"><div class="ttname"><a href="namespaceRelativisticEuler_1_1Solutions.html">RelativisticEuler::Solutions</a></div><div class="ttdoc">Holds classes implementing a solution to the relativistic Euler system.</div><div class="ttdef"><b>Definition:</b> EvolveValenciaFwd.hpp:9</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

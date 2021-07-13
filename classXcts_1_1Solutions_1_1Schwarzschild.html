@@ -1,0 +1,285 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Xcts::Solutions::Schwarzschild&lt; Registrars &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceXcts.html">Xcts</a></li><li class="navelem"><a class="el" href="namespaceXcts_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="classXcts_1_1Solutions_1_1Schwarzschild.html">Schwarzschild</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classXcts_1_1Solutions_1_1Schwarzschild-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Xcts::Solutions::Schwarzschild&lt; Registrars &gt; Class Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p><a class="el" href="classXcts_1_1Solutions_1_1Schwarzschild.html" title="Schwarzschild spacetime in general relativity.">Schwarzschild</a> spacetime in general relativity.  
+ <a href="classXcts_1_1Solutions_1_1Schwarzschild.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Schwarzschild_8hpp_source.html">Schwarzschild.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a8a5178db82181034b9850fe6efc8ecca"><td class="memItemLeft" align="right" valign="top"><a id="a8a5178db82181034b9850fe6efc8ecca"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Schwarzschild</b> (const <a class="el" href="classXcts_1_1Solutions_1_1Schwarzschild.html">Schwarzschild</a> &amp;) noexcept=default</td></tr>
+<tr class="separator:a8a5178db82181034b9850fe6efc8ecca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a0d396b27f6ec5eb6a319c8a39cb843"><td class="memItemLeft" align="right" valign="top"><a id="a6a0d396b27f6ec5eb6a319c8a39cb843"></a>
+<a class="el" href="classXcts_1_1Solutions_1_1Schwarzschild.html">Schwarzschild</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classXcts_1_1Solutions_1_1Schwarzschild.html">Schwarzschild</a> &amp;) noexcept=default</td></tr>
+<tr class="separator:a6a0d396b27f6ec5eb6a319c8a39cb843"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae396b184cf82956597f8d629780154bc"><td class="memItemLeft" align="right" valign="top"><a id="ae396b184cf82956597f8d629780154bc"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Schwarzschild</b> (<a class="el" href="classXcts_1_1Solutions_1_1Schwarzschild.html">Schwarzschild</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:ae396b184cf82956597f8d629780154bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad15d0c016a3416403cde6b80d671fb9d"><td class="memItemLeft" align="right" valign="top"><a id="ad15d0c016a3416403cde6b80d671fb9d"></a>
+<a class="el" href="classXcts_1_1Solutions_1_1Schwarzschild.html">Schwarzschild</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classXcts_1_1Solutions_1_1Schwarzschild.html">Schwarzschild</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:ad15d0c016a3416403cde6b80d671fb9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d64dd6985f57f5a8419cce8dd47bfa1"><td class="memTemplParams" colspan="2"><a id="a0d64dd6985f57f5a8419cce8dd47bfa1"></a>
+template&lt;typename DataType , typename... RequestedTags&gt; </td></tr>
+<tr class="memitem:a0d64dd6985f57f5a8419cce8dd47bfa1"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; RequestedTags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;x, tmpl::list&lt; RequestedTags... &gt;) const noexcept</td></tr>
+<tr class="separator:a0d64dd6985f57f5a8419cce8dd47bfa1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc641015c1d66a765bf2d49857512dca"><td class="memTemplParams" colspan="2"><a id="adc641015c1d66a765bf2d49857512dca"></a>
+template&lt;typename... RequestedTags&gt; </td></tr>
+<tr class="memitem:adc641015c1d66a765bf2d49857512dca"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; RequestedTags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;x, const <a class="el" href="classMesh.html">Mesh</a>&lt; 3 &gt; &amp;mesh, const InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;inv_jacobian, tmpl::list&lt; RequestedTags... &gt;) const noexcept</td></tr>
+<tr class="separator:adc641015c1d66a765bf2d49857512dca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a79d6db257e23fb73f5c71df3e6691c0a"><td class="memItemLeft" align="right" valign="top"><a id="a79d6db257e23fb73f5c71df3e6691c0a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:a79d6db257e23fb73f5c71df3e6691c0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classXcts_1_1Solutions_1_1AnalyticSolution"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classXcts_1_1Solutions_1_1AnalyticSolution')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classXcts_1_1Solutions_1_1AnalyticSolution.html">Xcts::Solutions::AnalyticSolution&lt; tmpl::list&lt; Solutions::Registrars::Schwarzschild &gt; &gt;</a></td></tr>
+<tr class="memitem:ad14eadd1f7a12fe6879c959679e3fa3b inherit pub_methods_classXcts_1_1Solutions_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="ad14eadd1f7a12fe6879c959679e3fa3b"></a>
+<a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; RequestedTags... &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;x, tmpl::list&lt; RequestedTags... &gt;) const noexcept</td></tr>
+<tr class="separator:ad14eadd1f7a12fe6879c959679e3fa3b inherit pub_methods_classXcts_1_1Solutions_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classAnalyticData"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classAnalyticData')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classAnalyticData.html">AnalyticData&lt; 3, tmpl::list&lt; Solutions::Registrars::Schwarzschild &gt; &gt;</a></td></tr>
+<tr class="memitem:a87d911aea5f1bc2df7141525bd4dc44e inherit pub_methods_classAnalyticData"><td class="memItemLeft" align="right" valign="top"><a id="a87d911aea5f1bc2df7141525bd4dc44e"></a>
+<a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAnalyticData.html#a87d911aea5f1bc2df7141525bd4dc44e">variables</a> (const tnsr::I&lt; DataType, Dim &gt; &amp;x, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:a87d911aea5f1bc2df7141525bd4dc44e inherit pub_methods_classAnalyticData"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a collection of tensor fields at spatial coordinate(s) <code>x</code> <br /></td></tr>
+<tr class="separator:a87d911aea5f1bc2df7141525bd4dc44e inherit pub_methods_classAnalyticData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9db45292e221044e16f904951d6c9b0 inherit pub_methods_classAnalyticData"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAnalyticData.html#ad9db45292e221044e16f904951d6c9b0">variables</a> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;x, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh, const InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;inv_jacobian, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:ad9db45292e221044e16f904951d6c9b0 inherit pub_methods_classAnalyticData"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a collection of tensor fields at spatial coordinate(s) <code>x</code>  <a href="classAnalyticData.html#ad9db45292e221044e16f904951d6c9b0">More...</a><br /></td></tr>
+<tr class="separator:ad9db45292e221044e16f904951d6c9b0 inherit pub_methods_classAnalyticData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header pub_types_classXcts_1_1Solutions_1_1AnalyticSolution"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classXcts_1_1Solutions_1_1AnalyticSolution')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classXcts_1_1Solutions_1_1AnalyticSolution.html">Xcts::Solutions::AnalyticSolution&lt; tmpl::list&lt; Solutions::Registrars::Schwarzschild &gt; &gt;</a></td></tr>
+<tr class="memitem:ac7367a5ec5857be91e44777820baf1a2 inherit pub_types_classXcts_1_1Solutions_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="ac7367a5ec5857be91e44777820baf1a2"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>registrars</b> = tmpl::list&lt; Solutions::Registrars::Schwarzschild &gt;</td></tr>
+<tr class="separator:ac7367a5ec5857be91e44777820baf1a2 inherit pub_types_classXcts_1_1Solutions_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a225e7520f1497a6e1641f80dfb3d5654 inherit pub_types_classXcts_1_1Solutions_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="a225e7520f1497a6e1641f80dfb3d5654"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = <a class="el" href="namespaceRegistration.html#abfd9ae1266be994041d2cfaa4199eed2">Registration::registrants</a>&lt; registrars &gt;</td></tr>
+<tr class="separator:a225e7520f1497a6e1641f80dfb3d5654 inherit pub_types_classXcts_1_1Solutions_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classAnalyticData"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classAnalyticData')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classAnalyticData.html">AnalyticData&lt; 3, tmpl::list&lt; Solutions::Registrars::Schwarzschild &gt; &gt;</a></td></tr>
+<tr class="memitem:aaeab66e58c7076cce1284d6fcf1f331e inherit pub_types_classAnalyticData"><td class="memItemLeft" align="right" valign="top"><a id="aaeab66e58c7076cce1284d6fcf1f331e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>registrars</b> = tmpl::list&lt; Solutions::Registrars::Schwarzschild &gt;</td></tr>
+<tr class="separator:aaeab66e58c7076cce1284d6fcf1f331e inherit pub_types_classAnalyticData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2ae5b60f4c626ee81e52d86ce9d2384 inherit pub_types_classAnalyticData"><td class="memItemLeft" align="right" valign="top"><a id="ac2ae5b60f4c626ee81e52d86ce9d2384"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = <a class="el" href="namespaceRegistration.html#abfd9ae1266be994041d2cfaa4199eed2">Registration::registrants</a>&lt; registrars &gt;</td></tr>
+<tr class="separator:ac2ae5b60f4c626ee81e52d86ce9d2384 inherit pub_types_classAnalyticData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_static_attribs_classAnalyticData"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_classAnalyticData')"><img src="closed.png" alt="-"/>&#160;Static Public Attributes inherited from <a class="el" href="classAnalyticData.html">AnalyticData&lt; 3, tmpl::list&lt; Solutions::Registrars::Schwarzschild &gt; &gt;</a></td></tr>
+<tr class="memitem:adf176d57e0105ecfbd77f542a6c70473 inherit pub_static_attribs_classAnalyticData"><td class="memItemLeft" align="right" valign="top"><a id="adf176d57e0105ecfbd77f542a6c70473"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b></td></tr>
+<tr class="separator:adf176d57e0105ecfbd77f542a6c70473 inherit pub_static_attribs_classAnalyticData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename Registrars = tmpl::list&lt;Solutions::Registrars::Schwarzschild&gt;&gt;<br />
+class Xcts::Solutions::Schwarzschild&lt; Registrars &gt;</h3>
+
+<p><a class="el" href="classXcts_1_1Solutions_1_1Schwarzschild.html" title="Schwarzschild spacetime in general relativity.">Schwarzschild</a> spacetime in general relativity. </p>
+<p>This class implements the <a class="el" href="classXcts_1_1Solutions_1_1Schwarzschild.html" title="Schwarzschild spacetime in general relativity.">Schwarzschild</a> solution with mass parameter \(M\) in various coordinate systems. See the entries of the <code><a class="el" href="namespaceXcts_1_1Solutions.html#a46f82055ad5af934898fb1ec737706c1" title="Various coordinate systems in which to express the Schwarzschild solution.">Xcts::Solutions::SchwarzschildCoordinates</a></code> enum for the available coordinate systems and for the solution variables in the respective coordinates. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticSolutions/Xcts/<a class="el" href="Schwarzschild_8hpp_source.html">Schwarzschild.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

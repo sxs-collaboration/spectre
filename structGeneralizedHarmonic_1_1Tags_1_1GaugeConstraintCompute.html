@@ -1,0 +1,285 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: GeneralizedHarmonic::Tags::GaugeConstraintCompute&lt; SpatialDim, Frame &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceGeneralizedHarmonic.html">GeneralizedHarmonic</a></li><li class="navelem"><a class="el" href="namespaceGeneralizedHarmonic_1_1Tags.html">Tags</a></li><li class="navelem"><a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1GaugeConstraintCompute.html">GaugeConstraintCompute</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structGeneralizedHarmonic_1_1Tags_1_1GaugeConstraintCompute-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">GeneralizedHarmonic::Tags::GaugeConstraintCompute&lt; SpatialDim, Frame &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Compute item to get the gauge constraint for the generalized harmonic evolution system.  
+ <a href="structGeneralizedHarmonic_1_1Tags_1_1GaugeConstraintCompute.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="GeneralizedHarmonic_2Constraints_8hpp_source.html">Constraints.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a116eb4cae8089076423603f4a0bfc049"><td class="memItemLeft" align="right" valign="top"><a id="a116eb4cae8089076423603f4a0bfc049"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt; <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1GaugeH.html">GaugeH</a>&lt; SpatialDim, Frame &gt;, <a class="el" href="structgr_1_1Tags_1_1SpacetimeNormalOneForm.html">gr::Tags::SpacetimeNormalOneForm</a>&lt; SpatialDim, Frame, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1SpacetimeNormalVector.html">gr::Tags::SpacetimeNormalVector</a>&lt; SpatialDim, Frame, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1InverseSpatialMetric.html">gr::Tags::InverseSpatialMetric</a>&lt; SpatialDim, Frame, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structgr_1_1Tags_1_1InverseSpacetimeMetric.html">gr::Tags::InverseSpacetimeMetric</a>&lt; SpatialDim, Frame, <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Pi.html">Pi</a>&lt; SpatialDim, Frame &gt;, <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1Phi.html">Phi</a>&lt; SpatialDim, Frame &gt; &gt;</td></tr>
+<tr class="separator:a116eb4cae8089076423603f4a0bfc049"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee7f8519ad67370890104bdc6641ff78"><td class="memItemLeft" align="right" valign="top"><a id="aee7f8519ad67370890104bdc6641ff78"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>return_type</b> = tnsr::a&lt; <a class="el" href="classDataVector.html">DataVector</a>, SpatialDim, Frame &gt;</td></tr>
+<tr class="separator:aee7f8519ad67370890104bdc6641ff78"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a559221bc366111963b9cfb0525ef7a64"><td class="memItemLeft" align="right" valign="top"><a id="a559221bc366111963b9cfb0525ef7a64"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>base</b> = <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1GaugeConstraint.html">GaugeConstraint</a>&lt; SpatialDim, Frame &gt;</td></tr>
+<tr class="separator:a559221bc366111963b9cfb0525ef7a64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_structGeneralizedHarmonic_1_1Tags_1_1GaugeConstraint"><td colspan="2" onclick="javascript:toggleInherit('pub_types_structGeneralizedHarmonic_1_1Tags_1_1GaugeConstraint')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1GaugeConstraint.html">GeneralizedHarmonic::Tags::GaugeConstraint&lt; SpatialDim, Frame &gt;</a></td></tr>
+<tr class="memitem:a276d8ec7d4f8e716832ece0c5d4fe94b inherit pub_types_structGeneralizedHarmonic_1_1Tags_1_1GaugeConstraint"><td class="memItemLeft" align="right" valign="top"><a id="a276d8ec7d4f8e716832ece0c5d4fe94b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>type</b> = tnsr::a&lt; <a class="el" href="classDataVector.html">DataVector</a>, SpatialDim, Frame &gt;</td></tr>
+<tr class="separator:a276d8ec7d4f8e716832ece0c5d4fe94b inherit pub_types_structGeneralizedHarmonic_1_1Tags_1_1GaugeConstraint"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:ac0cfff61be1b3c23b2e6873735dddfbd"><td class="memItemLeft" align="right" valign="top">static constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><b>function</b></td></tr>
+<tr class="separator:ac0cfff61be1b3c23b2e6873735dddfbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t SpatialDim, typename Frame&gt;<br />
+struct GeneralizedHarmonic::Tags::GaugeConstraintCompute&lt; SpatialDim, Frame &gt;</h3>
+
+<p>Compute item to get the gauge constraint for the generalized harmonic evolution system. </p>
+<h3>Details</h3>
+<p>See <code><a class="el" href="namespaceGeneralizedHarmonic.html#aad3632815f12e933610f407ad4bfa7e0" title="Computes the generalized-harmonic gauge constraint.">gauge_constraint()</a></code>. Can be retrieved using <code><a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1GaugeConstraint.html" title="Tags corresponding to various constraints of the generalized harmonic system, and their diagnosticall...">GeneralizedHarmonic::Tags::GaugeConstraint</a></code>. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="ac0cfff61be1b3c23b2e6873735dddfbd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac0cfff61be1b3c23b2e6873735dddfbd">&#9670;&nbsp;</a></span>function</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t SpatialDim, typename Frame &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr auto <a class="el" href="structGeneralizedHarmonic_1_1Tags_1_1GaugeConstraintCompute.html">GeneralizedHarmonic::Tags::GaugeConstraintCompute</a>&lt; SpatialDim, Frame &gt;::function</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= <span class="keyword">static_cast&lt;</span><span class="keywordtype">void</span> (*)(</div>
+<div class="line">      <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;tnsr::a&lt;DataVector, SpatialDim, Frame&gt;</a>*<span class="keyword">&gt;</span>,</div>
+<div class="line">      <span class="keyword">const</span> tnsr::a&lt;DataVector, SpatialDim, Frame&gt;&amp;,</div>
+<div class="line">      <span class="keyword">const</span> tnsr::a&lt;DataVector, SpatialDim, Frame&gt;&amp;,</div>
+<div class="line">      <span class="keyword">const</span> tnsr::A&lt;DataVector, SpatialDim, Frame&gt;&amp;,</div>
+<div class="line">      <span class="keyword">const</span> tnsr::II&lt;DataVector, SpatialDim, Frame&gt;&amp;,</div>
+<div class="line">      <span class="keyword">const</span> tnsr::AA&lt;DataVector, SpatialDim, Frame&gt;&amp;,</div>
+<div class="line">      <span class="keyword">const</span> tnsr::aa&lt;DataVector, SpatialDim, Frame&gt;&amp;,</div>
+<div class="line">      <span class="keyword">const</span> tnsr::iaa&lt;DataVector, SpatialDim, Frame&gt;&amp;) noexcept&gt;(</div>
+<div class="line">      &amp;gauge_constraint&lt;SpatialDim, Frame, DataVector&gt;)</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/Systems/GeneralizedHarmonic/<a class="el" href="GeneralizedHarmonic_2Constraints_8hpp_source.html">Constraints.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,568 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: YlmSpherepack Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="classYlmSpherepack-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">YlmSpherepack Class Reference<div class="ingroups"><a class="el" href="group__SpectralGroup.html">Spectral</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Defines the C++ interface to SPHEREPACK.  
+ <a href="classYlmSpherepack.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="YlmSpherepack_8hpp_source.html">YlmSpherepack.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structYlmSpherepack_1_1InterpolationInfo.html">InterpolationInfo</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Struct to hold cached information at a set of target interpolation points.  <a href="structYlmSpherepack_1_1InterpolationInfo.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a9ebe66671dc0de00825129e5d3839257"><td class="memItemLeft" align="right" valign="top"><a id="a9ebe66671dc0de00825129e5d3839257"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a9ebe66671dc0de00825129e5d3839257">FirstDeriv</a> = tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, 2, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt;</td></tr>
+<tr class="memdesc:a9ebe66671dc0de00825129e5d3839257"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type returned by gradient function. <br /></td></tr>
+<tr class="separator:a9ebe66671dc0de00825129e5d3839257"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5a60ceb5ddd9e6c83e1f0e66cd895fc"><td class="memItemLeft" align="right" valign="top"><a id="af5a60ceb5ddd9e6c83e1f0e66cd895fc"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#af5a60ceb5ddd9e6c83e1f0e66cd895fc">SecondDeriv</a> = tnsr::ij&lt; <a class="el" href="classDataVector.html">DataVector</a>, 2, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt;</td></tr>
+<tr class="memdesc:af5a60ceb5ddd9e6c83e1f0e66cd895fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type returned by second derivative function. <br /></td></tr>
+<tr class="separator:af5a60ceb5ddd9e6c83e1f0e66cd895fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a0c6d589ac8009535be4ea314915da865"><td class="memItemLeft" align="right" valign="top"><a id="a0c6d589ac8009535be4ea314915da865"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a0c6d589ac8009535be4ea314915da865">YlmSpherepack</a> (size_t <a class="el" href="classYlmSpherepack.html#aa28e823875023a21518d148c24350c9c">l_max</a>, size_t <a class="el" href="classYlmSpherepack.html#a53feb80979821341c336e2d6b88132ed">m_max</a>) noexcept</td></tr>
+<tr class="memdesc:a0c6d589ac8009535be4ea314915da865"><td class="mdescLeft">&#160;</td><td class="mdescRight">Here l_max and m_max are the largest fully-represented l and m in the Ylm expansion. <br /></td></tr>
+<tr class="separator:a0c6d589ac8009535be4ea314915da865"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aebca2ff5bb7ee548fe0bd55446e5fbbc"><td class="memItemLeft" align="right" valign="top"><a id="aebca2ff5bb7ee548fe0bd55446e5fbbc"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, 2 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>physical_extents</b> () const noexcept</td></tr>
+<tr class="separator:aebca2ff5bb7ee548fe0bd55446e5fbbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae54bab39727f1ad74a412f852e4515fa"><td class="memItemLeft" align="right" valign="top"><a id="ae54bab39727f1ad74a412f852e4515fa"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#ae54bab39727f1ad74a412f852e4515fa">gradient</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double *, 2 &gt; &amp;df, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; const double * &gt; collocation_values, size_t physical_stride=1, size_t physical_offset=0) const noexcept</td></tr>
+<tr class="memdesc:ae54bab39727f1ad74a412f852e4515fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes Pfaffian derivative (df/dtheta, csc(theta) df/dphi) at the collocation values. To act on a slice of the input and output arrays, specify stride and offset (assumed to be the same for input and output). <br /></td></tr>
+<tr class="separator:ae54bab39727f1ad74a412f852e4515fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c18b07ccd5de66e3e74b4a177ba5b5d"><td class="memItemLeft" align="right" valign="top"><a id="a2c18b07ccd5de66e3e74b4a177ba5b5d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a2c18b07ccd5de66e3e74b4a177ba5b5d">gradient_from_coefs</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double *, 2 &gt; &amp;df, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; const double * &gt; spectral_coefs, size_t spectral_stride=1, size_t spectral_offset=0, size_t physical_stride=1, size_t physical_offset=0) const noexcept</td></tr>
+<tr class="memdesc:a2c18b07ccd5de66e3e74b4a177ba5b5d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <code>gradient</code>, but takes the spectral coefficients (rather than collocation values) of the function. This is more efficient if one happens to already have the spectral coefficients. To act on a slice of the input and output arrays, specify strides and offsets. <br /></td></tr>
+<tr class="separator:a2c18b07ccd5de66e3e74b4a177ba5b5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4a7a74939c9951bb6140b7ba0df97f5"><td class="memItemLeft" align="right" valign="top"><a id="ac4a7a74939c9951bb6140b7ba0df97f5"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#ac4a7a74939c9951bb6140b7ba0df97f5">scalar_laplacian</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; double * &gt; scalar_laplacian, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; const double * &gt; collocation_values, size_t physical_stride=1, size_t physical_offset=0) const noexcept</td></tr>
+<tr class="memdesc:ac4a7a74939c9951bb6140b7ba0df97f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes Laplacian in physical space. To act on a slice of the input and output arrays, specify stride and offset (assumed to be the same for input and output). <br /></td></tr>
+<tr class="separator:ac4a7a74939c9951bb6140b7ba0df97f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aabc7b73321a5b37dcd86c632bf759b48"><td class="memItemLeft" align="right" valign="top"><a id="aabc7b73321a5b37dcd86c632bf759b48"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#aabc7b73321a5b37dcd86c632bf759b48">scalar_laplacian_from_coefs</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; double * &gt; <a class="el" href="classYlmSpherepack.html#ac4a7a74939c9951bb6140b7ba0df97f5">scalar_laplacian</a>, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; const double * &gt; spectral_coefs, size_t spectral_stride=1, size_t spectral_offset=0, size_t physical_stride=1, size_t physical_offset=0) const noexcept</td></tr>
+<tr class="memdesc:aabc7b73321a5b37dcd86c632bf759b48"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <code>scalar_laplacian</code> above, but the input is the spectral coefficients (rather than collocation values) of the function. This is more efficient if one happens to already have the spectral coefficients. To act on a slice of the input and output arrays, specify strides and offsets. <br /></td></tr>
+<tr class="separator:aabc7b73321a5b37dcd86c632bf759b48"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01fd3f3007c90b5b651086c8aabc4721"><td class="memItemLeft" align="right" valign="top"><a id="a01fd3f3007c90b5b651086c8aabc4721"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a01fd3f3007c90b5b651086c8aabc4721">second_derivative</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double *, 2 &gt; &amp;df, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classYlmSpherepack.html#af5a60ceb5ddd9e6c83e1f0e66cd895fc">SecondDeriv</a> * &gt; ddf, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; const double * &gt; collocation_values, size_t physical_stride=1, size_t physical_offset=0) const noexcept</td></tr>
+<tr class="memdesc:a01fd3f3007c90b5b651086c8aabc4721"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes Pfaffian first and second derivative in physical space. The first derivative is \(df(i) = d_i f\), and the second derivative is \(ddf(i,j) = d_i (d_j f)\), where \(d_0 = d/d\theta\) and \(d_1 = csc(\theta) d/d\phi\). ddf is not symmetric. To act on a slice of the input and output arrays, specify stride and offset (assumed to be the same for input and output). <br /></td></tr>
+<tr class="separator:a01fd3f3007c90b5b651086c8aabc4721"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75956d4a7aa29c36e180f1d104c3118e"><td class="memItemLeft" align="right" valign="top"><a id="a75956d4a7aa29c36e180f1d104c3118e"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt; <a class="el" href="classYlmSpherepack.html#a9ebe66671dc0de00825129e5d3839257">FirstDeriv</a>, <a class="el" href="classYlmSpherepack.html#af5a60ceb5ddd9e6c83e1f0e66cd895fc">SecondDeriv</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a75956d4a7aa29c36e180f1d104c3118e">first_and_second_derivative</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;collocation_values) const noexcept</td></tr>
+<tr class="memdesc:a75956d4a7aa29c36e180f1d104c3118e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simpler, less general interface to second_derivative. <br /></td></tr>
+<tr class="separator:a75956d4a7aa29c36e180f1d104c3118e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d94442305a4ac9f68d2dd3506a66aa1"><td class="memItemLeft" align="right" valign="top"><a id="a8d94442305a4ac9f68d2dd3506a66aa1"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a8d94442305a4ac9f68d2dd3506a66aa1">definite_integral</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; const double * &gt; collocation_values, size_t physical_stride=1, size_t physical_offset=0) const noexcept</td></tr>
+<tr class="memdesc:a8d94442305a4ac9f68d2dd3506a66aa1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the integral over the sphere. <br /></td></tr>
+<tr class="separator:a8d94442305a4ac9f68d2dd3506a66aa1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac301d533a1b5f7c5144e8dcf90d11292"><td class="memItemLeft" align="right" valign="top"><a id="ac301d533a1b5f7c5144e8dcf90d11292"></a>
+const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#ac301d533a1b5f7c5144e8dcf90d11292">integration_weights</a> () const noexcept</td></tr>
+<tr class="memdesc:ac301d533a1b5f7c5144e8dcf90d11292"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns weights \(w_i\) such that \(sum_i (c_i w_i)\) is the definite integral, where \(c_i\) are collocation values at point i. <br /></td></tr>
+<tr class="separator:ac301d533a1b5f7c5144e8dcf90d11292"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6920aa0c5bf52f4bbbb82f017805ba82"><td class="memTemplParams" colspan="2"><a id="a6920aa0c5bf52f4bbbb82f017805ba82"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a6920aa0c5bf52f4bbbb82f017805ba82"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structYlmSpherepack_1_1InterpolationInfo.html">InterpolationInfo</a>&lt; T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a6920aa0c5bf52f4bbbb82f017805ba82">set_up_interpolation_info</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 2 &gt; &amp;target_points) const noexcept</td></tr>
+<tr class="memdesc:a6920aa0c5bf52f4bbbb82f017805ba82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets up the <code><a class="el" href="structYlmSpherepack_1_1InterpolationInfo.html" title="Struct to hold cached information at a set of target interpolation points.">InterpolationInfo</a></code> structure for interpolating onto a set of target \((\theta,\phi)\) points. Does not depend on the function being interpolated. <br /></td></tr>
+<tr class="separator:a6920aa0c5bf52f4bbbb82f017805ba82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e0090e1b0285d3b585aa61a6b0c2817"><td class="memTemplParams" colspan="2"><a id="a5e0090e1b0285d3b585aa61a6b0c2817"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a5e0090e1b0285d3b585aa61a6b0c2817"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a5e0090e1b0285d3b585aa61a6b0c2817">interpolate</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; T * &gt; result, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; const double * &gt; collocation_values, const <a class="el" href="structYlmSpherepack_1_1InterpolationInfo.html">InterpolationInfo</a>&lt; T &gt; &amp;interpolation_info, size_t physical_stride=1, size_t physical_offset=0) const noexcept</td></tr>
+<tr class="memdesc:a5e0090e1b0285d3b585aa61a6b0c2817"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interpolates from <code>collocation_values</code> onto the points that have been passed into the <code>set_up_interpolation_info</code> function. To interpolate a different function on the same spectral grid, there is no need to recompute <code>interpolation_info</code>. If you specify stride and offset, acts on a slice of the input values. The output has unit stride. <br /></td></tr>
+<tr class="separator:a5e0090e1b0285d3b585aa61a6b0c2817"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aafbd28254adda59d516c07dd8ffcc831"><td class="memTemplParams" colspan="2"><a id="aafbd28254adda59d516c07dd8ffcc831"></a>
+template&lt;typename T , typename R &gt; </td></tr>
+<tr class="memitem:aafbd28254adda59d516c07dd8ffcc831"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#aafbd28254adda59d516c07dd8ffcc831">interpolate_from_coefs</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; T * &gt; result, const R &amp;spectral_coefs, const <a class="el" href="structYlmSpherepack_1_1InterpolationInfo.html">InterpolationInfo</a>&lt; T &gt; &amp;interpolation_info, size_t spectral_stride=1, size_t spectral_offset=0) const noexcept</td></tr>
+<tr class="memdesc:aafbd28254adda59d516c07dd8ffcc831"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <code>interpolate</code>, but assumes you have spectral coefficients. This is more efficient if you already have the spectral coefficients available. If you specify stride and offset, acts on a slice of the input coefs. The output has unit stride. <br /></td></tr>
+<tr class="separator:aafbd28254adda59d516c07dd8ffcc831"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c72860cb10ae0f98aa4729ea9efdf38"><td class="memTemplParams" colspan="2"><a id="a2c72860cb10ae0f98aa4729ea9efdf38"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a2c72860cb10ae0f98aa4729ea9efdf38"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a2c72860cb10ae0f98aa4729ea9efdf38">interpolate</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;collocation_values, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 2 &gt; &amp;target_points) const noexcept</td></tr>
+<tr class="memdesc:a2c72860cb10ae0f98aa4729ea9efdf38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simpler interface to <code>interpolate</code>. If you need to call this repeatedly on different <code>spectral_coefs</code> or <code>collocation_values</code> for the same target points, this is inefficient; instead use <code>set_up_interpolation_info</code> and the functions that use <code><a class="el" href="structYlmSpherepack_1_1InterpolationInfo.html" title="Struct to hold cached information at a set of target interpolation points.">InterpolationInfo</a></code>. <br /></td></tr>
+<tr class="separator:a2c72860cb10ae0f98aa4729ea9efdf38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7dc7612999db6e063f601e28ad23cd6"><td class="memTemplParams" colspan="2"><a id="aa7dc7612999db6e063f601e28ad23cd6"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:aa7dc7612999db6e063f601e28ad23cd6"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><b>interpolate_from_coefs</b> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;spectral_coefs, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 2 &gt; &amp;target_points) const noexcept</td></tr>
+<tr class="separator:aa7dc7612999db6e063f601e28ad23cd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74a9c453578d1361a3d29bf184d041a1"><td class="memItemLeft" align="right" valign="top"><a id="a74a9c453578d1361a3d29bf184d041a1"></a>
+<a class="el" href="classDataVector.html">DataVector</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a74a9c453578d1361a3d29bf184d041a1">prolong_or_restrict</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;spectral_coefs, const <a class="el" href="classYlmSpherepack.html">YlmSpherepack</a> &amp;target) const noexcept</td></tr>
+<tr class="memdesc:a74a9c453578d1361a3d29bf184d041a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Takes spectral coefficients compatible with <code>*this</code>, and either prolongs them or restricts them to be compatible with <code>target</code>. This is done by truncation (restriction) or padding with zeros (prolongation). <br /></td></tr>
+<tr class="separator:a74a9c453578d1361a3d29bf184d041a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:aa28e823875023a21518d148c24350c9c"><td class="memItemLeft" align="right" valign="top"><a id="aa28e823875023a21518d148c24350c9c"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#aa28e823875023a21518d148c24350c9c">l_max</a> () const noexcept</td></tr>
+<tr class="memdesc:aa28e823875023a21518d148c24350c9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sizes in physical and spectral space for this instance. <br /></td></tr>
+<tr class="separator:aa28e823875023a21518d148c24350c9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a53feb80979821341c336e2d6b88132ed"><td class="memItemLeft" align="right" valign="top"><a id="a53feb80979821341c336e2d6b88132ed"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a53feb80979821341c336e2d6b88132ed">m_max</a> () const noexcept</td></tr>
+<tr class="memdesc:a53feb80979821341c336e2d6b88132ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sizes in physical and spectral space for this instance. <br /></td></tr>
+<tr class="separator:a53feb80979821341c336e2d6b88132ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad0823edcb0d308c4c920ca014c6b3d0f"><td class="memItemLeft" align="right" valign="top"><a id="ad0823edcb0d308c4c920ca014c6b3d0f"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#ad0823edcb0d308c4c920ca014c6b3d0f">physical_size</a> () const noexcept</td></tr>
+<tr class="memdesc:ad0823edcb0d308c4c920ca014c6b3d0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sizes in physical and spectral space for this instance. <br /></td></tr>
+<tr class="separator:ad0823edcb0d308c4c920ca014c6b3d0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad50bc5bf87d2c055452ea6135ca35648"><td class="memItemLeft" align="right" valign="top"><a id="ad50bc5bf87d2c055452ea6135ca35648"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#ad50bc5bf87d2c055452ea6135ca35648">spectral_size</a> () const noexcept</td></tr>
+<tr class="memdesc:ad50bc5bf87d2c055452ea6135ca35648"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sizes in physical and spectral space for this instance. <br /></td></tr>
+<tr class="separator:ad50bc5bf87d2c055452ea6135ca35648"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a3ac5ac546073fcadd7bd348bd5a6289f"><td class="memItemLeft" align="right" valign="top">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a3ac5ac546073fcadd7bd348bd5a6289f">theta_points</a> () const noexcept</td></tr>
+<tr class="memdesc:a3ac5ac546073fcadd7bd348bd5a6289f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Collocation points theta and phi.  <a href="classYlmSpherepack.html#a3ac5ac546073fcadd7bd348bd5a6289f">More...</a><br /></td></tr>
+<tr class="separator:a3ac5ac546073fcadd7bd348bd5a6289f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ee3ad39a90ed7cfde707263a726776a"><td class="memItemLeft" align="right" valign="top">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; double &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a6ee3ad39a90ed7cfde707263a726776a">phi_points</a> () const noexcept</td></tr>
+<tr class="memdesc:a6ee3ad39a90ed7cfde707263a726776a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Collocation points theta and phi.  <a href="classYlmSpherepack.html#a6ee3ad39a90ed7cfde707263a726776a">More...</a><br /></td></tr>
+<tr class="separator:a6ee3ad39a90ed7cfde707263a726776a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f695e9292edad20f1bc3f5a00c2aec0"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, 2 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a1f695e9292edad20f1bc3f5a00c2aec0">theta_phi_points</a> () const noexcept</td></tr>
+<tr class="memdesc:a1f695e9292edad20f1bc3f5a00c2aec0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Collocation points theta and phi.  <a href="classYlmSpherepack.html#a1f695e9292edad20f1bc3f5a00c2aec0">More...</a><br /></td></tr>
+<tr class="separator:a1f695e9292edad20f1bc3f5a00c2aec0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a8e258c1534d6ffb7a5c6a8f3104b3a1a"><td class="memItemLeft" align="right" valign="top"><a id="a8e258c1534d6ffb7a5c6a8f3104b3a1a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a8e258c1534d6ffb7a5c6a8f3104b3a1a">phys_to_spec</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; double * &gt; spectral_coefs, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; const double * &gt; collocation_values, size_t physical_stride=1, size_t physical_offset=0, size_t spectral_stride=1, size_t spectral_offset=0) const noexcept</td></tr>
+<tr class="memdesc:a8e258c1534d6ffb7a5c6a8f3104b3a1a"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespaceSpectral.html" title="Functionality associated with a particular choice of basis functions and quadrature for spectral oper...">Spectral</a> transformations. To act on a slice of the input and output arrays, specify strides and offsets. <br /></td></tr>
+<tr class="separator:a8e258c1534d6ffb7a5c6a8f3104b3a1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2eb01b29ea3fbc3db54ad416cd18be9c"><td class="memItemLeft" align="right" valign="top"><a id="a2eb01b29ea3fbc3db54ad416cd18be9c"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a2eb01b29ea3fbc3db54ad416cd18be9c">spec_to_phys</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; double * &gt; collocation_values, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; const double * &gt; spectral_coefs, size_t spectral_stride=1, size_t spectral_offset=0, size_t physical_stride=1, size_t physical_offset=0) const noexcept</td></tr>
+<tr class="memdesc:a2eb01b29ea3fbc3db54ad416cd18be9c"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespaceSpectral.html" title="Functionality associated with a particular choice of basis functions and quadrature for spectral oper...">Spectral</a> transformations. To act on a slice of the input and output arrays, specify strides and offsets. <br /></td></tr>
+<tr class="separator:a2eb01b29ea3fbc3db54ad416cd18be9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ae052a6c314fa5e4945479450d472f3e1"><td class="memItemLeft" align="right" valign="top"><a id="ae052a6c314fa5e4945479450d472f3e1"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#ae052a6c314fa5e4945479450d472f3e1">phys_to_spec_all_offsets</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; double * &gt; spectral_coefs, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; const double * &gt; collocation_values, size_t stride) const noexcept</td></tr>
+<tr class="memdesc:ae052a6c314fa5e4945479450d472f3e1"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespaceSpectral.html" title="Functionality associated with a particular choice of basis functions and quadrature for spectral oper...">Spectral</a> transformations where <code>collocation_values</code> and <code>spectral_coefs</code> are assumed to point to 3-dimensional arrays (I1 x S2 topology), and the transformations are done for all 'radial' points at once by internally looping over all values of the offset from zero to <code>stride</code>-1 (the physical and spectral strides are equal and are called <code>stride</code>). <br /></td></tr>
+<tr class="separator:ae052a6c314fa5e4945479450d472f3e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e27073ca555de40e6d9a52b15f18aa1"><td class="memItemLeft" align="right" valign="top"><a id="a6e27073ca555de40e6d9a52b15f18aa1"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a6e27073ca555de40e6d9a52b15f18aa1">spec_to_phys_all_offsets</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; double * &gt; collocation_values, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; const double * &gt; spectral_coefs, size_t stride) const noexcept</td></tr>
+<tr class="memdesc:a6e27073ca555de40e6d9a52b15f18aa1"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespaceSpectral.html" title="Functionality associated with a particular choice of basis functions and quadrature for spectral oper...">Spectral</a> transformations where <code>collocation_values</code> and <code>spectral_coefs</code> are assumed to point to 3-dimensional arrays (I1 x S2 topology), and the transformations are done for all 'radial' points at once by internally looping over all values of the offset from zero to <code>stride</code>-1 (the physical and spectral strides are equal and are called <code>stride</code>). <br /></td></tr>
+<tr class="separator:a6e27073ca555de40e6d9a52b15f18aa1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:aee44ae60c8a0e72c96ea062b88babaae"><td class="memItemLeft" align="right" valign="top"><a id="aee44ae60c8a0e72c96ea062b88babaae"></a>
+<a class="el" href="classDataVector.html">DataVector</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#aee44ae60c8a0e72c96ea062b88babaae">phys_to_spec</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;collocation_values, size_t physical_stride=1, size_t physical_offset=0) const noexcept</td></tr>
+<tr class="memdesc:aee44ae60c8a0e72c96ea062b88babaae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simpler, less general interfaces to <code>phys_to_spec</code> and <code>spec_to_phys</code>. Acts on a slice of the input and returns a unit-stride result. <br /></td></tr>
+<tr class="separator:aee44ae60c8a0e72c96ea062b88babaae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a53b4918caa22ec694829f47bbfb9859f"><td class="memItemLeft" align="right" valign="top"><a id="a53b4918caa22ec694829f47bbfb9859f"></a>
+<a class="el" href="classDataVector.html">DataVector</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a53b4918caa22ec694829f47bbfb9859f">spec_to_phys</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;spectral_coefs, size_t spectral_stride=1, size_t spectral_offset=0) const noexcept</td></tr>
+<tr class="memdesc:a53b4918caa22ec694829f47bbfb9859f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simpler, less general interfaces to <code>phys_to_spec</code> and <code>spec_to_phys</code>. Acts on a slice of the input and returns a unit-stride result. <br /></td></tr>
+<tr class="separator:a53b4918caa22ec694829f47bbfb9859f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a818385ba09b8559218a587508411cda8"><td class="memItemLeft" align="right" valign="top"><a id="a818385ba09b8559218a587508411cda8"></a>
+<a class="el" href="classDataVector.html">DataVector</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a818385ba09b8559218a587508411cda8">phys_to_spec_all_offsets</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;collocation_values, size_t stride) const noexcept</td></tr>
+<tr class="memdesc:a818385ba09b8559218a587508411cda8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simpler, less general interfaces to <code>phys_to_spec_all_offsets</code> and <code>spec_to_phys_all_offsets</code>. Result has the same stride as the input. <br /></td></tr>
+<tr class="separator:a818385ba09b8559218a587508411cda8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d52246902d574992c07539a828d4ddc"><td class="memItemLeft" align="right" valign="top"><a id="a0d52246902d574992c07539a828d4ddc"></a>
+<a class="el" href="classDataVector.html">DataVector</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a0d52246902d574992c07539a828d4ddc">spec_to_phys_all_offsets</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;spectral_coefs, size_t stride) const noexcept</td></tr>
+<tr class="memdesc:a0d52246902d574992c07539a828d4ddc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simpler, less general interfaces to <code>phys_to_spec_all_offsets</code> and <code>spec_to_phys_all_offsets</code>. Result has the same stride as the input. <br /></td></tr>
+<tr class="separator:a0d52246902d574992c07539a828d4ddc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a527e4b8363a6797e95d9164705dc46c2"><td class="memItemLeft" align="right" valign="top"><a id="a527e4b8363a6797e95d9164705dc46c2"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a527e4b8363a6797e95d9164705dc46c2">gradient_all_offsets</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double *, 2 &gt; &amp;df, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; const double * &gt; collocation_values, size_t stride=1) const noexcept</td></tr>
+<tr class="memdesc:a527e4b8363a6797e95d9164705dc46c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <code>gradient</code> but pointers are assumed to point to 3-dimensional arrays (I1 x S2 topology), and the gradient is done for all 'radial' points at once by internally looping over all values of the offset from zero to <code>stride</code>-1. <br /></td></tr>
+<tr class="separator:a527e4b8363a6797e95d9164705dc46c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1bfa99818d2c6768568774bb6d00dbd4"><td class="memItemLeft" align="right" valign="top"><a id="a1bfa99818d2c6768568774bb6d00dbd4"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a1bfa99818d2c6768568774bb6d00dbd4">gradient_from_coefs_all_offsets</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double *, 2 &gt; &amp;df, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; const double * &gt; spectral_coefs, size_t stride=1) const noexcept</td></tr>
+<tr class="memdesc:a1bfa99818d2c6768568774bb6d00dbd4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <code>gradient</code> but pointers are assumed to point to 3-dimensional arrays (I1 x S2 topology), and the gradient is done for all 'radial' points at once by internally looping over all values of the offset from zero to <code>stride</code>-1. <br /></td></tr>
+<tr class="separator:a1bfa99818d2c6768568774bb6d00dbd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a275006d8d944955756f8e73fe2e1a8b9"><td class="memItemLeft" align="right" valign="top"><a id="a275006d8d944955756f8e73fe2e1a8b9"></a>
+<a class="el" href="classYlmSpherepack.html#a9ebe66671dc0de00825129e5d3839257">FirstDeriv</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a275006d8d944955756f8e73fe2e1a8b9">gradient</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;collocation_values, size_t physical_stride=1, size_t physical_offset=0) const noexcept</td></tr>
+<tr class="memdesc:a275006d8d944955756f8e73fe2e1a8b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simpler, less general interfaces to <code>gradient</code>. Acts on a slice of the input and returns a unit-stride result. <br /></td></tr>
+<tr class="separator:a275006d8d944955756f8e73fe2e1a8b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0993bf2062bfd564c378afb72c46aec6"><td class="memItemLeft" align="right" valign="top"><a id="a0993bf2062bfd564c378afb72c46aec6"></a>
+<a class="el" href="classYlmSpherepack.html#a9ebe66671dc0de00825129e5d3839257">FirstDeriv</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a0993bf2062bfd564c378afb72c46aec6">gradient_from_coefs</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;spectral_coefs, size_t spectral_stride=1, size_t spectral_offset=0) const noexcept</td></tr>
+<tr class="memdesc:a0993bf2062bfd564c378afb72c46aec6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simpler, less general interfaces to <code>gradient</code>. Acts on a slice of the input and returns a unit-stride result. <br /></td></tr>
+<tr class="separator:a0993bf2062bfd564c378afb72c46aec6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ad3ed19580e46ee2f03eac9a7c123aeb6"><td class="memItemLeft" align="right" valign="top"><a id="ad3ed19580e46ee2f03eac9a7c123aeb6"></a>
+<a class="el" href="classYlmSpherepack.html#a9ebe66671dc0de00825129e5d3839257">FirstDeriv</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#ad3ed19580e46ee2f03eac9a7c123aeb6">gradient_all_offsets</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;collocation_values, size_t stride=1) const noexcept</td></tr>
+<tr class="memdesc:ad3ed19580e46ee2f03eac9a7c123aeb6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simpler, less general interfaces to <code>gradient_all_offsets</code>. Result has the same stride as the input. <br /></td></tr>
+<tr class="separator:ad3ed19580e46ee2f03eac9a7c123aeb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61004afd9b6dadca886ffe9a1ea66917"><td class="memItemLeft" align="right" valign="top"><a id="a61004afd9b6dadca886ffe9a1ea66917"></a>
+<a class="el" href="classYlmSpherepack.html#a9ebe66671dc0de00825129e5d3839257">FirstDeriv</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a61004afd9b6dadca886ffe9a1ea66917">gradient_from_coefs_all_offsets</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;spectral_coefs, size_t stride=1) const noexcept</td></tr>
+<tr class="memdesc:a61004afd9b6dadca886ffe9a1ea66917"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simpler, less general interfaces to <code>gradient_all_offsets</code>. Result has the same stride as the input. <br /></td></tr>
+<tr class="separator:a61004afd9b6dadca886ffe9a1ea66917"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:adf48c7f8905f564bec2b0728ee107d0a"><td class="memItemLeft" align="right" valign="top"><a id="adf48c7f8905f564bec2b0728ee107d0a"></a>
+<a class="el" href="classDataVector.html">DataVector</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#adf48c7f8905f564bec2b0728ee107d0a">scalar_laplacian</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;collocation_values, size_t physical_stride=1, size_t physical_offset=0) const noexcept</td></tr>
+<tr class="memdesc:adf48c7f8905f564bec2b0728ee107d0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simpler, less general interfaces to <code>scalar_laplacian</code>. Acts on a slice of the input and returns a unit-stride result. <br /></td></tr>
+<tr class="separator:adf48c7f8905f564bec2b0728ee107d0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a351b5f81b23c008a2df494c75a254b52"><td class="memItemLeft" align="right" valign="top"><a id="a351b5f81b23c008a2df494c75a254b52"></a>
+<a class="el" href="classDataVector.html">DataVector</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a351b5f81b23c008a2df494c75a254b52">scalar_laplacian_from_coefs</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;spectral_coefs, size_t spectral_stride=1, size_t spectral_offset=0) const noexcept</td></tr>
+<tr class="memdesc:a351b5f81b23c008a2df494c75a254b52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simpler, less general interfaces to <code>scalar_laplacian</code>. Acts on a slice of the input and returns a unit-stride result. <br /></td></tr>
+<tr class="separator:a351b5f81b23c008a2df494c75a254b52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a34b75d8b82d583d782227968fbee20ca"><td class="memItemLeft" align="right" valign="top"><a id="a34b75d8b82d583d782227968fbee20ca"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a34b75d8b82d583d782227968fbee20ca">add_constant</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> * &gt; spectral_coefs, const double c) noexcept</td></tr>
+<tr class="memdesc:a34b75d8b82d583d782227968fbee20ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a constant (i.e. \(f(\theta,\phi)\) += \(c\)) to the function given by the spectral coefficients, by modifying the coefficients. <br /></td></tr>
+<tr class="separator:a34b75d8b82d583d782227968fbee20ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8e2372cb3bd30f64c23509c1542998ef"><td class="memItemLeft" align="right" valign="top"><a id="a8e2372cb3bd30f64c23509c1542998ef"></a>
+static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a8e2372cb3bd30f64c23509c1542998ef">average</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;spectral_coefs) noexcept</td></tr>
+<tr class="memdesc:a8e2372cb3bd30f64c23509c1542998ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the average of \(f(\theta,\phi)\) over \((\theta,\phi)\). <br /></td></tr>
+<tr class="separator:a8e2372cb3bd30f64c23509c1542998ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:add511a44bd64eca64478bcd54f764a61"><td class="memItemLeft" align="right" valign="top"><a id="add511a44bd64eca64478bcd54f764a61"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#add511a44bd64eca64478bcd54f764a61">physical_size</a> (const size_t <a class="el" href="classYlmSpherepack.html#aa28e823875023a21518d148c24350c9c">l_max</a>, const size_t <a class="el" href="classYlmSpherepack.html#a53feb80979821341c336e2d6b88132ed">m_max</a>) noexcept</td></tr>
+<tr class="memdesc:add511a44bd64eca64478bcd54f764a61"><td class="mdescLeft">&#160;</td><td class="mdescRight">Static functions to return the correct sizes of vectors of collocation points and spectral coefficients for a given l_max and m_max. Useful for allocating space without having to create a <a class="el" href="classYlmSpherepack.html" title="Defines the C++ interface to SPHEREPACK.">YlmSpherepack</a>. <br /></td></tr>
+<tr class="separator:add511a44bd64eca64478bcd54f764a61"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a96f905100d5aa2f902a7fccf91907447"><td class="memItemLeft" align="right" valign="top">static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classYlmSpherepack.html#a96f905100d5aa2f902a7fccf91907447">spectral_size</a> (const size_t <a class="el" href="classYlmSpherepack.html#aa28e823875023a21518d148c24350c9c">l_max</a>, const size_t <a class="el" href="classYlmSpherepack.html#a53feb80979821341c336e2d6b88132ed">m_max</a>) noexcept</td></tr>
+<tr class="separator:a96f905100d5aa2f902a7fccf91907447"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Defines the C++ interface to SPHEREPACK. </p>
+<h3>Details</h3>
+<p>The class <code><a class="el" href="classYlmSpherepack.html" title="Defines the C++ interface to SPHEREPACK.">YlmSpherepack</a></code> defines the C++ interface to the fortran library SPHEREPACK used for computations on the surface of a sphere.</p>
+<p>Given a real-valued, scalar function \(g(\theta, \phi)\), SPHEREPACK expands it as:</p>
+<p class="formulaDsp">
+\begin{align*} g(\theta, \phi) &amp;=\frac{1}{2}\sum_{l=0}^{l_{\max}}\bar P_l^0(\cos\theta) a_{l0} +\sum_{l=1}^{l_{\max}}\sum_{m=1}^{\min(l, m_{\max})}\bar P_l^m(\cos\theta)\{ a_{lm}\cos m\phi -b_{lm}\sin m\phi\}\nonumber \end{align*}
+</p>
+<p>where \(a_{lm}\) and \(b_{lm}\) are spectral coefficient arrays used by SPHEREPACK, \(P_l^m(x)\) are defined as</p>
+<p class="formulaDsp">
+\begin{align*} \bar P_l^m(x)&amp;=\sqrt{\frac{(2l+1)(l-m)!}{2(l+m)!}}\;P_{lm}(x) \end{align*}
+</p>
+<p>and \(P_{nm}(x)\) are the associated Legendre polynomials.</p>
+<p>Internally, SPHEREPACK can represent such an expansion in two ways which we will refer to as modal and nodal representations:</p>
+<ol type="1">
+<li>modal: The spectral coefficient arrays \(a_{lm}\) and \(b_{lm}\), referred to as <code>spectral_coefs</code> in the methods below. For this C++ interface, they are saved in a single <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code>. To help you index the coefficients as expected by this interface, use the class <code><a class="el" href="classSpherepackIterator.html" title="Iterates over spectral coefficients stored in SPHEREPACK format.">SpherepackIterator</a></code>.</li>
+<li>nodal: The values at certain collocation points, referred to as <code>collocation_values</code> in the methods below. This is an array of the expanded function \(g(\theta,\phi)\) evaluated at collocation values \((\theta_i,\phi_j)\), where \(\theta_i\) are Gauss-Legendre quadrature nodes in the interval \((0, \pi)\) with \(i = 0, ..., l_{\max}\), and \(\phi_j\) is distributed uniformly in \((0, 2\pi)\) with \(i = 0, ..., 2m_{\max}\). The angles of the collocation points can be computed with the method <code>theta_phi_points</code>.</li>
+</ol>
+<p>To convert between the two representations the methods <code>spec_to_phys</code> and <code>phys_to_spec</code> can be used. For internal calculations SPHEREPACK will usually convert to spectral coefficients first, so it is in general more efficient to use these directly.</p>
+<p>Most methods of SPHEREPACK will compute the requested values of e.g. <code>gradient</code> or <code>scalar_laplacian</code> at the collocation points, effectively returning an expansion in nodal form as defined above. To evaluate the function at arbitrary angles \(\theta\), \(\phi\), these values have to be "interpolated" (i.e. the new expansion evaluated) using <code>interpolate</code>. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a6ee3ad39a90ed7cfde707263a726776a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6ee3ad39a90ed7cfde707263a726776a">&#9670;&nbsp;</a></span>phi_points()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;double&gt;&amp; YlmSpherepack::phi_points </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Collocation points theta and phi. </p>
+<p>The phi points are uniform in phi, with the first point at phi=0.</p>
+<p>The theta points are Gauss-Legendre in \(\cos(\theta)\), so there are no points at the poles. </p>
+
+</div>
+</div>
+<a id="a96f905100d5aa2f902a7fccf91907447"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a96f905100d5aa2f902a7fccf91907447">&#9670;&nbsp;</a></span>spectral_size()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static constexpr size_t YlmSpherepack::spectral_size </td>
+          <td>(</td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>l_max</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>m_max</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="section note"><dt>Note</dt><dd><code>spectral_size</code> is the size of the buffer that holds the coefficients; it is not the number of coefficients (which is \(m_{\rm max}^2+(l_{\rm max}-m_{\rm max})(2m_{\rm max}+1)\)). To simplify its internal indexing, SPHEREPACK uses a buffer with more space than necessary. See <a class="el" href="classSpherepackIterator.html" title="Iterates over spectral coefficients stored in SPHEREPACK format.">SpherepackIterator</a> for how to index the coefficients in the buffer. </dd></dl>
+
+</div>
+</div>
+<a id="a1f695e9292edad20f1bc3f5a00c2aec0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1f695e9292edad20f1bc3f5a00c2aec0">&#9670;&nbsp;</a></span>theta_phi_points()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;<a class="el" href="classDataVector.html">DataVector</a>, 2&gt; YlmSpherepack::theta_phi_points </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Collocation points theta and phi. </p>
+<p>The phi points are uniform in phi, with the first point at phi=0.</p>
+<p>The theta points are Gauss-Legendre in \(\cos(\theta)\), so there are no points at the poles. </p>
+
+</div>
+</div>
+<a id="a3ac5ac546073fcadd7bd348bd5a6289f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3ac5ac546073fcadd7bd348bd5a6289f">&#9670;&nbsp;</a></span>theta_points()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;double&gt;&amp; YlmSpherepack::theta_points </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Collocation points theta and phi. </p>
+<p>The phi points are uniform in phi, with the first point at phi=0.</p>
+<p>The theta points are Gauss-Legendre in \(\cos(\theta)\), so there are no points at the poles. </p>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/ApparentHorizons/<a class="el" href="YlmSpherepack_8hpp_source.html">YlmSpherepack.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

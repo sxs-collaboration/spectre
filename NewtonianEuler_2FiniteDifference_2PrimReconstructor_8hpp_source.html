@@ -1,0 +1,479 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: tests/Unit/Helpers/Evolution/Systems/NewtonianEuler/FiniteDifference/PrimReconstructor.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_33df814919e476f9d56dccef9b24e276.html">tests</a></li><li class="navelem"><a class="el" href="dir_38113a4c235494bd05bb19f85d006940.html">Unit</a></li><li class="navelem"><a class="el" href="dir_b87ca7a475176b712f1482b79974072f.html">Helpers</a></li><li class="navelem"><a class="el" href="dir_002e20023af72d4513ec833e61587297.html">Evolution</a></li><li class="navelem"><a class="el" href="dir_69a63926d0d0a560268b3f57e744101c.html">Systems</a></li><li class="navelem"><a class="el" href="dir_40756c7273cc2e96ac5cb829f3026497.html">NewtonianEuler</a></li><li class="navelem"><a class="el" href="dir_51f3f68091a0f4abde84c3b2b21a4af7.html">FiniteDifference</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">PrimReconstructor.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TestingFramework_8hpp.html">Framework/TestingFramework.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160; </div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160; </div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataBox/PrefixHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Prefixes_8hpp.html">DataStructures/DataBox/Prefixes.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataBox/TagName.hpp&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataVector.hpp&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Index_8hpp.html">DataStructures/Index.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Tensor_8hpp.html">DataStructures/Tensor/Tensor.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="LogicalCoordinates_8hpp.html">Domain/LogicalCoordinates.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Direction_8hpp.html">Domain/Structure/Direction.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;Domain/Structure/DirectionMap.hpp&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Element_8hpp.html">Domain/Structure/Element.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ElementId_8hpp.html">Domain/Structure/ElementId.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;Domain/Structure/MaxNumberOfNeighbors.hpp&quot;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Neighbors_8hpp.html">Domain/Structure/Neighbors.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;Evolution/DgSubcell/NeighborData.hpp&quot;</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;Evolution/DgSubcell/SliceData.hpp&quot;</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp&quot;</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/NewtonianEuler/FiniteDifference/Reconstructor.hpp&quot;</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/NewtonianEuler/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="NumericalAlgorithms_2Spectral_2Mesh_8hpp.html">NumericalAlgorithms/Spectral/Mesh.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Spectral_8hpp.html">NumericalAlgorithms/Spectral/Spectral.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp&quot;</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp&quot;</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="preprocessor">#include &quot;PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp&quot;</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="TMPL_8hpp.html">Utilities/TMPL.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160; </div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="keyword">namespace </span>TestHelpers::NewtonianEuler::fd {</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim, <span class="keyword">typename</span> F&gt;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<a class="code" href="classFixedHashMap.html">FixedHashMap</a>&lt;<a class="code" href="group__ComputationalDomainGroup.html#gafa8cb44daebc8f9e080718961530be89">maximum_number_of_neighbors</a>(Dim) + 1,</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;             <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair&lt;Direction&lt;Dim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;Dim&gt;</a>&gt;,</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;             <a class="code" href="structevolution_1_1dg_1_1subcell_1_1NeighborData.html">evolution::dg::subcell::NeighborData</a>,</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;             boost::hash&lt;std::pair&lt;Direction&lt;Dim&gt;, <a class="code" href="classElementId.html">ElementId&lt;Dim&gt;</a>&gt;&gt;&gt;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;compute_neighbor_data(</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a>&amp; subcell_mesh,</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keyword">const</span> tnsr::I&lt;DataVector, Dim, Frame::Logical&gt;&amp; volume_logical_coords,</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keyword">const</span> <a class="code" href="classDirectionMap.html">DirectionMap</a>&lt;Dim, <a class="code" href="classNeighbors.html">Neighbors&lt;Dim&gt;</a>&gt;&amp; neighbors,</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">size_t</span> ghost_zone_size, <span class="keyword">const</span> F&amp; compute_variables_of_neighbor_data) {</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;  <a class="code" href="classFixedHashMap.html">FixedHashMap</a>&lt;<a class="code" href="group__ComputationalDomainGroup.html#gafa8cb44daebc8f9e080718961530be89">maximum_number_of_neighbors</a>(Dim) + 1,</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;               <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair&lt;Direction&lt;Dim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;Dim&gt;</a>&gt;,</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;               <a class="code" href="structevolution_1_1dg_1_1subcell_1_1NeighborData.html">evolution::dg::subcell::NeighborData</a>,</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;               boost::hash&lt;std::pair&lt;Direction&lt;Dim&gt;, <a class="code" href="classElementId.html">ElementId&lt;Dim&gt;</a>&gt;&gt;&gt;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;      neighbor_data{};</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;  <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; [direction, neighbors_in_direction] : neighbors) {</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    REQUIRE(neighbors_in_direction.size() == 1);</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="keyword">const</span> <a class="code" href="classElementId.html">ElementId&lt;Dim&gt;</a>&amp; neighbor_id = *neighbors_in_direction.begin();</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="keyword">auto</span> neighbor_logical_coords = volume_logical_coords;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    neighbor_logical_coords.get(direction.dimension()) +=</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        direction.sign() * 2.0;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> neighbor_vars_for_reconstruction =</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        compute_variables_of_neighbor_data(neighbor_logical_coords);</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <a class="code" href="classDirectionMap.html">DirectionMap&lt;Dim, bool&gt;</a> directions_to_slice{};</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    directions_to_slice[direction.opposite()] = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> sliced_data = evolution::dg::subcell::detail::slice_data_impl(</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        <a class="code" href="group__UtilitiesGroup.html#ga188c2766e601fb537e7d34ae70c6ff9d">gsl::make_span</a>(neighbor_vars_for_reconstruction.data(),</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;                       neighbor_vars_for_reconstruction.size()),</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        subcell_mesh.<a class="code" href="classMesh.html#af9a050a87833aa6efd8d3c37afee0c03">extents</a>(), ghost_zone_size, directions_to_slice);</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    REQUIRE(sliced_data.size() == 1);</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    REQUIRE(sliced_data.contains(direction.opposite()));</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    neighbor_data[<a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>{direction, neighbor_id}].data_for_reconstruction =</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        sliced_data.at(direction.opposite());</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;  }</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;  <span class="keywordflow">return</span> neighbor_data;</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;}</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="keyword">namespace </span>detail {</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim, <span class="keywordtype">size_t</span> ThermodynamicDim, <span class="keyword">typename</span> Reconstructor&gt;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="keywordtype">void</span> test_prim_reconstructor_impl(</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">size_t</span> points_per_dimension,</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keyword">const</span> Reconstructor&amp; derived_reconstructor,</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    <span class="keyword">const</span> <a class="code" href="classEquationsOfState_1_1EquationOfState.html">EquationsOfState::EquationOfState&lt;false, ThermodynamicDim&gt;</a>&amp; eos) {</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;  <span class="comment">// 1. Create linear prims to reconstruct</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;  <span class="comment">// 2. send through reconstruction</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;  <span class="comment">// 3. check prims and cons were computed correctly</span></div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;  <span class="keyword">namespace </span>ne = ::NewtonianEuler;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;  <span class="keyword">const</span> ne::fd::Reconstructor&lt;Dim&gt;&amp; reconstructor = derived_reconstructor;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;  static_assert(tmpl::list_contains_v&lt;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;                <span class="keyword">typename</span> ne::fd::Reconstructor&lt;Dim&gt;::creatable_classes,</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;                Reconstructor&gt;);</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;  <span class="keyword">using</span> MassDensityCons = ne::Tags::MassDensityCons;</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;  <span class="keyword">using</span> EnergyDensity = ne::Tags::EnergyDensity;</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;  <span class="keyword">using</span> MomentumDensity = ne::Tags::MomentumDensity&lt;Dim&gt;;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160; </div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;  <span class="comment">// Primitive vars tags</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;  <span class="keyword">using</span> MassDensity = ne::Tags::MassDensity&lt;DataVector&gt;;</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;  <span class="keyword">using</span> Velocity = ne::Tags::Velocity&lt;DataVector, Dim&gt;;</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;  <span class="keyword">using</span> SpecificInternalEnergy = ne::Tags::SpecificInternalEnergy&lt;DataVector&gt;;</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;  <span class="keyword">using</span> Pressure = ne::Tags::Pressure&lt;DataVector&gt;;</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160; </div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;  <span class="keyword">using</span> prims_tags =</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;      tmpl::list&lt;MassDensity, Velocity, SpecificInternalEnergy, Pressure&gt;;</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;  <span class="keyword">using</span> cons_tags = tmpl::list&lt;MassDensityCons, MomentumDensity, EnergyDensity&gt;;</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;  <span class="keyword">using</span> flux_tags = <a class="code" href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e">db::wrap_tags_in&lt;::Tags::Flux, cons_tags, tmpl::size_t&lt;Dim&gt;</a>,</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;                                     <a class="code" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt;;</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;  <span class="keyword">using</span> prim_tags_for_reconstruction =</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;      tmpl::list&lt;MassDensity, Velocity, Pressure&gt;;</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160; </div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;  <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a> subcell_mesh{points_per_dimension,</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;                               Spectral::Basis::FiniteDifference,</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;                               Spectral::Quadrature::CellCentered};</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;  <span class="keyword">auto</span> logical_coords = <a class="code" href="group__ComputationalDomainGroup.html#ga6070224843ce605a36853fab86c8c2ca">logical_coordinates</a>(subcell_mesh);</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;  <span class="comment">// Make the logical coordinates different in each direction</span></div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 1; i &lt; Dim; ++i) {</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    logical_coords.get(i) += 4.0 * i;</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;  }</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160; </div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;  <a class="code" href="classDirectionMap.html">DirectionMap&lt;Dim, Neighbors&lt;Dim&gt;</a>&gt; neighbors{};</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; 2 * Dim; ++i) {</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    neighbors[<a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(<a class="code" href="classDirection.html">Direction&lt;Dim&gt;::all_directions</a>(), i)] =</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;        <a class="code" href="classNeighbors.html">Neighbors&lt;Dim&gt;</a>{{<a class="code" href="classElementId.html">ElementId&lt;Dim&gt;</a>{i + 1, {}}}, {}};</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;  }</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;  <span class="keyword">const</span> <a class="code" href="classElement.html">Element&lt;Dim&gt;</a> element{<a class="code" href="classElementId.html">ElementId&lt;Dim&gt;</a>{0, {}}, neighbors};</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> compute_solution = [](<span class="keyword">const</span> <span class="keyword">auto</span>&amp; coords) {</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    Variables&lt;prim_tags_for_reconstruction&gt; vars{get&lt;0&gt;(coords).size(), 0.0};</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; Dim; ++i) {</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;      <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(get&lt;MassDensity&gt;(vars)) += coords.get(i);</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;      <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(get&lt;Pressure&gt;(vars)) += coords.get(i);</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;      <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> j = 0;j &lt;Dim;++j) {</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;        get&lt;Velocity&gt;(vars).get(j) += coords.get(i);</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;      }</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;    }</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;    <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(get&lt;MassDensity&gt;(vars)) += 2.0;</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    <a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>(get&lt;Pressure&gt;(vars)) += 30.0;</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> j = 0; j &lt; Dim; ++j) {</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;      get&lt;Velocity&gt;(vars).get(j) += 1.0e-2 * (j + 2.0) + 10.0;</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;    }</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;    <span class="keywordflow">return</span> vars;</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;  };</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160; </div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;  <span class="keyword">const</span> <a class="code" href="classFixedHashMap.html">FixedHashMap</a>&lt;<a class="code" href="group__ComputationalDomainGroup.html#gafa8cb44daebc8f9e080718961530be89">maximum_number_of_neighbors</a>(Dim) + 1,</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;                     <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair&lt;Direction&lt;Dim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;Dim&gt;</a>&gt;,</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;                     <a class="code" href="structevolution_1_1dg_1_1subcell_1_1NeighborData.html">evolution::dg::subcell::NeighborData</a>,</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;                     boost::hash&lt;std::pair&lt;Direction&lt;Dim&gt;, <a class="code" href="classElementId.html">ElementId&lt;Dim&gt;</a>&gt;&gt;&gt;</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;      neighbor_data = compute_neighbor_data(</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;          subcell_mesh, logical_coords, element.neighbors(),</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;          reconstructor.ghost_zone_size(), compute_solution);</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160; </div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;  <span class="keyword">const</span> <span class="keywordtype">size_t</span> reconstructed_num_pts =</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;      (subcell_mesh.<a class="code" href="classMesh.html#af9a050a87833aa6efd8d3c37afee0c03">extents</a>(0) + 1) *</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;      subcell_mesh.<a class="code" href="classMesh.html#af9a050a87833aa6efd8d3c37afee0c03">extents</a>().slice_away(0).product();</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160; </div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;  <span class="keyword">using</span> dg_package_data_argument_tags =</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;      tmpl::append&lt;cons_tags, prims_tags, flux_tags&gt;;</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;Variables&lt;dg_package_data_argument_tags&gt;</a>, Dim&gt; vars_on_lower_face =</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;      make_array&lt;Dim&gt;(</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;          Variables&lt;dg_package_data_argument_tags&gt;(reconstructed_num_pts));</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;Variables&lt;dg_package_data_argument_tags&gt;</a>, Dim&gt; vars_on_upper_face =</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;      make_array&lt;Dim&gt;(</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;          Variables&lt;dg_package_data_argument_tags&gt;(reconstructed_num_pts));</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160; </div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;  Variables&lt;prims_tags&gt; volume_prims{subcell_mesh.<a class="code" href="classMesh.html#a094b317e6113c50a0b8159c46ccae563">number_of_grid_points</a>()};</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;  volume_prims.assign_subset(compute_solution(logical_coords));</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160; </div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;  <span class="comment">// Now we have everything to call the reconstruction</span></div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;  <span class="keyword">dynamic_cast&lt;</span><span class="keyword">const </span>Reconstructor&amp;<span class="keyword">&gt;</span>(reconstructor).<a class="code" href="group__DgSubcellGroup.html#ga25b578ae42ae0ed05d4b74140a6af2d1">reconstruct</a>(</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;      <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;vars_on_lower_face), <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;vars_on_upper_face),</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;      volume_prims, eos, element, neighbor_data, subcell_mesh);</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160; </div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> dim = 0; dim &lt; Dim; ++dim) {</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;    CAPTURE(dim);</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> basis = make_array&lt;Dim&gt;(Spectral::Basis::FiniteDifference);</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;    <span class="keyword">auto</span> quadrature = make_array&lt;Dim&gt;(Spectral::Quadrature::CellCentered);</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;    <span class="keyword">auto</span> extents = make_array&lt;Dim&gt;(points_per_dimension);</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;    <a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(extents, dim) = points_per_dimension + 1;</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;    <a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(quadrature, dim) = Spectral::Quadrature::FaceCentered;</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;    <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;Dim&gt;</a> face_centered_mesh{extents, basis, quadrature};</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;    <span class="keyword">auto</span> logical_coords_face_centered = <a class="code" href="group__ComputationalDomainGroup.html#ga6070224843ce605a36853fab86c8c2ca">logical_coordinates</a>(face_centered_mesh);</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 1; i &lt; Dim; ++i) {</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;      logical_coords_face_centered.get(i) =</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;          logical_coords_face_centered.get(i) + 4.0 * i;</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;    }</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;    Variables&lt;dg_package_data_argument_tags&gt; expected_face_values{</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;        face_centered_mesh.number_of_grid_points()};</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;    expected_face_values.assign_subset(</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;        compute_solution(logical_coords_face_centered));</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;    <span class="keywordflow">if</span> constexpr (ThermodynamicDim == 2) {</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;      get&lt;SpecificInternalEnergy&gt;(expected_face_values) =</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;          eos.specific_internal_energy_from_density_and_pressure(</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;              get&lt;MassDensity&gt;(expected_face_values),</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;              get&lt;Pressure&gt;(expected_face_values));</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;      get&lt;SpecificInternalEnergy&gt;(expected_face_values) =</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;          eos.specific_internal_energy_from_density(</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;              get&lt;MassDensity&gt;(expected_face_values));</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;    }</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;    ne::ConservativeFromPrimitive&lt;Dim&gt;::apply(</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;        <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;get&lt;MassDensityCons&gt;(expected_face_values)),</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;        <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;get&lt;MomentumDensity&gt;(expected_face_values)),</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;        <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;get&lt;EnergyDensity&gt;(expected_face_values)),</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;        get&lt;MassDensity&gt;(expected_face_values),</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;        get&lt;Velocity&gt;(expected_face_values),</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;        get&lt;SpecificInternalEnergy&gt;(expected_face_values));</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160; </div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;    tmpl::for_each&lt;tmpl::append&lt;cons_tags, prims_tags&gt;&gt;(</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;        [dim, &amp;expected_face_values, &amp;vars_on_lower_face,</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;         &amp;vars_on_upper_face](<span class="keyword">auto</span> tag_to_check_v) {</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;          <span class="keyword">using</span> tag_to_check = tmpl::type_from&lt;decltype(tag_to_check_v)&gt;;</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;          CAPTURE(db::tag_name&lt;tag_to_check&gt;());</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;          <a class="code" href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">CHECK_ITERABLE_APPROX</a>(</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;              get&lt;tag_to_check&gt;(<a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(vars_on_lower_face, dim)),</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;              get&lt;tag_to_check&gt;(expected_face_values));</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;          <a class="code" href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">CHECK_ITERABLE_APPROX</a>(</div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;              get&lt;tag_to_check&gt;(<a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(vars_on_upper_face, dim)),</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;              get&lt;tag_to_check&gt;(expected_face_values));</div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;        });</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;  }</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;}</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;}  <span class="comment">// namespace detail</span></div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160; </div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim, <span class="keyword">typename</span> Reconstructor&gt;</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;<span class="keywordtype">void</span> test_prim_reconstructor(<span class="keyword">const</span> <span class="keywordtype">size_t</span> points_per_dimension,</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;                             <span class="keyword">const</span> Reconstructor&amp; derived_reconstructor) {</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;  detail::test_prim_reconstructor_impl&lt;Dim&gt;(</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;      points_per_dimension, derived_reconstructor,</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;      <a class="code" href="classEquationsOfState_1_1IdealFluid.html">EquationsOfState::IdealFluid&lt;false&gt;</a>{1.4});</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;  detail::test_prim_reconstructor_impl&lt;Dim&gt;(</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;      points_per_dimension, derived_reconstructor,</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;      <a class="code" href="classEquationsOfState_1_1PolytropicFluid.html">EquationsOfState::PolytropicFluid&lt;false&gt;</a>{1.0, 2.0});</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;}</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;}  <span class="comment">// namespace TestHelpers::NewtonianEuler::fd</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga818f101f2f8bd824a3bc7c2c2361c560"><div class="ttname"><a href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a></div><div class="ttdeci">constexpr T &amp; at(std::array&lt; T, N &gt; &amp;arr, Size index)</div><div class="ttdoc">Retrieve a entry from a container, with checks in Debug mode that the index being retrieved is valid.</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:125</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_gafa8cb44daebc8f9e080718961530be89"><div class="ttname"><a href="group__ComputationalDomainGroup.html#gafa8cb44daebc8f9e080718961530be89">maximum_number_of_neighbors</a></div><div class="ttdeci">constexpr size_t maximum_number_of_neighbors(const size_t dim)</div><div class="ttdef"><b>Definition:</b> MaxNumberOfNeighbors.hpp:15</div></div>
+<div class="ttc" id="autility_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a></div></div>
+<div class="ttc" id="astructFrame_1_1Inertial_html"><div class="ttname"><a href="structFrame_1_1Inertial.html">Frame::Inertial</a></div><div class="ttdef"><b>Definition:</b> IndexType.hpp:44</div></div>
+<div class="ttc" id="aclassEquationsOfState_1_1EquationOfState_html"><div class="ttname"><a href="classEquationsOfState_1_1EquationOfState.html">EquationsOfState::EquationOfState</a></div><div class="ttdoc">Base class for equations of state depending on whether or not the system is relativistic,...</div><div class="ttdef"><b>Definition:</b> EquationOfState.hpp:63</div></div>
+<div class="ttc" id="apair_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a></div></div>
+<div class="ttc" id="aTestingFramework_8hpp_html"><div class="ttname"><a href="TestingFramework_8hpp.html">TestingFramework.hpp</a></div></div>
+<div class="ttc" id="agroup__DataBoxGroup_html_gae08744824ea7df89224f128b2080c5b1"><div class="ttname"><a href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">db::get</a></div><div class="ttdeci">const auto &amp; get(const DataBox&lt; TagList &gt; &amp;box) noexcept</div><div class="ttdoc">Retrieve the item with tag Tag from the DataBox.</div><div class="ttdef"><b>Definition:</b> DataBox.hpp:791</div></div>
+<div class="ttc" id="agroup__TestingFrameworkGroup_html_ga6ce5d669c94418f197e4c55c53e64a64"><div class="ttname"><a href="group__TestingFrameworkGroup.html#ga6ce5d669c94418f197e4c55c53e64a64">CHECK_ITERABLE_APPROX</a></div><div class="ttdeci">#define CHECK_ITERABLE_APPROX(a, b)</div><div class="ttdoc">A wrapper around Catch's CHECK macro that checks approximate equality of entries in iterable containe...</div><div class="ttdef"><b>Definition:</b> TestingFramework.hpp:122</div></div>
+<div class="ttc" id="aSpectral_8hpp_html"><div class="ttname"><a href="Spectral_8hpp.html">Spectral.hpp</a></div></div>
+<div class="ttc" id="aclassDirection_html"><div class="ttname"><a href="classDirection.html">Direction</a></div><div class="ttdef"><b>Definition:</b> Direction.hpp:23</div></div>
+<div class="ttc" id="aclassElement_html"><div class="ttname"><a href="classElement.html">Element</a></div><div class="ttdef"><b>Definition:</b> Element.hpp:29</div></div>
+<div class="ttc" id="aclassElementId_html"><div class="ttname"><a href="classElementId.html">ElementId&lt; Dim &gt;</a></div></div>
+<div class="ttc" id="aElementId_8hpp_html"><div class="ttname"><a href="ElementId_8hpp.html">ElementId.hpp</a></div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="aNeighbors_8hpp_html"><div class="ttname"><a href="Neighbors_8hpp.html">Neighbors.hpp</a></div></div>
+<div class="ttc" id="aclassEquationsOfState_1_1IdealFluid_html"><div class="ttname"><a href="classEquationsOfState_1_1IdealFluid.html">EquationsOfState::IdealFluid&lt; false &gt;</a></div></div>
+<div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a></div></div>
+<div class="ttc" id="aLogicalCoordinates_8hpp_html"><div class="ttname"><a href="LogicalCoordinates_8hpp.html">LogicalCoordinates.hpp</a></div></div>
+<div class="ttc" id="aclassMesh_html_a094b317e6113c50a0b8159c46ccae563"><div class="ttname"><a href="classMesh.html#a094b317e6113c50a0b8159c46ccae563">Mesh::number_of_grid_points</a></div><div class="ttdeci">size_t number_of_grid_points() const noexcept</div><div class="ttdoc">The total number of grid points in all dimensions.</div><div class="ttdef"><b>Definition:</b> Mesh.hpp:165</div></div>
+<div class="ttc" id="aIndex_8hpp_html"><div class="ttname"><a href="Index_8hpp.html">Index.hpp</a></div></div>
+<div class="ttc" id="aclassEquationsOfState_1_1PolytropicFluid_html"><div class="ttname"><a href="classEquationsOfState_1_1PolytropicFluid.html">EquationsOfState::PolytropicFluid&lt; false &gt;</a></div></div>
+<div class="ttc" id="aclassNeighbors_html"><div class="ttname"><a href="classNeighbors.html">Neighbors</a></div><div class="ttdef"><b>Definition:</b> Neighbors.hpp:28</div></div>
+<div class="ttc" id="aElement_8hpp_html"><div class="ttname"><a href="Element_8hpp.html">Element.hpp</a></div></div>
+<div class="ttc" id="aclassMesh_html"><div class="ttname"><a href="classMesh.html">Mesh</a></div><div class="ttdoc">Holds the number of grid points, basis, and quadrature in each direction of the computational grid.</div><div class="ttdef"><b>Definition:</b> Mesh.hpp:49</div></div>
+<div class="ttc" id="astructevolution_1_1dg_1_1subcell_1_1NeighborData_html"><div class="ttname"><a href="structevolution_1_1dg_1_1subcell_1_1NeighborData.html">evolution::dg::subcell::NeighborData</a></div><div class="ttdoc">Holds neighbor data needed for the TCI and reconstruction.</div><div class="ttdef"><b>Definition:</b> NeighborData.hpp:24</div></div>
+<div class="ttc" id="aclassDirectionMap_html"><div class="ttname"><a href="classDirectionMap.html">DirectionMap</a></div><div class="ttdef"><b>Definition:</b> DirectionMap.hpp:15</div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga188c2766e601fb537e7d34ae70c6ff9d"><div class="ttname"><a href="group__UtilitiesGroup.html#ga188c2766e601fb537e7d34ae70c6ff9d">gsl::make_span</a></div><div class="ttdeci">constexpr span&lt; ElementType &gt; make_span(ElementType *ptr, typename span&lt; ElementType &gt;::index_type count)</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:801</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ga6070224843ce605a36853fab86c8c2ca"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ga6070224843ce605a36853fab86c8c2ca">logical_coordinates</a></div><div class="ttdeci">void logical_coordinates(gsl::not_null&lt; tnsr::I&lt; DataVector, VolumeDim, Frame::Logical &gt; * &gt; logical_coords, const Mesh&lt; VolumeDim &gt; &amp;mesh) noexcept</div><div class="ttdoc">Compute the logical coordinates in an Element.</div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="aTensor_8hpp_html"><div class="ttname"><a href="Tensor_8hpp.html">Tensor.hpp</a></div></div>
+<div class="ttc" id="agroup__DataBoxTagsGroup_html_ga3dda5a16c7f6baccd115de2c8f12394e"><div class="ttname"><a href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e">db::wrap_tags_in</a></div><div class="ttdeci">tmpl::transform&lt; TagList, tmpl::bind&lt; Wrapper, tmpl::_1, tmpl::pin&lt; Args &gt;... &gt; &gt; wrap_tags_in</div><div class="ttdoc">Create a new tmpl::list of tags by wrapping each tag in TagList in Wrapper&lt;_, Args....</div><div class="ttdef"><b>Definition:</b> PrefixHelpers.hpp:30</div></div>
+<div class="ttc" id="aGsl_8hpp_html_a649c6961f9146205c203e45d58fd0c4c"><div class="ttname"><a href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a></div><div class="ttdeci">gsl::not_null&lt; T * &gt; make_not_null(T *ptr) noexcept</div><div class="ttdoc">Construct a not_null from a pointer. Often this will be done as an implicit conversion,...</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:880</div></div>
+<div class="ttc" id="aDirection_8hpp_html"><div class="ttname"><a href="Direction_8hpp.html">Direction.hpp</a></div></div>
+<div class="ttc" id="aclassFixedHashMap_html"><div class="ttname"><a href="classFixedHashMap.html">FixedHashMap</a></div><div class="ttdoc">A hash table with a compile-time specified maximum size and ability to efficiently handle perfect has...</div><div class="ttdef"><b>Definition:</b> FixedHashMap.hpp:82</div></div>
+<div class="ttc" id="aclassMesh_html_af9a050a87833aa6efd8d3c37afee0c03"><div class="ttname"><a href="classMesh.html#af9a050a87833aa6efd8d3c37afee0c03">Mesh::extents</a></div><div class="ttdeci">const Index&lt; Dim &gt; &amp; extents() const noexcept</div><div class="ttdoc">The number of grid points in each dimension of the grid.</div><div class="ttdef"><b>Definition:</b> Mesh.hpp:148</div></div>
+<div class="ttc" id="aPrefixes_8hpp_html"><div class="ttname"><a href="Prefixes_8hpp.html">Prefixes.hpp</a></div></div>
+<div class="ttc" id="aTMPL_8hpp_html"><div class="ttname"><a href="TMPL_8hpp.html">TMPL.hpp</a></div></div>
+<div class="ttc" id="agroup__DgSubcellGroup_html_ga25b578ae42ae0ed05d4b74140a6af2d1"><div class="ttname"><a href="group__DgSubcellGroup.html#ga25b578ae42ae0ed05d4b74140a6af2d1">evolution::dg::subcell::fd::reconstruct</a></div><div class="ttdeci">DataVector reconstruct(const DataVector &amp;subcell_u_times_projected_det_jac, const Mesh&lt; Dim &gt; &amp;dg_mesh, const Index&lt; Dim &gt; &amp;subcell_extents) noexcept</div><div class="ttdoc">reconstruct the variable subcell_u_times_projected_det_jac onto the DG grid dg_mesh.</div></div>
+<div class="ttc" id="aNumericalAlgorithms_2Spectral_2Mesh_8hpp_html"><div class="ttname"><a href="NumericalAlgorithms_2Spectral_2Mesh_8hpp.html">Mesh.hpp</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,326 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: NewtonianEuler::NumericalFluxes::Hllc&lt; Dim, Frame &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceNewtonianEuler.html">NewtonianEuler</a></li><li class="navelem"><b>NumericalFluxes</b></li><li class="navelem"><a class="el" href="structNewtonianEuler_1_1NumericalFluxes_1_1Hllc.html">Hllc</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structNewtonianEuler_1_1NumericalFluxes_1_1Hllc-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">NewtonianEuler::NumericalFluxes::Hllc&lt; Dim, Frame &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Compute the HLLC numerical flux.  
+ <a href="structNewtonianEuler_1_1NumericalFluxes_1_1Hllc.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="NumericalFluxes_2Hllc_8hpp_source.html">Hllc.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1NumericalFluxes_1_1Hllc_1_1LargestIngoingSpeed.html">LargestIngoingSpeed</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Estimate for one of the signal speeds.  <a href="structNewtonianEuler_1_1NumericalFluxes_1_1Hllc_1_1LargestIngoingSpeed.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1NumericalFluxes_1_1Hllc_1_1LargestOutgoingSpeed.html">LargestOutgoingSpeed</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Estimate for the other signal speed.  <a href="structNewtonianEuler_1_1NumericalFluxes_1_1Hllc_1_1LargestOutgoingSpeed.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structNewtonianEuler_1_1NumericalFluxes_1_1Hllc_1_1NormalVelocity.html">NormalVelocity</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The normal component of the velocity.  <a href="structNewtonianEuler_1_1NumericalFluxes_1_1Hllc_1_1NormalVelocity.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a383007234f146d261e748106ab4376c4"><td class="memItemLeft" align="right" valign="top"><a id="a383007234f146d261e748106ab4376c4"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>char_speeds_tag</b> = <a class="el" href="structNewtonianEuler_1_1Tags_1_1CharacteristicSpeeds.html">Tags::CharacteristicSpeeds</a>&lt; Dim &gt;</td></tr>
+<tr class="separator:a383007234f146d261e748106ab4376c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d5287bbbe6fcb1901ff3164d4bbb3ed"><td class="memItemLeft" align="right" valign="top"><a id="a7d5287bbbe6fcb1901ff3164d4bbb3ed"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a7d5287bbbe6fcb1901ff3164d4bbb3ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7414715915693ce3a87080dd83290195"><td class="memItemLeft" align="right" valign="top"><a id="a7414715915693ce3a87080dd83290195"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>variables_tags</b> = tmpl::list&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1MassDensityCons.html">Tags::MassDensityCons</a>, <a class="el" href="structNewtonianEuler_1_1Tags_1_1MomentumDensity.html">Tags::MomentumDensity</a>&lt; Dim &gt;, <a class="el" href="structNewtonianEuler_1_1Tags_1_1EnergyDensity.html">Tags::EnergyDensity</a> &gt;</td></tr>
+<tr class="separator:a7414715915693ce3a87080dd83290195"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa2c46500aab8c317e88c24d63f377d21"><td class="memItemLeft" align="right" valign="top"><a id="aa2c46500aab8c317e88c24d63f377d21"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>package_field_tags</b> = tmpl::list&lt; ::<a class="el" href="structTags_1_1NormalDotFlux.html">Tags::NormalDotFlux</a>&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1MassDensityCons.html">Tags::MassDensityCons</a> &gt;, ::<a class="el" href="structTags_1_1NormalDotFlux.html">Tags::NormalDotFlux</a>&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1MomentumDensity.html">Tags::MomentumDensity</a>&lt; Dim, Frame &gt; &gt;, ::<a class="el" href="structTags_1_1NormalDotFlux.html">Tags::NormalDotFlux</a>&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1EnergyDensity.html">Tags::EnergyDensity</a> &gt;, <a class="el" href="structNewtonianEuler_1_1Tags_1_1MassDensityCons.html">Tags::MassDensityCons</a>, <a class="el" href="structNewtonianEuler_1_1Tags_1_1MomentumDensity.html">Tags::MomentumDensity</a>&lt; Dim, Frame &gt;, <a class="el" href="structNewtonianEuler_1_1Tags_1_1EnergyDensity.html">Tags::EnergyDensity</a>, <a class="el" href="structNewtonianEuler_1_1Tags_1_1Pressure.html">Tags::Pressure</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, ::<a class="el" href="structTags_1_1Normalized.html">Tags::Normalized</a>&lt; <a class="el" href="structdomain_1_1Tags_1_1UnnormalizedFaceNormal.html">domain::Tags::UnnormalizedFaceNormal</a>&lt; Dim, Frame &gt; &gt;, <a class="el" href="structNewtonianEuler_1_1NumericalFluxes_1_1Hllc_1_1NormalVelocity.html">NormalVelocity</a>, <a class="el" href="structNewtonianEuler_1_1NumericalFluxes_1_1Hllc_1_1LargestIngoingSpeed.html">LargestIngoingSpeed</a>, <a class="el" href="structNewtonianEuler_1_1NumericalFluxes_1_1Hllc_1_1LargestOutgoingSpeed.html">LargestOutgoingSpeed</a> &gt;</td></tr>
+<tr class="separator:aa2c46500aab8c317e88c24d63f377d21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a187f8b71e557b0905b216097f4d1b99d"><td class="memItemLeft" align="right" valign="top"><a id="a187f8b71e557b0905b216097f4d1b99d"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>package_extra_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a187f8b71e557b0905b216097f4d1b99d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab781f6a4351191f670cd9c34ac1838d2"><td class="memItemLeft" align="right" valign="top"><a id="ab781f6a4351191f670cd9c34ac1838d2"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt; ::<a class="el" href="structTags_1_1NormalDotFlux.html">Tags::NormalDotFlux</a>&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1MassDensityCons.html">Tags::MassDensityCons</a> &gt;, ::<a class="el" href="structTags_1_1NormalDotFlux.html">Tags::NormalDotFlux</a>&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1MomentumDensity.html">Tags::MomentumDensity</a>&lt; Dim, Frame &gt; &gt;, ::<a class="el" href="structTags_1_1NormalDotFlux.html">Tags::NormalDotFlux</a>&lt; <a class="el" href="structNewtonianEuler_1_1Tags_1_1EnergyDensity.html">Tags::EnergyDensity</a> &gt;, <a class="el" href="structNewtonianEuler_1_1Tags_1_1MassDensityCons.html">Tags::MassDensityCons</a>, <a class="el" href="structNewtonianEuler_1_1Tags_1_1MomentumDensity.html">Tags::MomentumDensity</a>&lt; Dim, Frame &gt;, <a class="el" href="structNewtonianEuler_1_1Tags_1_1EnergyDensity.html">Tags::EnergyDensity</a>, <a class="el" href="structNewtonianEuler_1_1Tags_1_1Velocity.html">Tags::Velocity</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, Frame &gt;, <a class="el" href="structNewtonianEuler_1_1Tags_1_1Pressure.html">Tags::Pressure</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;, <a class="el" href="structNewtonianEuler_1_1Tags_1_1CharacteristicSpeeds.html">char_speeds_tag</a>, ::<a class="el" href="structTags_1_1Normalized.html">Tags::Normalized</a>&lt; <a class="el" href="structdomain_1_1Tags_1_1UnnormalizedFaceNormal.html">domain::Tags::UnnormalizedFaceNormal</a>&lt; Dim, Frame &gt; &gt;&gt;</td></tr>
+<tr class="separator:ab781f6a4351191f670cd9c34ac1838d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a00ca03116aa65e424fb9cce8dc133a2d"><td class="memItemLeft" align="right" valign="top"><a id="a00ca03116aa65e424fb9cce8dc133a2d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;) noexcept</td></tr>
+<tr class="separator:a00ca03116aa65e424fb9cce8dc133a2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e9fea6ad94f66d6905e733fc2c3f532"><td class="memItemLeft" align="right" valign="top"><a id="a2e9fea6ad94f66d6905e733fc2c3f532"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>package_data</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; packaged_n_dot_f_mass_density, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, Frame &gt; * &gt; packaged_n_dot_f_momentum_density, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; packaged_n_dot_f_energy_density, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; packaged_mass_density, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, Frame &gt; * &gt; packaged_momentum_density, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; packaged_energy_density, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; packaged_pressure, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, Frame &gt; * &gt; packaged_face_normal, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; packaged_normal_velocity, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; packaged_largest_ingoing_speed, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; packaged_largest_outgoing_speed, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;normal_dot_flux_mass_density, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, Frame &gt; &amp;normal_dot_flux_momentum_density, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;normal_dot_flux_energy_density, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;mass_density, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, Frame &gt; &amp;momentum_density, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;energy_density, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, Frame &gt; &amp;velocity, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;pressure, const typename <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">char_speeds_tag::type</a> &amp;<a class="el" href="namespaceNewtonianEuler.html#a510fa6eb6163022cdaaa64516cc715d3">characteristic_speeds</a>, const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, Frame &gt; &amp;interface_unit_normal) const noexcept</td></tr>
+<tr class="separator:a2e9fea6ad94f66d6905e733fc2c3f532"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f06460fdd4b8f8aed6eb6ba07dcbe64"><td class="memItemLeft" align="right" valign="top"><a id="a7f06460fdd4b8f8aed6eb6ba07dcbe64"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; normal_dot_numerical_flux_mass_density, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, Frame &gt; * &gt; normal_dot_numerical_flux_momentum_density, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; normal_dot_numerical_flux_energy_density, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;normal_dot_flux_mass_density_int, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, Frame &gt; &amp;normal_dot_flux_momentum_density_int, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;normal_dot_flux_energy_density_int, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;mass_density_int, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, Frame &gt; &amp;momentum_density_int, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;energy_density_int, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;pressure_int, const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, Frame &gt; &amp;interface_unit_normal, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;normal_velocity_int, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;largest_ingoing_speed_int, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;largest_outgoing_speed_int, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;minus_normal_dot_flux_mass_density_ext, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, Frame &gt; &amp;minus_normal_dot_flux_momentum_density_ext, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;minus_normal_dot_flux_energy_density_ext, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;mass_density_ext, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, Frame &gt; &amp;momentum_density_ext, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;energy_density_ext, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;pressure_ext, const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, Frame &gt; &amp;minus_interface_unit_normal, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;minus_normal_velocity_ext, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;minus_largest_outgoing_speed_ext, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;minus_largest_ingoing_speed_ext) const noexcept</td></tr>
+<tr class="separator:a7f06460fdd4b8f8aed6eb6ba07dcbe64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:ad4956c7cc0f61ab2c671f7dcb97591b9"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:ad4956c7cc0f61ab2c671f7dcb97591b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim, typename Frame&gt;<br />
+struct NewtonianEuler::NumericalFluxes::Hllc&lt; Dim, Frame &gt;</h3>
+
+<p>Compute the HLLC numerical flux. </p>
+<p>Class implementing the HLLC flux for the Newtonian Euler equations, originally introduced by E. F. Toro, M. Spruce and W. Speares <a class="el" href="citelist.html#CITEREF_Toro1994">[104]</a>. Let \(F^k = [F^k(\rho), F^k(S^i), F^k(e)]^T\) be the fluxes of the conservative quantities \(U = [\rho, S^i, e]^T\) (see <a class="el" href="structNewtonianEuler_1_1ComputeFluxes.html" title="Compute the fluxes of the conservative variables of the Newtonian Euler system.">NewtonianEuler::ComputeFluxes</a>). Denoting \(v_n = n_k v^k\) and \(F = n_kF^k\), where \(v^k\) is the velocity and \(n_k\) is the interface unit normal, the HLLC flux is</p>
+<p class="formulaDsp">
+\begin{align*} G_\text{HLLC} = \begin{cases} F_\text{int}, &amp; S_\text{min} &gt; 0, \\ G_{*\text{int}}, &amp; S_\text{min} \leq 0\quad\text{and}\quad S_* &gt; 0, \\ G_{*\text{ext}}, &amp; S_* \leq 0\quad\text{and}\quad S_\text{max} &gt; 0, \\ F_\text{ext}, &amp; S_\text{max} \leq 0, \end{cases} \end{align*}
+</p>
+<p>where</p>
+<p class="formulaDsp">
+\begin{align*} G_{*\text{int}} &amp;= \frac{S_*\left(F_\text{int} - S_\text{min}U_\text{int}\right) - S_\text{min} p_{*\text{int}}D_*}{S_* - S_\text{min}},\\ G_{*\text{ext}} &amp;= \frac{S_*\left(F_\text{ext} - S_\text{max}U_\text{ext}\right) - S_\text{max} p_{*\text{ext}}D_*}{S_* - S_\text{max}}, \end{align*}
+</p>
+<p>with</p>
+<p class="formulaDsp">
+\begin{align*} p_{*\text{int}} &amp;\equiv p_\text{int} + \rho_\text{int} \left[(v_n)_\text{int} - S_\text{min}\right] \left[(v_n)_\text{int} - S_*\right], \\ p_{*\text{ext}} &amp;\equiv p_\text{ext} + \rho_\text{ext} \left[(v_n)_\text{ext} - S_\text{max}\right] \left[(v_n)_\text{ext} - S_*\right], \\ S_* &amp;\equiv \frac{p_\text{int} + F(\rho)_\text{int}\left[(v_n)_\text{int} - S_\text{min}\right] - p_\text{ext} - F(\rho)_\text{ext}\left[(v_n)_\text{ext} - S_\text{max}\right]}{F(\rho)_\text{int} - \rho_\text{int}S_\text{min} - F(\rho)_\text{ext} + \rho_\text{ext}S_\text{max}},\\ D_* &amp;\equiv \left[\begin{array}{c} 0\\ n^i\\ S_* \end{array}\right], \end{align*}
+</p>
+<p>and \(S_\text{min}\) and \(S_\text{max}\) are estimates of the minimum and maximum signal speeds bounding the ingoing and outgoing wavespeeds that arise when solving the Riemann problem. One requires \(S_\text{min} \leq S_* \leq S_\text{max}\). As estimates, we use</p>
+<p class="formulaDsp">
+\begin{align*} S_\text{min} &amp;= \text{min}\left(\{\lambda_\text{int}\},\{\lambda_\text{ext}\}, 0\right)\\ S_\text{max} &amp;= \text{max}\left(\{\lambda_\text{int}\},\{\lambda_\text{ext}\}, 0\right), \end{align*}
+</p>
+<p>where \(\{\lambda\}\) is the set of all the characteristic speeds along a given normal. This way, the definition of \(G_\text{HLLC}\) simplifies to</p>
+<p class="formulaDsp">
+\begin{align*} G_\text{HLLC} = \begin{cases} \dfrac{S_*\left(F_\text{int} - S_\text{min}U_\text{int}\right) - S_\text{min} p_{*\text{int}}D_*}{S_* - S_\text{min}}, &amp; S_* &gt; 0, \\ \dfrac{S_*\left(F_\text{ext} - S_\text{max}U_\text{ext}\right) - S_\text{max} p_{*\text{ext}}D_*}{S_* - S_\text{max}}, &amp; S_* \leq 0. \\ \end{cases} \end{align*}
+</p>
+<dl class="section warning"><dt>Warning</dt><dd>The HLLC flux implemented here does not incorporate any cure for the Carbuncle phenomenon or other shock instabilities reported in the literature. Prefer using another numerical flux in more than 1-d. </dd></dl>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="ad4956c7cc0f61ab2c671f7dcb97591b9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad4956c7cc0f61ab2c671f7dcb97591b9">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim, typename Frame &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="structNewtonianEuler_1_1NumericalFluxes_1_1Hllc.html">NewtonianEuler::NumericalFluxes::Hllc</a>&lt; Dim, Frame &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Compute the HLLC flux for the Newtonian Euler system.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/Systems/NewtonianEuler/NumericalFluxes/<a class="el" href="NumericalFluxes_2Hllc_8hpp_source.html">Hllc.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Observers Infrastructure</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">Observers Infrastructure </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><p>The observers infrastructure works with two parallel components: a group and a nodegroup. We have two types of observations: <code>Reduction</code> and <code>Volume</code> (see the enum <code>observers::TypeOfObservation</code>). <code>Reduction</code> data is anything that is written once per time/integral identifier per simulation. Some examples of reduction data are integrals or L2 norms over the entire domain, integrals or L2 norms over part of the domain, and integrals over lower-dimensional surfaces such as apparent horizons or slices through the domain. Volume data is anything that has physical extent, such as any of the evolved variables (or derived quantities thereof) across all or part of the domain, or quantities on lower-dimensional surfaces in the domain (e.g. the rest mass density in the xy-plane). Reduction and volume data both use the group and nodegroup for actually getting the data to disk, but do so in a slightly different manner.</p>
+<h2><a class="anchor" id="autotoc_md162"></a>
+Reduction Data</h2>
+<p>Reduction data requires combining information from many or all cores of a supercomputer to get a single value. Reductions are tagged by some temporal value, which for hyperbolic systems is the time and for elliptic systems some combination of linear and non-linear iteration count. The reduction data is stored in an object of type <code>Parallel::ReductionData</code>, which takes as template parameters a series of <code><a class="el" href="structParallel_1_1ReductionDatum.html" title="The data to be reduced, and invokables to be called whenever two reduction messages are combined and ...">Parallel::ReductionDatum</a></code>. A <code><a class="el" href="structParallel_1_1ReductionDatum.html" title="The data to be reduced, and invokables to be called whenever two reduction messages are combined and ...">Parallel::ReductionDatum</a></code> takes as template parameters the type of the data and operators that define how data from the different cores are to be combined to a single value. See the paragraphs below for more detail, and the documentation of <code><a class="el" href="structParallel_1_1ReductionDatum.html" title="The data to be reduced, and invokables to be called whenever two reduction messages are combined and ...">Parallel::ReductionDatum</a></code> for examples.</p>
+<p>At the start of a simulation, every component and event that wants to perform a reduction for observation, or will be part of a reduction observation, must register with the <code><a class="el" href="structobservers_1_1Observer.html" title="The group parallel component that is responsible for reducing data to be observed.">observers::Observer</a></code> component. The <code><a class="el" href="structobservers_1_1Observer.html" title="The group parallel component that is responsible for reducing data to be observed.">observers::Observer</a></code> is a group, which means there is one per core. The registration is used so that the <code>Observer</code> knows once all data for a specific reduction (both in time and by name/ID) has been contributed. Reduction data is combined on each core as it is contributed by using the binary operator from <code><a class="el" href="structParallel_1_1ReductionDatum.html" title="The data to be reduced, and invokables to be called whenever two reduction messages are combined and ...">Parallel::ReductionDatum</a></code>'s second template parameter. Once all the data is collected on the core, it is copied to the local <code><a class="el" href="structobservers_1_1ObserverWriter.html" title="The nodegroup parallel component that is responsible for writing data to disk.">observers::ObserverWriter</a></code> nodegroup, which keeps track of how many of the cores on the node will be contributing to a specific observation, and again combines all the data as it is being contributed. Once all the node's data is collected to the nodegroup, the data is sent to node <code>0</code> which combines the reduction data as it arrives using the binary operator from <code><a class="el" href="structParallel_1_1ReductionDatum.html" title="The data to be reduced, and invokables to be called whenever two reduction messages are combined and ...">Parallel::ReductionDatum</a></code>'s second template parameter. Using node <code>0</code> for collecting the final reduction data is an arbitrary choice, but we are always guaranteed to have a node <code>0</code>.</p>
+<p>Once all the reductions are received on node <code>0</code>, the <code>ObserverWriter</code> invokes the <code>InvokeFinal</code> (third) template parameter on each <code><a class="el" href="structParallel_1_1ReductionDatum.html" title="The data to be reduced, and invokables to be called whenever two reduction messages are combined and ...">Parallel::ReductionDatum</a></code> (this is the n-ary) in order to finalize the data before writing. This is used, for example, for dividing by the total number of grid points in an L1 or L2 norm. The reduction data is then written to an HDF5 file whose name is set in the input file using the option <code><a class="el" href="structobservers_1_1Tags_1_1ReductionFileName.html" title="The name of the HDF5 file on disk into which reduction data is written.">observers::Tags::ReductionFileName</a></code>. Specifically, the data is written into an <code><a class="el" href="classh5_1_1Dat.html" title="Represents a multicolumn dat file inside an HDF5 file.">h5::Dat</a></code> subfile since, along with the data, the subfile name must be passed through the reductions.</p>
+<p>The actions used for registering reductions are <code><a class="el" href="structobservers_1_1Actions_1_1RegisterEventsWithObservers.html" title="Registers this element of a parallel component with the local Observer parallel component for each tr...">observers::Actions::RegisterEventsWithObservers</a></code>, <code><a class="el" href="structobservers_1_1Actions_1_1RegisterSingletonWithObserverWriter.html" title="Registers a singleton with the ObserverWriter.">observers::Actions::RegisterSingletonWithObserverWriter</a></code>, and <code><a class="el" href="structobservers_1_1Actions_1_1RegisterWithObservers.html" title="Register an observation ID with the observers.">observers::Actions::RegisterWithObservers</a></code>. There is a separate <code><a class="el" href="namespaceRegistration.html" title="Helpers for derived class registration.">Registration</a></code> phase at the beginning of all simulations where everything must register with the observers. The action <code><a class="el" href="structobservers_1_1Actions_1_1ContributeReductionData.html" title="Send reduction data to the observer group.">observers::Actions::ContributeReductionData</a></code> is used to send data to the <code><a class="el" href="structobservers_1_1Observer.html" title="The group parallel component that is responsible for reducing data to be observed.">observers::Observer</a></code> component in the case where there is a reduction done across an array or subset of an array. If a singleton parallel component needs to write data directly to disk it should use the <code><a class="el" href="structobservers_1_1ThreadedActions_1_1WriteReductionData.html" title="Write reduction data to disk from node 0.">observers::ThreadedActions::WriteReductionData</a></code> action called on the zeroth element of the <code><a class="el" href="structobservers_1_1ObserverWriter.html" title="The nodegroup parallel component that is responsible for writing data to disk.">observers::ObserverWriter</a></code> component.</p>
+<h2><a class="anchor" id="autotoc_md163"></a>
+Volume Data</h2>
+<p>Volume data is vaguely defined as anything that has some extent. For example, in a 3d simulation, data on 2d surfaces is still considered volume data for the purposes of observing data. The spectral coefficients can also be written as volume data, though some care must be taken in that case to correctly identify which mode is associated with which terms in the basis function expansion. Whatever component will contribute volume data to be written must register with the <code><a class="el" href="structobservers_1_1Observer.html" title="The group parallel component that is responsible for reducing data to be observed.">observers::Observer</a></code> component (there currently isn't tested support for directly registering with the <code><a class="el" href="structobservers_1_1ObserverWriter.html" title="The nodegroup parallel component that is responsible for writing data to disk.">observers::ObserverWriter</a></code>). This registration is the same as in the reduction data case.</p>
+<p>Once the observers are registered, data is contributed to the <code><a class="el" href="structobservers_1_1Observer.html" title="The group parallel component that is responsible for reducing data to be observed.">observers::Observer</a></code> component using the <code><a class="el" href="structobservers_1_1Actions_1_1ContributeVolumeData.html" title="Send volume tensor data to the observer.">observers::Actions::ContributeVolumeData</a></code> action. The data is packed into a <code><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="el" href="structTensorComponent.html" title="An untyped tensor component with a name for observation.">TensorComponent</a>&gt;</code>, where the <code><a class="el" href="structTensorComponent.html" title="An untyped tensor component with a name for observation.">TensorComponent</a></code> is data from just one tensor component or a reduction over a tensor. The <code>extents</code>, <code><a class="el" href="group__SpectralGroup.html#ga37c9c17d05dccca652060d117f72ee21" title="The choice of basis functions for computing collocation points and weights.">Spectral::Basis</a></code> and <code><a class="el" href="group__SpectralGroup.html#ga7744e520f6d553caf358a6f09f5978c1" title="The choice of quadrature method to compute integration weights.">Spectral::Quadrature</a></code> are currently also passed to the <code>ContributeVolumeData</code> action. Once all the elements on a single core have contributed their volume data to the <code><a class="el" href="structobservers_1_1Observer.html" title="The group parallel component that is responsible for reducing data to be observed.">observers::Observer</a></code> group, the <code><a class="el" href="structobservers_1_1Observer.html" title="The group parallel component that is responsible for reducing data to be observed.">observers::Observer</a></code> group moves its data to the <code><a class="el" href="structobservers_1_1ObserverWriter.html" title="The nodegroup parallel component that is responsible for writing data to disk.">observers::ObserverWriter</a></code> component to be written. We write one file per node, appending the node ID to the HDF5 file name to distinguish between files written by different nodes. The HDF5 file name is specified in the input file using the <code><a class="el" href="structobservers_1_1Tags_1_1VolumeFileName.html" title="The name of the HDF5 file on disk into which volume data is written.">observers::Tags::VolumeFileName</a></code> option. The data is written into a subfile of the HDF5 file using the <code>h5::VolumeFile</code> class.</p>
+<h2><a class="anchor" id="autotoc_md164"></a>
+Threading and NodeLocks</h2>
+<p>Since the <code><a class="el" href="structobservers_1_1ObserverWriter.html" title="The nodegroup parallel component that is responsible for writing data to disk.">observers::ObserverWriter</a></code> class is a nodegroup, its entry methods can be invoked simultaneously on different cores of the node. However, this can lead to race conditions if care isn't taken. The biggest caution is that the <code>DataBox</code> cannot be mutated on one core and simultaneously accessed on another. This is because in order to guarantee a reasonable state for data in the <code>DataBox</code>, it must be impossible to perform a <code><a class="el" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1" title="Retrieve the item with tag Tag from the DataBox.">db::get</a></code> on a <code>DataBox</code> from inside or while a <code><a class="el" href="group__DataBoxGroup.html#gabd82fb36bfa1a8f987e595141cc4d44f" title="Allows changing the state of one or more non-computed elements in the DataBox.">db::mutate</a></code> is being done. What this means in practice is that all entry methods on a nodegroup must put their <code>DataBox</code> accesses inside of a <code>node_lock.lock()</code> and <code>node_lock.unlock()</code> block. To achieve better parallel performance and threading, the amount of work done while the entire node is locked should be minimized. To this end, we have additional locks. One for the HDF5 files because we do not require a threadsafe HDF5 (<code><a class="el" href="structobservers_1_1Tags_1_1H5FileLock.html" title="Node lock used when needing to read/write to H5 files on disk.">observers::Tags::H5FileLock</a></code>). We also have locks for the objects mutated when contributing reduction data (<code><a class="el" href="structobservers_1_1Tags_1_1ReductionDataLock.html" title="Lock used when contributing reduction data.">observers::Tags::ReductionDataLock</a></code>) and the objects mutated when contributing volume data (<code><a class="el" href="structobservers_1_1Tags_1_1VolumeDataLock.html" title="Lock used when contributing volume data.">observers::Tags::VolumeDataLock</a></code>).</p>
+<h2><a class="anchor" id="autotoc_md165"></a>
+Future changes</h2>
+<ul>
+<li>It would be preferable to make the <code>Observer</code> and <code>ObserverWriter</code> parallel components more general and have them act as the core (node)group. Since any simple actions can be run on them, it should be possible to use them for most, if not all cases where we need a (node)group. </li>
+</ul>
+</div></div><!-- contents -->
+</div><!-- PageDoc -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

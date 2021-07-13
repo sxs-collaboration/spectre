@@ -1,0 +1,269 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: NonlinearSolver::newton_raphson::NewtonRaphson&lt; Metavariables, FieldsTag, OptionsGroup, SourceTag &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceNonlinearSolver.html">NonlinearSolver</a></li><li class="navelem"><a class="el" href="namespaceNonlinearSolver_1_1newton__raphson.html">newton_raphson</a></li><li class="navelem"><a class="el" href="structNonlinearSolver_1_1newton__raphson_1_1NewtonRaphson.html">NewtonRaphson</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="structNonlinearSolver_1_1newton__raphson_1_1NewtonRaphson-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">NonlinearSolver::newton_raphson::NewtonRaphson&lt; Metavariables, FieldsTag, OptionsGroup, SourceTag &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A Newton-Raphson correction scheme for nonlinear systems of equations \(A_\mathrm{nonlinear}(x)=b\).  
+ <a href="structNonlinearSolver_1_1newton__raphson_1_1NewtonRaphson.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ParallelAlgorithms_2NonlinearSolver_2NewtonRaphson_2NewtonRaphson_8hpp_source.html">NewtonRaphson.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a01e9b379e536cc3cee484503c3ea166a"><td class="memItemLeft" align="right" valign="top"><a id="a01e9b379e536cc3cee484503c3ea166a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>fields_tag</b> = FieldsTag</td></tr>
+<tr class="separator:a01e9b379e536cc3cee484503c3ea166a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee398cfd225205bba92160e8648049a5"><td class="memItemLeft" align="right" valign="top"><a id="aee398cfd225205bba92160e8648049a5"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options_group</b> = OptionsGroup</td></tr>
+<tr class="separator:aee398cfd225205bba92160e8648049a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4eb0617f2bcaa320653ff88f9832e41b"><td class="memItemLeft" align="right" valign="top"><a id="a4eb0617f2bcaa320653ff88f9832e41b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>source_tag</b> = SourceTag</td></tr>
+<tr class="separator:a4eb0617f2bcaa320653ff88f9832e41b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a559aee1e53140eba5f7700e4da3da14b"><td class="memItemLeft" align="right" valign="top"><a id="a559aee1e53140eba5f7700e4da3da14b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>operand_tag</b> = fields_tag</td></tr>
+<tr class="separator:a559aee1e53140eba5f7700e4da3da14b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a487776a3c004b3d4c89f40ca31f27e50"><td class="memItemLeft" align="right" valign="top"><a id="a487776a3c004b3d4c89f40ca31f27e50"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>linear_solver_fields_tag</b> = <a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt; <a class="el" href="structNonlinearSolver_1_1Tags_1_1Correction.html">NonlinearSolver::Tags::Correction</a>, fields_tag &gt;</td></tr>
+<tr class="separator:a487776a3c004b3d4c89f40ca31f27e50"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a106d8a9f7b59bb39cfcd09bb75d645a3"><td class="memItemLeft" align="right" valign="top"><a id="a106d8a9f7b59bb39cfcd09bb75d645a3"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>linear_solver_source_tag</b> = <a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt; <a class="el" href="structNonlinearSolver_1_1Tags_1_1Residual.html">NonlinearSolver::Tags::Residual</a>, fields_tag &gt;</td></tr>
+<tr class="separator:a106d8a9f7b59bb39cfcd09bb75d645a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab824a763c12ca0cbe78b8d4f5edf0164"><td class="memItemLeft" align="right" valign="top"><a id="ab824a763c12ca0cbe78b8d4f5edf0164"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>component_list</b> = tmpl::list&lt; detail::ResidualMonitor&lt; Metavariables, FieldsTag, OptionsGroup &gt; &gt;</td></tr>
+<tr class="separator:ab824a763c12ca0cbe78b8d4f5edf0164"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25ca267ec06f611350249a12f742e3f8"><td class="memItemLeft" align="right" valign="top"><a id="a25ca267ec06f611350249a12f742e3f8"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>initialize_element</b> = detail::InitializeElement&lt; FieldsTag, OptionsGroup, SourceTag &gt;</td></tr>
+<tr class="separator:a25ca267ec06f611350249a12f742e3f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a49fca5ee44ab27083f533220744ebef8"><td class="memItemLeft" align="right" valign="top"><a id="a49fca5ee44ab27083f533220744ebef8"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>register_element</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a49fca5ee44ab27083f533220744ebef8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4367a3d5f5495c25d5e7881c5b6af1df"><td class="memItemLeft" align="right" valign="top"><a id="a4367a3d5f5495c25d5e7881c5b6af1df"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>observed_reduction_data_tags</b> = observers::make_reduction_data_tags&lt; tmpl::list&lt; NonlinearSolver::observe_detail::reduction_data &gt; &gt;</td></tr>
+<tr class="separator:a4367a3d5f5495c25d5e7881c5b6af1df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69815cec1c31c2a8699c8e6eb818b442"><td class="memTemplParams" colspan="2"><a id="a69815cec1c31c2a8699c8e6eb818b442"></a>
+template&lt;typename ApplyNonlinearOperator , typename SolveLinearization , typename ObserveActions  = tmpl::list&lt;&gt;, typename Label  = OptionsGroup&gt; </td></tr>
+<tr class="memitem:a69815cec1c31c2a8699c8e6eb818b442"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>solve</b> = tmpl::list&lt; ApplyNonlinearOperator, detail::PrepareSolve&lt; FieldsTag, OptionsGroup, Label &gt;, ObserveActions, detail::ReceiveInitialHasConverged&lt; FieldsTag, OptionsGroup, Label &gt;, detail::PrepareStep&lt; FieldsTag, OptionsGroup, Label &gt;, SolveLinearization, detail::PerformStep&lt; FieldsTag, OptionsGroup, Label &gt;, ApplyNonlinearOperator, detail::ContributeToResidualMagnitudeReduction&lt; FieldsTag, OptionsGroup, Label &gt;, detail::Globalize&lt; FieldsTag, OptionsGroup, Label &gt;, ObserveActions, detail::CompleteStep&lt; FieldsTag, OptionsGroup, Label &gt; &gt;</td></tr>
+<tr class="separator:a69815cec1c31c2a8699c8e6eb818b442"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename Metavariables, typename FieldsTag, typename OptionsGroup, typename SourceTag = db::add_tag_prefix&lt;::Tags::FixedSource, FieldsTag&gt;&gt;<br />
+struct NonlinearSolver::newton_raphson::NewtonRaphson&lt; Metavariables, FieldsTag, OptionsGroup, SourceTag &gt;</h3>
+
+<p>A Newton-Raphson correction scheme for nonlinear systems of equations \(A_\mathrm{nonlinear}(x)=b\). </p>
+<p>We can use a correction scheme to solve a nonlinear problem \(A_\mathrm{nonlinear}(x)=b\) by repeatedly solving a linearization of it. A Newton-Raphson scheme iteratively refines an initial guess \(x_0\) by repeatedly solving the linearized problem</p>
+<p class="formulaDsp">
+\begin{equation} \frac{\delta A_\mathrm{nonlinear}}{\delta x}(x_k) \delta x_k = b-A_\mathrm{nonlinear}(x_k) \equiv r_k \end{equation}
+</p>
+<p>for the correction \(\delta x_k\) and then updating the solution as \(x_{k+1}=x_k + \delta x_k\).</p>
+<p>The operations we need to supply to the algorithm are the nonlinear operator \(A_\mathrm{nonlinear}(x)\) and a linear solver for the linearized problem \(\frac{\delta A_\mathrm{nonlinear}}{\delta x}(x_k) \delta x_k = r_k\). Each step of the algorithm expects that \(A_\mathrm{nonlinear}(x)\) is computed and stored in the DataBox as <code><a class="el" href="group__DataBoxTagsGroup.html#gafeeced2a7fb41fdced8c55e76343f63c">db::add_tag_prefix</a>&lt;<a class="el" href="structNonlinearSolver_1_1Tags_1_1OperatorAppliedTo.html" title="The nonlinear operator  applied to the data in Tag">NonlinearSolver::Tags::OperatorAppliedTo</a>, FieldsTag&gt;</code>. To perform a solve, add the <code>solve</code> action list to an array parallel component. Pass the actions that compute \(A_\mathrm{nonlinear}(x)\) as the first template parameter to <code>solve</code>. As the second template parameter, pass the action list that performs a linear solve of the linearized operator \(\frac{\delta A_\mathrm{nonlinear}}{\delta x}(x)\) for the field \(\delta x\) (the <code>linear_solver_fields_tag</code>) sourced by \(r\) (the <code>linear_solver_source_tag</code>). You will find suitable iterative linear solvers in the <code><a class="el" href="namespaceLinearSolver.html" title="Functionality for solving linear systems of equations.">LinearSolver</a></code> namespace. The third template parameter allows you to pass any further actions you wish to run in each step of the algorithm (such as observations). If you add the <code>solve</code> action list multiple times, use the fourth template parameter to label each solve with a different type.</p>
+<dl class="section user"><dt>Globalization:</dt><dd>This nonlinear solver supports a line-search (or "backtracking") globalization. If a step does not sufficiently decrease the residual (see <code><a class="el" href="structNonlinearSolver_1_1OptionTags_1_1SufficientDecrease.html" title="Sufficient decrease parameter of the line search globalization.">NonlinearSolver::OptionTags::SufficientDecrease</a></code> for details on the sufficient decrease condition), the step length is reduced until the residual sufficiently decreases or the maximum number of globalization steps is reached. The reduction in step length is determined by the minimum of a quadratic (first globalization step) or cubic (subsequent globalization steps) polynomial interpolation according to Algorithm A6.1.3 in <a class="el" href="citelist.html#CITEREF_DennisSchnabel">[33]</a> (p. 325) (see <code><a class="el" href="namespaceNonlinearSolver_1_1newton__raphson.html#a376ff343875b5182ed668fe749832b7d" title="Find the next step length for the line-search globalization.">NonlinearSolver::newton_raphson::next_step_length</a></code>). Alternatives to a line-search globalization, such as a trust-region globalization or more sophisticated nonlinear preconditioning techniques (see e.g. <a class="el" href="citelist.html#CITEREF_Brune2015">[19]</a> for an overview), are not currently implemented. </dd></dl>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/ParallelAlgorithms/NonlinearSolver/NewtonRaphson/<a class="el" href="ParallelAlgorithms_2NonlinearSolver_2NewtonRaphson_2NewtonRaphson_8hpp_source.html">NewtonRaphson.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

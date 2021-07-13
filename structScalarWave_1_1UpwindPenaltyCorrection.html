@@ -1,0 +1,327 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: ScalarWave::UpwindPenaltyCorrection&lt; Dim &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceScalarWave.html">ScalarWave</a></li><li class="navelem"><a class="el" href="structScalarWave_1_1UpwindPenaltyCorrection.html">UpwindPenaltyCorrection</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structScalarWave_1_1UpwindPenaltyCorrection-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">ScalarWave::UpwindPenaltyCorrection&lt; Dim &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Computes the scalar wave upwind multipenalty boundary correction.  
+ <a href="structScalarWave_1_1UpwindPenaltyCorrection.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="ScalarWave_2UpwindPenaltyCorrection_8hpp_source.html">UpwindPenaltyCorrection.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a24c3106180bf45bc949dd4dbe52fdfdd"><td class="memItemLeft" align="right" valign="top"><a id="a24c3106180bf45bc949dd4dbe52fdfdd"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:a24c3106180bf45bc949dd4dbe52fdfdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48259b4b45fee424b3852fd5a7fb5f88"><td class="memItemLeft" align="right" valign="top"><a id="a48259b4b45fee424b3852fd5a7fb5f88"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>variables_tags</b> = tmpl::list&lt; <a class="el" href="structScalarWave_1_1Pi.html">Pi</a>, <a class="el" href="structScalarWave_1_1Phi.html">Phi</a>&lt; Dim &gt;, <a class="el" href="structScalarWave_1_1Psi.html">Psi</a> &gt;</td></tr>
+<tr class="separator:a48259b4b45fee424b3852fd5a7fb5f88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e77745c34b75d3d2365f9d7cc2756b4"><td class="memItemLeft" align="right" valign="top"><a id="a4e77745c34b75d3d2365f9d7cc2756b4"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>package_field_tags</b> = tmpl::list&lt; <a class="el" href="structScalarWave_1_1Tags_1_1VPsi.html">Tags::VPsi</a>, <a class="el" href="structScalarWave_1_1Tags_1_1VZero.html">Tags::VZero</a>&lt; Dim &gt;, <a class="el" href="structScalarWave_1_1Tags_1_1VPlus.html">Tags::VPlus</a>, <a class="el" href="structScalarWave_1_1Tags_1_1VMinus.html">Tags::VMinus</a>, NormalTimesVPlus, NormalTimesVMinus, Gamma2VPsi, CharSpeedsTensor &gt;</td></tr>
+<tr class="separator:a4e77745c34b75d3d2365f9d7cc2756b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad97762c07fedc674a3be9178b52f464c"><td class="memItemLeft" align="right" valign="top"><a id="ad97762c07fedc674a3be9178b52f464c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>package_extra_tags</b> = tmpl::list&lt;&gt;</td></tr>
+<tr class="separator:ad97762c07fedc674a3be9178b52f464c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5411f3211d91f734f61334fee1097cf8"><td class="memItemLeft" align="right" valign="top"><a id="a5411f3211d91f734f61334fee1097cf8"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>argument_tags</b> = tmpl::list&lt; <a class="el" href="structScalarWave_1_1Tags_1_1VPsi.html">Tags::VPsi</a>, <a class="el" href="structScalarWave_1_1Tags_1_1VZero.html">Tags::VZero</a>&lt; Dim &gt;, <a class="el" href="structScalarWave_1_1Tags_1_1VPlus.html">Tags::VPlus</a>, <a class="el" href="structScalarWave_1_1Tags_1_1VMinus.html">Tags::VMinus</a>, <a class="el" href="structScalarWave_1_1Tags_1_1CharacteristicSpeeds.html">Tags::CharacteristicSpeeds</a>&lt; Dim &gt;, <a class="el" href="structScalarWave_1_1Tags_1_1ConstraintGamma2.html">Tags::ConstraintGamma2</a>, ::<a class="el" href="structTags_1_1Normalized.html">Tags::Normalized</a>&lt; <a class="el" href="structdomain_1_1Tags_1_1UnnormalizedFaceNormal.html">domain::Tags::UnnormalizedFaceNormal</a>&lt; Dim &gt; &gt;&gt;</td></tr>
+<tr class="separator:a5411f3211d91f734f61334fee1097cf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ad247f8415870a9be3cc6811378eed56a"><td class="memItemLeft" align="right" valign="top"><a id="ad247f8415870a9be3cc6811378eed56a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;) noexcept</td></tr>
+<tr class="separator:ad247f8415870a9be3cc6811378eed56a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2fd1520d2b6a957cc90a44ebadb959fe"><td class="memItemLeft" align="right" valign="top"><a id="a2fd1520d2b6a957cc90a44ebadb959fe"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>package_data</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; packaged_char_speed_v_psi, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; packaged_char_speed_v_zero, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; packaged_char_speed_v_plus, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; packaged_char_speed_v_minus, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; packaged_char_speed_n_times_v_plus, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; packaged_char_speed_n_times_v_minus, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; packaged_char_speed_gamma2_v_psi, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::a&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; packaged_char_speeds, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;v_psi, const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;v_zero, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;v_plus, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;v_minus, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classDataVector.html">DataVector</a>, 4 &gt; &amp;char_speeds, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;constraint_gamma2, const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;interface_unit_normal) const noexcept</td></tr>
+<tr class="separator:a2fd1520d2b6a957cc90a44ebadb959fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a68f5a3e6fe9dd80edac70e11e1d3b7e7"><td class="memItemLeft" align="right" valign="top"><a id="a68f5a3e6fe9dd80edac70e11e1d3b7e7"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; pi_boundary_correction, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; phi_boundary_correction, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; psi_boundary_correction, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;char_speed_v_psi_int, const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speed_v_zero_int, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;char_speed_v_plus_int, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;char_speed_v_minus_int, const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speed_normal_times_v_plus_int, const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speed_normal_times_v_minus_int, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;char_speed_constraint_gamma2_v_psi_int, const tnsr::a&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speeds_int, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;char_speed_v_psi_ext, const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speed_v_zero_ext, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;char_speed_v_plus_ext, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;char_speed_v_minus_ext, const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speed_minus_normal_times_v_plus_ext, const tnsr::i&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speed_minus_normal_times_v_minus_ext, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;char_speed_constraint_gamma2_v_psi_ext, const tnsr::a&lt; <a class="el" href="classDataVector.html">DataVector</a>, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;char_speeds_ext) const noexcept</td></tr>
+<tr class="separator:a68f5a3e6fe9dd80edac70e11e1d3b7e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:af2c478c2f29a8893f0386c7bf40e5772"><td class="memItemLeft" align="right" valign="top"><a id="af2c478c2f29a8893f0386c7bf40e5772"></a>
+static <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memItemRight" valign="bottom"><b>name</b> () noexcept</td></tr>
+<tr class="separator:af2c478c2f29a8893f0386c7bf40e5772"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aa00180628665998b0dd3b74baecf04bb"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:aa00180628665998b0dd3b74baecf04bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim&gt;<br />
+struct ScalarWave::UpwindPenaltyCorrection&lt; Dim &gt;</h3>
+
+<p>Computes the scalar wave upwind multipenalty boundary correction. </p>
+<p>This implements the upwind multipenalty boundary correction term \(D_\alpha\). The general form is given by:</p>
+<p class="formulaDsp">
+\begin{align*} \label{eq:pnpm upwind boundary term characteristics} D_\beta = T_{\beta\hat{\beta}}^{\mathrm{ext}} \Lambda^{\mathrm{ext},-}_{\hat{\beta}\hat{\alpha}} v^{\mathrm{ext}}_{\hat{\alpha}} -T_{\beta\hat{\beta}}^{\mathrm{int}} \Lambda^{\mathrm{int},-}_{\hat{\beta}\hat{\alpha}} v^{\mathrm{int}}_{\hat{\alpha}}, \end{align*}
+</p>
+<p>We denote the evolved fields by \(u_{\alpha}\), the characteristic fields by \(v_{\hat{\alpha}}\), and implicitly sum over reapeated indices. \(T_{\alpha\hat{\alpha}}\) transforms characteristic fields to evolved fields, while \(\Lambda_{\hat{\alpha}\hat{\beta}}^-\) is a diagonal matrix with only the negative characteristic speeds. The int and ext superscripts denote quantities on the internal and external side of the mortar. Note that Eq. (6.3) of <a class="el" href="citelist.html#CITEREF_Teukolsky2015ega">[102]</a> is not exactly what's implemented since that boundary term does not consistently treat both sides of the interface on the same footing.</p>
+<p>For the scalar wave system the correction is:</p>
+<p class="formulaDsp">
+\begin{align} D_{\Psi} &amp;= \tilde{\lambda}_{v^{\Psi}}^{\mathrm{ext}} v^{\mathrm{ext},\Psi} - \tilde{\lambda}_{v^{\Psi}}^{\mathrm{int}} v^{\mathrm{int},\Psi}, \\ D_{\Pi} &amp;= \frac{1}{2}\left(\tilde{\lambda}_{v^+}^{\mathrm{ext}} v^{\mathrm{ext},+} + \tilde{\lambda}_{v^-}^{\mathrm{ext}} v^{\mathrm{ext},-}\right) + \tilde{\lambda}_{v^\Psi}^\mathrm{ext}\gamma_2 v^{\mathrm{ext},\Psi} \notag \\ &amp;-\frac{1}{2}\left(\tilde{\lambda}_{v^+}^{\mathrm{int}} v^{\mathrm{int},+} + \tilde{\lambda}_{v^-}^{\mathrm{int}} v^{\mathrm{int},-}\right) - \tilde{\lambda}_{v^\Psi}^\mathrm{int}\gamma_2 v^{\mathrm{int},\Psi} , \\ D_{\Phi_{i}} &amp;= \frac{1}{2}\left(\tilde{\lambda}_{v^+}^{\mathrm{ext}} v^{\mathrm{ext},+} - \tilde{\lambda}_{v^-}^{\mathrm{ext}} v^{\mathrm{ext},-}\right)n_i^{\mathrm{ext}} + \tilde{\lambda}_{v^0}^{\mathrm{ext}} v^{\mathrm{ext},0}_{i} \notag \\ &amp;- \frac{1}{2}\left(\tilde{\lambda}_{v^+}^{\mathrm{int}} v^{\mathrm{int},+} - \tilde{\lambda}_{v^-}^{\mathrm{int}} v^{\mathrm{int},-}\right)n_i^{\mathrm{int}} - \tilde{\lambda}_{v^0}^{\mathrm{int}} v^{\mathrm{int},0}_{i}, \end{align}
+</p>
+<p>with characteristic fields</p>
+<p class="formulaDsp">
+\begin{align} v^{\Psi} &amp;= \Psi, \\ v^{0}_{i} &amp;= (\delta^k_i-n^k n_i)\Phi_{k}, \\ v^{\pm} &amp;= \Pi\pm n^i\Phi_{i} -\gamma_2 \Psi, \end{align}
+</p>
+<p>and characteristic speeds</p>
+<p class="formulaDsp">
+\begin{align} \lambda_{v^\Psi} =&amp; -v^i_g n_i, \\ \lambda_{v^0} =&amp; -v^i_g n_i, \\ \lambda_{v^\pm} =&amp; \pm 1 - v^i_g n_i, \end{align}
+</p>
+<p>where \(v_g^i\) is the mesh velocity. We have also defined</p>
+<p class="formulaDsp">
+\begin{align} \tilde{\lambda}_{\hat{\alpha}} = \left\{ \begin{array}{ll} \lambda_{\hat{\alpha}} &amp; \mathrm{if}\;\lambda_{\hat{\alpha}}\le 0.0 \\ 0 &amp; \mathrm{otherwise} \end{array}\right. \end{align}
+</p>
+<p>Note that we have assumed \(n_i^{\mathrm{ext}}\) points in the same direction as \(n_i^{\mathrm{int}}\). If \(n_i^{\mathrm{ext}}\) points in the opposite direction the external speeds have their sign flipped and the \(\pm\) fields and their speeds reverse roles. Specifically, in the code we have:</p>
+<p class="formulaDsp">
+\begin{align} D_{\Psi} &amp;= \bar{\lambda}_{v^{\Psi}}^{\mathrm{ext}} v^{\mathrm{ext},\Psi} - \tilde{\lambda}_{v^{\Psi}}^{\mathrm{int}} v^{\mathrm{int},g}, \\ D_{\Pi} &amp;= \frac{1}{2}\left(\bar{\lambda}_{v^+}^{\mathrm{ext}} v^{\mathrm{ext},+} + \bar{\lambda}_{v^-}^{\mathrm{ext}} v^{\mathrm{ext},-}\right) + \bar{\lambda}_{v^\Psi}^\mathrm{ext}\gamma_2 v^{\mathrm{ext},\Psi} \notag \\ &amp;-\frac{1}{2}\left(\tilde{\lambda}_{v^+}^{\mathrm{int}} v^{\mathrm{int},+} + \tilde{\lambda}_{v^-}^{\mathrm{int}} v^{\mathrm{int},-}\right) - \tilde{\lambda}_{v^\Psi}^\mathrm{int}\gamma_2 v^{\mathrm{int},\Psi} , \\ D_{\Phi_{i}} &amp;= \frac{1}{2}\left(\bar{\lambda}_{v^+}^{\mathrm{ext}} v^{\mathrm{ext},+} - \bar{\lambda}_{v^-}^{\mathrm{ext}} v^{\mathrm{ext},-}\right)n_i^{\mathrm{ext}} + \bar{\lambda}_{v^0}^{\mathrm{ext}} v^{\mathrm{ext},0}_{i} \notag \\ &amp;- \frac{1}{2}\left(\tilde{\lambda}_{v^+}^{\mathrm{int}} v^{\mathrm{int},+} - \tilde{\lambda}_{v^-}^{\mathrm{int}} v^{\mathrm{int},-}\right)n_i^{\mathrm{int}} - \tilde{\lambda}_{v^0}^{\mathrm{int}} v^{\mathrm{int},0}_{i}, \end{align}
+</p>
+<p>where</p>
+<p class="formulaDsp">
+\begin{align} \bar{\lambda}_{\hat{\alpha}} = \left\{ \begin{array}{ll} -\lambda_{\hat{\alpha}} &amp; \mathrm{if}\;-\lambda_{\hat{\alpha}}\le 0.0 \\ 0 &amp; \mathrm{otherwise} \end{array}\right. \end{align}
+</p>
+ </div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="aa00180628665998b0dd3b74baecf04bb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa00180628665998b0dd3b74baecf04bb">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="structScalarWave_1_1UpwindPenaltyCorrection.html">ScalarWave::UpwindPenaltyCorrection</a>&lt; Dim &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Computes the upwind penalty boundary correction for a scalar wave &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;system. It requires no options.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/Systems/ScalarWave/<a class="el" href="ScalarWave_2UpwindPenaltyCorrection_8hpp_source.html">UpwindPenaltyCorrection.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

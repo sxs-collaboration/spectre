@@ -1,0 +1,377 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: EquationsOfState::DarkEnergyFluid&lt; IsRelativistic &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceEquationsOfState.html">EquationsOfState</a></li><li class="navelem"><a class="el" href="classEquationsOfState_1_1DarkEnergyFluid.html">DarkEnergyFluid</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classEquationsOfState_1_1DarkEnergyFluid-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">EquationsOfState::DarkEnergyFluid&lt; IsRelativistic &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__EquationsOfStateGroup.html">Equations of State</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Equation of state for a dark energy fluid.  
+ <a href="classEquationsOfState_1_1DarkEnergyFluid.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DarkEnergyFluid_8hpp_source.html">DarkEnergyFluid.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structEquationsOfState_1_1DarkEnergyFluid_1_1ParameterW.html">ParameterW</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a292f6fb93966d388174e091dfa0ad70b"><td class="memItemLeft" align="right" valign="top"><a id="a292f6fb93966d388174e091dfa0ad70b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structEquationsOfState_1_1DarkEnergyFluid_1_1ParameterW.html">ParameterW</a> &gt;</td></tr>
+<tr class="separator:a292f6fb93966d388174e091dfa0ad70b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4.html">EquationsOfState::EquationOfState&lt; IsRelativistic, 2 &gt;</a></td></tr>
+<tr class="memitem:af3eae69c4bfc7aee29b0dced614f63e5 inherit pub_types_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memItemLeft" align="right" valign="top"><a id="af3eae69c4bfc7aee29b0dced614f63e5"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = typename detail::DerivedClasses&lt; IsRelativistic, 2 &gt;::type</td></tr>
+<tr class="separator:af3eae69c4bfc7aee29b0dced614f63e5 inherit pub_types_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a4e3a96537099d190219b3bb139aaa614"><td class="memItemLeft" align="right" valign="top"><a id="a4e3a96537099d190219b3bb139aaa614"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>DarkEnergyFluid</b> (const <a class="el" href="classEquationsOfState_1_1DarkEnergyFluid.html">DarkEnergyFluid</a> &amp;)=default</td></tr>
+<tr class="separator:a4e3a96537099d190219b3bb139aaa614"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac99de792799244fcd09d1c645bd9f8e0"><td class="memItemLeft" align="right" valign="top"><a id="ac99de792799244fcd09d1c645bd9f8e0"></a>
+<a class="el" href="classEquationsOfState_1_1DarkEnergyFluid.html">DarkEnergyFluid</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classEquationsOfState_1_1DarkEnergyFluid.html">DarkEnergyFluid</a> &amp;)=default</td></tr>
+<tr class="separator:ac99de792799244fcd09d1c645bd9f8e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20fb9ce9f6799c24bbefc9395b098537"><td class="memItemLeft" align="right" valign="top"><a id="a20fb9ce9f6799c24bbefc9395b098537"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>DarkEnergyFluid</b> (<a class="el" href="classEquationsOfState_1_1DarkEnergyFluid.html">DarkEnergyFluid</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a20fb9ce9f6799c24bbefc9395b098537"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8edb80836f41e49e25e464cd20a001ce"><td class="memItemLeft" align="right" valign="top"><a id="a8edb80836f41e49e25e464cd20a001ce"></a>
+<a class="el" href="classEquationsOfState_1_1DarkEnergyFluid.html">DarkEnergyFluid</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classEquationsOfState_1_1DarkEnergyFluid.html">DarkEnergyFluid</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a8edb80836f41e49e25e464cd20a001ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7863683a6555a7770b8450e73301553c"><td class="memItemLeft" align="right" valign="top"><a id="a7863683a6555a7770b8450e73301553c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>DarkEnergyFluid</b> (double parameter_w) noexcept</td></tr>
+<tr class="separator:a7863683a6555a7770b8450e73301553c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a392b4bed7a2d1ebce7dd673c8907b9b9"><td class="memItemLeft" align="right" valign="top"><a id="a392b4bed7a2d1ebce7dd673c8907b9b9"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_decl_base_template</b> (SINGLE_ARG(<a class="el" href="classEquationsOfState_1_1EquationOfState.html">EquationOfState</a>&lt; IsRelativistic, 2 &gt;), <a class="el" href="classEquationsOfState_1_1DarkEnergyFluid.html">DarkEnergyFluid</a>)</td></tr>
+<tr class="separator:a392b4bed7a2d1ebce7dd673c8907b9b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aec70561332264e4e9fba9cfc1e991799"><td class="memItemLeft" align="right" valign="top"><a id="aec70561332264e4e9fba9cfc1e991799"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEquationsOfState_1_1DarkEnergyFluid.html#aec70561332264e4e9fba9cfc1e991799">rest_mass_density_lower_bound</a> () const noexcept override</td></tr>
+<tr class="memdesc:aec70561332264e4e9fba9cfc1e991799"><td class="mdescLeft">&#160;</td><td class="mdescRight">The lower bound of the rest mass density that is valid for this EOS. <br /></td></tr>
+<tr class="separator:aec70561332264e4e9fba9cfc1e991799"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b1ef3fe6155a317756cc2346f26eee0"><td class="memItemLeft" align="right" valign="top"><a id="a1b1ef3fe6155a317756cc2346f26eee0"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEquationsOfState_1_1DarkEnergyFluid.html#a1b1ef3fe6155a317756cc2346f26eee0">rest_mass_density_upper_bound</a> () const noexcept override</td></tr>
+<tr class="memdesc:a1b1ef3fe6155a317756cc2346f26eee0"><td class="mdescLeft">&#160;</td><td class="mdescRight">The upper bound of the rest mass density that is valid for this EOS. <br /></td></tr>
+<tr class="separator:a1b1ef3fe6155a317756cc2346f26eee0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c6401bac15e760b66aca3c0205e9406"><td class="memItemLeft" align="right" valign="top"><a id="a2c6401bac15e760b66aca3c0205e9406"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEquationsOfState_1_1DarkEnergyFluid.html#a2c6401bac15e760b66aca3c0205e9406">specific_internal_energy_lower_bound</a> (const double) const noexcept override</td></tr>
+<tr class="memdesc:a2c6401bac15e760b66aca3c0205e9406"><td class="mdescLeft">&#160;</td><td class="mdescRight">The lower bound of the specific internal energy that is valid for this EOS at the given rest mass density \(\rho\). <br /></td></tr>
+<tr class="separator:a2c6401bac15e760b66aca3c0205e9406"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e3bb0c7bea3a7697cef2cc56235c3c7"><td class="memItemLeft" align="right" valign="top"><a id="a3e3bb0c7bea3a7697cef2cc56235c3c7"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEquationsOfState_1_1DarkEnergyFluid.html#a3e3bb0c7bea3a7697cef2cc56235c3c7">specific_internal_energy_upper_bound</a> (const double) const noexcept override</td></tr>
+<tr class="memdesc:a3e3bb0c7bea3a7697cef2cc56235c3c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">The upper bound of the specific internal energy that is valid for this EOS at the given rest mass density \(\rho\). <br /></td></tr>
+<tr class="separator:a3e3bb0c7bea3a7697cef2cc56235c3c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7767959647158ecba9f53a15733b5e77"><td class="memItemLeft" align="right" valign="top"><a id="a7767959647158ecba9f53a15733b5e77"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEquationsOfState_1_1DarkEnergyFluid.html#a7767959647158ecba9f53a15733b5e77">specific_enthalpy_lower_bound</a> () const noexcept override</td></tr>
+<tr class="memdesc:a7767959647158ecba9f53a15733b5e77"><td class="mdescLeft">&#160;</td><td class="mdescRight">The lower bound of the specific enthalpy that is valid for this EOS. <br /></td></tr>
+<tr class="separator:a7767959647158ecba9f53a15733b5e77"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4.html">EquationsOfState::EquationOfState&lt; IsRelativistic, 2 &gt;</a></td></tr>
+<tr class="memitem:a5c97ee44db2333998165d964d2e7754a inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memItemLeft" align="right" valign="top"><a id="a5c97ee44db2333998165d964d2e7754a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>EquationOfState</b> (const <a class="el" href="classEquationsOfState_1_1EquationOfState.html">EquationOfState</a> &amp;)=default</td></tr>
+<tr class="separator:a5c97ee44db2333998165d964d2e7754a inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0fdba6f52625d703d17ed6f1279e1a46 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memItemLeft" align="right" valign="top"><a id="a0fdba6f52625d703d17ed6f1279e1a46"></a>
+<a class="el" href="classEquationsOfState_1_1EquationOfState.html">EquationOfState</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classEquationsOfState_1_1EquationOfState.html">EquationOfState</a> &amp;)=default</td></tr>
+<tr class="separator:a0fdba6f52625d703d17ed6f1279e1a46 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ade3a24b3a4755ef32f2ac7d6f555b0 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memItemLeft" align="right" valign="top"><a id="a0ade3a24b3a4755ef32f2ac7d6f555b0"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>EquationOfState</b> (<a class="el" href="classEquationsOfState_1_1EquationOfState.html">EquationOfState</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a0ade3a24b3a4755ef32f2ac7d6f555b0 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62f8cac455b4cdba6ffdc11fdac90357 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memItemLeft" align="right" valign="top"><a id="a62f8cac455b4cdba6ffdc11fdac90357"></a>
+<a class="el" href="classEquationsOfState_1_1EquationOfState.html">EquationOfState</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classEquationsOfState_1_1EquationOfState.html">EquationOfState</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a62f8cac455b4cdba6ffdc11fdac90357 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a533269ccdfe88ed9762074443ac6faa1 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memItemLeft" align="right" valign="top"><a id="a533269ccdfe88ed9762074443ac6faa1"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WRAPPED_PUPable_abstract</b> (<a class="el" href="classEquationsOfState_1_1EquationOfState.html">EquationOfState</a>)</td></tr>
+<tr class="separator:a533269ccdfe88ed9762074443ac6faa1 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7981cc4d7699a1be772083818e516344 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4.html#a7981cc4d7699a1be772083818e516344">pressure_from_density_and_energy</a> (const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; double &gt; &amp;, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; double &gt; &amp;) const noexcept=0</td></tr>
+<tr class="separator:a7981cc4d7699a1be772083818e516344 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3304e67e1f9668339b1ba7c685a5b70e inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4.html#a3304e67e1f9668339b1ba7c685a5b70e">pressure_from_density_and_energy</a> (const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;) const noexcept=0</td></tr>
+<tr class="separator:a3304e67e1f9668339b1ba7c685a5b70e inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c3855bdddd4aa6a612adecace63c4a1 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4.html#a3c3855bdddd4aa6a612adecace63c4a1">pressure_from_density_and_enthalpy</a> (const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; double &gt; &amp;, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; double &gt; &amp;) const noexcept=0</td></tr>
+<tr class="separator:a3c3855bdddd4aa6a612adecace63c4a1 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aebedd4d4e6f6317b4b7ace401aa0b9b5 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4.html#aebedd4d4e6f6317b4b7ace401aa0b9b5">pressure_from_density_and_enthalpy</a> (const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;) const noexcept=0</td></tr>
+<tr class="separator:aebedd4d4e6f6317b4b7ace401aa0b9b5 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f94083dc58c870f993dbe7c3177ca05 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4.html#a4f94083dc58c870f993dbe7c3177ca05">specific_enthalpy_from_density_and_energy</a> (const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; double &gt; &amp;, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; double &gt; &amp;) const noexcept=0</td></tr>
+<tr class="separator:a4f94083dc58c870f993dbe7c3177ca05 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab66ec637f865b3ff4cbb39c1b2718a3 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4.html#aab66ec637f865b3ff4cbb39c1b2718a3">specific_enthalpy_from_density_and_energy</a> (const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;) const noexcept=0</td></tr>
+<tr class="separator:aab66ec637f865b3ff4cbb39c1b2718a3 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2379a75623aeabb0f5beb32374959f1 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4.html#ac2379a75623aeabb0f5beb32374959f1">specific_internal_energy_from_density_and_pressure</a> (const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; double &gt; &amp;, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; double &gt; &amp;) const noexcept=0</td></tr>
+<tr class="separator:ac2379a75623aeabb0f5beb32374959f1 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0578492342bcd37ef320ec808be33f13 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4.html#a0578492342bcd37ef320ec808be33f13">specific_internal_energy_from_density_and_pressure</a> (const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;) const noexcept=0</td></tr>
+<tr class="separator:a0578492342bcd37ef320ec808be33f13 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98a957b704202c6f2040f5ae0c9686b3 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4.html#a98a957b704202c6f2040f5ae0c9686b3">chi_from_density_and_energy</a> (const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; double &gt; &amp;, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; double &gt; &amp;) const noexcept=0</td></tr>
+<tr class="separator:a98a957b704202c6f2040f5ae0c9686b3 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab53500cd550f2f8ccc5dbd61399301b7 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4.html#ab53500cd550f2f8ccc5dbd61399301b7">chi_from_density_and_energy</a> (const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;) const noexcept=0</td></tr>
+<tr class="separator:ab53500cd550f2f8ccc5dbd61399301b7 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adbb6355adcecb57f0b6730d155ef5fd3 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4.html#adbb6355adcecb57f0b6730d155ef5fd3">kappa_times_p_over_rho_squared_from_density_and_energy</a> (const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; double &gt; &amp;, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; double &gt; &amp;) const noexcept=0</td></tr>
+<tr class="separator:adbb6355adcecb57f0b6730d155ef5fd3 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15b27516c915c161dff5bb5880aedbc2 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4.html#a15b27516c915c161dff5bb5880aedbc2">kappa_times_p_over_rho_squared_from_density_and_energy</a> (const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;) const noexcept=0</td></tr>
+<tr class="separator:a15b27516c915c161dff5bb5880aedbc2 inherit pub_methods_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a2164bb5b8730bac974e5fc494916c586"><td class="memItemLeft" align="right" valign="top"><a id="a2164bb5b8730bac974e5fc494916c586"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>thermodynamic_dim</b> = 2</td></tr>
+<tr class="separator:a2164bb5b8730bac974e5fc494916c586"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a23ee1e28ecf8eaee067c8f366a0e1334"><td class="memItemLeft" align="right" valign="top"><a id="a23ee1e28ecf8eaee067c8f366a0e1334"></a>
+static constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_relativistic</b> = IsRelativistic</td></tr>
+<tr class="separator:a23ee1e28ecf8eaee067c8f366a0e1334"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aafec5f32587ace94d080f5576a2d9737"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:aafec5f32587ace94d080f5576a2d9737"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_static_attribs_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4')"><img src="closed.png" alt="-"/>&#160;Static Public Attributes inherited from <a class="el" href="classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4.html">EquationsOfState::EquationOfState&lt; IsRelativistic, 2 &gt;</a></td></tr>
+<tr class="memitem:aafce24c5b77ea7e7ae7e59ff9d3c575d inherit pub_static_attribs_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memItemLeft" align="right" valign="top"><a id="aafce24c5b77ea7e7ae7e59ff9d3c575d"></a>
+static constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_relativistic</b> = IsRelativistic</td></tr>
+<tr class="separator:aafce24c5b77ea7e7ae7e59ff9d3c575d inherit pub_static_attribs_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c1d54d3cc96a5ccfaac5e220b065c3d inherit pub_static_attribs_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memItemLeft" align="right" valign="top"><a id="a4c1d54d3cc96a5ccfaac5e220b065c3d"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>thermodynamic_dim</b> = 2</td></tr>
+<tr class="separator:a4c1d54d3cc96a5ccfaac5e220b065c3d inherit pub_static_attribs_classEquationsOfState_1_1EquationOfState_3_01IsRelativistic_00_012_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;bool IsRelativistic&gt;<br />
+class EquationsOfState::DarkEnergyFluid&lt; IsRelativistic &gt;</h3>
+
+<p>Equation of state for a dark energy fluid. </p>
+<p>A dark energy fluid equation of state: </p><p class="formulaDsp">
+\[ p = w(z) \rho ( 1.0 + \epsilon) \]
+</p>
+<p> where \(\rho\) is the rest mass density, \(\epsilon\) is the specific internal energy, and \(w(z) &gt; 0\) is a parameter depending on the redshift \(z\). </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="aafec5f32587ace94d080f5576a2d9737"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aafec5f32587ace94d080f5576a2d9737">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;bool IsRelativistic&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classEquationsOfState_1_1DarkEnergyFluid.html">EquationsOfState::DarkEnergyFluid</a>&lt; IsRelativistic &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;A dark energy fluid equation of state.\n&quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;The pressure is related to the rest mass density by &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;p = w(z) * rho * (1 + epsilon), where p is the pressure, rho is the &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;rest mass density, epsilon is the specific internal energy, and w(z) is &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;a parameter.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/Hydro/EquationsOfState/<a class="el" href="DarkEnergyFluid_8hpp_source.html">DarkEnergyFluid.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

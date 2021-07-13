@@ -1,0 +1,446 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: elliptic::dg Namespace Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceelliptic.html">elliptic</a></li><li class="navelem"><a class="el" href="namespaceelliptic_1_1dg.html">dg</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">elliptic::dg Namespace Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Functionality related to discontinuous Galerkin discretizations of elliptic equations.  
+<a href="namespaceelliptic_1_1dg.html#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceelliptic_1_1dg_1_1Actions"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceelliptic_1_1dg_1_1Actions.html">Actions</a></td></tr>
+<tr class="memdesc:namespaceelliptic_1_1dg_1_1Actions"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespaceelliptic_1_1dg_1_1Actions.html" title="Actions related to elliptic discontinuous Galerkin schemes.">Actions</a> related to elliptic discontinuous Galerkin schemes. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceelliptic_1_1dg_1_1OptionTags"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceelliptic_1_1dg_1_1OptionTags.html">OptionTags</a></td></tr>
+<tr class="memdesc:namespaceelliptic_1_1dg_1_1OptionTags"><td class="mdescLeft">&#160;</td><td class="mdescRight">Option tags related to elliptic discontinuous Galerkin schemes. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceelliptic_1_1dg_1_1subdomain__operator"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceelliptic_1_1dg_1_1subdomain__operator.html">subdomain_operator</a></td></tr>
+<tr class="memdesc:namespaceelliptic_1_1dg_1_1subdomain__operator"><td class="mdescLeft">&#160;</td><td class="mdescRight">Items related to the restriction of the DG operator to an element-centered subdomain. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceelliptic_1_1dg_1_1Tags"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceelliptic_1_1dg_1_1Tags.html">Tags</a></td></tr>
+<tr class="memdesc:namespaceelliptic_1_1dg_1_1Tags"><td class="mdescLeft">&#160;</td><td class="mdescRight">DataBox tags related to elliptic discontinuous Galerkin schemes. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structelliptic_1_1dg_1_1InitializeBackground.html">InitializeBackground</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize background quantities for the elliptic DG operator, possibly including the metric necessary for normalizing face normals.  <a href="structelliptic_1_1dg_1_1InitializeBackground.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structelliptic_1_1dg_1_1InitializeFacesAndMortars.html">InitializeFacesAndMortars</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the geometry on faces and mortars for the elliptic DG operator.  <a href="structelliptic_1_1dg_1_1InitializeFacesAndMortars.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structelliptic_1_1dg_1_1InitializeGeometry.html">InitializeGeometry</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the background-independent geometry for the elliptic DG operator.  <a href="structelliptic_1_1dg_1_1InitializeGeometry.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structelliptic_1_1dg_1_1MortarData.html">MortarData</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Boundary data on both sides of a mortar.  <a href="structelliptic_1_1dg_1_1MortarData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structelliptic_1_1dg_1_1NormalizeFaceNormal.html">NormalizeFaceNormal</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Normalize face normals, possibly using a background metric. Set <code>InvMetricTag</code> to <code>void</code> to normalize face normals with the Euclidean magnitude.  <a href="structelliptic_1_1dg_1_1NormalizeFaceNormal.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:ac01f468061bf6c950d1fa5105201ed19"><td class="memTemplParams" colspan="2"><a id="ac01f468061bf6c950d1fa5105201ed19"></a>
+template&lt;typename PrimalFields , typename PrimalFluxes &gt; </td></tr>
+<tr class="memitem:ac01f468061bf6c950d1fa5105201ed19"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceelliptic_1_1dg.html#ac01f468061bf6c950d1fa5105201ed19">BoundaryData</a> = ::<a class="el" href="structdg_1_1SimpleBoundaryData.html">dg::SimpleBoundaryData</a>&lt; tmpl::append&lt; <a class="el" href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e">db::wrap_tags_in</a>&lt;::<a class="el" href="structTags_1_1NormalDotFlux.html">Tags::NormalDotFlux</a>, PrimalFields &gt;, <a class="el" href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e">db::wrap_tags_in</a>&lt;::<a class="el" href="structTags_1_1NormalDotFlux.html">Tags::NormalDotFlux</a>, PrimalFluxes &gt;, <a class="el" href="group__DataBoxTagsGroup.html#ga3dda5a16c7f6baccd115de2c8f12394e">db::wrap_tags_in</a>&lt; <a class="el" href="structelliptic_1_1dg_1_1Tags_1_1NormalDotFluxForJump.html">Tags::NormalDotFluxForJump</a>, PrimalFields &gt;, tmpl::list&lt; <a class="el" href="structelliptic_1_1dg_1_1Tags_1_1ElementSize.html">Tags::ElementSize</a> &gt; &gt;, tmpl::list&lt; <a class="el" href="structelliptic_1_1dg_1_1Tags_1_1PerpendicularNumPoints.html">Tags::PerpendicularNumPoints</a> &gt; &gt;</td></tr>
+<tr class="memdesc:ac01f468061bf6c950d1fa5105201ed19"><td class="mdescLeft">&#160;</td><td class="mdescRight">Data that is projected to mortars and communicated across element boundaries. <br /></td></tr>
+<tr class="separator:ac01f468061bf6c950d1fa5105201ed19"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a69f75def1ff113ffffd0a3d64a0892f8"><td class="memTemplParams" colspan="2"><a id="a69f75def1ff113ffffd0a3d64a0892f8"></a>
+template&lt;typename PrimalMortarFields , typename PrimalMortarFluxes , size_t Dim&gt; </td></tr>
+<tr class="memitem:a69f75def1ff113ffffd0a3d64a0892f8"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespaceelliptic_1_1dg.html#ac01f468061bf6c950d1fa5105201ed19">BoundaryData</a>&lt; PrimalMortarFields, PrimalMortarFluxes &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceelliptic_1_1dg.html#a69f75def1ff113ffffd0a3d64a0892f8">zero_boundary_data_on_mortar</a> (const <a class="el" href="classDirection.html">Direction</a>&lt; Dim &gt; &amp;direction, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh, const <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; &amp;face_normal_magnitude, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim - 1 &gt; &amp;mortar_mesh, const ::<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">dg::MortarSize</a>&lt; Dim - 1 &gt; &amp;mortar_size) noexcept</td></tr>
+<tr class="memdesc:a69f75def1ff113ffffd0a3d64a0892f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct <code><a class="el" href="namespaceelliptic_1_1dg.html#ac01f468061bf6c950d1fa5105201ed19" title="Data that is projected to mortars and communicated across element boundaries.">elliptic::dg::BoundaryData</a></code> assuming the variable data on the element is zero, and project it to the mortar. <br /></td></tr>
+<tr class="separator:a69f75def1ff113ffffd0a3d64a0892f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a771844b4b1dd927b58242bab9574fc99"><td class="memTemplParams" colspan="2">template&lt;typename System , bool Linearized, typename... Args&gt; </td></tr>
+<tr class="memitem:a771844b4b1dd927b58242bab9574fc99"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceelliptic_1_1dg.html#a771844b4b1dd927b58242bab9574fc99">prepare_mortar_data</a> (Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:a771844b4b1dd927b58242bab9574fc99"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepare data on mortars so they can be communicated to neighbors.  <a href="namespaceelliptic_1_1dg.html#a771844b4b1dd927b58242bab9574fc99">More...</a><br /></td></tr>
+<tr class="separator:a771844b4b1dd927b58242bab9574fc99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0ddeca0e3ace357f4f50a347655f1d1"><td class="memTemplParams" colspan="2">template&lt;typename System , bool Linearized, typename... Args&gt; </td></tr>
+<tr class="memitem:ae0ddeca0e3ace357f4f50a347655f1d1"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceelliptic_1_1dg.html#ae0ddeca0e3ace357f4f50a347655f1d1">apply_operator</a> (Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:ae0ddeca0e3ace357f4f50a347655f1d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the elliptic DG operator.  <a href="namespaceelliptic_1_1dg.html#ae0ddeca0e3ace357f4f50a347655f1d1">More...</a><br /></td></tr>
+<tr class="separator:ae0ddeca0e3ace357f4f50a347655f1d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af581b1821a81e95799309b68afdd0727"><td class="memTemplParams" colspan="2">template&lt;typename System , typename... Args&gt; </td></tr>
+<tr class="memitem:af581b1821a81e95799309b68afdd0727"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceelliptic_1_1dg.html#af581b1821a81e95799309b68afdd0727">impose_inhomogeneous_boundary_conditions_on_source</a> (Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:af581b1821a81e95799309b68afdd0727"><td class="mdescLeft">&#160;</td><td class="mdescRight">For linear systems, impose inhomogeneous boundary conditions as contributions to the fixed sources (i.e. the RHS of the equations).  <a href="namespaceelliptic_1_1dg.html#af581b1821a81e95799309b68afdd0727">More...</a><br /></td></tr>
+<tr class="separator:af581b1821a81e95799309b68afdd0727"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af276a46d66053031526786cd0e585b35"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classDataVector.html">DataVector</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceelliptic_1_1dg.html#af276a46d66053031526786cd0e585b35">penalty</a> (const <a class="el" href="classDataVector.html">DataVector</a> &amp;element_size, size_t num_points, double penalty_parameter) noexcept</td></tr>
+<tr class="memdesc:af276a46d66053031526786cd0e585b35"><td class="mdescLeft">&#160;</td><td class="mdescRight">The penalty factor in internal penalty fluxes.  <a href="namespaceelliptic_1_1dg.html#af276a46d66053031526786cd0e585b35">More...</a><br /></td></tr>
+<tr class="separator:af276a46d66053031526786cd0e585b35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Functionality related to discontinuous Galerkin discretizations of elliptic equations. </p>
+<p>The following is a brief overview of the elliptic DG schemes that are implemented here. A publication that describes the schemes in detail is in preparation and will be referenced here.</p>
+<p>The DG schemes apply to any elliptic PDE that can be formulated in first-order flux-form</p>
+<p class="formulaDsp">
+\begin{equation} -\partial_i F^i_\alpha + S_\alpha = f_\alpha(x) \end{equation}
+</p>
+<p>in terms of fluxes \(F^i_\alpha\), sources \(S_\alpha\) and fixed-sources \(f_\alpha(x)\). The fluxes and sources are functionals of the "primal" system variables \(u_A(x)\) and their corresponding "auxiliary" variables \(v_A(x)\). The uppercase index enumerates the variables such that \(v_A\) is the auxiliary variable corresponding to \(u_A\). Greek indices enumerate <em>all</em> variables. In documentation related to particular elliptic systems we generally use the canonical system-specific symbols for the fields in place of these indices. See the <code><a class="el" href="structPoisson_1_1FirstOrderSystem.html" title="The Poisson equation formulated as a set of coupled first-order PDEs.">Poisson::FirstOrderSystem</a></code> and the <code><a class="el" href="structElasticity_1_1FirstOrderSystem.html" title="The linear elasticity equation formulated as a set of coupled first-order PDEs.">Elasticity::FirstOrderSystem</a></code> for examples.</p>
+<p>The DG discretization of equations in this first-order form amounts to projecting the equations on the set of basis functions that we also use to represent the fields on the computational grid. The currently implemented DG operator uses Lagrange interpolating polynomials w.r.t. Legendre-Gauss-Lobatto collocation points as basis functions. Support for Legendre-Gauss collocation points can be added if needed. Skipping all further details here, the discretization results in a linear equation \(A(u)=b\) over all grid points and primal variables. Solving the elliptic equations amounts to numerically inverting the DG operator \(A\), typically without ever constructing the full matrix but by employing an iterative linear solver that repeatedly applies the DG operator to "test data". Note that the DG operator applies directly to the primal variables. Auxiliary variables are only computed temporarily and don't inflate the size of the operator. This means the DG operator essentially computes second derivatives of the primal variables, modified by the fluxes and sources of the system as well as by DG boundary corrections that couple grid points across element boundaries.</p>
+<dl class="section user"><dt>Boundary corrections:</dt><dd>In this implementation we employ the "internal penalty" DG scheme that couples grid points across nearest-neighbor elements through the fluxes:</dd></dl>
+<p class="formulaDsp">
+\begin{align} (n_i F^i_v)^* &amp;= \frac{1}{2} n_i \left( F^i_v(u^\mathrm{int}) + F^i_v(u^\mathrm{ext})\right) \\ (n_i F^i_u)^* &amp;= \frac{1}{2} n_i \left( F^i_u(\partial_j F^j_v(u^\mathrm{int}) - S_v(u^\mathrm{int})) + F^i_u(\partial_j F^j_v(u^\mathrm{ext}) - S_v(u^\mathrm{ext}))\right) - \sigma n_i \left( F^i_u(n_j F^j_v(u^\mathrm{int})) - F^i_u(n_j F^j_v(u^\mathrm{ext}))\right) \end{align}
+</p>
+<p>Note that \(n_i\) denotes the face normal on the "interior" side of the element under consideration. We assume \(n^\mathrm{ext}_i=-n_i\) in the implementation, i.e. face normals don't depend on the dynamic variables (which may be discontinuous on element faces). This is the case for the problems we are expecting to solve, because those will be on fixed background metrics (e.g. a conformal metric for the XCTS system). Numerically, the face normals on either side of a mortar may nonetheless be different because the two faces adjacent to the mortar may resolve them at different resolutions.</p>
+<p>Also note that the numerical fluxes intentionally don't depend on the auxiliary field values \(v\). This property allows us to communicate data for both the primal and auxiliary boundary corrections together, instead of communicating them in two steps. If we were to resort to a two-step communication we could replace the divergence in \((n_i F^i_u)^*\) with \(v\), which would result in a generalized "stabilized central flux" that is slightly less sparse than the internal penalty flux (see e.g. <a class="el" href="citelist.html#CITEREF_HesthavenWarburton">[56]</a>, section 7.2). We could also choose to ignore the fluxes in the penalty term, but preliminary tests suggest that this may hurt convergence.</p>
+<p>For a <a class="el" href="namespacePoisson.html" title="Items related to solving a Poisson equation .">Poisson</a> system (see <code><a class="el" href="structPoisson_1_1FirstOrderSystem.html" title="The Poisson equation formulated as a set of coupled first-order PDEs.">Poisson::FirstOrderSystem</a></code>) this numerical flux reduces to the standard internal penalty flux (see e.g. <a class="el" href="citelist.html#CITEREF_HesthavenWarburton">[56]</a>, section 7.2, or <a class="el" href="citelist.html#CITEREF_Arnold2002">[2]</a>):</p>
+<p class="formulaDsp">
+\begin{align} (n_i F^i_{v_j})^* &amp;= n_j u^* = \frac{1}{2} n_j \left( u^\mathrm{int} + u^\mathrm{ext}\right) \\ (n_i F^i_u)^* &amp;= n_i v_i^* = \frac{1}{2} n_i \left( \partial_i u^\mathrm{int} + \partial_i u^\mathrm{ext}\right) - \sigma \left(u^\mathrm{int} - u^\mathrm{ext}\right) \end{align}
+</p>
+<p>where a sum over repeated indices is assumed, since the equation is formulated on a Euclidean geometry.</p>
+<p>The penalty factor \(\sigma\) is responsible for removing zero eigenmodes and impacts the conditioning of the linear operator to be solved. See <code><a class="el" href="namespaceelliptic_1_1dg.html#af276a46d66053031526786cd0e585b35" title="The penalty factor in internal penalty fluxes.">elliptic::dg::penalty</a></code> for details. For the element size that goes into computing the penalty we choose \(h=\frac{J_\mathrm{volume}}{J_\mathrm{face}}\), i.e. the ratio of Jacobi determinants from logical to inertial coordinates in the element volume and on the element face, both evaluated on the face (see <a class="el" href="citelist.html#CITEREF_Vincent2019qpd">[107]</a>). Since both \(N_\mathrm{points}\) and \(h\) can be different on either side of the element boundary we take the maximum of \(N_\mathrm{points}\) and the pointwise minimum of \(h\) across the element boundary as is done in <a class="el" href="citelist.html#CITEREF_Vincent2019qpd">[107]</a>. Note that we use the number of points \(N_\mathrm{points}\) where <a class="el" href="citelist.html#CITEREF_Vincent2019qpd">[107]</a> uses the polynomial degree \(N_\mathrm{points} - 1\) because we found unstable configurations on curved meshes when using the polynomial degree. Optimizing the penalty on curved meshes is subject to further investigation. </p>
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="ae0ddeca0e3ace357f4f50a347655f1d1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae0ddeca0e3ace357f4f50a347655f1d1">&#9670;&nbsp;</a></span>apply_operator()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename System , bool Linearized, typename... Args&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void elliptic::dg::apply_operator </td>
+          <td>(</td>
+          <td class="paramtype">Args &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>args</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Apply the elliptic DG operator. </p>
+<p>This function applies the elliptic DG operator on an element, assuming all data on mortars is already available. Use the <code><a class="el" href="namespaceelliptic_1_1dg.html#a771844b4b1dd927b58242bab9574fc99" title="Prepare data on mortars so they can be communicated to neighbors.">elliptic::dg::prepare_mortar_data</a></code> function to prepare mortar data on neighboring elements, then communicate the data and insert them on the "remote" side of the mortars before calling this function. </p>
+
+</div>
+</div>
+<a id="af581b1821a81e95799309b68afdd0727"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af581b1821a81e95799309b68afdd0727">&#9670;&nbsp;</a></span>impose_inhomogeneous_boundary_conditions_on_source()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename System , typename... Args&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void elliptic::dg::impose_inhomogeneous_boundary_conditions_on_source </td>
+          <td>(</td>
+          <td class="paramtype">Args &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>args</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>For linear systems, impose inhomogeneous boundary conditions as contributions to the fixed sources (i.e. the RHS of the equations). </p>
+<p>This function exists because the DG operator must typically be linear, but even for linear elliptic equations we typically apply boundary conditions with a constant, and therefore nonlinear, contribution. Standard examples are inhomogeneous (i.e. non-zero) Dirichlet or Neumann boundary conditions. This nonlinear contribution can be added to the fixed sources, leaving only the linearized boundary conditions in the DG operator. For standard constant Dirichlet or Neumann boundary conditions the linearization is of course just zero.</p>
+<p>This function essentially feeds zero variables through the nonlinear operator and subtracts the result from the fixed sources: <code>b -= A(x=0)</code>. </p>
+
+</div>
+</div>
+<a id="af276a46d66053031526786cd0e585b35"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af276a46d66053031526786cd0e585b35">&#9670;&nbsp;</a></span>penalty()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classDataVector.html">DataVector</a> elliptic::dg::penalty </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classDataVector.html">DataVector</a> &amp;&#160;</td>
+          <td class="paramname"><em>element_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>num_points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>penalty_parameter</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The penalty factor in internal penalty fluxes. </p>
+<p>The penalty factor is computed as</p>
+<p class="formulaDsp">
+\begin{equation} \sigma = C \frac{N_\text{points}^2}{h} \end{equation}
+</p>
+<p>where \(N_\text{points} = 1 + N_p\) is the number of points (or one plus the polynomial degree) and \(h\) is a measure of the element size. Both quantities are taken perpendicular to the face of the DG element that the penalty is being computed on. \(C\) is the "penalty parameter". For details see section 7.2 in <a class="el" href="citelist.html#CITEREF_HesthavenWarburton">[56]</a>. </p>
+
+</div>
+</div>
+<a id="a771844b4b1dd927b58242bab9574fc99"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a771844b4b1dd927b58242bab9574fc99">&#9670;&nbsp;</a></span>prepare_mortar_data()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename System , bool Linearized, typename... Args&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void elliptic::dg::prepare_mortar_data </td>
+          <td>(</td>
+          <td class="paramtype">Args &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>args</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Prepare data on mortars so they can be communicated to neighbors. </p>
+<p>Call this function on all elements and communicate the mortar data, then call <code><a class="el" href="namespaceelliptic_1_1dg.html#ae0ddeca0e3ace357f4f50a347655f1d1" title="Apply the elliptic DG operator.">elliptic::dg::apply_operator</a></code>. </p>
+
+</div>
+</div>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

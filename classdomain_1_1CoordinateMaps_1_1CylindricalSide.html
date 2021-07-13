@@ -1,0 +1,305 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: domain::CoordinateMaps::CylindricalSide Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>domain</b></li><li class="navelem"><a class="el" href="namespacedomain_1_1CoordinateMaps.html">CoordinateMaps</a></li><li class="navelem"><a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalSide.html">CylindricalSide</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classdomain_1_1CoordinateMaps_1_1CylindricalSide-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">domain::CoordinateMaps::CylindricalSide Class Reference<div class="ingroups"><a class="el" href="group__CoordinateMapsGroup.html">Coordinate Maps</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Map from a 3D unit right cylindrical shell to a volume that connects portions of two spherical surfaces.  
+ <a href="classdomain_1_1CoordinateMaps_1_1CylindricalSide.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="CylindricalSide_8hpp_source.html">CylindricalSide.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a0ed4a2377a4798c0469e84255c56d3bd"><td class="memItemLeft" align="right" valign="top"><a id="a0ed4a2377a4798c0469e84255c56d3bd"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CylindricalSide</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;center_one, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;center_two, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;proj_center, double radius_one, double radius_two, double z_lower, double z_upper) noexcept</td></tr>
+<tr class="separator:a0ed4a2377a4798c0469e84255c56d3bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a7cb3f4461a7f5517628a8b538fd9c8"><td class="memItemLeft" align="right" valign="top"><a id="a9a7cb3f4461a7f5517628a8b538fd9c8"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CylindricalSide</b> (<a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalSide.html">CylindricalSide</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a9a7cb3f4461a7f5517628a8b538fd9c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5351c50a10833ebcef068af8eba21e85"><td class="memItemLeft" align="right" valign="top"><a id="a5351c50a10833ebcef068af8eba21e85"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CylindricalSide</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalSide.html">CylindricalSide</a> &amp;)=default</td></tr>
+<tr class="separator:a5351c50a10833ebcef068af8eba21e85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe8d4fba30ab5c506082176af2d6aa4a"><td class="memItemLeft" align="right" valign="top"><a id="abe8d4fba30ab5c506082176af2d6aa4a"></a>
+<a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalSide.html">CylindricalSide</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalSide.html">CylindricalSide</a> &amp;)=default</td></tr>
+<tr class="separator:abe8d4fba30ab5c506082176af2d6aa4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aacfb72a9faa8e68fb0b3156a77877ad3"><td class="memItemLeft" align="right" valign="top"><a id="aacfb72a9faa8e68fb0b3156a77877ad3"></a>
+<a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalSide.html">CylindricalSide</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalSide.html">CylindricalSide</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:aacfb72a9faa8e68fb0b3156a77877ad3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af7b1c577add200b42c82aeb46db17e9a"><td class="memTemplParams" colspan="2"><a id="af7b1c577add200b42c82aeb46db17e9a"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:af7b1c577add200b42c82aeb46db17e9a"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator()</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:af7b1c577add200b42c82aeb46db17e9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab1ca0d860a8aaad23220bc1901c68f3d"><td class="memItemLeft" align="right" valign="top"><a id="ab1ca0d860a8aaad23220bc1901c68f3d"></a>
+<a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>inverse</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, 3 &gt; &amp;target_coords) const noexcept</td></tr>
+<tr class="separator:ab1ca0d860a8aaad23220bc1901c68f3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a27e7617cc6fd211e325d10e4f7b24dc3"><td class="memTemplParams" colspan="2"><a id="a27e7617cc6fd211e325d10e4f7b24dc3"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a27e7617cc6fd211e325d10e4f7b24dc3"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:a27e7617cc6fd211e325d10e4f7b24dc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5487be969f57dad9e0a16d747f84ce5f"><td class="memTemplParams" colspan="2"><a id="a5487be969f57dad9e0a16d747f84ce5f"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a5487be969f57dad9e0a16d747f84ce5f"><td class="memTemplItemLeft" align="right" valign="top">tnsr::Ij&lt; tt::remove_cvref_wrap_t&lt; T &gt;, 3, <a class="el" href="structFrame_1_1NoFrame.html">Frame::NoFrame</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>inv_jacobian</b> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, 3 &gt; &amp;source_coords) const noexcept</td></tr>
+<tr class="separator:a5487be969f57dad9e0a16d747f84ce5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abee476562bd704e621a3db36f2d92485"><td class="memItemLeft" align="right" valign="top"><a id="abee476562bd704e621a3db36f2d92485"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:abee476562bd704e621a3db36f2d92485"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:aa143b64759936fbee8532611245b5eed"><td class="memItemLeft" align="right" valign="top"><a id="aa143b64759936fbee8532611245b5eed"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_identity</b> () noexcept</td></tr>
+<tr class="separator:aa143b64759936fbee8532611245b5eed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aabe99b0445159f939eca7eb81c4edca5"><td class="memItemLeft" align="right" valign="top"><a id="aabe99b0445159f939eca7eb81c4edca5"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>dim</b> = 3</td></tr>
+<tr class="separator:aabe99b0445159f939eca7eb81c4edca5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a4543eaf081ab7a60918ef8c49dc66bb3"><td class="memItemLeft" align="right" valign="top"><a id="a4543eaf081ab7a60918ef8c49dc66bb3"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalSide.html">CylindricalSide</a> &amp;lhs, const <a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalSide.html">CylindricalSide</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a4543eaf081ab7a60918ef8c49dc66bb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Map from a 3D unit right cylindrical shell to a volume that connects portions of two spherical surfaces. </p>
+<div class="image">
+<object type="image/svg+xml" data="CylindricalSide.svg" style="pointer-events: none;"></object>
+<div class="caption">
+2D slice showing mapped (shaded) region.</div></div>
+<h3>Details</h3>
+<p>Consider two spheres with centers \(C_1\) and \(C_2\), and radii \(R_1\) and \(R_2\). Let sphere 1 be intersected by two planes normal to the \(z\) axis and located at \(z = z_\mathrm{L}\) and \(z = z_\mathrm{U}\), with \(z_\mathrm{L} &lt; z_\mathrm{U}\). Also let there be a projection point \(P\).</p>
+<p>Note that Sphere 1 and Sphere 2 are not equivalent, because the mapped portion of Sphere 1 is bounded by planes of constant \(z\) but the mapped portion of Sphere 2 is not (except for special choices of \(C_1\), \(C_2\), and \(P\)).</p>
+<p><a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalSide.html" title="Map from a 3D unit right cylindrical shell to a volume that connects portions of two spherical surfac...">CylindricalSide</a> maps a 3D unit right cylindrical shell (with coordinates \((\bar{x},\bar{y},\bar{z})\) such that \(-1\leq\bar{z}\leq 1\) and \(1 \leq \bar{x}^2+\bar{y}^2 \leq 4\)) to the shaded area in each panel of the figure above (with coordinates \((x,y,z)\)). The figure shows two different allowed possibilities: \(R_1 &gt; R_2\) and \(R_2 &gt; R_1\). Note that the two portions of the shaded region in each panel of the figure represent different portions of the same block; each panel of the figure is to be understood as rotated around the \(z\) axis. The inner boundary of the cylindrical shell \(\bar{x}^2+\bar{y}^2=1\) is mapped to the portion of sphere 1 that has \(z_\mathrm{L} \leq z \leq z_\mathrm{U}\). Curves of constant \((\bar{z})\) along the vector \((\bar{x},\bar{y})\) are mapped to portions of lines that pass through \(P\). Along each of these curves, \(\bar{x}^2+\bar{y}^2=1\) is mapped to a point on sphere 1 and \(\bar{x}^2+\bar{y}^2=4\) is mapped to a point on sphere 2.</p>
+<p><a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalSide.html" title="Map from a 3D unit right cylindrical shell to a volume that connects portions of two spherical surfac...">CylindricalSide</a> is described briefly in the Appendix of <a class="el" href="citelist.html#CITEREF_Buchman:2012dw">[20]</a>. <a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalSide.html" title="Map from a 3D unit right cylindrical shell to a volume that connects portions of two spherical surfac...">CylindricalSide</a> is used to construct the blocks labeled 'CA cylinder', 'EA cylinder', 'CB cylinder', 'EE cylinder', and 'EB cylinder' in Figure 20 of that paper. Note that 'CA cylinder', 'CB cylinder', and 'EE cylinder' have Sphere 1 contained in Sphere2, and 'EA cylinder' and 'EB cylinder' have Sphere 2 contained in Sphere 1.</p>
+<p><a class="el" href="classdomain_1_1CoordinateMaps_1_1CylindricalSide.html" title="Map from a 3D unit right cylindrical shell to a volume that connects portions of two spherical surfac...">CylindricalSide</a> is implemented using <code><a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedMap.html" title="Map from  to the volume contained between a 2D surface and the surface of a 2-sphere.">FocallyLiftedMap</a></code> and <code><a class="el" href="classdomain_1_1CoordinateMaps_1_1FocallyLiftedInnerMaps_1_1Side.html" title="A FocallyLiftedInnerMap that maps a 3D unit right cylindrical shell to a volume that connects portion...">FocallyLiftedInnerMaps::Side</a></code>; see those classes for details.</p>
+<h3><a class="anchor" id="autotoc_md25"></a>
+Restrictions on map parameters.</h3>
+<p>We demand that:</p><ul>
+<li>Either Sphere 1 is fully contained inside Sphere 2, or Sphere 2 is fully contained inside Sphere 1.</li>
+<li>\(P\) is contained inside the smaller sphere, and between (or on) the planes defined by \(z_\mathrm{L}\) and \(z_\mathrm{U}\).</li>
+<li>If sphere 1 is contained in sphere 2:<ul>
+<li>\(C_1^z - 0.95 R_1 \leq z_\mathrm{L}\)</li>
+<li>\(z_\mathrm{U} \leq C_1^z + 0.95 R_1\)</li>
+</ul>
+</li>
+<li>If sphere 2 is contained in sphere 1:<ul>
+<li>\(C_1^z - 0.95 R_1 \leq z_\mathrm{L} \leq C_1^z - 0.2 R_1\)</li>
+<li>\(C_1^z + 0.2 R_1 \leq z_\mathrm{U} \leq C_1^z + 0.95 R_1\) </li>
+</ul>
+</li>
+</ul>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/Domain/CoordinateMaps/<a class="el" href="CylindricalSide_8hpp_source.html">CylindricalSide.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

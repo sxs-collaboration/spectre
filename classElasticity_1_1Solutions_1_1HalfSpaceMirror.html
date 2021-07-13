@@ -1,0 +1,374 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Elasticity::Solutions::HalfSpaceMirror&lt; Registrars &gt; Class Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceElasticity.html">Elasticity</a></li><li class="navelem"><a class="el" href="namespaceElasticity_1_1Solutions.html">Solutions</a></li><li class="navelem"><a class="el" href="classElasticity_1_1Solutions_1_1HalfSpaceMirror.html">HalfSpaceMirror</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="classElasticity_1_1Solutions_1_1HalfSpaceMirror-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Elasticity::Solutions::HalfSpaceMirror&lt; Registrars &gt; Class Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>The solution for a half-space mirror deformed by a laser beam.  
+ <a href="classElasticity_1_1Solutions_1_1HalfSpaceMirror.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="HalfSpaceMirror_8hpp_source.html">HalfSpaceMirror.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structElasticity_1_1Solutions_1_1HalfSpaceMirror_1_1AbsoluteTolerance.html">AbsoluteTolerance</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structElasticity_1_1Solutions_1_1HalfSpaceMirror_1_1BeamWidth.html">BeamWidth</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structElasticity_1_1Solutions_1_1HalfSpaceMirror_1_1IntegrationIntervals.html">IntegrationIntervals</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structElasticity_1_1Solutions_1_1HalfSpaceMirror_1_1Material.html">Material</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structElasticity_1_1Solutions_1_1HalfSpaceMirror_1_1RelativeTolerance.html">RelativeTolerance</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a298395142aa4eee4df9aae52ccd47e4a"><td class="memItemLeft" align="right" valign="top"><a id="a298395142aa4eee4df9aae52ccd47e4a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>constitutive_relation_type</b> = <a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html">Elasticity::ConstitutiveRelations::IsotropicHomogeneous</a>&lt; 3 &gt;</td></tr>
+<tr class="separator:a298395142aa4eee4df9aae52ccd47e4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3115ed5c3c790520b90f145dc6cd1ba"><td class="memItemLeft" align="right" valign="top"><a id="ae3115ed5c3c790520b90f145dc6cd1ba"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::list&lt; <a class="el" href="structElasticity_1_1Solutions_1_1HalfSpaceMirror_1_1BeamWidth.html">BeamWidth</a>, <a class="el" href="structElasticity_1_1Solutions_1_1HalfSpaceMirror_1_1Material.html">Material</a>, <a class="el" href="structElasticity_1_1Solutions_1_1HalfSpaceMirror_1_1IntegrationIntervals.html">IntegrationIntervals</a>, <a class="el" href="structElasticity_1_1Solutions_1_1HalfSpaceMirror_1_1AbsoluteTolerance.html">AbsoluteTolerance</a>, <a class="el" href="structElasticity_1_1Solutions_1_1HalfSpaceMirror_1_1RelativeTolerance.html">RelativeTolerance</a> &gt;</td></tr>
+<tr class="separator:ae3115ed5c3c790520b90f145dc6cd1ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classElasticity_1_1Solutions_1_1AnalyticSolution"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classElasticity_1_1Solutions_1_1AnalyticSolution')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classElasticity_1_1Solutions_1_1AnalyticSolution.html">Elasticity::Solutions::AnalyticSolution&lt; 3, tmpl::list&lt; Solutions::Registrars::HalfSpaceMirror &gt; &gt;</a></td></tr>
+<tr class="memitem:ab9bcbb6865b57ef9d0e62a9ff63f82c0 inherit pub_types_classElasticity_1_1Solutions_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="ab9bcbb6865b57ef9d0e62a9ff63f82c0"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>registrars</b> = tmpl::list&lt; Solutions::Registrars::HalfSpaceMirror &gt;</td></tr>
+<tr class="separator:ab9bcbb6865b57ef9d0e62a9ff63f82c0 inherit pub_types_classElasticity_1_1Solutions_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a27df76b34b01e2e0880ed81d3db03460 inherit pub_types_classElasticity_1_1Solutions_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="a27df76b34b01e2e0880ed81d3db03460"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = <a class="el" href="namespaceRegistration.html#abfd9ae1266be994041d2cfaa4199eed2">Registration::registrants</a>&lt; registrars &gt;</td></tr>
+<tr class="separator:a27df76b34b01e2e0880ed81d3db03460 inherit pub_types_classElasticity_1_1Solutions_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_types_classAnalyticData"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classAnalyticData')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classAnalyticData.html">AnalyticData&lt; Dim, Registrars &gt;</a></td></tr>
+<tr class="memitem:aaeab66e58c7076cce1284d6fcf1f331e inherit pub_types_classAnalyticData"><td class="memItemLeft" align="right" valign="top"><a id="aaeab66e58c7076cce1284d6fcf1f331e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>registrars</b> = Registrars</td></tr>
+<tr class="separator:aaeab66e58c7076cce1284d6fcf1f331e inherit pub_types_classAnalyticData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2ae5b60f4c626ee81e52d86ce9d2384 inherit pub_types_classAnalyticData"><td class="memItemLeft" align="right" valign="top"><a id="ac2ae5b60f4c626ee81e52d86ce9d2384"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>creatable_classes</b> = <a class="el" href="namespaceRegistration.html#abfd9ae1266be994041d2cfaa4199eed2">Registration::registrants</a>&lt; registrars &gt;</td></tr>
+<tr class="separator:ac2ae5b60f4c626ee81e52d86ce9d2384 inherit pub_types_classAnalyticData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ae13a9f1f7b3a932393a83a2a23d500c2"><td class="memItemLeft" align="right" valign="top"><a id="ae13a9f1f7b3a932393a83a2a23d500c2"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>HalfSpaceMirror</b> (const <a class="el" href="classElasticity_1_1Solutions_1_1HalfSpaceMirror.html">HalfSpaceMirror</a> &amp;) noexcept=default</td></tr>
+<tr class="separator:ae13a9f1f7b3a932393a83a2a23d500c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a90ed48a3acb0c508a5bef274eca95e"><td class="memItemLeft" align="right" valign="top"><a id="a3a90ed48a3acb0c508a5bef274eca95e"></a>
+<a class="el" href="classElasticity_1_1Solutions_1_1HalfSpaceMirror.html">HalfSpaceMirror</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classElasticity_1_1Solutions_1_1HalfSpaceMirror.html">HalfSpaceMirror</a> &amp;) noexcept=default</td></tr>
+<tr class="separator:a3a90ed48a3acb0c508a5bef274eca95e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a086aed473cac2be0d55bc0bfa1d9aa26"><td class="memItemLeft" align="right" valign="top"><a id="a086aed473cac2be0d55bc0bfa1d9aa26"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>HalfSpaceMirror</b> (<a class="el" href="classElasticity_1_1Solutions_1_1HalfSpaceMirror.html">HalfSpaceMirror</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a086aed473cac2be0d55bc0bfa1d9aa26"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a53314c75b9d027b18d372f80affc436f"><td class="memItemLeft" align="right" valign="top"><a id="a53314c75b9d027b18d372f80affc436f"></a>
+<a class="el" href="classElasticity_1_1Solutions_1_1HalfSpaceMirror.html">HalfSpaceMirror</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classElasticity_1_1Solutions_1_1HalfSpaceMirror.html">HalfSpaceMirror</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a53314c75b9d027b18d372f80affc436f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad81e54ee12a6d4003dba6d70949b918f"><td class="memItemLeft" align="right" valign="top"><a id="ad81e54ee12a6d4003dba6d70949b918f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>HalfSpaceMirror</b> (double beam_width, <a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html">constitutive_relation_type</a> constitutive_relation, size_t integration_intervals=350, double absolute_tolerance=1e-12, double relative_tolerance=1e-10) noexcept</td></tr>
+<tr class="separator:ad81e54ee12a6d4003dba6d70949b918f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d57ec60b81691b520c0ec2ae0a4bcca"><td class="memItemLeft" align="right" valign="top"><a id="a5d57ec60b81691b520c0ec2ae0a4bcca"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>beam_width</b> () const noexcept</td></tr>
+<tr class="separator:a5d57ec60b81691b520c0ec2ae0a4bcca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a32db4bd919cae11651fa555cce8f769f"><td class="memItemLeft" align="right" valign="top"><a id="a32db4bd919cae11651fa555cce8f769f"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>integration_intervals</b> () const noexcept</td></tr>
+<tr class="separator:a32db4bd919cae11651fa555cce8f769f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adef9c973087a5dd3842d9f0d6c667adc"><td class="memItemLeft" align="right" valign="top"><a id="adef9c973087a5dd3842d9f0d6c667adc"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>absolute_tolerance</b> () const noexcept</td></tr>
+<tr class="separator:adef9c973087a5dd3842d9f0d6c667adc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf486c15bcfc4b0f47cf958dcf9a7f5e"><td class="memItemLeft" align="right" valign="top"><a id="abf486c15bcfc4b0f47cf958dcf9a7f5e"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>relative_tolerance</b> () const noexcept</td></tr>
+<tr class="separator:abf486c15bcfc4b0f47cf958dcf9a7f5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1cbc5298752bb3a7520461e6de07a9af"><td class="memItemLeft" align="right" valign="top"><a id="a1cbc5298752bb3a7520461e6de07a9af"></a>
+const <a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html">constitutive_relation_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>constitutive_relation</b> () const noexcept override</td></tr>
+<tr class="separator:a1cbc5298752bb3a7520461e6de07a9af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a134326047b84ec807a5c5245fb45dab4"><td class="memTemplParams" colspan="2"><a id="a134326047b84ec807a5c5245fb45dab4"></a>
+template&lt;typename DataType , typename... RequestedTags&gt; </td></tr>
+<tr class="memitem:a134326047b84ec807a5c5245fb45dab4"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; RequestedTags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; RequestedTags... &gt;) const noexcept</td></tr>
+<tr class="separator:a134326047b84ec807a5c5245fb45dab4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85513f0ea3ebdef80e59478d501f0e6b"><td class="memItemLeft" align="right" valign="top"><a id="a85513f0ea3ebdef80e59478d501f0e6b"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept override</td></tr>
+<tr class="separator:a85513f0ea3ebdef80e59478d501f0e6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classElasticity_1_1Solutions_1_1AnalyticSolution"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classElasticity_1_1Solutions_1_1AnalyticSolution')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classElasticity_1_1Solutions_1_1AnalyticSolution.html">Elasticity::Solutions::AnalyticSolution&lt; 3, tmpl::list&lt; Solutions::Registrars::HalfSpaceMirror &gt; &gt;</a></td></tr>
+<tr class="memitem:a21e496a0d3b1ced26b4fb4f0f18772b6 inherit pub_methods_classElasticity_1_1Solutions_1_1AnalyticSolution"><td class="memItemLeft" align="right" valign="top"><a id="a21e496a0d3b1ced26b4fb4f0f18772b6"></a>
+<a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; RequestedTags... &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;x, tmpl::list&lt; RequestedTags... &gt;) const noexcept</td></tr>
+<tr class="separator:a21e496a0d3b1ced26b4fb4f0f18772b6 inherit pub_methods_classElasticity_1_1Solutions_1_1AnalyticSolution"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classElasticity_1_1AnalyticData_1_1AnalyticData"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classElasticity_1_1AnalyticData_1_1AnalyticData')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classElasticity_1_1AnalyticData_1_1AnalyticData.html">Elasticity::AnalyticData::AnalyticData&lt; Dim, tmpl::list&lt; Solutions::Registrars::HalfSpaceMirror &gt; &gt;</a></td></tr>
+<tr class="memitem:a02043252c95545ee265af94fecdcd98a inherit pub_methods_classElasticity_1_1AnalyticData_1_1AnalyticData"><td class="memItemLeft" align="right" valign="top"><a id="a02043252c95545ee265af94fecdcd98a"></a>
+virtual const <a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1ConstitutiveRelation.html">ConstitutiveRelations::ConstitutiveRelation</a>&lt; Dim &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classElasticity_1_1AnalyticData_1_1AnalyticData.html#a02043252c95545ee265af94fecdcd98a">constitutive_relation</a> () const noexcept=0</td></tr>
+<tr class="memdesc:a02043252c95545ee265af94fecdcd98a inherit pub_methods_classElasticity_1_1AnalyticData_1_1AnalyticData"><td class="mdescLeft">&#160;</td><td class="mdescRight">A constitutive relation that represents the properties of the elastic material. <br /></td></tr>
+<tr class="separator:a02043252c95545ee265af94fecdcd98a inherit pub_methods_classElasticity_1_1AnalyticData_1_1AnalyticData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classAnalyticData"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classAnalyticData')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classAnalyticData.html">AnalyticData&lt; Dim, Registrars &gt;</a></td></tr>
+<tr class="memitem:a87d911aea5f1bc2df7141525bd4dc44e inherit pub_methods_classAnalyticData"><td class="memTemplParams" colspan="2"><a id="a87d911aea5f1bc2df7141525bd4dc44e"></a>
+template&lt;typename DataType , typename... Tags&gt; </td></tr>
+<tr class="memitem:a87d911aea5f1bc2df7141525bd4dc44e inherit pub_methods_classAnalyticData"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classAnalyticData.html#a87d911aea5f1bc2df7141525bd4dc44e">variables</a> (const tnsr::I&lt; DataType, Dim &gt; &amp;x, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:a87d911aea5f1bc2df7141525bd4dc44e inherit pub_methods_classAnalyticData"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a collection of tensor fields at spatial coordinate(s) <code>x</code> <br /></td></tr>
+<tr class="separator:a87d911aea5f1bc2df7141525bd4dc44e inherit pub_methods_classAnalyticData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9db45292e221044e16f904951d6c9b0 inherit pub_methods_classAnalyticData"><td class="memTemplParams" colspan="2">template&lt;typename... Tags&gt; </td></tr>
+<tr class="memitem:ad9db45292e221044e16f904951d6c9b0 inherit pub_methods_classAnalyticData"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classAnalyticData.html#ad9db45292e221044e16f904951d6c9b0">variables</a> (const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim &gt; &amp;x, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh, const InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;inv_jacobian, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:ad9db45292e221044e16f904951d6c9b0 inherit pub_methods_classAnalyticData"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a collection of tensor fields at spatial coordinate(s) <code>x</code>  <a href="classAnalyticData.html#ad9db45292e221044e16f904951d6c9b0">More...</a><br /></td></tr>
+<tr class="separator:ad9db45292e221044e16f904951d6c9b0 inherit pub_methods_classAnalyticData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a9789f4e59c053fddece5baad767e3040"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:a9789f4e59c053fddece5baad767e3040"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_static_attribs_classAnalyticData"><td colspan="2" onclick="javascript:toggleInherit('pub_static_attribs_classAnalyticData')"><img src="closed.png" alt="-"/>&#160;Static Public Attributes inherited from <a class="el" href="classAnalyticData.html">AnalyticData&lt; Dim, Registrars &gt;</a></td></tr>
+<tr class="memitem:adf176d57e0105ecfbd77f542a6c70473 inherit pub_static_attribs_classAnalyticData"><td class="memItemLeft" align="right" valign="top"><a id="adf176d57e0105ecfbd77f542a6c70473"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = Dim</td></tr>
+<tr class="separator:adf176d57e0105ecfbd77f542a6c70473 inherit pub_static_attribs_classAnalyticData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename Registrars = tmpl::list&lt;Solutions::Registrars::HalfSpaceMirror&gt;&gt;<br />
+class Elasticity::Solutions::HalfSpaceMirror&lt; Registrars &gt;</h3>
+
+<p>The solution for a half-space mirror deformed by a laser beam. </p>
+<h3>Details</h3>
+<p>This solution is mapping (via the fluctuation dissipation theorem) thermal noise to an elasticity problem where a normally incident and axisymmetric laser beam with a Gaussian beam profile acts on the face of a semi-infinite mirror. Here we assume the face to be at \(z = 0\) and the material to extend to \(+\infty\) in the z-direction as well as for the mirror diameter to be comparatively large to the <code>beam width</code>. The mirror material is characterized by an isotropic homogeneous constitutive relation \(Y^{ijkl}\) (see <code><a class="el" href="classElasticity_1_1ConstitutiveRelations_1_1IsotropicHomogeneous.html" title="An isotropic and homogeneous material.">Elasticity::ConstitutiveRelations::IsotropicHomogeneous</a></code>). In this scenario, the auxiliary elastic problem has an applied pressure distribution equal to the laser beam intensity profile \(p(r)\) (see Eq. (11.94) and Eq. (11.95) in <a class="el" href="citelist.html#CITEREF_ThorneBlandford2017">[103]</a> with F = 1 and the time dependency dropped)</p>
+<p class="formulaDsp">
+\begin{align} T^{zr} &amp;= T^{rz} = 0 \\ T^{zz} &amp;= p(r) = \frac{e^{-\frac{r^2}{r_0^2}}}{\pi r_0^2}\text{.} \end{align}
+</p>
+<p>in the form of a Neumann boundary condition to the face of the mirror. We find that this stress in cylinder coordinates is produced by the displacement field</p>
+<p class="formulaDsp">
+\begin{align} \xi_{r} &amp;= \frac{1}{2 \mu} \int_0^{\infty} dk J_1(kr)e^{(-kz)}\left(1 - \frac{\lambda + 2\mu}{\lambda + \mu} + kz \right) \tilde{p}(k) \\ \xi_{\phi} &amp;= 0 \\ \xi_{z} &amp;= \frac{1}{2 \mu} \int_0^{\infty} dk J_0(kr)e^{(-kz)}\left(1 + \frac{\mu}{\lambda + \mu} + kz \right) \tilde{p}(k) \end{align}
+</p>
+<p>and the strain</p>
+<p class="formulaDsp">
+\begin{align} \Theta &amp;= \frac{1}{2 \mu} \int_0^{\infty} dk J_0(kr) k e^{(-kz)}\left(\frac{-2\mu}{\lambda + \mu}\right) \tilde{p}(k) \\ S_{rr} &amp;= \Theta - S_{\phi\phi} - S_{zz} \\ S_{\phi\phi} &amp;= \frac{\xi_{r}}{r} \\ S_{(rz)} &amp;= -\frac{1}{2 \mu} \int_0^{\infty} dk J_1(kr) k e^{(-kz)}\left(kz \right) \tilde{p}(k) \\ S_{zz} &amp;= \frac{1}{2 \mu} \int_0^{\infty} dk J_0(kr) k e^{(-kz)}\left(-\frac{\mu}{\lambda + \mu} - kz \right) \tilde{p}(k) \end{align}
+</p>
+<p>(see Eqs. (11 a) - (11 c) and (13 a) - (13 e), with (13 c) swapped in favor of (12 c) in <a class="el" href="citelist.html#CITEREF_Lovelace2007tn">[76]</a>), where \(\tilde{p}(k)= \frac{1}{2\pi} e^{-(\frac{kr_0}{2})^2}\) is the Hankel-Transform of the lasers intensity profile and \( \Theta = \mathrm{Tr}(S)\) the materials expansion. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a9789f4e59c053fddece5baad767e3040"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9789f4e59c053fddece5baad767e3040">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Registrars  = tmpl::list&lt;Solutions::Registrars::HalfSpaceMirror&gt;&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> <a class="el" href="classElasticity_1_1Solutions_1_1HalfSpaceMirror.html">Elasticity::Solutions::HalfSpaceMirror</a>&lt; Registrars &gt;::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">{</div>
+<div class="line">      <span class="stringliteral">&quot;A semi-infinite mirror on which a laser introduces stress perpendicular &quot;</span></div>
+<div class="line">      <span class="stringliteral">&quot;to the mirrors surface.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticSolutions/Elasticity/<a class="el" href="HalfSpaceMirror_8hpp_source.html">HalfSpaceMirror.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

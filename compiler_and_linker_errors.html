@@ -1,0 +1,278 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Understanding Compiler and Linker Errors</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">Understanding Compiler and Linker Errors </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><h1><a class="anchor" id="understanding_linker_errors"></a>
+Linker Errors</h1>
+<p>There are a few common mistakes that can lead to linker problems, specifically problems where there is an <code>undefined reference</code>. These include:</p><ul>
+<li>forgetting to add a <code>.cpp</code> file to the list of sources of a library in a <code>CMakeLists.txt</code> file</li>
+<li>missing an explicit instantiation of a function or class template in a <code>cpp</code> file</li>
+<li>not including a <code>tpp</code> file inside a <code>cpp</code> file</li>
+<li>the template specialization or function overload has been explicitly disabled via SFINAE (usually through the use of a <code>Requires</code>)</li>
+<li>not linking a library (explained below)</li>
+</ul>
+<p>Possibly the most difficult part of fixing linking errors is understanding what they are trying to tell you. Let's take the following example </p><div class="fragment"><div class="line">error: undefined reference to &#39;Tensor&lt;DataVector,</div>
+<div class="line">brigand::list&lt;brigand::integral_constant&lt;int, 1&gt; &gt;,</div>
+<div class="line">brigand::list&lt;Tensor_detail::TensorIndexType&lt;3ul, (UpLo)0, Frame::Inertial,</div>
+<div class="line">(IndexType)0&gt; &gt; &gt;</div>
+<div class="line">random_unit_normal&lt;DataVector&gt;(gsl::not_null&lt;std::mersenne_twister_engine&lt;</div>
+<div class="line">unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul,</div>
+<div class="line">2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul&gt;*&gt;, Tensor&lt;DataVector,</div>
+<div class="line">brigand::list&lt;brigand::integral_constant&lt;int, 1&gt;,</div>
+<div class="line">brigand::integral_constant&lt;int, 1&gt; &gt;,</div>
+<div class="line">brigand::list&lt;Tensor_detail::TensorIndexType&lt;3ul, (UpLo)1, Frame::Inertial,</div>
+<div class="line">(IndexType)0&gt;, Tensor_detail::TensorIndexType&lt;3ul, (UpLo)1, Frame::Inertial,</div>
+<div class="line">(IndexType)0&gt; &gt; &gt; const&amp;)&#39; in</div>
+<div class="line">lib/libTest_GeneralizedHarmonic.a(Test_UpwindFlux.cpp.o):</div>
+<div class="line">Test_UpwindFlux.cpp:function (anonymous namespace)::test_upwind_flux_random()</div>
+</div><!-- fragment --><p>We can start by splitting out information about different parts of the error. First, </p><div class="fragment"><div class="line">error: undefined reference to</div>
+</div><!-- fragment --><p>tells us that we forgot to add a link dependency for a library or executable. The next relevant part of information is which library (executable) and file the missing function/class was in. This is at the end of the error message (unfortunately, where in the error message can depend on your linker, these examples used <code>ld.lld</code> v9): </p><div class="fragment"><div class="line">lib/libTest_GeneralizedHarmonic.a(Test_UpwindFlux.cpp.o):</div>
+<div class="line">Test_UpwindFlux.cpp:function (anonymous namespace)::test_upwind_flux_random()</div>
+</div><!-- fragment --><p>What this means is that the missing link dependency is used in the library <code>Test_GeneralizedHarmonic</code>, the file <code>Test_UpwindFlux.cpp</code>, and the function <code>test_upwind_flux_random()</code>.</p>
+<p>We have now determined what the linker error is (a missing link dependency), and in which library, file, and function the missing link dependency is used. We now need to understand what the missing link dependency is. Since SpECTRE uses a lot of templates, the missing reference (link dependency) can be quite long. In this case it is: </p><div class="fragment"><div class="line">Tensor&lt;DataVector,</div>
+<div class="line">brigand::list&lt;brigand::integral_constant&lt;int, 1&gt; &gt;,</div>
+<div class="line">brigand::list&lt;Tensor_detail::TensorIndexType&lt;3ul, (UpLo)0, Frame::Inertial,</div>
+<div class="line">(IndexType)0&gt; &gt; &gt;</div>
+<div class="line">random_unit_normal&lt;DataVector&gt;(gsl::not_null&lt;std::mersenne_twister_engine&lt;</div>
+<div class="line">unsigned long, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul, 4294967295ul, 7ul,</div>
+<div class="line">2636928640ul, 15ul, 4022730752ul, 18ul, 1812433253ul&gt;*&gt;, Tensor&lt;DataVector,</div>
+<div class="line">brigand::list&lt;brigand::integral_constant&lt;int, 1&gt;,</div>
+<div class="line">brigand::integral_constant&lt;int, 1&gt; &gt;,</div>
+<div class="line">brigand::list&lt;Tensor_detail::TensorIndexType&lt;3ul, (UpLo)1, Frame::Inertial,</div>
+<div class="line">(IndexType)0&gt;, Tensor_detail::TensorIndexType&lt;3ul, (UpLo)1, Frame::Inertial,</div>
+<div class="line">(IndexType)0&gt; &gt; &gt; const&amp;)</div>
+</div><!-- fragment --><p>In order to make this easier to read, it is recommended to run the code through ClangFormat. This can be done by copying the linker output into an empty <code>cpp</code> file and running <code>clang-format -i EMPTY_FILE_WITH_LINKER_OUTPUT</code>. Keep in mind that ClangFormat will only work if you have only copied the part of the linker output that resembles valid C++. Doing so in this case gives: </p><div class="fragment"><div class="line">Tensor&lt;DataVector, brigand::list&lt;brigand::integral_constant&lt;int, 1&gt; &gt;,</div>
+<div class="line">       brigand::list&lt;Tensor_detail::TensorIndexType&lt;</div>
+<div class="line">           3ul, (<a class="code" href="group__TensorGroup.html#gaab1181edf2ab2b664b0f174223f08c28">UpLo</a>)0, <a class="code" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, (<a class="code" href="group__TensorGroup.html#ga875b107b929ff008a27078792ac0bc8e">IndexType</a>)0&gt; &gt; &gt;</div>
+<div class="line">random_unit_normal&lt;DataVector&gt;(</div>
+<div class="line">    <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/numeric/random/mersenne_twister_engine.html">std::mersenne_twister_engine</a>&lt;</div>
+<div class="line">        <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span>, 32ul, 624ul, 397ul, 31ul, 2567483615ul, 11ul,</div>
+<div class="line">        4294967295ul, 7ul, 2636928640ul, 15ul, 4022730752ul, 18ul,</div>
+<div class="line">        1812433253ul&gt;*&gt;,</div>
+<div class="line">    Tensor&lt;<a class="code" href="classDataVector.html">DataVector</a>,</div>
+<div class="line">           brigand::list&lt;brigand::integral_constant&lt;int, 1&gt;,</div>
+<div class="line">                         brigand::integral_constant&lt;int, 1&gt; &gt;,</div>
+<div class="line">           brigand::list&lt;</div>
+<div class="line">               Tensor_detail::TensorIndexType&lt;3ul, (<a class="code" href="group__TensorGroup.html#gaab1181edf2ab2b664b0f174223f08c28">UpLo</a>)1, <a class="code" href="structFrame_1_1Inertial.html">Frame::Inertial</a>,</div>
+<div class="line">                                              (<a class="code" href="group__TensorGroup.html#ga875b107b929ff008a27078792ac0bc8e">IndexType</a>)0&gt;,</div>
+<div class="line">               Tensor_detail::TensorIndexType&lt;3ul, (<a class="code" href="group__TensorGroup.html#gaab1181edf2ab2b664b0f174223f08c28">UpLo</a>)1, <a class="code" href="structFrame_1_1Inertial.html">Frame::Inertial</a>,</div>
+<div class="line">                                              (<a class="code" href="group__TensorGroup.html#ga875b107b929ff008a27078792ac0bc8e">IndexType</a>)0&gt; &gt; &gt; <span class="keyword">const</span>&amp;);</div>
+</div><!-- fragment --><p> We see that it is the function <code>random_unit_normal</code> that isn't found. Now we can search in the code base where than function is defined. Doing a <code>git grep "random_unit_normal"</code> points to <code>tests/Unit/Helpers/DataStructures/RandomUnitNormal.?pp</code>. Looking at <code><a class="el" href="RandomUnitNormal_8hpp_source.html">tests/Unit/Helpers/DataStructures/RandomUnitNormal.hpp</a></code> we see that the function <code>random_unit_normal</code> is declared there, and looking in the corresponding <code>cpp</code> we see <code>random_unit_normal</code> is instantiated in the source file. Opening up <code>tests/Unit/Helpers/DataStructures/CMakeLists.txt</code> we see that the library name is <code>DataStructuresHelpers</code>, and <code>RandomUnitNormal.cpp</code> is in the list of sources for the library. Thus, linking <code>Test_GeneralizedHarmonic</code> against <code>DataStructuresHelpers</code> will resolve our error. To link against a library, you must add it to the <code>target_link_libraries</code>, or the last argument passed to <code>add_test_library</code>.</p>
+<p>If <code>random_unit_normal</code> had been defined in the header file, then the error would've indicated that we did not include the header (or <code>tpp</code>) file into <code>Test_UpwindFlux.cpp</code>, and so the compiler could not generate an instantiation.</p>
+<p>In summary:</p><ul>
+<li>Identify target with undefined reference, i.e. the file included in a library or executable.</li>
+<li>Identify missing source definition (usually a function or static variable).</li>
+<li>Find source declaration and definition in repository.</li>
+<li><p class="startli">If source definition is in a <code>cpp</code> file, make sure it is in the list of sources in the <code>CMakeLists.txt</code> in the same directory and that the corresponding library is linked against by the target.</p>
+<p class="startli">If the undefined reference is a template, make sure the required instantiation exists.</p>
+</li>
+<li>If the undefined reference's definition is in a <code>tpp</code> file, make sure the <code>tpp</code> file is included in the target file.</li>
+<li>If the undefined reference's source definition is in an <code>hpp</code> file, make sure the specific instantiation is possible (e.g. not forbidden by a <code>Requires</code>) </li>
+</ul>
+</div></div><!-- contents -->
+</div><!-- PageDoc -->
+<div class="ttc" id="astructFrame_1_1Inertial_html"><div class="ttname"><a href="structFrame_1_1Inertial.html">Frame::Inertial</a></div><div class="ttdef"><b>Definition:</b> IndexType.hpp:44</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_gaab1181edf2ab2b664b0f174223f08c28"><div class="ttname"><a href="group__TensorGroup.html#gaab1181edf2ab2b664b0f174223f08c28">UpLo</a></div><div class="ttdeci">UpLo</div><div class="ttdef"><b>Definition:</b> IndexType.hpp:20</div></div>
+<div class="ttc" id="amersenne_twister_engine_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/numeric/random/mersenne_twister_engine.html">std::mersenne_twister_engine</a></div></div>
+<div class="ttc" id="aclassDataVector_html"><div class="ttname"><a href="classDataVector.html">DataVector</a></div><div class="ttdoc">Stores a collection of function values.</div><div class="ttdef"><b>Definition:</b> DataVector.hpp:46</div></div>
+<div class="ttc" id="agroup__TensorGroup_html_ga875b107b929ff008a27078792ac0bc8e"><div class="ttname"><a href="group__TensorGroup.html#ga875b107b929ff008a27078792ac0bc8e">IndexType</a></div><div class="ttdeci">IndexType</div><div class="ttdef"><b>Definition:</b> IndexType.hpp:134</div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,433 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: tests/Unit/Framework/MockRuntimeSystemFreeFunctions.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_33df814919e476f9d56dccef9b24e276.html">tests</a></li><li class="navelem"><a class="el" href="dir_38113a4c235494bd05bb19f85d006940.html">Unit</a></li><li class="navelem"><a class="el" href="dir_bfa7bcfc7f40b36e07518da92ec4c107.html">Framework</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">MockRuntimeSystemFreeFunctions.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/random.html">random</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a>&gt;</code><br />
+<code>#include &quot;Framework/MockRuntimeSystem.hpp&quot;</code><br />
+<code>#include &quot;<a class="el" href="Gsl_8hpp_source.html">Utilities/Gsl.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="Requires_8hpp_source.html">Utilities/Requires.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="TMPL_8hpp_source.html">Utilities/TMPL.hpp</a>&quot;</code><br />
+<code>#include &quot;Utilities/TypeTraits.hpp&quot;</code><br />
+</div>
+<p><a href="MockRuntimeSystemFreeFunctions_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceActionTesting"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html">ActionTesting</a></td></tr>
+<tr class="memdesc:namespaceActionTesting"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structures used for mocking the parallel components framework in order to test actions. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a46ee6bd026b832ec6286b17be61158f0"><td class="memTemplParams" colspan="2"><a id="a46ee6bd026b832ec6286b17be61158f0"></a>
+template&lt;typename Metavariables &gt; </td></tr>
+<tr class="memitem:a46ee6bd026b832ec6286b17be61158f0"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a46ee6bd026b832ec6286b17be61158f0">ActionTesting::set_phase</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; Metavariables &gt; * &gt; runner, const typename Metavariables::Phase &amp;phase) noexcept</td></tr>
+<tr class="memdesc:a46ee6bd026b832ec6286b17be61158f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the phase of all parallel components to <code>phase</code> <br /></td></tr>
+<tr class="separator:a46ee6bd026b832ec6286b17be61158f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa514ab61a3e64d7aa7744911fe4d999c"><td class="memTemplParams" colspan="2"><a id="aa514ab61a3e64d7aa7744911fe4d999c"></a>
+template&lt;typename Component , typename... Options&gt; </td></tr>
+<tr class="memitem:aa514ab61a3e64d7aa7744911fe4d999c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#aa514ab61a3e64d7aa7744911fe4d999c">ActionTesting::emplace_component</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; typename Component::metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:aa514ab61a3e64d7aa7744911fe4d999c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplaces a distributed object with index <code>array_index</code> into the parallel component <code>Component</code>. The options <code>opts</code> are forwarded to be used in a call to <code>detail::ForwardAllOptionsToDataBox::apply</code>. <br /></td></tr>
+<tr class="separator:aa514ab61a3e64d7aa7744911fe4d999c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac0b8c8857d55fcdbbe41cd0bdbf9ddfc"><td class="memTemplParams" colspan="2"><a id="ac0b8c8857d55fcdbbe41cd0bdbf9ddfc"></a>
+template&lt;typename Component , typename... Options&gt; </td></tr>
+<tr class="memitem:ac0b8c8857d55fcdbbe41cd0bdbf9ddfc"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#ac0b8c8857d55fcdbbe41cd0bdbf9ddfc">ActionTesting::emplace_array_component</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; typename Component::metavariables &gt; * &gt; runner, const NodeId node_id, const LocalCoreId local_core_id, const typename Component::array_index &amp;array_index, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:ac0b8c8857d55fcdbbe41cd0bdbf9ddfc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplaces a distributed array object with index <code>array_index</code> into the parallel component <code>Component</code>. The options <code>opts</code> are forwarded to be used in a call to <code>detail::ForwardAllOptionsToDataBox::apply</code>. <br /></td></tr>
+<tr class="separator:ac0b8c8857d55fcdbbe41cd0bdbf9ddfc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b963e2d649757097e5ac207c9a2f2b0"><td class="memTemplParams" colspan="2"><a id="a5b963e2d649757097e5ac207c9a2f2b0"></a>
+template&lt;typename Component , typename... Options&gt; </td></tr>
+<tr class="memitem:a5b963e2d649757097e5ac207c9a2f2b0"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a5b963e2d649757097e5ac207c9a2f2b0">ActionTesting::emplace_singleton_component</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; typename Component::metavariables &gt; * &gt; runner, const NodeId node_id, const LocalCoreId local_core_id, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a5b963e2d649757097e5ac207c9a2f2b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplaces a distributed singleton object into the parallel component <code>Component</code>. The options <code>opts</code> are forwarded to be used in a call to <code>detail::ForwardAllOptionsToDataBox::apply</code>. <br /></td></tr>
+<tr class="separator:a5b963e2d649757097e5ac207c9a2f2b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a308da60ea861a12688ceaf9d13cef45b"><td class="memTemplParams" colspan="2"><a id="a308da60ea861a12688ceaf9d13cef45b"></a>
+template&lt;typename Component , typename... Options&gt; </td></tr>
+<tr class="memitem:a308da60ea861a12688ceaf9d13cef45b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a308da60ea861a12688ceaf9d13cef45b">ActionTesting::emplace_group_component</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; typename Component::metavariables &gt; * &gt; runner, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a308da60ea861a12688ceaf9d13cef45b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplaces a distributed group object into the parallel component <code>Component</code>. The options <code>opts</code> are forwarded to be used in a call to <code>detail::ForwardAllOptionsToDataBox::apply</code>. <br /></td></tr>
+<tr class="separator:a308da60ea861a12688ceaf9d13cef45b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a33da9f11d07b58a578233825d9399ce5"><td class="memTemplParams" colspan="2"><a id="a33da9f11d07b58a578233825d9399ce5"></a>
+template&lt;typename Component , typename... Options&gt; </td></tr>
+<tr class="memitem:a33da9f11d07b58a578233825d9399ce5"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a33da9f11d07b58a578233825d9399ce5">ActionTesting::emplace_nodegroup_component</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; typename Component::metavariables &gt; * &gt; runner, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a33da9f11d07b58a578233825d9399ce5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplaces a distributed nodegroup object into the parallel component <code>Component</code>. The options <code>opts</code> are forwarded to be used in a call to <code>detail::ForwardAllOptionsToDataBox::apply</code>. <br /></td></tr>
+<tr class="separator:a33da9f11d07b58a578233825d9399ce5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f0e8f71de62510302dda880b8410b4c"><td class="memTemplParams" colspan="2"><a id="a4f0e8f71de62510302dda880b8410b4c"></a>
+template&lt;typename Component , typename... Options, typename Metavars  = typename Component::metavariables, Requires&lt; detail::has_initialization_phase_v&lt; Metavars &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a4f0e8f71de62510302dda880b8410b4c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a4f0e8f71de62510302dda880b8410b4c">ActionTesting::emplace_component_and_initialize</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; typename Component::metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index, const typename detail::get_initialization&lt; Component &gt;::InitialValues &amp;initial_values, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a4f0e8f71de62510302dda880b8410b4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplaces a distributed object with index <code>array_index</code> into the parallel component <code>Component</code>. The options <code>opts</code> are forwarded to be used in a call to <code>detail::ForwardAllOptionsToDataBox::apply</code> Additionally, the simple tags in the DataBox are initialized from the values set in <code>initial_values</code>. <br /></td></tr>
+<tr class="separator:a4f0e8f71de62510302dda880b8410b4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a183a1ce0c6f7e17af58380674b968ca9"><td class="memTemplParams" colspan="2"><a id="a183a1ce0c6f7e17af58380674b968ca9"></a>
+template&lt;typename Component , typename... Options, typename Metavars  = typename Component::metavariables, Requires&lt; detail::has_initialization_phase_v&lt; Metavars &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a183a1ce0c6f7e17af58380674b968ca9"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a183a1ce0c6f7e17af58380674b968ca9">ActionTesting::emplace_array_component_and_initialize</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; typename Component::metavariables &gt; * &gt; runner, const NodeId node_id, const LocalCoreId local_core_id, const typename Component::array_index &amp;array_index, const typename detail::get_initialization&lt; Component &gt;::InitialValues &amp;initial_values, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a183a1ce0c6f7e17af58380674b968ca9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplaces a distributed array object with index <code>array_index</code> into the parallel component <code>Component</code>. The options <code>opts</code> are forwarded to be used in a call to <code>detail::ForwardAllOptionsToDataBox::apply</code> Additionally, the simple tags in the DataBox are initialized from the values set in <code>initial_values</code>. <br /></td></tr>
+<tr class="separator:a183a1ce0c6f7e17af58380674b968ca9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5150bd733dcab5135240bb938779088f"><td class="memTemplParams" colspan="2"><a id="a5150bd733dcab5135240bb938779088f"></a>
+template&lt;typename Component , typename... Options, typename Metavars  = typename Component::metavariables, Requires&lt; detail::has_initialization_phase_v&lt; Metavars &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a5150bd733dcab5135240bb938779088f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a5150bd733dcab5135240bb938779088f">ActionTesting::emplace_singleton_component_and_initialize</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; typename Component::metavariables &gt; * &gt; runner, const NodeId node_id, const LocalCoreId local_core_id, const typename detail::get_initialization&lt; Component &gt;::InitialValues &amp;initial_values, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a5150bd733dcab5135240bb938779088f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplaces a distributed singleton object into the parallel component <code>Component</code>. The options <code>opts</code> are forwarded to be used in a call to <code>detail::ForwardAllOptionsToDataBox::apply</code> Additionally, the simple tags in the DataBox are initialized from the values set in <code>initial_values</code>. <br /></td></tr>
+<tr class="separator:a5150bd733dcab5135240bb938779088f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a374304bc4a107b68cec22560e92ea643"><td class="memTemplParams" colspan="2"><a id="a374304bc4a107b68cec22560e92ea643"></a>
+template&lt;typename Component , typename... Options, typename Metavars  = typename Component::metavariables, Requires&lt; detail::has_initialization_phase_v&lt; Metavars &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a374304bc4a107b68cec22560e92ea643"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a374304bc4a107b68cec22560e92ea643">ActionTesting::emplace_group_component_and_initialize</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; typename Component::metavariables &gt; * &gt; runner, const typename detail::get_initialization&lt; Component &gt;::InitialValues &amp;initial_values, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a374304bc4a107b68cec22560e92ea643"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplaces a distributed group object into the parallel component <code>Component</code>. The options <code>opts</code> are forwarded to be used in a call to <code>detail::ForwardAllOptionsToDataBox::apply</code> Additionally, the simple tags in the DataBox are initialized from the values set in <code>initial_values</code>. <br /></td></tr>
+<tr class="separator:a374304bc4a107b68cec22560e92ea643"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a180870008cf114c5874463ac01d1eb"><td class="memTemplParams" colspan="2"><a id="a2a180870008cf114c5874463ac01d1eb"></a>
+template&lt;typename Component , typename... Options, typename Metavars  = typename Component::metavariables, Requires&lt; detail::has_initialization_phase_v&lt; Metavars &gt;&gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a2a180870008cf114c5874463ac01d1eb"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a2a180870008cf114c5874463ac01d1eb">ActionTesting::emplace_nodegroup_component_and_initialize</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; typename Component::metavariables &gt; * &gt; runner, const typename detail::get_initialization&lt; Component &gt;::InitialValues &amp;initial_values, Options &amp;&amp;... opts) noexcept</td></tr>
+<tr class="memdesc:a2a180870008cf114c5874463ac01d1eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Emplaces a distributed nodegroup object into the parallel component <code>Component</code>. The options <code>opts</code> are forwarded to be used in a call to <code>detail::ForwardAllOptionsToDataBox::apply</code> Additionally, the simple tags in the DataBox are initialized from the values set in <code>initial_values</code>. <br /></td></tr>
+<tr class="separator:a2a180870008cf114c5874463ac01d1eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38e4125f212ec02fde513c3e0995fe67"><td class="memTemplParams" colspan="2"><a id="a38e4125f212ec02fde513c3e0995fe67"></a>
+template&lt;typename Component , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a38e4125f212ec02fde513c3e0995fe67"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a38e4125f212ec02fde513c3e0995fe67">ActionTesting::get_next_action_index</a> (const MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a38e4125f212ec02fde513c3e0995fe67"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the index in the action list of the next action. <br /></td></tr>
+<tr class="separator:a38e4125f212ec02fde513c3e0995fe67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f85a884bc2199e599cbf961638c7c7b"><td class="memTemplParams" colspan="2"><a id="a3f85a884bc2199e599cbf961638c7c7b"></a>
+template&lt;typename Component , typename Tag , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a3f85a884bc2199e599cbf961638c7c7b"><td class="memTemplItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a3f85a884bc2199e599cbf961638c7c7b">ActionTesting::get_databox_tag</a> (const MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a3f85a884bc2199e599cbf961638c7c7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the <code>Tag</code> from the <code>DataBox</code> of the parallel component <code>Component</code> with array index <code>array_index</code>. If the component's current <code>DataBox</code> type does not contain <code>Tag</code> then an error is emitted. <br /></td></tr>
+<tr class="separator:a3f85a884bc2199e599cbf961638c7c7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1ae27d86428f1be2a5aea63bb088df8"><td class="memTemplParams" colspan="2"><a id="ac1ae27d86428f1be2a5aea63bb088df8"></a>
+template&lt;typename Component , typename Tag , typename Metavariables &gt; </td></tr>
+<tr class="memitem:ac1ae27d86428f1be2a5aea63bb088df8"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#ac1ae27d86428f1be2a5aea63bb088df8">ActionTesting::box_contains</a> (const MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:ac1ae27d86428f1be2a5aea63bb088df8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>true</code> if the current DataBox of <code>Component</code> with index <code>array_index</code> contains the tag <code>Tag</code>. If the tag is not contained, returns <code>false</code>. <br /></td></tr>
+<tr class="separator:ac1ae27d86428f1be2a5aea63bb088df8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a563c20abd2f3670df7a03f404f168e15"><td class="memTemplParams" colspan="2"><a id="a563c20abd2f3670df7a03f404f168e15"></a>
+template&lt;typename Component , typename Tag , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a563c20abd2f3670df7a03f404f168e15"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a563c20abd2f3670df7a03f404f168e15">ActionTesting::tag_is_retrievable</a> (const MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a563c20abd2f3670df7a03f404f168e15"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>true</code> if the tag <code>Tag</code> can be retrieved from the current DataBox of <code>Component</code> with index <code>array_index</code>. <br /></td></tr>
+<tr class="separator:a563c20abd2f3670df7a03f404f168e15"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9179b63a24df649db1bd10345d49c847"><td class="memTemplParams" colspan="2"><a id="a9179b63a24df649db1bd10345d49c847"></a>
+template&lt;typename Component , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a9179b63a24df649db1bd10345d49c847"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a9179b63a24df649db1bd10345d49c847">ActionTesting::next_action</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; Metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a9179b63a24df649db1bd10345d49c847"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke the next action in the ActionList on the parallel component <code>Component</code> on the component labeled by <code>array_index</code>, failing if it was not ready. <br /></td></tr>
+<tr class="separator:a9179b63a24df649db1bd10345d49c847"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a177297372549392c3edb9f33dd272045"><td class="memTemplParams" colspan="2"><a id="a177297372549392c3edb9f33dd272045"></a>
+template&lt;typename Component , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a177297372549392c3edb9f33dd272045"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a177297372549392c3edb9f33dd272045">ActionTesting::next_action_if_ready</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; Metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a177297372549392c3edb9f33dd272045"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke the next action in the ActionList on the parallel component <code>Component</code> on the component labeled by <code>array_index</code>, returning whether it was ready. <br /></td></tr>
+<tr class="separator:a177297372549392c3edb9f33dd272045"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca813b8efba8a7b4c8fcc41ca13839e2"><td class="memTemplParams" colspan="2"><a id="aca813b8efba8a7b4c8fcc41ca13839e2"></a>
+template&lt;typename Component , typename Action , typename Metavariables , typename... Args&gt; </td></tr>
+<tr class="memitem:aca813b8efba8a7b4c8fcc41ca13839e2"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#aca813b8efba8a7b4c8fcc41ca13839e2">ActionTesting::simple_action</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; Metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:aca813b8efba8a7b4c8fcc41ca13839e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs the simple action <code>Action</code> on the <code>array_index</code>th element of the parallel component <code>Component</code>. <br /></td></tr>
+<tr class="separator:aca813b8efba8a7b4c8fcc41ca13839e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7de7112a702c806a96cd581b40501632"><td class="memTemplParams" colspan="2"><a id="a7de7112a702c806a96cd581b40501632"></a>
+template&lt;typename Component , typename Action , typename Metavariables , typename... Args&gt; </td></tr>
+<tr class="memitem:a7de7112a702c806a96cd581b40501632"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a7de7112a702c806a96cd581b40501632">ActionTesting::threaded_action</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; Metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index, Args &amp;&amp;... args) noexcept</td></tr>
+<tr class="memdesc:a7de7112a702c806a96cd581b40501632"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs the simple action <code>Action</code> on the <code>array_index</code>th element of the parallel component <code>Component</code>. <br /></td></tr>
+<tr class="separator:a7de7112a702c806a96cd581b40501632"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5649a7b020bff06c3f389325ab30492c"><td class="memTemplParams" colspan="2"><a id="a5649a7b020bff06c3f389325ab30492c"></a>
+template&lt;typename Component , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a5649a7b020bff06c3f389325ab30492c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a5649a7b020bff06c3f389325ab30492c">ActionTesting::invoke_queued_simple_action</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; Metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a5649a7b020bff06c3f389325ab30492c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs the next queued simple action on the <code>array_index</code>th element of the parallel component <code>Component</code>. <br /></td></tr>
+<tr class="separator:a5649a7b020bff06c3f389325ab30492c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa0cc87670e0ae509d24bf2fcff2d141"><td class="memTemplParams" colspan="2"><a id="aaa0cc87670e0ae509d24bf2fcff2d141"></a>
+template&lt;typename Component , typename Metavariables &gt; </td></tr>
+<tr class="memitem:aaa0cc87670e0ae509d24bf2fcff2d141"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#aaa0cc87670e0ae509d24bf2fcff2d141">ActionTesting::is_simple_action_queue_empty</a> (const MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:aaa0cc87670e0ae509d24bf2fcff2d141"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>true</code> if there are no simple actions in the queue. <br /></td></tr>
+<tr class="separator:aaa0cc87670e0ae509d24bf2fcff2d141"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4cd372efc294369207c3687eeb9300c6"><td class="memTemplParams" colspan="2"><a id="a4cd372efc294369207c3687eeb9300c6"></a>
+template&lt;typename Component , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a4cd372efc294369207c3687eeb9300c6"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a4cd372efc294369207c3687eeb9300c6">ActionTesting::number_of_queued_simple_actions</a> (const MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a4cd372efc294369207c3687eeb9300c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of simple actions in the queue. <br /></td></tr>
+<tr class="separator:a4cd372efc294369207c3687eeb9300c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5517f1a15dad85e1e6b21fb475efcc43"><td class="memTemplParams" colspan="2"><a id="a5517f1a15dad85e1e6b21fb475efcc43"></a>
+template&lt;typename Component , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a5517f1a15dad85e1e6b21fb475efcc43"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a5517f1a15dad85e1e6b21fb475efcc43">ActionTesting::invoke_queued_threaded_action</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; Metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a5517f1a15dad85e1e6b21fb475efcc43"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs the next queued threaded action on the <code>array_index</code>th element of the parallel component <code>Component</code>. <br /></td></tr>
+<tr class="separator:a5517f1a15dad85e1e6b21fb475efcc43"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a080212b821aabe11a91d344469f87efc"><td class="memTemplParams" colspan="2"><a id="a080212b821aabe11a91d344469f87efc"></a>
+template&lt;typename Component , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a080212b821aabe11a91d344469f87efc"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a080212b821aabe11a91d344469f87efc">ActionTesting::is_threaded_action_queue_empty</a> (const MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a080212b821aabe11a91d344469f87efc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns <code>true</code> if there are no threaded actions in the queue. <br /></td></tr>
+<tr class="separator:a080212b821aabe11a91d344469f87efc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a95ae013bdecaff33d3c0805c4d5dfb59"><td class="memTemplParams" colspan="2"><a id="a95ae013bdecaff33d3c0805c4d5dfb59"></a>
+template&lt;typename Component , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a95ae013bdecaff33d3c0805c4d5dfb59"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a95ae013bdecaff33d3c0805c4d5dfb59">ActionTesting::number_of_queued_threaded_actions</a> (const MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a95ae013bdecaff33d3c0805c4d5dfb59"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of threaded actions in the queue. <br /></td></tr>
+<tr class="separator:a95ae013bdecaff33d3c0805c4d5dfb59"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13b6ad8185fbb4d7d61e4d4721dc5f63"><td class="memTemplParams" colspan="2"><a id="a13b6ad8185fbb4d7d61e4d4721dc5f63"></a>
+template&lt;typename Component , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a13b6ad8185fbb4d7d61e4d4721dc5f63"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a13b6ad8185fbb4d7d61e4d4721dc5f63">ActionTesting::get_terminate</a> (const MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a13b6ad8185fbb4d7d61e4d4721dc5f63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns whether or not the <code>Component</code> with index <code>array_index</code> has been terminated. <br /></td></tr>
+<tr class="separator:a13b6ad8185fbb4d7d61e4d4721dc5f63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2cb56d7012b27cab5d118a9fa0783d2"><td class="memTemplParams" colspan="2"><a id="af2cb56d7012b27cab5d118a9fa0783d2"></a>
+template&lt;typename Component , typename Metavariables , typename ArrayIndex &gt; </td></tr>
+<tr class="memitem:af2cb56d7012b27cab5d118a9fa0783d2"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt; &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">ActionTesting::cache</a> (MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const ArrayIndex &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:af2cb56d7012b27cab5d118a9fa0783d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the GlobalCache of <code>Component</code> with index <code>array_index</code>. <br /></td></tr>
+<tr class="separator:af2cb56d7012b27cab5d118a9fa0783d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9eb05fa236a168c4c82d45a685e24924"><td class="memTemplParams" colspan="2"><a id="a9eb05fa236a168c4c82d45a685e24924"></a>
+template&lt;typename ComponentList , typename MockRuntimeSystem , typename ArrayIndex &gt; </td></tr>
+<tr class="memitem:a9eb05fa236a168c4c82d45a685e24924"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; size_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a9eb05fa236a168c4c82d45a685e24924">ActionTesting::indices_of_components_with_queued_simple_actions</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem * &gt; runner, const ArrayIndex &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a9eb05fa236a168c4c82d45a685e24924"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a vector of all the indices of the Components in the ComponentList that have queued simple actions, for a particular array_index. <br /></td></tr>
+<tr class="separator:a9eb05fa236a168c4c82d45a685e24924"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54642f4081fd6e4f2a201ad9104019af"><td class="memTemplParams" colspan="2"><a id="a54642f4081fd6e4f2a201ad9104019af"></a>
+template&lt;typename ComponentList , typename MockRuntimeSystem &gt; </td></tr>
+<tr class="memitem:a54642f4081fd6e4f2a201ad9104019af"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a54642f4081fd6e4f2a201ad9104019af">ActionTesting::array_indices_with_queued_simple_actions</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem * &gt; runner) noexcept -&gt; detail::array_indices_for_each_component&lt; ComponentList &gt;</td></tr>
+<tr class="memdesc:a54642f4081fd6e4f2a201ad9104019af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a vector of array_indices for each Component. The vector is filled with only those array_indices for which there are queued simple actions. <br /></td></tr>
+<tr class="separator:a54642f4081fd6e4f2a201ad9104019af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc5f932491a77a138ba3b5afe27fd799"><td class="memTemplParams" colspan="2"><a id="abc5f932491a77a138ba3b5afe27fd799"></a>
+template&lt;typename ComponentList &gt; </td></tr>
+<tr class="memitem:abc5f932491a77a138ba3b5afe27fd799"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#abc5f932491a77a138ba3b5afe27fd799">ActionTesting::number_of_elements_with_queued_simple_actions</a> (const detail::array_indices_for_each_component&lt; ComponentList &gt; &amp;array_indices) noexcept</td></tr>
+<tr class="memdesc:abc5f932491a77a138ba3b5afe27fd799"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given the output of <code>array_indices_with_queued_simple_actions</code>, returns the total number of array indices that have queued simple actions. <br /></td></tr>
+<tr class="separator:abc5f932491a77a138ba3b5afe27fd799"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3183c5884148ff4d48ea39538072fe2"><td class="memTemplParams" colspan="2"><a id="af3183c5884148ff4d48ea39538072fe2"></a>
+template&lt;typename ComponentList , typename MockRuntimeSystem , typename Generator &gt; </td></tr>
+<tr class="memitem:af3183c5884148ff4d48ea39538072fe2"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#af3183c5884148ff4d48ea39538072fe2">ActionTesting::invoke_random_queued_simple_action</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem * &gt; runner, const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Generator * &gt; generator, const detail::array_indices_for_each_component&lt; ComponentList &gt; &amp;array_indices) noexcept</td></tr>
+<tr class="memdesc:af3183c5884148ff4d48ea39538072fe2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invokes the next queued action on a random Component on a random array_index of that component. <code>array_indices</code> is the thing returned by <code>array_indices_with_queued_simple_actions</code> <br /></td></tr>
+<tr class="separator:af3183c5884148ff4d48ea39538072fe2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a90b9ac07989a5e4ff8077ad8e9353a82"><td class="memTemplParams" colspan="2"><a id="a90b9ac07989a5e4ff8077ad8e9353a82"></a>
+template&lt;typename Component , typename TagsList , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a90b9ac07989a5e4ff8077ad8e9353a82"><td class="memTemplItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a90b9ac07989a5e4ff8077ad8e9353a82">ActionTesting::get_databox</a> (const MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a90b9ac07989a5e4ff8077ad8e9353a82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieves the DataBox with tags <code>TagsList</code> (omitting the <code>GlobalCache</code> and <code>add_from_options</code> tags) from the parallel component <code>Component</code> with index <code>array_index</code>. <br /></td></tr>
+<tr class="separator:a90b9ac07989a5e4ff8077ad8e9353a82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a545afdcbc2a1786b87f36ab967d0d270"><td class="memTemplParams" colspan="2"><a id="a545afdcbc2a1786b87f36ab967d0d270"></a>
+template&lt;typename Component , typename TagsList , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a545afdcbc2a1786b87f36ab967d0d270"><td class="memTemplItemLeft" align="right" valign="top">auto &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a545afdcbc2a1786b87f36ab967d0d270">ActionTesting::get_databox</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; Metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a545afdcbc2a1786b87f36ab967d0d270"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieves the DataBox with tags <code>TagsList</code> (omitting the <code>GlobalCache</code> and <code>add_from_options</code> tags) from the parallel component <code>Component</code> with index <code>array_index</code>. <br /></td></tr>
+<tr class="separator:a545afdcbc2a1786b87f36ab967d0d270"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a8d716108dcfdc412935c9a375dd66162"><td class="memTemplParams" colspan="2"><a id="a8d716108dcfdc412935c9a375dd66162"></a>
+template&lt;typename Component , typename InboxTag , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a8d716108dcfdc412935c9a375dd66162"><td class="memTemplItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a8d716108dcfdc412935c9a375dd66162">ActionTesting::get_inbox_tag</a> (const MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a8d716108dcfdc412935c9a375dd66162"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the <code>InboxTag</code> from the parallel component <code>Component</code> with array index <code>array_index</code>. <br /></td></tr>
+<tr class="separator:a8d716108dcfdc412935c9a375dd66162"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a6a1a366469b70b2f052bbf3ee4896a"><td class="memTemplParams" colspan="2"><a id="a4a6a1a366469b70b2f052bbf3ee4896a"></a>
+template&lt;typename Component , typename InboxTag , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a4a6a1a366469b70b2f052bbf3ee4896a"><td class="memTemplItemLeft" align="right" valign="top">auto &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a4a6a1a366469b70b2f052bbf3ee4896a">ActionTesting::get_inbox_tag</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; Metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a4a6a1a366469b70b2f052bbf3ee4896a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the <code>InboxTag</code> from the parallel component <code>Component</code> with array index <code>array_index</code>. <br /></td></tr>
+<tr class="separator:a4a6a1a366469b70b2f052bbf3ee4896a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a90b9ac07989a5e4ff8077ad8e9353a82"><td class="memTemplParams" colspan="2"><a id="a90b9ac07989a5e4ff8077ad8e9353a82"></a>
+template&lt;typename Component , typename TagsList , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a90b9ac07989a5e4ff8077ad8e9353a82"><td class="memTemplItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a90b9ac07989a5e4ff8077ad8e9353a82">ActionTesting::get_databox</a> (const MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a90b9ac07989a5e4ff8077ad8e9353a82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieves the DataBox with tags <code>TagsList</code> (omitting the <code>GlobalCache</code> and <code>add_from_options</code> tags) from the parallel component <code>Component</code> with index <code>array_index</code>. <br /></td></tr>
+<tr class="separator:a90b9ac07989a5e4ff8077ad8e9353a82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a545afdcbc2a1786b87f36ab967d0d270"><td class="memTemplParams" colspan="2"><a id="a545afdcbc2a1786b87f36ab967d0d270"></a>
+template&lt;typename Component , typename TagsList , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a545afdcbc2a1786b87f36ab967d0d270"><td class="memTemplItemLeft" align="right" valign="top">auto &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a545afdcbc2a1786b87f36ab967d0d270">ActionTesting::get_databox</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; Metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a545afdcbc2a1786b87f36ab967d0d270"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieves the DataBox with tags <code>TagsList</code> (omitting the <code>GlobalCache</code> and <code>add_from_options</code> tags) from the parallel component <code>Component</code> with index <code>array_index</code>. <br /></td></tr>
+<tr class="separator:a545afdcbc2a1786b87f36ab967d0d270"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a8d716108dcfdc412935c9a375dd66162"><td class="memTemplParams" colspan="2"><a id="a8d716108dcfdc412935c9a375dd66162"></a>
+template&lt;typename Component , typename InboxTag , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a8d716108dcfdc412935c9a375dd66162"><td class="memTemplItemLeft" align="right" valign="top">const auto &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a8d716108dcfdc412935c9a375dd66162">ActionTesting::get_inbox_tag</a> (const MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a8d716108dcfdc412935c9a375dd66162"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the <code>InboxTag</code> from the parallel component <code>Component</code> with array index <code>array_index</code>. <br /></td></tr>
+<tr class="separator:a8d716108dcfdc412935c9a375dd66162"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a6a1a366469b70b2f052bbf3ee4896a"><td class="memTemplParams" colspan="2"><a id="a4a6a1a366469b70b2f052bbf3ee4896a"></a>
+template&lt;typename Component , typename InboxTag , typename Metavariables &gt; </td></tr>
+<tr class="memitem:a4a6a1a366469b70b2f052bbf3ee4896a"><td class="memTemplItemLeft" align="right" valign="top">auto &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceActionTesting.html#a4a6a1a366469b70b2f052bbf3ee4896a">ActionTesting::get_inbox_tag</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; MockRuntimeSystem&lt; Metavariables &gt; * &gt; runner, const typename Component::array_index &amp;array_index) noexcept</td></tr>
+<tr class="memdesc:a4a6a1a366469b70b2f052bbf3ee4896a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the <code>InboxTag</code> from the parallel component <code>Component</code> with array index <code>array_index</code>. <br /></td></tr>
+<tr class="separator:a4a6a1a366469b70b2f052bbf3ee4896a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Defines free functions that wrap MockRuntimeSystem member functions. </p>
+</div></div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Writing Python Bindings</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">Writing Python Bindings </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><h1><a class="anchor" id="autotoc_md191"></a>
+CMake and Directory Layout</h1>
+<p>To allow users to analyze output from simulations and take advantage of SpECTRE's data structures and functions in python, bindings must sometimes be written. SpECTRE uses <a href="https://pybind11.readthedocs.io/">pybind11</a> to aid with generating the bindings. The C++ code for the bindings should generally go in a <code>Python</code> subdirectory. For example, the bindings for the DataStructures library would go in <code>src/DataStructures/Python/</code>. SpECTRE provides the <code>spectre_python_add_module</code> CMake function to make adding a new python module, be it with or without bindings, easy. The python bindings are built only if <code>-D BUILD_PYTHON_BINDINGS=ON</code> is passed when invoking cmake. You can specify the Python version, interpreter and libraries used for compiling and testing the bindings by setting the <code>-D Python_EXECUTABLE</code> to an absolute path such as <code>/usr/bin/python3</code>.</p>
+<p>The function <code>spectre_python_add_module</code> takes as its first argument the module, in our case <code>DataStructures</code>. Optionally, a list of <code>SOURCES</code> can be passed to the CMake function. If you specify <code>SOURCES</code>, you must also specify a <code>LIBRARY_NAME</code>. A good <code>LIBRARY_NAME</code> is the name of the C++ library for which bindings are being built prefixed with <code>Py</code>, e.g. <code>PyDataStructures</code>. If the Python module will only consist of Python files, then the <code>SOURCES</code> option should not be specified. Python files that should be part of the module can be passed with the keywords <code>PYTHON_FILES</code> or <code>PYTHON_EXECUTABLES</code>, where the latter exposes them in <code>bin/</code> in the SpECTRE build directory. For example, the arguments <code>PYTHON_FILES Hello.py PYTHON_EXECUTABLES HelloWorld.py</code> produce a Python module that contains both files, but <code>HelloWorld.py</code> can be run directly as <code>bin/HelloWorld</code> from the SpECTRE build directory. Finally, the <code>MODULE_PATH</code> named argument can be passed with a string that is the path to where the module should be. For example, <code>MODULE_PATH "submodule0/submodule1/"</code> would mean the module is accessed from python using <code>import spectre.submodule0.submodule1.MODULE_NAME</code>.</p>
+<p>Here is a complete example of how to call the <code>spectre_python_add_module</code> function:</p>
+<div class="fragment"><div class="line">spectre_python_add_module(</div>
+<div class="line">  Extra</div>
+<div class="line">  LIBRARY_NAME &quot;PyExtraDataStructures&quot;</div>
+<div class="line">  MODULE_PATH &quot;DataStructures/&quot;</div>
+<div class="line">  SOURCES Bindings.cpp MyCoolDataStructure.cpp</div>
+<div class="line">  PYTHON_FILES CoolPythonDataStructure.py</div>
+<div class="line">  PYTHON_EXECUTABLES HelloWorld.py</div>
+<div class="line">  )</div>
+</div><!-- fragment --><p>The library that is added has the name <code>PyExtraDataStructures</code>. Make sure to call <code>spectre_python_link_libraries</code> for every Python module that compiles <code>SOURCES</code>. For example,</p>
+<div class="fragment"><div class="line">spectre_python_link_libraries(</div>
+<div class="line">  PyExtraDataStructures</div>
+<div class="line">  PRIVATE</div>
+<div class="line">  ExtraDataStructures</div>
+<div class="line">  pybind11::module</div>
+<div class="line">  )</div>
+</div><!-- fragment --><p>You may also call <code>spectre_python_add_dependencies</code> for Python modules that have <code>SOURCES</code>, e.g.</p>
+<div class="fragment"><div class="line">spectre_python_add_dependencies(</div>
+<div class="line">  PyExtraDataStructures</div>
+<div class="line">  PyDataStructures</div>
+<div class="line">  )</div>
+</div><!-- fragment --><p>Note that these functions will skip adding or configure any C++ libraries if the <code>BUILD_PYTHON_BINDINGS</code> flag is <code>OFF</code>.</p>
+<h1><a class="anchor" id="autotoc_md192"></a>
+Writing Bindings</h1>
+<p>Once a python module has been added you can write the actual bindings. You should structure your bindings directory to reflect the structure of the library you're writing bindings for. For example, say we want bindings for <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> and <code><a class="el" href="classMatrix.html" title="A dynamically sized matrix of doubles with column-major storage.">Matrix</a></code> then we should have one source file for each class's bindings inside <code>src/DataStructures/Python</code>. The functions that generate the bindings should be in the <code>py_bindings</code> namespace and have a reasonable name such as <code>bind_datavector</code>. There should be a file named <code>Bindings.cpp</code> which calls all the <code>bind_*</code> functions. The <code>Bindings.cpp</code> file is quite simple and should <code>include &lt;pybind11/pybind11.h&gt;</code>, forward declare the <code>bind_*</code> functions, and then have a <code>PYBIND11_MODULE</code> function. For example,</p>
+<div class="fragment"><div class="line"><span class="preprocessor">#include &lt;pybind11/pybind11.h&gt;</span></div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">namespace </span>py = pybind11;</div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">namespace </span>py_bindings {</div>
+<div class="line"><span class="keywordtype">void</span> bind_datavector(py::module&amp; m);</div>
+<div class="line">}  <span class="comment">// namespace py_bindings</span></div>
+<div class="line"> </div>
+<div class="line">PYBIND11_MODULE(_PyDataStructures, m) {</div>
+<div class="line">  py_bindings::bind_datavector(m);</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>Note that the library name is passed to <code>PYBIND11_MODULE</code> and is prefixed with an underscore. The underscore is important and the library name must be the same that is passed as <code>LIBRARY_NAME</code> to <code>spectre_python_add_module</code> (see above).</p>
+<p>The <code><a class="el" href="classDataVector.html" title="Stores a collection of function values.">DataVector</a></code> bindings serve as an example with code comments on how to write bindings for a class. There is also extensive documentation available directly from <a href="https://pybind11.readthedocs.io/">pybind11</a>. SpECTRE currently aims to support both Python 2.7 and Python 3 and as such all bindings must support both.</p>
+<dl class="section note"><dt>Note</dt><dd>Exceptions should be allowed to propagate through the bindings so that error handling via exceptions is possible from python rather than having the python interpreter being killed with a call to <code>abort</code>.</dd></dl>
+<h1><a class="anchor" id="autotoc_md193"></a>
+Testing Python Bindings and Code</h1>
+<p>All the python bindings must be tested. SpECTRE uses the <a href="https://docs.python.org/3/library/unittest.html">unittest</a> framework provided as part of python. To register a test file with CMake use the SpECTRE-provided function <code>spectre_add_python_test</code> passing as the first argument the test name (e.g. <code>"Unit.DataStructures.Python.DataVector"</code>), the file as the second argument (e.g. <code>Test_DataVector.py</code>), and a semicolon separated list of labels as the last (e.g. <code>"unit;datastructures;python"</code>). All the test cases should be in a single class so that the python unit testing framework will run all test functions on a single invocation to avoid startup cost.</p>
+<p>Below is an example of registering a python test file for bindings:</p>
+<div class="fragment"><div class="line">spectre_add_python_bindings_test(</div>
+<div class="line">  <span class="stringliteral">&quot;Unit.DataStructures.Python.DataVector&quot;</span></div>
+<div class="line">  Test_DataVector.py</div>
+<div class="line">  <span class="stringliteral">&quot;Unit;DataStructures;Python&quot;</span></div>
+<div class="line">  PyDataStructures)</div>
+</div><!-- fragment --><p> Python code that does not use bindings must also be tested. You can register the test file using the <code>spectre_add_python_test</code> CMake function with the same signature as shown above.</p>
+<p>Please note that the tests must be formatted according to the <code>.style.yapf</code> file in the root of the repository.</p>
+<h1><a class="anchor" id="autotoc_md194"></a>
+Using The Bindings</h1>
+<p>See <a class="el" href="spectre_using_python.html">Using SpECTRE's Python</a></p>
+<h1><a class="anchor" id="autotoc_md195"></a>
+Notes:</h1>
+<ul>
+<li>All python libraries are dynamic/shared libraries.</li>
+<li>Exceptions should be allowed to propagate through the bindings so that error handling via exceptions is possible from python rather than having the python interpreter being killed with a call to <code>abort</code>.</li>
+<li>All function arguments in Python bindings should be named using <code>py::arg</code>. See the Python bindings in <code>IO/H5/</code> for examples. Using the named arguments in Python code is optional, but preferred when it makes code more readable. In particular, use the argument names in the tests for the Python bindings so they are being tested as well. </li>
+</ul>
+</div></div><!-- contents -->
+</div><!-- PageDoc -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

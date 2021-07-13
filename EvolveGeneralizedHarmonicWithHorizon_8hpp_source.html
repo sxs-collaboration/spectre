@@ -1,0 +1,438 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Evolution/Executables/GeneralizedHarmonic/EvolveGeneralizedHarmonicWithHorizon.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_d7cddb31ba741ba3a4d5be000d880a30.html">Evolution</a></li><li class="navelem"><a class="el" href="dir_30b8e6eb4e8c63ae8a0232d96e3103cd.html">Executables</a></li><li class="navelem"><a class="el" href="dir_f93fdeff099ade3f3d7f18c73f590c10.html">GeneralizedHarmonic</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">EvolveGeneralizedHarmonicWithHorizon.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstdint.html">cstdint</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160; </div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;ApparentHorizons/ComputeItems.hpp&quot;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;ApparentHorizons/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;Domain/Creators/RegisterDerivedWithCharm.hpp&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp&quot;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &quot;Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp&quot;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;Evolution/Executables/GeneralizedHarmonic/GeneralizedHarmonicBase.hpp&quot;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/RegisterDerivedWithCharm.hpp&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/RegisterDerived.hpp&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/RegisterDerivedWithCharm.hpp&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Interpolation/Callbacks/ErrorOnFailedApparentHorizon.hpp&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp&quot;</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp&quot;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Interpolation/CleanUpInterpolator.hpp&quot;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp&quot;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Interpolation/Interpolate.hpp&quot;</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Interpolation/InterpolationTarget.hpp&quot;</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Interpolation/InterpolationTargetApparentHorizon.hpp&quot;</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Interpolation/InterpolationTargetReceiveVars.hpp&quot;</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Interpolation/Interpolator.hpp&quot;</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Interpolation/InterpolatorReceivePoints.hpp&quot;</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Interpolation/InterpolatorReceiveVolumeData.hpp&quot;</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Interpolation/InterpolatorRegisterElement.hpp&quot;</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Interpolation/Tags.hpp&quot;</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="preprocessor">#include &quot;NumericalAlgorithms/Interpolation/TryToInterpolate.hpp&quot;</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">#include &quot;Options/FactoryHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Options_8hpp.html">Options/Options.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="preprocessor">#include &quot;Options/Protocols/FactoryCreation.hpp&quot;</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="preprocessor">#include &quot;Parallel/PhaseControl/PhaseControlTags.hpp&quot;</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="RegisterDerivedClassesWithCharm_8hpp.html">Parallel/RegisterDerivedClassesWithCharm.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ParallelAlgorithms_2EventsAndTriggers_2Tags_8hpp.html">ParallelAlgorithms/EventsAndTriggers/Tags.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="preprocessor">#include &quot;Time/StepChoosers/Factory.hpp&quot;</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor">#include &quot;Time/StepControllers/Factory.hpp&quot;</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Blas_8hpp.html">Utilities/Blas.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Error_8hpp.html">Utilities/ErrorHandling/Error.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="FloatingPointExceptions_8hpp.html">Utilities/ErrorHandling/FloatingPointExceptions.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160; </div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment">// First template parameter specifies the source of the initial data, which</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment">// could be an analytic solution, analytic data, or imported numerical data.</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment">// Second template parameter specifies the analytic solution used when imposing</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment">// dirichlet boundary conditions or against which to compute error norms.</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> InitialData, <span class="keyword">typename</span> BoundaryConditions&gt;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="keyword">struct </span><a class="code" href="structEvolutionMetavars.html">EvolutionMetavars</a></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    : <span class="keyword">public</span> <span class="keyword">virtual</span> <a class="code" href="structGeneralizedHarmonicDefaults.html">GeneralizedHarmonicDefaults</a>,</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;      <span class="keyword">public</span> <a class="code" href="structGeneralizedHarmonicTemplateBase.html">GeneralizedHarmonicTemplateBase</a>&lt;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;          EvolutionMetavars&lt;InitialData, BoundaryConditions&gt;&gt; {</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;  <span class="keyword">static</span> constexpr <a class="code" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> help{</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;      <span class="stringliteral">&quot;Evolve the Einstein field equations using the Generalized Harmonic &quot;</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;      <span class="stringliteral">&quot;formulation,\n&quot;</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;      <span class="stringliteral">&quot;on a domain with a single horizon and corresponding excised region&quot;</span>};</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160; </div>
+<div class="line"><a name="l00060"></a><span class="lineno"><a class="line" href="structEvolutionMetavars_1_1AhA.html">   60</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structEvolutionMetavars_1_1AhA.html">AhA</a> {</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <span class="keyword">using</span> tags_to_observe =</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        tmpl::list&lt;StrahlkorperGr::Tags::AreaCompute&lt;frame&gt;,</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;                   <a class="code" href="structStrahlkorperGr_1_1Tags_1_1IrreducibleMassCompute.html">StrahlkorperGr::Tags::IrreducibleMassCompute&lt;frame&gt;</a>&gt;;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keyword">using</span> compute_items_on_source = tmpl::list&lt;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        <a class="code" href="structgr_1_1Tags_1_1SpatialMetricCompute.html">gr::Tags::SpatialMetricCompute&lt;volume_dim, frame, DataVector&gt;</a>,</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        <a class="code" href="structah_1_1Tags_1_1InverseSpatialMetricCompute.html">ah::Tags::InverseSpatialMetricCompute&lt;volume_dim, frame&gt;</a>,</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        <a class="code" href="structah_1_1Tags_1_1ExtrinsicCurvatureCompute.html">ah::Tags::ExtrinsicCurvatureCompute&lt;volume_dim, frame&gt;</a>,</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        <a class="code" href="structah_1_1Tags_1_1SpatialChristoffelSecondKindCompute.html">ah::Tags::SpatialChristoffelSecondKindCompute&lt;volume_dim, frame&gt;</a>&gt;;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="keyword">using</span> vars_to_interpolate_to_target =</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        tmpl::list&lt;gr::Tags::SpatialMetric&lt;volume_dim, frame, DataVector&gt;,</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;                   <a class="code" href="structgr_1_1Tags_1_1InverseSpatialMetric.html">gr::Tags::InverseSpatialMetric&lt;volume_dim, frame&gt;</a>,</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;                   <a class="code" href="structgr_1_1Tags_1_1ExtrinsicCurvature.html">gr::Tags::ExtrinsicCurvature&lt;volume_dim, frame&gt;</a>,</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;                   <a class="code" href="structgr_1_1Tags_1_1SpatialChristoffelSecondKind.html">gr::Tags::SpatialChristoffelSecondKind&lt;volume_dim, frame&gt;</a>&gt;;</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keyword">using</span> compute_items_on_target = tmpl::append&lt;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        tmpl::list&lt;StrahlkorperGr::Tags::AreaElementCompute&lt;frame&gt;,</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;                   <a class="code" href="structStrahlkorperTags_1_1ThetaPhiCompute.html">StrahlkorperTags::ThetaPhiCompute&lt;frame&gt;</a>,</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;                   <a class="code" href="structStrahlkorperTags_1_1RadiusCompute.html">StrahlkorperTags::RadiusCompute&lt;frame&gt;</a>,</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;                   <a class="code" href="structStrahlkorperTags_1_1RhatCompute.html">StrahlkorperTags::RhatCompute&lt;frame&gt;</a>,</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;                   <a class="code" href="structStrahlkorperTags_1_1InvJacobianCompute.html">StrahlkorperTags::InvJacobianCompute&lt;frame&gt;</a>,</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;                   <a class="code" href="structStrahlkorperTags_1_1DxRadiusCompute.html">StrahlkorperTags::DxRadiusCompute&lt;frame&gt;</a>,</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;                   <a class="code" href="structStrahlkorperTags_1_1OneOverOneFormMagnitudeCompute.html">StrahlkorperTags::OneOverOneFormMagnitudeCompute</a>&lt;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;                       volume_dim, frame, <a class="code" href="classDataVector.html">DataVector</a>&gt;,</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;                   <a class="code" href="structStrahlkorperTags_1_1NormalOneFormCompute.html">StrahlkorperTags::NormalOneFormCompute&lt;frame&gt;</a>,</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;                   <a class="code" href="structStrahlkorperTags_1_1UnitNormalOneFormCompute.html">StrahlkorperTags::UnitNormalOneFormCompute&lt;frame&gt;</a>,</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;                   <a class="code" href="structStrahlkorperTags_1_1UnitNormalVectorCompute.html">StrahlkorperTags::UnitNormalVectorCompute&lt;frame&gt;</a>,</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;                   <a class="code" href="structStrahlkorperTags_1_1GradUnitNormalOneFormCompute.html">StrahlkorperTags::GradUnitNormalOneFormCompute&lt;frame&gt;</a>,</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;                   <a class="code" href="structStrahlkorperTags_1_1ExtrinsicCurvatureCompute.html">StrahlkorperTags::ExtrinsicCurvatureCompute&lt;frame&gt;</a>,</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;                   <a class="code" href="structStrahlkorperGr_1_1Tags_1_1SpinFunctionCompute.html">StrahlkorperGr::Tags::SpinFunctionCompute&lt;frame&gt;</a>&gt;,</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;        tags_to_observe&gt;;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    <span class="keyword">using</span> <a class="code" href="structintrp_1_1TargetPoints_1_1ApparentHorizon.html">compute_target_points</a> =</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        <a class="code" href="structintrp_1_1TargetPoints_1_1ApparentHorizon.html">intrp::TargetPoints::ApparentHorizon&lt;AhA, ::Frame::Inertial&gt;</a>;</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    <span class="keyword">using</span> <a class="code" href="structintrp_1_1callbacks_1_1FindApparentHorizon.html">post_interpolation_callback</a> =</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        <a class="code" href="structintrp_1_1callbacks_1_1FindApparentHorizon.html">intrp::callbacks::FindApparentHorizon&lt;AhA, ::Frame::Inertial&gt;</a>;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keyword">using</span> <a class="code" href="structintrp_1_1callbacks_1_1ErrorOnFailedApparentHorizon.html">horizon_find_failure_callback</a> =</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        <a class="code" href="structintrp_1_1callbacks_1_1ErrorOnFailedApparentHorizon.html">intrp::callbacks::ErrorOnFailedApparentHorizon</a>;</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    <span class="keyword">using</span> <a class="code" href="structintrp_1_1callbacks_1_1ObserveTimeSeriesOnSurface.html">post_horizon_find_callback</a> =</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        <a class="code" href="structintrp_1_1callbacks_1_1ObserveTimeSeriesOnSurface.html">intrp::callbacks::ObserveTimeSeriesOnSurface&lt;tags_to_observe, AhA, AhA&gt;</a>;</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;  };</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160; </div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;  <span class="keyword">using</span> interpolation_target_tags = tmpl::list&lt;AhA&gt;;</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;  <span class="keyword">using</span> interpolator_source_vars =</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;      tmpl::list&lt;gr::Tags::SpacetimeMetric&lt;volume_dim, frame&gt;,</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;                 <a class="code" href="structGeneralizedHarmonic_1_1Tags_1_1Pi.html">GeneralizedHarmonic::Tags::Pi&lt;volume_dim, frame&gt;</a>,</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;                 <a class="code" href="structGeneralizedHarmonic_1_1Tags_1_1Phi.html">GeneralizedHarmonic::Tags::Phi&lt;volume_dim, frame&gt;</a>&gt;;</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160; </div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;  <span class="keyword">struct </span><a class="code" href="structEvolutionMetavars_1_1factory__creation.html">factory_creation</a></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;      : <a class="code" href="structtt_1_1ConformsTo.html">tt::ConformsTo</a>&lt;Options::protocols::FactoryCreation&gt; {</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    <span class="keyword">using</span> factory_classes = <a class="code" href="namespaceOptions.html#ac5c3b66a4eba312fdb7c9fc24cb20ce3">Options::add_factory_classes</a>&lt;</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;        <span class="keyword">typename</span> <a class="code" href="structGeneralizedHarmonicTemplateBase.html">GeneralizedHarmonicTemplateBase</a>&lt;</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;            <a class="code" href="structEvolutionMetavars.html">EvolutionMetavars</a>&gt;::factory_creation::factory_classes,</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;        tmpl::pair&lt;<a class="code" href="classEvent.html">Event</a>, tmpl::list&lt;<a class="code" href="classintrp_1_1Events_1_1Interpolate.html">intrp::Events::Interpolate</a>&lt;</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;                              3, <a class="code" href="structEvolutionMetavars_1_1AhA.html">AhA</a>, interpolator_source_vars&gt;&gt;&gt;&gt;;</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;  };</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;  <span class="keyword">using</span> phase_changes = <span class="keyword">typename</span> <a class="code" href="structGeneralizedHarmonicTemplateBase.html">GeneralizedHarmonicTemplateBase</a>&lt;</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;      <a class="code" href="structEvolutionMetavars.html">EvolutionMetavars</a>&gt;::phase_changes;</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160; </div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;  <span class="keyword">using</span> const_global_cache_tags = tmpl::list&lt;</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;      <span class="keyword">typename</span> <a class="code" href="structGeneralizedHarmonicTemplateBase.html">GeneralizedHarmonicTemplateBase</a>&lt;</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;          <a class="code" href="structEvolutionMetavars.html">EvolutionMetavars</a>&gt;::analytic_solution_tag,</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;      <a class="code" href="structTags_1_1EventsAndTriggers.html">Tags::EventsAndTriggers</a>,</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;      <a class="code" href="structGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1DampingFunctionGamma0.html">GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0</a>&lt;</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;          volume_dim, frame&gt;,</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;      <a class="code" href="structGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1DampingFunctionGamma1.html">GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1</a>&lt;</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;          volume_dim, frame&gt;,</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;      <a class="code" href="structGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1DampingFunctionGamma2.html">GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2</a>&lt;</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;          volume_dim, frame&gt;,</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;      <a class="code" href="structPhaseControl_1_1Tags_1_1PhaseChangeAndTriggers.html">PhaseControl::Tags::PhaseChangeAndTriggers&lt;phase_changes&gt;</a>&gt;;</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160; </div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;  <span class="keyword">using</span> observed_reduction_data_tags =</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;      observers::collect_reduction_data_tags&lt;<a class="code" href="group__ComputationalDomainGroup.html#ga398bdce722c9ba655f479a7712f1a0e5">tmpl::push_back</a>&lt;</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;          tmpl::at&lt;typename factory_creation::factory_classes, Event&gt;,</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;          <span class="keyword">typename</span> AhA::post_horizon_find_callback&gt;&gt;;</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160; </div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;  <span class="keyword">using</span> dg_registration_list =</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;      <a class="code" href="group__ComputationalDomainGroup.html#ga398bdce722c9ba655f479a7712f1a0e5">tmpl::push_back</a>&lt;<span class="keyword">typename</span> <a class="code" href="structGeneralizedHarmonicTemplateBase.html">GeneralizedHarmonicTemplateBase</a>&lt;</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;                          <a class="code" href="structEvolutionMetavars.html">EvolutionMetavars</a>&gt;::dg_registration_list,</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;                      <a class="code" href="structintrp_1_1Actions_1_1RegisterElementWithInterpolator.html">intrp::Actions::RegisterElementWithInterpolator</a>&gt;;</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160; </div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ParallelComponent&gt;</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;  <span class="keyword">struct </span>registration_list {</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;    <span class="keyword">using</span> type = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/conditional.html">std::conditional_t</a>&lt;</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;        std::is_same_v&lt;ParallelComponent,</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;                       <span class="keyword">typename</span> <a class="code" href="structGeneralizedHarmonicTemplateBase.html">GeneralizedHarmonicTemplateBase</a>&lt;</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;                           <a class="code" href="structEvolutionMetavars.html">EvolutionMetavars</a>&gt;::gh_dg_element_array&gt;,</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;        dg_registration_list, tmpl::list&lt;&gt;&gt;;</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;  };</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160; </div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;  <span class="keyword">using</span> component_list =</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;      <a class="code" href="group__ComputationalDomainGroup.html#ga398bdce722c9ba655f479a7712f1a0e5">tmpl::push_back</a>&lt;<span class="keyword">typename</span> <a class="code" href="structGeneralizedHarmonicTemplateBase.html">GeneralizedHarmonicTemplateBase</a>&lt;</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;                          <a class="code" href="structEvolutionMetavars.html">EvolutionMetavars</a>&gt;::component_list,</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;                      <a class="code" href="structintrp_1_1Interpolator.html">intrp::Interpolator&lt;EvolutionMetavars&gt;</a>,</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;                      <a class="code" href="structintrp_1_1InterpolationTarget.html">intrp::InterpolationTarget&lt;EvolutionMetavars, AhA&gt;</a>&gt;;</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;};</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160; </div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;<span class="keyword">static</span> <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;void (*)()&gt; charm_init_node_funcs{</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;    &amp;setup_error_handling,</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;    &amp;<a class="code" href="Blas_8hpp.html#a5b54f526fe76418288fdf2dd79b0828e">disable_openblas_multithreading</a>,</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;    &amp;domain::creators::time_dependence::register_derived_with_charm,</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;    &amp;domain::FunctionsOfTime::register_derived_with_charm,</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;    &amp;GeneralizedHarmonic::BoundaryConditions::register_derived_with_charm,</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;    &amp;GeneralizedHarmonic::BoundaryCorrections::register_derived_with_charm,</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    &amp;domain::creators::register_derived_with_charm,</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;    &amp;GeneralizedHarmonic::ConstraintDamping::register_derived_with_charm,</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;    &amp;Parallel::register_derived_classes_with_charm&lt;TimeStepper&gt;,</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;    &amp;<a class="code" href="namespaceParallel.html#a61571416f61cc9de70c8e6e2b1508fc6">Parallel::register_derived_classes_with_charm</a>&lt;</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;        <a class="code" href="structPhaseChange.html">PhaseChange&lt;metavariables::phase_changes&gt;</a>&gt;,</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;    &amp;Parallel::register_factory_classes_with_charm&lt;metavariables&gt;};</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160; </div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;<span class="keyword">static</span> <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;void (*)()&gt; charm_init_proc_funcs{</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;    &amp;<a class="code" href="group__ErrorHandlingGroup.html#gac5fde843ca62e1d4288f4a4e6d480aa0">enable_floating_point_exceptions</a>};</div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="aFloatingPointExceptions_8hpp_html"><div class="ttname"><a href="FloatingPointExceptions_8hpp.html">FloatingPointExceptions.hpp</a></div></div>
+<div class="ttc" id="astructintrp_1_1callbacks_1_1ErrorOnFailedApparentHorizon_html"><div class="ttname"><a href="structintrp_1_1callbacks_1_1ErrorOnFailedApparentHorizon.html">intrp::callbacks::ErrorOnFailedApparentHorizon</a></div><div class="ttdoc">Callback for a failed apparent horizon find that simply errors.</div><div class="ttdef"><b>Definition:</b> ErrorOnFailedApparentHorizon.hpp:24</div></div>
+<div class="ttc" id="aRegisterDerivedClassesWithCharm_8hpp_html"><div class="ttname"><a href="RegisterDerivedClassesWithCharm_8hpp.html">RegisterDerivedClassesWithCharm.hpp</a></div></div>
+<div class="ttc" id="astructgr_1_1Tags_1_1SpatialChristoffelSecondKind_html"><div class="ttname"><a href="structgr_1_1Tags_1_1SpatialChristoffelSecondKind.html">gr::Tags::SpatialChristoffelSecondKind</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:79</div></div>
+<div class="ttc" id="astructGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1DampingFunctionGamma2_html"><div class="ttname"><a href="structGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1DampingFunctionGamma2.html">GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2</a></div><div class="ttdoc">A DampingFunction to compute the constraint damping parameter .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:117</div></div>
+<div class="ttc" id="astructStrahlkorperTags_1_1ThetaPhiCompute_html"><div class="ttname"><a href="structStrahlkorperTags_1_1ThetaPhiCompute.html">StrahlkorperTags::ThetaPhiCompute</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:60</div></div>
+<div class="ttc" id="astructStrahlkorperTags_1_1ExtrinsicCurvatureCompute_html"><div class="ttname"><a href="structStrahlkorperTags_1_1ExtrinsicCurvatureCompute.html">StrahlkorperTags::ExtrinsicCurvatureCompute</a></div><div class="ttdoc">Calculates the Extrinsic curvature of a 2D Strahlkorper embedded in a 3D space.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:385</div></div>
+<div class="ttc" id="aParallelAlgorithms_2EventsAndTriggers_2Tags_8hpp_html"><div class="ttname"><a href="ParallelAlgorithms_2EventsAndTriggers_2Tags_8hpp.html">Tags.hpp</a></div></div>
+<div class="ttc" id="astructStrahlkorperTags_1_1InvJacobianCompute_html"><div class="ttname"><a href="structStrahlkorperTags_1_1InvJacobianCompute.html">StrahlkorperTags::InvJacobianCompute</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:119</div></div>
+<div class="ttc" id="aOptions_8hpp_html"><div class="ttname"><a href="Options_8hpp.html">Options.hpp</a></div></div>
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a></div></div>
+<div class="ttc" id="aError_8hpp_html"><div class="ttname"><a href="Error_8hpp.html">Error.hpp</a></div></div>
+<div class="ttc" id="astructStrahlkorperTags_1_1UnitNormalVectorCompute_html"><div class="ttname"><a href="structStrahlkorperTags_1_1UnitNormalVectorCompute.html">StrahlkorperTags::UnitNormalVectorCompute</a></div><div class="ttdoc">Computes the UnitNormalVector perpendicular to the horizon.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:340</div></div>
+<div class="ttc" id="astructStrahlkorperTags_1_1RadiusCompute_html"><div class="ttname"><a href="structStrahlkorperTags_1_1RadiusCompute.html">StrahlkorperTags::RadiusCompute</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:157</div></div>
+<div class="ttc" id="astructStrahlkorperGr_1_1Tags_1_1IrreducibleMassCompute_html"><div class="ttname"><a href="structStrahlkorperGr_1_1Tags_1_1IrreducibleMassCompute.html">StrahlkorperGr::Tags::IrreducibleMassCompute</a></div><div class="ttdoc">Computes the Irreducible mass of an apparent horizon from its area.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:681</div></div>
+<div class="ttc" id="astructah_1_1Tags_1_1SpatialChristoffelSecondKindCompute_html"><div class="ttname"><a href="structah_1_1Tags_1_1SpatialChristoffelSecondKindCompute.html">ah::Tags::SpatialChristoffelSecondKindCompute</a></div><div class="ttdef"><b>Definition:</b> ComputeItems.hpp:76</div></div>
+<div class="ttc" id="astructEvolutionMetavars_1_1factory__creation_html"><div class="ttname"><a href="structEvolutionMetavars_1_1factory__creation.html">EvolutionMetavars::factory_creation</a></div><div class="ttdef"><b>Definition:</b> EvolveBurgers.hpp:135</div></div>
+<div class="ttc" id="astructGeneralizedHarmonicTemplateBase_html"><div class="ttname"><a href="structGeneralizedHarmonicTemplateBase.html">GeneralizedHarmonicTemplateBase</a></div><div class="ttdef"><b>Definition:</b> GeneralizedHarmonicBase.hpp:204</div></div>
+<div class="ttc" id="astructStrahlkorperTags_1_1DxRadiusCompute_html"><div class="ttname"><a href="structStrahlkorperTags_1_1DxRadiusCompute.html">StrahlkorperTags::DxRadiusCompute</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:201</div></div>
+<div class="ttc" id="astructPhaseControl_1_1Tags_1_1PhaseChangeAndTriggers_html"><div class="ttname"><a href="structPhaseControl_1_1Tags_1_1PhaseChangeAndTriggers.html">PhaseControl::Tags::PhaseChangeAndTriggers</a></div><div class="ttdoc">Tag for the collection of triggers that indicate synchronization points at which phase changes should...</div><div class="ttdef"><b>Definition:</b> PhaseControlTags.hpp:66</div></div>
+<div class="ttc" id="aBlas_8hpp_html_a5b54f526fe76418288fdf2dd79b0828e"><div class="ttname"><a href="Blas_8hpp.html#a5b54f526fe76418288fdf2dd79b0828e">disable_openblas_multithreading</a></div><div class="ttdeci">void disable_openblas_multithreading() noexcept</div><div class="ttdoc">Disable OpenBLAS multithreading since it conflicts with Charm++ parallelism.</div></div>
+<div class="ttc" id="astructStrahlkorperTags_1_1RhatCompute_html"><div class="ttname"><a href="structStrahlkorperTags_1_1RhatCompute.html">StrahlkorperTags::RhatCompute</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:78</div></div>
+<div class="ttc" id="astructEvolutionMetavars_html"><div class="ttname"><a href="structEvolutionMetavars.html">EvolutionMetavars</a></div><div class="ttdef"><b>Definition:</b> EvolveBurgers.hpp:108</div></div>
+<div class="ttc" id="astructintrp_1_1Interpolator_html"><div class="ttname"><a href="structintrp_1_1Interpolator.html">intrp::Interpolator</a></div><div class="ttdoc">ParallelComponent responsible for collecting data from Elements and interpolating it onto Interpolati...</div><div class="ttdef"><b>Definition:</b> Interpolator.hpp:23</div></div>
+<div class="ttc" id="agroup__ComputationalDomainGroup_html_ga398bdce722c9ba655f479a7712f1a0e5"><div class="ttname"><a href="group__ComputationalDomainGroup.html#ga398bdce722c9ba655f479a7712f1a0e5">domain::push_back</a></div><div class="ttdeci">CoordinateMap&lt; SourceFrame, TargetFrame, Maps..., NewMap &gt; push_back(CoordinateMap&lt; SourceFrame, TargetFrame, Maps... &gt; old_map, NewMap new_map) noexcept</div><div class="ttdoc">Creates a CoordinateMap by appending the new map to the end of the old maps.</div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_gac5fde843ca62e1d4288f4a4e6d480aa0"><div class="ttname"><a href="group__ErrorHandlingGroup.html#gac5fde843ca62e1d4288f4a4e6d480aa0">enable_floating_point_exceptions</a></div><div class="ttdeci">void enable_floating_point_exceptions()</div></div>
+<div class="ttc" id="astructah_1_1Tags_1_1ExtrinsicCurvatureCompute_html"><div class="ttname"><a href="structah_1_1Tags_1_1ExtrinsicCurvatureCompute.html">ah::Tags::ExtrinsicCurvatureCompute</a></div><div class="ttdef"><b>Definition:</b> ComputeItems.hpp:54</div></div>
+<div class="ttc" id="aclassEvent_html"><div class="ttname"><a href="classEvent.html">Event</a></div><div class="ttdef"><b>Definition:</b> Event.hpp:19</div></div>
+<div class="ttc" id="astructStrahlkorperTags_1_1GradUnitNormalOneFormCompute_html"><div class="ttname"><a href="structStrahlkorperTags_1_1GradUnitNormalOneFormCompute.html">StrahlkorperTags::GradUnitNormalOneFormCompute</a></div><div class="ttdoc">Computes 3-covariant gradient  of a Strahlkorper's normal.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:360</div></div>
+<div class="ttc" id="astructintrp_1_1Actions_1_1RegisterElementWithInterpolator_html"><div class="ttname"><a href="structintrp_1_1Actions_1_1RegisterElementWithInterpolator.html">intrp::Actions::RegisterElementWithInterpolator</a></div><div class="ttdoc">Invoked on DgElementArray to register all its elements with the Interpolator.</div><div class="ttdef"><b>Definition:</b> InterpolatorRegisterElement.hpp:109</div></div>
+<div class="ttc" id="astructintrp_1_1TargetPoints_1_1ApparentHorizon_html"><div class="ttname"><a href="structintrp_1_1TargetPoints_1_1ApparentHorizon.html">intrp::TargetPoints::ApparentHorizon</a></div><div class="ttdoc">Computes points on a trial apparent horizon`.</div><div class="ttdef"><b>Definition:</b> InterpolationTargetApparentHorizon.hpp:141</div></div>
+<div class="ttc" id="astructGeneralizedHarmonic_1_1Tags_1_1Pi_html"><div class="ttname"><a href="structGeneralizedHarmonic_1_1Tags_1_1Pi.html">GeneralizedHarmonic::Tags::Pi</a></div><div class="ttdoc">Conjugate momentum to the spacetime metric.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:29</div></div>
+<div class="ttc" id="astructgr_1_1Tags_1_1SpatialMetricCompute_html"><div class="ttname"><a href="structgr_1_1Tags_1_1SpatialMetricCompute.html">gr::Tags::SpatialMetricCompute</a></div><div class="ttdoc">Compute item for spatial metric  from the spacetime metric .</div><div class="ttdef"><b>Definition:</b> SpatialMetric.hpp:50</div></div>
+<div class="ttc" id="acstdint_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstdint.html">cstdint</a></div></div>
+<div class="ttc" id="aclassDataVector_html"><div class="ttname"><a href="classDataVector.html">DataVector</a></div><div class="ttdoc">Stores a collection of function values.</div><div class="ttdef"><b>Definition:</b> DataVector.hpp:46</div></div>
+<div class="ttc" id="astructah_1_1Tags_1_1InverseSpatialMetricCompute_html"><div class="ttname"><a href="structah_1_1Tags_1_1InverseSpatialMetricCompute.html">ah::Tags::InverseSpatialMetricCompute</a></div><div class="ttdoc">These ComputeItems are different from those used in GeneralizedHarmonic evolution because these live ...</div><div class="ttdef"><b>Definition:</b> ComputeItems.hpp:41</div></div>
+<div class="ttc" id="astructGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1DampingFunctionGamma0_html"><div class="ttname"><a href="structGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1DampingFunctionGamma0.html">GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0</a></div><div class="ttdoc">A DampingFunction to compute the constraint damping parameter .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:79</div></div>
+<div class="ttc" id="astructStrahlkorperTags_1_1UnitNormalOneFormCompute_html"><div class="ttname"><a href="structStrahlkorperTags_1_1UnitNormalOneFormCompute.html">StrahlkorperTags::UnitNormalOneFormCompute</a></div><div class="ttdoc">Computes the unit one-form perpendicular to the horizon.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:320</div></div>
+<div class="ttc" id="astructintrp_1_1callbacks_1_1ObserveTimeSeriesOnSurface_html"><div class="ttname"><a href="structintrp_1_1callbacks_1_1ObserveTimeSeriesOnSurface.html">intrp::callbacks::ObserveTimeSeriesOnSurface</a></div><div class="ttdoc">post_interpolation_callback that outputs a time series on a surface.</div><div class="ttdef"><b>Definition:</b> ObserveTimeSeriesOnSurface.hpp:91</div></div>
+<div class="ttc" id="astructGeneralizedHarmonic_1_1Tags_1_1Phi_html"><div class="ttname"><a href="structGeneralizedHarmonic_1_1Tags_1_1Phi.html">GeneralizedHarmonic::Tags::Phi</a></div><div class="ttdoc">Auxiliary variable which is analytically the spatial derivative of the spacetime metric.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:40</div></div>
+<div class="ttc" id="astructTags_1_1EventsAndTriggers_html"><div class="ttname"><a href="structTags_1_1EventsAndTriggers.html">Tags::EventsAndTriggers</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:51</div></div>
+<div class="ttc" id="astructPhaseChange_html"><div class="ttname"><a href="structPhaseChange.html">PhaseChange</a></div><div class="ttdoc">PhaseChange objects determine the storage types and logic for moving between phases based on runtime ...</div><div class="ttdef"><b>Definition:</b> PhaseChange.hpp:141</div></div>
+<div class="ttc" id="astructGeneralizedHarmonicDefaults_html"><div class="ttname"><a href="structGeneralizedHarmonicDefaults.html">GeneralizedHarmonicDefaults</a></div><div class="ttdef"><b>Definition:</b> GeneralizedHarmonicBase.hpp:149</div></div>
+<div class="ttc" id="anamespaceOptions_html_aa61c7f41f21afa7646811456f673be89"><div class="ttname"><a href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a></div><div class="ttdeci">const char *const String</div><div class="ttdoc">The string used in option structs.</div><div class="ttdef"><b>Definition:</b> Options.hpp:32</div></div>
+<div class="ttc" id="astructEvolutionMetavars_1_1AhA_html"><div class="ttname"><a href="structEvolutionMetavars_1_1AhA.html">EvolutionMetavars::AhA</a></div><div class="ttdef"><b>Definition:</b> EvolveGeneralizedHarmonicWithHorizon.hpp:60</div></div>
+<div class="ttc" id="astructGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1DampingFunctionGamma1_html"><div class="ttname"><a href="structGeneralizedHarmonic_1_1ConstraintDamping_1_1Tags_1_1DampingFunctionGamma1.html">GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1</a></div><div class="ttdoc">A DampingFunction to compute the constraint damping parameter .</div><div class="ttdef"><b>Definition:</b> Tags.hpp:98</div></div>
+<div class="ttc" id="astructgr_1_1Tags_1_1ExtrinsicCurvature_html"><div class="ttname"><a href="structgr_1_1Tags_1_1ExtrinsicCurvature.html">gr::Tags::ExtrinsicCurvature</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:116</div></div>
+<div class="ttc" id="aconditional_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/conditional.html">std::conditional_t</a></div></div>
+<div class="ttc" id="anamespaceParallel_html_a61571416f61cc9de70c8e6e2b1508fc6"><div class="ttname"><a href="namespaceParallel.html#a61571416f61cc9de70c8e6e2b1508fc6">Parallel::register_derived_classes_with_charm</a></div><div class="ttdeci">void register_derived_classes_with_charm() noexcept</div><div class="ttdoc">Register derived classes of the Base class.</div><div class="ttdef"><b>Definition:</b> RegisterDerivedClassesWithCharm.hpp:35</div></div>
+<div class="ttc" id="aBlas_8hpp_html"><div class="ttname"><a href="Blas_8hpp.html">Blas.hpp</a></div></div>
+<div class="ttc" id="anamespaceOptions_html_ac5c3b66a4eba312fdb7c9fc24cb20ce3"><div class="ttname"><a href="namespaceOptions.html#ac5c3b66a4eba312fdb7c9fc24cb20ce3">Options::add_factory_classes</a></div><div class="ttdeci">typename detail::add_factory_classes&lt; FactoryClasses, NewClasses... &gt;::type add_factory_classes</div><div class="ttdoc">Add new factory-creatable classes to the list in a factory_creation struct.</div><div class="ttdef"><b>Definition:</b> FactoryHelpers.hpp:51</div></div>
+<div class="ttc" id="astructintrp_1_1callbacks_1_1FindApparentHorizon_html"><div class="ttname"><a href="structintrp_1_1callbacks_1_1FindApparentHorizon.html">intrp::callbacks::FindApparentHorizon</a></div><div class="ttdoc">post interpolation callback (see InterpolationTarget) that does a FastFlow iteration and triggers ano...</div><div class="ttdef"><b>Definition:</b> FindApparentHorizon.hpp:125</div></div>
+<div class="ttc" id="astructStrahlkorperGr_1_1Tags_1_1SpinFunctionCompute_html"><div class="ttname"><a href="structStrahlkorperGr_1_1Tags_1_1SpinFunctionCompute.html">StrahlkorperGr::Tags::SpinFunctionCompute</a></div><div class="ttdoc">Calculates the spin function which is proportional to the imaginary part of the Strahlkorper’s comple...</div><div class="ttdef"><b>Definition:</b> Tags.hpp:702</div></div>
+<div class="ttc" id="astructtt_1_1ConformsTo_html"><div class="ttname"><a href="structtt_1_1ConformsTo.html">tt::ConformsTo</a></div><div class="ttdoc">Indicate a class conforms to the Protocol.</div><div class="ttdef"><b>Definition:</b> ProtocolHelpers.hpp:22</div></div>
+<div class="ttc" id="aclassintrp_1_1Events_1_1Interpolate_html"><div class="ttname"><a href="classintrp_1_1Events_1_1Interpolate.html">intrp::Events::Interpolate</a></div><div class="ttdoc">Does an interpolation onto InterpolationTargetTag by calling Actions on the Interpolator and Interpol...</div><div class="ttdef"><b>Definition:</b> Interpolate.hpp:53</div></div>
+<div class="ttc" id="astructStrahlkorperTags_1_1NormalOneFormCompute_html"><div class="ttname"><a href="structStrahlkorperTags_1_1NormalOneFormCompute.html">StrahlkorperTags::NormalOneFormCompute</a></div><div class="ttdef"><b>Definition:</b> Tags.hpp:278</div></div>
+<div class="ttc" id="astructgr_1_1Tags_1_1InverseSpatialMetric_html"><div class="ttname"><a href="structgr_1_1Tags_1_1InverseSpatialMetric.html">gr::Tags::InverseSpatialMetric</a></div><div class="ttdoc">Inverse of the spatial metric.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:33</div></div>
+<div class="ttc" id="astructintrp_1_1InterpolationTarget_html"><div class="ttname"><a href="structintrp_1_1InterpolationTarget.html">intrp::InterpolationTarget</a></div><div class="ttdoc">ParallelComponent representing a set of points to be interpolated to and a function to call upon inte...</div><div class="ttdef"><b>Definition:</b> InterpolationTarget.hpp:347</div></div>
+<div class="ttc" id="astructStrahlkorperTags_1_1OneOverOneFormMagnitudeCompute_html"><div class="ttname"><a href="structStrahlkorperTags_1_1OneOverOneFormMagnitudeCompute.html">StrahlkorperTags::OneOverOneFormMagnitudeCompute</a></div><div class="ttdoc">Computes the reciprocal of the magnitude of the one form perpendicular to the horizon.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:297</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

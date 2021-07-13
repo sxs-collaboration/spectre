@@ -1,0 +1,331 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: tests/Unit/Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp File Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_33df814919e476f9d56dccef9b24e276.html">tests</a></li><li class="navelem"><a class="el" href="dir_38113a4c235494bd05bb19f85d006940.html">Unit</a></li><li class="navelem"><a class="el" href="dir_b87ca7a475176b712f1482b79974072f.html">Helpers</a></li><li class="navelem"><a class="el" href="dir_a46dde7b53c4b42dc7d953025b32947f.html">Domain</a></li><li class="navelem"><a class="el" href="dir_ba8bc740bec34e36a928c04e6e4ed768.html">CoordinateMaps</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">TestMapHelpers.hpp File Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><code>#include &quot;<a class="el" href="TestingFramework_8hpp_source.html">Framework/TestingFramework.hpp</a>&quot;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/algorithm.html">algorithm</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/array.html">array</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/cmath.html">cmath</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/functional.html">functional</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/limits.html">limits</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/memory.html">memory</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/numeric.html">numeric</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/random.html">random</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/header/unordered_map.html">unordered_map</a>&gt;</code><br />
+<code>#include &quot;DataStructures/DataVector.hpp&quot;</code><br />
+<code>#include &quot;<a class="el" href="Tensor_8hpp_source.html">DataStructures/Tensor/Tensor.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="CoordinateMap_8hpp_source.html">Domain/CoordinateMaps/CoordinateMap.hpp</a>&quot;</code><br />
+<code>#include &quot;Domain/CoordinateMaps/CoordinateMap.tpp&quot;</code><br />
+<code>#include &quot;<a class="el" href="Domain_2CoordinateMaps_2Identity_8hpp_source.html">Domain/CoordinateMaps/Identity.hpp</a>&quot;</code><br />
+<code>#include &quot;Domain/CoordinateMaps/TimeDependentHelpers.hpp&quot;</code><br />
+<code>#include &quot;<a class="el" href="DomainHelpers_8hpp_source.html">Domain/DomainHelpers.hpp</a>&quot;</code><br />
+<code>#include &quot;Domain/FunctionsOfTime/FunctionOfTime.hpp&quot;</code><br />
+<code>#include &quot;<a class="el" href="Direction_8hpp_source.html">Domain/Structure/Direction.hpp</a>&quot;</code><br />
+<code>#include &quot;Domain/Structure/OrientationMap.hpp&quot;</code><br />
+<code>#include &quot;<a class="el" href="Framework_2TestHelpers_8hpp_source.html">Framework/TestHelpers.hpp</a>&quot;</code><br />
+<code>#include &quot;Helpers/Domain/DomainTestHelpers.hpp&quot;</code><br />
+<code>#include &quot;Utilities/TypeTraits.hpp&quot;</code><br />
+</div>
+<p><a href="TestMapHelpers_8hpp_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOrientationMapIterator.html">OrientationMapIterator&lt; VolumeDim &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An iterator for looping through all possible orientations of the n-dim cube.  <a href="classOrientationMapIterator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:gacadb87efe0412015568637a68c678b29"><td class="memTemplParams" colspan="2">
+template&lt;typename Map &gt; </td></tr>
+<tr class="memitem:gacadb87efe0412015568637a68c678b29"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#gacadb87efe0412015568637a68c678b29">are_maps_equal</a> (const Map &amp;map, const <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>, Map::dim &gt; &amp;map_base) noexcept</td></tr>
+<tr class="memdesc:gacadb87efe0412015568637a68c678b29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a Map and a CoordinateMapBase, checks that the maps are equal by downcasting <code>map_base</code> and then comparing to <code>map</code>. Returns false if the downcast fails. <br /></td></tr>
+<tr class="separator:gacadb87efe0412015568637a68c678b29"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga96b4ff568846f3c2fffc4541052b96ec"><td class="memTemplParams" colspan="2">
+template&lt;typename SourceFrame , typename TargetFrame , size_t VolumeDim&gt; </td></tr>
+<tr class="memitem:ga96b4ff568846f3c2fffc4541052b96ec"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga96b4ff568846f3c2fffc4541052b96ec">check_if_maps_are_equal</a> (const <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; SourceFrame, TargetFrame, VolumeDim &gt; &amp;map_one, const <a class="el" href="classdomain_1_1CoordinateMapBase.html">domain::CoordinateMapBase</a>&lt; SourceFrame, TargetFrame, VolumeDim &gt; &amp;map_two, const double time=<a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt; double &gt;::quiet_NaN(), const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time={}) noexcept</td></tr>
+<tr class="memdesc:ga96b4ff568846f3c2fffc4541052b96ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given two coordinate maps (but not their types), check that the maps are equal by evaluating them at a random set of points. <br /></td></tr>
+<tr class="separator:ga96b4ff568846f3c2fffc4541052b96ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga635824a415e8933aa4f7e7a2ad1ff66a"><td class="memTemplParams" colspan="2">
+template&lt;typename Map &gt; </td></tr>
+<tr class="memitem:ga635824a415e8933aa4f7e7a2ad1ff66a"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga635824a415e8933aa4f7e7a2ad1ff66a">check_if_map_is_identity</a> (const Map &amp;map) noexcept</td></tr>
+<tr class="memdesc:ga635824a415e8933aa4f7e7a2ad1ff66a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a coordinate map, check that this map is equal to the identity by evaluating the map at a random set of points. <br /></td></tr>
+<tr class="separator:ga635824a415e8933aa4f7e7a2ad1ff66a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7ada2dd817f0846b4a2177419228a791"><td class="memTemplParams" colspan="2">
+template&lt;typename Map &gt; </td></tr>
+<tr class="memitem:ga7ada2dd817f0846b4a2177419228a791"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga7ada2dd817f0846b4a2177419228a791">test_frame_velocity</a> (const Map &amp;map, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, Map::dim &gt; &amp;test_point, const double time, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time)</td></tr>
+<tr class="memdesc:ga7ada2dd817f0846b4a2177419228a791"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a Map <code>map</code>, checks that the frame velocity matches a sixth-order finite difference approximation. <br /></td></tr>
+<tr class="separator:ga7ada2dd817f0846b4a2177419228a791"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae082371a40e886deb604c05ff87cb435"><td class="memTemplParams" colspan="2">
+template&lt;typename Map , typename... Args&gt; </td></tr>
+<tr class="memitem:gae082371a40e886deb604c05ff87cb435"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#gae082371a40e886deb604c05ff87cb435">test_coordinate_map_implementation</a> (const Map &amp;map) noexcept</td></tr>
+<tr class="memdesc:gae082371a40e886deb604c05ff87cb435"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks that the CoordinateMap <code>map</code> functions as expected when used as the template parameter to the <code>CoordinateMap</code> type. <br /></td></tr>
+<tr class="separator:gae082371a40e886deb604c05ff87cb435"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad2b86f2fe7f836fef3a95233ae9bde7c"><td class="memTemplParams" colspan="2">
+template&lt;typename Map , typename... Args&gt; </td></tr>
+<tr class="memitem:gad2b86f2fe7f836fef3a95233ae9bde7c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#gad2b86f2fe7f836fef3a95233ae9bde7c">test_coordinate_map_argument_types</a> (const Map &amp;map, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, Map::dim &gt; &amp;test_point, const Args &amp;... args)</td></tr>
+<tr class="memdesc:gad2b86f2fe7f836fef3a95233ae9bde7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks that the CoordinateMap <code>map</code> functions as expected when used with different argument types. <br /></td></tr>
+<tr class="separator:gad2b86f2fe7f836fef3a95233ae9bde7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa54f012f3d9b6e12d67d4eb16d2a8fe2"><td class="memTemplParams" colspan="2">
+template&lt;typename Map &gt; </td></tr>
+<tr class="memitem:gaa54f012f3d9b6e12d67d4eb16d2a8fe2"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#gaa54f012f3d9b6e12d67d4eb16d2a8fe2">test_suite_for_map_on_unit_cube</a> (const Map &amp;map) noexcept</td></tr>
+<tr class="memdesc:gaa54f012f3d9b6e12d67d4eb16d2a8fe2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a Map <code>map</code>, tests the map functions, including map inverse, jacobian, and inverse jacobian, for a series of points. These points are chosen in a dim-dimensonal cube of side 2 centered at the origin. The map is expected to be valid on the boundaries of the cube. <br /></td></tr>
+<tr class="separator:gaa54f012f3d9b6e12d67d4eb16d2a8fe2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf66d8a093671dc1518a3807c4f4e43e1"><td class="memTemplParams" colspan="2">
+template&lt;typename Map &gt; </td></tr>
+<tr class="memitem:gaf66d8a093671dc1518a3807c4f4e43e1"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#gaf66d8a093671dc1518a3807c4f4e43e1">test_suite_for_map_on_sphere</a> (const Map &amp;map, const bool include_origin=true, const double radius_of_sphere=1.0) noexcept</td></tr>
+<tr class="memdesc:gaf66d8a093671dc1518a3807c4f4e43e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a Map <code>map</code>, tests the map functions, including map inverse, jacobian, and inverse jacobian, for a series of points. These points are chosen in a sphere of radius <code>radius_of_sphere</code>, and the map is expected to be valid on the boundary of that sphere as well as in its interior. The flag <code>include_origin</code> indicates whether to test the map at the origin. This test works only in 3 dimensions. <br /></td></tr>
+<tr class="separator:gaf66d8a093671dc1518a3807c4f4e43e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5508a281766734dd9f8c2da0585aa578"><td class="memTemplParams" colspan="2">
+template&lt;typename Map &gt; </td></tr>
+<tr class="memitem:ga5508a281766734dd9f8c2da0585aa578"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga5508a281766734dd9f8c2da0585aa578">test_suite_for_map_on_cylinder</a> (const Map &amp;map, const double inner_radius, const double outer_radius) noexcept</td></tr>
+<tr class="memdesc:ga5508a281766734dd9f8c2da0585aa578"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a Map <code>map</code>, tests the map functions, including map inverse, jacobian, and inverse jacobian, for a series of points. These points are chosen in a right cylinder with cylindrical radius 1 and z-axis extending from -1 to +1. The map is expected to be valid on the boundary of that cylinder as well as in its interior. This test works only in 3 dimensions. <br /></td></tr>
+<tr class="separator:ga5508a281766734dd9f8c2da0585aa578"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa226fb4e34109bf71af60e2e725ccc7c"><td class="memItemLeft" align="right" valign="top">
+<a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; <a class="el" href="classOrientationMap.html">OrientationMap</a>&lt; 3 &gt;, 6 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#gaa226fb4e34109bf71af60e2e725ccc7c">all_wedge_directions</a> () noexcept</td></tr>
+<tr class="memdesc:gaa226fb4e34109bf71af60e2e725ccc7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wedge <a class="el" href="classOrientationMap.html" title="A mapping of the logical coordinate axes of a host to the logical coordinate axes of a neighbor of th...">OrientationMap</a> in each of the six directions used in the Shell and Sphere domain creators. <br /></td></tr>
+<tr class="separator:gaa226fb4e34109bf71af60e2e725ccc7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:gab0937cf96cba9ee5da456973fdcf2ac5"><td class="memTemplParams" colspan="2">
+template&lt;typename Map &gt; </td></tr>
+<tr class="memitem:gab0937cf96cba9ee5da456973fdcf2ac5"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#gab0937cf96cba9ee5da456973fdcf2ac5">test_jacobian</a> (const Map &amp;map, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, Map::dim &gt; &amp;test_point) noexcept</td></tr>
+<tr class="memdesc:gab0937cf96cba9ee5da456973fdcf2ac5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a Map <code>map</code>, checks that the jacobian gives expected results when compared to the numerical derivative in each direction. <br /></td></tr>
+<tr class="separator:gab0937cf96cba9ee5da456973fdcf2ac5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabb23077861837c0734123e2060c17ae4"><td class="memTemplParams" colspan="2">
+template&lt;typename Map &gt; </td></tr>
+<tr class="memitem:gabb23077861837c0734123e2060c17ae4"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#gabb23077861837c0734123e2060c17ae4">test_jacobian</a> (const Map &amp;map, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, Map::dim &gt; &amp;test_point, const double time, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time) noexcept</td></tr>
+<tr class="memdesc:gabb23077861837c0734123e2060c17ae4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a Map <code>map</code>, checks that the jacobian gives expected results when compared to the numerical derivative in each direction. <br /></td></tr>
+<tr class="separator:gabb23077861837c0734123e2060c17ae4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ga5b3f174791f6db04f4ff6279ccf13454"><td class="memTemplParams" colspan="2">
+template&lt;typename Map &gt; </td></tr>
+<tr class="memitem:ga5b3f174791f6db04f4ff6279ccf13454"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga5b3f174791f6db04f4ff6279ccf13454">test_inv_jacobian</a> (const Map &amp;map, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, Map::dim &gt; &amp;test_point) noexcept</td></tr>
+<tr class="memdesc:ga5b3f174791f6db04f4ff6279ccf13454"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a Map <code>map</code>, checks that the inverse jacobian and jacobian multiply together to produce the identity matrix. <br /></td></tr>
+<tr class="separator:ga5b3f174791f6db04f4ff6279ccf13454"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8ea5bd67be610ed18cef09bc2953eeef"><td class="memTemplParams" colspan="2">
+template&lt;typename Map &gt; </td></tr>
+<tr class="memitem:ga8ea5bd67be610ed18cef09bc2953eeef"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga8ea5bd67be610ed18cef09bc2953eeef">test_inv_jacobian</a> (const Map &amp;map, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; double, Map::dim &gt; &amp;test_point, const double time, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time)</td></tr>
+<tr class="memdesc:ga8ea5bd67be610ed18cef09bc2953eeef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a Map <code>map</code>, checks that the inverse jacobian and jacobian multiply together to produce the identity matrix. <br /></td></tr>
+<tr class="separator:ga8ea5bd67be610ed18cef09bc2953eeef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ga1e156c7ae26ac3d9fedf6b992a5c82e5"><td class="memTemplParams" colspan="2">
+template&lt;typename Map , typename T &gt; </td></tr>
+<tr class="memitem:ga1e156c7ae26ac3d9fedf6b992a5c82e5"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga1e156c7ae26ac3d9fedf6b992a5c82e5">test_inverse_map</a> (const Map &amp;map, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Map::dim &gt; &amp;test_point) noexcept</td></tr>
+<tr class="memdesc:ga1e156c7ae26ac3d9fedf6b992a5c82e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a Map <code>map</code>, checks that the inverse map gives expected results. <br /></td></tr>
+<tr class="separator:ga1e156c7ae26ac3d9fedf6b992a5c82e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9a8dfecf4be3cf5c8774cdfd28edf171"><td class="memTemplParams" colspan="2">
+template&lt;typename Map , typename T &gt; </td></tr>
+<tr class="memitem:ga9a8dfecf4be3cf5c8774cdfd28edf171"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__TestingFrameworkGroup.html#ga9a8dfecf4be3cf5c8774cdfd28edf171">test_inverse_map</a> (const Map &amp;map, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; T, Map::dim &gt; &amp;test_point, const double time, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classdomain_1_1FunctionsOfTime_1_1FunctionOfTime.html">domain::FunctionsOfTime::FunctionOfTime</a> &gt;&gt; &amp;functions_of_time) noexcept</td></tr>
+<tr class="memdesc:ga9a8dfecf4be3cf5c8774cdfd28edf171"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a Map <code>map</code>, checks that the inverse map gives expected results. <br /></td></tr>
+<tr class="separator:ga9a8dfecf4be3cf5c8774cdfd28edf171"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Helper functions for testing coordinate maps </p>
+</div></div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

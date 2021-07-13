@@ -1,0 +1,323 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Parallel/Invoke.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_f1a490c609eea752f5cd0b5c139209b7.html">Parallel</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">Invoke.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160; </div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;Parallel/MaxInlineMethodsReached.hpp&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Parallel_2TypeTraits_8hpp.html">Parallel/TypeTraits.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160; </div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceParallel.html">Parallel</a> {</div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="keyword">namespace </span>detail {</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> = std::<span class="keywordtype">void</span>_t&lt;&gt;&gt;</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="keyword">struct </span>has_ckLocal_method : <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::false_type</a> {};</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160; </div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="keyword">struct </span>has_ckLocal_method&lt;T, std::void_t&lt;decltype(std::declval&lt;T&gt;().ckLocal())&gt;&gt;</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    : <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::true_type</a> {};</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;}  <span class="comment">// namespace detail</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment"> * \ingroup ParallelGroup</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment"> * \brief Send the data `args...` to the algorithm running on `proxy`, and tag</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment"> * the message with the identifier `temporal_id`.</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="comment"> * If the algorithm was previously disabled, set `enable_if_disabled` to true to</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment"> * enable the algorithm on the parallel component.</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> ReceiveTag, <span class="keyword">typename</span> Proxy, <span class="keyword">typename</span> ReceiveDataType&gt;</div>
+<div class="line"><a name="l00032"></a><span class="lineno"><a class="line" href="group__ParallelGroup.html#ga082a5e034d254ce6c633f9aaabe4a2d6">   32</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__ParallelGroup.html#ga082a5e034d254ce6c633f9aaabe4a2d6">receive_data</a>(Proxy&amp;&amp; proxy, <span class="keyword">typename</span> ReceiveTag::temporal_id temporal_id,</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;                  ReceiveDataType&amp;&amp; <a class="code" href="group__ParallelGroup.html#ga082a5e034d254ce6c633f9aaabe4a2d6">receive_data</a>,</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;                  <span class="keyword">const</span> <span class="keywordtype">bool</span> enable_if_disabled = <span class="keyword">false</span>) noexcept {</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  <span class="comment">// Both branches of this if statement call into the charm proxy system, but</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  <span class="comment">// because we specify [inline] for array chares, we must specify the</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="comment">// `ReceiveDataType` explicitly in the template arguments when dispatching to</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  <span class="comment">// array chares.</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  <span class="comment">// This is required because of inconsistent overloads in the generated charm++</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  <span class="comment">// files when [inline] is specified vs when it is not. The [inline] version</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;  <span class="comment">// generates a function signature with template parameters associated with</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  <span class="comment">// each function argument, ensuring a redundant template parameter for the</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;  <span class="comment">// `ReceiveDataType`. Then, that template parameter cannot be inferred so must</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  <span class="comment">// be explicitly specified.</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  <span class="keywordflow">if</span> constexpr (detail::has_ckLocal_method&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/types/decay.html">std::decay_t&lt;Proxy&gt;</a>&gt;::value) {</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    proxy.template receive_data&lt;ReceiveTag, std::decay_t&lt;ReceiveDataType&gt;&gt;(</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        std::move(temporal_id), std::forward&lt;ReceiveDataType&gt;(<a class="code" href="group__ParallelGroup.html#ga082a5e034d254ce6c633f9aaabe4a2d6">receive_data</a>),</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        enable_if_disabled);</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    proxy.template receive_data&lt;ReceiveTag&gt;(</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        std::move(temporal_id), std::forward&lt;ReceiveDataType&gt;(<a class="code" href="group__ParallelGroup.html#ga082a5e034d254ce6c633f9aaabe4a2d6">receive_data</a>),</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        enable_if_disabled);</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;  }</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;}</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment">/// @{</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment"></span><span class="comment">/*!</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment"> * \ingroup ParallelGroup</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment"> * \brief Invoke a simple action on `proxy`</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Action, <span class="keyword">typename</span> Proxy&gt;</div>
+<div class="line"><a name="l00062"></a><span class="lineno"><a class="line" href="group__ParallelGroup.html#gaa17acf0ac876ac8cf36dfb939d7aea11">   62</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__ParallelGroup.html#gaa17acf0ac876ac8cf36dfb939d7aea11">simple_action</a>(Proxy&amp;&amp; proxy) noexcept {</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;  proxy.template simple_action&lt;Action&gt;();</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;}</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160; </div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Action, <span class="keyword">typename</span> Proxy, <span class="keyword">typename</span> Arg0, <span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a name="l00067"></a><span class="lineno"><a class="line" href="group__ParallelGroup.html#gaa8624f46f3a77806a85190891437ee67">   67</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__ParallelGroup.html#gaa17acf0ac876ac8cf36dfb939d7aea11">simple_action</a>(Proxy&amp;&amp; proxy, Arg0&amp;&amp; arg0, Args&amp;&amp;... args) noexcept {</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;  proxy.template simple_action&lt;Action&gt;(</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;      <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/types/decay.html">std::decay_t&lt;Arg0&gt;</a>, <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/decay.html">std::decay_t&lt;Args&gt;</a>...&gt;(</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;          std::forward&lt;Arg0&gt;(arg0), std::forward&lt;Args&gt;(args)...));</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;}<span class="comment"></span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment">/// @}</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment"></span><span class="comment"></span> </div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment"> * \ingroup ParallelGroup</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment"> * \brief Invoke a local synchronous action on `proxy`</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Action, <span class="keyword">typename</span> Proxy, <span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a name="l00079"></a><span class="lineno"><a class="line" href="group__ParallelGroup.html#ga77b497b1275ff26d7e4a4c58742d2020">   79</a></span>&#160;decltype(<span class="keyword">auto</span>) <a class="code" href="group__ParallelGroup.html#ga77b497b1275ff26d7e4a4c58742d2020">local_synchronous_action</a>(Proxy&amp;&amp; proxy,</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;                                        Args&amp;&amp;... args) noexcept {</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;  <span class="keywordflow">return</span> proxy.ckLocalBranch()-&gt;template local_synchronous_action&lt;Action&gt;(</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;      std::forward&lt;Args&gt;(args)...);</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;}</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="comment">/// @{</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment"></span><span class="comment">/*!</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment"> * \ingroup ParallelGroup</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment"> * \brief Invoke a threaded action on `proxy`, where the proxy must be a</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment"> * nodegroup.</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Action, <span class="keyword">typename</span> Proxy&gt;</div>
+<div class="line"><a name="l00092"></a><span class="lineno"><a class="line" href="group__ParallelGroup.html#ga9400abf9bfed73781d813df2c1a9f162">   92</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__ParallelGroup.html#ga9400abf9bfed73781d813df2c1a9f162">threaded_action</a>(Proxy&amp;&amp; proxy) noexcept {</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;  proxy.template threaded_action&lt;Action&gt;();</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;}</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160; </div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Action, <span class="keyword">typename</span> Proxy, <span class="keyword">typename</span> Arg0, <span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a name="l00097"></a><span class="lineno"><a class="line" href="group__ParallelGroup.html#gac875d2accf84d68a10b5a9c8b450cb5d">   97</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__ParallelGroup.html#ga9400abf9bfed73781d813df2c1a9f162">threaded_action</a>(Proxy&amp;&amp; proxy, Arg0&amp;&amp; arg0, Args&amp;&amp;... args) noexcept {</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;  proxy.template threaded_action&lt;Action&gt;(</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;      <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/types/decay.html">std::decay_t&lt;Arg0&gt;</a>, <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/decay.html">std::decay_t&lt;Args&gt;</a>...&gt;(</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;          std::forward&lt;Arg0&gt;(arg0), std::forward&lt;Args&gt;(args)...));</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;}<span class="comment"></span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="comment">/// @}</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="comment"></span>}  <span class="comment">// namespace Parallel</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="aintegral_constant_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::false_type</a></div></div>
+<div class="ttc" id="autility_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a></div></div>
+<div class="ttc" id="atuple_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a></div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_ga77b497b1275ff26d7e4a4c58742d2020"><div class="ttname"><a href="group__ParallelGroup.html#ga77b497b1275ff26d7e4a4c58742d2020">Parallel::local_synchronous_action</a></div><div class="ttdeci">decltype(auto) local_synchronous_action(Proxy &amp;&amp;proxy, Args &amp;&amp;... args) noexcept</div><div class="ttdoc">Invoke a local synchronous action on proxy</div><div class="ttdef"><b>Definition:</b> Invoke.hpp:79</div></div>
+<div class="ttc" id="adecay_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/decay.html">std::decay_t</a></div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_ga082a5e034d254ce6c633f9aaabe4a2d6"><div class="ttname"><a href="group__ParallelGroup.html#ga082a5e034d254ce6c633f9aaabe4a2d6">Parallel::receive_data</a></div><div class="ttdeci">void receive_data(Proxy &amp;&amp;proxy, typename ReceiveTag::temporal_id temporal_id, ReceiveDataType &amp;&amp;receive_data, const bool enable_if_disabled=false) noexcept</div><div class="ttdoc">Send the data args... to the algorithm running on proxy, and tag the message with the identifier temp...</div><div class="ttdef"><b>Definition:</b> Invoke.hpp:32</div></div>
+<div class="ttc" id="aParallel_2TypeTraits_8hpp_html"><div class="ttname"><a href="Parallel_2TypeTraits_8hpp.html">TypeTraits.hpp</a></div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_gaa17acf0ac876ac8cf36dfb939d7aea11"><div class="ttname"><a href="group__ParallelGroup.html#gaa17acf0ac876ac8cf36dfb939d7aea11">Parallel::simple_action</a></div><div class="ttdeci">void simple_action(Proxy &amp;&amp;proxy) noexcept</div><div class="ttdoc">Invoke a simple action on proxy</div><div class="ttdef"><b>Definition:</b> Invoke.hpp:62</div></div>
+<div class="ttc" id="anamespaceParallel_html"><div class="ttname"><a href="namespaceParallel.html">Parallel</a></div><div class="ttdoc">Functionality for parallelization.</div><div class="ttdef"><b>Definition:</b> ElementReceiveInterpPoints.hpp:13</div></div>
+<div class="ttc" id="atype_traits_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a></div></div>
+<div class="ttc" id="agroup__ParallelGroup_html_ga9400abf9bfed73781d813df2c1a9f162"><div class="ttname"><a href="group__ParallelGroup.html#ga9400abf9bfed73781d813df2c1a9f162">Parallel::threaded_action</a></div><div class="ttdeci">void threaded_action(Proxy &amp;&amp;proxy) noexcept</div><div class="ttdoc">Invoke a threaded action on proxy, where the proxy must be a nodegroup.</div><div class="ttdef"><b>Definition:</b> Invoke.hpp:92</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

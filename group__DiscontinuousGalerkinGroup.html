@@ -1,0 +1,860 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Discontinuous Galerkin</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle">
+<div class="title">Discontinuous Galerkin</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Functions and classes specific to the Discontinuous Galerkin algorithm.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structActions_1_1ComputeTimeDerivative.html">Actions::ComputeTimeDerivative&lt; TimeDerivativeComputer &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the time derivative of the system variables.  <a href="structActions_1_1ComputeTimeDerivative.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLimiters_1_1Tags_1_1LimiterCommunicationTag.html">Limiters::Tags::LimiterCommunicationTag&lt; Metavariables &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The inbox tag for limiter communication.  <a href="structLimiters_1_1Tags_1_1LimiterCommunicationTag.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLimiters_1_1Actions_1_1Limit.html">Limiters::Actions::Limit&lt; Metavariables &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive limiter data from neighbors, then apply limiter.  <a href="structLimiters_1_1Actions_1_1Limit.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLimiters_1_1Actions_1_1SendData.html">Limiters::Actions::SendData&lt; Metavariables &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send local data needed for limiting.  <a href="structLimiters_1_1Actions_1_1SendData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdg_1_1FirstOrderScheme_1_1FirstOrderScheme.html">dg::FirstOrderScheme::FirstOrderScheme&lt; Dim, VariablesTag, DtVariablesTag, NumericalFluxComputerTag, TemporalIdTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Boundary contributions for a first-order DG scheme.  <a href="structdg_1_1FirstOrderScheme_1_1FirstOrderScheme.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdg_1_1FirstOrderScheme_1_1FirstOrderSchemeLts.html">dg::FirstOrderScheme::FirstOrderSchemeLts&lt; Dim, VariablesTag, DtVariablesTag, NumericalFluxComputerTag, TemporalIdTag, TimeStepperTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Boundary contributions for a first-order DG scheme with local time-stepping.  <a href="structdg_1_1FirstOrderScheme_1_1FirstOrderSchemeLts.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdg_1_1NumericalFluxes_1_1Hll.html">dg::NumericalFluxes::Hll&lt; System &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the HLL numerical flux.  <a href="structdg_1_1NumericalFluxes_1_1Hll.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdg_1_1NumericalFluxes_1_1LocalLaxFriedrichs.html">dg::NumericalFluxes::LocalLaxFriedrichs&lt; System &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the local Lax-Friedrichs numerical flux.  <a href="structdg_1_1NumericalFluxes_1_1LocalLaxFriedrichs.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdg_1_1SimpleMortarData.html">dg::SimpleMortarData&lt; TemporalId, LocalVars, RemoteVars &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Storage of boundary data on two sides of a mortar.  <a href="classdg_1_1SimpleMortarData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1SimpleMortarData.html">Tags::SimpleMortarData&lt; TemporalId, LocalData, RemoteData &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simple boundary communication data.  <a href="structTags_1_1SimpleMortarData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1Mortars.html">Tags::Mortars&lt; Tag, VolumeDim &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTags_1_1MortarSize.html">Tags::MortarSize&lt; Dim &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classFilters_1_1Exponential.html">Filters::Exponential&lt; FilterIndex &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A cached exponential filter.  <a href="classFilters_1_1Exponential.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdg_1_1Actions_1_1Filter_3_01FilterType_00_01tmpl_1_1list_3_01TagsToFilter_8_8_8_01_4_01_4.html">dg::Actions::Filter&lt; FilterType, tmpl::list&lt; TagsToFilter... &gt; &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Applies a filter to the specified tags.  <a href="classdg_1_1Actions_1_1Filter_3_01FilterType_00_01tmpl_1_1list_3_01TagsToFilter_8_8_8_01_4_01_4.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdg_1_1Actions_1_1CollectDataForFluxes.html">dg::Actions::CollectDataForFluxes&lt; BoundaryScheme, DirectionsTag &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Collect data that is needed to compute numerical fluxes and store it on mortars, projecting it if necessary.  <a href="structdg_1_1Actions_1_1CollectDataForFluxes.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdg_1_1Actions_1_1SendDataForFluxes.html">dg::Actions::SendDataForFluxes&lt; BoundaryScheme &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send local boundary data needed for fluxes to neighbors.  <a href="structdg_1_1Actions_1_1SendDataForFluxes.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdg_1_1Actions_1_1ReceiveDataForFluxes.html">dg::Actions::ReceiveDataForFluxes&lt; BoundaryScheme, typename &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive boundary data needed for fluxes from neighbors.  <a href="structdg_1_1Actions_1_1ReceiveDataForFluxes.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdg_1_1Events_1_1ObserveErrorNorms_3_01ObservationValueTag_00_01tmpl_1_1list_3_01Tensors_8_8_8_01_4_01_4.html">dg::Events::ObserveErrorNorms&lt; ObservationValueTag, tmpl::list&lt; Tensors... &gt; &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Observe the RMS errors in the tensors compared to their analytic solution.  <a href="classdg_1_1Events_1_1ObserveErrorNorms_3_01ObservationValueTag_00_01tmpl_1_1list_3_01Tensors_8_8_8_01_4_01_4.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdg_1_1Events_1_1ObserveFields_3_01VolumeDim_00_01ObservationValueTag_00_01tmpl_1_1list_3_016fbe9ee2f313de16bfb5db27bcf01ce6.html">dg::Events::ObserveFields&lt; VolumeDim, ObservationValueTag, tmpl::list&lt; Tensors... &gt;, tmpl::list&lt; AnalyticSolutionTensors... &gt;, tmpl::list&lt; NonSolutionTensors... &gt; &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Observe volume tensor fields.  <a href="classdg_1_1Events_1_1ObserveFields_3_01VolumeDim_00_01ObservationValueTag_00_01tmpl_1_1list_3_016fbe9ee2f313de16bfb5db27bcf01ce6.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdg_1_1Events_1_1ObserveVolumeIntegrals_3_01VolumeDim_00_01ObservationValueTag_00_01tmpl_1_1defa771d73d788e0729ab0165b436e92.html">dg::Events::ObserveVolumeIntegrals&lt; VolumeDim, ObservationValueTag, tmpl::list&lt; Tensors... &gt; &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Observe the volume integrals of the tensors over the domain.  <a href="classdg_1_1Events_1_1ObserveVolumeIntegrals_3_01VolumeDim_00_01ObservationValueTag_00_01tmpl_1_1defa771d73d788e0729ab0165b436e92.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:ga102ad013b7e4298b4c14c52a39bcd8da"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__DiscontinuousGalerkinGroup.html#ga102ad013b7e4298b4c14c52a39bcd8da">dg::Formulation</a> { <b>StrongInertial</b>, 
+<b>WeakInertial</b>
+ }</td></tr>
+<tr class="memdesc:ga102ad013b7e4298b4c14c52a39bcd8da"><td class="mdescLeft">&#160;</td><td class="mdescRight">The DG formulation to use.  <a href="group__DiscontinuousGalerkinGroup.html#ga102ad013b7e4298b4c14c52a39bcd8da">More...</a><br /></td></tr>
+<tr class="separator:ga102ad013b7e4298b4c14c52a39bcd8da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:gaee76646149bd85a9808cbd3dc548eb47"><td class="memTemplParams" colspan="2">template&lt;typename InboxTag , size_t Dim, typename TemporalIdType , typename... InboxTags&gt; </td></tr>
+<tr class="memitem:gaee76646149bd85a9808cbd3dc548eb47"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DiscontinuousGalerkinGroup.html#gaee76646149bd85a9808cbd3dc548eb47">dg::has_received_from_all_mortars</a> (const TemporalIdType &amp;temporal_id, const <a class="el" href="classElement.html">Element</a>&lt; Dim &gt; &amp;element, const <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; InboxTags... &gt; &amp;inboxes) noexcept</td></tr>
+<tr class="memdesc:gaee76646149bd85a9808cbd3dc548eb47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines if data on all mortars has been received for the <code>InboxTag</code> at time <code>temporal_id</code>.  <a href="group__DiscontinuousGalerkinGroup.html#gaee76646149bd85a9808cbd3dc548eb47">More...</a><br /></td></tr>
+<tr class="separator:gaee76646149bd85a9808cbd3dc548eb47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab334019445a7f1261769b51d3223bf7f"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:gab334019445a7f1261769b51d3223bf7f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DiscontinuousGalerkinGroup.html#gab334019445a7f1261769b51d3223bf7f">dg::metric_identity_det_jac_times_inv_jac</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; det_jac_times_inverse_jacobian, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;inertial_coords, const Jacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;jacobian) noexcept</td></tr>
+<tr class="memdesc:gab334019445a7f1261769b51d3223bf7f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the Jacobian determinant times the inverse Jacobian so that the result is divergence-free.  <a href="group__DiscontinuousGalerkinGroup.html#gab334019445a7f1261769b51d3223bf7f">More...</a><br /></td></tr>
+<tr class="separator:gab334019445a7f1261769b51d3223bf7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1a63d0fdd77e6f95b46dfe34a2ccb8fa"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:ga1a63d0fdd77e6f95b46dfe34a2ccb8fa"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DiscontinuousGalerkinGroup.html#ga1a63d0fdd77e6f95b46dfe34a2ccb8fa">dg::metric_identity_jacobian_quantities</a> (<a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; det_jac_times_inverse_jacobian, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; inverse_jacobian, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Jacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt; jacobian, <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt; det_jacobian, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;mesh, const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;inertial_coords) noexcept</td></tr>
+<tr class="memdesc:ga1a63d0fdd77e6f95b46dfe34a2ccb8fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the Jacobian, inverse Jacobian, and determinant of the Jacobian so that they satisfy the metric identities.  <a href="group__DiscontinuousGalerkinGroup.html#ga1a63d0fdd77e6f95b46dfe34a2ccb8fa">More...</a><br /></td></tr>
+<tr class="separator:ga1a63d0fdd77e6f95b46dfe34a2ccb8fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga738b600132f1a93efa03fde8c11e950c"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:ga738b600132f1a93efa03fde8c11e950c"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DiscontinuousGalerkinGroup.html#ga738b600132f1a93efa03fde8c11e950c">dg::mortar_mesh</a> (const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;face_mesh1, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;face_mesh2) noexcept</td></tr>
+<tr class="separator:ga738b600132f1a93efa03fde8c11e950c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad64bacb048e27950202430591f5ae631"><td class="memTemplParams" colspan="2">template&lt;size_t Dim&gt; </td></tr>
+<tr class="memitem:gad64bacb048e27950202430591f5ae631"><td class="memTemplItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">MortarSize</a>&lt; Dim - 1 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DiscontinuousGalerkinGroup.html#gad64bacb048e27950202430591f5ae631">dg::mortar_size</a> (const <a class="el" href="classElementId.html">ElementId</a>&lt; Dim &gt; &amp;self, const <a class="el" href="classElementId.html">ElementId</a>&lt; Dim &gt; &amp;neighbor, size_t dimension, const <a class="el" href="classOrientationMap.html">OrientationMap</a>&lt; Dim &gt; &amp;orientation) noexcept</td></tr>
+<tr class="separator:gad64bacb048e27950202430591f5ae631"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga10331f076ed7bf2a80a9feb054f57594"><td class="memTemplParams" colspan="2">template&lt;typename Tags , size_t Dim&gt; </td></tr>
+<tr class="memitem:ga10331f076ed7bf2a80a9feb054f57594"><td class="memTemplItemLeft" align="right" valign="top">Variables&lt; Tags &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DiscontinuousGalerkinGroup.html#ga10331f076ed7bf2a80a9feb054f57594">dg::project_to_mortar</a> (const Variables&lt; Tags &gt; &amp;vars, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;face_mesh, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;<a class="el" href="group__DiscontinuousGalerkinGroup.html#ga738b600132f1a93efa03fde8c11e950c">mortar_mesh</a>, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">MortarSize</a>&lt; Dim &gt; &amp;<a class="el" href="group__DiscontinuousGalerkinGroup.html#gad64bacb048e27950202430591f5ae631">mortar_size</a>) noexcept</td></tr>
+<tr class="separator:ga10331f076ed7bf2a80a9feb054f57594"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacb1af7445881ea429e92ec466a2684f0"><td class="memTemplParams" colspan="2">template&lt;typename Tags , size_t Dim&gt; </td></tr>
+<tr class="memitem:gacb1af7445881ea429e92ec466a2684f0"><td class="memTemplItemLeft" align="right" valign="top">Variables&lt; Tags &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DiscontinuousGalerkinGroup.html#gacb1af7445881ea429e92ec466a2684f0">dg::project_from_mortar</a> (const Variables&lt; Tags &gt; &amp;vars, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;face_mesh, const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;<a class="el" href="group__DiscontinuousGalerkinGroup.html#ga738b600132f1a93efa03fde8c11e950c">mortar_mesh</a>, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">MortarSize</a>&lt; Dim &gt; &amp;<a class="el" href="group__DiscontinuousGalerkinGroup.html#gad64bacb048e27950202430591f5ae631">mortar_size</a>) noexcept</td></tr>
+<tr class="separator:gacb1af7445881ea429e92ec466a2684f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0b03977f50dd9c182e87226f1064b562"><td class="memTemplParams" colspan="2">template&lt;typename... BoundaryCorrectionTags&gt; </td></tr>
+<tr class="memitem:ga0b03977f50dd9c182e87226f1064b562"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DiscontinuousGalerkinGroup.html#ga0b03977f50dd9c182e87226f1064b562">dg::lift_flux</a> (const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; tmpl::list&lt; BoundaryCorrectionTags... &gt;&gt; * &gt; boundary_correction_terms, const size_t extent_perpendicular_to_boundary, <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; magnitude_of_face_normal) noexcept</td></tr>
+<tr class="memdesc:ga0b03977f50dd9c182e87226f1064b562"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lifts the flux contribution from an interface to the volume.  <a href="group__DiscontinuousGalerkinGroup.html#ga0b03977f50dd9c182e87226f1064b562">More...</a><br /></td></tr>
+<tr class="separator:ga0b03977f50dd9c182e87226f1064b562"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga04da649e76c3c3fed752bc19d5bb9d32"><td class="memTemplParams" colspan="2">template&lt;typename... FluxTags&gt; </td></tr>
+<tr class="memitem:ga04da649e76c3c3fed752bc19d5bb9d32"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__DiscontinuousGalerkinGroup.html#ga04da649e76c3c3fed752bc19d5bb9d32">dg::lift_flux</a> (Variables&lt; tmpl::list&lt; FluxTags... &gt;&gt; flux, const size_t extent_perpendicular_to_boundary, <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; magnitude_of_face_normal) noexcept -&gt; Variables&lt; tmpl::list&lt; <a class="el" href="group__DataBoxTagsGroup.html#gae0f7c7c20a2a4908eebcb234302b1b4f">db::remove_tag_prefix</a>&lt; FluxTags &gt;... &gt;&gt;</td></tr>
+<tr class="memdesc:ga04da649e76c3c3fed752bc19d5bb9d32"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lifts the flux contribution from an interface to the volume.  <a href="group__DiscontinuousGalerkinGroup.html#ga04da649e76c3c3fed752bc19d5bb9d32">More...</a><br /></td></tr>
+<tr class="separator:ga04da649e76c3c3fed752bc19d5bb9d32"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p>Functions and classes specific to the Discontinuous Galerkin algorithm. </p>
+<h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="ga102ad013b7e4298b4c14c52a39bcd8da"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga102ad013b7e4298b4c14c52a39bcd8da">&#9670;&nbsp;</a></span>Formulation</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="group__DiscontinuousGalerkinGroup.html#ga102ad013b7e4298b4c14c52a39bcd8da">dg::Formulation</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The DG formulation to use. </p>
+<ul>
+<li>The <code>StrongInertial</code> formulation is also known as the integrate then transform formulation. The "Inertial" part of the name refers to the fact that the integration is done over the physical/inertial coordinates, while the "strong" part refers to the fact that the boundary correction terms are zero if the solution is continuous at the interfaces. See <a class="el" href="citelist.html#CITEREF_Teukolsky2015ega">[102]</a> for an overview.</li>
+<li>The <code>WeakInertial</code> formulation is also known as the integrate then transform formulation. The "Inertial" part of the name refers to the fact that the integration is done over the physical/inertial coordinates, while the "weak" part refers to the fact that the boundary correction terms are non-zero even if the solution is continuous at the interfaces. See <a class="el" href="citelist.html#CITEREF_Teukolsky2015ega">[102]</a> for an overview. </li>
+</ul>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="gaee76646149bd85a9808cbd3dc548eb47"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaee76646149bd85a9808cbd3dc548eb47">&#9670;&nbsp;</a></span>has_received_from_all_mortars()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename InboxTag , size_t Dim, typename TemporalIdType , typename... InboxTags&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool dg::has_received_from_all_mortars </td>
+          <td>(</td>
+          <td class="paramtype">const TemporalIdType &amp;&#160;</td>
+          <td class="paramname"><em>temporal_id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classElement.html">Element</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>element</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; InboxTags... &gt; &amp;&#160;</td>
+          <td class="paramname"><em>inboxes</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Determines if data on all mortars has been received for the <code>InboxTag</code> at time <code>temporal_id</code>. </p>
+<p>The <code>InboxTag</code> must hold a container indexed by the <code>TemporalIdType</code>, representing received neighbor data at a given time. Each element in the container, i.e. the received neighbor data at a given time, must be another container indexed by the <code>dg::MortarId&lt;Dim&gt;</code>. The value it holds is not relevant for this function. Here's an example for such a type:</p>
+<div class="fragment"><div class="line"><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> Dim&gt;</div>
+<div class="line"><span class="keyword">struct </span>InboxTag {</div>
+<div class="line">  <span class="keyword">using</span> type = <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map&lt;int, dg::MortarMap&lt;Dim, double&gt;</a>&gt;;</div>
+<div class="line">};</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="ga0b03977f50dd9c182e87226f1064b562"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0b03977f50dd9c182e87226f1064b562">&#9670;&nbsp;</a></span>lift_flux() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... BoundaryCorrectionTags&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void dg::lift_flux </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Variables&lt; tmpl::list&lt; BoundaryCorrectionTags... &gt;&gt; * &gt;&#160;</td>
+          <td class="paramname"><em>boundary_correction_terms</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>extent_perpendicular_to_boundary</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&#160;</td>
+          <td class="paramname"><em>magnitude_of_face_normal</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Lifts the flux contribution from an interface to the volume. </p>
+<p>The lifting operation takes the (d-1)-dimensional flux term at the interface and computes the corresponding d-dimensional term in the volume. SpECTRE implements an efficient DG method in which each interface grid point contributes only to that same grid point of the volume.</p>
+<h3>Details</h3>
+<p>SpECTRE implements a DG method with a diagonalized mass matrix (also known as a mass-lumping scheme). This choice gives a large reduction in the computational cost of the lifting operation, however, the scheme is slightly less accurate, especially when the grid is deformed by non-trivial Jacobians. For more details on the diagonalization of the mass matrix and its implications, <a class="el" href="citelist.html#CITEREF_Teukolsky2015ega">[102]</a>, especially Section 3.</p>
+<dl class="section note"><dt>Note</dt><dd>The result is still provided only on the boundary grid. The values away from the boundary are zero and are not stored. </dd></dl>
+
+</div>
+</div>
+<a id="ga04da649e76c3c3fed752bc19d5bb9d32"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga04da649e76c3c3fed752bc19d5bb9d32">&#9670;&nbsp;</a></span>lift_flux() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... FluxTags&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto dg::lift_flux </td>
+          <td>(</td>
+          <td class="paramtype">Variables&lt; tmpl::list&lt; FluxTags... &gt;&gt;&#160;</td>
+          <td class="paramname"><em>flux</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>extent_perpendicular_to_boundary</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt;&#160;</td>
+          <td class="paramname"><em>magnitude_of_face_normal</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> -&gt; Variables&lt;tmpl::list&lt;<a class="el" href="group__DataBoxTagsGroup.html#gae0f7c7c20a2a4908eebcb234302b1b4f">db::remove_tag_prefix</a>&lt;FluxTags&gt;...&gt;&gt; </td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Lifts the flux contribution from an interface to the volume. </p>
+<p>The lifting operation takes the (d-1)-dimensional flux term at the interface and computes the corresponding d-dimensional term in the volume. SpECTRE implements an efficient DG method in which each interface grid point contributes only to that same grid point of the volume.</p>
+<h3>Details</h3>
+<p>SpECTRE implements a DG method with a diagonalized mass matrix (also known as a mass-lumping scheme). This choice gives a large reduction in the computational cost of the lifting operation, however, the scheme is slightly less accurate, especially when the grid is deformed by non-trivial Jacobians. For more details on the diagonalization of the mass matrix and its implications, <a class="el" href="citelist.html#CITEREF_Teukolsky2015ega">[102]</a>, especially Section 3.</p>
+<dl class="section note"><dt>Note</dt><dd>The result is still provided only on the boundary grid. The values away from the boundary are zero and are not stored. </dd></dl>
+
+</div>
+</div>
+<a id="gab334019445a7f1261769b51d3223bf7f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab334019445a7f1261769b51d3223bf7f">&#9670;&nbsp;</a></span>metric_identity_det_jac_times_inv_jac()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void dg::metric_identity_det_jac_times_inv_jac </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>det_jac_times_inverse_jacobian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>inertial_coords</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Jacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>jacobian</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the Jacobian determinant times the inverse Jacobian so that the result is divergence-free. </p>
+<p>The metric identities are given by</p>
+<p class="formulaDsp">
+\begin{align*} \partial_{\hat{\imath}}\left(J\frac{\partial\xi^{\hat{\imath}}} {\partial x^i}\right)=0. \end{align*}
+</p>
+<p>We want to compute \(J\partial\xi^{\hat{\imath}}/\partial x^i\) in such a way that the above metric identity is satisfied numerically/discretely. We refer to the inverse Jacobian computed this way as the "metric
+indentity-satisfying inverse Jacobian".</p>
+<p>The discretized form, with the Jacobian determinant \(J\) expanded, is given by</p>
+<p class="formulaDsp">
+\begin{align*} 2\left(J\frac{\partial \xi^{\hat{\imath}}}{\partial x^i}\right)_{s} &amp;=\epsilon_{ijk} \sum_{t_{\hat{1}}} \epsilon^{\hat{\imath}\hat{1}\hat{k}} D^{(\hat{1})}_{s t_1} \left(x^j\frac{\partial x^k}{\partial \xi^{\hat{k}}}\right)_{t} \notag \\ &amp;+\epsilon_{ijk} \sum_{t_{\hat{2}}} \epsilon^{\hat{\imath}\hat{2}\hat{k}} D^{(\hat{2})}_{st_2} \left(x^j\frac{\partial x^k}{\partial \xi^{\hat{k}}}\right)_{t} \notag \\ &amp;+\epsilon_{ijk} \sum_{t_{\hat{3}}}\epsilon^{\hat{\imath}\hat{3}\hat{k}} D^{(\hat{3})}_{st_3} \left(x^j\frac{\partial x^k}{\partial \xi^{\hat{k}}}\right)_{t}. \end{align*}
+</p>
+<p>where indices \(s,t,t_1,t_2\) and \(t_3\) are over grid points. \(t_i\) are the grid points in the particular logical direction.</p>
+<p>In 1d we have:</p>
+<p class="formulaDsp">
+\begin{align*} J\frac{\partial \xi^{\hat{\imath}}}{\partial x^i}= = J\frac{\partial \xi^{\hat{i}}}{\partial x^i} = 1 \end{align*}
+</p>
+<p>In 2d we have:</p>
+<p class="formulaDsp">
+\begin{align*} J\frac{\partial \xi^{\hat{1}}}{\partial x^1}&amp;=D^{\hat{(2)}}x^2 &amp; J\frac{\partial \xi^{\hat{2}}}{\partial x^1}&amp;=-D^{\hat{(1)}}x^2 \\ J\frac{\partial \xi^{\hat{1}}}{\partial x^2}&amp;=-D^{\hat{(2)}}x^1 &amp; J\frac{\partial \xi^{\hat{2}}}{\partial x^2}&amp;=D^{\hat{(1)}}x^1 \\ \end{align*}
+</p>
+<p>In 3d we have:</p>
+<p class="formulaDsp">
+\begin{align*} 2J\frac{\partial \xi^{\hat{1}}}{\partial x^1}&amp;= D^{(\hat{2})}\left(x^2\frac{\partial x^3}{\partial \xi^{\hat{3}}}\right) -D^{(\hat{2})}\left(x^3\frac{\partial x^2}{\partial \xi^{\hat{3}}}\right) +D^{(\hat{3})}\left(x^3\frac{\partial x^2}{\partial \xi^{\hat{2}}}\right) -D^{(\hat{3})}\left(x^2\frac{\partial x^3}{\partial \xi^{\hat{2}}}\right)\\ 2J\frac{\partial \xi^{\hat{2}}}{\partial x^1}&amp;= D^{(\hat{1})}\left(x^3\frac{\partial x^2}{\partial\xi^{\hat{3}}}\right) -D^{(\hat{1})}\left(x^2\frac{\partial x^3}{\partial\xi^{\hat{3}}}\right) +D^{(\hat{3})}\left(x^2\frac{\partial x^3}{\partial\xi^{\hat{1}}}\right) -D^{(\hat{3})}\left(x^3\frac{\partial x^2}{\partial\xi^{\hat{1}}}\right) \\ 2J\frac{\partial \xi^{\hat{3}}}{\partial x^1}&amp;= D^{(\hat{1})}\left(x^2\frac{\partial x^3}{\partial\xi^{\hat{2}}}\right) -D^{(\hat{1})}\left(x^3\frac{\partial x^2}{\partial\xi^{\hat{2}}}\right) +D^{(\hat{2})}\left(x^3\frac{\partial x^2}{\partial\xi^{\hat{1}}}\right) -D^{(\hat{2})}\left(x^2\frac{\partial x^3}{\partial\xi^{\hat{1}}}\right)\\ 2J\frac{\partial \xi^{\hat{1}}}{\partial x^2}&amp;= D^{(\hat{2})}\left(x^3\frac{\partial x^1}{\partial \xi^{\hat{3}}}\right) -D^{(\hat{2})}\left(x^1\frac{\partial x^3}{\partial \xi^{\hat{3}}}\right) +D^{(\hat{3})}\left(x^1\frac{\partial x^3}{\partial \xi^{\hat{2}}}\right) -D^{(\hat{3})}\left(x^3\frac{\partial x^1}{\partial \xi^{\hat{2}}}\right) \\ 2J\frac{\partial \xi^{\hat{2}}}{\partial x^2}&amp;= D^{(\hat{1})}\left(x^1\frac{\partial x^3}{\partial \xi^{\hat{3}}}\right) -D^{(\hat{1})}\left(x^3\frac{\partial x^1}{\partial \xi^{\hat{3}}}\right) +D^{(\hat{3})}\left(x^3\frac{\partial x^1}{\partial \xi^{\hat{1}}}\right) -D^{(\hat{3})}\left(x^1\frac{\partial x^3}{\partial \xi^{\hat{1}}}\right)\\ 2J\frac{\partial \xi^{\hat{3}}}{\partial x^2}&amp;= D^{(\hat{1})}\left(x^3\frac{\partial x^1}{\partial \xi^{\hat{2}}}\right) -D^{(\hat{1})}\left(x^1\frac{\partial x^3}{\partial \xi^{\hat{2}}}\right) +D^{(\hat{2})}\left(x^1\frac{\partial x^3}{\partial \xi^{\hat{1}}}\right) -D^{(\hat{2})}\left(x^3\frac{\partial x^1}{\partial \xi^{\hat{1}}}\right) \\ 2J\frac{\partial \xi^{\hat{1}}}{\partial x^3}&amp;= D^{(\hat{2})}\left(x^1\frac{\partial x^2}{\partial \xi^{\hat{3}}}\right) -D^{(\hat{2})}\left(x^2\frac{\partial x^1}{\partial \xi^{\hat{3}}}\right) +D^{(\hat{3})}\left(x^2\frac{\partial x^1}{\partial \xi^{\hat{2}}}\right) -D^{(\hat{3})}\left(x^1\frac{\partial x^2}{\partial \xi^{\hat{2}}}\right) \\ 2J\frac{\partial \xi^{\hat{2}}}{\partial x^3}&amp;= D^{(\hat{1})}\left(x^2\frac{\partial x^1}{\partial \xi^{\hat{3}}}\right) -D^{(\hat{1})}\left(x^1\frac{\partial x^2}{\partial \xi^{\hat{3}}}\right) +D^{(\hat{3})}\left(x^1\frac{\partial x^2}{\partial \xi^{\hat{1}}}\right) -D^{(\hat{3})}\left(x^2\frac{\partial x^1}{\partial \xi^{\hat{1}}}\right) \\ 2J\frac{\partial \xi^{\hat{3}}}{\partial x^3}&amp;= D^{(\hat{1})}\left(x^1\frac{\partial x^2}{\partial \xi^{\hat{2}}}\right) -D^{(\hat{1})}\left(x^2\frac{\partial x^1}{\partial \xi^{\hat{2}}}\right) +D^{(\hat{2})}\left(x^2\frac{\partial x^1}{\partial \xi^{\hat{1}}}\right) -D^{(\hat{2})}\left(x^1\frac{\partial x^2}{\partial \xi^{\hat{1}}}\right) \end{align*}
+</p>
+<p>Again, this ensures that the metric identities are satisfied discretely. That is,</p>
+<p class="formulaDsp">
+\begin{align*} \partial_{\hat{\imath}}\left(J\frac{\partial\xi^{\hat{\imath}}} {\partial x^i}\right)=0 \end{align*}
+</p>
+<p>numerically.</p>
+<p>The reason for calculating \(J\partial\xi^{\hat{\imath}}/\partial x^i\) in this manner is because in the weak form of DG (and most spectral-type methods can be recast as DG) we effectively evaluate</p>
+<p class="formulaDsp">
+\begin{align*} \partial_{\hat{\imath}}\left(J\frac{\partial\xi^{\hat{\imath}}} {\partial x^i} F^i\right), \end{align*}
+</p>
+<p>which should be identically zero if \(F^i\) is constant. This feature of a scheme is referred to as free-stream preserving. Note that another way to achieve free-stream preservation is to subtract off the metric identity violations. That is,</p>
+<p class="formulaDsp">
+\begin{align*} \partial_{\hat{\imath}}\left(J\frac{\partial\xi^{\hat{\imath}}} {\partial x^i} F^i\right) - F^i \partial_{\hat{\imath}}\left(J\frac{\partial\xi^{\hat{\imath}}} {\partial x^i}\right). \end{align*}
+</p>
+<p>The subtraction technique is most commonly used in finite difference codes. </p>
+
+</div>
+</div>
+<a id="ga1a63d0fdd77e6f95b46dfe34a2ccb8fa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga1a63d0fdd77e6f95b46dfe34a2ccb8fa">&#9670;&nbsp;</a></span>metric_identity_jacobian_quantities()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void dg::metric_identity_jacobian_quantities </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>det_jac_times_inverse_jacobian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; InverseJacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>inverse_jacobian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; Jacobian&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>jacobian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt; <a class="el" href="group__TensorGroup.html#ga06ebcb38a1f13c246e53378b9e8959ce">Scalar</a>&lt; <a class="el" href="classDataVector.html">DataVector</a> &gt; * &gt;&#160;</td>
+          <td class="paramname"><em>det_jacobian</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tnsr::I&lt; <a class="el" href="classDataVector.html">DataVector</a>, Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>inertial_coords</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the Jacobian, inverse Jacobian, and determinant of the Jacobian so that they satisfy the metric identities. </p>
+<p>Uses <code>dg::metric_identity_jacobian()</code> to compute the determinant of the Jacobian times the inverse Jacobian. By taking the determinant of this product, we can isolate \(J\), the determinant of the Jacobian. In \(d\) dimensions, we have:</p>
+<p class="formulaDsp">
+\begin{align} \mathrm{det}\left(J\frac{\partial \xi^{\hat{\imath}}}{\partial x^i}\right) = J^{d-1}. \end{align}
+</p>
+<p>We assume the determinant of the Jacobian is positive, which means logical and inertial coordinates have the same handedness. With this assumption, we have</p>
+<p class="formulaDsp">
+\begin{align} J = \sqrt[(d-1)]{\mathrm{det}\left(J\frac{\partial \xi^{\hat{\imath}}}{\partial x^i}\right)} \end{align}
+</p>
+<p>We can now compute the inverse Jacobian using:</p>
+<p class="formulaDsp">
+\begin{align} \frac{\partial \xi^{\hat{\imath}}}{\partial x^i}= \frac{1}{J}\left(J\frac{\partial \xi^{\hat{\imath}}}{\partial x^i}\right) \end{align}
+</p>
+<p>This guarantees that multiplying the determinant of the Jacobian by the inverse Jacobian gives a result that satisfies the metric identities. We also compute the Jacobian by inverting the inverse Jacobian, which guarantees they are (numerical) inverses of each other.</p>
+<dl class="section warning"><dt>Warning</dt><dd>on entry <code>jacobian</code> must be the Jacobian to use for computing the determinant of the Jacobian times the inverse Jacobian so that it satisfies the metric identities. The <code>jacobian</code> can be computed analytically or numerically, either is fine. On output the <code>jacobian</code> is the inverse of the inverse Jacobian that satisfies the metric identities. </dd></dl>
+
+</div>
+</div>
+<a id="ga738b600132f1a93efa03fde8c11e950c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga738b600132f1a93efa03fde8c11e950c">&#9670;&nbsp;</a></span>mortar_mesh()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classMesh.html">Mesh</a>&lt;Dim&gt; dg::mortar_mesh </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>face_mesh1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>face_mesh2</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Find a mesh for a mortar capable of representing data from either of two faces.</p>
+<dl class="section warning"><dt>Warning</dt><dd>Make sure the two face meshes are oriented the same, i.e. their dimensions align. This is facilitated by the <code>orientation</code> passed to <code>domain::Initialization::create_initial_mesh</code>, for example. </dd></dl>
+
+</div>
+</div>
+<a id="gad64bacb048e27950202430591f5ae631"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad64bacb048e27950202430591f5ae631">&#9670;&nbsp;</a></span>mortar_size()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">MortarSize</a>&lt;Dim - 1&gt; dg::mortar_size </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classElementId.html">ElementId</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classElementId.html">ElementId</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>neighbor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>dimension</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classOrientationMap.html">OrientationMap</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>orientation</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Determine the size of the mortar (i.e., the part of the face it covers) for communicating with a neighbor. This is the size relative to the size of <code>self</code>, and will not generally agree with that determined by <code>neighbor</code>. </p>
+
+</div>
+</div>
+<a id="gacb1af7445881ea429e92ec466a2684f0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gacb1af7445881ea429e92ec466a2684f0">&#9670;&nbsp;</a></span>project_from_mortar()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Tags , size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variables&lt;Tags&gt; dg::project_from_mortar </td>
+          <td>(</td>
+          <td class="paramtype">const Variables&lt; Tags &gt; &amp;&#160;</td>
+          <td class="paramname"><em>vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>face_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mortar_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">MortarSize</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mortar_size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Project variables from a mortar to a face. </p>
+
+</div>
+</div>
+<a id="ga10331f076ed7bf2a80a9feb054f57594"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga10331f076ed7bf2a80a9feb054f57594">&#9670;&nbsp;</a></span>project_to_mortar()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Tags , size_t Dim&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variables&lt;Tags&gt; dg::project_to_mortar </td>
+          <td>(</td>
+          <td class="paramtype">const Variables&lt; Tags &gt; &amp;&#160;</td>
+          <td class="paramname"><em>vars</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>face_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classMesh.html">Mesh</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mortar_mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">MortarSize</a>&lt; Dim &gt; &amp;&#160;</td>
+          <td class="paramname"><em>mortar_size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Project variables from a face to a mortar. </p>
+
+</div>
+</div>
+</div><!-- contents -->
+<div class="ttc" id="aunordered_map_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

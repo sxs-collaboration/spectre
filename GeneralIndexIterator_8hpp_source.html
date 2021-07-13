@@ -1,0 +1,287 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/DataStructures/GeneralIndexIterator.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_f794354f56b7b0ecf5e40827268a3615.html">DataStructures</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">GeneralIndexIterator.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a>&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160; </div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="comment">/// Iterate over a generic &quot;block&quot; of coordinates.  The constructor</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="comment">/// takes a container of pairs defining the range (inclusive start,</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="comment">/// exclusive end) of each coordinate.  The utility function</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="comment">/// make_general_index_iterator() is provided for easier construction.</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Container&gt;</div>
+<div class="line"><a name="l00016"></a><span class="lineno"><a class="line" href="classGeneralIndexIterator.html">   16</a></span>&#160;<span class="keyword">class </span><a class="code" href="classGeneralIndexIterator.html">GeneralIndexIterator</a> {</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;  <span class="keyword">using</span> value_type = <span class="keyword">typename</span> Container::value_type::first_type;</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;  <span class="keyword">using</span> iterator_type = <span class="keyword">typename</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;value_type&gt;::const_iterator</a>;</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160; </div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;  <span class="keyword">explicit</span> <a class="code" href="classGeneralIndexIterator.html">GeneralIndexIterator</a>(Container ranges) noexcept</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;      : ranges_(std::move(ranges)) {</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    current_.reserve(ranges_.size());</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; range : ranges_) {</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;      <span class="keywordflow">if</span> (range.first == range.second) {</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;        done_ = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;        <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;      }</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;      current_.push_back(range.first);</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    }</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  }</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment">  /// Access the given coordinate of the current value.</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno"><a class="line" href="classGeneralIndexIterator.html#ab43eedfe42162622b1bcf71a57abef41">   34</a></span>&#160;<span class="comment"></span>  <span class="keyword">const</span> value_type&amp; <a class="code" href="classGeneralIndexIterator.html#ab43eedfe42162622b1bcf71a57abef41">operator[]</a>(<span class="keywordtype">size_t</span> i) <span class="keyword">const</span> noexcept { <span class="keywordflow">return</span> current_[i]; }</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment">  /// Check whether the iterator is complete.  Calling any of the</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment">  /// other methods on a completed iterator is undefined behavior.</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno"><a class="line" href="classGeneralIndexIterator.html#a043ec9d9946a56d5ed0e05f9acfa08b9">   38</a></span>&#160;<span class="comment"></span>  <span class="keyword">explicit</span> <span class="keyword">operator</span> bool() const noexcept { <span class="keywordflow">return</span> not done_; }</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  <span class="keywordtype">void</span> operator++() noexcept {</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> index = 0; index &lt; current_.size(); ++index) {</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;      ++current_[index];</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;      <span class="keywordflow">if</span> (current_[index] != <a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(ranges_, index).second) { <span class="keywordflow">return</span>; }</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;      current_[index] = <a class="code" href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a>(ranges_, index).first;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    }</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    done_ = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  }</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment">  /// Iterate over the coordinates of the current value.</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment">  /// @{</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno"><a class="line" href="classGeneralIndexIterator.html#a5b354c4bfa632e44a515612345eb1276">   51</a></span>&#160;<span class="comment"></span>  iterator_type <a class="code" href="classGeneralIndexIterator.html#a5b354c4bfa632e44a515612345eb1276">cbegin</a>() const noexcept { <span class="keywordflow">return</span> current_.cbegin(); }</div>
+<div class="line"><a name="l00052"></a><span class="lineno"><a class="line" href="classGeneralIndexIterator.html#a0005ed915bf35003d1d4e2d1e17485f2">   52</a></span>&#160;  iterator_type <a class="code" href="classGeneralIndexIterator.html#a0005ed915bf35003d1d4e2d1e17485f2">cend</a>() const noexcept { <span class="keywordflow">return</span> current_.cend(); }</div>
+<div class="line"><a name="l00053"></a><span class="lineno"><a class="line" href="classGeneralIndexIterator.html#a4a79dcc2984965c46d1e5f0c9d22a1f1">   53</a></span>&#160;  iterator_type <a class="code" href="classGeneralIndexIterator.html#a4a79dcc2984965c46d1e5f0c9d22a1f1">begin</a>() const noexcept { <span class="keywordflow">return</span> <a class="code" href="classGeneralIndexIterator.html#a5b354c4bfa632e44a515612345eb1276">cbegin</a>(); }</div>
+<div class="line"><a name="l00054"></a><span class="lineno"><a class="line" href="classGeneralIndexIterator.html#adc2e4fc4b9ec6998d976bc048c635bcb">   54</a></span>&#160;  iterator_type <a class="code" href="classGeneralIndexIterator.html#adc2e4fc4b9ec6998d976bc048c635bcb">end</a>() const noexcept { <span class="keywordflow">return</span> <a class="code" href="classGeneralIndexIterator.html#a0005ed915bf35003d1d4e2d1e17485f2">cend</a>(); }<span class="comment"></span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment">  /// @}</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;  Container ranges_;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;value_type&gt;</a> current_{};</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;  <span class="keywordtype">bool</span> done_{<span class="keyword">false</span>};</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;};</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">/// Construct a GeneralIndexIterator</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Container&gt;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<a class="code" href="classGeneralIndexIterator.html">GeneralIndexIterator&lt;std::decay_t&lt;Container&gt;</a>&gt; make_general_index_iterator(</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    Container&amp;&amp; ranges) noexcept {</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;  <span class="keywordflow">return</span> <a class="code" href="classGeneralIndexIterator.html">GeneralIndexIterator&lt;std::decay_t&lt;Container&gt;</a>&gt;(</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;      std::forward&lt;Container&gt;(ranges));</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;}</div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga818f101f2f8bd824a3bc7c2c2361c560"><div class="ttname"><a href="group__UtilitiesGroup.html#ga818f101f2f8bd824a3bc7c2c2361c560">gsl::at</a></div><div class="ttdeci">constexpr T &amp; at(std::array&lt; T, N &gt; &amp;arr, Size index)</div><div class="ttdoc">Retrieve a entry from a container, with checks in Debug mode that the index being retrieved is valid.</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:125</div></div>
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a></div></div>
+<div class="ttc" id="aclassGeneralIndexIterator_html_a0005ed915bf35003d1d4e2d1e17485f2"><div class="ttname"><a href="classGeneralIndexIterator.html#a0005ed915bf35003d1d4e2d1e17485f2">GeneralIndexIterator::cend</a></div><div class="ttdeci">iterator_type cend() const noexcept</div><div class="ttdoc">Iterate over the coordinates of the current value.</div><div class="ttdef"><b>Definition:</b> GeneralIndexIterator.hpp:52</div></div>
+<div class="ttc" id="aclassGeneralIndexIterator_html_ab43eedfe42162622b1bcf71a57abef41"><div class="ttname"><a href="classGeneralIndexIterator.html#ab43eedfe42162622b1bcf71a57abef41">GeneralIndexIterator::operator[]</a></div><div class="ttdeci">const value_type &amp; operator[](size_t i) const noexcept</div><div class="ttdoc">Access the given coordinate of the current value.</div><div class="ttdef"><b>Definition:</b> GeneralIndexIterator.hpp:34</div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="aclassGeneralIndexIterator_html_a4a79dcc2984965c46d1e5f0c9d22a1f1"><div class="ttname"><a href="classGeneralIndexIterator.html#a4a79dcc2984965c46d1e5f0c9d22a1f1">GeneralIndexIterator::begin</a></div><div class="ttdeci">iterator_type begin() const noexcept</div><div class="ttdoc">Iterate over the coordinates of the current value.</div><div class="ttdef"><b>Definition:</b> GeneralIndexIterator.hpp:53</div></div>
+<div class="ttc" id="aclassGeneralIndexIterator_html"><div class="ttname"><a href="classGeneralIndexIterator.html">GeneralIndexIterator</a></div><div class="ttdoc">Iterate over a generic &quot;block&quot; of coordinates. The constructor takes a container of pairs defining th...</div><div class="ttdef"><b>Definition:</b> GeneralIndexIterator.hpp:16</div></div>
+<div class="ttc" id="aclassGeneralIndexIterator_html_a5b354c4bfa632e44a515612345eb1276"><div class="ttname"><a href="classGeneralIndexIterator.html#a5b354c4bfa632e44a515612345eb1276">GeneralIndexIterator::cbegin</a></div><div class="ttdeci">iterator_type cbegin() const noexcept</div><div class="ttdoc">Iterate over the coordinates of the current value.</div><div class="ttdef"><b>Definition:</b> GeneralIndexIterator.hpp:51</div></div>
+<div class="ttc" id="aclassGeneralIndexIterator_html_adc2e4fc4b9ec6998d976bc048c635bcb"><div class="ttname"><a href="classGeneralIndexIterator.html#adc2e4fc4b9ec6998d976bc048c635bcb">GeneralIndexIterator::end</a></div><div class="ttdeci">iterator_type end() const noexcept</div><div class="ttdoc">Iterate over the coordinates of the current value.</div><div class="ttdef"><b>Definition:</b> GeneralIndexIterator.hpp:54</div></div>
+<div class="ttc" id="atype_traits_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/type_traits.html">type_traits</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

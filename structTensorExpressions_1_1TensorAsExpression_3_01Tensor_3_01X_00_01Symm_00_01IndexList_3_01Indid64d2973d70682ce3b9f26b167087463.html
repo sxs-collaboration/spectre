@@ -1,0 +1,407 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: TensorExpressions::TensorAsExpression&lt; Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;, ArgsList&lt; Args... &gt; &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceTensorExpressions.html">TensorExpressions</a></li><li class="navelem"><a class="el" href="structTensorExpressions_1_1TensorAsExpression_3_01Tensor_3_01X_00_01Symm_00_01IndexList_3_01Indid64d2973d70682ce3b9f26b167087463.html">TensorAsExpression&lt; Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;, ArgsList&lt; Args... &gt; &gt;</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="structTensorExpressions_1_1TensorAsExpression_3_01Tensor_3_01X_00_01Symm_00_01IndexList_3_01Indif42f78478c2ea1b73aa9b276b7b74fbf.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">TensorExpressions::TensorAsExpression&lt; Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;, ArgsList&lt; Args... &gt; &gt; Struct Template Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a46f595d5e861c31d2459bd688f9d7b81"><td class="memItemLeft" align="right" valign="top"><a id="a46f595d5e861c31d2459bd688f9d7b81"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>type</b> = X</td></tr>
+<tr class="separator:a46f595d5e861c31d2459bd688f9d7b81"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d1b353fab6acb31603b2b5c8423cf4f"><td class="memItemLeft" align="right" valign="top"><a id="a8d1b353fab6acb31603b2b5c8423cf4f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>symmetry</b> = Symm</td></tr>
+<tr class="separator:a8d1b353fab6acb31603b2b5c8423cf4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a344889d01b0b2952f291e64e2ae0a6b2"><td class="memItemLeft" align="right" valign="top"><a id="a344889d01b0b2952f291e64e2ae0a6b2"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>index_list</b> = IndexList&lt; Indices... &gt;</td></tr>
+<tr class="separator:a344889d01b0b2952f291e64e2ae0a6b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5fe50dac11729883ac7750d9cf07bc2f"><td class="memItemLeft" align="right" valign="top"><a id="a5fe50dac11729883ac7750d9cf07bc2f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>args_list</b> = ArgsList&lt; Args... &gt;</td></tr>
+<tr class="separator:a5fe50dac11729883ac7750d9cf07bc2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a8a8e9a048cb8f750a632e31c428c8f28"><td class="memItemLeft" align="right" valign="top"><a id="a8a8e9a048cb8f750a632e31c428c8f28"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTensorExpressions_1_1TensorAsExpression_3_01Tensor_3_01X_00_01Symm_00_01IndexList_3_01Indid64d2973d70682ce3b9f26b167087463.html#a8a8e9a048cb8f750a632e31c428c8f28">TensorAsExpression</a> (const Tensor&lt; X, Symm, IndexList&lt; Indices... &gt;&gt; &amp;t)</td></tr>
+<tr class="memdesc:a8a8e9a048cb8f750a632e31c428c8f28"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct an expression from a Tensor. <br /></td></tr>
+<tr class="separator:a8a8e9a048cb8f750a632e31c428c8f28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affd014ed0f6d02021efbb348b0c6f686"><td class="memTemplParams" colspan="2">template&lt;typename... LhsIndices&gt; </td></tr>
+<tr class="memitem:affd014ed0f6d02021efbb348b0c6f686"><td class="memTemplItemLeft" align="right" valign="top">decltype(auto)&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structTensorExpressions_1_1TensorAsExpression_3_01Tensor_3_01X_00_01Symm_00_01IndexList_3_01Indid64d2973d70682ce3b9f26b167087463.html#affd014ed0f6d02021efbb348b0c6f686">get</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, num_tensor_indices &gt; &amp;lhs_multi_index) const noexcept</td></tr>
+<tr class="memdesc:affd014ed0f6d02021efbb348b0c6f686"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the value of a left hand side tensor's multi-index.  <a href="structTensorExpressions_1_1TensorAsExpression_3_01Tensor_3_01X_00_01Symm_00_01IndexList_3_01Indid64d2973d70682ce3b9f26b167087463.html#affd014ed0f6d02021efbb348b0c6f686">More...</a><br /></td></tr>
+<tr class="separator:affd014ed0f6d02021efbb348b0c6f686"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6b16b6b063834b43c97323a1307b1b81"><td class="memItemLeft" align="right" valign="top"><a id="a6b16b6b063834b43c97323a1307b1b81"></a>
+type&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTensorExpressions_1_1TensorAsExpression_3_01Tensor_3_01X_00_01Symm_00_01IndexList_3_01Indid64d2973d70682ce3b9f26b167087463.html#a6b16b6b063834b43c97323a1307b1b81">operator[]</a> (const size_t i) const</td></tr>
+<tr class="memdesc:a6b16b6b063834b43c97323a1307b1b81"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the i'th entry of the Tensor being held. <br /></td></tr>
+<tr class="separator:a6b16b6b063834b43c97323a1307b1b81"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a5e82c487ac5af372669e6fe3e309c556"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, num_tensor_indices &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTensorExpressions_1_1TensorAsExpression_3_01Tensor_3_01X_00_01Symm_00_01IndexList_3_01Indid64d2973d70682ce3b9f26b167087463.html#a5e82c487ac5af372669e6fe3e309c556">compute_index_transformation</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, num_tensor_indices &gt; &amp;lhs_tensorindices) noexcept</td></tr>
+<tr class="memdesc:a5e82c487ac5af372669e6fe3e309c556"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes a transformation from the LHS tensor's multi-indices to the equivalent RHS tensor's multi-indices, according to the differences in the orderings of their generic indices.  <a href="structTensorExpressions_1_1TensorAsExpression_3_01Tensor_3_01X_00_01Symm_00_01IndexList_3_01Indid64d2973d70682ce3b9f26b167087463.html#a5e82c487ac5af372669e6fe3e309c556">More...</a><br /></td></tr>
+<tr class="separator:a5e82c487ac5af372669e6fe3e309c556"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24e2242ff01769c951f5ec7ea62f1df7"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, num_tensor_indices &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTensorExpressions_1_1TensorAsExpression_3_01Tensor_3_01X_00_01Symm_00_01IndexList_3_01Indid64d2973d70682ce3b9f26b167087463.html#a24e2242ff01769c951f5ec7ea62f1df7">compute_rhs_multi_index</a> (const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, num_tensor_indices &gt; &amp;lhs_multi_index, const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, num_tensor_indices &gt; &amp;index_transformation) noexcept</td></tr>
+<tr class="memdesc:a24e2242ff01769c951f5ec7ea62f1df7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the RHS tensor multi-index that is equivalent to a given LHS tensor multi-index, according to the differences in the orderings of their generic indices.  <a href="structTensorExpressions_1_1TensorAsExpression_3_01Tensor_3_01X_00_01Symm_00_01IndexList_3_01Indid64d2973d70682ce3b9f26b167087463.html#a24e2242ff01769c951f5ec7ea62f1df7">More...</a><br /></td></tr>
+<tr class="separator:a24e2242ff01769c951f5ec7ea62f1df7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a076f0cd908f61f1372dfe1f2660cf6be"><td class="memItemLeft" align="right" valign="top"><a id="a076f0cd908f61f1372dfe1f2660cf6be"></a>
+static constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><b>num_tensor_indices</b> = tmpl::size&lt;index_list&gt;::value</td></tr>
+<tr class="separator:a076f0cd908f61f1372dfe1f2660cf6be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a5e82c487ac5af372669e6fe3e309c556"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5e82c487ac5af372669e6fe3e309c556">&#9670;&nbsp;</a></span>compute_index_transformation()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename X , typename Symm , template&lt; typename... &gt; class IndexList, typename... Indices, template&lt; typename... &gt; class ArgsList, typename... Args&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;size_t, num_tensor_indices&gt; <a class="el" href="structTensorExpressions_1_1TensorAsExpression.html">TensorExpressions::TensorAsExpression</a>&lt; Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;, ArgsList&lt; Args... &gt; &gt;::compute_index_transformation </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, num_tensor_indices &gt; &amp;&#160;</td>
+          <td class="paramname"><em>lhs_tensorindices</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Computes a transformation from the LHS tensor's multi-indices to the equivalent RHS tensor's multi-indices, according to the differences in the orderings of their generic indices. </p>
+<h3>Details</h3>
+<p>The elements of the transformation are the positions of the RHS generic indices in the LHS generic indices. Put another way, for some <code>i</code>, <code>rhs_tensorindices[i] == lhs_tensorindices[index_transformation[i]]</code>.</p>
+<p>Here is an example of what the algorithm does:</p>
+<p>Tensor equation: \(L_{cab} = R_{abc}\) <code>lhs_tensorindices</code>: </p><div class="fragment"><div class="line">{2, 0, 1} <span class="comment">// i.e. {c, a, b}</span></div>
+</div><!-- fragment --><p> <code>rhs_tensorindices</code>: </p><div class="fragment"><div class="line">{0, 1, 2} <span class="comment">// i.e. {a, b, c}</span></div>
+</div><!-- fragment --><p> returned <code>index_transformation</code>: </p><div class="fragment"><div class="line">{1, 2, 0} <span class="comment">// positions of RHS indices {a, b, c} in LHS indices {c, a, b}</span></div>
+</div><!-- fragment --><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">lhs_tensorindices</td><td>the TensorIndexs of the LHS tensor </td></tr>
+  </table>
+  </dd>
+</dl>
+<p><em>Returns:</em> a transformation from the LHS tensor's multi-indices to the equivalent RHS tensor's multi-indices </p>
+
+</div>
+</div>
+<a id="a24e2242ff01769c951f5ec7ea62f1df7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24e2242ff01769c951f5ec7ea62f1df7">&#9670;&nbsp;</a></span>compute_rhs_multi_index()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename X , typename Symm , template&lt; typename... &gt; class IndexList, typename... Indices, template&lt; typename... &gt; class ArgsList, typename... Args&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;size_t, num_tensor_indices&gt; <a class="el" href="structTensorExpressions_1_1TensorAsExpression.html">TensorExpressions::TensorAsExpression</a>&lt; Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;, ArgsList&lt; Args... &gt; &gt;::compute_rhs_multi_index </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, num_tensor_indices &gt; &amp;&#160;</td>
+          <td class="paramname"><em>lhs_multi_index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, num_tensor_indices &gt; &amp;&#160;</td>
+          <td class="paramname"><em>index_transformation</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Computes the RHS tensor multi-index that is equivalent to a given LHS tensor multi-index, according to the differences in the orderings of their generic indices. </p>
+<h3>Details</h3>
+<p>Here is an example of what the algorithm does:</p>
+<p>Tensor equation: \(L_{cab} = R_{abc}\) <code>index_transformation</code>: </p><div class="fragment"><div class="line">{1, 2, 0} <span class="comment">// positions of RHS indices {a, b, c} in LHS indices {c, a, b}</span></div>
+</div><!-- fragment --><p> <code>lhs_multi_index</code>: </p><div class="fragment"><div class="line">{3, 4, 5} <span class="comment">// i.e. c = 3, a = 4, b = 5</span></div>
+</div><!-- fragment --><p> returned equivalent <code>rhs_multi_index</code>: </p><div class="fragment"><div class="line">{4, 5, 3} <span class="comment">// i.e. a = 4, b = 5, c = 3</span></div>
+</div><!-- fragment --><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">lhs_multi_index</td><td>the multi-index of the LHS tensor </td></tr>
+    <tr><td class="paramname">index_transformation</td><td>the list of the positions of the RHS indices in the LHS indices </td></tr>
+  </table>
+  </dd>
+</dl>
+<p><em>Returns:</em> the RHS tensor multi-index that is equivalent to <code>lhs_tensor_index</code> </p>
+
+</div>
+</div>
+<a id="affd014ed0f6d02021efbb348b0c6f686"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#affd014ed0f6d02021efbb348b0c6f686">&#9670;&nbsp;</a></span>get()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename X , typename Symm , template&lt; typename... &gt; class IndexList, typename... Indices, template&lt; typename... &gt; class ArgsList, typename... Args&gt; </div>
+<div class="memtemplate">
+template&lt;typename... LhsIndices&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">decltype(auto) <a class="el" href="structTensorExpressions_1_1TensorAsExpression.html">TensorExpressions::TensorAsExpression</a>&lt; Tensor&lt; X, Symm, IndexList&lt; Indices... &gt; &gt;, ArgsList&lt; Args... &gt; &gt;::get </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="elRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt; size_t, num_tensor_indices &gt; &amp;&#160;</td>
+          <td class="paramname"><em>lhs_multi_index</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the value of a left hand side tensor's multi-index. </p>
+<h3>Details</h3>
+<p>One big challenge with TensorExpression implementation is the reordering of the indices on the left hand side (LHS) and right hand side (RHS) of the expression. The algorithms implemented in <code>compute_index_transformation</code> and <code>compute_rhs_multi_index</code> handle the index sorting by mapping between the generic index orders of the LHS and RHS tensors.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">LhsIndices</td><td>the TensorIndexs of the Tensor on the LHS of the tensor expression </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">lhs_multi_index</td><td>the multi-index of the LHS tensor component to retrieve </td></tr>
+  </table>
+  </dd>
+</dl>
+<p><em>Returns:</em> the value of the DataType of the component at <code>lhs_multi_index</code> in the LHS tensor </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/DataStructures/Tensor/Expressions/<a class="el" href="TensorAsExpression_8hpp_source.html">TensorAsExpression.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

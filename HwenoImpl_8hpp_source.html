@@ -1,0 +1,843 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: src/Evolution/DiscontinuousGalerkin/Limiters/HwenoImpl.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_230c67cf33a57f61172880426036f42c.html">src</a></li><li class="navelem"><a class="el" href="dir_d7cddb31ba741ba3a4d5be000d880a30.html">Evolution</a></li><li class="navelem"><a class="el" href="dir_680060fb3726c0ad0655dd389196130a.html">DiscontinuousGalerkin</a></li><li class="navelem"><a class="el" href="dir_eccc4e98cecf075b0ff53ff5410ab77a.html">Limiters</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">HwenoImpl.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/array.html">array</a>&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;boost/functional/hash.hpp&gt;</span>  <span class="comment">// IWYU pragma: keep</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a>&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/functional.html">functional</a>&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/limits.html">limits</a>&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/unordered_map.html">unordered_map</a>&gt;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a>&gt;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a>&gt;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160; </div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;DataStructures/ApplyMatrices.hpp&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;DataStructures/DataVector.hpp&quot;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Index_8hpp.html">DataStructures/Index.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Matrix_8hpp.html">DataStructures/Matrix.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="preprocessor">#include &quot;DataStructures/Tags.hpp&quot;</span>       <span class="comment">// IWYU pragma: keep</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Variables_8hpp.html">DataStructures/Variables.hpp</a>&quot;</span>  <span class="comment">// IWYU pragma: keep</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Direction_8hpp.html">Domain/Structure/Direction.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;Domain/Structure/DirectionMap.hpp&quot;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;Evolution/DiscontinuousGalerkin/Limiters/WenoGridHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;Evolution/DiscontinuousGalerkin/Limiters/WenoHelpers.hpp&quot;</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;Evolution/DiscontinuousGalerkin/Limiters/WenoOscillationIndicator.hpp&quot;</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="MeanValue_8hpp.html">NumericalAlgorithms/LinearOperators/MeanValue.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="NumericalAlgorithms_2Spectral_2Mesh_8hpp.html">NumericalAlgorithms/Spectral/Mesh.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#include &quot;Utilities/Algorithm.hpp&quot;</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#include &quot;Utilities/EqualWithinRoundoff.hpp&quot;</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Assert_8hpp.html">Utilities/ErrorHandling/Assert.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Gsl_8hpp.html">Utilities/Gsl.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment">/// \cond</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment"></span><span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="keyword">class </span><a class="code" href="classElement.html">Element</a>;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="keyword">class </span><a class="code" href="classElementId.html">ElementId</a>;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span>&gt;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="keyword">class </span><a class="code" href="classMesh.html">Mesh</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment">/// \endcond</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00042"></a><span class="lineno"><a class="line" href="namespaceLimiters.html">   42</a></span>&#160;<span class="keyword">namespace </span>Limiters::Weno_detail {</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160; </div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment">// Caching class that holds various precomputed terms used in the constrained-</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment">// fit algebra on each element.</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment">//</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment">// The terms to precompute and cache depend on the configuration of neighbors to</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment">// the element (how many neighbors, in which directions, of what resolution).</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment">// Each instance of the caching class represents one particular neighbor</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment">// configuration, and typical simulations will create many instances of</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment">// the caching class: one instance for each neighbor-element configuration</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment">// present in the computational domain.</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment">//</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment">// Because the current implementation of the HWENO fitting makes the simplifying</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment">// restrictions of no h/p-refinement, the structure of the caching is also</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment">// simplified. In particular, with no h/p-refinement, the allowable neighbor</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment">// configurations satisfy,</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment">// 1. the element has at most one neighbor per dimension, AND</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment">// 2. the mesh on every neighbor is the same as on the element.</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment">// With these restrictions, the number of independent configurations to be</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment">// cached is greatly reduced. Because an element has 2*VolumeDim boundaries,</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment">// it has 2^(2*VolumeDim) possible configurations of internal/external</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">// boundaries, and therefore there are 2^(2*VolumeDim) configurations to cache.</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment">// Different elements with the same configuration of internal/external</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment">// boundaries vs. direction can share the same caching-class instance.</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment">//</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment">// Each instance of the caching class holds several terms, some of which also</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment">// depend on the neighbor configuration. The restriction of no h/p-refinement</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment">// therefore simplifies each cache instance, as well as reducing the necessary</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment">// number of instances.</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment">//</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment">// The most complicated term to cache is the A^{-1} matrix. The complexity</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment">// arises because the matrix can take many values depending on (runtime) choices</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment">// made for each individual HWNEO fit: which element is the primary neighbor,</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment">// and which element(s) are the excluded neighbors.</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment">// Fits with one excluded neighbor are overwhelmingly the most likely, and the</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment">// cache is designed for this particular case. Fits with no excluded neighbors</span></div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment">// can arise in elements with only one neighbor (always the primary neighbor);</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment">// these cases are also handled. However, the very rare case in which more than</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment">// one neighbor is excluded is not handled by the cache; the caller must compute</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment">// A^{-1} from scratch if this scenario arises.</span></div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="keyword">class </span>ConstrainedFitCache {</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;  ConstrainedFitCache(<span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;VolumeDim&gt;</a>&amp; mesh,</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;                      <span class="keyword">const</span> <a class="code" href="classElement.html">Element&lt;VolumeDim&gt;</a>&amp; element) noexcept;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160; </div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;  <span class="comment">// Valid calls must satisfy these constraints on directions_to_exclude:</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;  <span class="comment">// - the vector is empty, OR</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;  <span class="comment">// - the vector contains one element, and this element is a direction</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;  <span class="comment">//   different from the direction to the primary neighbor.</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;  <span class="comment">// The very rare case where more than one neighbor is excluded from the fit is</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;  <span class="comment">// not cached. In this case, A^{-1} must be computed from scratch.</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;  <span class="keyword">const</span> <a class="code" href="classMatrix.html">Matrix</a>&amp; retrieve_inverse_a_matrix(</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;      <span class="keyword">const</span> <a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a>&amp; primary_direction,</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;      <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a>&gt;&amp; directions_to_exclude) <span class="keyword">const</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;      noexcept;</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160; </div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;  <a class="code" href="classDataVector.html">DataVector</a> <a class="code" href="namespaceSpectral.html#a43a7bb2e106dbab2bd3a306504a1c008">quadrature_weights</a>;</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;  <a class="code" href="classDirectionMap.html">DirectionMap&lt;VolumeDim, Matrix&gt;</a> interpolation_matrices;</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;  <a class="code" href="classDirectionMap.html">DirectionMap&lt;VolumeDim, DataVector&gt;</a></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;      quadrature_weights_dot_interpolation_matrices;</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;  <span class="comment">// The many possible values of A^{-1} are stored in a map of maps. The outer</span></div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;  <span class="comment">// map indexes over the primary neighbor, and the inner map indexes over the</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;  <span class="comment">// excluded neighbor.</span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;  <span class="comment">// This data structure is not perfect: configurations with only one neighbor</span></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;  <span class="comment">// (always the primary neighbor) lead to no excluded neighbors, and there is</span></div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;  <span class="comment">// no natural place to hold A^{-1} in the maps. For this case, we simply store</span></div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;  <span class="comment">// the data in the normally-nonsensical slot where</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;  <span class="comment">// excluded_neighbor == primary_neighbor.</span></div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;  <a class="code" href="classDirectionMap.html">DirectionMap&lt;VolumeDim, DirectionMap&lt;VolumeDim, Matrix&gt;</a>&gt; inverse_a_matrices;</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;};</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160; </div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="comment">// Return the appropriate cache for the given mesh and element.</span></div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="keyword">const</span> ConstrainedFitCache&lt;VolumeDim&gt;&amp; constrained_fit_cache(</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;VolumeDim&gt;</a>&amp; mesh, <span class="keyword">const</span> <a class="code" href="classElement.html">Element&lt;VolumeDim&gt;</a>&amp; element) noexcept;</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160; </div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="comment">// Compute the inverse of the matrix A_st for the constrained fit.</span></div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="comment">// See the documentation of `hweno_modified_neighbor_solution`.</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="keyword">template</span> &lt;<span class="keywordtype">size_t</span> VolumeDim&gt;</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<a class="code" href="classMatrix.html">Matrix</a> inverse_a_matrix(</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;    <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;VolumeDim&gt;</a>&amp; mesh, <span class="keyword">const</span> <a class="code" href="classElement.html">Element&lt;VolumeDim&gt;</a>&amp; element,</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    <span class="keyword">const</span> <a class="code" href="classDataVector.html">DataVector</a>&amp; <a class="code" href="namespaceSpectral.html#a43a7bb2e106dbab2bd3a306504a1c008">quadrature_weights</a>,</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    <span class="keyword">const</span> <a class="code" href="classDirectionMap.html">DirectionMap&lt;VolumeDim, Matrix&gt;</a>&amp; interpolation_matrices,</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    <span class="keyword">const</span> <a class="code" href="classDirectionMap.html">DirectionMap&lt;VolumeDim, DataVector&gt;</a>&amp;</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;        quadrature_weights_dot_interpolation_matrices,</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    <span class="keyword">const</span> <a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a>&amp; primary_direction,</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a>&gt;&amp; directions_to_exclude) noexcept;</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160; </div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;<span class="comment">// Not all secondary neighbors (i.e., neighbors that are not the primary) are</span></div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;<span class="comment">// included in the HWENO constrained fit. In particular, for the tensor</span></div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;<span class="comment">// component specified by `Tag` and `tensor_index`, the secondary neighbor whose</span></div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;<span class="comment">// mean is most different from the troubled cell&#39;s mean is excluded.</span></div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;<span class="comment">//</span></div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;<span class="comment">// Zhu2016 indicate that when multiple secondary neighbors share the property of</span></div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;<span class="comment">// being &quot;most different&quot; from the troubled cell, then all of these secondary</span></div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;<span class="comment">// neighbors should be excluded from the minimization. The probability of this</span></div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;<span class="comment">// occuring is exceedingly low, but we handle it anyway. We return the excluded</span></div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;<span class="comment">// secondary neighbors in a vector.</span></div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;<span class="comment">//</span></div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;<span class="comment">// Note that if there is only one neighbor, it is the primary neighbor, and so</span></div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;<span class="comment">// there are no secondary neighbors to exclude. We return an empty vector. This</span></div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;<span class="comment">// scenario can arise in various test cases, but is unlikely to arise in science</span></div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;<span class="comment">// cases.</span></div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag, <span class="keywordtype">size_t</span> VolumeDim, <span class="keyword">typename</span> Package&gt;</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;<a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;std::pair&lt;Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;&gt;</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;secondary_neighbors_to_exclude_from_fit(</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">double</span> local_mean, <span class="keyword">const</span> <span class="keywordtype">size_t</span> tensor_index,</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt;</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt;<a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;, Package,</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;        boost::hash&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt;<a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;&gt;&gt;&amp;</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;        neighbor_data,</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt;<a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;&amp;</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;        primary_neighbor) noexcept {</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;  <span class="comment">// Rare case: with only one neighbor, there is no secondary to exclude</span></div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;  <span class="keywordflow">if</span> (<a class="code" href="group__UtilitiesGroup.html#gab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a>(neighbor_data.size() == 1)) {</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;    <span class="keywordflow">return</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;std::pair&lt;Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;&gt;{};</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;  }</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160; </div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;  <span class="comment">// Identify element with maximum mean difference</span></div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> mean_difference =</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;      [&amp;tensor_index, &amp;local_mean](</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;          <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair&lt;std::pair&lt;Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;,</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;                          Package&gt;&amp; neighbor_and_data) noexcept {</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;        <span class="keywordflow">return</span> fabs(<a class="code" href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">get</a>&lt;::<a class="code" href="structTags_1_1Mean.html">Tags::Mean&lt;Tag&gt;</a>&gt;(</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;                        neighbor_and_data.second.means)[tensor_index] -</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;                    local_mean);</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;      };</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160; </div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;  <span class="keywordtype">double</span> max_difference = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/lowest.html">std::numeric_limits&lt;double&gt;::lowest</a>();</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair&lt;Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;      neighbor_max_difference{};</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;  <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; neighbor_and_data : neighbor_data) {</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; neighbor = neighbor_and_data.first;</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;    <span class="keywordflow">if</span> (neighbor == primary_neighbor) {</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;      <span class="keywordflow">continue</span>;</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;    }</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">double</span> difference = mean_difference(neighbor_and_data);</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;    <span class="keywordflow">if</span> (difference &gt; max_difference) {</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;      max_difference = difference;</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;      neighbor_max_difference = neighbor;</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;    }</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;  }</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160; </div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;std::pair&lt;Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;&gt;</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;      neighbors_to_exclude{{neighbor_max_difference}};</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160; </div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;  <span class="comment">// See if other elements share this maximum mean difference. This loop should</span></div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;  <span class="comment">// only rarely find other neighbors with the same maximal mean difference to</span></div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;  <span class="comment">// add to the vector, so it will usually not change the vector.</span></div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;  <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; neighbor_and_data : neighbor_data) {</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; neighbor = neighbor_and_data.first;</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;    <span class="keywordflow">if</span> (neighbor == primary_neighbor or neighbor == neighbor_max_difference) {</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;      <span class="keywordflow">continue</span>;</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;    }</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">double</span> difference = mean_difference(neighbor_and_data);</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;    <span class="keywordflow">if</span> (<a class="code" href="group__UtilitiesGroup.html#gab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a>(<a class="code" href="group__UtilitiesGroup.html#ga6ed84deeb606f239b8781809d2be69a6">equal_within_roundoff</a>(difference, max_difference))) {</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;      neighbors_to_exclude.push_back(neighbor);</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;    }</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;  }</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160; </div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;  <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(not <a class="code" href="namespacealg.html#a555a287c18af07a8d7b5e5009ec50951">alg::found</a>(neighbors_to_exclude, primary_neighbor),</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;         <span class="stringliteral">&quot;Logical inconsistency: trying to exclude the primary neighbor.&quot;</span>);</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160; </div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;  <span class="keywordflow">return</span> neighbors_to_exclude;</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;}</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160; </div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;<span class="comment">// Compute the vector b_s for the constrained fit. For details, see the</span></div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;<span class="comment">// documentation of `hweno_modified_neighbor_solution` below.</span></div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag, <span class="keywordtype">size_t</span> VolumeDim, <span class="keyword">typename</span> Package&gt;</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;<a class="code" href="classDataVector.html">DataVector</a> b_vector(</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">size_t</span> tensor_index, <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;VolumeDim&gt;</a>&amp; mesh,</div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;    <span class="keyword">const</span> <a class="code" href="classDataVector.html">DataVector</a>&amp; <a class="code" href="namespaceSpectral.html#a43a7bb2e106dbab2bd3a306504a1c008">quadrature_weights</a>,</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;    <span class="keyword">const</span> <a class="code" href="classDirectionMap.html">DirectionMap&lt;VolumeDim, Matrix&gt;</a>&amp; interpolation_matrices,</div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;    <span class="keyword">const</span> <a class="code" href="classDirectionMap.html">DirectionMap&lt;VolumeDim, DataVector&gt;</a>&amp;</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;        quadrature_weights_dot_interpolation_matrices,</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt;</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt;<a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;, Package,</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;        boost::hash&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt;<a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;&gt;&gt;&amp;</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;        neighbor_data,</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt;<a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;&amp;</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;        primary_neighbor,</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt;<a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;&gt;&amp;</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;        neighbors_to_exclude) noexcept {</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;  <span class="keyword">const</span> <span class="keywordtype">size_t</span> number_of_grid_points = mesh.number_of_grid_points();</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;  <a class="code" href="classDataVector.html">DataVector</a> b(number_of_grid_points, 0.);</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160; </div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;  <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; neighbor_and_data : neighbor_data) {</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;    <span class="comment">// Generally, neighbors_to_exclude contains just one neighbor to exclude,</span></div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;    <span class="comment">// and the loop over neighbor_data will hit this (in 3D) roughly 1/6 times.</span></div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;    <span class="comment">// So the condition is somewhat, but not overwhelmingly, unlikely:</span></div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;    <span class="keywordflow">if</span> (<a class="code" href="group__UtilitiesGroup.html#gab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a>(<a class="code" href="namespacealg.html#a555a287c18af07a8d7b5e5009ec50951">alg::found</a>(neighbors_to_exclude, neighbor_and_data.first))) {</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;      <span class="keywordflow">continue</span>;</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;    }</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160; </div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; direction = neighbor_and_data.first.first;</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;    <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(interpolation_matrices.<a class="code" href="classFixedHashMap.html#a6152dc921343ea34b31a2b88b9d827b3">contains</a>(direction),</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;           <span class="stringliteral">&quot;interpolation_matrices does not contain key: &quot;</span> &lt;&lt; direction);</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;    <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(</div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;        quadrature_weights_dot_interpolation_matrices.<a class="code" href="classFixedHashMap.html#a6152dc921343ea34b31a2b88b9d827b3">contains</a>(direction),</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;        <span class="stringliteral">&quot;quadrature_weights_dot_interpolation_matrices does not contain key: &quot;</span></div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;            &lt;&lt; direction);</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160; </div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; neighbor_mesh = mesh;</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; neighbor_quadrature_weights = <a class="code" href="namespaceSpectral.html#a43a7bb2e106dbab2bd3a306504a1c008">quadrature_weights</a>;</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; <a class="code" href="namespaceSpectral.html#a73ec2be22ed7a694949db310c31bc5f6">interpolation_matrix</a> = interpolation_matrices.at(direction);</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; quadrature_weights_dot_interpolation_matrix =</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;        quadrature_weights_dot_interpolation_matrices.at(direction);</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160; </div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; neighbor_tensor_component =</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;        get&lt;Tag&gt;(neighbor_and_data.second.volume_data)[tensor_index];</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160; </div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;    <span class="comment">// Add terms from the primary neighbor</span></div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;    <span class="keywordflow">if</span> (neighbor_and_data.first == primary_neighbor) {</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;      <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> r = 0; r &lt; neighbor_mesh.number_of_grid_points(); ++r) {</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;        <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> s = 0; s &lt; number_of_grid_points; ++s) {</div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;          b[s] += neighbor_tensor_component[r] *</div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;                  neighbor_quadrature_weights[r] * <a class="code" href="namespaceSpectral.html#a73ec2be22ed7a694949db310c31bc5f6">interpolation_matrix</a>(r, s);</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;        }</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;      }</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;    }</div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;    <span class="comment">// Add terms from the secondary neighbors</span></div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;    <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;      <span class="keyword">const</span> <span class="keywordtype">double</span> quadrature_weights_dot_u = [&amp;]() noexcept {</div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;        <span class="keywordtype">double</span> result = 0.;</div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;        <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> r = 0; r &lt; neighbor_mesh.number_of_grid_points(); ++r) {</div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;          result +=</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;              neighbor_tensor_component[r] * neighbor_quadrature_weights[r];</div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;        }</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;        <span class="keywordflow">return</span> result;</div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;      }();</div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;      b += quadrature_weights_dot_u *</div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;           quadrature_weights_dot_interpolation_matrix;</div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;    }</div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;  }</div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;  <span class="keywordflow">return</span> b;</div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;}</div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160; </div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;<span class="comment">// Solve the constrained fit problem that gives the HWENO modified solution,</span></div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;<span class="comment">// for one particular tensor component. For details, see documentation of</span></div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;<span class="comment">// `hweno_modified_neighbor_solution` below.</span></div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag, <span class="keywordtype">size_t</span> VolumeDim, <span class="keyword">typename</span> Package&gt;</div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;<span class="keywordtype">void</span> solve_constrained_fit(</div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;DataVector*&gt;</a> constrained_fit_result,</div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;    <span class="keyword">const</span> <a class="code" href="classDataVector.html">DataVector</a>&amp; u, <span class="keyword">const</span> <span class="keywordtype">size_t</span> tensor_index, <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;VolumeDim&gt;</a>&amp; mesh,</div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;    <span class="keyword">const</span> <a class="code" href="classElement.html">Element&lt;VolumeDim&gt;</a>&amp; element,</div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt;</div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt;<a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;, Package,</div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;        boost::hash&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt;<a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;&gt;&gt;&amp;</div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;        neighbor_data,</div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt;<a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;&amp;</div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;        primary_neighbor,</div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt;<a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;&gt;&amp;</div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;        neighbors_to_exclude) noexcept {</div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;  <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(not <a class="code" href="namespacealg.html#a555a287c18af07a8d7b5e5009ec50951">alg::found</a>(neighbors_to_exclude, primary_neighbor),</div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;         <span class="stringliteral">&quot;Logical inconsistency: trying to exclude the primary neighbor.&quot;</span>);</div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;  <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(not neighbors_to_exclude.empty() or neighbor_data.size() == 1,</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;         <span class="stringliteral">&quot;The HWENO constrained fit algorithm expects at least one neighbor \n&quot;</span></div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;         <span class="stringliteral">&quot;to exclude from the fit (unless if the element has a single \n&quot;</span></div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;         <span class="stringliteral">&quot;neighbor, which would automatically be the primary neighbor).&quot;</span>);</div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160; </div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;  <span class="comment">// Get the cache of linear algebra quantities for this element</span></div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;  <span class="keyword">const</span> ConstrainedFitCache&lt;VolumeDim&gt;&amp; <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a> =</div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;      constrained_fit_cache(mesh, element);</div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160; </div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;  <span class="comment">// Because we don&#39;t support h-refinement, the direction is the only piece</span></div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;  <span class="comment">// of the neighbor information that we actually need.</span></div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;  <span class="keyword">const</span> <a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a> primary_direction = primary_neighbor.first;</div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;  <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;Direction&lt;VolumeDim&gt;</a>&gt; directions_to_exclude =</div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;      [&amp;neighbors_to_exclude]() noexcept {</div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;Direction&lt;VolumeDim&gt;</a>&gt; result(neighbors_to_exclude.size());</div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;        <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; result.size(); ++i) {</div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;          result[i] = neighbors_to_exclude[i].first;</div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;        }</div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;        <span class="keywordflow">return</span> result;</div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;      }();</div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160; </div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;  <span class="keyword">const</span> <a class="code" href="classDataVector.html">DataVector</a>&amp; w = <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>.quadrature_weights;</div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;  <span class="keyword">const</span> <a class="code" href="classDirectionMap.html">DirectionMap&lt;VolumeDim, Matrix&gt;</a>&amp; interp_matrices =</div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;      <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>.interpolation_matrices;</div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;  <span class="keyword">const</span> <a class="code" href="classDirectionMap.html">DirectionMap&lt;VolumeDim, DataVector&gt;</a>&amp; w_dot_interp_matrices =</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;      <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>.quadrature_weights_dot_interpolation_matrices;</div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160; </div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;  <span class="comment">// Use cache if possible, or compute matrix if we are in edge case</span></div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;  <span class="keyword">const</span> <a class="code" href="classMatrix.html">Matrix</a>&amp; inverse_a =</div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;      <a class="code" href="group__UtilitiesGroup.html#gaffde14445f49f65ff4f5b592e44ee71a">LIKELY</a>(directions_to_exclude.size() &lt; 2)</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;          ? <a class="code" href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">cache</a>.retrieve_inverse_a_matrix(primary_direction,</div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;                                            directions_to_exclude)</div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;          : inverse_a_matrix(mesh, element, w, interp_matrices,</div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;                             w_dot_interp_matrices, primary_direction,</div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;                             directions_to_exclude);</div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160; </div>
+<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;  <span class="keyword">const</span> <a class="code" href="classDataVector.html">DataVector</a> b = b_vector&lt;Tag&gt;(tensor_index, mesh, w, interp_matrices,</div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;                                     w_dot_interp_matrices, neighbor_data,</div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;                                     primary_neighbor, neighbors_to_exclude);</div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160; </div>
+<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;  <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="namespaceMakeWithValueImpls.html#a7ea3d1902a2155296c53df5451c2da48">number_of_points</a> = b.size();</div>
+<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;  <span class="keyword">const</span> <a class="code" href="classDataVector.html">DataVector</a> inverse_a_times_b = <a class="code" href="group__NumericalAlgorithmsGroup.html#ga49cabadc0d50ce1eaf316301297fd232">apply_matrices</a>(</div>
+<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;      <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/functional/reference_wrapper.html">std::reference_wrapper&lt;const Matrix&gt;</a>, 1&gt;{{inverse_a}}, b,</div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;      <a class="code" href="classIndex.html">Index&lt;1&gt;</a>(<a class="code" href="namespaceMakeWithValueImpls.html#a7ea3d1902a2155296c53df5451c2da48">number_of_points</a>));</div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;  <span class="keyword">const</span> <a class="code" href="classDataVector.html">DataVector</a> inverse_a_times_w = <a class="code" href="group__NumericalAlgorithmsGroup.html#ga49cabadc0d50ce1eaf316301297fd232">apply_matrices</a>(</div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;      <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/functional/reference_wrapper.html">std::reference_wrapper&lt;const Matrix&gt;</a>, 1&gt;{{inverse_a}}, w,</div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;      <a class="code" href="classIndex.html">Index&lt;1&gt;</a>(<a class="code" href="namespaceMakeWithValueImpls.html#a7ea3d1902a2155296c53df5451c2da48">number_of_points</a>));</div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160; </div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;  <span class="comment">// Compute Lagrange multiplier:</span></div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;  <span class="comment">// Note: we take w as an argument (instead of as a lambda capture), because</span></div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;  <span class="comment">//       some versions of Clang incorrectly warn about capturing w.</span></div>
+<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;  <span class="keyword">const</span> <span class="keywordtype">double</span> lagrange_multiplier = [&amp;<a class="code" href="namespaceMakeWithValueImpls.html#a7ea3d1902a2155296c53df5451c2da48">number_of_points</a>, &amp;inverse_a_times_b,</div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;                                      &amp;inverse_a_times_w,</div>
+<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;                                      &amp;u](<span class="keyword">const</span> <a class="code" href="classDataVector.html">DataVector</a>&amp; local_w) noexcept {</div>
+<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;    <span class="keywordtype">double</span> numerator = 0.;</div>
+<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;    <span class="keywordtype">double</span> denominator = 0.;</div>
+<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> s = 0; s &lt; <a class="code" href="namespaceMakeWithValueImpls.html#a7ea3d1902a2155296c53df5451c2da48">number_of_points</a>; ++s) {</div>
+<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;      numerator += local_w[s] * (inverse_a_times_b[s] - u[s]);</div>
+<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;      denominator += local_w[s] * inverse_a_times_w[s];</div>
+<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;    }</div>
+<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;    <span class="keywordflow">return</span> -numerator / denominator;</div>
+<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;  }(w);</div>
+<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160; </div>
+<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;  <span class="comment">// Compute solution:</span></div>
+<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;  *constrained_fit_result =</div>
+<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;      inverse_a_times_b + lagrange_multiplier * inverse_a_times_w;</div>
+<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;}</div>
+<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;<span class="comment">/*!</span></div>
+<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;<span class="comment"> * \ingroup LimitersGroup</span></div>
+<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;<span class="comment"> * \brief Compute the HWENO solution for one tensor</span></div>
+<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;<span class="comment"> * The HWENO limiter reconstructs a new solution from the linear combination of</span></div>
+<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;<span class="comment"> * the local DG solution and a &quot;modified&quot; solution from each neighbor element.</span></div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;<span class="comment"> * This function computes the modified solution for a particular tensor and</span></div>
+<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;<span class="comment"> * neighbor, following Section 3 of \cite Zhu2016.</span></div>
+<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;<span class="comment"> * The modified solution associated with a particular neighbor (the &quot;primary&quot;</span></div>
+<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;<span class="comment"> * neighbor) is obtained by solving a constrained fit over the local element,</span></div>
+<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;<span class="comment"> * the primary neighbor, and the other (&quot;secondary&quot;) neighbors of the local</span></div>
+<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;<span class="comment"> * element. This fit seeks to minimize in a least-squared sense:</span></div>
+<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;<span class="comment"> * 1. The distance between the modified solution and the original solution on</span></div>
+<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;<span class="comment"> *    the primary neighbor.</span></div>
+<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;<span class="comment"> * 2. The distance between the cell average of the modified solution and the</span></div>
+<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;<span class="comment"> *    cell average of the original solution on each secondary neighbor. Note</span></div>
+<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;<span class="comment"> *    however that one secondary neighbor (or, rarely, several) is excluded from</span></div>
+<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;<span class="comment"> *    this minimization: the secondary neighbor(s) where the original solution</span></div>
+<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;<span class="comment"> *    has the most different cell average from the local element. This helps to</span></div>
+<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;<span class="comment"> *    prevent an outlier (e.g., near a shock) from biasing the fit.</span></div>
+<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;<span class="comment"> * The constraint on the minimization is the following: the cell average of the</span></div>
+<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;<span class="comment"> * modified solution on the local element must equal the cell average of the</span></div>
+<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;<span class="comment"> * local element&#39;s original solution.</span></div>
+<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;<span class="comment"> * Below we give the mathematical form of the constraints described above and</span></div>
+<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;<span class="comment"> * show how these are translated into a numerical algorithm.</span></div>
+<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;<span class="comment"> * Consider an element \f$I_0\f$ with neighbors \f$I_1, I_2, ...\f$. For a</span></div>
+<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;<span class="comment"> * given tensor component \f$u\f$, the values on each of these elements are</span></div>
+<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;<span class="comment"> * \f$u^{(0)}, u^{(1)}, u^{(2)}, ...\f$. Taking for the sake of example the</span></div>
+<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;<span class="comment"> * primary neighbor to be \f$I_1\f$, the modified solution \f$\phi\f$ must</span></div>
+<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;<span class="comment"> * minimize</span></div>
+<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;<span class="comment"> * \f[</span></div>
+<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;<span class="comment"> * \chi^2 = \int_{I_1} (\phi - u^{(1)})^2 dV</span></div>
+<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;<span class="comment"> *          + \sum_{\ell \in L} \left(</span></div>
+<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;<span class="comment"> *                              \int_{I_{\ell}} ( \phi - u^{(\ell)} ) dV</span></div>
+<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;<span class="comment"> *                              \right)^2,</span></div>
+<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;<span class="comment"> * \f]</span></div>
+<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;<span class="comment"> * subject to the constaint</span></div>
+<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;<span class="comment"> * \f[</span></div>
+<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;<span class="comment"> * C = \int_{I_0} ( \phi - u^{(0)} ) dV = 0.</span></div>
+<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;<span class="comment"> * \f]</span></div>
+<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;<span class="comment"> * where \f$\ell\f$ ranges over a subset \f$L\f$ of the secondary neighbors.</span></div>
+<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;<span class="comment"> * \f$L\f$ excludes the one (or more) secondary neighbor(s) where the mean of</span></div>
+<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;<span class="comment"> * \f$u\f$ is the most different from the mean of \f$u^{(0)}\f$. Typically, only</span></div>
+<div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;<span class="comment"> * one secondary neighbor is excluded, so \f$L\f$ contains two fewer neighbors</span></div>
+<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;<span class="comment"> * than the total number of neighbors to the element. Note that in 1D, this</span></div>
+<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;<span class="comment"> * implies that \f$L\f$ is the empty set; for each modified solution, one</span></div>
+<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;<span class="comment"> * neighbor is the primary neighbor and the other is the excluded neighbor.</span></div>
+<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;<span class="comment"> * The integrals are evaluated by quadrature. We denote the quadrature weights</span></div>
+<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;<span class="comment"> * by \f$w_s\f$ and the values of some data \f$X\f$ at the quadrature</span></div>
+<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;<span class="comment"> * nodes by \f$X_s\f$. We use subscripts \f$r,s\f$ to denote quadrature nodes</span></div>
+<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;<span class="comment"> * on the neighbor and local elements, respectively. The minimization becomes</span></div>
+<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;<span class="comment"> * \f[</span></div>
+<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;<span class="comment"> * \chi^2 = \sum_r w^{(1)}_r ( \phi_r - u^{(1)}_r )^2</span></div>
+<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;<span class="comment"> *          + \sum_{\ell \in L} \left(</span></div>
+<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;<span class="comment"> *                              \sum_r w^{(\ell)}_r ( \phi_r - u^{(\ell)}_r )</span></div>
+<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;<span class="comment"> *                              \right)^2,</span></div>
+<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160;<span class="comment"> * \f]</span></div>
+<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160;<span class="comment"> * subject to the constraint</span></div>
+<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;<span class="comment"> * \f[</span></div>
+<div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160;<span class="comment"> * C = \sum_s w^{(0)}_s ( \phi_s - u^{(0)}_s ) = 0.</span></div>
+<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160;<span class="comment"> * \f]</span></div>
+<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160;<span class="comment"> * Note that \f$\phi\f$ is a function defined on the local element \f$I_0\f$,</span></div>
+<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;<span class="comment"> * and so is fully represented by its values \f$\phi_s\f$ at the quadrature</span></div>
+<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;<span class="comment"> * points on this element. When evaluating \f$\phi\f$ on element \f$I_{\ell}\f$,</span></div>
+<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;<span class="comment"> * we obtain the function values \f$\phi_r\f$ by polynomial extrapolation,</span></div>
+<div class="line"><a name="l00444"></a><span class="lineno">  444</span>&#160;<span class="comment"> * \f$\phi_r = \sum_s \mathcal{I}^{(\ell)}_{rs} \phi_s\f$, where</span></div>
+<div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160;<span class="comment"> * \f$\mathcal{I}^{(\ell)}_{rs}\f$ is the interpolation/extrapolation matrix</span></div>
+<div class="line"><a name="l00446"></a><span class="lineno">  446</span>&#160;<span class="comment"> * that interpolates data defined at grid points \f$x_s\f$ and evaluates it at</span></div>
+<div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160;<span class="comment"> * grid points \f$x_r\f$ of \f$I_{\ell}\f$. Thus,</span></div>
+<div class="line"><a name="l00448"></a><span class="lineno">  448</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00449"></a><span class="lineno">  449</span>&#160;<span class="comment"> * \f[</span></div>
+<div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160;<span class="comment"> * \chi^2 = \sum_r w^{(1)}_r</span></div>
+<div class="line"><a name="l00451"></a><span class="lineno">  451</span>&#160;<span class="comment"> *                 \left(</span></div>
+<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160;<span class="comment"> *                 \sum_s \mathcal{I}^{(1)}_{rs} \phi_s - u^{(1)}_r</span></div>
+<div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160;<span class="comment"> *                 \right)^2</span></div>
+<div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160;<span class="comment"> *          + \sum_{\ell \in L} \left(</span></div>
+<div class="line"><a name="l00455"></a><span class="lineno">  455</span>&#160;<span class="comment"> *                              \sum_r w^{(\ell)}_r</span></div>
+<div class="line"><a name="l00456"></a><span class="lineno">  456</span>&#160;<span class="comment"> *                                     \left(</span></div>
+<div class="line"><a name="l00457"></a><span class="lineno">  457</span>&#160;<span class="comment"> *                                     \sum_s \mathcal{I}^{(\ell)}_{rs} \phi_s</span></div>
+<div class="line"><a name="l00458"></a><span class="lineno">  458</span>&#160;<span class="comment"> *                                             - u^{(\ell)}_r</span></div>
+<div class="line"><a name="l00459"></a><span class="lineno">  459</span>&#160;<span class="comment"> *                                     \right)</span></div>
+<div class="line"><a name="l00460"></a><span class="lineno">  460</span>&#160;<span class="comment"> *                      \right)^2.</span></div>
+<div class="line"><a name="l00461"></a><span class="lineno">  461</span>&#160;<span class="comment"> * \f]</span></div>
+<div class="line"><a name="l00462"></a><span class="lineno">  462</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00463"></a><span class="lineno">  463</span>&#160;<span class="comment"> * The solution to this optimization problem is found in the standard way,</span></div>
+<div class="line"><a name="l00464"></a><span class="lineno">  464</span>&#160;<span class="comment"> * using a Lagrange multiplier \f$\lambda\f$ to impose the constraint:</span></div>
+<div class="line"><a name="l00465"></a><span class="lineno">  465</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00466"></a><span class="lineno">  466</span>&#160;<span class="comment"> * \f[</span></div>
+<div class="line"><a name="l00467"></a><span class="lineno">  467</span>&#160;<span class="comment"> * 0 = \frac{d}{d \phi_s} \left( \chi^2 + \lambda C \right).</span></div>
+<div class="line"><a name="l00468"></a><span class="lineno">  468</span>&#160;<span class="comment"> * \f]</span></div>
+<div class="line"><a name="l00469"></a><span class="lineno">  469</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00470"></a><span class="lineno">  470</span>&#160;<span class="comment"> * Working out the differentiation with respect to \f$\phi_s\f$ leads to the</span></div>
+<div class="line"><a name="l00471"></a><span class="lineno">  471</span>&#160;<span class="comment"> * linear problem that must be inverted to obtain the solution,</span></div>
+<div class="line"><a name="l00472"></a><span class="lineno">  472</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00473"></a><span class="lineno">  473</span>&#160;<span class="comment"> * \f[</span></div>
+<div class="line"><a name="l00474"></a><span class="lineno">  474</span>&#160;<span class="comment"> * 0 = A_{st} \phi_t - b_s - \lambda w^{(0)}_s,</span></div>
+<div class="line"><a name="l00475"></a><span class="lineno">  475</span>&#160;<span class="comment"> * \f]</span></div>
+<div class="line"><a name="l00476"></a><span class="lineno">  476</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00477"></a><span class="lineno">  477</span>&#160;<span class="comment"> * where</span></div>
+<div class="line"><a name="l00478"></a><span class="lineno">  478</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00479"></a><span class="lineno">  479</span>&#160;<span class="comment"> * \f{align*}{</span></div>
+<div class="line"><a name="l00480"></a><span class="lineno">  480</span>&#160;<span class="comment"> * A_{st} &amp;= \sum_r \left( w^{(1)}_r</span></div>
+<div class="line"><a name="l00481"></a><span class="lineno">  481</span>&#160;<span class="comment"> *                  \mathcal{I}^{(1)}_{rs} \mathcal{I}^{(1)}_{rt}</span></div>
+<div class="line"><a name="l00482"></a><span class="lineno">  482</span>&#160;<span class="comment"> *                  \right)</span></div>
+<div class="line"><a name="l00483"></a><span class="lineno">  483</span>&#160;<span class="comment"> *          + \sum_{\ell \in L} \left(</span></div>
+<div class="line"><a name="l00484"></a><span class="lineno">  484</span>&#160;<span class="comment"> *                              \sum_r \left(</span></div>
+<div class="line"><a name="l00485"></a><span class="lineno">  485</span>&#160;<span class="comment"> *                                     w^{(\ell)}_r \mathcal{I}^{(\ell)}_{rt}</span></div>
+<div class="line"><a name="l00486"></a><span class="lineno">  486</span>&#160;<span class="comment"> *                                     \right)</span></div>
+<div class="line"><a name="l00487"></a><span class="lineno">  487</span>&#160;<span class="comment"> *                              \cdot</span></div>
+<div class="line"><a name="l00488"></a><span class="lineno">  488</span>&#160;<span class="comment"> *                              \sum_r \left(</span></div>
+<div class="line"><a name="l00489"></a><span class="lineno">  489</span>&#160;<span class="comment"> *                                     w^{(\ell)}_r \mathcal{I}^{(\ell)}_{rs}</span></div>
+<div class="line"><a name="l00490"></a><span class="lineno">  490</span>&#160;<span class="comment"> *                                     \right)</span></div>
+<div class="line"><a name="l00491"></a><span class="lineno">  491</span>&#160;<span class="comment"> *                              \right)</span></div>
+<div class="line"><a name="l00492"></a><span class="lineno">  492</span>&#160;<span class="comment"> * \\</span></div>
+<div class="line"><a name="l00493"></a><span class="lineno">  493</span>&#160;<span class="comment"> * b_s &amp;= \sum_r \left( w^{(1)}_r u^{(1)}_r \mathcal{I}^{(1)}_{rs} \right)</span></div>
+<div class="line"><a name="l00494"></a><span class="lineno">  494</span>&#160;<span class="comment"> *         + \sum_{\ell \in L} \left(</span></div>
+<div class="line"><a name="l00495"></a><span class="lineno">  495</span>&#160;<span class="comment"> *                             \sum_r \left( w^{(\ell)}_r u^{(\ell)}_r \right)</span></div>
+<div class="line"><a name="l00496"></a><span class="lineno">  496</span>&#160;<span class="comment"> *                             \cdot</span></div>
+<div class="line"><a name="l00497"></a><span class="lineno">  497</span>&#160;<span class="comment"> *                             \sum_r \left(</span></div>
+<div class="line"><a name="l00498"></a><span class="lineno">  498</span>&#160;<span class="comment"> *                                    w^{(\ell)}_r \mathcal{I}^{(\ell)}_{rs}</span></div>
+<div class="line"><a name="l00499"></a><span class="lineno">  499</span>&#160;<span class="comment"> *                                    \right)</span></div>
+<div class="line"><a name="l00500"></a><span class="lineno">  500</span>&#160;<span class="comment"> *                             \right).</span></div>
+<div class="line"><a name="l00501"></a><span class="lineno">  501</span>&#160;<span class="comment"> * \f}</span></div>
+<div class="line"><a name="l00502"></a><span class="lineno">  502</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00503"></a><span class="lineno">  503</span>&#160;<span class="comment"> * Finally, the solution to the constrained fit is</span></div>
+<div class="line"><a name="l00504"></a><span class="lineno">  504</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00505"></a><span class="lineno">  505</span>&#160;<span class="comment"> * \f{align*}{</span></div>
+<div class="line"><a name="l00506"></a><span class="lineno">  506</span>&#160;<span class="comment"> * \lambda &amp;= - \frac{ \sum_s w^{(0)}_s</span></div>
+<div class="line"><a name="l00507"></a><span class="lineno">  507</span>&#160;<span class="comment"> *                            \left( (A^{-1})_{st} b_t - u^{(0)}_s \right)</span></div>
+<div class="line"><a name="l00508"></a><span class="lineno">  508</span>&#160;<span class="comment"> *              }{ \sum_s w^{(0)}_s (A^{-1})_{st} w^{(0)}_t }</span></div>
+<div class="line"><a name="l00509"></a><span class="lineno">  509</span>&#160;<span class="comment"> * \\</span></div>
+<div class="line"><a name="l00510"></a><span class="lineno">  510</span>&#160;<span class="comment"> * \phi_s &amp;= (A^{-1})_{st} ( b_t + \lambda w^{(0)}_t ).</span></div>
+<div class="line"><a name="l00511"></a><span class="lineno">  511</span>&#160;<span class="comment"> * \f}</span></div>
+<div class="line"><a name="l00512"></a><span class="lineno">  512</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00513"></a><span class="lineno">  513</span>&#160;<span class="comment"> * Note that the matrix \f$A\f$ does not depend on the values of the tensor</span></div>
+<div class="line"><a name="l00514"></a><span class="lineno">  514</span>&#160;<span class="comment"> * \f$u\f$, so its inverse \f$A^{-1}\f$ can be precomputed and stored.</span></div>
+<div class="line"><a name="l00515"></a><span class="lineno">  515</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00516"></a><span class="lineno">  516</span>&#160;<span class="comment"> * \warning</span></div>
+<div class="line"><a name="l00517"></a><span class="lineno">  517</span>&#160;<span class="comment"> * Note also that the implementation currently does not support h- or</span></div>
+<div class="line"><a name="l00518"></a><span class="lineno">  518</span>&#160;<span class="comment"> * p-refinement; this is checked by some assertions. The implementation is</span></div>
+<div class="line"><a name="l00519"></a><span class="lineno">  519</span>&#160;<span class="comment"> * untested for grids where elements are curved, and it should not be expected</span></div>
+<div class="line"><a name="l00520"></a><span class="lineno">  520</span>&#160;<span class="comment"> * to work in these cases.</span></div>
+<div class="line"><a name="l00521"></a><span class="lineno">  521</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00522"></a><span class="lineno">  522</span>&#160;<span class="comment"> * When calling `hweno_impl`, `modified_neighbor_solution_buffer` should contain</span></div>
+<div class="line"><a name="l00523"></a><span class="lineno">  523</span>&#160;<span class="comment"> * one DataVector for each neighboring element (i.e. for each entry in</span></div>
+<div class="line"><a name="l00524"></a><span class="lineno">  524</span>&#160;<span class="comment"> * `neighbor_data`).</span></div>
+<div class="line"><a name="l00525"></a><span class="lineno">  525</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00526"></a><span class="lineno">  526</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tag, <span class="keywordtype">size_t</span> VolumeDim, <span class="keyword">typename</span> PackagedData&gt;</div>
+<div class="line"><a name="l00527"></a><span class="lineno">  527</span>&#160;<span class="keywordtype">void</span> hweno_impl(</div>
+<div class="line"><a name="l00528"></a><span class="lineno">  528</span>&#160;    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null</a>&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt;</div>
+<div class="line"><a name="l00529"></a><span class="lineno">  529</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt;<a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;, <a class="code" href="classDataVector.html">DataVector</a>,</div>
+<div class="line"><a name="l00530"></a><span class="lineno">  530</span>&#160;        boost::hash&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt;<a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;&gt;&gt;*&gt;</div>
+<div class="line"><a name="l00531"></a><span class="lineno">  531</span>&#160;        modified_neighbor_solution_buffer,</div>
+<div class="line"><a name="l00532"></a><span class="lineno">  532</span>&#160;    <span class="keyword">const</span> <a class="code" href="classgsl_1_1not__null.html">gsl::not_null&lt;typename Tag::type*&gt;</a> tensor,</div>
+<div class="line"><a name="l00533"></a><span class="lineno">  533</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">double</span> neighbor_linear_weight, <span class="keyword">const</span> <a class="code" href="classMesh.html">Mesh&lt;VolumeDim&gt;</a>&amp; mesh,</div>
+<div class="line"><a name="l00534"></a><span class="lineno">  534</span>&#160;    <span class="keyword">const</span> <a class="code" href="classElement.html">Element&lt;VolumeDim&gt;</a>&amp; element,</div>
+<div class="line"><a name="l00535"></a><span class="lineno">  535</span>&#160;    <span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/unordered_map.html">std::unordered_map</a>&lt;</div>
+<div class="line"><a name="l00536"></a><span class="lineno">  536</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt;<a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;, PackagedData,</div>
+<div class="line"><a name="l00537"></a><span class="lineno">  537</span>&#160;        boost::hash&lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a>&lt;<a class="code" href="classDirection.html">Direction&lt;VolumeDim&gt;</a>, <a class="code" href="classElementId.html">ElementId&lt;VolumeDim&gt;</a>&gt;&gt;&gt;&amp;</div>
+<div class="line"><a name="l00538"></a><span class="lineno">  538</span>&#160;        neighbor_data) noexcept {</div>
+<div class="line"><a name="l00539"></a><span class="lineno">  539</span>&#160;  <span class="comment">// Check that basis is LGL or LG</span></div>
+<div class="line"><a name="l00540"></a><span class="lineno">  540</span>&#160;  <span class="comment">// The Hweno reconstruction implemented here is specialized to the case of a</span></div>
+<div class="line"><a name="l00541"></a><span class="lineno">  541</span>&#160;  <span class="comment">// Legendre basis. While the underlying algorithm should work for other bases</span></div>
+<div class="line"><a name="l00542"></a><span class="lineno">  542</span>&#160;  <span class="comment">// as well, the matrix computations would need to be generalized.</span></div>
+<div class="line"><a name="l00543"></a><span class="lineno">  543</span>&#160;  <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(mesh.basis() == make_array&lt;VolumeDim&gt;(Spectral::Basis::Legendre),</div>
+<div class="line"><a name="l00544"></a><span class="lineno">  544</span>&#160;         <span class="stringliteral">&quot;Unsupported basis: &quot;</span> &lt;&lt; mesh);</div>
+<div class="line"><a name="l00545"></a><span class="lineno">  545</span>&#160;  <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(mesh.quadrature() ==</div>
+<div class="line"><a name="l00546"></a><span class="lineno">  546</span>&#160;                 make_array&lt;VolumeDim&gt;(Spectral::Quadrature::GaussLobatto) or</div>
+<div class="line"><a name="l00547"></a><span class="lineno">  547</span>&#160;             mesh.quadrature() ==</div>
+<div class="line"><a name="l00548"></a><span class="lineno">  548</span>&#160;                 make_array&lt;VolumeDim&gt;(Spectral::Quadrature::Gauss),</div>
+<div class="line"><a name="l00549"></a><span class="lineno">  549</span>&#160;         <span class="stringliteral">&quot;Unsupported quadrature: &quot;</span> &lt;&lt; mesh);</div>
+<div class="line"><a name="l00550"></a><span class="lineno">  550</span>&#160; </div>
+<div class="line"><a name="l00551"></a><span class="lineno">  551</span>&#160;  <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(</div>
+<div class="line"><a name="l00552"></a><span class="lineno">  552</span>&#160;      modified_neighbor_solution_buffer-&gt;size() == neighbor_data.size(),</div>
+<div class="line"><a name="l00553"></a><span class="lineno">  553</span>&#160;      <span class="stringliteral">&quot;modified_neighbor_solution_buffer-&gt;size() = &quot;</span></div>
+<div class="line"><a name="l00554"></a><span class="lineno">  554</span>&#160;          &lt;&lt; modified_neighbor_solution_buffer-&gt;size()</div>
+<div class="line"><a name="l00555"></a><span class="lineno">  555</span>&#160;          &lt;&lt; <span class="stringliteral">&quot;\nneighbor_data.size() = &quot;</span> &lt;&lt; neighbor_data.size()</div>
+<div class="line"><a name="l00556"></a><span class="lineno">  556</span>&#160;          &lt;&lt; <span class="stringliteral">&quot;\nmodified_neighbor_solution_buffer was incorrectly initialized &quot;</span></div>
+<div class="line"><a name="l00557"></a><span class="lineno">  557</span>&#160;             <span class="stringliteral">&quot;before calling hweno_impl.&quot;</span>);</div>
+<div class="line"><a name="l00558"></a><span class="lineno">  558</span>&#160; </div>
+<div class="line"><a name="l00559"></a><span class="lineno">  559</span>&#160;  <a class="code" href="namespacealg.html#af893873f65d38df2edd4999798524cdb">alg::for_each</a>(</div>
+<div class="line"><a name="l00560"></a><span class="lineno">  560</span>&#160;      neighbor_data, [&amp;mesh, &amp;element](<span class="keyword">const</span> <span class="keyword">auto</span>&amp; neighbor_and_data) noexcept {</div>
+<div class="line"><a name="l00561"></a><span class="lineno">  561</span>&#160;        <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(Weno_detail::check_element_has_one_similar_neighbor_in_direction(</div>
+<div class="line"><a name="l00562"></a><span class="lineno">  562</span>&#160;                   element, neighbor_and_data.first.first),</div>
+<div class="line"><a name="l00563"></a><span class="lineno">  563</span>&#160;               <span class="stringliteral">&quot;Found some amount of h-refinement; this is not supported&quot;</span>);</div>
+<div class="line"><a name="l00564"></a><span class="lineno">  564</span>&#160;        <a class="code" href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a>(neighbor_and_data.second.mesh == mesh,</div>
+<div class="line"><a name="l00565"></a><span class="lineno">  565</span>&#160;               <span class="stringliteral">&quot;Found some amount of p-refinement; this is not supported&quot;</span>);</div>
+<div class="line"><a name="l00566"></a><span class="lineno">  566</span>&#160;      });</div>
+<div class="line"><a name="l00567"></a><span class="lineno">  567</span>&#160; </div>
+<div class="line"><a name="l00568"></a><span class="lineno">  568</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> tensor_index = 0; tensor_index &lt; tensor-&gt;size(); ++tensor_index) {</div>
+<div class="line"><a name="l00569"></a><span class="lineno">  569</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; tensor_component = (*tensor)[tensor_index];</div>
+<div class="line"><a name="l00570"></a><span class="lineno">  570</span>&#160;    <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; neighbor_and_data : neighbor_data) {</div>
+<div class="line"><a name="l00571"></a><span class="lineno">  571</span>&#160;      <span class="keyword">const</span> <span class="keyword">auto</span>&amp; primary_neighbor = neighbor_and_data.first;</div>
+<div class="line"><a name="l00572"></a><span class="lineno">  572</span>&#160;      <span class="keyword">const</span> <span class="keyword">auto</span> neighbors_to_exclude =</div>
+<div class="line"><a name="l00573"></a><span class="lineno">  573</span>&#160;          secondary_neighbors_to_exclude_from_fit&lt;Tag&gt;(</div>
+<div class="line"><a name="l00574"></a><span class="lineno">  574</span>&#160;              <a class="code" href="group__NumericalAlgorithmsGroup.html#ga9f8afa3e3506040f3af8ebb067c16126">mean_value</a>(tensor_component, mesh), tensor_index, neighbor_data,</div>
+<div class="line"><a name="l00575"></a><span class="lineno">  575</span>&#160;              primary_neighbor);</div>
+<div class="line"><a name="l00576"></a><span class="lineno">  576</span>&#160; </div>
+<div class="line"><a name="l00577"></a><span class="lineno">  577</span>&#160;      <a class="code" href="classDataVector.html">DataVector</a>&amp; buffer =</div>
+<div class="line"><a name="l00578"></a><span class="lineno">  578</span>&#160;          modified_neighbor_solution_buffer-&gt;at(primary_neighbor);</div>
+<div class="line"><a name="l00579"></a><span class="lineno">  579</span>&#160;      solve_constrained_fit&lt;Tag&gt;(<a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;buffer), tensor_component,</div>
+<div class="line"><a name="l00580"></a><span class="lineno">  580</span>&#160;                                 tensor_index, mesh, element, neighbor_data,</div>
+<div class="line"><a name="l00581"></a><span class="lineno">  581</span>&#160;                                 primary_neighbor, neighbors_to_exclude);</div>
+<div class="line"><a name="l00582"></a><span class="lineno">  582</span>&#160;    }</div>
+<div class="line"><a name="l00583"></a><span class="lineno">  583</span>&#160; </div>
+<div class="line"><a name="l00584"></a><span class="lineno">  584</span>&#160;    <span class="comment">// Sum local and modified neighbor polynomials for the WENO reconstruction</span></div>
+<div class="line"><a name="l00585"></a><span class="lineno">  585</span>&#160;    Weno_detail::reconstruct_from_weighted_sum(</div>
+<div class="line"><a name="l00586"></a><span class="lineno">  586</span>&#160;        <a class="code" href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a>(&amp;((*tensor)[tensor_index])), neighbor_linear_weight,</div>
+<div class="line"><a name="l00587"></a><span class="lineno">  587</span>&#160;        Weno_detail::DerivativeWeight::PowTwoEllOverEllFactorial, mesh,</div>
+<div class="line"><a name="l00588"></a><span class="lineno">  588</span>&#160;        *modified_neighbor_solution_buffer);</div>
+<div class="line"><a name="l00589"></a><span class="lineno">  589</span>&#160;  }</div>
+<div class="line"><a name="l00590"></a><span class="lineno">  590</span>&#160;}</div>
+<div class="line"><a name="l00591"></a><span class="lineno">  591</span>&#160; </div>
+<div class="line"><a name="l00592"></a><span class="lineno">  592</span>&#160;}  <span class="comment">// namespace Limiters::Weno_detail</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="aclassMatrix_html"><div class="ttname"><a href="classMatrix.html">Matrix</a></div><div class="ttdoc">A dynamically sized matrix of doubles with column-major storage.</div><div class="ttdef"><b>Definition:</b> Matrix.hpp:19</div></div>
+<div class="ttc" id="agroup__NumericalAlgorithmsGroup_html_ga49cabadc0d50ce1eaf316301297fd232"><div class="ttname"><a href="group__NumericalAlgorithmsGroup.html#ga49cabadc0d50ce1eaf316301297fd232">apply_matrices</a></div><div class="ttdeci">void apply_matrices(const gsl::not_null&lt; Variables&lt; VariableTags &gt; * &gt; result, const std::array&lt; MatrixType, Dim &gt; &amp;matrices, const Variables&lt; VariableTags &gt; &amp;u, const Index&lt; Dim &gt; &amp;extents) noexcept</div><div class="ttdoc">Multiply by matrices in each dimension.</div><div class="ttdef"><b>Definition:</b> ApplyMatrices.hpp:67</div></div>
+<div class="ttc" id="autility_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/utility.html">utility</a></div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_gab10d0a221f4d7a706701b806c8135fd7"><div class="ttname"><a href="group__UtilitiesGroup.html#gab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a></div><div class="ttdeci">#define UNLIKELY(x)</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:73</div></div>
+<div class="ttc" id="afunctional_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/functional.html">functional</a></div></div>
+<div class="ttc" id="anamespaceMakeWithValueImpls_html_a7ea3d1902a2155296c53df5451c2da48"><div class="ttname"><a href="namespaceMakeWithValueImpls.html#a7ea3d1902a2155296c53df5451c2da48">MakeWithValueImpls::number_of_points</a></div><div class="ttdeci">size_t number_of_points(const T &amp;input) noexcept</div><div class="ttdoc">The number of points represented by an object.</div><div class="ttdef"><b>Definition:</b> MakeWithValue.hpp:40</div></div>
+<div class="ttc" id="apair_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a></div></div>
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a></div></div>
+<div class="ttc" id="astructTags_1_1Mean_html"><div class="ttname"><a href="structTags_1_1Mean.html">Tags::Mean</a></div><div class="ttdoc">Given the Tag holding a Tensor&lt;DataVector, ...&gt;, swap the DataVector with a double.</div><div class="ttdef"><b>Definition:</b> Tags.hpp:23</div></div>
+<div class="ttc" id="agroup__DataBoxGroup_html_gae08744824ea7df89224f128b2080c5b1"><div class="ttname"><a href="group__DataBoxGroup.html#gae08744824ea7df89224f128b2080c5b1">db::get</a></div><div class="ttdeci">const auto &amp; get(const DataBox&lt; TagList &gt; &amp;box) noexcept</div><div class="ttdoc">Retrieve the item with tag Tag from the DataBox.</div><div class="ttdef"><b>Definition:</b> DataBox.hpp:791</div></div>
+<div class="ttc" id="aclassIndex_html"><div class="ttname"><a href="classIndex.html">Index</a></div><div class="ttdef"><b>Definition:</b> Index.hpp:31</div></div>
+<div class="ttc" id="aclassDirection_html"><div class="ttname"><a href="classDirection.html">Direction</a></div><div class="ttdef"><b>Definition:</b> Direction.hpp:23</div></div>
+<div class="ttc" id="aclassElement_html"><div class="ttname"><a href="classElement.html">Element</a></div><div class="ttdef"><b>Definition:</b> Element.hpp:29</div></div>
+<div class="ttc" id="alowest_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/numeric_limits/lowest.html">std::numeric_limits::lowest</a></div><div class="ttdeci">T lowest(T... args)</div></div>
+<div class="ttc" id="aclassElementId_html"><div class="ttname"><a href="classElementId.html">ElementId</a></div><div class="ttdoc">An ElementId uniquely labels an Element.</div><div class="ttdef"><b>Definition:</b> ElementId.hpp:51</div></div>
+<div class="ttc" id="areference_wrapper_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/functional/reference_wrapper.html">std::reference_wrapper</a></div></div>
+<div class="ttc" id="anamespacealg_html_a555a287c18af07a8d7b5e5009ec50951"><div class="ttname"><a href="namespacealg.html#a555a287c18af07a8d7b5e5009ec50951">alg::found</a></div><div class="ttdeci">constexpr bool found(const Container &amp;c, const T &amp;value)</div><div class="ttdoc">Convenience wrapper around constexpr reimplementation of std::find, returns true if value is in c.</div><div class="ttdef"><b>Definition:</b> Algorithm.hpp:257</div></div>
+<div class="ttc" id="acstddef_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstddef.html">cstddef</a></div></div>
+<div class="ttc" id="aAssert_8hpp_html"><div class="ttname"><a href="Assert_8hpp.html">Assert.hpp</a></div></div>
+<div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/array.html">array</a></div></div>
+<div class="ttc" id="aIndex_8hpp_html"><div class="ttname"><a href="Index_8hpp.html">Index.hpp</a></div></div>
+<div class="ttc" id="aclassDataVector_html"><div class="ttname"><a href="classDataVector.html">DataVector</a></div><div class="ttdoc">Stores a collection of function values.</div><div class="ttdef"><b>Definition:</b> DataVector.hpp:46</div></div>
+<div class="ttc" id="agroup__NumericalAlgorithmsGroup_html_ga9f8afa3e3506040f3af8ebb067c16126"><div class="ttname"><a href="group__NumericalAlgorithmsGroup.html#ga9f8afa3e3506040f3af8ebb067c16126">mean_value</a></div><div class="ttdeci">double mean_value(const DataVector &amp;f, const Mesh&lt; Dim &gt; &amp;mesh) noexcept</div><div class="ttdoc">Compute the mean value of a function over a manifold.</div><div class="ttdef"><b>Definition:</b> MeanValue.hpp:47</div></div>
+<div class="ttc" id="anamespacealg_html_af893873f65d38df2edd4999798524cdb"><div class="ttname"><a href="namespacealg.html#af893873f65d38df2edd4999798524cdb">alg::for_each</a></div><div class="ttdeci">decltype(auto) for_each(const Container &amp;c, UnaryFunction &amp;&amp;f)</div><div class="ttdoc">Convenience wrapper around std::for_each, returns the result of std::for_each(begin(c),...</div><div class="ttdef"><b>Definition:</b> Algorithm.hpp:291</div></div>
+<div class="ttc" id="anamespaceSpectral_html_a43a7bb2e106dbab2bd3a306504a1c008"><div class="ttname"><a href="namespaceSpectral.html#a43a7bb2e106dbab2bd3a306504a1c008">Spectral::quadrature_weights</a></div><div class="ttdeci">const DataVector &amp; quadrature_weights(size_t num_points) noexcept</div><div class="ttdoc">Weights to compute definite integrals.</div></div>
+<div class="ttc" id="agroup__ErrorHandlingGroup_html_gaf170f3984e3d0f809b2558dbd981ca35"><div class="ttname"><a href="group__ErrorHandlingGroup.html#gaf170f3984e3d0f809b2558dbd981ca35">ASSERT</a></div><div class="ttdeci">#define ASSERT(a, m)</div><div class="ttdoc">Assert that an expression should be true.</div><div class="ttdef"><b>Definition:</b> Assert.hpp:49</div></div>
+<div class="ttc" id="aVariables_8hpp_html"><div class="ttname"><a href="Variables_8hpp.html">Variables.hpp</a></div></div>
+<div class="ttc" id="aclassMesh_html"><div class="ttname"><a href="classMesh.html">Mesh</a></div><div class="ttdoc">Holds the number of grid points, basis, and quadrature in each direction of the computational grid.</div><div class="ttdef"><b>Definition:</b> Mesh.hpp:49</div></div>
+<div class="ttc" id="aclassDirectionMap_html"><div class="ttname"><a href="classDirectionMap.html">DirectionMap</a></div><div class="ttdef"><b>Definition:</b> DirectionMap.hpp:15</div></div>
+<div class="ttc" id="anamespaceActionTesting_html_af2cb56d7012b27cab5d118a9fa0783d2"><div class="ttname"><a href="namespaceActionTesting.html#af2cb56d7012b27cab5d118a9fa0783d2">ActionTesting::cache</a></div><div class="ttdeci">Parallel::GlobalCache&lt; Metavariables &gt; &amp; cache(MockRuntimeSystem&lt; Metavariables &gt; &amp;runner, const ArrayIndex &amp;array_index) noexcept</div><div class="ttdoc">Returns the GlobalCache of Component with index array_index.</div><div class="ttdef"><b>Definition:</b> MockRuntimeSystemFreeFunctions.hpp:382</div></div>
+<div class="ttc" id="alimits_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/limits.html">limits</a></div></div>
+<div class="ttc" id="aGsl_8hpp_html"><div class="ttname"><a href="Gsl_8hpp.html">Gsl.hpp</a></div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_gaffde14445f49f65ff4f5b592e44ee71a"><div class="ttname"><a href="group__UtilitiesGroup.html#gaffde14445f49f65ff4f5b592e44ee71a">LIKELY</a></div><div class="ttdeci">#define LIKELY(x)</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:67</div></div>
+<div class="ttc" id="aMatrix_8hpp_html"><div class="ttname"><a href="Matrix_8hpp.html">Matrix.hpp</a></div></div>
+<div class="ttc" id="aclassFixedHashMap_html_a6152dc921343ea34b31a2b88b9d827b3"><div class="ttname"><a href="classFixedHashMap.html#a6152dc921343ea34b31a2b88b9d827b3">FixedHashMap&lt; 2 *Dim, Direction&lt; Dim &gt;, T, DirectionHash&lt; Dim &gt; &gt;::contains</a></div><div class="ttdeci">bool contains(const key_type &amp;key) const noexcept</div><div class="ttdoc">Check if key is in the map.</div><div class="ttdef"><b>Definition:</b> FixedHashMap.hpp:177</div></div>
+<div class="ttc" id="aGsl_8hpp_html_a649c6961f9146205c203e45d58fd0c4c"><div class="ttname"><a href="Gsl_8hpp.html#a649c6961f9146205c203e45d58fd0c4c">make_not_null</a></div><div class="ttdeci">gsl::not_null&lt; T * &gt; make_not_null(T *ptr) noexcept</div><div class="ttdoc">Construct a not_null from a pointer. Often this will be done as an implicit conversion,...</div><div class="ttdef"><b>Definition:</b> Gsl.hpp:880</div></div>
+<div class="ttc" id="aDirection_8hpp_html"><div class="ttname"><a href="Direction_8hpp.html">Direction.hpp</a></div></div>
+<div class="ttc" id="agroup__UtilitiesGroup_html_ga6ed84deeb606f239b8781809d2be69a6"><div class="ttname"><a href="group__UtilitiesGroup.html#ga6ed84deeb606f239b8781809d2be69a6">equal_within_roundoff</a></div><div class="ttdeci">constexpr bool equal_within_roundoff(const double a, const double b, const double eps=std::numeric_limits&lt; double &gt;::epsilon() *100.0, const double scale=1.0) noexcept</div><div class="ttdef"><b>Definition:</b> EqualWithinRoundoff.hpp:15</div></div>
+<div class="ttc" id="anamespaceSpectral_html_a73ec2be22ed7a694949db310c31bc5f6"><div class="ttname"><a href="namespaceSpectral.html#a73ec2be22ed7a694949db310c31bc5f6">Spectral::interpolation_matrix</a></div><div class="ttdeci">Matrix interpolation_matrix(size_t num_points, const T &amp;target_points) noexcept</div><div class="ttdoc">Matrix used to interpolate to the target_points.</div></div>
+<div class="ttc" id="aunordered_map_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/unordered_map.html">unordered_map</a></div></div>
+<div class="ttc" id="aMeanValue_8hpp_html"><div class="ttname"><a href="MeanValue_8hpp.html">MeanValue.hpp</a></div></div>
+<div class="ttc" id="aNumericalAlgorithms_2Spectral_2Mesh_8hpp_html"><div class="ttname"><a href="NumericalAlgorithms_2Spectral_2Mesh_8hpp.html">Mesh.hpp</a></div></div>
+<div class="ttc" id="aclassgsl_1_1not__null_html"><div class="ttname"><a href="classgsl_1_1not__null.html">gsl::not_null</a></div><div class="ttdoc">Require a pointer to not be a nullptr</div><div class="ttdef"><b>Definition:</b> ReadSpecPiecewisePolynomial.hpp:13</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

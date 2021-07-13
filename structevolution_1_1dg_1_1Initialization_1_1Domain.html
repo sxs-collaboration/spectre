@@ -1,0 +1,288 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: evolution::dg::Initialization::Domain&lt; Dim, OverrideCubicFunctionsOfTime &gt; Struct Template Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceevolution.html">evolution</a></li><li class="navelem"><a class="el" href="namespaceevolution_1_1dg.html">dg</a></li><li class="navelem"><a class="el" href="namespaceevolution_1_1dg_1_1Initialization.html">Initialization</a></li><li class="navelem"><a class="el" href="structevolution_1_1dg_1_1Initialization_1_1Domain.html">Domain</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="structevolution_1_1dg_1_1Initialization_1_1Domain-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">evolution::dg::Initialization::Domain&lt; Dim, OverrideCubicFunctionsOfTime &gt; Struct Template Reference<div class="ingroups"><a class="el" href="group__InitializationGroup.html">Initialization</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Initialize items related to the basic structure of the element.  
+ <a href="structevolution_1_1dg_1_1Initialization_1_1Domain.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="DgDomain_8hpp_source.html">DgDomain.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a514eb885412a4ba7816e73e1aaa79a7e"><td class="memItemLeft" align="right" valign="top"><a id="a514eb885412a4ba7816e73e1aaa79a7e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>initialization_tags</b> = tmpl::list&lt;::<a class="el" href="structdomain_1_1Tags_1_1InitialExtents.html">domain::Tags::InitialExtents</a>&lt; Dim &gt;, ::<a class="el" href="structdomain_1_1Tags_1_1InitialRefinementLevels.html">domain::Tags::InitialRefinementLevels</a>&lt; Dim &gt;, <a class="el" href="structevolution_1_1dg_1_1Tags_1_1Quadrature.html">evolution::dg::Tags::Quadrature</a> &gt;</td></tr>
+<tr class="separator:a514eb885412a4ba7816e73e1aaa79a7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6c6c73a7aa730a3ee6e01efc38d749f"><td class="memItemLeft" align="right" valign="top"><a id="ab6c6c73a7aa730a3ee6e01efc38d749f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>const_global_cache_tags</b> = tmpl::list&lt;::<a class="el" href="structdomain_1_1Tags_1_1Domain.html">domain::Tags::Domain</a>&lt; Dim &gt; &gt;</td></tr>
+<tr class="separator:ab6c6c73a7aa730a3ee6e01efc38d749f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acccdccdef6fd9e10767e8e4829407377"><td class="memItemLeft" align="right" valign="top"><a id="acccdccdef6fd9e10767e8e4829407377"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>mutable_global_cache_tags</b> = tmpl::list&lt;::<a class="el" href="structdomain_1_1Tags_1_1FunctionsOfTime.html">domain::Tags::FunctionsOfTime</a> &gt;</td></tr>
+<tr class="separator:acccdccdef6fd9e10767e8e4829407377"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69bbd070eb94a60e0a767640471efc24"><td class="memItemLeft" align="right" valign="top"><a id="a69bbd070eb94a60e0a767640471efc24"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>simple_tags</b> = tmpl::list&lt;::<a class="el" href="structdomain_1_1Tags_1_1Mesh.html">domain::Tags::Mesh</a>&lt; Dim &gt;, ::<a class="el" href="structdomain_1_1Tags_1_1Element.html">domain::Tags::Element</a>&lt; Dim &gt;, ::<a class="el" href="structdomain_1_1Tags_1_1ElementMap.html">domain::Tags::ElementMap</a>&lt; Dim, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a> &gt;, ::<a class="el" href="structdomain_1_1CoordinateMaps_1_1Tags_1_1CoordinateMap.html">domain::CoordinateMaps::Tags::CoordinateMap</a>&lt; Dim, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;</td></tr>
+<tr class="separator:a69bbd070eb94a60e0a767640471efc24"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad6fa391ddf8e8e36adb72c863524ac7e"><td class="memItemLeft" align="right" valign="top"><a id="ad6fa391ddf8e8e36adb72c863524ac7e"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>compute_tags</b> = tmpl::list&lt; ::<a class="el" href="structdomain_1_1Tags_1_1LogicalCoordinates.html">domain::Tags::LogicalCoordinates</a>&lt; Dim &gt;, ::<a class="el" href="structdomain_1_1Tags_1_1MappedCoordinates.html">domain::Tags::MappedCoordinates</a>&lt; ::<a class="el" href="structdomain_1_1Tags_1_1ElementMap.html">domain::Tags::ElementMap</a>&lt; Dim, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a> &gt;, ::<a class="el" href="structdomain_1_1Tags_1_1Coordinates.html">domain::Tags::Coordinates</a>&lt; Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt; &gt;, ::<a class="el" href="structdomain_1_1Tags_1_1InverseJacobianCompute.html">domain::Tags::InverseJacobianCompute</a>&lt; ::<a class="el" href="structdomain_1_1Tags_1_1ElementMap.html">domain::Tags::ElementMap</a>&lt; Dim, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a> &gt;, ::<a class="el" href="structdomain_1_1Tags_1_1Coordinates.html">domain::Tags::Coordinates</a>&lt; Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a> &gt; &gt;, <a class="el" href="structParallel_1_1Tags_1_1FromGlobalCache.html">Parallel::Tags::FromGlobalCache</a>&lt;::<a class="el" href="structdomain_1_1Tags_1_1FunctionsOfTime.html">domain::Tags::FunctionsOfTime</a> &gt;, ::<a class="el" href="structdomain_1_1Tags_1_1CoordinatesMeshVelocityAndJacobiansCompute.html">domain::Tags::CoordinatesMeshVelocityAndJacobiansCompute</a>&lt; ::<a class="el" href="structdomain_1_1CoordinateMaps_1_1Tags_1_1CoordinateMap.html">domain::CoordinateMaps::Tags::CoordinateMap</a>&lt; Dim, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;, ::<a class="el" href="structdomain_1_1Tags_1_1InertialFromGridCoordinatesCompute.html">domain::Tags::InertialFromGridCoordinatesCompute</a>&lt; Dim &gt;, ::<a class="el" href="structdomain_1_1Tags_1_1ElementToInertialInverseJacobian.html">domain::Tags::ElementToInertialInverseJacobian</a>&lt; Dim &gt;, ::<a class="el" href="structdomain_1_1Tags_1_1DetInvJacobianCompute.html">domain::Tags::DetInvJacobianCompute</a>&lt; Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;, ::<a class="el" href="structdomain_1_1Tags_1_1InertialMeshVelocityCompute.html">domain::Tags::InertialMeshVelocityCompute</a>&lt; Dim &gt;, <a class="el" href="structevolution_1_1domain_1_1Tags_1_1DivMeshVelocityCompute.html">evolution::domain::Tags::DivMeshVelocityCompute</a>&lt; Dim &gt;, ::<a class="el" href="structdomain_1_1Tags_1_1MinimumGridSpacingCompute.html">domain::Tags::MinimumGridSpacingCompute</a>&lt; Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;</td></tr>
+<tr class="separator:ad6fa391ddf8e8e36adb72c863524ac7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a37c4c56dce349911ab2fb44dfd4c10ea"><td class="memTemplParams" colspan="2"><a id="a37c4c56dce349911ab2fb44dfd4c10ea"></a>
+template&lt;typename DataBox , typename... InboxTags, typename Metavariables , typename ActionList , typename ParallelComponent , Requires&lt; tmpl::all&lt; initialization_tags, tmpl::bind&lt; db::tag_is_retrievable, tmpl::_1, tmpl::pin&lt; DataBox &gt;&gt;&gt;::value &gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:a37c4c56dce349911ab2fb44dfd4c10ea"><td class="memTemplItemLeft" align="right" valign="top">static auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>apply</b> (DataBox &amp;box, const <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; InboxTags... &gt; &amp;, const <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt; &amp;, const <a class="el" href="classElementId.html">ElementId</a>&lt; Dim &gt; &amp;array_index, const ActionList, const ParallelComponent *const) noexcept</td></tr>
+<tr class="separator:a37c4c56dce349911ab2fb44dfd4c10ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa6aa29e3116d2fa69408f21554355f90"><td class="memTemplParams" colspan="2"><a id="aa6aa29e3116d2fa69408f21554355f90"></a>
+template&lt;typename DataBox , typename... InboxTags, typename Metavariables , typename ArrayIndex , typename ActionList , typename ParallelComponent , Requires&lt; not tmpl::all&lt; initialization_tags, tmpl::bind&lt; db::tag_is_retrievable, tmpl::_1, tmpl::pin&lt; DataBox &gt;&gt;&gt;::value &gt;  = nullptr&gt; </td></tr>
+<tr class="memitem:aa6aa29e3116d2fa69408f21554355f90"><td class="memTemplItemLeft" align="right" valign="top">static <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/tuple.html">std::tuple</a>&lt; DataBox &amp;&amp; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>apply</b> (DataBox &amp;, const <a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; InboxTags... &gt; &amp;, const <a class="el" href="classParallel_1_1GlobalCache.html">Parallel::GlobalCache</a>&lt; Metavariables &gt; &amp;, const ArrayIndex &amp;, ActionList, const ParallelComponent *const) noexcept</td></tr>
+<tr class="separator:aa6aa29e3116d2fa69408f21554355f90"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t Dim, bool OverrideCubicFunctionsOfTime = false&gt;<br />
+struct evolution::dg::Initialization::Domain&lt; Dim, OverrideCubicFunctionsOfTime &gt;</h3>
+
+<p>Initialize items related to the basic structure of the element. </p>
+<p>GlobalCache:</p><ul>
+<li>Uses:<ul>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1Domain.html">domain::Tags::Domain</a>&lt;Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt;</code> DataBox:</li>
+</ul>
+</li>
+<li>Uses:<ul>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1InitialExtents.html">domain::Tags::InitialExtents</a>&lt;Dim&gt;</code></li>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1FunctionsOfTime.html" title="The FunctionsOfTime initialized from a DomainCreator or (if override_functions_of_time is true in the...">domain::Tags::FunctionsOfTime</a></code></li>
+</ul>
+</li>
+<li>Adds:<ul>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1Mesh.html" title="The computational grid of the Element in the DataBox.">domain::Tags::Mesh</a>&lt;Dim&gt;</code></li>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1Element.html">domain::Tags::Element</a>&lt;Dim&gt;</code></li>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1ElementMap.html">domain::Tags::ElementMap</a>&lt;Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt;</code></li>
+<li><code><a class="el" href="structdomain_1_1CoordinateMaps_1_1Tags_1_1CoordinateMap.html">domain::CoordinateMaps::Tags::CoordinateMap</a>&lt;Dim, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt;</code></li>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1CoordinatesMeshVelocityAndJacobiansCompute.html" title="Computes the Inertial coordinates, the inverse Jacobian from the Grid to the Inertial frame,...">domain::Tags::CoordinatesMeshVelocityAndJacobiansCompute</a>&lt; CoordinateMap&lt;Dim, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt;&gt;</code></li>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1Coordinates.html">domain::Tags::Coordinates</a>&lt;Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>&gt;</code></li>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1Coordinates.html">domain::Tags::Coordinates</a>&lt;Dim, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>&gt;</code></li>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1Coordinates.html">domain::Tags::Coordinates</a>&lt;Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt;</code></li>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1InverseJacobian.html" title="The inverse Jacobian from the source frame to the target frame.">domain::Tags::InverseJacobian</a>&lt;Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Grid.html">Frame::Grid</a>&gt;</code></li>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1InverseJacobian.html" title="The inverse Jacobian from the source frame to the target frame.">domain::Tags::InverseJacobian</a>&lt;Dim, <a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt;</code></li>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1DetInvJacobian.html" title="The determinant of the inverse Jacobian from the source frame to the target frame.">domain::Tags::DetInvJacobian</a>&lt;<a class="el" href="structFrame_1_1Logical.html">Frame::Logical</a>, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt;</code></li>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1MeshVelocity.html" title="The mesh velocity.">domain::Tags::MeshVelocity</a>&lt;Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt;</code></li>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1DivMeshVelocity.html" title="The divergence of the mesh velocity.">domain::Tags::DivMeshVelocity</a></code></li>
+<li><code><a class="el" href="structdomain_1_1Tags_1_1MinimumGridSpacingCompute.html">domain::Tags::MinimumGridSpacingCompute</a>&lt;Dim, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a>&gt;&gt;</code></li>
+</ul>
+</li>
+<li>Removes: nothing</li>
+<li>Modifies: nothing</li>
+</ul>
+<dl class="section note"><dt>Note</dt><dd>This action relies on the <code>SetupDataBox</code> aggregated initialization mechanism, so <code><a class="el" href="structActions_1_1SetupDataBox.html" title="Add into the DataBox default constructed items for the collection of tags requested by any of the act...">Actions::SetupDataBox</a></code> must be present in the <code><a class="el" href="namespaceevolution_1_1dg_1_1Initialization.html" title="Functionality for initializing the discontinuous Galerkin to evolve hyperbolic partial differential e...">Initialization</a></code> phase action list prior to this action. </dd>
+<dd>
+If OverrideCubicFunctionsOfTime == true, then cubic functions of time are overriden via <code>read_spec_piecewise_polynomial()</code> </dd></dl>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>src/Evolution/Initialization/<a class="el" href="DgDomain_8hpp_source.html">DgDomain.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

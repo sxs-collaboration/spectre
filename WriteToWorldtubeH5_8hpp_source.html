@@ -1,0 +1,294 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: tests/Unit/Helpers/Evolution/Systems/Cce/WriteToWorldtubeH5.hpp Source File</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_33df814919e476f9d56dccef9b24e276.html">tests</a></li><li class="navelem"><a class="el" href="dir_38113a4c235494bd05bb19f85d006940.html">Unit</a></li><li class="navelem"><a class="el" href="dir_b87ca7a475176b712f1482b79974072f.html">Helpers</a></li><li class="navelem"><a class="el" href="dir_002e20023af72d4513ec833e61587297.html">Evolution</a></li><li class="navelem"><a class="el" href="dir_69a63926d0d0a560268b3f57e744101c.html">Systems</a></li><li class="navelem"><a class="el" href="dir_eba41e20a2bbc16129823470c5247cc2.html">Cce</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">WriteToWorldtubeH5.hpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">// Distributed under the MIT License.</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// See LICENSE.txt for details.</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &quot;DataStructures/ComplexModalVector.hpp&quot;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Dat_8hpp.html">IO/H5/Dat.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="File_8hpp.html">IO/H5/File.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="Version_8hpp.html">IO/H5/Version.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160; </div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespaceCce.html">Cce</a> {</div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="keyword">namespace </span>TestHelpers {</div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160; </div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="comment">// records worldtube data in the SpEC h5 style.</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno"><a class="line" href="structCce_1_1TestHelpers_1_1WorldtubeModeRecorder.html">   15</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structCce_1_1TestHelpers_1_1WorldtubeModeRecorder.html">WorldtubeModeRecorder</a> {</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;  <a class="code" href="structCce_1_1TestHelpers_1_1WorldtubeModeRecorder.html">WorldtubeModeRecorder</a>(<span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&amp; filename,</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;                        <span class="keyword">const</span> <span class="keywordtype">size_t</span> l_max) noexcept</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;      : output_file_{filename} {</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    <span class="comment">// write the .ver that indicates that the derivatives are correctly</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    <span class="comment">// normalized.</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    output_file_.<a class="code" href="classh5_1_1H5File.html#a0d08cecb7a4b3c5f0edc3fae810de00a">insert</a>&lt;<a class="code" href="classh5_1_1Version.html">h5::Version</a>&gt;(</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;        <span class="stringliteral">&quot;/VersionHist&quot;</span>, <span class="stringliteral">&quot;Bugfix in CCE radial derivatives (ticket 1096).&quot;</span>);</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    output_file_.<a class="code" href="classh5_1_1H5File.html#ae0f7dd1e8f15fd2c261669b1a9e1e21c">close_current_object</a>();</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    file_legend_.emplace_back(<span class="stringliteral">&quot;time&quot;</span>);</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> l = 0; l &lt;= static_cast&lt;int&gt;(l_max); ++l) {</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;      <span class="keywordflow">for</span> (<span class="keywordtype">int</span> m = -l; m &lt;= l; ++m) {</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;        file_legend_.push_back(<span class="stringliteral">&quot;Real Y_&quot;</span> + std::to_string(l) + <span class="stringliteral">&quot;,&quot;</span> +</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;                               std::to_string(m));</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;        file_legend_.push_back(<span class="stringliteral">&quot;Imag Y_&quot;</span> + std::to_string(l) + <span class="stringliteral">&quot;,&quot;</span> +</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;                               std::to_string(m));</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;      }</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    }</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  }</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  <span class="comment">// append to `dataset_path` the vector created by `time` followed by the</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="comment">// `modes` rearranged to be compatible with SpEC h5 format.</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  <span class="keywordtype">void</span> append_worldtube_mode_data(<span class="keyword">const</span> <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&amp; dataset_path,</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;                                  <span class="keyword">const</span> <span class="keywordtype">double</span> time,</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;                                  <span class="keyword">const</span> <a class="code" href="classComplexModalVector.html">ComplexModalVector</a>&amp; modes,</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;                                  <span class="keyword">const</span> <span class="keywordtype">size_t</span> l_max) noexcept {</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="keyword">auto</span>&amp; output_mode_dataset =</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        output_file_.<a class="code" href="classh5_1_1H5File.html#a85c2b34accc553ce09b3281868391c86">try_insert</a>&lt;<a class="code" href="classh5_1_1Dat.html">h5::Dat</a>&gt;(dataset_path, file_legend_, 0);</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">size_t</span> output_size = <a class="code" href="group__ConstantExpressionsGroup.html#gaef1fe82faee8c46e9706f252a5a00937">square</a>(l_max + 1);</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;double&gt;</a> data_to_write(2 * output_size + 1);</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    data_to_write[0] = time;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> l = 0; l &lt;= static_cast&lt;int&gt;(l_max); ++l) {</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;      <span class="keywordflow">for</span> (<span class="keywordtype">int</span> m = -l; m &lt;= l; ++m) {</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        data_to_write[2 * <a class="code" href="group__SwshGroup.html#ga226f04036d4d08f77c5ce26f59d80d04">Spectral::Swsh::goldberg_mode_index</a>(</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;                              l_max, <span class="keyword">static_cast&lt;</span><span class="keywordtype">size_t</span><span class="keyword">&gt;</span>(l), -m) +</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;                      1] =</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;            real(modes[<a class="code" href="group__SwshGroup.html#ga226f04036d4d08f77c5ce26f59d80d04">Spectral::Swsh::goldberg_mode_index</a>(</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;                l_max, <span class="keyword">static_cast&lt;</span><span class="keywordtype">size_t</span><span class="keyword">&gt;</span>(l), m)]);</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        data_to_write[2 * <a class="code" href="group__SwshGroup.html#ga226f04036d4d08f77c5ce26f59d80d04">Spectral::Swsh::goldberg_mode_index</a>(</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;                              l_max, <span class="keyword">static_cast&lt;</span><span class="keywordtype">size_t</span><span class="keyword">&gt;</span>(l), -m) +</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;                      2] =</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;            imag(modes[<a class="code" href="group__SwshGroup.html#ga226f04036d4d08f77c5ce26f59d80d04">Spectral::Swsh::goldberg_mode_index</a>(</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;                l_max, <span class="keyword">static_cast&lt;</span><span class="keywordtype">size_t</span><span class="keyword">&gt;</span>(l), m)]);</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;      }</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    }</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    output_mode_dataset.append(data_to_write);</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    output_file_.<a class="code" href="classh5_1_1H5File.html#ae0f7dd1e8f15fd2c261669b1a9e1e21c">close_current_object</a>();</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;  }</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;  <a class="code" href="classh5_1_1H5File.html">h5::H5File&lt;h5::AccessType::ReadWrite&gt;</a> output_file_;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;  <a class="codeRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;std::string&gt;</a> file_legend_;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;};</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;}  <span class="comment">// namespace TestHelpers</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;}  <span class="comment">// namespace Cce</span></div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
+<div class="ttc" id="aclassh5_1_1H5File_html_a85c2b34accc553ce09b3281868391c86"><div class="ttname"><a href="classh5_1_1H5File.html#a85c2b34accc553ce09b3281868391c86">h5::H5File::try_insert</a></div><div class="ttdeci">ObjectType &amp; try_insert(const std::string &amp;path, Args &amp;&amp;... args) noexcept</div><div class="ttdoc">Inserts an object like insert if it does not exist, returns the object if it does.</div><div class="ttdef"><b>Definition:</b> File.hpp:269</div></div>
+<div class="ttc" id="aclassh5_1_1Dat_html"><div class="ttname"><a href="classh5_1_1Dat.html">h5::Dat</a></div><div class="ttdoc">Represents a multicolumn dat file inside an HDF5 file.</div><div class="ttdef"><b>Definition:</b> Dat.hpp:42</div></div>
+<div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt; double &gt;</a></div></div>
+<div class="ttc" id="agroup__ConstantExpressionsGroup_html_gaef1fe82faee8c46e9706f252a5a00937"><div class="ttname"><a href="group__ConstantExpressionsGroup.html#gaef1fe82faee8c46e9706f252a5a00937">square</a></div><div class="ttdeci">constexpr decltype(auto) square(const T &amp;x)</div><div class="ttdoc">Compute the square of x</div><div class="ttdef"><b>Definition:</b> ConstantExpressions.hpp:55</div></div>
+<div class="ttc" id="agroup__SwshGroup_html_ga226f04036d4d08f77c5ce26f59d80d04"><div class="ttname"><a href="group__SwshGroup.html#ga226f04036d4d08f77c5ce26f59d80d04">Spectral::Swsh::goldberg_mode_index</a></div><div class="ttdeci">constexpr size_t goldberg_mode_index(const size_t l_max, const size_t l, const int m, const size_t radial_offset=0) noexcept</div><div class="ttdoc">Returns the index into a vector of modes consistent with .</div><div class="ttdef"><b>Definition:</b> SwshCoefficients.hpp:504</div></div>
+<div class="ttc" id="aFile_8hpp_html"><div class="ttname"><a href="File_8hpp.html">File.hpp</a></div></div>
+<div class="ttc" id="astructCce_1_1TestHelpers_1_1WorldtubeModeRecorder_html"><div class="ttname"><a href="structCce_1_1TestHelpers_1_1WorldtubeModeRecorder.html">Cce::TestHelpers::WorldtubeModeRecorder</a></div><div class="ttdef"><b>Definition:</b> WriteToWorldtubeH5.hpp:15</div></div>
+<div class="ttc" id="aclassh5_1_1H5File_html"><div class="ttname"><a href="classh5_1_1H5File.html">h5::H5File&lt; h5::AccessType::ReadWrite &gt;</a></div></div>
+<div class="ttc" id="aVersion_8hpp_html"><div class="ttname"><a href="Version_8hpp.html">Version.hpp</a></div></div>
+<div class="ttc" id="aclassh5_1_1Version_html"><div class="ttname"><a href="classh5_1_1Version.html">h5::Version</a></div><div class="ttdoc">Used to store the version of the file.</div><div class="ttdef"><b>Definition:</b> Version.hpp:31</div></div>
+<div class="ttc" id="aclassh5_1_1H5File_html_a0d08cecb7a4b3c5f0edc3fae810de00a"><div class="ttname"><a href="classh5_1_1H5File.html#a0d08cecb7a4b3c5f0edc3fae810de00a">h5::H5File::insert</a></div><div class="ttdeci">ObjectType &amp; insert(const std::string &amp;path, Args &amp;&amp;... args)</div><div class="ttdoc">Insert an object into an H5 file.</div><div class="ttdef"><b>Definition:</b> File.hpp:242</div></div>
+<div class="ttc" id="aclassComplexModalVector_html"><div class="ttname"><a href="classComplexModalVector.html">ComplexModalVector</a></div><div class="ttdoc">A class for storing complex spectral coefficients on a spectral grid.</div><div class="ttdef"><b>Definition:</b> ComplexModalVector.hpp:40</div></div>
+<div class="ttc" id="anamespaceCce_html"><div class="ttname"><a href="namespaceCce.html">Cce</a></div><div class="ttdoc">The set of utilities for performing Cauchy characteristic evolution and Cauchy characteristic matchin...</div><div class="ttdef"><b>Definition:</b> CharacteristicExtractFwd.hpp:6</div></div>
+<div class="ttc" id="aclassh5_1_1H5File_html_ae0f7dd1e8f15fd2c261669b1a9e1e21c"><div class="ttname"><a href="classh5_1_1H5File.html#ae0f7dd1e8f15fd2c261669b1a9e1e21c">h5::H5File::close_current_object</a></div><div class="ttdeci">void close_current_object() const noexcept</div><div class="ttdef"><b>Definition:</b> File.hpp:151</div></div>
+<div class="ttc" id="aDat_8hpp_html"><div class="ttname"><a href="Dat_8hpp.html">Dat.hpp</a></div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

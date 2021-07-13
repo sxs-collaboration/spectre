@@ -1,0 +1,408 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: grmhd::AnalyticData::MagnetizedTovStar Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacegrmhd.html">grmhd</a></li><li class="navelem"><a class="el" href="namespacegrmhd_1_1AnalyticData.html">AnalyticData</a></li><li class="navelem"><a class="el" href="classgrmhd_1_1AnalyticData_1_1MagnetizedTovStar.html">MagnetizedTovStar</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
+<a href="#pro-attribs">Protected Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
+<a href="classgrmhd_1_1AnalyticData_1_1MagnetizedTovStar-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">grmhd::AnalyticData::MagnetizedTovStar Class Reference</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Magnetized TOV star initial data, where metric terms only account for the hydrodynamics not the magnetic fields.  
+ <a href="classgrmhd_1_1AnalyticData_1_1MagnetizedTovStar.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="MagnetizedTovStar_8hpp_source.html">MagnetizedTovStar.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1MagnetizedTovStar_1_1CutoffPressureFraction.html">CutoffPressureFraction</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1MagnetizedTovStar_1_1PressureExponent.html">PressureExponent</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgrmhd_1_1AnalyticData_1_1MagnetizedTovStar_1_1VectorPotentialAmplitude.html">VectorPotentialAmplitude</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a508297b8fb46cd3acae2ed4c574f0344"><td class="memItemLeft" align="right" valign="top"><a id="a508297b8fb46cd3acae2ed4c574f0344"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>options</b> = tmpl::push_back&lt; tov_star::options, <a class="el" href="structgrmhd_1_1AnalyticData_1_1MagnetizedTovStar_1_1PressureExponent.html">PressureExponent</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1MagnetizedTovStar_1_1CutoffPressureFraction.html">CutoffPressureFraction</a>, <a class="el" href="structgrmhd_1_1AnalyticData_1_1MagnetizedTovStar_1_1VectorPotentialAmplitude.html">VectorPotentialAmplitude</a> &gt;</td></tr>
+<tr class="separator:a508297b8fb46cd3acae2ed4c574f0344"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b4a850baecb2e6a7fa296fa52e2a8d5"><td class="memTemplParams" colspan="2"><a id="a2b4a850baecb2e6a7fa296fa52e2a8d5"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a2b4a850baecb2e6a7fa296fa52e2a8d5"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>tags</b> = typename tov_star::template tags&lt; DataType &gt;</td></tr>
+<tr class="separator:a2b4a850baecb2e6a7fa296fa52e2a8d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a5bdd59048df03d752e541386bab04531"><td class="memItemLeft" align="right" valign="top"><a id="a5bdd59048df03d752e541386bab04531"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MagnetizedTovStar</b> (const <a class="el" href="classgrmhd_1_1AnalyticData_1_1MagnetizedTovStar.html">MagnetizedTovStar</a> &amp;)=delete</td></tr>
+<tr class="separator:a5bdd59048df03d752e541386bab04531"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa7322376a510971cfb2fdcfe1be9830"><td class="memItemLeft" align="right" valign="top"><a id="aaa7322376a510971cfb2fdcfe1be9830"></a>
+<a class="el" href="classgrmhd_1_1AnalyticData_1_1MagnetizedTovStar.html">MagnetizedTovStar</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classgrmhd_1_1AnalyticData_1_1MagnetizedTovStar.html">MagnetizedTovStar</a> &amp;)=delete</td></tr>
+<tr class="separator:aaa7322376a510971cfb2fdcfe1be9830"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc726e9d64973296d07045e39edad6e8"><td class="memItemLeft" align="right" valign="top"><a id="adc726e9d64973296d07045e39edad6e8"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MagnetizedTovStar</b> (<a class="el" href="classgrmhd_1_1AnalyticData_1_1MagnetizedTovStar.html">MagnetizedTovStar</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:adc726e9d64973296d07045e39edad6e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a260c7e75e43ae06008442733ec05b2cd"><td class="memItemLeft" align="right" valign="top"><a id="a260c7e75e43ae06008442733ec05b2cd"></a>
+<a class="el" href="classgrmhd_1_1AnalyticData_1_1MagnetizedTovStar.html">MagnetizedTovStar</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classgrmhd_1_1AnalyticData_1_1MagnetizedTovStar.html">MagnetizedTovStar</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a260c7e75e43ae06008442733ec05b2cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a68786159cb7aee8ba8445f836d5355a2"><td class="memItemLeft" align="right" valign="top"><a id="a68786159cb7aee8ba8445f836d5355a2"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MagnetizedTovStar</b> (double central_rest_mass_density, double polytropic_constant, double polytropic_exponent, size_t pressure_exponent, double cutoff_pressure_fraction, double vector_potential_amplitude) noexcept</td></tr>
+<tr class="separator:a68786159cb7aee8ba8445f836d5355a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4190ab4a506f33ccae6ad89c79fe72e7"><td class="memTemplParams" colspan="2"><a id="a4190ab4a506f33ccae6ad89c79fe72e7"></a>
+template&lt;typename DataType , typename... Tags&gt; </td></tr>
+<tr class="memitem:a4190ab4a506f33ccae6ad89c79fe72e7"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; Tags... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classgrmhd_1_1AnalyticData_1_1MagnetizedTovStar.html#a4190ab4a506f33ccae6ad89c79fe72e7">variables</a> (const tnsr::I&lt; DataType, 3 &gt; &amp;x, tmpl::list&lt; Tags... &gt;) const noexcept</td></tr>
+<tr class="memdesc:a4190ab4a506f33ccae6ad89c79fe72e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve a collection of variables at <code>(x)</code> <br /></td></tr>
+<tr class="separator:a4190ab4a506f33ccae6ad89c79fe72e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5bde8be958c50229b3ed18c42f79975b"><td class="memItemLeft" align="right" valign="top"><a id="a5bde8be958c50229b3ed18c42f79975b"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>pup</b> (PUP::er &amp;p) noexcept</td></tr>
+<tr class="separator:a5bde8be958c50229b3ed18c42f79975b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:aeabc1bebc0b615816786d7c71bc87665"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a>&#160;</td><td class="memItemRight" valign="bottom"><b>help</b></td></tr>
+<tr class="separator:aeabc1bebc0b615816786d7c71bc87665"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abcd9f45a3b8f5211cef15130f4fb4c9a"><td class="memItemLeft" align="right" valign="top"><a id="abcd9f45a3b8f5211cef15130f4fb4c9a"></a>
+static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>volume_dim</b> = 3_st</td></tr>
+<tr class="separator:abcd9f45a3b8f5211cef15130f4fb4c9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:a70b3bfff2a50d0569cfe9a66ae8ddaa3"><td class="memTemplParams" colspan="2"><a id="a70b3bfff2a50d0569cfe9a66ae8ddaa3"></a>
+template&lt;typename DataType &gt; </td></tr>
+<tr class="memitem:a70b3bfff2a50d0569cfe9a66ae8ddaa3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classtuples_1_1TaggedTuple.html">tuples::TaggedTuple</a>&lt; <a class="el" href="structhydro_1_1Tags_1_1MagneticField.html">hydro::Tags::MagneticField</a>&lt; DataType, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>variables</b> (const tnsr::I&lt; DataType, 3 &gt; &amp;coords, tmpl::list&lt; <a class="el" href="structhydro_1_1Tags_1_1MagneticField.html">hydro::Tags::MagneticField</a>&lt; DataType, 3, <a class="el" href="structFrame_1_1Inertial.html">Frame::Inertial</a> &gt;&gt;, const RadialVariables&lt; DataType &gt; &amp;radial_vars) const noexcept</td></tr>
+<tr class="separator:a70b3bfff2a50d0569cfe9a66ae8ddaa3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
+Protected Attributes</h2></td></tr>
+<tr class="memitem:ac293f754220ef14593e8bb1367338d30"><td class="memItemLeft" align="right" valign="top"><a id="ac293f754220ef14593e8bb1367338d30"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>pressure_exponent_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;size_t&gt;::max()</td></tr>
+<tr class="separator:ac293f754220ef14593e8bb1367338d30"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a627227c0a310d91f6f3646e16b3d520c"><td class="memItemLeft" align="right" valign="top"><a id="a627227c0a310d91f6f3646e16b3d520c"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>cutoff_pressure_</b> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a>&lt;double&gt;::signaling_NaN()</td></tr>
+<tr class="separator:a627227c0a310d91f6f3646e16b3d520c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31c9db4b9d5148b0605ce3f9bf0bb407"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><b>vector_potential_amplitude_</b></td></tr>
+<tr class="separator:a31c9db4b9d5148b0605ce3f9bf0bb407"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a0635524b24d16f78e873d30e6ce48e81"><td class="memItemLeft" align="right" valign="top"><a id="a0635524b24d16f78e873d30e6ce48e81"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classgrmhd_1_1AnalyticData_1_1MagnetizedTovStar.html">MagnetizedTovStar</a> &amp;lhs, const <a class="el" href="classgrmhd_1_1AnalyticData_1_1MagnetizedTovStar.html">MagnetizedTovStar</a> &amp;rhs) noexcept</td></tr>
+<tr class="separator:a0635524b24d16f78e873d30e6ce48e81"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Magnetized TOV star initial data, where metric terms only account for the hydrodynamics not the magnetic fields. </p>
+<p>Superposes a poloidal magnetic field on top of a TOV solution where the vector potential has the form</p>
+<p class="formulaDsp">
+\begin{align*} A_{\phi} = A_b \varpi^2 \max(p-p_{\mathrm{cut}}, 0)^{n_s} \end{align*}
+</p>
+<p>where \(A_b\) controls the amplitude of the magnetic field, \(\varpi^2=x^2+y^2=r^2-z^2\) is the cylindrical radius, \(n_s\) controls the degree of differentiability, and \(p_{\mathrm{cut}}\) controls the pressure cutoff below which the magnetic field is zero.</p>
+<p>In Cartesian coordinates the vector potential is:</p>
+<p class="formulaDsp">
+\begin{align*} A_x&amp;=-\frac{y}{\varpi^2}A_\phi, \\ A_y&amp;=\frac{x}{\varpi^2}A_\phi, \\ A_z&amp;=0, \end{align*}
+</p>
+<p>For the poloidal field this means</p>
+<p class="formulaDsp">
+\begin{align*} A_x &amp;= -y A_b\max(p-p_{\mathrm{cut}}, 0)^{n_s}, \\ A_y &amp;= x A_b\max(p-p_{\mathrm{cut}}, 0)^{n_s}. \end{align*}
+</p>
+<p>The magnetic field is computed from the vector potential as</p>
+<p class="formulaDsp">
+\begin{align*} B^i&amp;=n_a\epsilon^{aijk}\partial_jA_k \\ &amp;=-\frac{1}{\sqrt{\gamma}}[ijk]\partial_j A_k, \end{align*}
+</p>
+<p>where \([ijk]\) is the total anti-symmetric symbol. This means that</p>
+<p class="formulaDsp">
+\begin{align*} B^x&amp;=\frac{1}{\sqrt{\gamma}} (\partial_z A_y-\partial_y A_z), \\ B^y&amp;=\frac{1}{\sqrt{\gamma}} (\partial_x A_z - \partial_z A_x), \\ B^z&amp;=\frac{1}{\sqrt{\gamma}} (\partial_y A_x - \partial_x A_y). \end{align*}
+</p>
+<p>Focusing on the region where the field is non-zero we have:</p>
+<p class="formulaDsp">
+\begin{align*} \partial_x A_y &amp;= A_b(p-p_{\mathrm{cut}})^{n_s}+ \frac{x^2}{r}A_bn_s(p-p_{\mathrm{cut}})^{n_s-1}\partial_r p \\ \partial_y A_x &amp;= -A_b(p-p_{\mathrm{cut}})^{n_s}- \frac{y^2}{r}A_bn_s(p-p_{\mathrm{cut}})^{n_s-1}\partial_r p \\ \partial_z A_x &amp;= -\frac{yz}{r}A_bn_s(p-p_{\mathrm{cut}})^{n_s-1}\partial_rp \\ \partial_z A_y &amp;= \frac{xz}{r}A_bn_s(p-p_{\mathrm{cut}})^{n_s-1}\partial_rp \end{align*}
+</p>
+<p>The magnetic field is given by:</p>
+<p class="formulaDsp">
+\begin{align*} B^x&amp;=\frac{1}{\sqrt{\gamma}}\frac{xz}{r} A_bn_s(p-p_{\mathrm{cut}})^{n_s-1}\partial_rp \\ B^y&amp;=\frac{1}{\sqrt{\gamma}}\frac{yz}{r} A_bn_s(p-p_{\mathrm{cut}})^{n_s-1}\partial_rp \\ B^z&amp;=-\frac{A_b}{\sqrt{\gamma}}\left[ 2(p-p_{\mathrm{cut}})^{n_s} \phantom{\frac{a}{b}}\right. \\ &amp;\left.+\frac{x^2+y^2}{r} n_s(p-p_{\mathrm{cut}})^{n_s-1}\partial_r p \right] \end{align*}
+</p>
+<p>Taking the small- \(r\) limit gives the \(r=0\) magnetic field:</p>
+<p class="formulaDsp">
+\begin{align*} B^x&amp;=0, \\ B^y&amp;=0, \\ B^z&amp;=-\frac{A_b}{\sqrt{\gamma}} 2(p-p_{\mathrm{cut}})^{n_s}. \end{align*}
+</p>
+<p>While the amplitude \(A_b\) is specified in the code, it is more natural to work with the magnetic field strength, which is given by \(\sqrt{b^2}\) (where \(b^a\) is the comoving magnetic field), and in CGS units is</p>
+<p class="formulaDsp">
+\begin{align*} |B_{\mathrm{CGS}}|&amp;= \sqrt{4 \pi b^2} \left(\frac{c^2}{G M_\odot}\right) \left(\frac{c}{\sqrt{4 \pi \epsilon_0 G}}\right) \\ &amp;= \sqrt{b^2} \times 8.352\times10^{19}\mathrm{G} \,. \end{align*}
+</p>
+<p>We now give values used for standard tests of magnetized stars.</p><ul>
+<li>\(\rho_c(0)=1.28\times10^{-3}\)</li>
+<li>\(K=100\)</li>
+<li>\(\Gamma=2\)</li>
+<li>Domain \([-20,20]^3\)</li>
+<li>Units \(M=M_\odot\)</li>
+<li>A target final time 20ms means \(20\times10^{-3}/(5\times10^{-6})=4000M\)</li>
+<li>The mass of the star is \(1.4M_{\odot}\)</li>
+</ul>
+<p>Parameters for desired magnetic field strength:</p><ul>
+<li>For \(n_s=0\) and \(p_{\mathrm{cut}}=0.04p_{\max}\) setting \(A_b=6\times10^{-5}\) yields a maximum mganetic field strength of \(1.002\times10^{16}G\).</li>
+<li>For \(n_s=1\) and \(p_{\mathrm{cut}}=0.04p_{\max}\) setting \(A_b=0.4\) yields a maximum mganetic field strength of \(1.05\times10^{16}G\).</li>
+<li>For \(n_s=2\) and \(p_{\mathrm{cut}}=0.04p_{\max}\) setting \(A_b=2500\) yields a maximum mganetic field strength of \(1.03\times10^{16}G\).</li>
+<li>For \(n_s=3\) and \(p_{\mathrm{cut}}=0.04p_{\max}\) setting \(A_b=1.65\times10^{7}\) yields a maximum mganetic field strength of \(1.07\times10^{16}G\).</li>
+</ul>
+<p>Note that the magnetic field strength goes as \(A_b\) so any desired value can be achieved by a linear scaling. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="aeabc1bebc0b615816786d7c71bc87665"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeabc1bebc0b615816786d7c71bc87665">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceOptions.html#aa61c7f41f21afa7646811456f673be89">Options::String</a> grmhd::AnalyticData::MagnetizedTovStar::help</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">      <span class="stringliteral">&quot;Magnetized TOV star in areal coordinates.&quot;</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a31c9db4b9d5148b0605ce3f9bf0bb407"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a31c9db4b9d5148b0605ce3f9bf0bb407">&#9670;&nbsp;</a></span>vector_potential_amplitude_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double grmhd::AnalyticData::MagnetizedTovStar::vector_potential_amplitude_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits&lt;double&gt;::signaling_NaN</a>()</div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/PointwiseFunctions/AnalyticData/GrMhd/<a class="el" href="MagnetizedTovStar_8hpp_source.html">MagnetizedTovStar.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<div class="ttc" id="asignaling_NaN_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/numeric_limits/signaling_NaN.html">std::numeric_limits::signaling_NaN</a></div><div class="ttdeci">T signaling_NaN(T... args)</div></div>
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>

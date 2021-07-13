@@ -1,0 +1,284 @@
+<!-- HTML header for doxygen 1.8.10-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=9"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="SXS Collaboration">
+    <meta name="generator" content="Doxygen 1.8.17"/>
+    <style>
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014-2015 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         */
+        @-webkit-viewport { width: device-width; }
+        @-moz-viewport    { width: device-width; }
+        @-ms-viewport     { width: device-width; }
+        @-o-viewport      { width: device-width; }
+        @viewport         { width: device-width; }
+      </style>
+  <title>SpECTRE: Spectral::Swsh::CoefficientsMetadata Class Reference</title>
+  <link href="tabs.css" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="dynsections.js"></script>
+  <link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script>
+<script type="text/javascript" async="async" src="./MathJax.js"></script>
+  <link href="octicons.css" rel="stylesheet">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="doxygen.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="popper.min.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  <script type="text/javascript" src="spectre.js"></script>
+  </head>
+  <body>
+  <div id="top" class="navbar-fixed-top"><!-- do not remove this div, it is closed by doxygen! -->
+  <!-- BEGIN TITLEAREA -->
+  <div id="titlearea">
+  <script type="text/javascript">
+  var searchBox = new SearchBox("searchBox", "search",false,'Search');
+  </script>
+  <div id="main-nav">
+    <ul class="sm sm-dox" id="main-menu">
+      <li>
+      <a href="index.html">
+      SpECTRE &#160;
+        <span id="projectnumber">v2021.07.08</span>
+      </a>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-book"></i><span>Documentation</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 135px;">
+            <a href="index.html">
+            <i class="octicon octicon-book"></i><span>Introduction</span></a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="versioning_and_releases.html">
+              <i class="octicon octicon-versions"></i><span>Releases</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="installation.html">
+              <i class="octicon octicon-desktop-download"></i><span>Installation</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="tutorials.html">
+              <i class="octicon octicon-mortar-board"></i><span>User Tutorials</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="dev_guide.html">
+              <i class="octicon octicon-gist-secret"></i><span>Dev Guide</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="code_of_conduct.html">
+              <i class="octicon octicon-comment-discussion"></i><span>Code of Conduct</span>
+            </a>
+          </li>
+          <li style="min-width: 135px;">
+            <a href="contributing_to_spectre.html">
+              <i class="octicon octicon-git-pull-request"></i><span>Contributing Guide</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="selected">
+          <span id="selected">
+            <i class="octicon octicon-code"></i>
+              <span>Code Reference</span>
+          </span>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li style="min-width: 130px;">
+            <a href="modules.html">
+              <i class="octicon octicon-code"></i>
+              <span>Topics</span>
+            </a>
+          </li>
+          <li style="min-width: 130px;">
+            <a href="namespaces.html">
+              <i class="octicon octicon-gist"></i>
+              <span>Namespaces</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="files.html">
+          <i class="octicon octicon-file-directory"></i><span>Files</span>
+        </a>
+      </li>
+      <li>
+        <a href="citelist.html">
+          <i class="octicon octicon-file-text"></i><span>Bibliography</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/sxs-collaboration/spectre" target="_blank">
+          <i class="octicon octicon-mark-github"></i><span>View on GitHub</span>
+        </a>
+      </li>
+      <!--The Search <li> is added by doxygen later-->
+    </ul>
+  </div><!-- main-nav -->
+  </div><!-- titlearea -->
+  <!-- window showing the filter options -->
+  <div id="MSearchSelectWindow"  style="position: fixed;"
+       onmouseover="return searchBox.OnSearchSelectShow()"
+       onmouseout="return searchBox.OnSearchSelectHide()"
+       onkeydown="return searchBox.OnSearchSelectKey(event)">
+  </div>
+  <!-- iframe showing the search results (closed by default) -->
+  <div id="MSearchResultsWindow"  style="position: fixed;">
+  <iframe src="javascript:void(0)" frameborder="0"
+          name="MSearchResults" id="MSearchResults">
+  </iframe>
+  </div>
+<!-- Generated by Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespaceSpectral.html">Spectral</a></li><li class="navelem"><a class="el" href="namespaceSpectral_1_1Swsh.html">Swsh</a></li><li class="navelem"><a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html">CoefficientsMetadata</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classSpectral_1_1Swsh_1_1CoefficientsMetadata-members.html">List of all members</a>  </div>
+  <div class="headertitle">
+<div class="title">Spectral::Swsh::CoefficientsMetadata Class Reference<div class="ingroups"><a class="el" href="group__SwshGroup.html">Spin-weighted spherical harmonics</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>A container for libsharp metadata for the spin-weighted spherical harmonics modal representation.  
+ <a href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="SwshCoefficients_8hpp_source.html">SwshCoefficients.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata_1_1CoefficientsIndexIterator.html">CoefficientsIndexIterator</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An iterator for easily traversing a libsharp-compatible spin-weighted spherical harmonic modal representation. The <code><a class="el" href="group__TensorExpressionsGroup.html#ga078bcec08b0bef602762b194bf6ecb95" title="Returns the tensor expression representing the product of two tensor expressions.">operator*()</a></code> returns a <code><a class="el" href="structSpectral_1_1Swsh_1_1LibsharpCoefficientInfo.html" title="Points to a single pair of modes in a libsharp-compatible spin-weighted spherical harmonic modal repr...">LibsharpCoefficientInfo</a></code>, which contains two offsets, <code>transform_of_real_part_offset</code> and <code>transform_of_imag_part_offset</code>, and the <code>l_max</code>, <code>l</code> and <code>m</code> associated with the values at those offsets.  <a href="classSpectral_1_1Swsh_1_1CoefficientsMetadata_1_1CoefficientsIndexIterator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a9786f20f78c13baccb251744a4c3d341"><td class="memItemLeft" align="right" valign="top"><a id="a9786f20f78c13baccb251744a4c3d341"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CoefficientsMetadata</b> (size_t l_max) noexcept</td></tr>
+<tr class="separator:a9786f20f78c13baccb251744a4c3d341"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4133a6be132ba900c046c7f3f291fca9"><td class="memItemLeft" align="right" valign="top"><a id="a4133a6be132ba900c046c7f3f291fca9"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CoefficientsMetadata</b> (const <a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html">CoefficientsMetadata</a> &amp;)=delete</td></tr>
+<tr class="separator:a4133a6be132ba900c046c7f3f291fca9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a05bf3a9bdcc54cd04a2904f47d30e3c4"><td class="memItemLeft" align="right" valign="top"><a id="a05bf3a9bdcc54cd04a2904f47d30e3c4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CoefficientsMetadata</b> (<a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html">CoefficientsMetadata</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a05bf3a9bdcc54cd04a2904f47d30e3c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a523f46b7c3a2de8421194617df2bfa80"><td class="memItemLeft" align="right" valign="top"><a id="a523f46b7c3a2de8421194617df2bfa80"></a>
+<a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html">CoefficientsMetadata</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html">CoefficientsMetadata</a> &amp;)=delete</td></tr>
+<tr class="separator:a523f46b7c3a2de8421194617df2bfa80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af05be44f51c9a7b1d75c39bc86d64ca9"><td class="memItemLeft" align="right" valign="top"><a id="af05be44f51c9a7b1d75c39bc86d64ca9"></a>
+<a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html">CoefficientsMetadata</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html">CoefficientsMetadata</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:af05be44f51c9a7b1d75c39bc86d64ca9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abb8603bf59fc20e25578fc5ac581234d"><td class="memItemLeft" align="right" valign="top"><a id="abb8603bf59fc20e25578fc5ac581234d"></a>
+sharp_alm_info *&#160;</td><td class="memItemRight" valign="bottom"><b>get_sharp_alm_info</b> () const noexcept</td></tr>
+<tr class="separator:abb8603bf59fc20e25578fc5ac581234d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e077fcb215a97605e5ee7d07012c152"><td class="memItemLeft" align="right" valign="top"><a id="a6e077fcb215a97605e5ee7d07012c152"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>l_max</b> () const noexcept</td></tr>
+<tr class="separator:a6e077fcb215a97605e5ee7d07012c152"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1f26203acb00d96dac7834db56655ef"><td class="memItemLeft" align="right" valign="top"><a id="ad1f26203acb00d96dac7834db56655ef"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html#ad1f26203acb00d96dac7834db56655ef">size</a> () const noexcept</td></tr>
+<tr class="memdesc:ad1f26203acb00d96dac7834db56655ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">returns the number of (complex) entries in a libsharp-compatible coefficients vector. This includes the factor of 2 associated with needing to store both the transform of the real and imaginary parts, so is the full size of the result of a libsharp swsh transform. <br /></td></tr>
+<tr class="separator:ad1f26203acb00d96dac7834db56655ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ad97a4280f28f93839ab47fb66a948db1"><td class="memItemLeft" align="right" valign="top"><a id="ad97a4280f28f93839ab47fb66a948db1"></a>
+<a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata_1_1CoefficientsIndexIterator.html">CoefficientsMetadata::CoefficientsIndexIterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html#ad97a4280f28f93839ab47fb66a948db1">begin</a> () const noexcept</td></tr>
+<tr class="memdesc:ad97a4280f28f93839ab47fb66a948db1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a bidirectional iterator to the start of the series of modes. <br /></td></tr>
+<tr class="separator:ad97a4280f28f93839ab47fb66a948db1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ef471368713018f4b2e6270ba1bd963"><td class="memItemLeft" align="right" valign="top"><a id="a9ef471368713018f4b2e6270ba1bd963"></a>
+<a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata_1_1CoefficientsIndexIterator.html">CoefficientsMetadata::CoefficientsIndexIterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html#a9ef471368713018f4b2e6270ba1bd963">cbegin</a> () const noexcept</td></tr>
+<tr class="memdesc:a9ef471368713018f4b2e6270ba1bd963"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a bidirectional iterator to the start of the series of modes. <br /></td></tr>
+<tr class="separator:a9ef471368713018f4b2e6270ba1bd963"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a113af1daadec357ff25cd2c93c4569af"><td class="memItemLeft" align="right" valign="top"><a id="a113af1daadec357ff25cd2c93c4569af"></a>
+<a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata_1_1CoefficientsIndexIterator.html">CoefficientsMetadata::CoefficientsIndexIterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html#a113af1daadec357ff25cd2c93c4569af">end</a> () const noexcept</td></tr>
+<tr class="memdesc:a113af1daadec357ff25cd2c93c4569af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a bidirectional iterator to the end of the series of modes. <br /></td></tr>
+<tr class="separator:a113af1daadec357ff25cd2c93c4569af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2f7c55ed242b88b5317656702b27c38"><td class="memItemLeft" align="right" valign="top"><a id="af2f7c55ed242b88b5317656702b27c38"></a>
+<a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata_1_1CoefficientsIndexIterator.html">CoefficientsMetadata::CoefficientsIndexIterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html#af2f7c55ed242b88b5317656702b27c38">cend</a> () const noexcept</td></tr>
+<tr class="memdesc:af2f7c55ed242b88b5317656702b27c38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a bidirectional iterator to the end of the series of modes. <br /></td></tr>
+<tr class="separator:af2f7c55ed242b88b5317656702b27c38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A container for libsharp metadata for the spin-weighted spherical harmonics modal representation. </p>
+<h3>Details</h3>
+<p>The <a class="el" href="classSpectral_1_1Swsh_1_1CoefficientsMetadata.html" title="A container for libsharp metadata for the spin-weighted spherical harmonics modal representation.">CoefficientsMetadata</a> class acts as a memory-safe container for a <code>sharp_alm_info*</code>, required for use of libsharp transform utilities. The libsharp utilities are currently constructed to only provide user functions with collocation data for spin-weighted functions and derivatives. This class also provides an iterator for easily traversing a libsharp-compatible modal representation.</p>
+<dl class="section note"><dt>Note</dt><dd>The libsharp representation of coefficients is altered from the standard mathematical definitions in a nontrivial way. There are a number of important features to the data storage of the coefficients.<ul>
+<li>they are stored as a set of complex values, but each vector of complex values is the transform of only the real or imaginary part of the collocation data</li>
+<li>because each vector of complex coefficients is related to the transform of a set of doubles, only (about) half of the m's are stored (m &gt;= 0), because the remaining m modes are determinable by conjugation from the positive m modes, given that they represent the transform of a purely real or purely imaginary collocation quantity</li>
+<li>they are stored in an l-varies-fastest, triangular representation. To be concrete, for an l_max=2, the order of coefficient storage is (l, m): [(0, 0), (1, 0), (2, 0), (1, 1), (2, 1), (2, 2)]</li>
+<li>due to the restriction of representing only the transform of real quantities, the m=0 modes always have vanishing imaginary component. </li>
+</ul>
+</dd></dl>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/NumericalAlgorithms/Spectral/<a class="el" href="SwshCoefficients_8hpp_source.html">SwshCoefficients.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- HTML footer for doxygen 1.8.10-->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+&copy; Copyright 2017 - 2021
+<a href="https://black-holes.org">SXS Collaboration</a>,
+<a href="LICENSE.txt" target="_blank">
+<span class="hidden-xs">Distributed under the</span>
+MIT License</a>
+</small></address>
+</body>
+</html>
